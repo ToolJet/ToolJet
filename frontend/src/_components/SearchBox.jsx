@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import cx from 'classnames';
 import useDebounce from '@/_hooks/useDebounce';
 import { useMounted } from '@/_hooks/use-mount';
-import SolidIcon from '../_ui/Icon/SolidIcons';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export function SearchBox({
   width = '200px',

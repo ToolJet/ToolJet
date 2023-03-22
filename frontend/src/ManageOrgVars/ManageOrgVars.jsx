@@ -6,7 +6,7 @@ import ReactTooltip from 'react-tooltip';
 import VariablesTable from './VariablesTable';
 import { withTranslation } from 'react-i18next';
 import ManageOrgVarsDrawer from './ManageOrgVarsDrawer';
-import { ButtonSolid } from '../_ui/AppButton/AppButton';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 class ManageOrgVarsComponent extends React.Component {
   constructor(props) {

@@ -6,8 +6,8 @@ import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { Loader } from '../ManageSSO/Loader';
-import SolidIcon from '../_ui/Icon/solidIcons/index';
-import BulkIcon from '../_ui/Icon/bulkIcons/index';
+import SolidIcon from '@/_ui/Icon/solidIcons/index';
+import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 import Multiselect from '../_ui/Multiselect/Multiselect';
 import { FilterPreview, MultiSelectUser } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -80,7 +80,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         .getUsersNotInGroup(query, groupPermissionId)
         .then(({ users }) => {
           console.log('called', users, groupPermissionId);
-          // return resolve(users);
           resolve(
             users.map((user) => {
               return {
@@ -606,23 +605,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       <div className="row">
                         <div className="col">
                           <MultiSelectUser
-                            // className={{
-                            //   container: searchSelectClass,
-                            //   value: `${searchSelectClass}__value`,
-                            //   input: `${searchSelectClass}__input`,
-                            //   select: `${searchSelectClass}__select`,
-                            //   options: `${searchSelectClass}__options`,
-                            //   row: `${searchSelectClass}__row`,
-                            //   option: `${searchSelectClass}__option`,
-                            //   group: `${searchSelectClass}__group`,
-                            //   'group-header': `${searchSelectClass}__group-header`,
-                            //   'is-selected': 'is-selected',
-                            //   'is-highlighted': 'is-highlighted',
-                            //   'is-loading': 'is-loading',
-                            //   'is-multiple': 'is-multiple',
-                            //   'has-focus': 'has-focus',
-                            //   'not-found': `${searchSelectClass}__not-found`,
-                            // }}
                             onSelect={this.setSelectedUsers}
                             onSearch={(query) => this.searchUsersNotInGroup(query, groupPermission.id)}
                             selectedValues={selectedUsers}

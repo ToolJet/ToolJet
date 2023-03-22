@@ -7,7 +7,7 @@ import { Loader } from './Loader';
 import { Git } from './Git';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { toast } from 'react-hot-toast';
-import FolderList from '../_ui/FolderList/FolderList';
+import FolderList from '@/_ui/FolderList/FolderList';
 
 export function ManageSSO({ darkMode }) {
   const menuItems = [

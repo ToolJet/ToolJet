@@ -5,7 +5,7 @@ import { EditOrganization } from './EditOrganization';
 import { CreateOrganization } from './CreateOrganization';
 import { useTranslation } from 'react-i18next';
 import { authenticationService } from '@/_services';
-import SolidIcon from '../../_ui/Icon/SolidIcons';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const Menu = (props) => {
   const { t } = useTranslation();
@@ -37,7 +37,6 @@ const Menu = (props) => {
                 </div>
               </div>
             </div>
-            {/* <hr className="m-0" /> */}
           </>
         )}
         <div className={`react-select-container ${darkMode && 'dark-theme'}`}>{props.children}</div>

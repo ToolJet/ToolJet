@@ -2,13 +2,12 @@ import React from 'react';
 import { authenticationService, groupPermissionService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
-import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
 import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import Modal from '../HomePage/Modal';
-import { ButtonSolid } from '../_ui/AppButton/AppButton';
-import FolderList from '../_ui/FolderList/FolderList';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import FolderList from '@/_ui/FolderList/FolderList';
 class ManageGroupPermissionsComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -276,21 +275,6 @@ class ManageGroupPermissionsComponent extends React.Component {
                     {this.props.t('globals.cancel', 'Cancel')}
                   </ButtonSolid>
                   <ButtonSolid
-                    // onClick={() =>
-                    //   this.setState({
-                    //     showNewGroupForm: false,
-                    //     showGroupNameUpdateForm: false,
-                    //     newGroupName: null,
-                    //   })
-                    // }
-                    // onClick={(e) => {
-                    //   e.preventDefault();
-                    //   if (showNewGroupForm) {
-                    //     this.createGroup();
-                    //   } else {
-                    //     this.executeGroupUpdation();
-                    //   }
-                    // }}
                     type="submit"
                     id="my-form"
                     disabled={creatingGroup || this.state.isSaveBtnDisabled}
@@ -303,31 +287,6 @@ class ManageGroupPermissionsComponent extends React.Component {
                       ? this.props.t('globals.save', 'Save')
                       : this.props.t('header.organization.menus.manageGroups.permissions.createGroup', 'Create Group')}
                   </ButtonSolid>
-                  {/* <button
-                    type="button"
-                    className="btn btn-light mr-2"
-                    onClick={() =>
-                      this.setState({
-                        showNewGroupForm: false,
-                        showGroupNameUpdateForm: false,
-                        newGroupName: null,
-                      })
-                    }
-                    disabled={creatingGroup}
-                    data-cy="cancel-button"
-                  >
-                    {this.props.t('globals.cancel', 'Cancel')}
-                  </button> */}
-                  {/* <button
-                    type="submit"
-                    className={`btn mx-2 btn-primary ${creatingGroup || isUpdatingGroupName ? 'btn-loading' : ''}`}
-                    disabled={creatingGroup || this.state.isSaveBtnDisabled}
-                    data-cy="create-group-button"
-                  >
-                    {showGroupNameUpdateForm
-                      ? this.props.t('globals.save', 'Save')
-                      : this.props.t('header.organization.menus.manageGroups.permissions.createGroup', 'Create Group')}
-                  </button> */}
                 </div>
               </form>
             </Modal>
@@ -349,7 +308,6 @@ class ManageGroupPermissionsComponent extends React.Component {
                           });
                         }}
                         className="groups-folder-list"
-                        //   RightIcon="apps"
                       >
                         <span>{this.humanizeifDefaultGroupName(permissionGroup.group)}</span>
                       </FolderList>

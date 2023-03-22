@@ -1,11 +1,10 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext } from 'react';
 import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import CreateColumnForm from '../../Forms/ColumnForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
-import { ButtonSolid } from '../../../_ui/AppButton/AppButton';
-import SolidIcon from '../../../_ui/Icon/SolidIcons';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerOpen }) => {
   const { organizationId, selectedTable, setColumns, setSelectedTableData } = useContext(TooljetDatabaseContext);

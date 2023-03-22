@@ -3,7 +3,7 @@ import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
-import SolidIcon from '../_ui/Icon/SolidIcons';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { ButtonSolid } from '../_ui/AppButton/AppButton';
 
 export function Google({ settings, updateData }) {

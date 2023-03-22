@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import CreateRowForm from '../../Forms/RowForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
-import SolidIcon from '../../../_ui/Icon/SolidIcons';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
   const { organizationId, selectedTable, setSelectedTableData, setTotalRecords } = useContext(TooljetDatabaseContext);

@@ -12,7 +12,7 @@ const Variable = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0
     <path
       opacity="0.4"
       d="M2 6C2 3.79086 3.79086 2 6 2H18C20.2091 2 22 3.79086 22 6V18C22 20.2091 20.2091 22 18 22H6C3.79086 22 2 20.2091 2 18V6Z"
-      fill="#121212"
+      fill={fill}
     />
     <path
       d="M14.1215 16.4618L9.87854 12.2189"
@@ -42,7 +42,7 @@ const Variable = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0
       stroke-linecap="round"
       stroke-linejoin="round"
     />
-    <path d="M22 7H2V6C2 3.79086 3.79086 2 6 2H18C20.2091 2 22 3.79086 22 6V7Z" fill="#121212" />
+    <path d="M22 7H2V6C2 3.79086 3.79086 2 6 2H18C20.2091 2 22 3.79086 22 6V7Z" fill={fill} />
   </svg>
 );
 

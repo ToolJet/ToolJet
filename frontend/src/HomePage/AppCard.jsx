@@ -4,13 +4,12 @@ import { AppMenu } from './AppMenu';
 import { history } from '@/_helpers';
 import moment from 'moment';
 import { ToolTip } from '@/_components';
-// import { Fade } from '@/_ui/Fade';
 import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
 import { Link } from 'react-router-dom';
 import urlJoin from 'url-join';
 import { useTranslation } from 'react-i18next';
-import SolidIcon from '../_ui/Icon/SolidIcons';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '../_ui/Icon/BulkIcons';
 
 const { defaultIcon } = configs;
@@ -57,7 +56,7 @@ export default function AppCard({
 
   let AppIcon;
   try {
-    AppIcon = <BulkIcon name={app.icon || defaultIcon} />;
+    AppIcon = <BulkIcon fill={'#3E63DD'} name={app.icon || defaultIcon} />;
   } catch (e) {
     console.error('App icon not found', app.icon);
   }

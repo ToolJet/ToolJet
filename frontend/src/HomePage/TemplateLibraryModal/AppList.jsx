@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ListGroup } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import FolderList from '../../_ui/FolderList/FolderList';
+import FolderList from '@/_ui/FolderList/FolderList';
 
 export default function AppList(props) {
   const { apps, selectedApp, selectApp } = props;
@@ -22,9 +22,6 @@ export default function AppList(props) {
           <div></div>
         )}
         {filteredApps.map((app) => (
-          // <ListGroup.Item key={app.id} action active={app.id === selectedApp?.id} onClick={() => selectApp(app)}>
-          //   {app.name}
-          // </ListGroup.Item>
           <FolderList key={app.id} action selectedItem={app.id === selectedApp?.id} onClick={() => selectApp(app)}>
             {app.name}
           </FolderList>

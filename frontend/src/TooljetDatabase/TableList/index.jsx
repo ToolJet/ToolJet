@@ -7,7 +7,7 @@ import { tooljetDatabaseService } from '@/_services';
 import { ListItem } from '../TableListItem';
 import { BreadCrumbContext } from '../../App/App';
 import Search from '../Search';
-import SolidIcon from '../../_ui/Icon/SolidIcons';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const List = () => {
   const { organizationId, tables, searchParam, selectedTable, setTables, setSelectedTable } =

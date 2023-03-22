@@ -1,6 +1,6 @@
 import React from 'react';
 import { withTranslation } from 'react-i18next';
-import SolidIcon from '../_ui/Icon/SolidIcons';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 class VariablesTable extends React.Component {
   constructor(props) {

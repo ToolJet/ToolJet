@@ -67,30 +67,6 @@ export const BlankPage = function BlankPage({
                     )}
                   </p>
                   <div className="row mt-4">
-                    {/* <div className="col">
-                      <a
-                        onClick={createApp}
-                        className={`btn btn-primary ${creatingApp ? 'btn-loading' : ''}`}
-                        data-cy="create-new-application"
-                      >
-                        <svg
-                          className="icon"
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M9.99967 3.33301C10.4599 3.33301 10.833 3.7061 10.833 4.16634V9.16634H15.833C16.2932 9.16634 16.6663 9.53944 16.6663 9.99967C16.6663 10.4599 16.2932 10.833 15.833 10.833H10.833V15.833C10.833 16.2932 10.4599 16.6663 9.99967 16.6663C9.53944 16.6663 9.16634 16.2932 9.16634 15.833V10.833H4.16634C3.7061 10.833 3.33301 10.4599 3.33301 9.99967C3.33301 9.53944 3.7061 9.16634 4.16634 9.16634H9.16634V4.16634C9.16634 3.7061 9.53944 3.33301 9.99967 3.33301Z"
-                            fill="#FDFDFE"
-                          />
-                        </svg>
-                        New app from scratch
-                      </a>
-                    </div> */}
                     <ButtonSolid
                       leftIcon="plus"
                       onClick={createApp}
@@ -103,7 +79,6 @@ export const BlankPage = function BlankPage({
                     </ButtonSolid>
                     <div className="col">
                       <ButtonSolid
-                        // fill={'#FDFDFE'}
                         leftIcon="folderdownload"
                         onChange={handleImportApp}
                         isLoading={isImportingApp}

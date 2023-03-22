@@ -107,10 +107,6 @@ const TableForm = ({
             autoFocus
           />
         </div>
-        {/* <div className="mb-3">
-          <div className="form-label">Table description</div>
-          <input type="text" className="form-control" placeholder="optional" />
-        </div> */}
       </div>
       {!isEditMode && <CreateColumnsForm columns={columns} setColumns={setColumns} />}
       <DrawerFooter

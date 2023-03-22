@@ -7,11 +7,10 @@ import { FolderMenu } from './FolderMenu';
 import { ConfirmDialog } from '@/_components';
 import { useTranslation } from 'react-i18next';
 import Skeleton from 'react-loading-skeleton';
-import SolidIcon from '../_ui/Icon/SolidIcons';
-import { BreadCrumbContext } from '../App/App';
-import { ButtonSolid } from '../_ui/AppButton/AppButton';
-import { SearchBox } from '../_components/SearchBox';
-import SearchInput from '../_ui/SearchInput/SearchInput';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { BreadCrumbContext } from '@/App/App';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { SearchBox } from '@/_components/SearchBox';
 
 export const Folders = function Folders({
   folders,
@@ -26,7 +25,6 @@ export const Folders = function Folders({
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
   const [showInput, setShowInput] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [isCreating, setCreationStatus] = useState(false);
   const [isDeleting, setDeletionStatus] = useState(false);
@@ -54,9 +52,7 @@ export const Folders = function Folders({
   }, [folders]);
 
   const handleSearch = (e) => {
-    console.log('value', e);
     const value = e?.target?.value;
-    setSearchQuery(value);
     const filtered = folders.filter((item) => item?.name?.toLowerCase().includes(value?.toLowerCase()));
     setFilteredData(filtered);
   };
@@ -156,7 +152,6 @@ export const Folders = function Folders({
 
   function handleClose() {
     setShowInput(false);
-    setSearchQuery('');
     setFilteredData(folders);
   }
   return (
@@ -206,26 +201,6 @@ export const Folders = function Folders({
             </div>
           </>
         ) : (
-          // <input
-          //   className="tj-common-search-input"
-          //   type="search"
-          //   placeholder="search for folders"
-          //   value={searchQuery}
-          //   onChange={handleSearch}
-          // />
-          // <SearchInput
-          //   value={searchQuery}
-          //   handleChange={handleSearch}
-          //   handleClose={handleClose}
-          //   placeholder="search for folders"
-          // />
-          // <SearchBox
-          //   // onSubmit={handleSearch}
-          //   placeholder={'search for folders'}
-          //   // customClass="tj-common-search-input"
-          //   dataCy="folder-input"
-          //   callBack={handleSearch}
-          // />
           <SearchBox
             dataCy={`query-manager`}
             width="248px"

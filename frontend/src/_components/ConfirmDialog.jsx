@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import Modal from 'react-bootstrap/Modal';
 import { useTranslation } from 'react-i18next';
-import { ButtonSolid } from '../_ui/AppButton/AppButton';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export function ConfirmDialog({ show, title, message, onConfirm, onCancel, confirmButtonLoading, darkMode }) {
   darkMode = darkMode ?? (localStorage.getItem('darkMode') || false);

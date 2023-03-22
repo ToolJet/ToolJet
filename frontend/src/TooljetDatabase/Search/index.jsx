@@ -4,7 +4,7 @@ import cx from 'classnames';
 import useDebounce from '@/_hooks/useDebounce';
 import { useMounted } from '@/_hooks/use-mount';
 import { TooljetDatabaseContext } from '../index';
-import SolidIcon from '../../_ui/Icon/SolidIcons';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 const Search = ({
   width = '248px',
   onSubmit,

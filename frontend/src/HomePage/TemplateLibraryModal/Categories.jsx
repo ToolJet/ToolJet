@@ -1,5 +1,4 @@
 import React from 'react';
-import { ListGroup } from 'react-bootstrap';
 import FolderList from '../../_ui/FolderList/FolderList';
 
 const categoryTitles = {
@@ -15,18 +14,6 @@ export default function Categories(props) {
   console.log('check', selectedCategory);
   return (
     <div className="mt-2 template-categories">
-      {/* {categories.map((category) => (
-        <ListGroup.Item
-          action
-          active={category.id === selectedCategory.id}
-          key={category.id}
-          onClick={() => selectCategory(category)}
-          className="d-flex justify-content-between align-items-start"
-        >
-          <span>{categoryTitles[category.id]}</span>
-          <span>{category.count}</span>
-        </ListGroup.Item>
-      ))} */}
       {categories.map((category) => (
         <FolderList
           selectedItem={category.id === selectedCategory.id}

@@ -6,7 +6,7 @@ import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { ToolTip } from '@/_components/ToolTip';
-import SolidIcon from '../../_ui/Icon/SolidIcons';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const NotificationCenter = ({ darkMode }) => {
   const [loading, setLoading] = React.useState(false);

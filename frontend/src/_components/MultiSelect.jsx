@@ -84,7 +84,6 @@ function MultiSelectUser({
         value={{ name: '' }}
         onChange={(id, value) => {
           onSelect([...selectedValues, ...value]);
-          console.log('xxx', value);
         }}
         placeholder={placeholder}
         debounce={onSearch ? 300 : undefined}

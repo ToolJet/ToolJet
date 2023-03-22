@@ -1,7 +1,7 @@
 import React from 'react';
 import Select from '@/_ui/Select';
 import { withTranslation } from 'react-i18next';
-import { ButtonSolid } from '../_ui/AppButton/AppButton';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 class VariableForm extends React.Component {
   constructor(props) {
     super(props);

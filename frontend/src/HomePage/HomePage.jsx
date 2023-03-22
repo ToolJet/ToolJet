@@ -18,11 +18,8 @@ import { sample } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
-import IconEl from '../_ui/Icon/Icon';
-import icon from '../../assets/images/icons/editor/left-sidebar/back.svg';
-import { ButtonSolid } from '../_ui/AppButton/AppButton';
-import BulkIcon from '../_ui/Icon/bulkIcons/index';
-import SolidIcon from '../_ui/Icon/SolidIcons';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 
 const { iconList, defaultIcon } = configs;
 
@@ -383,10 +380,7 @@ class HomePageComponent extends React.Component {
         onClick={() => this.setState({ appOperations: { ...appOperations, selectedIcon: icon } })}
         key={index}
       >
-        {/* <img src={`assets/images/icons/app-icons/${icon}.svg`} data-cy={`${icon}-icon`} /> */}
         <BulkIcon name={icon} />
-        {/* <p>{icon}</p> */}
-        {/* <SolidIcon name="icon"/> */}
       </li>
     ));
   };

@@ -6,7 +6,7 @@ import Avatar from '@/_ui/Avatar';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useTranslation } from 'react-i18next';
 import { ToolTip } from '@/_components/ToolTip';
-import SolidIcon from '../_ui/Icon/SolidIcons';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const Profile = function Header({ darkMode }) {
   const { first_name, last_name, avatar_id } = authenticationService.currentUserValue;

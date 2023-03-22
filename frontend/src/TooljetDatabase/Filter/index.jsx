@@ -6,7 +6,7 @@ import { FilterForm } from '../Forms/FilterForm';
 import { isEmpty } from 'lodash';
 import { pluralize } from '@/_helpers/utils';
 import { useMounted } from '@/_hooks/use-mount';
-import SolidIcon from '../../_ui/Icon/SolidIcons';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery }) => {
   const [show, setShow] = useState(false);

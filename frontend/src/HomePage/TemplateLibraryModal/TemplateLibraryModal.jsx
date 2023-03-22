@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, Container, Row, Col } from 'react-bootstrap';
+import { Modal, Container, Row, Col } from 'react-bootstrap';
 import Categories from './Categories';
 import AppList from './AppList';
 import { libraryAppService } from '@/_services';
@@ -8,7 +8,7 @@ import _ from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ButtonSolid } from '../../_ui/AppButton/AppButton';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const identifyUniqueCategories = (templates) =>
   ['all', ...new Set(_.map(templates, 'category'))].map((categoryId) => ({

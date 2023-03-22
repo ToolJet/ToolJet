@@ -3,9 +3,9 @@ import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
-import SolidIcon from '../_ui/Icon/SolidIcons';
-import { ButtonSolid } from '../_ui/AppButton/AppButton';
-import Toggle from '../_ui/Toggle/index';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Toggle from '@/_ui/Toggle/index';
 
 export function Git({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -76,16 +76,6 @@ export function Git({ settings, updateData }) {
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
           <div>
-            {/* <label className="form-check form-switch">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                checked={enabled}
-                onChange={changeStatus}
-                data-cy="git-enable-toogle"
-              />
-              <span className="sso-type-header">{t('header.organization.menus.manageSSO.github.title', 'Github')}</span>
-            </label> */}
             <Toggle
               label={t('header.organization.menus.manageSSO.github.title', 'Github')}
               onChange={changeStatus}
@@ -140,7 +130,6 @@ export function Git({ settings, updateData }) {
             <label className="form-label" data-cy="client-secret-label">
               {t('header.organization.menus.manageSSO.github.clientSecret', 'Client Secret')}
               <small className="git- mx-2" data-cy="encripted-label">
-                {/* <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" /> */}
                 <SolidIcon name="lock" width="16" />
                 {t('header.organization.menus.manageSSO.github.encrypted', 'Encrypted')}
               </small>

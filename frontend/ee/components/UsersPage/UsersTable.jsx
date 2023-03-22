@@ -1,11 +1,11 @@
 import React from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import Avatar from '../../../src/_ui/Avatar';
+import Avatar from '@/_ui/Avatar';
 import Skeleton from 'react-loading-skeleton';
 import cx from 'classnames';
 import { Pagination } from '@/_components';
-import { ButtonSolid } from '../../../src/_ui/AppButton/AppButton';
-import SolidIcon from '../../../src/_ui/Icon/SolidIcons';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 const UsersTable = ({
   isLoading,
@@ -124,11 +124,6 @@ const UsersTable = ({
                           variant="dangerSecondary"
                           style={{ minWidth: '100px' }}
                           className="workspace-user-archive-btn tj-text-xsm"
-                          // className={cx('', {
-                          //   'btn-outline-success': user.status === 'archived',
-                          //   'btn-outline-danger': user.status === 'active' || user.status === 'invited',
-                          //   'btn-loading': unarchivingUser === user.id || archivingUser === user.id,
-                          // })}
                           disabled={unarchivingUser === user.id || archivingUser === user.id}
                           onClick={() => {
                             user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);

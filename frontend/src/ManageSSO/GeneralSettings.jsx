@@ -3,10 +3,9 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
-import SolidIcon from '../_ui/Icon/SolidIcons';
-import { ButtonSolid } from '../_ui/AppButton/AppButton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ConfirmDialog } from '@/_components';
-import InputField from '../_ui/AppInput/AppInput';
 
 export function GeneralSettings({ settings, updateData, instanceSettings, darkMode }) {
   const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';

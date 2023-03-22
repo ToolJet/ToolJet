@@ -135,7 +135,6 @@ $border-radius: 4px;
     .delete-query,
     .rename-query {
 
-      // display: none;
       span {
         width: 16px;
         height: 16px;
@@ -163,9 +162,6 @@ $border-radius: 4px;
   .query-row-selected {
     background: $color-light-indigo-04  !important;
 
-    // .delete-query,.rename-query{
-    //   display: block;
-    // }
     .delete-query {
       svg:hover {
         path {
@@ -511,7 +507,6 @@ $border-radius: 4px;
         }
 
         .code-hinter.codehinter-default-input:focus-within {
-          // box-shadow: 0px 0px 0px 1px #C6D4F9 !important;
           border: 1px solid #3E63DD !important;
           background-color: #F8FAFF;
           border-radius: 0;
