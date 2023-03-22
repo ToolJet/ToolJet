@@ -10,6 +10,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
   const [modalProps, setModalProps] = useState({
     backdrop: true,
     dialogClassName: 'datasource-edit-modal',
+    enforceFocus: false,
   });
 
   const {

@@ -3,7 +3,6 @@ import cx from 'classnames';
 import { GlobalDataSourcesContext } from '..';
 import { DataSourceTypes } from '../../Editor/DataSourceManager/SourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
-// import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 
 export const ListItem = ({ dataSource, key, active, onDelete }) => {
