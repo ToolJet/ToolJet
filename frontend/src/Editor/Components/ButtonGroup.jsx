@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { isExpectedDataType } from '@/_helpers/utils';
+import _ from 'lodash';
 
 export const ButtonGroup = function Button({
   height,
@@ -35,7 +36,7 @@ export const ButtonGroup = function Button({
   const [defaultActive, setDefaultActive] = useState(defaultSelected);
   const [data, setData] = useState(
     // eslint-disable-next-line no-unsafe-optional-chaining
-    values?.length <= labels?.length ? [...labels, ...values?.slice(labels?.length)] : labels
+    values.length <= labels.length ? [...labels, ...values.slice(labels.length)] : labels
   );
   // data is used as state to show what to display , club of label+values / values
   useEffect(() => {
@@ -44,11 +45,13 @@ export const ButtonGroup = function Button({
   }, [JSON.stringify(defaultSelected)]);
 
   useEffect(() => {
-    if (labels?.length < values?.length) {
+    if (!_.isEmpty(labels) && labels.length <= values.length) {
       // eslint-disable-next-line no-unsafe-optional-chaining
-      setData([...labels, ...values?.slice(labels?.length)]);
+      setData([...labels, ...values.slice(labels.length)]);
+    } else if (labels.length > values.length) {
+      setData([...labels.slice(0, values.length), ...values.slice(labels.length)]);
     } else {
-      setData(labels);
+      setData([...labels, ...values]);
     }
   }, [JSON.stringify(labels), JSON.stringify(values)]);
 
