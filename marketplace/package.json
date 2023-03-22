@@ -12,6 +12,8 @@
     "recursive-readdir": "^2.2.3"
   },
   "scripts": {
-    "start:dev": "lerna run watch --stream --parallel"
+    "start:watch": "lerna run watch --stream --parallel",
+    "build": "npm run build --workspaces",
+    "start:dev": "npm run build && npm run start:watch"
   }
 }
