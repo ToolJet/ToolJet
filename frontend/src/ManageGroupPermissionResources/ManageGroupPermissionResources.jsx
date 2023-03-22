@@ -353,7 +353,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       data-cy="update-link"
                       className="tj-text-xsm font-weight-500 edit-group"
                     >
-                      <SolidIcon name="editrectangle" width="14" />
+                      <SolidIcon fill="#28303F" name="editrectangle" width="14" />
                       Edit name
                     </Link>
                     <Link
@@ -361,7 +361,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       onClick={() => this.props.deleteGroup(groupPermission.id)}
                       data-cy="delete-link"
                     >
-                      <SolidIcon name="trash" width="14" /> Delete group
+                      <SolidIcon fill="#E54D2E" name="trash" width="14" /> Delete group
                     </Link>
                   </div>
                 )}

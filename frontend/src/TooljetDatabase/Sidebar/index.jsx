@@ -1,6 +1,7 @@
 import React from 'react';
 import List from '../TableList';
 import CreateTableDrawer from '../Drawers/CreateTableDrawer';
+import { OrganizationList } from '@/_components/OrganizationManager/List';
 
 export default function Sidebar() {
   return (
@@ -12,6 +13,7 @@ export default function Sidebar() {
         <div className="sidebar-list-wrap">
           <List />
         </div>
+        <OrganizationList />
       </div>
     </div>
   );

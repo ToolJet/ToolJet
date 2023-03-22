@@ -8285,6 +8285,11 @@ tbody {
   color: var(--slate12);
   padding: 4px 4px 4px 8px !important;
   text-transform: capitalize !important;
+  line-height: 0px !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+  line-height: 20px !important;
+  color: var(--slate12) !important;
 
   &:first-child {
     display: flex !important;
@@ -8630,6 +8635,7 @@ tbody {
   justify-content: center;
   flex-direction: column;
   align-items: center;
+  width: 602px;
 
   p {
     margin-top: 12px;
@@ -9883,6 +9889,7 @@ tbody {
   border-width: 0px 1px 1px 1px;
   border-style: solid;
   border-color: var(--slate4);
+  border-radius: 0px !important;
 }
 // custom styles for users multiselect in manage users 
 .manage-groups-users-multiselect{
