@@ -724,3 +724,22 @@ export const getAppWithAllDetails = async (id: string) => {
 
   return app;
 };
+
+export const authenticateUser = async (app: INestApplication, email = 'admin@tooljet.io', password = 'password') => {
+  const sessionResponse = await request
+    .agent(app.getHttpServer())
+    .post('/api/authenticate')
+    .send({ email, password })
+    .expect(201);
+
+  return { user: sessionResponse.body, tokenCookie: sessionResponse.headers['set-cookie'] };
+};
+
+export const logoutUser = async (app: INestApplication, tokenCookie: any, organization_id: string) => {
+  return await request
+    .agent(app.getHttpServer())
+    .get('/api/logout')
+    .set('tj-workspace-id', organization_id)
+    .set('Cookie', tokenCookie)
+    .expect(200);
+};
