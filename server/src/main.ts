@@ -88,32 +88,15 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, 'assets'), { prefix: (UrlPrefix ? UrlPrefix : '/') + 'assets' });
   app.enableVersioning({
     type: VersioningType.URI,
-    defaultVersion: VERSION_NEUTRAL
+    defaultVersion: VERSION_NEUTRAL,
   });
 
   const port = parseInt(process.env.PORT) || 3000;
 
-  const server = await app.listen(port, '0.0.0.0', function () {
+  await app.listen(port, '0.0.0.0', function () {
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
     console.log(`Ready to use at ${tooljetHost} 🚀`);
   });
-
-  // Print all registered routes
-  const router = server._events.request._router;
-  const availableRoutes: any[] = router.stack
-    .map((layer: any) => {
-      if (layer.route) {
-        return {
-          route: {
-            path: layer.route.path,
-            method: layer.route.stack[0].method,
-          },
-        };
-      }
-    })
-    .filter((item: any) => item !== undefined);
-
-  availableRoutes.forEach((x) =>  console.log(x))
 }
 
 // Bootstrap global agent only if TOOLJET_HTTP_PROXY is set

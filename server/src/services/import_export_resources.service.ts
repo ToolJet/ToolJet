@@ -41,23 +41,29 @@ export class ImportExportResourcesService {
 
   async import(user: User, importResourcesDto: ImportResourcesDto) {
     const tableNameMapping = {};
+    const imports = { app: [], tooljet_database: [] };
 
     if (importResourcesDto.tooljet_database) {
       for (const tjdbImportDto of importResourcesDto.tooljet_database) {
-        tableNameMapping[tjdbImportDto.id] = await this.tooljetDbImportExportService.import(
+        const createdTable = await this.tooljetDbImportExportService.import(
           importResourcesDto.organization_id,
           tjdbImportDto
         );
+        tableNameMapping[tjdbImportDto.id] = createdTable;
+        imports.tooljet_database.push(createdTable);
       }
     }
 
     if (importResourcesDto.app) {
       for (const appImportDto of importResourcesDto.app) {
         user.organizationId = importResourcesDto.organization_id;
-        await this.appImportExportService.import(user, appImportDto.definition, { tooljet_database: tableNameMapping });
+        const createdApp = await this.appImportExportService.import(user, appImportDto.definition, {
+          tooljet_database: tableNameMapping,
+        });
+        imports.app.push({ id: createdApp.id, name: createdApp.name });
       }
     }
 
-    return true;
+    return imports;
   }
 }
