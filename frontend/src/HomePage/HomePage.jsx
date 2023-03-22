@@ -14,7 +14,7 @@ import HomeHeader from './Header';
 import Modal from './Modal';
 import configs from './Configs/AppIcon.json';
 import { withTranslation } from 'react-i18next';
-import { sample } from 'lodash';
+import { sample, isEmpty } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
 
@@ -156,24 +156,35 @@ class HomePageComponent extends React.Component {
       this.setState({ isImportingApp: true });
       try {
         const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
-        const requestBody = {organization_id, ...(JSON.parse(fileContent))}
+        let importJSON = JSON.parse(fileContent);
+        // For backward compatibility with legacy app import
+        const isLegacyImport = isEmpty(importJSON.tooljet_version);
+        if (isLegacyImport) {
+          importJSON = { app: [{ definition: importJSON }], tooljet_version: importJSON.tooljetVersion };
+        }
+        const requestBody = { organization_id, ...importJSON };
         appService
           .importResource(requestBody)
           .then((data) => {
-            toast.success('App imported successfully.');
+            toast.success('Imported successfully.');
             this.setState({
               isImportingApp: false,
             });
-            this.props.history.push(`/apps/${data.id}`);
+            console.log(data);
+            if (!isEmpty(data.imports.app)) {
+              this.props.history.push(`/apps/${data.imports.app[0].id}`);
+            } else if (!isEmpty(data.imports.tooljet_database)) {
+              this.props.history.push(`/database`);
+            }
           })
           .catch(({ error }) => {
-            toast.error(`Could not import the app: ${error}`);
+            toast.error(`Could not import: ${error}`);
             this.setState({
               isImportingApp: false,
             });
           });
       } catch (error) {
-        toast.error(`Could not import the app: ${error}`);
+        toast.error(`Could not import: ${error}`);
         this.setState({
           isImportingApp: false,
         });
