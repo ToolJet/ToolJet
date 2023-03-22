@@ -55,7 +55,7 @@ module.exports = {
     'jest/no-identical-title': 'error',
     'jest/prefer-to-have-length': 'warn',
     'jest/valid-expect': 'error',
-    'import/no-unresolved': ['error', { ignore: ['^@/', 'react-hot-toast', 'react-i18next'] }],
+    'import/no-unresolved': ['error', { ignore: ['^@/', 'react-hot-toast'] }],
     'react/no-unknown-property': 'off',
   },
   settings: {

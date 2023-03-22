@@ -1,30 +1,12 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { getEnvVars } from './scripts/database-config-utils';
 
-function dbSslConfig(envVars) {
+function sslConfig(envVars) {
   let config = {};
 
   if (envVars?.DATABASE_URL)
     config = {
       url: envVars.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    };
-
-  if (envVars?.CA_CERT)
-    config = {
-      ...config,
-      ...{ ssl: { rejectUnauthorized: false, ca: envVars.CA_CERT } },
-    };
-
-  return config;
-}
-
-function tooljetDbSslConfig(envVars) {
-  let config = {};
-
-  if (envVars?.TOOLJET_DB_URL)
-    config = {
-      url: envVars.TOOLJET_DB_URL,
       ssl: { rejectUnauthorized: false },
     };
 
@@ -48,7 +30,7 @@ function buildConnectionOptions(data): TypeOrmModuleOptions {
     extra: {
       max: 25,
     },
-    ...dbSslConfig(data),
+    ...sslConfig(data),
   };
 
   const entitiesDir =
@@ -82,7 +64,7 @@ function buildToolJetDbConnectionOptions(data): TypeOrmModuleOptions {
     extra: {
       max: 25,
     },
-    ...tooljetDbSslConfig(data),
+    ...sslConfig(data),
   };
 
   return {

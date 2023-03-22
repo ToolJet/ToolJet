@@ -1,0 +1,84 @@
+.tj-splitbutton-icon {
+    height: 13.333333015441895px;
+    width: 13.333333015441895px;
+}
+
+
+.tj-splitbutton {
+    // justify-content: center;
+    align-items: center;
+    display: flex;
+    align-items: center;
+    padding: 0px;
+    gap: 10px;
+    width: 240px;
+    height: 40px;
+    border-radius: 6px;
+    background: #3E63DD;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--indigo10);
+    }
+
+    &:focus {
+        box-shadow: 0px 0px 0px 4px var(--indigo6);
+        background: var(--indigo10);
+        outline: 0;
+    }
+
+
+    &:active {
+        background: var(--indigo11);
+        box-shadow: none;
+    }
+}
+
+.tj-splibutton-name {
+    margin-left: 12px;
+    color: #fff !important;
+}
+
+.tj-splibutton-wrapper {
+    padding: 10px 20px;
+    gap: 8px;
+    width: 199px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tj-splibutton-dropdown {
+    width: 40px;
+    border-left: 1px solid #3451B2;
+
+    &:active {
+        border: none !important;
+    }
+
+    &:hover {
+        border: none !important;
+    }
+}
+
+#dropdown-split-basic {
+    &:active {
+        border: none !important;
+        box-shadow: none !important;
+
+    }
+
+    &:hover {
+        // border: none !important;
+        // box-shadow: none !important;
+        border-left: 1px solid #3451B2;
+
+
+    }
+
+    &:focus {
+        border: none !important;
+        box-shadow: none !important;
+
+    }
+}

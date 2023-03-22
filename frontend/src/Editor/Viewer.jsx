@@ -20,10 +20,9 @@ import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { resolveReferences, safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
-import { Navigate } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 import { toast } from 'react-hot-toast';
-import { withRouter } from '@/_hoc/withRouter';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -32,11 +31,11 @@ class ViewerComponent extends React.Component {
     const deviceWindowWidth = window.screen.width - 5;
     const isMobileDevice = deviceWindowWidth < 600;
 
-    const pageHandle = this.props?.params?.pageHandle;
+    const pageHandle = this.props.match?.params?.pageHandle;
 
-    const slug = this.props.params.slug;
-    const appId = this.props.params.id;
-    const versionId = this.props.params.versionId;
+    const slug = this.props.match.params.slug;
+    const appId = this.props.match.params.id;
+    const versionId = this.props.match.params.versionId;
 
     this.state = {
       slug,
@@ -129,7 +128,7 @@ class ViewerComponent extends React.Component {
 
     const pages = Object.entries(data.definition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
     const homePageId = data.definition.homePageId;
-    const startingPageHandle = this.props?.params?.pageHandle;
+    const startingPageHandle = this.props.match?.params?.pageHandle;
     const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
     const currentPage = pages.find((page) => page.id === currentPageId);
 
@@ -170,7 +169,6 @@ class ViewerComponent extends React.Component {
           this.setState({ initialComputationOfStateDone: true });
           console.log('Default component state computed and set');
           this.runQueries(data.data_queries);
-          // eslint-disable-next-line no-unsafe-optional-chaining
           const { events } = this.state.appDefinition?.pages[this.state.currentPageId];
           for (const event of events ?? []) {
             await this.handleEvent(event.eventId, event);
@@ -272,41 +270,41 @@ class ViewerComponent extends React.Component {
             this.switchOrganization(errorObj?.organizationId, appId, versionId);
             return;
           }
-          return <Navigate replace to={'/'} />;
+          return <Redirect to={'/'} />;
         } else if (statusCode === 401) {
-          return <Navigate replace to={`/login?redirectTo=${this.props.location.pathname}`} />;
+          return <Redirect to={`/login?redirectTo=${this.props.location.pathname}`} />;
         } else if (statusCode === 404) {
           toast.error(errorDetails?.error ?? 'App not found', {
             position: 'top-center',
           });
         }
-        return <Navigate replace to={'/'} />;
+        return <Redirect to={'/'} />;
       }
     } catch (err) {
-      return <Navigate replace to={'/'} />;
+      return <Redirect to={'/'} />;
     }
   };
 
   componentDidMount() {
-    const slug = this.props.params.slug;
-    const appId = this.props.params.id;
-    const versionId = this.props.params.versionId;
+    const slug = this.props.match.params.slug;
+    const appId = this.props.match.params.id;
+    const versionId = this.props.match.params.versionId;
 
     this.setState({ isLoading: false });
     slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.params.slug && this.props.params.slug !== prevProps.params.slug) {
+    if (this.props.match.params.slug && this.props.match.params.slug !== prevProps.match.params.slug) {
       this.setState({ isLoading: true });
-      this.loadApplicationBySlug(this.props.params.slug);
+      this.loadApplicationBySlug(this.props.match.params.slug);
     }
 
     if (this.state.initialComputationOfStateDone) this.handlePageSwitchingBasedOnURLparam();
   }
 
   handlePageSwitchingBasedOnURLparam() {
-    const handleOnURL = this.props.params.pageHandle;
+    const handleOnURL = this.props.match.params.pageHandle;
     const pageIdCorrespondingToHandleOnURL = handleOnURL
       ? this.findPageIdFromHandle(handleOnURL)
       : this.state.appDefinition.homePageId;
@@ -346,7 +344,6 @@ class ViewerComponent extends React.Component {
         async () => {
           computeComponentState(this, this.state.appDefinition?.pages[this.state.currentPageId].components).then(
             async () => {
-              // eslint-disable-next-line no-unsafe-optional-chaining
               const { events } = this.state.appDefinition?.pages[this.state.currentPageId];
               for (const event of events ?? []) {
                 await this.handleEvent(event.eventId, event);
@@ -407,9 +404,9 @@ class ViewerComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    if (this.state.slug) this.props.navigate(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
+    if (this.state.slug) this.props.history.push(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
     else
-      this.props.navigate(
+      this.props.history.push(
         `/applications/${this.state.appId}/versions/${this.state.versionId}/${handle}?${queryParamsString}`
       );
   };
@@ -577,4 +574,4 @@ class ViewerComponent extends React.Component {
   }
 }
 
-export const Viewer = withTranslation()(withRouter(ViewerComponent));
+export const Viewer = withTranslation()(ViewerComponent);

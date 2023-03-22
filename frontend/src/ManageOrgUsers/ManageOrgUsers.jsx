@@ -1,7 +1,7 @@
 import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
 import { toast } from 'react-hot-toast';
-// eslint-disable-next-line import/no-unresolved
+import ReactTooltip from 'react-tooltip';
 import { withTranslation } from 'react-i18next';
 import urlJoin from 'url-join';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
@@ -250,6 +250,7 @@ class ManageOrgUsersComponent extends React.Component {
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper org-users-page animation-fade">
+          <ReactTooltip type="dark" effect="solid" delayShow={250} />
           {this.state.isInviteUsersDrawerOpen && (
             <ManageOrgUsersDrawer
               isInviteUsersDrawerOpen={this.state.isInviteUsersDrawerOpen}

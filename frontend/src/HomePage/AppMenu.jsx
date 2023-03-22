@@ -45,7 +45,7 @@ export const AppMenu = function AppMenu({
       onToggle={onMenuOpen}
       overlay={
         <Popover id="popover-app-menu" className={darkMode && 'dark-theme'}>
-          <Popover.Body bsPrefix="popover-body">
+          <Popover.Content bsPrefix="popover-body">
             <div data-cy="card-options">
               {canUpdateApp && (
                 <Field
@@ -78,7 +78,7 @@ export const AppMenu = function AppMenu({
                 />
               )}
             </div>
-          </Popover.Body>
+          </Popover.Content>
         </Popover>
       }
     >

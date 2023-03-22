@@ -29,7 +29,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
       show={showMenu}
       overlay={
         <Popover key={page.id} id="page-handler-menu" className={darkMode && 'popover-dark-themed'}>
-          <Popover.Body key={page.id} bsPrefix="popover-body">
+          <Popover.Content key={page.id} bsPrefix="popover-body">
             <div className="card-body">
               <PageHandleField page={page} updatePageHandle={handlePageCallback} />
               <hr style={{ margin: '0.75rem 0' }} />
@@ -84,21 +84,19 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                 />
               </div>
             </div>
-          </Popover.Body>
+          </Popover.Content>
         </Popover>
       }
     >
-      <span>
-        <Button.UnstyledButton
-          onClick={(event) => {
-            event.stopPropagation();
-            setShowMenu(true);
-          }}
-          styles={{ height: '20px', marginTop: '2px' }}
-        >
-          <Button.Content dataCy={`page-menu`} iconSrc={'assets/images/icons/3dots-menu.svg'} />
-        </Button.UnstyledButton>
-      </span>
+      <Button.UnstyledButton
+        onClick={(event) => {
+          event.stopPropagation();
+          setShowMenu(true);
+        }}
+        styles={{ height: '20px', marginTop: '2px' }}
+      >
+        <Button.Content dataCy={`page-menu`} iconSrc={'assets/images/icons/3dots-menu.svg'} />
+      </Button.UnstyledButton>
     </OverlayTrigger>
   );
 };

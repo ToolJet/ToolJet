@@ -119,6 +119,11 @@ export const Calendar = function ({
     },
   };
 
+  //! hack
+  if (exposedVariables.currentDate === undefined) {
+    setExposedVariable('currentDate', moment(defaultDate).format(properties.dateFormat));
+  }
+
   return (
     <div id={id} style={{ display: styles.visibility ? 'block' : 'none' }} data-cy={dataCy}>
       <ReactCalendar

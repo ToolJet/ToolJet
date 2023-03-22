@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactTooltip from 'react-tooltip';
 import Popover from '@/_ui/Popover';
 import Avatar from '@/_ui/Avatar';
 // eslint-disable-next-line import/no-unresolved
@@ -17,6 +18,13 @@ const RealtimeAvatars = ({ darkMode }) => {
   const getAvatarText = (presence) => presence.firstName?.charAt(0) + presence.lastName?.charAt(0);
   const getAvatarTitle = (presence) => `${presence.firstName} ${presence.lastName}`;
 
+  // This is required for the tooltip not binding to dynamic content
+  // i.e. when others on the same version changes, tooltip
+  // ref: https://github.com/wwayne/react-tooltip#3-tooltip-not-binding-to-dynamic-content
+  React.useEffect(() => {
+    ReactTooltip.rebuild();
+  }, [othersOnSameVersionAndPage?.length]);
+
   const popoverContent = () => {
     return othersOnSameVersionAndPage
       .slice(MAX_DISPLAY_USERS, othersOnSameVersionAndPage.length)
@@ -32,7 +40,6 @@ const RealtimeAvatars = ({ darkMode }) => {
                     text={getAvatarText(presence)}
                     image={presence?.image}
                     borderShape="rounded"
-                    indexId={id}
                   />
                 </div>
                 <div className={`col text-truncate ${darkMode && 'text-white'}`}>
@@ -65,7 +72,6 @@ const RealtimeAvatars = ({ darkMode }) => {
               text={getAvatarText(self?.presence)}
               image={self?.presence?.image}
               borderShape="rounded"
-              indexId={self?.presence?.id}
             />
           )}
           {othersOnSameVersionAndPage.slice(0, MAX_DISPLAY_USERS).map(({ id, presence }) => {
@@ -77,7 +83,6 @@ const RealtimeAvatars = ({ darkMode }) => {
                 text={getAvatarText(presence)}
                 image={presence?.image}
                 borderShape="rounded"
-                indexId={id}
               />
             );
           })}

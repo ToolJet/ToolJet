@@ -63,7 +63,7 @@ const LeftSidebarPageSelector = ({
 
   const popoverContent = (
     <div>
-      <div className="card-body p-0 pb-5">
+      <div className="card-body p-0 pb-5" onClick={(event) => event.stopPropagation()}>
         <HeaderSection darkMode={darkMode}>
           <HeaderSection.PanelHeader
             title="Pages"

@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import cx from 'classnames';
 import { AppMenu } from './AppMenu';
+import { history } from '@/_helpers';
 import moment from 'moment';
 import { ToolTip } from '@/_components';
 import useHover from '@/_hooks/useHover';
 import configs from './Configs/AppIcon.json';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import urlJoin from 'url-join';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -29,7 +30,6 @@ export default function AppCard({
   const [focused, setFocused] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   const onMenuToggle = useCallback(
     (status) => {
@@ -147,7 +147,7 @@ export default function AppCard({
                     if (app?.current_version_id) {
                       window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
                     } else {
-                      navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
+                      history.push(app?.current_version_id ? `/applications/${app.slug}` : '');
                     }
                   }}
                   data-cy="launch-button"

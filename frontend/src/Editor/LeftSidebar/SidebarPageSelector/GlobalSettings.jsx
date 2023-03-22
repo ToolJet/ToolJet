@@ -14,7 +14,7 @@ export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, sho
       rootClose={true}
       overlay={
         <Popover id="page-handler-menu" className={`global-settings ${darkMode && 'popover-dark-themed'}`}>
-          <Popover.Body bsPrefix="popover-body">
+          <Popover.Content bsPrefix="popover-body">
             <div className="card-body">
               <label htmlFor="pin" className="form-label" data-cy={`page-settings-header`}>
                 Settings
@@ -24,13 +24,11 @@ export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, sho
                 <Toggle onChange={onChange} value={!showPageViwerPageNavitation} />
               </div>
             </div>
-          </Popover.Body>
+          </Popover.Content>
         </Popover>
       }
     >
-      <span>
-        <MenuIcon width="10" height="16" data-cy={'menu-icon'} />
-      </span>
+      <MenuIcon width="10" height="16" data-cy={'menu-icon'} />
     </OverlayTrigger>
   );
 };

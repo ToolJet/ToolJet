@@ -2,9 +2,8 @@ import React from 'react';
 import { authenticationService, orgEnvironmentVariableService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
-// import ReactTooltip from 'react-tooltip';
+import ReactTooltip from 'react-tooltip';
 import VariablesTable from './VariablesTable';
-// eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import ManageOrgVarsDrawer from './ManageOrgVarsDrawer';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -247,6 +246,8 @@ class ManageOrgVarsComponent extends React.Component {
     const { isLoading, addingVar, variables, isManageVarDrawerOpen } = this.state;
     return (
       <div className="wrapper org-variables-page animation-fade">
+        <ReactTooltip type="dark" effect="solid" delayShow={250} />
+
         <ConfirmDialog
           show={this.state.showVariableDeleteConfirmation}
           message={this.props.t(

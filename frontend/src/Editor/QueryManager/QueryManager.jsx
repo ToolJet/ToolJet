@@ -1,7 +1,7 @@
 import React from 'react';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { Tooltip } from 'react-tooltip';
+import ReactTooltip from 'react-tooltip';
 import { allSources, source } from './QueryEditors';
 import { Transformation } from './Transformation';
 import { previewQuery } from '@/_helpers/appUtils';
@@ -12,7 +12,6 @@ import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
 import _, { isEmpty, isEqual, capitalize } from 'lodash';
 import { allOperations } from '@tooljet/plugins/client';
-// eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
 // eslint-disable-next-line import/no-unresolved
@@ -55,6 +54,7 @@ class QueryManagerComponent extends React.Component {
   }
 
   setStateFromProps = (props) => {
+    console.log('setStateFromProps--- ', props.isUnsavedQueriesAvailable);
     const selectedQuery = props.selectedQuery;
 
     const dataSourceId = selectedQuery?.data_source_id;
@@ -522,6 +522,8 @@ class QueryManagerComponent extends React.Component {
         })}
         key={selectedQuery ? selectedQuery.id : ''}
       >
+        <ReactTooltip type="dark" effect="solid" delayShow={250} />
+
         <div className="row header" style={{ padding: '8px 0' }}>
           <div className="col d-flex align-items-center px-3 h-100 font-weight-500 py-1" style={{ gap: '10px' }}>
             {(addingQuery || editingQuery) && selectedDataSource && (
@@ -698,8 +700,7 @@ class QueryManagerComponent extends React.Component {
             <span
               onClick={this.props.toggleQueryEditor}
               className={`cursor-pointer m-3 toggle-query-editor-svg d-flex`}
-              data-tooltip-id="tooltip-for-hide-query-editor"
-              data-tooltip-content="Hide query editor"
+              data-tip="Hide query editor"
             >
               <svg width="5.58" height="10.25" viewBox="0 0 6 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -708,7 +709,6 @@ class QueryManagerComponent extends React.Component {
                 />
               </svg>
             </span>
-            <Tooltip id="tooltip-for-hide-query-editor" className="tooltip" />
           </div>
         </div>
 

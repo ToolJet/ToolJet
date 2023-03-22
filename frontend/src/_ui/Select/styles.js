@@ -29,7 +29,6 @@ export default function styles(darkMode, width = 224, height = 32, styles = {}) 
     }),
     valueContainer: (provided, state) => ({
       ...provided,
-      display: 'flex',
       height: height,
       marginBottom: '4px',
     }),

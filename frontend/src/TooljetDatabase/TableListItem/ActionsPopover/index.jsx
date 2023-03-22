@@ -12,7 +12,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
 
   const popover = (
     <Popover id="popover-contained" className={`table-list-items ${darkMode && 'dark-theme'}`}>
-      <Popover.Body className={`${darkMode && 'theme-dark'}`}>
+      <Popover.Content className={`${darkMode && 'theme-dark'}`}>
         <div className={`row cursor-pointer`}>
           <div className="col-auto" data-cy="edit-option-icon">
             <EditIcon />
@@ -42,7 +42,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
             Delete
           </div>
         </div>
-      </Popover.Body>
+      </Popover.Content>
     </Popover>
   );
 
@@ -62,11 +62,8 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
         trigger="click"
         placement="bottom"
         overlay={popover}
-        transition={false}
       >
-        <span>
-          <EllipsisIcon />
-        </span>
+        <EllipsisIcon />
       </OverlayTrigger>
     </div>
   );

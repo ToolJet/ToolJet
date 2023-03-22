@@ -1,49 +1,27 @@
 {
-    "editor.fontLigatures": "calt, contextual",
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-    // "editor.rulers": [80],
-    "editor.snippetSuggestions": "top",
-    "editor.suggest.localityBonus": true,
-    "editor.acceptSuggestionOnCommitCharacter": false,
-    "editor.wordBasedSuggestions": false,
     "[javascript, typescript]": {
         "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.suggestSelection": "recentlyUsed",
-        "editor.suggest.showKeywords": false
     },
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+    "eslint.format.enable": true,
+    "editor.formatOnSave": true,
     "json.schemas": [
         {
             "fileMatch": [
-                "/package.json"
+                "/*.operations.json"
             ],
-            "url": "https://json.schemastore.org/package",
-            "schema": true
+            "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json"
         },
-    ],
-    "eslint.options": {
-        "env": {
-            "browser": true,
-            "jest/globals": true,
-            "es6": true,
-            "node": true
-        },
-        "parserOptions": {
-            "ecmaVersion": 2020,
-            "sourceType": "module",
-            "ecmaFeatures": {
-                "jsx": true
-            }
-        },
-        "rules": {
-            "no-debugger": "off"
+        {
+            "fileMatch": [
+                "/*.manifest.json"
+            ],
+            "url": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json"
         }
-    },
-    "files.associations": {
-        "*jsx": "javascriptreact",
-        "*js": "javascript",
-        "*ts": "typescript",
-        "*tsx": "typescriptreact",
-        "*.json": "jsonc"
-    },
-    "javascript.format.insertSpaceBeforeFunctionParenthesis": true
+    ]
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import Slider from 'rc-slider';
+import Slider, { Range } from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
 export const RangeSlider = function RangeSlider({ height, properties, styles, setExposedVariable, fireEvent, dataCy }) {
@@ -64,8 +64,7 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
   return (
     <div style={computedStyles} className="range-slider" data-cy={dataCy}>
       {enableTwoHandle ? (
-        <Slider
-          range
+        <Range
           min={min}
           max={max}
           defaultValue={toArray(rangeValue)}

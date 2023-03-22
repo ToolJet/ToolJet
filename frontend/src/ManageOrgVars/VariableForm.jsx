@@ -26,7 +26,7 @@ class VariableForm extends React.Component {
         <div className="card-body">
           <form onSubmit={this.props.createOrUpdate} noValidate>
             <div className="form-group mb-3 ">
-              <div className="">
+              <div className="row">
                 <div className="col tj-app-input">
                   <label className="form-label">
                     {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.name', 'Name')}

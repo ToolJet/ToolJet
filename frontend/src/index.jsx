@@ -1,8 +1,8 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { render } from 'react-dom';
 import * as Sentry from '@sentry/react';
-import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
-import { BrowserTracing } from '@sentry/tracing';
+import { Integrations } from '@sentry/tracing';
+import { createBrowserHistory } from 'history';
 import { appService } from '@/_services';
 import { App } from './App';
 // eslint-disable-next-line import/no-unresolved
@@ -33,6 +33,7 @@ appService
       });
 
     if (window.public_config.APM_VENDOR === 'sentry') {
+      const history = createBrowserHistory();
       const tooljetServerUrl = window.public_config.TOOLJET_SERVER_URL;
       const tracingOrigins = ['localhost', /^\//];
       const releaseVersion = window.public_config.RELEASE_VERSION
@@ -46,14 +47,8 @@ appService
         debug: !!window.public_config.SENTRY_DEBUG,
         release: releaseVersion,
         integrations: [
-          new BrowserTracing({
-            routingInstrumentation: Sentry.reactRouterV6Instrumentation(
-              React.useEffect,
-              useLocation,
-              useNavigationType,
-              createRoutesFromChildren,
-              matchRoutes
-            ),
+          new Integrations.BrowserTracing({
+            routingInstrumentation: Sentry.reactRouterV5Instrumentation(history),
             tracingOrigins: tracingOrigins,
           }),
         ],
@@ -61,4 +56,4 @@ appService
       });
     }
   })
-  .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));
+  .then(() => render(<AppWithProfiler />, document.getElementById('app')));

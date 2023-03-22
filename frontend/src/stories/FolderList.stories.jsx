@@ -10,11 +10,9 @@ export default {
   argTypes: {
     backgroundColor: { control: 'color' },
     leftIcon: {
-      // options: Object.keys(),
       control: { type: 'select' },
     },
     rightIcon: {
-      // options: Object.keys(),
       control: { type: 'select' },
     },
     onClick: {

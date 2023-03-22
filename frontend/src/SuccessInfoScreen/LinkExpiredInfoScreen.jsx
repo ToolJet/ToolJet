@@ -1,9 +1,9 @@
 import React from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
-import { useNavigate } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
 export const LinkExpiredInfoScreen = function LinkExpiredInfoScreen({ show = true }) {
-  const navigate = useNavigate();
+  const history = useHistory();
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
@@ -30,7 +30,7 @@ export const LinkExpiredInfoScreen = function LinkExpiredInfoScreen({ show = tru
           <ButtonSolid
             variant="secondary"
             className="link-expired-info-btn"
-            onClick={() => navigate('/signup')}
+            onClick={() => history.push('/signup')}
             data-cy="back-to-signup-button"
           >
             Back to signup

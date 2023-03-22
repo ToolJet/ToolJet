@@ -5,7 +5,6 @@ import { RoomProvider } from '@y-presence/react';
 import Spinner from '@/_ui/Spinner';
 import { Editor } from '@/Editor';
 import useRouter from '@/_hooks/use-router';
-import { useParams } from 'react-router-dom';
 const Y = require('yjs');
 const psl = require('psl');
 const { WebsocketProvider } = require('y-websocket');
@@ -28,8 +27,7 @@ const getWebsocketUrl = () => {
 };
 
 export const RealtimeEditor = (props) => {
-  const params = useParams();
-  const appId = params.id;
+  const appId = props.match.params.id;
   const [provider, setProvider] = React.useState();
   const router = useRouter();
 

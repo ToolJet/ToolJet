@@ -9,7 +9,7 @@ export const TablePopover = ({ disabled, children, onEdit, onDelete }) => {
   if (disabled) return children;
   const popover = (
     <Popover>
-      <Popover.Body>
+      <Popover.Content>
         {/* <div className="w-min-100 row list-group-item-action cursor-pointer">
           <div className="col-auto">
             <EditIcon />
@@ -26,7 +26,7 @@ export const TablePopover = ({ disabled, children, onEdit, onDelete }) => {
             Delete
           </div>
         </div>
-      </Popover.Body>
+      </Popover.Content>
     </Popover>
   );
 

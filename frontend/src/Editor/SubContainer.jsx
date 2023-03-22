@@ -74,18 +74,15 @@ export const SubContainer = ({
       allComponents[parent]?.component?.component === 'Form') ??
     false;
 
-  const getChildWidgets = (components) => {
-    let childWidgets = [];
-    Object.keys(components).forEach((key) => {
-      if (components[key].parent === parent) {
-        childWidgets[key] = { ...components[key], component: { ...components[key]['component'], parent } };
-      }
-    });
-    return childWidgets;
-  };
+  let childWidgets = [];
+
+  Object.keys(allComponents).forEach((key) => {
+    if (allComponents[key].parent === parent) {
+      childWidgets[key] = { ...allComponents[key], component: { ...allComponents[key]['component'], parent } };
+    }
+  });
 
   const [boxes, setBoxes] = useState(allComponents);
-  const [childWidgets, setChildWidgets] = useState(() => getChildWidgets(allComponents));
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   // const [subContainerHeight, setSubContainerHeight] = useState('100%'); //used to determine the height of the sub container for modal
@@ -93,9 +90,7 @@ export const SubContainer = ({
 
   useEffect(() => {
     setBoxes(allComponents);
-    setChildWidgets(() => getChildWidgets(allComponents));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allComponents, parent]);
+  }, [allComponents]);
 
   useEffect(() => {
     if (mounted) {
@@ -353,7 +348,6 @@ export const SubContainer = ({
       }
     }
 
-    setChildWidgets(() => getChildWidgets(newBoxes));
     setBoxes(newBoxes);
   }
 
@@ -540,6 +534,18 @@ export const SubContainer = ({
             );
           }
         })}
+
+      {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
+        <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box" data-cy="----Test----">
+          <center className="text-muted">
+            Drag components from the right sidebar and drop here. Check out our{' '}
+            <a href="https://docs.tooljet.io/docs/tutorial/adding-widget" target="_blank" rel="noreferrer">
+              guide
+            </a>{' '}
+            on adding widgets.
+          </center>
+        </div>
+      )}
       {appLoading && (
         <div className="mx-auto mt-5 w-50 p-5">
           <center>
