@@ -12,7 +12,7 @@ export const ButtonGroup = function Button({
 }) {
   const { label, multiSelection } = properties;
   const values = isExpectedDataType(properties.values, 'array');
-  const labels = useMemo(() => isExpectedDataType(properties.labels, 'array'), [properties.labels]);
+  const labels = isExpectedDataType(properties.labels, 'array');
   const defaultSelected = isExpectedDataType(properties.defaultSelected, 'array');
 
   const {
@@ -50,7 +50,7 @@ export const ButtonGroup = function Button({
     } else {
       setData(labels);
     }
-  }, [labels, values]);
+  }, [JSON.stringify(labels), JSON.stringify(values)]);
 
   useEffect(() => {
     setDefaultActive(defaultSelected);
