@@ -1482,14 +1482,17 @@ export const widgets = [
         type: 'code',
         displayName: 'Default value',
         validation: {
-          schema: { type: 'boolean' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
         },
       },
       values: {
         type: 'code',
         displayName: 'Option values',
         validation: {
-          schema: { type: 'array', element: { type: 'boolean' } },
+          schema: {
+            type: 'array',
+            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
+          },
         },
       },
       display_values: {
