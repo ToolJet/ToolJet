@@ -3,26 +3,20 @@ const { Configuration, OpenAIApi } = require('openai');
 
 export async function getRecommendation(currentContext, query) {
   const configuration = new Configuration({
-    apiKey: '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',
+    apiKey: '',
   });
   const openai = new OpenAIApi(configuration);
   // Convert the context object to a JSON string
   const context = JSON.stringify(currentContext);
 
-  const response = await openai.createCompletion({
-    model: 'code-cushman-001',
-    prompt: JSON.stringify(currentContext) + query,
-    temperature: 0,
-    max_tokens: 64,
-    top_p: 1.0,
-    frequency_penalty: 0.0,
-    presence_penalty: 0.0,
-    // stop: ["\n"]
+  const completion = await openai.createChatCompletion({
+    model: 'gpt-3.5-turbo',
+    messages: [{ role: 'user', content: context + query }],
   });
 
-  console.log('---CHATGPT---', response);
+  console.log('---CHATGPT gpt---', completion.data.choices[0].message.content);
 
-  return response.data.choices[0].text;
+  return completion.data.choices[0].message.content;
 }
 
 function getResult(suggestionList, query) {
