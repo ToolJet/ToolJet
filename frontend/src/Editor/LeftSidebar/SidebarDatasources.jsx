@@ -102,9 +102,23 @@ export const LeftSidebarDataSources = ({
       changeScope(dataSource);
     };
 
+    React.useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (isConversionVisible && event.target.closest('.popover-change-scope') === null) {
+          setConversionVisible(false);
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify({ dataSource, isConversionVisible })]);
+
     const popover = (
-      <PopoverBS id="popover-change-scope">
-        <PopoverBS.Body className={`${darkMode && 'theme-dark popover-dark-themed'}`}>
+      <PopoverBS key={dataSource.id} id="popover-change-scope">
+        <PopoverBS.Body key={dataSource.id} className={`${darkMode && 'theme-dark popover-dark-themed'}`}>
           <div className={`row cursor-pointer`}>
             <div className="col text-truncate cursor-pointer" onClick={() => convertToGlobalDataSource(dataSource)}>
               Change scope
@@ -144,7 +158,13 @@ export const LeftSidebarDataSources = ({
         )}
         {convertToGlobal && admin && (
           <div className="col-auto">
-            <OverlayTrigger show={isConversionVisible} rootClose trigger="click" placement="bottom" overlay={popover}>
+            <OverlayTrigger
+              rootClose={false}
+              show={isConversionVisible}
+              trigger="click"
+              placement="bottom"
+              overlay={popover}
+            >
               <div onClick={() => setConversionVisible(!isConversionVisible)}>
                 <VerticalIcon />
               </div>
