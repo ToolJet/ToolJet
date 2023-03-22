@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { useHistory } from 'react-router-dom';
 import OnBoardingInput from './OnBoardingInput';
 import OnBoardingRadioInput from './OnBoardingRadioInput';
 import ContinueButton from './ContinueButton';
 import OnBoardingBubbles from './OnBoardingBubbles';
-import { getuserName } from '@/_helpers/utils';
+import { getuserName, getSubpath } from '@/_helpers/utils';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
 import LogoLightMode from '@assets/images/Logomark.svg';
 import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
 
 function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
   const Logo = darkMode ? LogoDarkMode : LogoLightMode;
-  const history = useHistory();
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,11 +42,12 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           organizationToken: organizationToken,
           ...(password?.length > 0 && { password }),
         })
-        .then((user) => {
-          authenticationService.updateUser(user);
+        .then((data) => {
           authenticationService.deleteLoginOrganizationId();
           setIsLoading(false);
-          history.push('/');
+          window.location = getSubpath()
+            ? `${getSubpath()}/${data.current_organization_id}`
+            : `/${data.current_organization_id}`;
         })
         .catch((res) => {
           setIsLoading(false);
