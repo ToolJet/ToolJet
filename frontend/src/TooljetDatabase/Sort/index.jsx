@@ -39,7 +39,7 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
 
   const popover = (
     <Popover id="storage-sort-popover" className={cx({ 'theme-dark dark-theme': darkMode })} data-cy="sort-section">
-      <Popover.Content bsPrefix="storage-filter-popover">
+      <Popover.Body bsPrefix="storage-filter-popover">
         <div className="card-body" data-cy="sort-card-body">
           {Object.values(filters).map((filter, index) => {
             return (
@@ -69,7 +69,7 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
           </svg>
           &nbsp;Add another
         </div>
-      </Popover.Content>
+      </Popover.Body>
     </Popover>
   );
 

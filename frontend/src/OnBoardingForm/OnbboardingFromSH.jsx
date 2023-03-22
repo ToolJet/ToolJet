@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import OnBoardingInput from './OnBoardingInput';
 import OnBoardingRadioInput from './OnBoardingRadioInput';
 import AdminSetup from './AdminSetup';
@@ -14,7 +14,7 @@ import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
 
 function OnbboardingFromSH({ darkMode }) {
   const Logo = darkMode ? LogoDarkMode : LogoLightMode;
-  const history = useHistory();
+  const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -55,7 +55,7 @@ function OnbboardingFromSH({ darkMode }) {
           authenticationService.updateUser(user);
           authenticationService.deleteLoginOrganizationId();
           setIsLoading(false);
-          history.push('/');
+          navigate('/');
         })
         .catch((res) => {
           setIsLoading(false);

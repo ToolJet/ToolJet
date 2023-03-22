@@ -83,8 +83,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           resolve(
             users.map((user) => {
               return {
-                // name: `${this.userFullName(user)} (${user.email})`,
-                // value: user.id,
+                name: `${this.userFullName(user)} (${user.email})`,
                 first_name: user.first_name,
                 last_name: user.last_name,
                 email: user.email,
@@ -314,6 +313,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       selectedAppIds,
       selectedUsers,
     } = this.state;
+
+    const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
 
     const folder_permission = groupPermission
       ? groupPermission.folder_create && groupPermission.folder_delete && groupPermission.folder_update
@@ -603,8 +604,25 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   <div className={`tab-pane ${currentTab === 'users' ? 'active show' : ''}`}>
                     {groupPermission?.group !== 'all_users' && (
                       <div className="row">
-                        <div className="col">
+                        <div className="col" data-cy="multi-select-search">
                           <MultiSelectUser
+                            className={{
+                              container: searchSelectClass,
+                              value: `${searchSelectClass}__value`,
+                              input: `${searchSelectClass}__input`,
+                              select: `${searchSelectClass}__select`,
+                              options: `${searchSelectClass}__options`,
+                              row: `${searchSelectClass}__row`,
+                              option: `${searchSelectClass}__option`,
+                              group: `${searchSelectClass}__group`,
+                              'group-header': `${searchSelectClass}__group-header`,
+                              'is-selected': 'is-selected',
+                              'is-highlighted': 'is-highlighted',
+                              'is-loading': 'is-loading',
+                              'is-multiple': 'is-multiple',
+                              'has-focus': 'has-focus',
+                              'not-found': `${searchSelectClass}__not-found`,
+                            }}
                             onSelect={this.setSelectedUsers}
                             onSearch={(query) => this.searchUsersNotInGroup(query, groupPermission.id)}
                             selectedValues={selectedUsers}

@@ -6,6 +6,7 @@ import cx from 'classnames';
 import { Pagination } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Tooltip } from 'react-tooltip';
 
 const UsersTable = ({
   isLoading,
@@ -109,8 +110,11 @@ const UsersTable = ({
                             <div className="workspace-clipboard-wrap">
                               <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
                                 <span>
-                                  <SolidIcon width="12" fill="#889096" data-cy="copy-invitation-link" name="copy" />
+                                  <SolidIcon     
+                                  data-tooltip-id="tooltip-for-copy-invitation-link"
+                                  data-tooltip-content="Copy invitation link" width="12" fill="#889096" data-cy="copy-invitation-link" name="copy" />
                                   <p className="tj-text-xsm">Copy link</p>
+                                  <Tooltip id="tooltip-for-copy-invitation-link" className="tooltip" />
                                 </span>
                               </CopyToClipboard>
                             </div>

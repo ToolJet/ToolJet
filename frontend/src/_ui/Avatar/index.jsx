@@ -1,9 +1,11 @@
 import React from 'react';
 import { userService } from '../../_services';
 import cx from 'classnames';
+import { Tooltip } from 'react-tooltip';
 
 // eslint-disable-next-line no-unused-vars
-const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderShape, className }) => {
+const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderShape, indexId = 0, className }) => {
+  const formattedTitle = String(title).toLowerCase().replace(/\s+/g, '-');
   const [avatar, setAvatar] = React.useState();
 
   React.useEffect(() => {
@@ -18,8 +20,9 @@ const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderSha
   }, [avatarId]);
 
   return (
-    <div
-      data-tip={title}
+    <span
+      data-tooltip-id={`tooltip-for-avatar-${formattedTitle}-${indexId}`}
+      data-tooltip-content={title}
       style={{
         ...(image || avatar ? { backgroundImage: `url(${avatar ?? image})` } : {}),
       }}
@@ -29,7 +32,8 @@ const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderSha
       data-cy="avatar-image"
     >
       {!image && !avatarId && text}
-    </div>
+      <Tooltip id={`tooltip-for-avatar-${formattedTitle}-${indexId}`} className="tooltip" />
+    </span>
   );
 };
 
