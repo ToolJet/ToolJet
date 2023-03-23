@@ -77,13 +77,7 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
   }
 }
 
-//export const defaultAppEnvironments = [{ name: 'production', isDefault: true }];
-
-export const defaultAppEnvironments = [
-  { name: 'production', isDefault: true },
-  { name: 'staging', isDefault: false },
-  { name: 'development', isDefault: false },
-];
+export const defaultAppEnvironments = [{ name: 'production', isDefault: true }];
 
 export function isPlural(data: Array<any>) {
   return data?.length > 1 ? 's' : '';
