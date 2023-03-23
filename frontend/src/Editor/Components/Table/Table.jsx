@@ -889,8 +889,15 @@ export function Table({
                       }
                       const wrapAction = textWrapActions(cell.column.id);
                       const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
-                      const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || cell.value : cell.value;
                       const rowData = tableData[cell.row.index];
+                      const value = cell.column?.columnValue
+                        ? resolveReferences(cell.column.columnValue, currentState, '', {
+                            cellValue: cell.value,
+                            rowData,
+                          })
+                        : cell.value;
+                      console.log('table--- cell col val', cell.column.columnValue);
+                      const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || value : value;
                       const cellBackgroundColor = resolveReferences(
                         cell.column?.cellBackgroundColor,
                         currentState,

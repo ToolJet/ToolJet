@@ -74,6 +74,7 @@ export default function generateColumnsData({
       maxLength: column.maxLength,
       regex: column.regex,
       customRule: column?.customRule,
+      columnValue: column.columnValue,
       Cell: function (cell) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.name] ?? cell.value : cell.value;

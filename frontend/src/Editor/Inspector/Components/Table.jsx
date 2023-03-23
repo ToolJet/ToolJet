@@ -165,6 +165,7 @@ class TableComponent extends React.Component {
       { name: '+12:00', value: 'Etc/GMT-12' },
       { name: '+13:00', value: 'Pacific/Auckland' },
     ];
+    console.log('table-- column', column);
     return (
       <Popover id="popover-basic-2" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
         <Popover.Body>
@@ -250,6 +251,22 @@ class TableComponent extends React.Component {
               componentName={this.getPopoverFieldSource(column.columnType, 'key')}
               popOverCallback={(showing) => {
                 this.setColumnPopoverRootCloseBlocker('tableKey', showing);
+              }}
+            />
+          </div>
+          <div data-cy={`input-and-label-column-value`} className="field mb-2">
+            <label className="form-label">{this.props.t('widget.Table.columnValue', 'Column value')}</label>
+            <CodeHinter
+              currentState={this.props.currentState}
+              initialValue={column.columnValue ?? `${column.value}`}
+              theme={this.props.darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={''}
+              onChange={(value) => this.onColumnItemChange(index, 'columnValue', value)}
+              componentName={this.getPopoverFieldSource(column.columnType, 'columnValue')}
+              popOverCallback={(showing) => {
+                this.setColumnPopoverRootCloseBlocker('columnValue', showing);
               }}
             />
           </div>
