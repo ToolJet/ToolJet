@@ -131,6 +131,9 @@ function FlowBuilder(_props) {
         // onEdgesDelete={onEdgesDelete}
         ref={flowElement}
         nodeTypes={nodeTypes}
+        zoomOnPinch={false}
+        zoomOnScroll={false}
+        panOnScroll={true}
       >
         <Background />
       </ReactFlow>
