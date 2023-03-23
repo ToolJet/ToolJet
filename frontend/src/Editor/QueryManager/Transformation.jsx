@@ -278,13 +278,15 @@ return [row for row in data if row['amount'] > 1000]
             </div>
 
             <div>
-              <button
+              <Button
                 onClick={handleCallToGPT}
-                className={`default-tertiary-button ${darkMode ? 'theme-dark' : ''} ${fetchingRecommendation ? (darkMode ? 'btn-loading' : 'button-loading') : ''
-                  }`}
+                darkMode={darkMode}
+                size="sm"
+                classNames={`${fetchingRecommendation ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`}
+                styles={{ width: '100%', fontSize: '12px', fontWeight: 500, borderColor: darkMode && 'transparent' }}
               >
-                Load recommendations ⌘+L
-              </button>
+                <Button.Content title={'Generate code ⌘+L'} />
+              </Button>
             </div>
           </div>
           <div className="border-top mx-3"></div>

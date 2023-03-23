@@ -86,15 +86,16 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName, dar
         </div>
 
         {includeGPT && (
-          <div>
-            <button
+          <div className='mx-2'>
+            <Button
               onClick={handleCallGpt}
-              className={`default-tertiary-button ${darkMode ? 'theme-dark' : ''} ${
-                loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''
-              }`}
+              darkMode={darkMode}
+              size="sm"
+              classNames={`${loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`}
+              styles={{ width: '100%', fontSize: '12px', fontWeight: 500, borderColor: darkMode && 'transparent' }}
             >
-              Generate code ⌘+L
-            </button>
+              <Button.Content title={'Generate code ⌘+L'} />
+            </Button>
           </div>
         )}
 
