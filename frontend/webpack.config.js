@@ -52,7 +52,7 @@ module.exports = {
       '@assets': path.resolve(__dirname, 'assets/'),
     },
   },
-  devtool: environment === 'development' ? 'inline-source-map' : false,
+  devtool: environment === 'development' ? 'eval-cheap-source-map' : false,
   module: {
     rules: [
       {
