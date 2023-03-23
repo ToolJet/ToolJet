@@ -147,9 +147,9 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
                   {isUpdateAvailable && (
                     <span
                       className={cx('link-span', { disabled: updating })}
-                      onClick={() => updatePlugin(plugin, marketplacePlugin.version)}
+                      onClick={() => updatePlugin(plugin, marketplacePlugin?.version)}
                     >
-                      <small className="font-weight-light">(click to update to v{marketplacePlugin.version})</small>
+                      <small className="font-weight-light">(click to update to v{marketplacePlugin?.version})</small>
                     </span>
                   )}
                 </sub>
