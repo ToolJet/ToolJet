@@ -30,7 +30,7 @@ function createColumn(organizationId, tableId, columnName, dataType, defaultValu
     column: {
       column_name: columnName,
       data_type: dataType,
-      default: defaultValue,
+      column_default: defaultValue,
     },
   });
 }
@@ -59,12 +59,12 @@ function deleteRow(organizationId, tableId, query = '') {
   return tooljetAdapter.delete(`/tooljet_db/organizations/${organizationId}/proxy/${tableId}?${query}`);
 }
 
-function deleteColumn(organizationId, tableId, columnName) {
-  return tooljetAdapter.delete(`/tooljet_db/organizations/${organizationId}/table/${tableId}/column/${columnName}`);
+function deleteColumn(organizationId, tableName, columnName) {
+  return tooljetAdapter.delete(`/tooljet_db/organizations/${organizationId}/table/${tableName}/column/${columnName}`);
 }
 
-function deleteTable(organizationId, tableId) {
-  return tooljetAdapter.delete(`/tooljet_db/organizations/${organizationId}/table/${tableId}`);
+function deleteTable(organizationId, tableName) {
+  return tooljetAdapter.delete(`/tooljet_db/organizations/${organizationId}/table/${tableName}`);
 }
 
 export const tooljetDatabaseService = {

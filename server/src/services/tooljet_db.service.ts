@@ -210,7 +210,7 @@ export class TooljetDbService {
     if (!internalTable) throw new NotFoundException('Internal table not found: ' + tableName);
 
     let query = `ALTER TABLE "${internalTable.id}" ADD ${column['column_name']} ${column['data_type']}`;
-    if (column['default']) query += ` DEFAULT ${this.addQuotesIfString(column['default'])}`;
+    if (column['column_default']) query += ` DEFAULT ${this.addQuotesIfString(column['column_default'])}`;
     if (column['constraint']) query += ` ${column['constraint']};`;
 
     const result = await this.tooljetDbManager.query(query);

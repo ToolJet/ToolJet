@@ -165,13 +165,13 @@ const Table = ({ openCreateRowDrawer }) => {
   const handleDeleteColumn = async (columnName) => {
     const shouldDelete = confirm(`Are you sure you want to delete the column "${columnName}"?`);
     if (shouldDelete) {
-      const { error } = await tooljetDatabaseService.deleteColumn(organizationId, selectedTable, columnName);
+      const { error } = await tooljetDatabaseService.deleteColumn(organizationId, selectedTable.table_name, columnName);
       if (error) {
         toast.error(error?.message ?? `Error deleting column "${columnName}" from table "${selectedTable}"`);
         return;
       }
       await fetchTableMetadata();
-      toast.success(`Deleted ${columnName} from table "${selectedTable}"`);
+      toast.success(`Deleted ${columnName} from table "${selectedTable.table_name}"`);
     }
   };
 
