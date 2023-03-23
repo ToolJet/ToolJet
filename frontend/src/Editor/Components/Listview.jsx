@@ -31,7 +31,7 @@ export const Listview = function Listview({
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const borderColor = styles.borderColor ?? 'transparent';
-  const rowPerPageValue = Number(rowsPerPage) ? rowsPerPage || 10 : 10;
+  const rowPerPageValue = Number(rowsPerPage) ? +rowsPerPage || 10 : 10;
 
   const computedStyles = {
     backgroundColor,
