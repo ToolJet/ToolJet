@@ -31,6 +31,7 @@ import { toast } from 'react-hot-toast';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/_ui/LeftSidebar';
 
 const AllElements = {
   Color,
@@ -323,6 +324,7 @@ export function CodeHinter({
                   callback={handleToggle}
                   icon="portal-open"
                   tip="Pop out code editor into a new window"
+                  transformation={componentName === 'transformation'}
                 />
               )}
               <CodeHinter.Portal
@@ -388,7 +390,9 @@ export function CodeHinter({
   );
 }
 
-const PopupIcon = ({ callback, icon, tip }) => {
+const PopupIcon = ({ callback, icon, tip, transformation = false }) => {
+  const size = transformation ? 20 : 12;
+
   return (
     <div className="d-flex justify-content-end" style={{ position: 'relative' }}>
       <OverlayTrigger
@@ -400,8 +404,8 @@ const PopupIcon = ({ callback, icon, tip }) => {
         <img
           className="svg-icon m-2 popup-btn"
           src={`assets/images/icons/${icon}.svg`}
-          width="12"
-          height="12"
+          width={size}
+          height={size}
           onClick={(e) => {
             e.stopPropagation();
             callback();

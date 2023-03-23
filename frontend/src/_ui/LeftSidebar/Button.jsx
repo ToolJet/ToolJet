@@ -57,7 +57,7 @@ const Content = ({ title = null, iconSrc = null, direction = 'left', dataCy }) =
   ) : typeof title === 'function' ? (
     title()
   ) : (
-    <span data-cy={`${String(title).toLowerCase().replace(/\s+/g, '-')}-option-button`} className="mx-1">
+    <span data-cy={`${String(btnTitle).toLowerCase().replace(/\s+/g, '-')}-option-button`} className="mx-1">
       {title}
     </span>
   );
@@ -66,12 +66,12 @@ const Content = ({ title = null, iconSrc = null, direction = 'left', dataCy }) =
   return content;
 };
 
-const UnstyledButton = ({ children, onClick, classNames = '', styles = {}, disabled = false }) => {
+const UnstyledButton = ({ children, onClick, classNames = '', styles = {}, disabled = false, darkMode = false }) => {
   return (
     <div
       type="button"
       style={{ ...styles, ...(disabled ? defaultDisabledStyles : {}) }}
-      className={`unstyled-button ${classNames} ${disabled && 'disabled'}`}
+      className={`unstyled-button ${classNames} ${disabled && 'disabled'} ${darkMode && 'dark'}`}
       onClick={onClick}
     >
       {children}

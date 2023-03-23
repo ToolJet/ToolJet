@@ -37,7 +37,7 @@ $btn-dark-color: #FFFFFF;
 .base-button.dark {
     background: $btn-dark-bg;
     color: $btn-dark-color;
-    border-color: #11181C;
+    // border-color: #11181C;
 
     &:hover {
         background: lighten($btn-dark-bg, 10%);
@@ -312,4 +312,14 @@ $btn-dark-color: #FFFFFF;
   height: 100%;
   overflow: visible;
   fill: #919eab;
+}
+
+.tj-badge {
+  background: #F0F4FF;
+  color: #3E63DD;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 20px;
 }

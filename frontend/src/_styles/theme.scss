@@ -6978,6 +6978,8 @@ tbody {
   font-weight: 500;
   height: 28px;
   cursor: pointer;
+  // text should not go beyond the button
+  white-space: nowrap;
 
   .query-btn-svg-wrapper {
     width: 16px !important;

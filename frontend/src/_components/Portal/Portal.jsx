@@ -1,6 +1,7 @@
 import React from 'react';
 import { ReactPortal } from './ReactPortal.js';
 import { Rnd } from 'react-rnd';
+import { Button } from '@/_ui/LeftSidebar';
 
 const Portal = ({ children, ...restProps }) => {
   const { isOpen, trigger, styles, className, componentName, dragResizePortal, callgpt } = restProps;
@@ -65,7 +66,6 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName, dar
     callgpt().then(() => setLoading(false));
   };
 
-  console.log('----nice', componentName);
   const includeGPT = ['Runjs', 'Runpy', 'transformation'].includes(componentName);
 
   const renderModalContent = () => (
@@ -75,39 +75,38 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName, dar
         style={{ ...portalStyles }}
       >
         <div className="w-100">
-          <code className="mx-2 text-info">{componentName ?? 'Editor'}</code>
-          {loading && <code className="mx-2 text-info">{'loading'}</code>}
+          <span
+            style={{
+              textTransform: 'none',
+            }}
+            className="badge tj-badge"
+          >
+            {componentName ?? 'Editor'}
+          </span>
         </div>
 
-        <button
-          type="button"
-          className="btn mx-2 btn-light"
-          onClick={handleClose}
-          style={{ backgroundColor: darkMode && '#42546a' }}
-        >
-          <img
-            style={{ transform: 'rotate(-90deg)', filter: darkMode && 'brightness(0) invert(1)' }}
-            src="assets/images/icons/portal-close.svg"
-            width="12"
-            height="12"
-          />
-        </button>
-
         {includeGPT && (
-          <button
-            type="button"
-            className="btn mx-2 btn-light"
-            onClick={handleCallGpt}
-            style={{ backgroundColor: darkMode && '#42546a' }}
-          >
-            <img
-              style={{ filter: darkMode && 'brightness(0) invert(1)' }}
-              src="assets/images/icons/search.svg"
-              width="12"
-              height="12"
-            />
-          </button>
+          <div>
+            <button
+              onClick={handleCallGpt}
+              className={`default-tertiary-button ${darkMode ? 'theme-dark' : ''} ${
+                loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''
+              }`}
+            >
+              Load recommendations ⌘+L
+            </button>
+          </div>
         )}
+
+        <Button
+          title={'close'}
+          onClick={handleClose}
+          darkMode={darkMode}
+          size="sm"
+          styles={{ width: '50px', padding: '2px' }}
+        >
+          <Button.Content iconSrc={'assets/images/icons/portal-close.svg'} direction="left" />
+        </Button>
       </div>
       <div
         className={`modal-body ${darkMode ? 'dark-mode-border' : ''}`}

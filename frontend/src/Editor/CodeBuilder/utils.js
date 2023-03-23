@@ -1,9 +1,10 @@
 import _ from 'lodash';
 const { Configuration, OpenAIApi } = require('openai');
+import config from 'config';
 
 export async function getRecommendation(currentContext, query) {
   const configuration = new Configuration({
-    apiKey: '',
+    apiKey: config.OPENAI_API_KEY,
   });
   const openai = new OpenAIApi(configuration);
   // Convert the context object to a JSON string

@@ -4,6 +4,7 @@ const path = require('path');
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const hash = require('string-hash');
+require('dotenv').config({ path: '../.env' });
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -169,6 +170,7 @@ module.exports = {
       COMMENT_FEATURE_ENABLE: process.env.COMMENT_FEATURE_ENABLE ?? true,
       ENABLE_TOOLJET_DB: process.env.ENABLE_TOOLJET_DB ?? true,
       ENABLE_MULTIPLAYER_EDITING: true,
+      OPENAI_API_KEY: process.env.OPENAI_API_KEY,
       TOOLJET_MARKETPLACE_URL:
         process.env.TOOLJET_MARKETPLACE_URL || 'https://tooljet-plugins-production.s3.us-east-2.amazonaws.com',
     }),

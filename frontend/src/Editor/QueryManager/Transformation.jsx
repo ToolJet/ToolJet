@@ -13,6 +13,7 @@ import { useLocalStorageState } from '@/_hooks/use-local-storage';
 import _ from 'lodash';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
+import { Button } from '@/_ui/LeftSidebar';
 
 export const Transformation = ({ changeOption, currentState, options, darkMode, queryId }) => {
   const { t } = useTranslation();
@@ -147,6 +148,21 @@ return [row for row in data if row['amount'] > 1000]
     </Popover>
   );
 
+  const EducativeLebel = () => {
+    const title = () => {
+      return (
+        <>
+          Powered by <strong style={{ fontWeight: 700, color: '#3E63DD' }}>AI copilot</strong>
+        </>
+      );
+    };
+    return (
+      <Button.UnstyledButton styles={{ height: '28px' }} darkMode={darkMode}>
+        <Button.Content title={title} iconSrc={'assets/images/icons/flash.svg'} direction="left" />
+      </Button.UnstyledButton>
+    );
+  };
+
   return (
     <div className="field  transformation-editor">
       <div className="align-items-center gap-2" style={{ display: 'flex', position: 'relative', height: '20px' }}>
@@ -182,30 +198,8 @@ return [row for row in data if row['amount'] > 1000]
             </svg>
           </OverlayTrigger>
         </div>
-        <div className="d-flex">
-          <span className="cursor-pointer" style={{ marginTop: '2px', marginRight: '5px' }} onClick={handleCallToGPT}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-                d="M8.49992 1.83325C8.49992 1.55711 8.27606 1.33325 7.99992 1.33325C7.72378 1.33325 7.49992 1.55711 7.49992 1.83325V3.49992C7.49992 3.77606 7.72378 3.99992 7.99992 3.99992C8.27606 3.99992 8.49992 3.77606 8.49992 3.49992V1.83325ZM8.49992 12.6666C8.49992 12.3904 8.27606 12.1666 7.99992 12.1666C7.72378 12.1666 7.49992 12.3904 7.49992 12.6666V14.1666C7.49992 14.4427 7.72378 14.6666 7.99992 14.6666C8.27606 14.6666 8.49992 14.4427 8.49992 14.1666V12.6666ZM12.714 3.28593C12.9092 3.48119 12.9092 3.79777 12.714 3.99303L11.5355 5.17154C11.3402 5.36681 11.0236 5.36681 10.8284 5.17154C10.6331 4.97628 10.6331 4.6597 10.8284 4.46444L12.0069 3.28593C12.2021 3.09066 12.5187 3.09066 12.714 3.28593ZM5.05367 11.6534C5.24893 11.4581 5.24893 11.1415 5.05367 10.9462C4.85841 10.751 4.54182 10.751 4.34656 10.9462L3.2859 12.0069C3.09064 12.2022 3.09064 12.5188 3.2859 12.714C3.48116 12.9093 3.79774 12.9093 3.99301 12.714L5.05367 11.6534ZM14.6666 7.99992C14.6666 8.27606 14.4427 8.49992 14.1666 8.49992H12.4999C12.2238 8.49992 11.9999 8.27606 11.9999 7.99992C11.9999 7.72378 12.2238 7.49992 12.4999 7.49992H14.1666C14.4427 7.49992 14.6666 7.72378 14.6666 7.99992ZM3.33325 8.49992C3.60939 8.49992 3.83325 8.27606 3.83325 7.99992C3.83325 7.72378 3.60939 7.49992 3.33325 7.49992H1.83325C1.55711 7.49992 1.33325 7.72378 1.33325 7.99992C1.33325 8.27606 1.55711 8.49992 1.83325 8.49992H3.33325ZM12.7141 12.714C12.5188 12.9092 12.2022 12.9092 12.007 12.714L10.8285 11.5355C10.6332 11.3402 10.6332 11.0236 10.8285 10.8284C11.0237 10.6331 11.3403 10.6331 11.5356 10.8284L12.7141 12.0069C12.9093 12.2021 12.9093 12.5187 12.7141 12.714ZM4.34648 5.05367C4.54175 5.24893 4.85833 5.24893 5.05359 5.05367C5.24885 4.85841 5.24885 4.54182 5.05359 4.34656L3.99293 3.2859C3.79767 3.09064 3.48109 3.09064 3.28582 3.2859C3.09056 3.48116 3.09056 3.79774 3.28582 3.99301L4.34648 5.05367Z"
-                fill="#3E63DD"
-              />
-            </svg>
-          </span>
 
-          <p className="py-1">
-            Powered by &nbsp;
-            <text
-              style={{
-                color: '#3E63DD',
-              }}
-            >
-              {' '}
-              AI Copilot
-            </text>
-          </p>
-        </div>
+        <EducativeLebel />
       </div>
       <br></br>
       {enableTransformation && (
@@ -235,12 +229,16 @@ return [row for row in data if row['amount'] > 1000]
                 useCustomStyles={true}
               />
             </div>
-            <div className="mt-2">
-              {fetchingRecommendation ? (
-                <div className="spinner-border spinner-border-sm" role="status"></div>
-              ) : (
-                <span className="align-items-center">Load recommendations ⌘+L</span>
-              )}
+
+            <div>
+              <button
+                onClick={handleCallToGPT}
+                className={`default-tertiary-button ${darkMode ? 'theme-dark' : ''} ${
+                  fetchingRecommendation ? (darkMode ? 'btn-loading' : 'button-loading') : ''
+                }`}
+              >
+                Load recommendations ⌘+L
+              </button>
             </div>
           </div>
           <div className="border-top mx-3"></div>
@@ -251,7 +249,7 @@ return [row for row in data if row['amount'] > 1000]
             theme={darkMode ? 'monokai' : 'base16-light'}
             lineNumbers={true}
             height={'300px'}
-            className="query-hinter mt-3"
+            className="query-hinter"
             ignoreBraces={true}
             onChange={(value) => changeOption('transformation', value)}
             componentName={`transformation`}
