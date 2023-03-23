@@ -5,6 +5,7 @@ import Select from 'react-select';
 import WorkflowEditorContext from '../../context';
 import { capitalize, isUndefined } from 'lodash';
 import { find } from 'lodash';
+import { generateQueryName } from '../../utils';
 
 import './query-node-styles.scss';
 
@@ -49,7 +50,11 @@ export default function QueryNode(props) {
 
   const onQueryTypeChange = (option) => {
     const dataSource = find(editorSession.dataSources, { kind: option.value });
-    updateQuery(queryData.idOnDefinition, { dataSourceId: dataSource.id, kind: dataSource.kind });
+    updateQuery(queryData.idOnDefinition, {
+      dataSourceId: dataSource.id,
+      kind: dataSource.kind,
+      name: generateQueryName(dataSource.kind, editorSession.queries),
+    });
   };
 
   return (

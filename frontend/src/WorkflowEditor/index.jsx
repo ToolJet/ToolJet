@@ -79,17 +79,15 @@ export default function WorkflowEditor(props) {
   const updateQuery = (idOnDefinition, queryChanges) => {
     const query = find(editorSession.queries, { idOnDefinition });
 
-    const newDataSource = find(editorSession.dataSources, { id: queryChanges.dataSourceId });
-
-    const name =
-      queryChanges.dataSourceId === query.data_source_id || !newDataSource
-        ? query.name
-        : generateQueryName(newDataSource.kind, editorSession.queries);
-
-    editorSessionActions.updateQuery(idOnDefinition, { ...queryChanges, name });
+    editorSessionActions.updateQuery(idOnDefinition, { ...queryChanges });
     editorSessionActions.setAppSavingStatus(true);
     dataqueryService
-      .update(query.id, name, merge(query.options, queryChanges.options), queryChanges.dataSourceId)
+      .update(
+        query.id,
+        queryChanges.name ?? query.name,
+        merge(query.options, queryChanges.options),
+        queryChanges.dataSourceId
+      )
       .then(() => editorSessionActions.setAppSavingStatus(false));
   };
 
