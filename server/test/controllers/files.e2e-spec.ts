@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, createFile, clearDB, createUser, createNestAppInstance } from '../test.helper';
+import { createFile, clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
 
 describe('files controller', () => {
   let app: INestApplication;
@@ -24,11 +24,17 @@ describe('files controller', () => {
 
     const file = await createFile(app);
 
+    const loggedUser = await authenticateUser(app);
+
     const response = await request(app.getHttpServer())
       .get(`/api/files/${file.id}`)
       .set('tj-workspace-id', user.defaultOrganizationId)
-      .set('Authorization', authHeaderForUser(user));
+      .set('Cookie', loggedUser.tokenCookie);
 
     expect(response.statusCode).toBe(200);
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 });

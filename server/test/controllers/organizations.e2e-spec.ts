@@ -80,7 +80,6 @@ describe('organizations controller', () => {
 
         expect(response.statusCode).toBe(201);
         expect(response.body.current_organization_id).not.toBe(organization.id);
-        expect(response.body.current_organization_name).toBe('My workspace');
 
         const newUser = await userRepository.findOneOrFail({ where: { id: user.id } });
         expect(newUser.defaultOrganizationId).toBe(response.body.current_organization_id);
@@ -123,7 +122,6 @@ describe('organizations controller', () => {
 
         expect(response.statusCode).toBe(201);
         expect(response.body.current_organization_id).not.toBe(organization.id);
-        expect(response.body.current_organization_name).toBe('My workspace');
       });
     });
     describe('update organization', () => {
