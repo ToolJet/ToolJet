@@ -93,7 +93,7 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName, dar
                 loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''
               }`}
             >
-              Load recommendations ⌘+L
+              Generate code ⌘+L
             </button>
           </div>
         )}

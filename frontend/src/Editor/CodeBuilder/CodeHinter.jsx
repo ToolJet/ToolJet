@@ -69,6 +69,7 @@ export function CodeHinter({
   component,
   popOverCallback,
   cyLabel = '',
+  callgpt = () => null,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -271,10 +272,10 @@ export function CodeHinter({
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
-  const handleCallbacktoGpt = async (context, query) => {
-    const gptcode = await getRecommendation(context, query);
-    onChange(query + gptcode);
-  };
+  // const handleCallbacktoGpt = async (context, query) => {
+  //   const gptcode = await getRecommendation(context, query);
+  //   onChange(query + gptcode);
+  // };
 
   return (
     <div ref={wrapperRef}>
@@ -338,7 +339,7 @@ export function CodeHinter({
                 darkMode={darkMode}
                 selectors={{ className: 'preview-block-portal' }}
                 dragResizePortal={true}
-                callgpt={() => handleCallbacktoGpt(currentState, currentValue)}
+                callgpt={callgpt}
               >
                 <CodeMirror
                   value={typeof initialValue === 'string' ? initialValue : ''}
