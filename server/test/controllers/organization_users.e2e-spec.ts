@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { BadRequestException, INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
+import { authHeaderForUser, clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
 
 describe('organization users controller', () => {
   let app: INestApplication;
@@ -29,17 +29,26 @@ describe('organization users controller', () => {
 
     const organization = adminUserData.organization;
 
+    let loggedUser = await authenticateUser(app);
+    adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
       groups: ['developer', 'all_users'],
       organization,
     });
 
+    loggedUser = await authenticateUser(app);
+    developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
     const viewerUserData = await createUser(app, {
       email: 'viewer@tooljet.io',
       groups: ['viewer', 'all_users'],
       organization,
     });
+
+    loggedUser = await authenticateUser(app);
+    viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     await request(app.getHttpServer())
       .post(`/api/organization_users/`)
