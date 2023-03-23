@@ -75,9 +75,9 @@ export default function generateColumnsData({
       regex: column.regex,
       customRule: column?.customRule,
       columnValue: column.columnValue,
-      Cell: function (cell) {
+      Cell: function ({ cell, cellValue }) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
-        let cellValue = rowChangeSet ? rowChangeSet[column.name] ?? cell.value : cell.value;
+        // let cellValue = rowChangeSet ? rowChangeSet[column.name] ?? cell.value : cell.value;
         const rowData = tableData[cell.row.index];
         if (
           cell.row.index === 0 &&

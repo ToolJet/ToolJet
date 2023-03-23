@@ -896,8 +896,9 @@ export function Table({
                             rowData,
                           })
                         : cell.value;
-                      console.log('table--- cell col val', cell.column.columnValue);
-                      const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || value : value;
+                      const cellValue = rowChangeSet
+                        ? rowChangeSet[cell.column.key || cell.column.name] || value
+                        : value;
                       const cellBackgroundColor = resolveReferences(
                         cell.column?.cellBackgroundColor,
                         currentState,
@@ -938,7 +939,7 @@ export function Table({
                             <GenerateEachCellValue
                               cellValue={cellValue}
                               globalFilter={state.globalFilter}
-                              cellRender={cell.render('Cell')}
+                              cellRender={cell.render('Cell', { cell, cellValue })}
                               rowChangeSet={rowChangeSet}
                               isEditable={cell.column.isEditable}
                               columnType={cell.column.columnType}
