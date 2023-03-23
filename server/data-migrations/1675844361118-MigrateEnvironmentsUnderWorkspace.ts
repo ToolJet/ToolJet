@@ -6,12 +6,21 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class MigrateEnvironmentsUnderWorkspace1675844361118 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
+    let progress = 0;
+
     const organizations = await entityManager.find(Organization, {
       select: ['id', 'name'],
     });
 
     //Insert new environments under workspace
     for (const org of organizations) {
+      progress++;
+      console.log(
+        `MigrateEnvironmentsUnderWorkspace1675844361118 Progress ${Math.round(
+          (progress / organizations.length) * 100
+        )} %`
+      );
+
       const newMappingForEnvironments = {};
       console.log(`Performing environment migration for ${org.name}: ${org.id}`);
       for (const { name, isDefault } of defaultAppEnvironments) {

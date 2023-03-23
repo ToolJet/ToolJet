@@ -2,7 +2,6 @@ import { MigrationInterface, QueryRunner, TableForeignKey } from 'typeorm';
 
 export class removeRepetitionInDataSourceAndQuery1669919175280 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // TODO: next version add : await queryRunner.dropColumn('data_sources', 'options');
     await this.dropForeignKey('data_sources', 'app_id', queryRunner);
     await this.dropForeignKey('data_queries', 'app_id', queryRunner);
     await this.dropForeignKey('data_queries', 'app_version_id', queryRunner);
