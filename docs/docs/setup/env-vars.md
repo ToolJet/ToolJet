@@ -46,6 +46,11 @@ ToolJet server uses PostgreSQL as the database.
 If you are using docker-compose setup, you can set PG_HOST as `postgres` which will be DNS resolved by docker
 :::
 
+:::info
+If you intent you use the string and if the connection does not support ssl. Please use the below format.
+`postgres://username:password@hostname:port/database_name?sslmode=disable`
+:::
+
 ### Disable database and extension creation (optional)
 
 ToolJet by default tries to create database based on `PG_DB` variable set and additionally my try to create postgres extensions. This requires the postgres user to have CREATEDB permission. If this cannot be granted you can disable this behaviour by setting `PG_DB_OWNER` as `false` and will have to manually run them.
@@ -96,6 +101,11 @@ Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work 
 :::tip
 When this feature is enabled, the database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.
 Incase you want to trigger it manually, use the command `npm run db:create` on ToolJet server.
+:::
+
+:::info
+If you intent you use the string and if the connection does not support ssl. Please use the below format.
+`postgres://username:password@hostname:port/database_name?sslmode=disable`
 :::
 
 #### Server Host ( optional )
