@@ -602,7 +602,7 @@ export class AppImportExportService {
   }
 
   replaceTooljetDbTableIds(queryOptions: any, tooljetDatabaseMapping: any) {
-    return { ...queryOptions, table_id: tooljetDatabaseMapping[queryOptions['table_id']]['id'] };
+    return { ...queryOptions, table_id: tooljetDatabaseMapping[queryOptions.table_id]?.id };
   }
 }
 
