@@ -47,7 +47,7 @@ If you are using docker-compose setup, you can set PG_HOST as `postgres` which w
 :::
 
 :::info
-If you intent you use the string and if the connection does not support ssl. Please use the below format.
+If you intent you use the string and if the connection does not support ssl. Please use the below format using the variable DATABASE_URL.
 `postgres://username:password@hostname:port/database_name?sslmode=disable`
 :::
 
@@ -104,7 +104,7 @@ Incase you want to trigger it manually, use the command `npm run db:create` on T
 :::
 
 :::info
-If you intent you use the string and if the connection does not support ssl. Please use the below format.
+If you intent you use the string and if the connection does not support ssl. Please use the below format using the variable TOOLJET_DB_URL.
 `postgres://username:password@hostname:port/database_name?sslmode=disable`
 :::
 
