@@ -58,7 +58,7 @@ export default function generateColumnsData({
     return {
       id: column.id,
       Header: resolveReferences(column.name, currentState),
-      accessor: (column) => resolveReferences(column.key, currentState) || resolveReferences(column.name, currentState),
+      accessor: column.key || column.name,
       filter: customFilter,
       width: width,
       columnOptions,
