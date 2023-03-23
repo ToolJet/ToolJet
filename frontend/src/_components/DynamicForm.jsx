@@ -253,6 +253,7 @@ const DynamicForm = ({
           auth_url: options.auth_url?.value,
           custom_auth_params: options.custom_auth_params?.value,
           custom_query_params: options.custom_query_params?.value,
+          spec: options.spec?.value,
         };
       default:
         return {};
