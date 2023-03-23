@@ -105,6 +105,14 @@ module.exports = {
               label: 'Twitter',
               href: 'https://twitter.com/ToolJet',
             },
+            {
+              label: 'Facebook',
+              href: 'https://www.facebook.com/ToolJet.io',
+            },
+            {
+              label: 'LinkedIn',
+              href: 'https://www.linkedin.com/company/tooljet/',
+            },
           ],
         },
       ],
