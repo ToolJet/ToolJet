@@ -55,11 +55,10 @@ export default function generateColumnsData({
     }
 
     const width = columnSize || defaultColumn.width;
-
     return {
       id: column.id,
       Header: resolveReferences(column.name, currentState),
-      accessor: column.key || resolveReferences(column.name, currentState),
+      accessor: resolveReferences(column.key, currentState) || resolveReferences(column.name, currentState),
       filter: customFilter,
       width: width,
       columnOptions,
