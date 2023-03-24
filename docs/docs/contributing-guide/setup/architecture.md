@@ -21,4 +21,5 @@ ToolJet client is a ReactJS application. Client is responsible for visually edit
 
 ## Requirements
 
-1. **Node version 14.x**
+1. **Node version 18.3.0**
+2. **npm version 8.11.0**

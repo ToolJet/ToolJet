@@ -18,6 +18,7 @@ import { sample } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
 import { getWorkspaceId } from '@/_helpers/utils';
+import { withRouter } from '@/_hoc/withRouter';
 
 const { iconList, defaultIcon } = configs;
 
@@ -122,7 +123,7 @@ class HomePageComponent extends React.Component {
       .createApp({ icon: sample(iconList) })
       .then((data) => {
         const workspaceId = getWorkspaceId();
-        _self.props.history.push(`/${workspaceId}/apps/${data.id}`);
+        _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
       })
       .catch(({ error }) => {
         toast.error(error);
@@ -141,7 +142,7 @@ class HomePageComponent extends React.Component {
       .then((data) => {
         toast.success('App cloned successfully.');
         this.setState({ isCloningApp: false });
-        this.props.history.push(`/${getWorkspaceId()}/apps/${data.id}`);
+        this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
       })
       .catch(({ _error }) => {
         toast.error('Could not clone the app.');
@@ -169,7 +170,7 @@ class HomePageComponent extends React.Component {
             this.setState({
               isImportingApp: false,
             });
-            this.props.history.push(`/${getWorkspaceId()}/apps/${data.id}`);
+            this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
           })
           .catch(({ error }) => {
             toast.error(`Could not import the app: ${error}`);
@@ -694,4 +695,4 @@ class HomePageComponent extends React.Component {
   }
 }
 
-export const HomePage = withTranslation()(HomePageComponent);
+export const HomePage = withTranslation()(withRouter(HomePageComponent));

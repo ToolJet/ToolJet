@@ -4,7 +4,7 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
 import { authenticationService } from '@/_services';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/SuccessInfoScreen';
 import { ShowLoading } from '@/_components';
 import { toast } from 'react-hot-toast';
@@ -30,16 +30,16 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const { t } = useTranslation();
 
   const location = useLocation();
-  const history = useHistory();
+  const params = useParams();
 
-  const organizationId = new URLSearchParams(location?.state?.search).get('oid');
-  const source = new URLSearchParams(location?.state?.search).get('source');
+  const organizationId = new URLSearchParams(location?.search).get('oid');
+  const source = new URLSearchParams(location?.search).get('source');
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const getUserDetails = () => {
     setIsLoading(true);
     authenticationService
-      .verifyToken(location?.state?.token, location?.state?.organizationToken)
+      .verifyToken(params?.token, params?.organizationToken)
       .then((data) => {
         if (data?.redirect_url) {
           window.location.href = buildURLWithQuery(data.redirect_url, {
@@ -51,7 +51,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         setUserDetails(data);
         setIsLoading(false);
         if (data?.email !== '') {
-          if (location?.state?.organizationToken) {
+          if (params?.organizationToken) {
             setShowJoinWorkspace(true);
             return;
           }
@@ -109,8 +109,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         companyName: '',
         companySize: '',
         role: '',
-        token: location?.state?.token,
-        organizationToken: location?.state?.organizationToken ?? '',
+        token: params?.token,
+        organizationToken: params?.organizationToken ?? '',
         source: source,
         password: password,
       })
@@ -366,8 +366,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       {verifiedToken && showOnboarding && (
         <OnBoardingForm
           userDetails={userDetails}
-          token={location?.state?.token}
-          organizationToken={location?.state?.organizationToken ?? ''}
+          token={params?.token}
+          organizationToken={params?.organizationToken ?? ''}
           password={password}
           darkMode={darkMode}
         />

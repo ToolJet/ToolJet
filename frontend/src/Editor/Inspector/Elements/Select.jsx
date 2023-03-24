@@ -1,6 +1,7 @@
 import React from 'react';
 import { ToolTip } from './Components/ToolTip';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import SelectSearch from 'react-select-search';
+// eslint-disable-next-line import/no-unresolved
 import { useTranslation } from 'react-i18next';
 
 export const Select = ({ param, definition, onChange, paramType, componentMeta }) => {
@@ -18,7 +19,7 @@ export const Select = ({ param, definition, onChange, paramType, componentMeta }
         value={value}
         search={true}
         onChange={(newVal) => onChange(param, 'value', newVal, paramType)}
-        filterOptions={fuzzySearch}
+        fuzzySearch
         placeholder={t('globals.select', 'Select') + '...'}
       />
     </div>

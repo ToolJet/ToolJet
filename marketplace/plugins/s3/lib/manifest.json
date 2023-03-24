@@ -4,7 +4,7 @@
   "description": "A schema defining AWS S3 datasource",
   "type": "cloud-storage",
   "source": {
-    "name": "AWS S3",
+    "name": "AWS S3 plugin",
     "kind": "s3",
     "exposedVariables": {
       "isLoading": false,

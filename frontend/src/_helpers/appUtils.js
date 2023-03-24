@@ -343,12 +343,29 @@ function showModal(_ref, modal, show) {
 
 function logoutAction(_ref) {
   localStorage.clear();
-  _ref.props.history.push('/login');
+  _ref.props.navigate('/login');
   window.location.href = '/login';
 
   return Promise.resolve();
 }
-export const executeAction = (_ref, event, mode, customVariables) => {
+
+function debounce(func) {
+  let timer;
+  return (...args) => {
+    const event = args[1] || {};
+    if (event.debounce === undefined) {
+      return func.apply(this, args);
+    }
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      func.apply(this, args);
+    }, Number(event.debounce));
+  };
+}
+
+export const executeAction = debounce(executeActionWithDebounce);
+
+function executeActionWithDebounce(_ref, event, mode, customVariables) {
   console.log('nopski', customVariables);
   if (event) {
     switch (event.actionId) {
@@ -411,8 +428,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
         }
 
         if (mode === 'view') {
-          _ref.props.history.push(url);
-          _ref.props.history.go();
+          _ref.props.navigate(url);
         } else {
           if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
             window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
@@ -550,7 +566,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
       }
     }
   }
-};
+}
 
 export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
@@ -714,11 +730,13 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCalendarViewChange',
       'onSearchTextChanged',
       'onPageChange',
+      'onAddCardClick',
       'onCardAdded',
       'onCardRemoved',
       'onCardMoved',
       'onCardSelected',
       'onCardUpdated',
+      'onUpdate',
       'onTabSwitch',
       'onFocus',
       'onBlur',
@@ -878,6 +896,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
   if (dataQuery.options.requestConfirmation) {
+    // eslint-disable-next-line no-unsafe-optional-chaining
     const queryConfirmationList = _ref.state?.queryConfirmationList ? [..._ref.state?.queryConfirmationList] : [];
     const queryConfirmation = {
       queryId,
@@ -1504,7 +1523,7 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.others.showOnMobile.value = true;
   }
 
-  const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form'];
+  const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form', 'Kanban'];
 
   const newComponent = {
     id: uuidv4(),

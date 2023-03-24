@@ -6414,15 +6414,11 @@ tbody {
 }
 
 .dropdown-table-column-hide-common {
-  position: absolute;
-  z-index: 10;
-  right: 0;
   border-radius: 3px;
   height: auto;
   overflow-y: scroll;
   padding: 8px 16px;
   width: 20rem;
-  top: 20px;
   max-height: 200px;
 }
 
@@ -6867,6 +6863,10 @@ tbody {
 .custom-select {
   .select-search-dark__value::after {
     content: none;
+  }
+  .select-search-dark__select,.select-search__select{
+    min-width: fit-content;
+    max-width: 100% !important;
   }
 }
 
@@ -7628,6 +7628,9 @@ tbody {
   }
 }
 
+.react-tooltip {
+  font-size: .765625rem !important;
+}
 .tj-db-table {
   overflow-y: auto;
   height: 110px;
@@ -7661,4 +7664,9 @@ tbody {
       height: 12px !important;
     }
   }
+
+}
+
+.selected-ds.row > img {
+  padding: 0 !important;
 }

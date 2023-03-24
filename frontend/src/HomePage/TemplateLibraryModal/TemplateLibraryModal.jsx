@@ -6,7 +6,7 @@ import { libraryAppService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getWorkspaceId } from '../../_helpers/utils';
 
@@ -17,7 +17,7 @@ const identifyUniqueCategories = (templates) =>
   }));
 
 export default function TemplateLibraryModal(props) {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [libraryApps, setLibraryApps] = useState([]);
   const [selectedCategory, selectCategory] = useState({ id: 'all', count: 0 });
   const filteredApps = libraryApps.filter(
@@ -62,7 +62,7 @@ export default function TemplateLibraryModal(props) {
         toast.success('App created.', {
           position: 'top-center',
         });
-        history.push(`/${getWorkspaceId()}/apps/${data.id}`);
+        navigate(`/${getWorkspaceId()}/apps/${data.id}`);
       })
       .catch((e) => {
         toast.error(e.error, {
