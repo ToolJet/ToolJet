@@ -88,13 +88,15 @@ export class DataSourcesService {
   async findOneByEnvironment(dataSourceId: string, environmentId?: string): Promise<DataSource> {
     const dataSource = await this.dataSourcesRepository.findOneOrFail({
       where: { id: dataSourceId },
-      relations: ['plugin', 'apps', 'dataSourceOptions'],
+      relations: ['plugin', 'apps', 'dataSourceOptions', 'appVersion', 'appVersion.app'],
     });
+
+    const dsOrganizationId = dataSource.organizationId || dataSource.appVersion.app.organizationId;
 
     if (!environmentId && dataSource.dataSourceOptions?.length > 1) {
       //fix for env id issue when importing cloud/enterprise apps to CE
       if (dataSource.dataSourceOptions?.length > 1) {
-        const env = await this.appEnvironmentService.get(dataSource.organizationId, null);
+        const env = await this.appEnvironmentService.get(dsOrganizationId, null);
         environmentId = env?.id;
       } else {
         throw new NotAcceptableException('Environment id should not be empty');
@@ -103,7 +105,7 @@ export class DataSourcesService {
 
     if (environmentId) {
       dataSource.options = (
-        await this.appEnvironmentService.getOptions(dataSourceId, dataSource.organizationId, environmentId)
+        await this.appEnvironmentService.getOptions(dataSourceId, dsOrganizationId, environmentId)
       ).options;
     } else {
       dataSource.options = dataSource.dataSourceOptions?.[0]?.options || {};
