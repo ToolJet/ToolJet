@@ -255,6 +255,7 @@ export class UsersService {
 
       case 'User':
       case 'Plugin':
+      case 'GlobalDataSource':
         return await this.hasGroup(user, 'admin');
 
       case 'Thread':
