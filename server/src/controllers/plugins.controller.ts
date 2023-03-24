@@ -77,4 +77,10 @@ export class PluginsController {
 
     return this.pluginsService.remove(id);
   }
+
+  @Post(':id/reload')
+  @UseGuards(JwtAuthGuard)
+  async reload(@Param('id') id: string) {
+    return this.pluginsService.reload(id);
+  }
 }
