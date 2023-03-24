@@ -8,15 +8,16 @@ export const ProgramaticallyHandleToggleSwitch = ({
   index,
   callbackFunction,
   property,
-  action = {},
+  props = {},
   component,
   paramMeta,
   // eslint-disable-next-line no-unused-vars
   paramType,
 }) => {
+  const value = property === 'isEditable' ? props.isEditable : props.disableActionButton;
   const param = { name: property };
-  const definition = { value: action.disableActionButton, fxActive: action.fxActive };
-  const initialValue = definition?.value ?? '{{false}}';
+  const definition = { value, fxActive: props.fxActive };
+  const initialValue = definition?.value ?? `{{false}}`;
 
   const options = {};
   return (
@@ -36,7 +37,7 @@ export const ProgramaticallyHandleToggleSwitch = ({
       onFxPress={(active) => {
         callbackFunction(index, 'fxActive', active);
       }}
-      fxActive={action?.fxActive ?? false}
+      fxActive={props?.fxActive ?? false}
       component={component}
       className="codehinter-default-input"
     />

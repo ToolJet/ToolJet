@@ -650,7 +650,6 @@ class EditorComponent extends React.Component {
     this.setState({ isSaving: true, appDefinition: newDefinition, appDefinitionLocalVersion: uuid() }, () => {
       if (!opts.skipAutoSave) this.autoSave();
     });
-    computeComponentState(this, newDefinition.pages[currentPageId]?.components ?? {});
   };
 
   handleInspectorView = () => {

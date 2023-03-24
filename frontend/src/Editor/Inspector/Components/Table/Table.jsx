@@ -166,7 +166,14 @@ class TableComponent extends React.Component {
       { name: '+13:00', value: 'Pacific/Auckland' },
     ];
     return (
-      <Popover id="popover-basic-2" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
+      <Popover
+        id="popover-basic-2"
+        className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}
+        style={{
+          maxHeight: resolveReferences(column.isEditable, this.state.currentState) ? '100vh' : 'inherit',
+          overflowY: 'auto',
+        }}
+      >
         <Popover.Body>
           <div className="field mb-2" data-cy={`dropdown-column-type`}>
             <label data-cy={`label-column-type`} className="form-label">
@@ -293,7 +300,7 @@ class TableComponent extends React.Component {
                 />
               </div>
 
-              {column.isEditable && (
+              {resolveReferences(column.isEditable, this.state.currentState) && (
                 <div>
                   <div data-cy={`header-validation`} className="hr-text">
                     {this.props.t('widget.Table.validation', 'Validation')}
@@ -367,7 +374,7 @@ class TableComponent extends React.Component {
             </div>
           )}
 
-          {column.columnType === 'number' && column.isEditable && (
+          {column.columnType === 'number' && resolveReferences(column.isEditable, this.state.currentState) && (
             <div>
               <div className="hr-text" data-cy={`header-validation`}>
                 {this.props.t('widget.Table.validation', 'Validation')}
@@ -483,7 +490,7 @@ class TableComponent extends React.Component {
 
           {column.columnType === 'dropdown' && (
             <>
-              {column.isEditable && (
+              {resolveReferences(column.isEditable, this.state.currentState) && (
                 <div>
                   <div data-cy={`header-validations`} className="hr-text">
                     {this.props.t('widget.Table.validation', 'Validation')}
@@ -661,18 +668,18 @@ class TableComponent extends React.Component {
           )}
 
           {column.columnType !== 'image' && (
-            <div className="form-check form-switch my-4">
-              <input
-                data-cy={`toggle-make-editable`}
-                className="form-check-input"
-                type="checkbox"
-                onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
-                checked={column.isEditable}
-              />
-              <span data-cy={`label-make-editable`} className="form-check-label">
-                {this.props.t('widget.Table.makeEditable', 'make editable')}
-              </span>
-            </div>
+            <ProgramaticallyHandleToggleSwitch
+              label="make editable"
+              currentState={this.state.currentState}
+              index={index}
+              darkMode={this.props.darkMode}
+              callbackFunction={this.onColumnItemChange}
+              property="isEditable"
+              props={column}
+              component={this.props.component}
+              paramMeta={{ type: 'toggle', displayName: 'make editable' }}
+              paramType="properties"
+            />
           )}
         </Popover.Body>
       </Popover>
@@ -749,7 +756,7 @@ class TableComponent extends React.Component {
             darkMode={this.props.darkMode}
             callbackFunction={this.onActionButtonPropertyChanged}
             property="disableActionButton"
-            action={action}
+            props={action}
             component={this.props.component}
             paramMeta={{ type: 'toggle', displayName: 'Disable action button' }}
             paramType="properties"

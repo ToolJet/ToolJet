@@ -228,9 +228,10 @@ export const SubContainer = ({
         if (parentRef.current) {
           const currentOffset = monitor.getSourceClientOffset();
           if (currentOffset) {
-            const canvasBoundingRect = parentRef.current
-              .getElementsByClassName('real-canvas')[0]
-              .getBoundingClientRect();
+            const canvasBoundingRect = parentRef?.current
+              ?.getElementsByClassName('real-canvas')[0]
+              ?.getBoundingClientRect();
+            if (!canvasBoundingRect) return { draggingState: false };
             if (
               currentOffset.x > canvasBoundingRect.x &&
               currentOffset.x < canvasBoundingRect.x + canvasBoundingRect.width
