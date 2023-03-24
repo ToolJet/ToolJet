@@ -102,8 +102,8 @@ class ViewerComponent extends React.Component {
     if (currentUser) {
       userVars = {
         email: currentUser.email,
-        firstName: currentUser.firstName,
-        lastName: currentUser.lastName,
+        firstName: currentUser.first_name,
+        lastName: currentUser.last_name,
         groups: authenticationService.currentSessionValue?.group_permissions.map((group) => group.group),
       };
     }
@@ -270,10 +270,11 @@ class ViewerComponent extends React.Component {
         const statusCode = errorDetails.data?.statusCode;
         if (statusCode === 403) {
           const errorObj = safelyParseJSON(errorDetails.data?.message);
+          const currentSessionValue = authenticationService.currentSessionValue;
           if (
             errorObj?.organizationId &&
             this.state.currentUser &&
-            this.state.currentUser.organization_id !== errorObj?.organizationId
+            currentSessionValue.current_organization_id !== errorObj?.organizationId
           ) {
             this.switchOrganization(errorObj?.organizationId, appId, versionId);
             return;

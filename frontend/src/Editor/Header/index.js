@@ -47,8 +47,8 @@ export default function EditorHeader({
   const updatePresence = useUpdatePresence();
   useEffect(() => {
     const initialPresence = {
-      firstName: currentUser?.firstName ?? '',
-      lastName: currentUser?.lastName ?? '',
+      firstName: currentUser?.first_name ?? '',
+      lastName: currentUser?.last_name ?? '',
       email: currentUser?.email ?? '',
       image: '',
       editingVersionId: '',
