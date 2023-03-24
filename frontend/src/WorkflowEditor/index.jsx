@@ -74,7 +74,14 @@ export default function WorkflowEditor(props) {
   useEffect(() => {
     editorSession.bootupComplete && debouncedSave(editorSession, editorSessionActions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ flow: editorSession.app.flow, queries: editorSession.queries })]);
+  }, [
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    JSON.stringify({
+      nodeData: editorSession.app.flow.nodes.map((node) => [node.data, node.position]),
+      edgeData: editorSession.app.flow.edges.map((edge) => [edge.source, edge.target]),
+      queries: editorSession.queries,
+    }),
+  ]);
 
   const updateQuery = (idOnDefinition, queryChanges) => {
     const query = find(editorSession.queries, { idOnDefinition });

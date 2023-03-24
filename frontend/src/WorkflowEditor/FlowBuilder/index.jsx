@@ -26,12 +26,7 @@ function FlowBuilder(_props) {
 
   const flowElement = useRef(null);
 
-  const onNodesChange = useCallback(
-    (changes) => {
-      updateNodes(applyNodeChanges(changes, nodes));
-    },
-    [nodes, updateNodes]
-  );
+  const onNodesChange = useCallback((changes) => updateNodes(applyNodeChanges(changes, nodes)), [nodes, updateNodes]);
 
   const onEdgesChange = useCallback(
     (changes) => {
@@ -134,6 +129,7 @@ function FlowBuilder(_props) {
         zoomOnPinch={false}
         zoomOnScroll={false}
         panOnScroll={true}
+        zoomOnDoubleClick={false}
       >
         <Background />
       </ReactFlow>

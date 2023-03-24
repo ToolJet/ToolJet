@@ -6,7 +6,7 @@ export default function generateActions(dispatch) {
     updateNodes: (nodes) => dispatch({ type: 'UPDATE_NODES', payload: { nodes } }),
     updateEdges: (edges) => dispatch({ type: 'UPDATE_EDGES', payload: { edges } }),
     addNode: (node) => dispatch({ type: 'ADD_NEW_NODE', payload: { node } }),
-    updateNodeData: (id, data) => dispatch({ type: 'UPDATE_NODE', payload: { id, data } }),
+    updateNodeData: (id, data, rest = {}) => dispatch({ type: 'UPDATE_NODE', payload: { id, data, rest } }),
     addEdge: (edge) => dispatch({ type: 'ADD_NEW_EDGE', payload: { edge } }),
     removeEdge: (edge) => dispatch({ type: 'REMOVE_EDGE', payload: { edge } }),
     setEditingActivity: (editingActivity) =>

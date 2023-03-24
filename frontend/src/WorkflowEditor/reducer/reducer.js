@@ -115,7 +115,7 @@ export const reducer = (state = initialState(), { payload, type }) => {
     }
 
     case 'UPDATE_NODE': {
-      const { id, data } = payload;
+      const { id, data, rest } = payload;
       const existingNode = find(state.app.flow.nodes, { id });
 
       const newNode = {
@@ -124,6 +124,7 @@ export const reducer = (state = initialState(), { payload, type }) => {
           ...existingNode.data,
           ...data,
         },
+        ...rest,
       };
 
       const nodes = state.app.flow.nodes.map((iteratingNode) => (iteratingNode.id === id ? newNode : iteratingNode));

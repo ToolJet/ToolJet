@@ -86,33 +86,18 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   <ToolTip message="Workflows" placement="right">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="icon icon-tabler icon-tabler-ripple"
-                      width="44"
-                      height="44"
+                      className="icon icon-tabler icon-tabler-brand-tidal layout-sidebar-icon"
+                      width="24"
+                      height="24"
                       viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="#597e8d"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      fill={router.pathname === '/workflows' ? '#E6EDFE' : '#none'}
+                      stroke-width="2"
+                      stroke="#C0C8CC"
+                      fill="none"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
                     >
-                      <path
-                        stroke="none"
-                        d="M0 0h24v24H0z"
-                        fill={router.pathname === '/workflows' ? '#E6EDFE' : '#none'}
-                      />
-                      <path
-                        d="M3 7c3 -2 6 -2 9 0s6 2 9 0"
-                        fill={router.pathname === '/workflows' ? '#E6EDFE' : '#none'}
-                      />
-                      <path
-                        d="M3 17c3 -2 6 -2 9 0s6 2 9 0"
-                        fill={router.pathname === '/workflows' ? '#E6EDFE' : '#none'}
-                      />
-                      <path
-                        d="M3 12c3 -2 6 -2 9 0s6 2 9 0"
-                        fill={router.pathname === '/workflows' ? '#E6EDFE' : '#none'}
-                      />
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                      <path d="M5.333 6l3.334 3.25l3.333 -3.25l3.333 3.25l3.334 -3.25l3.333 3.25l-3.333 3.25l-3.334 -3.25l-3.333 3.25l3.333 3.25l-3.333 3.25l-3.333 -3.25l3.333 -3.25l-3.333 -3.25l-3.334 3.25l-3.333 -3.25z"></path>
                     </svg>
                   </ToolTip>
                 </Link>

@@ -185,7 +185,9 @@ const LeftSidebarDataSourcesContainer = ({
             </center>
           ) : (
             <div className="mt-2 w-80" data-cy="datasource-Label">
-              {dataSources?.map((source, idx) => renderDataSource(source, idx))}
+              {dataSources
+                ?.filter((source) => source.type != 'static')
+                ?.map((source, idx) => renderDataSource(source, idx))}
             </div>
           )}
         </div>
