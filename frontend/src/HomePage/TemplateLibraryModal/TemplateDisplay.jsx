@@ -16,8 +16,8 @@ export default function TemplateDisplay(props) {
             {sources?.map((source) => (
               <Badge
                 className="me-2"
-                variant="primary"
                 key={source.id}
+                bg={props.darkMode ? 'dark' : 'light'}
                 style={{
                   backgroundColor: '#D2DDEC',
                   color: 'black',

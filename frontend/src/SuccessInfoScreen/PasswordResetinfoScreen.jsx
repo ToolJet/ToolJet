@@ -1,7 +1,9 @@
 import React from 'react';
 import { ButtonSolid } from '@/_components/AppButton';
+import { useNavigate } from 'react-router-dom';
 
-export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props, darkMode }) {
+export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ darkMode }) {
+  const navigate = useNavigate();
   return (
     <div className="info-screen-wrapper">
       <div className="password-reset-card">
@@ -24,7 +26,7 @@ export const PasswordResetinfoScreen = function PasswordResetinfoScreen({ props,
         </p>
         <ButtonSolid
           variant="secondary"
-          onClick={() => props.history.push('/login')}
+          onClick={() => navigate('/login')}
           className="reset-password-info-btn"
           data-cy="back-to-login-button"
         >
