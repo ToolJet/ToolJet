@@ -196,6 +196,13 @@ export class AuthService {
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
         groupPermissions: await this.usersService.groupPermissions(user, manager),
         appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+        currentUser: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatarId: user.avatarId,
+        },
       });
     });
   }

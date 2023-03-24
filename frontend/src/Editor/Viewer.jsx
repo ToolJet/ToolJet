@@ -300,32 +300,31 @@ class ViewerComponent extends React.Component {
 
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
       if (currentSession?.group_permissions) {
-        authenticationService.getUserDetails().then((currentUser) => {
-          const userVars = {
-            email: currentUser.email,
-            firstName: currentUser.firstName,
-            lastName: currentUser.lastName,
-            groups: currentSession?.group_permissions?.map((group) => group.group),
-          };
+        const currentUser = currentSession.current_user;
+        const userVars = {
+          email: currentUser.email,
+          firstName: currentUser.first_name,
+          lastName: currentUser.last_name,
+          groups: currentSession?.group_permissions?.map((group) => group.group),
+        };
 
-          this.setState({
-            currentUser,
-            currentState: {
-              ...this.state.currentState,
-              globals: {
-                ...this.state.currentState.globals,
-                userVars: {
-                  email: currentUser.email,
-                  firstName: currentUser.firstName,
-                  lastName: currentUser.lastName,
-                  groups: currentSession?.group_permissions?.map((group) => group.group) || [],
-                },
+        this.setState({
+          currentUser,
+          currentState: {
+            ...this.state.currentState,
+            globals: {
+              ...this.state.currentState.globals,
+              userVars: {
+                email: currentUser.email,
+                firstName: currentUser.first_name,
+                lastName: currentUser.last_name,
+                groups: currentSession?.group_permissions?.map((group) => group.group) || [],
               },
             },
-            userVars,
-          });
-          slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
+          },
+          userVars,
         });
+        slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
       } else if (currentSession?.authentication_failed && !slug) {
         const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
         const pathname = window.public_config?.SUB_PATH

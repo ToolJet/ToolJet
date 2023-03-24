@@ -8,7 +8,12 @@ import { ToolTip } from '@/_components/ToolTip';
 import { getPrivateRoute } from '../_helpers/routes';
 
 export const Profile = function Header({ switchDarkMode, darkMode }) {
-  const [currentUser, setCurrentUser] = React.useState({ first_name: '', last_name: '', avatar_id: null });
+  const currentSession = authenticationService.currentSessionValue;
+  const [currentUser, setCurrentUser] = React.useState({
+    first_name: currentSession?.current_user.first_name,
+    last_name: currentSession?.current_user.last_name,
+    avatar_id: currentSession?.current_user.avatar_id,
+  });
   const { t } = useTranslation();
 
   function logout() {
@@ -23,7 +28,6 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
   }
 
   React.useEffect(() => {
-    getUserDetails();
     const observable = authenticationService.currentSession.subscribe((session) => {
       if (session.isUserUpdated) {
         getUserDetails();
@@ -125,9 +129,9 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
         <ToolTip message="Profile">
           <div className="d-xl-block" data-cy="profile-settings">
             <Avatar
-              avatarId={currentUser.avatar_id}
-              text={`${currentUser.first_name ? currentUser.first_name[0] : ''}${
-                currentUser.last_name ? currentUser.last_name[0] : ''
+              avatarId={currentUser?.avatar_id}
+              text={`${currentUser?.first_name ? currentUser?.first_name[0] : ''}${
+                currentUser?.last_name ? currentUser?.last_name[0] : ''
               }`}
             />
           </div>

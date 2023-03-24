@@ -162,34 +162,34 @@ class EditorComponent extends React.Component {
   }
 
   getCurrentOrganizationDetails() {
-    authenticationService.getUserDetails().then((currentUser) => {
-      this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
-        if (currentUser && currentSession?.group_permissions) {
-          const userVars = {
-            email: currentUser.email,
-            firstName: currentUser.firstName,
-            lastName: currentUser.lastName,
-            groups: currentSession.group_permissions?.map((group) => group.group),
-          };
+    const currentSession = authenticationService.currentSessionValue;
+    const currentUser = currentSession?.current_user;
+    this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
+      if (currentUser && currentSession?.group_permissions) {
+        const userVars = {
+          email: currentUser.email,
+          firstName: currentUser.first_name,
+          lastName: currentUser.last_name,
+          groups: currentSession.group_permissions?.map((group) => group.group),
+        };
 
-          this.setState({
-            currentUser,
-            currentState: {
-              ...this.state.currentState,
-              globals: {
-                ...this.state.currentState.globals,
-                userVars: {
-                  email: currentUser.email,
-                  firstName: currentUser.firstName,
-                  lastName: currentUser.lastName,
-                  groups: currentSession.group_permissions?.map((group) => group.group) || [],
-                },
+        this.setState({
+          currentUser,
+          currentState: {
+            ...this.state.currentState,
+            globals: {
+              ...this.state.currentState.globals,
+              userVars: {
+                email: currentUser.email,
+                firstName: currentUser.first_name,
+                lastName: currentUser.last_name,
+                groups: currentSession.group_permissions?.map((group) => group.group) || [],
               },
             },
-            userVars,
-          });
-        }
-      });
+          },
+          userVars,
+        });
+      }
     });
   }
 

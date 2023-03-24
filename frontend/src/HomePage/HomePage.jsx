@@ -26,9 +26,13 @@ class HomePageComponent extends React.Component {
   constructor(props) {
     super(props);
 
+    const currentSession = authenticationService.currentSessionValue;
+
     this.fileInput = React.createRef();
     this.state = {
-      currentUser: null,
+      currentUser: {
+        id: currentSession?.current_user.id,
+      },
       users: null,
       isLoading: true,
       creatingApp: false,
@@ -57,15 +61,8 @@ class HomePageComponent extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchUserDetails();
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
-  }
-
-  fetchUserDetails() {
-    authenticationService.getUserDetails().then((currentUser) => {
-      this.setState({ currentUser });
-    });
   }
 
   fetchApps = (page = 1, folder, searchKey) => {

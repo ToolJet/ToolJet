@@ -35,9 +35,9 @@ const RealtimeCursors = ({ editingVersionId, editingPageId }) => {
       };
       fileReader.readAsDataURL(blob);
     }
-    authenticationService.getUserDetails().then((currentUser) => {
-      if (currentUser.avatarId) fetchAvatar(currentUser.avatarId);
-    });
+    const currentSession = authenticationService.currentSessionValue;
+    const currentUser = currentSession?.current_user;
+    if (currentUser.avatar_id) fetchAvatar(currentUser.avatar_id);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

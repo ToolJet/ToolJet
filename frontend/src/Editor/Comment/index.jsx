@@ -30,9 +30,9 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
   React.useEffect(() => {
     // Listen for messages
     // TODO: add check if user is the initiator of this event, don't fetch data
-    authenticationService.getUserDetails().then((currentUser) => {
-      setCurrentUser(currentUser);
-    });
+    const currentSession = authenticationService.currentSessionValue;
+    const currentUser = currentSession?.current_user;
+    setCurrentUser(currentUser);
 
     socket?.addEventListener('message', function (event) {
       if (event.data === threadId) fetchData();
