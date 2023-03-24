@@ -32,7 +32,7 @@ import {
   removeSelectedComponent,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
-import ReactTooltip from 'react-tooltip';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
 import CommentNotifications from './CommentNotifications';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
@@ -53,6 +53,8 @@ import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import EditorHeader from './Header';
+import '@/_styles/editor/react-select-search.scss';
+import { withRouter } from '@/_hoc/withRouter';
 
 setAutoFreeze(false);
 enablePatches();
@@ -61,9 +63,9 @@ class EditorComponent extends React.Component {
   constructor(props) {
     super(props);
 
-    const appId = this.props.match.params.id;
+    const appId = this.props.params.id;
 
-    const pageHandle = this.props.match.params.pageHandle;
+    const pageHandle = this.props.params.pageHandle;
 
     const currentUser = authenticationService.currentUserValue;
 
@@ -174,7 +176,7 @@ class EditorComponent extends React.Component {
   componentDidMount() {
     this.autoSave();
     this.fetchApps(0);
-    this.fetchApp(this.props.match.params.pageHandle);
+    this.fetchApp(this.props.params.pageHandle);
     this.fetchOrgEnvironmentVariables();
     this.initComponentVersioning();
     this.initRealtimeSave();
@@ -309,7 +311,7 @@ class EditorComponent extends React.Component {
             () => {
               let queryState = {};
               data.data_queries.forEach((query) => {
-                if (query.plugin_id) {
+                if (query.plugin?.plugin_id) {
                   queryState[query.name] = {
                     ...query.plugin.manifest_file.data.source.exposedVariables,
                     kind: query.plugin.manifest_file.data.source.kind,
@@ -402,7 +404,7 @@ class EditorComponent extends React.Component {
   };
 
   fetchApp = (startingPageHandle) => {
-    const appId = this.props.match.params.id;
+    const appId = this.props.params.id;
 
     const callBack = async (data) => {
       let dataDefinition = defaults(data.definition, this.defaultDefinition);
@@ -837,7 +839,7 @@ class EditorComponent extends React.Component {
 
   renderDataSource = (dataSource) => {
     const sourceMeta = this.getSourceMetaData(dataSource);
-    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.icon_file?.data);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.iconFile?.data);
 
     return (
       <tr
@@ -971,7 +973,8 @@ class EditorComponent extends React.Component {
 
   renderDataQuery = (dataQuery, setSaveConfirmation, setCancelData, isDraftQuery = false) => {
     const sourceMeta = this.getSourceMetaData(dataQuery);
-    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataQuery?.plugin?.icon_file?.data);
+    const iconFile = dataQuery?.plugin?.iconFile?.data || dataQuery?.plugin?.icon_file?.data;
+    const icon = getSvgIcon(sourceMeta?.kind.toLowerCase(), 20, 20, iconFile);
 
     let isSeletedQuery = false;
     if (this.state.selectedQuery) {
@@ -1626,7 +1629,7 @@ class EditorComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    this.props.history.push(`/apps/${this.state.appId}/${handle}?${queryParamsString}`);
+    this.props.navigate(`/apps/${this.state.appId}/${handle}?${queryParamsString}`);
 
     const { globals: existingGlobals } = this.state.currentState;
 
@@ -1764,7 +1767,6 @@ class EditorComponent extends React.Component {
 
     return (
       <div className="editor wrapper">
-        <ReactTooltip type="dark" effect="solid" eventOff="click" delayShow={250} />
         <Confirm
           show={queryConfirmationList.length > 0}
           message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
@@ -2036,11 +2038,11 @@ class EditorComponent extends React.Component {
                                 onClick={() => {
                                   this.handleAddNewQuery(setSaveConfirmation, setCancelData);
                                 }}
+                                data-tooltip-id="tooltip-for-add-query"
+                                data-tooltip-content="Add new query"
                               >
                                 <span
                                   className={` d-flex query-manager-btn-svg-wrapper align-items-center query-icon-wrapper`}
-                                  data-tip="Add new query"
-                                  data-class=""
                                 >
                                   <svg
                                     width="auto"
@@ -2132,6 +2134,7 @@ class EditorComponent extends React.Component {
                     </>
                   )}
                 </QueryPanel>
+                <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
               </div>
               <div className="editor-sidebar">
                 <EditorKeyHooks
@@ -2196,4 +2199,4 @@ class EditorComponent extends React.Component {
   }
 }
 
-export const Editor = withTranslation()(EditorComponent);
+export const Editor = withTranslation()(withRouter(EditorComponent));
