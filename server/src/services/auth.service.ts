@@ -204,7 +204,7 @@ export class AuthService {
     }
   }
 
-  async signup(email: string, name: string, password: string, phoneNumber: string) {
+  async signup(email: string, name: string, password: string) {
     const existingUser = await this.usersService.findByEmail(email);
     if (existingUser?.organizationUsers?.some((ou) => ou.status === WORKSPACE_USER_STATUS.ACTIVE)) {
       throw new NotAcceptableException('Email already exists');
@@ -252,7 +252,6 @@ export class AuthService {
         {
           email,
           password,
-          phoneNumber,
           ...(names.firstName && { firstName: names.firstName }),
           ...(names.lastName && { lastName: names.lastName }),
           ...getUserStatusAndSource(lifecycleEvents.USER_SIGN_UP),
@@ -308,7 +307,7 @@ export class AuthService {
   }
 
   async setupAdmin(userCreateDto: CreateAdminDto): Promise<any> {
-    const { companyName, companySize, name, role, workspace, password, email } = userCreateDto;
+    const { companyName, companySize, name, role, workspace, password, email, phoneNumber } = userCreateDto;
 
     const nameObj = this.splitName(name);
 
@@ -325,6 +324,7 @@ export class AuthService {
           companyName,
           companySize,
           role,
+          phoneNumber,
         },
         organization.id,
         ['all_users', 'admin'],
@@ -342,7 +342,7 @@ export class AuthService {
   }
 
   async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
-    const { companyName, companySize, token, role, organizationToken, password, source } = userCreateDto;
+    const { companyName, companySize, token, role, organizationToken, password, source, phoneNumber } = userCreateDto;
 
     if (!token) {
       throw new BadRequestException('Invalid token');
@@ -385,6 +385,7 @@ export class AuthService {
             ...(role ? { role } : {}),
             companySize,
             companyName,
+            phoneNumber,
             invitationToken: null,
             ...(isPasswordMandatory(user.source) ? { password } : {}),
             ...lifecycleParams,

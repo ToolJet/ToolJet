@@ -25,11 +25,6 @@ export class AppSignupDto {
   email: string;
 
   @IsString()
-  @IsPhoneNumber()
-  @IsOptional()
-  phoneNumber: string;
-
-  @IsString()
   @IsNotEmpty()
   @MinLength(5, { message: 'Password should contain more than 5 letters' })
   password: string;

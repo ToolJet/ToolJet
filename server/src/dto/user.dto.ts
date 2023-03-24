@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNotEmpty, MinLength, IsEmail } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, MinLength, IsEmail, IsPhoneNumber } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { lowercaseString, sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
@@ -21,6 +21,11 @@ export class CreateUserDto {
   @IsNotEmpty()
   @MinLength(5, { message: 'Password should contain more than 5 letters' })
   password: string;
+
+  @IsString()
+  @IsPhoneNumber()
+  @IsOptional()
+  phoneNumber: string;
 
   @IsString()
   @IsOptional()
@@ -68,6 +73,11 @@ export class CreateAdminDto {
   @IsNotEmpty()
   @MinLength(5, { message: 'Password should contain more than 5 letters' })
   password: string;
+
+  @IsString()
+  @IsPhoneNumber()
+  @IsOptional()
+  phoneNumber: string;
 
   @IsString()
   @IsOptional()
