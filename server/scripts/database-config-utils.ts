@@ -94,7 +94,7 @@ function validateDatabaseConfig(dbConfig: any): Joi.ValidationResult {
       PG_USER: Joi.string().required(),
       PG_DB: Joi.string().default('tooljet_production'),
       PG_DB_OWNER: Joi.string().default('true'),
-      ...((dbConfig.ENABLE_TOOLJET_DB === 'true') && {
+      ...(dbConfig.ENABLE_TOOLJET_DB === 'true' && {
         TOOLJET_DB_HOST: Joi.string().default('localhost'),
         TOOLJET_DB_PORT: Joi.number().positive().default(5432),
         TOOLJET_DB_PASS: Joi.string().default(''),
