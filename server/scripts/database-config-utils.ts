@@ -31,8 +31,8 @@ export function getEnvVars() {
 }
 
 function buildDbConfigFromDatabaseURL(data): any {
-  const config = buildDbConfigFromUrl(data.DATABASE_URL)
-  const TJDBconfig = buildDbConfigFromUrl(data.TOOLJET_DB_URL)
+  const config = buildDbConfigFromUrl(data.DATABASE_URL);
+  const TJDBconfig = buildDbConfigFromUrl(data.TOOLJET_DB_URL);
 
   const { value: dbConfig, error } = validateDatabaseConfig({
     DATABASE_URL: data.DATBASE_URL,
@@ -54,9 +54,7 @@ function buildDbConfigFromDatabaseURL(data): any {
   if (error) {
     throw new Error(`Config validation error: ${error.message}`);
   }
-
   return removeEmptyKeys(dbConfig);
-
 }
 
 function buildDbConfigFromUrl(dbURL): any {
