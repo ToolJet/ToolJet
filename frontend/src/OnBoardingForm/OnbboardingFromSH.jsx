@@ -61,6 +61,7 @@ function OnbboardingFromSH({ darkMode }) {
           authenticationService.deleteLoginOrganizationId();
           setIsLoading(false);
           navigate('/');
+          setCompleted(false);
         })
         .catch((res) => {
           setIsLoading(false);

@@ -54,6 +54,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           authenticationService.deleteLoginOrganizationId();
           setIsLoading(false);
           navigate('/');
+          setCompleted(false);
         })
         .catch((res) => {
           setIsLoading(false);
