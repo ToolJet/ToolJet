@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNotEmpty, MinLength, IsEmail, IsPhoneNumber } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, MinLength, IsEmail } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { lowercaseString, sanitizeInput } from 'src/helpers/utils.helper';
 import { PartialType } from '@nestjs/mapped-types';
@@ -23,7 +23,6 @@ export class CreateUserDto {
   password: string;
 
   @IsString()
-  @IsPhoneNumber()
   @IsOptional()
   phoneNumber: string;
 
@@ -75,7 +74,6 @@ export class CreateAdminDto {
   password: string;
 
   @IsString()
-  @IsPhoneNumber()
   @IsOptional()
   phoneNumber: string;
 
