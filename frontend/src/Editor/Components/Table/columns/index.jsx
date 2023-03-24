@@ -57,7 +57,7 @@ export default function generateColumnsData({
     const width = columnSize || defaultColumn.width;
     return {
       id: column.id,
-      Header: resolveReferences(column.name, currentState),
+      Header: resolveReferences(column.name, currentState) ?? '',
       accessor: column.key || column.name,
       filter: customFilter,
       width: width,
