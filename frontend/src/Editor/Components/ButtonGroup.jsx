@@ -36,7 +36,8 @@ export const ButtonGroup = function Button({
   const [defaultActive, setDefaultActive] = useState(defaultSelected);
   const [data, setData] = useState(
     // eslint-disable-next-line no-unsafe-optional-chaining
-    values.length <= labels.length ? [...labels, ...values.slice(labels.length)] : labels
+    // values.length <= labels.length ? [...labels, ...values.slice(labels.length)] : labels
+    values?.length <= labels?.length ? [...labels, ...values?.slice(labels?.length)] : labels
   );
   // data is used as state to show what to display , club of label+values / values
   useEffect(() => {
@@ -45,13 +46,11 @@ export const ButtonGroup = function Button({
   }, [JSON.stringify(defaultSelected)]);
 
   useEffect(() => {
-    if (!_.isEmpty(labels) && labels.length <= values.length) {
+    if (labels?.length < values?.length) {
       // eslint-disable-next-line no-unsafe-optional-chaining
-      setData([...labels, ...values.slice(labels.length)]);
-    } else if (labels.length > values.length) {
-      setData([...labels.slice(0, values.length), ...values.slice(labels.length)]);
+      setData([...labels, ...values?.slice(labels?.length)]);
     } else {
-      setData([...labels, ...values]);
+      setData(labels);
     }
   }, [JSON.stringify(labels), JSON.stringify(values)]);
 
