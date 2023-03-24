@@ -31,8 +31,8 @@ export function getEnvVars() {
 }
 
 function buildDbConfigFromDatabaseURL(data): any {
-  const config = buildDbConfigFromUrl(data.DATABASE_URL)
-  const TJDBconfig = buildDbConfigFromUrl(data.TOOLJET_DB_URL)
+  const config = buildDbConfigFromUrl(data.DATABASE_URL);
+  const TJDBconfig = buildDbConfigFromUrl(data.TOOLJET_DB_URL);
 
   const { value: dbConfig, error } = validateDatabaseConfig({
     DATABASE_URL: data.DATBASE_URL,
@@ -54,9 +54,7 @@ function buildDbConfigFromDatabaseURL(data): any {
   if (error) {
     throw new Error(`Config validation error: ${error.message}`);
   }
-
   return removeEmptyKeys(dbConfig);
-
 }
 
 function buildDbConfigFromUrl(dbURL): any {
@@ -94,7 +92,7 @@ function validateDatabaseConfig(dbConfig: any): Joi.ValidationResult {
       PG_USER: Joi.string().required(),
       PG_DB: Joi.string().default('tooljet_production'),
       PG_DB_OWNER: Joi.string().default('true'),
-      ...((dbConfig.ENABLE_TOOLJET_DB === 'true') && {
+      ...(dbConfig.ENABLE_TOOLJET_DB === 'true' && {
         TOOLJET_DB_HOST: Joi.string().default('localhost'),
         TOOLJET_DB_PORT: Joi.number().positive().default(5432),
         TOOLJET_DB_PASS: Joi.string().default(''),
