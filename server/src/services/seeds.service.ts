@@ -4,8 +4,10 @@ import { User } from '../entities/user.entity';
 import { Organization } from '../entities/organization.entity';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class SeedsService {
@@ -53,6 +55,8 @@ export class SeedsService {
         status: WORKSPACE_USER_STATUS.ACTIVE,
       });
 
+      await this.createDefaultEnvironments(organization.id, manager);
+
       await manager.save(organizationUser);
 
       await this.createDefaultUserGroups(manager, user);
@@ -92,5 +96,20 @@ export class SeedsService {
     });
 
     await manager.save(userGroupPermission);
+  }
+
+  async createDefaultEnvironments(organizationId: string, manager: EntityManager) {
+    await Promise.all(
+      defaultAppEnvironments.map(async (en) => {
+        const env = manager.create(AppEnvironment, {
+          organizationId: organizationId,
+          name: en.name,
+          isDefault: en.isDefault,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await manager.save(env);
+      })
+    );
   }
 }

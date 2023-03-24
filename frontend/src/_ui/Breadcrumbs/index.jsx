@@ -27,4 +27,5 @@ const routes = [
   // { path: '/', breadcrumb: 'Apps' },
   { path: '/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
+  { path: '/global-datasources', breadcrumb: 'Global Datasources' },
 ];
