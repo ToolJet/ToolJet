@@ -67,7 +67,6 @@ const UsersTable = ({
                         <Skeleton />
                       </td>
                     </tr>
-                    <hr />
                   </>
                 ))}
               </tbody>
