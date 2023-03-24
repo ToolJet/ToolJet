@@ -54,7 +54,7 @@ function OnbboardingFromSH({ darkMode }) {
           name: formData?.name,
           email: formData?.email,
           workspace: formData?.workspace,
-          phoneNumber: formData.phoneNumber,
+          phoneNumber: `+${formData.phoneNumber}`,
         })
         .then((user) => {
           authenticationService.updateUser(user);
