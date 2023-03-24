@@ -47,7 +47,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           token: token,
           organizationToken: organizationToken,
           ...(password?.length > 0 && { password }),
-          phoneNumber: formData?.phoneNumbe && `+${formData.phoneNumber}`,
+          phoneNumber: formData?.phoneNumber,
         })
         .then((user) => {
           authenticationService.updateUser(user);
@@ -58,6 +58,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
         })
         .catch((res) => {
           setIsLoading(false);
+          setCompleted(false);
           toast.error(res.error || 'Something went wrong', {
             id: 'toast-login-auth-error',
             position: 'top-center',

@@ -48,7 +48,7 @@ function ContinueButtonSelfHost({
             return;
           }
         }
-        page != 5 && setPage((currPage) => currPage + 1);
+        if (page < 5) setPage((currPage) => currPage + 1);
         if (page == 5) {
           setIsLoading(true);
           setCompleted(true);
@@ -75,7 +75,7 @@ function ContinueButtonSelfHost({
             return;
           }
         }
-        page != 5 && setPage((currPage) => currPage + 1);
+        if (page < 5) setPage((currPage) => currPage + 1);
         if (page == 5) {
           setIsLoading(true);
           setCompleted(true);

@@ -115,7 +115,7 @@ function onboarding({ companyName, companySize, role, token, organizationToken, 
       ...(organizationToken?.length > 0 && { organizationToken }),
       ...(source?.length > 0 && { source }),
       ...(password?.length > 0 && { password }),
-      ...(phoneNumber?.length > 0 && { phoneNumber }),
+      ...(phoneNumber?.length > 0 && { phoneNumber: `+${phoneNumber}` }),
     }),
   };
 
@@ -137,7 +137,7 @@ function setupAdmin({ companyName, companySize, name, role, workspace, password,
       workspace,
       email,
       password,
-      phoneNumber,
+      ...(phoneNumber?.length > 0 && { phoneNumber: `+${phoneNumber}` }),
     }),
   };
   return fetch(`${config.apiUrl}/setup-admin`, requestOptions)

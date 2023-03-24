@@ -13,7 +13,7 @@ function ContinueButton({ setPage, formData, page, setCompleted, isLoading, setI
   useEffect(() => {
     const keyDownHandler = (event) => {
       if (event.key === 'Enter' && !activeCondition) {
-        setPage((currPage) => currPage + 1);
+        if (page < 3) setPage((currPage) => currPage + 1);
         if (page == 3) {
           setIsLoading(true);
           setCompleted(true);
@@ -33,7 +33,7 @@ function ContinueButton({ setPage, formData, page, setCompleted, isLoading, setI
       disabled={activeCondition}
       onClick={(e) => {
         e.preventDefault();
-        setPage((currPage) => currPage + 1);
+        if (page < 3) setPage((currPage) => currPage + 1);
         if (page == 3) {
           setIsLoading(true);
           setCompleted(true);
