@@ -258,7 +258,7 @@ class TableComponent extends React.Component {
             <label className="form-label">{this.props.t('widget.Table.columnValue', 'Column value')}</label>
             <CodeHinter
               currentState={this.props.currentState}
-              initialValue={column.columnValue ?? `${column.value}`}
+              initialValue={column.columnValue ? column.columnValue : ''}
               theme={this.props.darkMode ? 'monokai' : 'default'}
               mode="javascript"
               lineNumbers={false}
