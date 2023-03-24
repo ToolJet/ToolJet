@@ -894,7 +894,7 @@ export function Table({
                         ? resolveReferences(cell.column.columnValue, currentState, '', {
                             cellValue: cell.value,
                             rowData,
-                          })
+                          }) ?? cell.value
                         : cell.value;
                       const cellValue = rowChangeSet
                         ? rowChangeSet[cell.column.key || cell.column.name] || value
