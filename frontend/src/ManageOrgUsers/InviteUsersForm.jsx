@@ -166,22 +166,6 @@ function InviteUsersForm({
                 >
                   {/* <form className="upload-user-form"> */}
                   <div className="form-group mb-3 ">
-                    <input
-                      ref={inputRef}
-                      id="input-file-upload"
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (Math.round(file.size / 1024) > 1024) {
-                          toast.error('File size cannot exceed more than 1MB');
-                          e.target.value = null;
-                        } else {
-                          handleFileChange(e);
-                        }
-                      }}
-                      accept=".csv"
-                      type="file"
-                      className="form-control"
-                    />
                     <label
                       id="label-file-upload"
                       htmlFor="input-file-upload"

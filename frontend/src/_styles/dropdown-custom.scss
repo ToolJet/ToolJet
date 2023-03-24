@@ -1,0 +1,42 @@
+
+
+.users-filter-dropdown,.select-folder-container {
+ .css-ell65w-control
+    {
+    gap: 17px;
+    background-color: var(--base) !important;
+    border: 1px solid var(--slate7) !important;
+    border-radius: 6px;
+
+    }
+    .css-1u65qca-control{
+        background-color: var(--base);
+        &:hover,&:focus-visible,&:active{
+            border: 1px solid #3E63DD;
+            box-shadow: 0px 0px 0px 2px #C6D4F9;
+            border-radius: 6px;
+        }
+    }
+}
+.css-1u65qca-control{
+    background: var(--base);
+}
+
+    .css-169zxdi-MenuList{   
+         background-color: var(--base) !important;
+         border: 1px solid #202425 !important;
+        box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03) !important;
+        border-radius: 6px;
+
+        div{
+            background-color: var(--base) !important;
+            &:hover{
+                background-color: rgb(32, 36, 37) !important;
+            }
+        }
+    }
+
+
+.css-szmh3y-control{
+    width: 268px !important;
+}

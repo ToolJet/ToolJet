@@ -491,7 +491,7 @@ class HomePageComponent extends React.Component {
 
                   <span>{this.props.t('homePage.appCard.to', 'to')}</span>
                 </div>
-                <div data-cy="select-folder">
+                <div data-cy="select-folder" className="select-folder-container">
                   <Select
                     options={this.state.folders.map((folder) => {
                       return { name: folder.name, value: folder.id };
@@ -618,8 +618,8 @@ class HomePageComponent extends React.Component {
                 canUpdateFolder={this.canUpdateFolder()}
                 darkMode={this.props.darkMode}
               />
+              <OrganizationList />
             </div>
-            <OrganizationList />
 
             <div
               className={cx('col home-page-content', {

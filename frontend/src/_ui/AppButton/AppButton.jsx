@@ -45,7 +45,7 @@ export const ButtonBase = function ButtonBase(props) {
         </span>
       )}
       {isLoading ? (
-        <div className="m-auto spinner">
+        <div className="spinner">
           <Spinner />
         </div>
       ) : (

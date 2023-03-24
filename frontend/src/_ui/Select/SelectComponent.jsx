@@ -53,7 +53,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
   };
 
   return (
-    <>
+    <div style={{ width: width }}>
       <Select
         className={`react-select-container ${darkMode && ' dark-theme'}`}
         {...restProps}
@@ -71,9 +71,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
         maxMenuHeight={maxMenuHeight}
         menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
         closeMenuOnSelect={closeMenuOnSelect ?? false}
-        blurInputOnSelect={false}
-        unstyled={true}
       />
-    </>
+    </div>
   );
 };

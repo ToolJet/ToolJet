@@ -118,7 +118,7 @@ export const CustomSelect = ({ ...props }) => {
       ) : (
         <Select
           className={`react-select-container ${darkMode && 'dark-theme'}`}
-          width={'100%'}
+          width={'282px'}
           hasSearch={false}
           components={{ Menu, SingleValue }}
           setShowEditOrg={setShowEditOrg}
