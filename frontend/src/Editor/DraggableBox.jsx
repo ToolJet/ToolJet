@@ -187,7 +187,14 @@ export const DraggableBox = function DraggableBox({
 
   return (
     <div
-      className={inCanvas ? '' : 'col-md-4 text-center align-items-center clearfix mb-2'}
+      className={
+        inCanvas
+          ? ''
+          : cx('text-center align-items-center clearfix mb-2', {
+              'col-md-4': component.component !== 'KanbanBoard',
+              'd-none': component.component === 'KanbanBoard',
+            })
+      }
       style={!inCanvas ? {} : { width: computeWidth() }}
     >
       {inCanvas ? (
@@ -204,6 +211,10 @@ export const DraggableBox = function DraggableBox({
           }}
           onMouseLeave={() => onComponentHover?.(false)}
           style={getStyles(isDragging, isSelectedComponent)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedComponent && setSelectedComponent(id);
+          }}
         >
           <Rnd
             style={{ ...style }}

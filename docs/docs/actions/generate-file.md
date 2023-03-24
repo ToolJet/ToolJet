@@ -15,6 +15,7 @@ Presently, the only file type supported is `CSV`.
 | Type   | Type of file to be generated |
 | File name | Name of the file to be generated |
 | Data | Data that will be used to construct the file. Its format will depend on the file type, as specified in the following section |
+| Debounce | Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300` |
 
 ### Data format for CSV
 

@@ -329,6 +329,7 @@ export default function generateColumnsData({
                   }}
                   darkMode={darkMode}
                   isEditable={isEditable}
+                  width={width}
                 />
               </div>
             );

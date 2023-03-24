@@ -65,6 +65,7 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout
       <svg
         onClick={handleUndo}
         xmlns="http://www.w3.org/2000/svg"
+        data-cy={`editor-undo-button`}
         className={cx('undo-button cursor-pointer icon icon-tabler icon-tabler-arrow-back-up', {
           disabled: !canUndo,
         })}
@@ -90,6 +91,7 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout
         title="redo"
         onClick={handleRedo}
         xmlns="http://www.w3.org/2000/svg"
+        data-cy={`editor-redo-button`}
         className={cx('redo-button cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
           disabled: !canRedo,
         })}
