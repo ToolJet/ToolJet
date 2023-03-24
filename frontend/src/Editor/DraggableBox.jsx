@@ -211,6 +211,10 @@ export const DraggableBox = function DraggableBox({
           }}
           onMouseLeave={() => onComponentHover?.(false)}
           style={getStyles(isDragging, isSelectedComponent)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedComponent && setSelectedComponent(id);
+          }}
         >
           <Rnd
             style={{ ...style }}
