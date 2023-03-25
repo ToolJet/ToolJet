@@ -122,6 +122,7 @@ export function Table({
 
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
   const [hoverAdded, setHoverAdded] = useState(false);
+  const [generatedColumn, setGeneratedColumn] = useState([]);
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
   const mounted = useMounted();
@@ -287,10 +288,12 @@ export function Table({
 
   let tableData = [],
     dynamicColumn = [];
+
+  const useDynamicColumn = resolveReferences(component.definition.properties?.useDynamicColumn?.value);
   if (currentState) {
     tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
-    dynamicColumn = resolveReferences(component.definition.properties?.useDynamicColumn?.value)
-      ? resolveReferences(component.definition.properties?.columnData?.value, currentState, [])
+    dynamicColumn = useDynamicColumn
+      ? resolveReferences(component.definition.properties?.columnData?.value, currentState, []) ?? []
       : [];
     if (!Array.isArray(tableData)) tableData = [];
   }
@@ -300,7 +303,7 @@ export function Table({
   const tableRef = useRef();
 
   const columnData = generateColumnsData({
-    columnProperties: component.definition.properties.columns.value,
+    columnProperties: generatedColumn.length > 0 ? generatedColumn : component.definition.properties.columns.value,
     columnSizes,
     currentState,
     handleCellValueChange,
@@ -356,8 +359,6 @@ export function Table({
     ] // Hack: need to fix
   );
 
-  console.log('columns--- ', columns);
-
   const data = useMemo(
     () => tableData,
     [
@@ -371,13 +372,14 @@ export function Table({
   useEffect(() => {
     if (tableData.length != 0 && component.definition.properties.autogenerateColumns?.value && mode === 'edit') {
       const prevColumn = prevDynamicColumn.current.length > 0 && dynamicColumn.length === 0;
-      autogenerateColumns(
+      const generatedColumnFromData = autogenerateColumns(
         tableData,
         prevColumn ? [] : component.definition.properties.columns.value,
         component.definition.properties?.columnDeletionHistory?.value ?? [],
         dynamicColumn,
         setProperty
       );
+      useDynamicColumn && dynamicColumn.length > 0 && setGeneratedColumn(generatedColumnFromData);
       prevDynamicColumn.current = [...dynamicColumn];
     }
   }, [JSON.stringify(tableData), JSON.stringify(dynamicColumn)]);
