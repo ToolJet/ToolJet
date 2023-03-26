@@ -223,6 +223,7 @@ export const Folders = function Folders({
                 'bg-dark-indigo': !activeFolder.id && darkMode,
               }
             )}
+            style={{ height: '32px' }}
             onClick={() => handleFolderChange({})}
             data-cy="all-applications-link"
           >

@@ -15,6 +15,8 @@ function Header() {
         return 'Tables';
       case '/workspace-settings':
         return 'Workspace settings';
+      case '/global-datasources':
+        return 'Datasources';
       default:
         return;
     }

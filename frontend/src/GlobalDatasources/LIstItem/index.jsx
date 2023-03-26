@@ -1,11 +1,11 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import cx from 'classnames';
 import { GlobalDataSourcesContext } from '..';
 import { DataSourceTypes } from '../../Editor/DataSourceManager/SourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 
-export const ListItem = ({ dataSource, key, active, onDelete }) => {
+export const ListItem = ({ dataSource, key, active, onDelete, updateSidebarNAV }) => {
   const { setSelectedDataSource, toggleDataSourceManagerModal } = useContext(GlobalDataSourcesContext);
 
   const getSourceMetaData = (dataSource) => {
@@ -23,6 +23,10 @@ export const ListItem = ({ dataSource, key, active, onDelete }) => {
     const element = document.getElementsByClassName('form-control-plaintext form-control-plaintext-sm')[0];
     element.focus();
   };
+  useEffect(() => {
+    if (active) updateSidebarNAV(dataSource?.name);
+    else if (dataSource?.lenght == 0) updateSidebarNAV('');
+  }, []);
 
   return (
     <div
@@ -37,6 +41,7 @@ export const ListItem = ({ dataSource, key, active, onDelete }) => {
           setSelectedDataSource(dataSource);
           toggleDataSourceManagerModal(true);
           focusModal();
+          updateSidebarNAV(dataSource?.name);
         }}
         className="col d-flex align-items-center"
       >

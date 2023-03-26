@@ -11,7 +11,7 @@ const ManageOrgUsersDrawer = ({
   fields,
   handleFileChange,
   uploadingUsers,
-  setState,
+  onCancel,
   inviteBulkUsers,
 }) => {
   return (
@@ -27,9 +27,9 @@ const ManageOrgUsersDrawer = ({
           changeNewUserOption={changeNewUserOption}
           errors={errors}
           fields={fields}
-          handleChange={handleFileChange}
+          handleFileChange={handleFileChange}
           uploadingUsers={uploadingUsers}
-          setState={setState}
+          onCancel={onCancel}
           inviteBulkUsers={inviteBulkUsers}
           onClose={() => setIsInviteUsersDrawerOpen(false)}
         />

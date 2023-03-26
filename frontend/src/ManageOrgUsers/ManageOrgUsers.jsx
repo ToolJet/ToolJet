@@ -245,6 +245,13 @@ class ManageOrgUsersComponent extends React.Component {
     this.setState({ isInviteUsersDrawerOpen: val });
   };
 
+  onCancel = () => {
+    this.setState({
+      errors: {},
+      file: null,
+    });
+  };
+
   render() {
     const { isLoading, uploadingUsers, users, archivingUser, unarchivingUser, meta } = this.state;
     return (
@@ -260,7 +267,7 @@ class ManageOrgUsersComponent extends React.Component {
               fields={this.state.fields}
               handleFileChange={this.handleFileChange}
               uploadingUsers={uploadingUsers}
-              setState={this.setState}
+              onCancel={this.onCancel}
               inviteBulkUsers={this.inviteBulkUsers}
             />
           )}

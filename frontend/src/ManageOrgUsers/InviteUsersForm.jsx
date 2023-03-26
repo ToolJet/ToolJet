@@ -1,34 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
-
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '../_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
 
 function InviteUsersForm({
-  props,
   onClose,
   createUser,
   changeNewUserOption,
   errors,
   fields,
-  handleChange,
+  handleFileChange,
   uploadingUsers,
-  setState,
+  onCancel,
   inviteBulkUsers,
 }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(1);
   const hiddenFileInput = React.useRef(null);
-
-  const handleFileChange = function (file) {
-    // e.preventDefault();
-    // if (e.target.files && e.target.files[0]) {
-    //   console.log('xxx', e.target.files);
-    handleChange(file);
-    // }
-  };
   const handleClick = (event) => {
     hiddenFileInput.current.click();
   };
@@ -130,7 +120,6 @@ function InviteUsersForm({
                     </ButtonSolid>
                   </div>
                 </div>
-                {/* <form onSubmit={inviteBulkUsers} noValidate className="upload-user-form"> */}
                 <form onSubmit={inviteBulkUsers} noValidate className="upload-user-form" id="inviteBulkUsers">
                   <div className="form-group mb-3 ">
                     <div>
@@ -170,11 +159,8 @@ function InviteUsersForm({
             <ButtonSolid
               data-cy="cancel-button"
               onClick={() => {
+                onCancel();
                 onClose();
-                setState({
-                  errors: {},
-                  file: null,
-                });
               }}
               variant="tertiary"
             >

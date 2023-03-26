@@ -6,6 +6,8 @@ import { ListItem } from '../LIstItem';
 import { ConfirmDialog } from '@/_components';
 import { globalDatasourceService } from '@/_services';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
+import { OrganizationList } from '@/_components/OrganizationManager/List';
+import { BreadCrumbContext } from '@/App/App';
 
 export const List = () => {
   const { dataSources, fetchDataSources, selectedDataSource, setSelectedDataSource, toggleDataSourceManagerModal } =
@@ -16,6 +18,7 @@ export const List = () => {
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
     fetchDataSources(true)
@@ -27,6 +30,10 @@ export const List = () => {
         toast.error('Failed to fetch datasources');
         return;
       });
+  }, []);
+
+  useEffect(() => {
+    if (dataSources?.length == 0) updateSidebarNAV('');
   }, []);
 
   const deleteDataSource = (selectedSource) => {
@@ -76,24 +83,28 @@ export const List = () => {
 
   return (
     <>
-      <div className="list-group mb-3">
+      <div className="list-group">
         {loading && <Skeleton count={3} height={22} />}
         {!loading && (
-          <div className="mt-2 w-100" data-cy="datasource-Label">
+          <div className="w-100 datasource-inner-sidebar-wrap" data-cy="datasource-Label">
             {dataSources?.length ? (
-              dataSources?.map((source, idx) => (
-                <ListItem
-                  dataSource={source}
-                  key={idx}
-                  active={selectedDataSource?.id === source?.id}
-                  onDelete={deleteDataSource}
-                />
-              ))
+              dataSources?.map((source, idx) => {
+                return (
+                  <ListItem
+                    dataSource={source}
+                    key={idx}
+                    active={selectedDataSource?.id === source?.id}
+                    onDelete={deleteDataSource}
+                    updateSidebarNAV={updateSidebarNAV}
+                  />
+                );
+              })
             ) : (
               <EmptyState />
             )}
           </div>
         )}
+        <OrganizationList />
       </div>
       <ConfirmDialog
         show={isDeleteModalVisible}

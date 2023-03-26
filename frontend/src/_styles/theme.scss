@@ -9625,6 +9625,10 @@ tbody {
   grid-template-rows: auto 1fr auto;
 }
 
+.datasource-inner-sidebar-wrap {
+  min-height: calc(100vh - 182px);
+}
+
 .folder-list-group-item {
   color: var(--slate12) !important;
 }

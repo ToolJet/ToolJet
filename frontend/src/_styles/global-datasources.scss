@@ -2,9 +2,10 @@
 @import "./designtheme.scss";
 
 .global-datasources-sidebar {
-    height: calc(100vh - 48px);
+    height: calc(100vh - 64px);
     max-width: 288px;
-    overflow-y: scroll;
+    overflow-y: auto;
+    background: var(--base);
 
     .add-datasource-btn {
         height: 32px;
@@ -66,6 +67,7 @@
 
 .datasource-modal-container {
     position: relative;
+    background: var(--slate2);
 
     .modal {
         position: absolute;
@@ -73,11 +75,13 @@
 
     .modal-content {
         border: 1px solid var(--slate5);
+
         .input-icon {
             &:hover {
                 input {
                     padding-right: 2rem !important;
                 }
+
                 .input-icon-addon {
                     justify-content: flex-end;
                 }

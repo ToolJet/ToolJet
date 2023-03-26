@@ -71,55 +71,26 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </ToolTip>
                 </li>
                 {/* DATASOURCES */}
-                {/* <li className="text-center  cursor-pointer">
-                  <ToolTip message="Datasource" placement="right">
-                    <Link
-                      to="/datasources"
-                      className={`tj-leftsidebar-icon-items  ${
-                        router.pathname === '/datasources' && `current-seleted-route`
-                      }`}
-                    >
-                      <SolidIcon
-                        name="datasource"
-                        fill={router.pathname === '/datasources' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
-                      />
-                    </Link>
-                  </ToolTip>
-                </li> */}
+
                 {admin && (
                   <li className="text-centercursor-pointer">
                     <Link
                       to="/global-datasources"
                       className={`tj-leftsidebar-icon-items  ${
-                        router.pathname === '/datasources' && `current-seleted-route`
+                        router.pathname === '/global-datasources' && `current-seleted-route`
                       }`}
                     >
                       <ToolTip message="Global Datasources" placement="right">
                         <SolidIcon
                           name="datasource"
-                          fill={router.pathname === '/datasources' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
+                          fill={
+                            router.pathname === '/global-datasources' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'
+                          }
                         />
                       </ToolTip>
                     </Link>
                   </li>
                 )}
-                {/* <li className="m-auto"> */}
-                {/* INSTANCE SETTINGS */}
-                <li className="text-center  cursor-pointer ">
-                  <ToolTip message="Instance settings" placement="right">
-                    <Link
-                      to="/instance-settings"
-                      className={`tj-leftsidebar-icon-items  ${
-                        router.pathname === '/instance-settings' && `current-seleted-route`
-                      }`}
-                    >
-                      <SolidIcon
-                        name="server"
-                        fill={router.pathname === '/instance-settings' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
-                      />
-                    </Link>
-                  </ToolTip>
-                </li>
                 <li className="tj-leftsidebar-icon-items-bottom text-center">
                   <NotificationCenter darkMode={darkMode} />
                   <div className="cursor-pointer  tj-leftsidebar-icon-items" onClick={() => switchDarkMode(!darkMode)}>
