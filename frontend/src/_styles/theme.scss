@@ -5,10 +5,10 @@
 @import "./queryManager.scss";
 @import "./onboarding.scss";
 @import "./components.scss";
+@import "./global-datasources.scss";
 @import "./typography.scss";
 @import "./designtheme.scss";
 @import "./dropdown-custom.scss";
-
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,400;1,500;1,600;1,700&display=swap');
 // variables
 $border-radius: 4px;
@@ -1330,7 +1330,6 @@ button {
   -moz-appearance: none;
   appearance: none;
   border-radius: $border-radius  !important;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .select-search__input::-webkit-search-decoration,
@@ -1573,7 +1572,6 @@ button {
   padding: 0 16px;
   background-color: $dark-background  !important;
   color: #ffffff !important;
-  border: none;
   outline: none;
   font-family: "Roboto", sans-serif;
   font-size: 14px;
@@ -4523,6 +4521,37 @@ input[type="text"] {
 //   @extend .modal-content.home-modal-component.dark;
 // }
 
+// .modal-content.home-modal-component.dark {
+//   background-color: $bg-dark-light !important;
+//   color: $white !important;
+
+//   .modal-header {
+//     background-color: $bg-dark-light !important;
+//   }
+
+//   .btn-close {
+//     filter: brightness(0) invert(1);
+//   }
+
+//   .form-control {
+//     border-color: $border-grey-dark !important;
+//     color: inherit;
+//   }
+
+//   input {
+//     background-color: $bg-dark-light !important;
+//   }
+
+//   .form-select {
+//     background-color: $bg-dark !important;
+//     color: $white !important;
+//     border-color: $border-grey-dark !important;
+//   }
+
+//   .text-muted {
+//     color: $white !important;
+//   }
+// }
 
 .radio-img {
   input {
@@ -7738,6 +7767,10 @@ tbody {
   }
 }
 
+.datasources-category {
+  color: var(--slate10);
+}
+
 .react-tooltip {
   font-size: .765625rem !important;
 }
@@ -9890,4 +9923,60 @@ tbody {
 
 .upload-user-form span.file-upload-error {
   color: var(--tomato10) !important;
+}
+
+.tj-onboarding-phone-input {
+  width: 392px !important;
+  height: 40px;
+  padding: 8px 12px;
+  gap: 8px;
+  margin-bottom: 12px;
+  background: #FFFFFF;
+  border: 1px solid #D7DBDF !important;
+  border-radius: 0px 4px 4px 0px !important;
+
+  &:hover {
+    border: 1px solid #466BF2 !important;
+  }
+}
+
+.tj-onboarding-phone-input-wrapper {
+  margin-bottom: 12px;
+}
+
+.theme-dark {
+  .tj-onboarding-phone-input-wrapper {
+    .flag-dropdown {
+      background-color: #1f2936 !important;
+
+      .country-list {
+        background-color: #1f2936 !important;
+        background: #1f2936;
+
+        li {
+          .country .highlight {
+            background-color: #3a3f42;
+            color: #000 !important;
+
+            div {
+              .country-name {
+                color: #6b6b6b !important;
+              }
+            }
+
+          }
+
+          &:hover {
+            background-color: #2b2f31;
+          }
+
+        }
+      }
+    }
+
+  }
+
+  .react-tel-input .country-list .country.highlight {
+    color: #6b6b6b;
+  }
 }
