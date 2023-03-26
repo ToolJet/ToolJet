@@ -16,8 +16,8 @@ const FloppyDisk = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = 
     />
     <path d="M7 16V22H17V16C17 14.8954 16.1046 14 15 14H9C7.89543 14 7 14.8954 7 16Z" fill={fill} />
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M15.75 7C15.75 7.41421 15.4142 7.75 15 7.75L9 7.75C8.58579 7.75 8.25 7.41421 8.25 7C8.25 6.58579 8.58579 6.25 9 6.25L15 6.25C15.4142 6.25 15.75 6.58579 15.75 7Z"
       fill={fill}
     />

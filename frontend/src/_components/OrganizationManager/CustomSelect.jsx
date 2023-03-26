@@ -39,7 +39,7 @@ const Menu = (props) => {
             </div>
           </>
         )}
-        <div className={`react-select-container ${darkMode && 'dark-theme'}`}>{props.children}</div>
+        <div className={`${darkMode && 'dark-theme'}`}>{props.children}</div>
         <div
           className="cursor-pointer d-flex align-items-center add-workspace-button"
           style={{ padding: '4px 12px', color: '#3E63DD' }}
@@ -67,7 +67,9 @@ const Menu = (props) => {
 const SingleValue = ({ selectProps }) => {
   return (
     <div className="d-inline-flex align-items-center">
-      <div data-cy="workspace-name">{selectProps.value.name}</div>
+      <div data-cy="workspace-name" className="tj-text-xsm">
+        {selectProps.value.name}
+      </div>
     </div>
   );
 };
@@ -87,7 +89,9 @@ export const CustomSelect = ({ ...props }) => {
 
       {isSingleOrganization ? (
         <div className="d-flex align-items-center justify-content-between h-100 tj-current-org">
-          <span data-cy="workspace-name">{organization}</span>
+          <span data-cy="workspace-name" className="tj-text-xsm">
+            {organization}
+          </span>
           <>
             {admin && (
               <div onClick={() => setShowEditOrg(true)}>
@@ -118,13 +122,14 @@ export const CustomSelect = ({ ...props }) => {
       ) : (
         <Select
           className={`react-select-container ${darkMode && 'dark-theme'}`}
-          width={'282px'}
+          width={'262px'}
           hasSearch={false}
           components={{ Menu, SingleValue }}
           setShowEditOrg={setShowEditOrg}
           setShowCreateOrg={setShowCreateOrg}
           styles={{ border: 0, cursor: 'pointer' }}
           {...props}
+          customWrap={true}
         />
       )}
     </>

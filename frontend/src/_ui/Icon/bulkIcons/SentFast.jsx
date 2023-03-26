@@ -15,20 +15,20 @@ const SentFast = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0
       fill={fill}
     />
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M7.75 12C7.75 11.5858 8.08579 11.25 8.5 11.25H12C12.4142 11.25 12.75 11.5858 12.75 12C12.75 12.4142 12.4142 12.75 12 12.75H8.5C8.08579 12.75 7.75 12.4142 7.75 12Z"
       fill={fill}
     />
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M1.25 10C1.25 9.58579 1.58579 9.25 2 9.25H4C4.41421 9.25 4.75 9.58579 4.75 10C4.75 10.4142 4.41421 10.75 4 10.75H2C1.58579 10.75 1.25 10.4142 1.25 10Z"
       fill={fill}
     />
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M1.25 14C1.25 13.5858 1.58579 13.25 2 13.25H4C4.41421 13.25 4.75 13.5858 4.75 14C4.75 14.4142 4.41421 14.75 4 14.75H2C1.58579 14.75 1.25 14.4142 1.25 14Z"
       // fill={fill}
     />

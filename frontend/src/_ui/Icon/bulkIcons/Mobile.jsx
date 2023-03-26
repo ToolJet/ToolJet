@@ -15,8 +15,8 @@ const Mobiles = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 
       fill={fill}
     />
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M10.25 19C10.25 18.5858 10.5858 18.25 11 18.25H13C13.4142 18.25 13.75 18.5858 13.75 19C13.75 19.4142 13.4142 19.75 13 19.75H11C10.5858 19.75 10.25 19.4142 10.25 19Z"
       fill={fill}
     />

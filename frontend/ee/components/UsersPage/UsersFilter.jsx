@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Select from '@/_ui/Select';
+import { debounce } from 'lodash';
 
 const userStatusOptions = [
   { name: 'All', value: '' },
@@ -38,7 +39,14 @@ const UsersFilter = ({ filterList }) => {
   };
 
   useEffect(() => {
-    filterList(options);
+    console.log('options', options);
+    const debouncedFilter = debounce(() => {
+      filterList(options);
+    }, 500);
+
+    debouncedFilter();
+    return debouncedFilter.cancel;
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options]);
 
@@ -66,6 +74,7 @@ const UsersFilter = ({ filterList }) => {
             useMenuPortal={true}
             className="users-filter-dropdown"
             closeMenuOnSelect={true}
+            customWrap={true}
           />
         </div>
         <div className="workspace-settings-filter-items workspace-clear-filter-wrap">

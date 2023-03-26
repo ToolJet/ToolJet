@@ -756,7 +756,7 @@ button {
   }
 
 
-  
+
 
   .app-list {
     .app-card {
@@ -3209,10 +3209,10 @@ input:focus-visible {
     border-width: 0px 0px 1px 0px !important;
   }
 
-  .blank-page-wrapper {
+  .home-page-content {
     .hr-text {
       color: var(--slate11) !important;
-      text-transform: lowercase;
+      text-transform: lowercase !important;
       font-weight: 400;
       font-size: 12px;
       line-height: 20px;
@@ -3276,6 +3276,7 @@ input:focus-visible {
   }
 
   .org-users-page {
+
     .user-email,
     .user-status {
       color: var(--slate12) !important;
@@ -4576,6 +4577,10 @@ input[type="text"] {
 .icon-change-modal {
   ul {
     list-style-type: none;
+    margin: 0 auto;
+    text-align: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
 
     li {
       float: left;
@@ -5922,7 +5927,7 @@ a.step-item-disabled {
 .notification-center {
   max-height: 500px;
   overflow: auto;
-  margin-left:11px !important;
+  margin-left: 11px !important;
 
   .empty {
     padding: 0 !important;
@@ -6963,10 +6968,12 @@ tbody {
 }
 
 .organization-page-sidebar {
-  height: calc(100vh - 63px);
+  height: calc(100vh - 64px);
   max-width: 288px;
   background-color: var(--base);
   border-right: 1px solid var(--slate5) !important;
+  display: grid !important;
+  grid-template-rows: auto 1fr auto !important;
 }
 
 .home-page-sidebar {
@@ -7036,7 +7043,9 @@ tbody {
   .select-search-dark__value::after {
     content: none;
   }
-  .select-search-dark__select,.select-search__select{
+
+  .select-search-dark__select,
+  .select-search__select {
     min-width: fit-content;
     max-width: 100% !important;
   }
@@ -7893,8 +7902,11 @@ tbody {
   width: 848px;
   margin: 0 auto;
   padding: 16px;
-  tbody{
-    tr>td>span, tr>td>a{
+
+  tbody {
+
+    tr>td>span,
+    tr>td>a {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -8371,7 +8383,8 @@ tbody {
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
-  p{
+
+  p {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -8403,6 +8416,7 @@ tbody {
     border-bottom: 2px solid var(--indigo9) !important;
     border-color: var(--indigo9) !important;
   }
+
   .nav-item {
     font-weight: 500 !important;
     font-size: 12px !important;
@@ -8486,8 +8500,9 @@ tbody {
   .nav-tabs .nav-link.active {
     background-color: transparent !important;
   }
+
   .nav-tabs .nav-item.show .nav-link,
-  .nav-tabs .nav-link.active{
+  .nav-tabs .nav-link.active {
     border-color: var(--indigo9) !important;
 
   }
@@ -8716,13 +8731,14 @@ tbody {
     width: 272px;
     white-space: nowrap;
     overflow: hidden;
-     text-overflow: ellipsis;
-     span{
+    text-overflow: ellipsis;
+
+    span {
       max-width: 150px;
       white-space: nowrap;
       overflow: hidden;
-       text-overflow: ellipsis;
-     }
+      text-overflow: ellipsis;
+    }
   }
 
   &:hover .apps-remove-btn {
@@ -8784,6 +8800,7 @@ tbody {
 .create-new-group-button {
   width: 169px;
   height: 32px;
+  border-radius: 6px;
 }
 
 .faded-input {
@@ -9151,7 +9168,7 @@ tbody {
   height: 64px;
   background: var(--indigo3);
   border-radius: 12px;
-  margin:  0px auto 12px auto;
+  margin: 0px auto 12px auto;
 }
 
 .user-csv-template-wrap {
@@ -9245,7 +9262,7 @@ tbody {
   max-width: 188px;
   height: 32px;
 
-  span{
+  span {
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -9304,11 +9321,6 @@ tbody {
   gap: 40px;
   width: 248px;
   height: 32px;
-}
-
-.workspace-nav-list-wrap {
-  padding: 0px 20px 20px 20px;
-
 }
 
 .new-app-dropdown {
@@ -9383,7 +9395,7 @@ tbody {
   border-radius: 6px !important;
 }
 
-// .react-select-container {
+
 //   background-color: var(--base);
 
 //   .css-1bugkci-control,
@@ -9477,6 +9489,9 @@ tbody {
 
     ::placeholder {
       color: var(--slate9);
+      margin-left: 5px !important;
+      padding-left: 5px !important;
+      background-color: red !important;
     }
 
     &:hover {
@@ -9525,6 +9540,8 @@ tbody {
 .sidebar-list-wrap {
   margin-top: 24px;
   padding: 0px 20px 20px 20px;
+  height: calc(100vh - 180px);
+  overflow: auto;
 
   span {
     letter-spacing: -0.02em;
@@ -9672,25 +9689,24 @@ tbody {
       border: 1px solid var(--indigo9) !important;
       box-shadow: none !important;
     }
+
   }
 
-  .input-icon {
-    .tj-common-search-input-clear-icon {
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
-      padding: 4px;
-      gap: 8px;
-      width: 20px;
-      height: 20px;
-      background: var(--indigo3);
-      border-radius: 4px;
+  .tj-common-search-input-clear-icon {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 4px;
+    gap: 8px;
+    width: 20px;
+    height: 20px;
+    background: var(--indigo3) !important;
+    border-radius: 4px;
 
-    }
   }
-
 }
+
 
 
 .tj-sub-helper-text {
@@ -9734,16 +9750,19 @@ tbody {
     }
   }
 }
-.tj-db-table{
-  table{
+
+.tj-db-table {
+  table {
     max-width: calc(100% - 28px);
 
   }
-  .datatable{
+
+  .datatable {
     position: relative;
   }
 }
-.add-row-btn-database{
+
+.add-row-btn-database {
   position: absolute;
   top: 0;
   right: -28px;
@@ -9755,41 +9774,50 @@ tbody {
   border-color: var(--slate4);
   border-radius: 0px !important;
 }
+
 // custom styles for users multiselect in manage users 
-.manage-groups-users-multiselect{
+.manage-groups-users-multiselect {
   gap: 17px;
   width: 440px;
   height: 32px;
   background: var(--base);
   border-radius: 6px;
-  .dropdown-heading{
+
+  .dropdown-heading {
     height: 32px;
     padding: 6px 10px;
   }
-  .dropdown-container{
+
+  .dropdown-container {
     background: var(--base);
     border: 1px solid var(--slate7) !important;
   }
-  .dropdown-content{
+
+  .dropdown-content {
     border: 1px solid var(--slate3);
     box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
     border-radius: 6px;
-    .search{
-      input{
+
+    .search {
+      input {
         background-color: var(--base);
         color: var(--slate12);
       }
     }
   }
-  .rmsc, .dropdown-content, .panel-content,.search
-  {
+
+  .rmsc,
+  .dropdown-content,
+  .panel-content,
+  .search {
     background: var(--base) !important;
   }
 
-  .options{
-    .select-item{
+  .options {
+    .select-item {
       color: var(--slate12);
-      &:hover{
+
+      &:hover {
         background: var(--slate4);
         border-radius: 6px;
       }
@@ -9797,51 +9825,63 @@ tbody {
   }
 }
 
-.select-search__options{
-  .item-renderer{
+.select-search__options {
+  .item-renderer {
     display: flex !important;
     justify-content: space-between;
     padding: 20px;
     cursor: pointer;
     flex-direction: row;
-    div:first-child{
+
+    div:first-child {
       display: flex;
     }
-    p{
+
+    p {
       margin-bottom: 0px !important;
       color: var(--slate12);
     }
-    span{
+
+    span {
       color: var(--slate11);
     }
-    p,span{
+
+    p,
+    span {
       font-weight: 400;
       font-size: 12px;
       line-height: 20px;
     }
   }
-} 
+}
+
 .create-new-app-dropdown {
-  .button:first-child{
+  .button:first-child {
     padding: 0 !important;
   }
-  .dropdown-toggle::after{
+
+  .dropdown-toggle::after {
     border: none !important;
-      content:url("data:image/svg+xml,%3Csvg width='25' height='25' viewBox='0 0 25 25' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M10.5 7.03906C10.5 6.34871 11.0596 5.78906 11.75 5.78906C12.4404 5.78906 13 6.34871 13 7.03906C13 7.72942 12.4404 8.28906 11.75 8.28906C11.0596 8.28906 10.5 7.72942 10.5 7.03906ZM10.5 12.0391C10.5 11.3487 11.0596 10.7891 11.75 10.7891C12.4404 10.7891 13 11.3487 13 12.0391C13 12.7294 12.4404 13.2891 11.75 13.2891C11.0596 13.2891 10.5 12.7294 10.5 12.0391ZM11.75 15.7891C11.0596 15.7891 10.5 16.3487 10.5 17.0391C10.5 17.7294 11.0596 18.2891 11.75 18.2891C12.4404 18.2891 13 17.7294 13 17.0391C13 16.3487 12.4404 15.7891 11.75 15.7891Z' fill='%23fff'/%3E%3C/svg%3E%0A");
-      transform: rotate(360deg);
-      width: 14px;
-      margin: 0 !important;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 0px 0px 0px;
+    content: url("data:image/svg+xml,%3Csvg width='25' height='25' viewBox='0 0 25 25' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M10.5 7.03906C10.5 6.34871 11.0596 5.78906 11.75 5.78906C12.4404 5.78906 13 6.34871 13 7.03906C13 7.72942 12.4404 8.28906 11.75 8.28906C11.0596 8.28906 10.5 7.72942 10.5 7.03906ZM10.5 12.0391C10.5 11.3487 11.0596 10.7891 11.75 10.7891C12.4404 10.7891 13 11.3487 13 12.0391C13 12.7294 12.4404 13.2891 11.75 13.2891C11.0596 13.2891 10.5 12.7294 10.5 12.0391ZM11.75 15.7891C11.0596 15.7891 10.5 16.3487 10.5 17.0391C10.5 17.7294 11.0596 18.2891 11.75 18.2891C12.4404 18.2891 13 17.7294 13 17.0391C13 16.3487 12.4404 15.7891 11.75 15.7891Z' fill='%23fff'/%3E%3C/svg%3E%0A");
+    transform: rotate(360deg);
+    width: 14px;
+    margin: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 0px 0px 0px;
   }
 }
 
-.sso-page-loader-card{
-  background-color: var(--slate2)!important;
+.sso-page-loader-card {
+  background-color: var(--slate2) !important;
 
- .card-header{
-  background-color: var(--slate2)!important;
+  .card-header {
+    background-color: var(--slate2) !important;
   }
+}
+
+.workspace-nav-list-wrap {
+  padding: 0px 20px 20px 20px;
+  height: calc(100vh - 116px) !important;
 }

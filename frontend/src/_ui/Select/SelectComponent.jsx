@@ -3,7 +3,15 @@ import _ from 'lodash';
 import Select from 'react-select';
 import defaultStyles from './styles';
 
-export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSelect, ...restProps }) => {
+export const SelectComponent = ({
+  options = [],
+  value,
+  onChange,
+  closeMenuOnSelect,
+  className,
+  customWrap, //used so that editor selects remains with old theme , remove when whole theme is same !
+  ...restProps
+}) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const {
     isMulti = false,
@@ -53,9 +61,9 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
   };
 
   return (
-    <div style={{ width: width }}>
+    <div style={{ width: width }} className={className && className}>
       <Select
-        className={`react-select-container ${darkMode && ' dark-theme'}`}
+        className={` ${darkMode && ' dark-theme'}`}
         {...restProps}
         defaultValue={defaultValue}
         isLoading={isLoading}
@@ -71,6 +79,7 @@ export const SelectComponent = ({ options = [], value, onChange, closeMenuOnSele
         maxMenuHeight={maxMenuHeight}
         menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
         closeMenuOnSelect={closeMenuOnSelect ?? false}
+        classNamePrefix={`${darkMode && 'dark-theme'} ${customWrap && 'react-select'}`}
       />
     </div>
   );

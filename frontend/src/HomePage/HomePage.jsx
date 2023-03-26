@@ -503,6 +503,8 @@ class HomePageComponent extends React.Component {
                     width={'100%'}
                     value={appOperations?.selectedFolder}
                     placeholder={this.props.t('homePage.appCard.selectFolder', 'Select folder')}
+                    closeMenuOnSelect={true}
+                    customWrap={true}
                   />
                 </div>
               </div>

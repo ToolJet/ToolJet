@@ -19,8 +19,8 @@ const Warning = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 
       fill={fill}
     />
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M12 8.25C12.4142 8.25 12.75 8.58579 12.75 9V14C12.75 14.4142 12.4142 14.75 12 14.75C11.5858 14.75 11.25 14.4142 11.25 14V9C11.25 8.58579 11.5858 8.25 12 8.25Z"
       fill={fill}
     />

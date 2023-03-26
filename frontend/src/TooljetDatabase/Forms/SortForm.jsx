@@ -38,22 +38,24 @@ export const SortForm = ({ filters, setFilters, index, column = '', order = '' }
       <div className="col-2" data-cy="sort-by-label">
         Sort by
       </div>
-      <div className="col-4 py-3" data-cy="select-column-field">
+      <div className="col-4 py-3 select-column-field" data-cy="select-column-field">
         <Select
           useMenuPortal={false}
           placeholder="Select column"
           value={column}
           options={displayColumns}
           onChange={handleColumnChange}
+          customWrap={true}
         />
       </div>
-      <div className="col-4 py-3" data-cy="select-order-field">
+      <div className="col-4 py-3 select-order-field" data-cy="select-order-field">
         <Select
           useMenuPortal={false}
           value={order}
           placeholder="Select order"
           options={orders}
           onChange={handleFilterChange}
+          customWrap={true}
         />
       </div>
       <div className="col-1 py-3 cursor-pointer">

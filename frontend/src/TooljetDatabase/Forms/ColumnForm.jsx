@@ -72,7 +72,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
             autoFocus
           />
         </div>
-        <div className="mb-3" data-cy="data-type-dropdown-section">
+        <div className="mb-3 data-type-dropdown-section" data-cy="data-type-dropdown-section">
           <div className="form-label" data-cy="data-type-input-field-label">
             Data type
           </div>
@@ -82,6 +82,7 @@ const ColumnForm = ({ onCreate, onClose }) => {
             value={dataType}
             options={dataTypes}
             onChange={handleTypeChange}
+            customWrap={true}
           />
         </div>
         <div className="mb-3 tj-app-input">

@@ -43,7 +43,7 @@ export function OrganizationSettings(props) {
       <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
         <div className="wrapper organization-settings-page">
           <div className="row gx-0">
-            <div className="organization-page-sidebar col border-end">
+            <div className="organization-page-sidebar col ">
               <div className="workspace-nav-list-wrap">
                 {sideBarNavs.map((item) => {
                   return (

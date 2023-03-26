@@ -12,8 +12,8 @@ const Lock = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 2
     className={className}
   >
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M8.75 6C8.75 4.20507 10.2051 2.75 12 2.75C13.7949 2.75 15.25 4.20507 15.25 6V8H16C16.2563 8 16.5071 8.02411 16.75 8.0702V6C16.75 3.37665 14.6234 1.25 12 1.25C9.37665 1.25 7.25 3.37665 7.25 6V8.0702C7.49294 8.02411 7.74365 8 8 8H8.75V6Z"
       fill={fill}
     />

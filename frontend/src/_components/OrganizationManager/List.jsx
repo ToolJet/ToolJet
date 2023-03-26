@@ -64,12 +64,14 @@ export const OrganizationList = function () {
   }));
 
   return (
-    <CustomSelect
-      isLoading={getOrgStatus === 'loading'}
-      options={options}
-      value={organization_id}
-      onChange={(id) => switchOrganization(id)}
-      className={`tj-org-select  ${darkMode && 'dark-theme'}`}
-    />
+    <div className="org-select-container">
+      <CustomSelect
+        isLoading={getOrgStatus === 'loading'}
+        options={options}
+        value={organization_id}
+        onChange={(id) => switchOrganization(id)}
+        className={`tj-org-select  ${darkMode && 'dark-theme'}`}
+      />
+    </div>
   );
 };

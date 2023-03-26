@@ -11,8 +11,8 @@ const Pin = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25
   >
     <path
       opacity="0.4"
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M9.53045 14.4697C9.82333 14.7626 9.82333 15.2375 9.53043 15.5303L3.53032 21.5302C3.23742 21.8231 2.76255 21.8231 2.46966 21.5302C2.17677 21.2373 2.17678 20.7624 2.46968 20.4695L8.46979 14.4697C8.76269 14.1768 9.23756 14.1768 9.53045 14.4697Z"
       fill={fill}
     />

@@ -78,13 +78,14 @@ const EditRowForm = ({ onEdit, onClose }) => {
               {primaryColumn}&nbsp;
               <span className="badge badge-outline text-blue"> SERIAL</span>
             </div>
-            <div className="col-auto">
+            <div className="col-auto row-edit-select-container">
               <Select
                 useMenuPortal={false}
                 placeholder="Select a row to edit"
                 value={selectedRow}
                 options={options}
                 onChange={handleOnSelect}
+                customWrap={true}
               />
             </div>
           </div>

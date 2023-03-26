@@ -49,22 +49,24 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
     <div className="row g-2 align-items-center">
       <div className="col-11">
         <div className="row g-2 align-items-center py-3">
-          <div className="col-4" data-cy="select-column-field">
+          <div className="col-4 select-column-field" data-cy="select-column-field">
             <Select
               useMenuPortal={false}
               placeholder="Select column"
               value={column}
               options={displayColumns}
               onChange={handleColumnChange}
+              customWrap={true}
             />
           </div>
-          <div className="col-4" data-cy="select-operation-field">
+          <div className="col-4 select-operation-field" data-cy="select-operation-field">
             <Select
               placeholder="Select operation"
               useMenuPortal={false}
               value={operator}
               options={operators}
               onChange={handleOperatorChange}
+              customWrap={true}
             />
           </div>
           <div className="col-4 tj-app-input">

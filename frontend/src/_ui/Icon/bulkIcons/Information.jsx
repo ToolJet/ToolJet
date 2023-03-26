@@ -15,8 +15,8 @@ const Information = ({ fill = '#C1C8CD', width = '25', className = '', viewBox =
       fill={fill}
     />
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
+      fillRule="evenodd"
+      clipRule="evenodd"
       d="M10.25 10C10.25 9.58579 10.5858 9.25 11 9.25H12C12.4142 9.25 12.75 9.58579 12.75 10V17C12.75 17.4142 12.4142 17.75 12 17.75C11.5858 17.75 11.25 17.4142 11.25 17V10.75H11C10.5858 10.75 10.25 10.4142 10.25 10Z"
       fill={fill}
     />

@@ -287,28 +287,33 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
               rows.map((row, index) => {
                 prepareRow(row);
                 return (
-                  <tr {...row.getRowProps()} key={index}>
-                    {row.cells.map((cell, index) => {
-                      console.log('----qa-checking----', cell);
-                      const dataCy =
-                        cell.column.id === 'selection'
-                          ? `${cell.row.values?.id}-checkbox`
-                          : `id-${cell.row.values?.id}-column-${cell.column.id}`;
-                      return (
-                        <td
-                          key={`cell.value-${index}`}
-                          title={cell.value || ''}
-                          className="table-cell"
-                          data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
-                          {...cell.getCellProps()}
-                        >
-                          {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
-                        </td>
-                      );
-                    })}
-                  </tr>
+                  <>
+                    <tr {...row.getRowProps()} key={index}>
+                      {row.cells.map((cell, index) => {
+                        console.log('----qa-checking----', cell);
+                        const dataCy =
+                          cell.column.id === 'selection'
+                            ? `${cell.row.values?.id}-checkbox`
+                            : `id-${cell.row.values?.id}-column-${cell.column.id}`;
+                        return (
+                          <td
+                            key={`cell.value-${index}`}
+                            title={cell.value || ''}
+                            className="table-cell"
+                            data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
+                            {...cell.getCellProps()}
+                          >
+                            {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  </>
                 );
               })
+              //   <button onClick={() => openCreateRowDrawer()} className="add-row-btn-database">
+              //   +
+              // </button>
             )}
           </tbody>
         </table>
