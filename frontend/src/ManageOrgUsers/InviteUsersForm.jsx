@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import SolidIcon from '@/_ui/Icon/SolidIcons';
+import React, { useEffect, useState } from 'react';
+import SolidIcon from '../_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
+
 import { useTranslation } from 'react-i18next';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { ButtonSolid } from '../_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
 
 function InviteUsersForm({
@@ -19,43 +20,17 @@ function InviteUsersForm({
 }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(1);
-  // drag state
-  const [dragActive, setDragActive] = useState(false);
-  // ref
-  const inputRef = React.useRef(null);
+  const hiddenFileInput = React.useRef(null);
 
-  // handle drag events
-  const handleDrag = function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
+  const handleFileChange = function (file) {
+    // e.preventDefault();
+    // if (e.target.files && e.target.files[0]) {
+    //   console.log('xxx', e.target.files);
+    handleChange(file);
+    // }
   };
-
-  // triggers when file is dropped
-  const handleDrop = function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      // handleFiles(e.dataTransfer.files);
-    }
-  };
-
-  // triggers when file is selected with click
-  const handleFileChange = function (e) {
-    e.preventDefault();
-    if (e.target.files && e.target.files[0]) {
-      handleChange(e.target.files);
-    }
-  };
-
-  // triggers the input when the button is clicked
-  const onButtonClick = () => {
-    inputRef.current.click();
+  const handleClick = (event) => {
+    hiddenFileInput.current.click();
   };
 
   return (
@@ -101,8 +76,8 @@ function InviteUsersForm({
                     <div className="tj-app-input">
                       <input
                         type="text"
-                        className=""
-                        placeholder={t('header.organization.menus.manageUsers.enterFulltName', 'Enter full name')}
+                        className="form-control"
+                        placeholder={t('header.organization.menus.manageUsers.enterFirstName', 'Enter full name')}
                         name="fullName"
                         onChange={changeNewUserOption.bind(this, 'fullName')}
                         value={fields['fullName']}
@@ -119,7 +94,7 @@ function InviteUsersForm({
                     <div className="tj-app-input">
                       <input
                         type="text"
-                        className=""
+                        className="form-control"
                         aria-describedby="emailHelp"
                         placeholder={t('header.organization.menus.manageUsers.enterEmail', 'Enter Email')}
                         name="email"
@@ -140,57 +115,53 @@ function InviteUsersForm({
               <div>
                 <div className="user-csv-template-wrap">
                   <SolidIcon name="information" fill="#F76808" width="28" />
-
                   <div>
                     <p className="tj-text tj-text-sm">
                       Download the ToolJet template to add user details or format your file in the same as the template.
                       ToolJet won’t be able to recognise files in any other format.{' '}
                     </p>
-                    <a
+                    <ButtonSolid
                       href="../../assets/csv/sample_upload.csv"
                       download="sample_upload.csv"
                       variant="tertiary"
-                      className="download-template-btn tj-tertiary-btn remove-decoration tj-base-btn"
-                      role="button"
+                      className="download-template-btn"
                     >
                       Download Template
-                    </a>
+                    </ButtonSolid>
                   </div>
                 </div>
-                <form
-                  onDragEnter={handleDrag}
-                  onSubmit={inviteBulkUsers}
-                  noValidate
-                  className="upload-user-form"
-                  id="inviteBulkUsers"
-                >
-                  {/* <form className="upload-user-form"> */}
+                {/* <form onSubmit={inviteBulkUsers} noValidate className="upload-user-form"> */}
+                <form onSubmit={inviteBulkUsers} noValidate className="upload-user-form" id="inviteBulkUsers">
                   <div className="form-group mb-3 ">
-                    <label
-                      id="label-file-upload"
-                      htmlFor="input-file-upload"
-                      className={dragActive ? 'drag-active' : ''}
-                    >
-                      <div className="csv-upload-icon-wrap">
+                    <div>
+                      {' '}
+                      <div className="csv-upload-icon-wrap" onClick={handleClick}>
                         <BulkIcon name="fileupload" width="27" fill="#3E63DD" />
                       </div>
                       <p className="tj-text tj-text-md font-weight-500 select-csv-text">Select a CSV file to upload</p>
                       <span className="tj-text tj-text-sm drag-and-drop-text">Or drag and drop it here</span>
-
-                      <span className="text-danger" data-cy="file-error">
+                      <input
+                        style={{ display: 'none' }}
+                        ref={hiddenFileInput}
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          console.log('files', file);
+                          if (Math.round(file.size / 1024) > 1024) {
+                            toast.error('File size cannot exceed more than 1MB');
+                            e.target.value = null;
+                          } else {
+                            handleFileChange(file);
+                          }
+                        }}
+                        accept=".csv"
+                        type="file"
+                        className="form-control"
+                      />
+                      <span className="file-upload-error" data-cy="file-error">
                         {errors['file']}
                       </span>
-                    </label>
+                    </div>
                   </div>
-                  {dragActive && (
-                    <div
-                      id="drag-file-element"
-                      onDragEnter={handleDrag}
-                      onDragLeave={handleDrag}
-                      onDragOver={handleDrag}
-                      onDrop={handleDrop}
-                    ></div>
-                  )}
                 </form>
               </div>
             </div>
@@ -214,6 +185,7 @@ function InviteUsersForm({
               form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
+              disabled={uploadingUsers}
               data-cy="create-users-button"
               leftIcon="sent"
               width="20"
@@ -228,5 +200,4 @@ function InviteUsersForm({
     </div>
   );
 }
-
 export default InviteUsersForm;

@@ -78,7 +78,7 @@ export const SelectComponent = ({
         menuPlacement={menuPlacement}
         maxMenuHeight={maxMenuHeight}
         menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
-        closeMenuOnSelect={closeMenuOnSelect ?? false}
+        closeMenuOnSelect={closeMenuOnSelect ?? true}
         classNamePrefix={`${darkMode && 'dark-theme'} ${customWrap && 'react-select'}`}
       />
     </div>

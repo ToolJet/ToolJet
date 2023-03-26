@@ -45,12 +45,12 @@ export function OrganizationSettings(props) {
           <div className="row gx-0">
             <div className="organization-page-sidebar col ">
               <div className="workspace-nav-list-wrap">
-                {sideBarNavs.map((item) => {
+                {sideBarNavs.map((item, index) => {
                   return (
                     <>
                       <FolderList
                         className="workspace-settings-nav-items"
-                        key={item}
+                        key={index}
                         onClick={() => {
                           setSelectedTab(defaultOrgName(item));
                           updateSidebarNAV(item);

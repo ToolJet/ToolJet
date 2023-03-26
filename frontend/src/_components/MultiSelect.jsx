@@ -64,13 +64,13 @@ function MultiSelectUser({
       </div>
     );
   }
+
   const filterOptions = useCallback(
     (options) => {
       return options?.filter((data) => !selectedValues.some((selected) => selected.value === data.value));
     },
     [selectedValues]
   );
-
   return (
     <div className="tj-ms tj-ms-count">
       <FilterPreview text={`${selectedValues.length} selected`} onClose={selectedValues.length ? onReset : undefined} />
@@ -82,9 +82,7 @@ function MultiSelectUser({
         search={true}
         multiple
         value={{ name: '' }}
-        onChange={(id, value) => {
-          onSelect([...selectedValues, ...value]);
-        }}
+        onChange={(id, value) => onSelect([...selectedValues, ...value])}
         placeholder={placeholder}
         debounce={onSearch ? 300 : undefined}
         printOptions="on-focus"
@@ -100,6 +98,7 @@ function MultiSelectUser({
         disabled={isLoading}
         fuzzySearch
         renderOption={renderCustom}
+        customWrap={true}
       />
     </div>
   );

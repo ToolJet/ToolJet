@@ -155,7 +155,7 @@ export const Folders = function Folders({
     setFilteredData(folders);
   }
   return (
-    <div className="w-100 folder-list" style={{ padding: '24px 20px 20px 20px' }}>
+    <div className="w-100 folder-list" style={{ padding: '24px 20px 20px 20px', width: '248px' }}>
       <ConfirmDialog
         show={showDeleteConfirmation}
         message={t(

@@ -646,10 +646,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                           </ButtonSolid>
                         </div>
                         <div className="row mt-2">
-                          <div className="selected-section">
+                          {/* <div className="selected-section">
                             <div className="selected-text">Selected Users:</div>
                             {this.generateSelection(selectedUsers)}
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                     )}

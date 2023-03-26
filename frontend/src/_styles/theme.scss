@@ -1521,7 +1521,7 @@ button {
 .select-search-dark__input {
   display: block;
   width: 100%;
-  padding: 0.4375rem 0.75rem;
+  // padding: 0.4375rem 0.75rem;
   font-size: 0.875rem;
   font-weight: 400;
   line-height: 1.4285714;
@@ -4335,7 +4335,7 @@ input[type="text"] {
 
   .input-icon .form-control:not(:first-child),
   .input-icon .form-select:not(:last-child) {
-    padding-left: 20px !important;
+    padding-left: 28px !important;
   }
 
   input:focus {
@@ -4348,6 +4348,19 @@ input[type="text"] {
 
   .input-icon .input-icon-addon.end {
     pointer-events: auto;
+
+    .tj-common-search-input-clear-icon {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      padding: 4px;
+      // gap: 8px;
+      width: 20px;
+      height: 20px;
+      background: var(--indigo3) !important;
+      border-radius: 4px;
+    }
 
     div {
       border-radius: 12px;
@@ -8145,6 +8158,7 @@ tbody {
 
 .table-list-item {
   text-transform: capitalize;
+  width: 248px;
 }
 
 .workspace-settings-filter-items {
@@ -9169,6 +9183,7 @@ tbody {
   background: var(--indigo3);
   border-radius: 12px;
   margin: 0px auto 12px auto;
+  cursor: pointer;
 }
 
 .user-csv-template-wrap {
@@ -9692,19 +9707,6 @@ tbody {
 
   }
 
-  .tj-common-search-input-clear-icon {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    padding: 4px;
-    gap: 8px;
-    width: 20px;
-    height: 20px;
-    background: var(--indigo3) !important;
-    border-radius: 4px;
-
-  }
 }
 
 
@@ -9884,4 +9886,8 @@ tbody {
 .workspace-nav-list-wrap {
   padding: 0px 20px 20px 20px;
   height: calc(100vh - 116px) !important;
+}
+
+.upload-user-form span.file-upload-error {
+  color: var(--tomato10) !important;
 }

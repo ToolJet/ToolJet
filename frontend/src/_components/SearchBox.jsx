@@ -65,7 +65,7 @@ export function SearchBox({
           autoFocus={autoFocus}
         />
         {isFocused && searchText && (
-          <span className="input-icon-addon end tj-common-search-input-clear-icon">
+          <span className="input-icon-addon end">
             <div className="d-flex tj-common-search-input-clear-icon" onMouseDown={clearSearchText} title="clear">
               <SolidIcon name="remove" />
             </div>
