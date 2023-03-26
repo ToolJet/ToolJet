@@ -18,6 +18,7 @@ import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
+import { GlobalDatasources } from '@/GlobalDatasources';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
@@ -61,7 +62,7 @@ class AppComponent extends React.Component {
     }
   };
 
-  componentDidMount() {
+  componentDidMount () {
     authenticationService.currentUser.subscribe((x) => {
       this.setState({ currentUser: x }, this.fetchMetadata);
       setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
@@ -73,8 +74,8 @@ class AppComponent extends React.Component {
     localStorage.setItem('darkMode', newMode);
   };
 
-  render() {
-    const { updateAvailable, darkMode } = this.state;
+  render () {
+    const { updateAvailable, darkMode, currentUser } = this.state;
     let toastOptions = {
       style: {
         wordBreak: 'break-all',
@@ -156,6 +157,7 @@ class AppComponent extends React.Component {
                 path="/confirm-invite"
                 element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
               />
+
               <Route
                 exact
                 path="/apps/:id/:pageHandle?/*"
@@ -221,6 +223,15 @@ class AppComponent extends React.Component {
                   }
                 />
               )}
+              <Route
+                exact
+                path="/global-datasources"
+                element={
+                  <PrivateRoute>
+                    <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
               {window.public_config?.ENABLE_MARKETPLACE_FEATURE === 'true' && (
                 <Route
                   exact

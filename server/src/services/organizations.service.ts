@@ -24,6 +24,7 @@ import {
 } from 'src/helpers/user_lifecycle';
 import { decamelize } from 'humps';
 import { Response } from 'express';
+import { AppEnvironmentService } from './app_environments.service';
 
 const MAX_ROW_COUNT = 500;
 
@@ -56,6 +57,7 @@ export class OrganizationsService {
     private usersService: UsersService,
     private organizationUserService: OrganizationUsersService,
     private groupPermissionService: GroupPermissionsService,
+    private appEnvironmentService: AppEnvironmentService,
     private encryptionService: EncryptionService,
     private emailService: EmailService,
     private configService: ConfigService
@@ -77,6 +79,8 @@ export class OrganizationsService {
           updatedAt: new Date(),
         })
       );
+
+      await this.appEnvironmentService.createDefaultEnvironments(organization.id, manager);
 
       const createdGroupPermissions: GroupPermission[] = await this.createDefaultGroupPermissionsForOrganization(
         organization,

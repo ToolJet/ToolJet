@@ -14,6 +14,7 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { UpdateFileDto } from '@dto/update-file.dto';
 
 const jszipInstance = new jszip();
+const fs = require('fs');
 
 @Injectable()
 export class PluginsService {
@@ -194,23 +195,39 @@ export class PluginsService {
       return [indexFile, operationsFile, iconFile, manifestFile];
     }
 
-    const fs = require('fs/promises');
+    async function readFile(filePath) {
+      return new Promise((resolve, reject) => {
+        const readStream = fs.createReadStream(filePath, { encoding: 'utf8' });
+        let fileContent = '';
 
-    // NOTE: big files are going to have a major impact on the memory consumption and speed of execution of the program
-    // as `fs.readFile` read the full content of the file in memory before returning the data.
-    // In this case, a better option is to read the file content using streams.
+        readStream.on('data', (chunk) => {
+          fileContent += chunk;
+        });
+
+        readStream.on('error', (err) => {
+          reject(err);
+        });
+
+        readStream.on('end', () => {
+          resolve(fileContent);
+        });
+      });
+    }
+
     const [indexFile, operationsFile, iconFile, manifestFile] = await Promise.all([
-      fs.readFile(`../marketplace/plugins/${id}/dist/index.js`, 'utf8'),
-      fs.readFile(`../marketplace/plugins/${id}/lib/operations.json`, 'utf8'),
-      fs.readFile(`../marketplace/plugins/${id}/lib/icon.svg`, 'utf8'),
-      fs.readFile(`../marketplace/plugins/${id}/lib/manifest.json`, 'utf8'),
+      readFile(`../marketplace/plugins/${id}/dist/index.js`),
+      readFile(`../marketplace/plugins/${id}/lib/operations.json`),
+      readFile(`../marketplace/plugins/${id}/lib/icon.svg`),
+      readFile(`../marketplace/plugins/${id}/lib/manifest.json`),
     ]);
 
     return [indexFile, operationsFile, iconFile, manifestFile];
   }
 
   fetchPluginFiles(id: string, repo: string) {
-    if (repo) return this.fetchPluginFilesFromRepo(repo);
+    if (repo && repo.length > 0) {
+      return this.fetchPluginFilesFromRepo(repo);
+    }
 
     return this.fetchPluginFilesFromS3(id);
   }
@@ -229,5 +246,48 @@ export class PluginsService {
 
   async remove(id: string) {
     return await this.pluginsRepository.delete(id);
+  }
+
+  async reload(id: string) {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const plugin = await this.findOne(id);
+      const { pluginId, repo, version } = plugin;
+
+      const [index, operations, icon, manifest] = await this.fetchPluginFiles(pluginId, repo);
+
+      const files = { index, operations, icon, manifest };
+
+      const uploadedFiles: { index?: File; operations?: File; icon?: File; manifest?: File } = {};
+      await Promise.all(
+        Object.keys(files).map(async (key) => {
+          return await dbTransactionWrap(async (manager: EntityManager) => {
+            const file = files[key];
+            const fileDto = new UpdateFileDto();
+            fileDto.data = encode(file);
+            fileDto.filename = key;
+            uploadedFiles[key] = await this.filesService.update(plugin[`${key}FileId`], fileDto, manager);
+          });
+        })
+      );
+
+      const updatedPlugin = new Plugin();
+
+      updatedPlugin.id = plugin.id;
+      updatedPlugin.repo = repo || '';
+      updatedPlugin.version = version;
+
+      return this.pluginsRepository.save(updatedPlugin);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(error);
+    } finally {
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
+    }
   }
 }

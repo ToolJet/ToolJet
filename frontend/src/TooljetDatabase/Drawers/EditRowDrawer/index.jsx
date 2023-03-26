@@ -19,7 +19,10 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
             fill="#3E63DD"
           />
         </svg>
-        &nbsp;&nbsp;<span className="tj-text-xsm font-weight-500">Edit row</span>
+        &nbsp;&nbsp;
+        <span data-cy="edit-row-button-text" className="tj-text-xsm font-weight-500">
+          Edit row
+        </span>
       </button>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <EditRowForm
