@@ -18,6 +18,7 @@ import { withTranslation } from 'react-i18next';
 import { sample } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
+import { withRouter } from '@/_hoc/withRouter';
 
 const { iconList, defaultIcon } = configs;
 
@@ -117,7 +118,7 @@ class WorkflowsComponent extends React.Component {
     appService
       .createApp({ icon: sample(iconList), type: 'workflow' })
       .then((data) => {
-        _self.props.history.push(`/workflows/${data.id}`);
+        _self.props.navigate(`/workflows/${data.id}`);
       })
       .catch(({ error }) => {
         toast.error(error);
@@ -677,6 +678,6 @@ class WorkflowsComponent extends React.Component {
   }
 }
 
-const Workflows = withTranslation()(WorkflowsComponent);
+const Workflows = withTranslation()(withRouter(WorkflowsComponent));
 
 export { Workflows };

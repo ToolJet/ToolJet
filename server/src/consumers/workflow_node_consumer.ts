@@ -54,7 +54,8 @@ export class WorkflowNodeConsumer {
     }).id;
 
     const query = await this.dataQueriesService.findOne(queryId);
-    const user = await this.userRepository.findOne(userId);
+    const user = await this.userRepository.findOne(userId, { relations: ['organization'] });
+    user.organizationId = user.organization.id;
     try {
       void getQueryVariables(query.options, state);
     } catch (e) {
@@ -62,17 +63,19 @@ export class WorkflowNodeConsumer {
     }
 
     const options = getQueryVariables(query.options, state);
-    console.log({ query, state, options });
-    const result = await this.dataQueriesService.runQuery(user, query, options);
+    try {
+      const result = await this.dataQueriesService.runQuery(user, query, options);
 
-    console.log({ state, result });
+      const newState = {
+        ...state,
+        [query.name]: result,
+      };
 
-    const newState = {
-      ...state,
-      [query.name]: result,
-    };
+      void this.workflowExecutionService.enqueueForwardNodes(workflowExecutionNode, newState, userId);
+    } catch (exception) {
+      console.log({ exception });
+    }
 
-    void this.workflowExecutionService.enqueueForwardNodes(workflowExecutionNode, newState, userId);
     return {};
   }
 }
@@ -80,7 +83,6 @@ export class WorkflowNodeConsumer {
 export function getQueryVariables(options, state) {
   const queryVariables = {};
   const optionsType = typeof options;
-  console.log({ options, state });
   switch (optionsType) {
     case 'string': {
       options = options.replace(/\n/g, ' ');

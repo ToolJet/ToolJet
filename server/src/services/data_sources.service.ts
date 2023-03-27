@@ -41,7 +41,6 @@ export class DataSourcesService {
         .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
         .leftJoinAndSelect('plugin.operationsFile', 'operationsFile')
         .where('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
-        .andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC });
 
       if (scope === DataSourceScopes.GLOBAL) {
         query
@@ -53,7 +52,7 @@ export class DataSourcesService {
           .andWhere('data_source.scope = :scope', { scope: DataSourceScopes.LOCAL });
       }
 
-      if (includeStaticSources) {
+      if (includeStaticSources === 'false') {
         query.andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC });
       }
 

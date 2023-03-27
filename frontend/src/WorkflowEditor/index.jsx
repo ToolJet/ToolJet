@@ -12,13 +12,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { generateQueryName } from './utils';
 import { Link } from 'react-router-dom';
 import AppLogo from '@/_components/AppLogo';
+import { withRouter } from '@/_hoc/withRouter';
 
 import './style.scss';
 import { dataqueryService } from '../_services/dataquery.service';
 
 // Wherever this file uses the term 'app', it means 'workflow'
-export default function WorkflowEditor(props) {
-  const { id: appId, versionId: appVersionId } = props.match.params;
+function WorkflowEditor(props) {
+  const { id: appId, versionId: appVersionId } = props.params;
 
   const [editorSession, dispatch] = useReducer(reducer, initialState({ appId, appVersionId }));
 
@@ -38,7 +39,7 @@ export default function WorkflowEditor(props) {
         return { definition: appData.definition, queriesData: appData.data_queries, versionId };
       })
       .then(({ definition, queriesData, versionId }) => {
-        datasourceService.getAll(versionId).then((dataSourceData) => {
+        datasourceService.getAll(versionId, true).then((dataSourceData) => {
           editorSessionActions.setDataSources(dataSourceData.data_sources);
         });
         return { definition, queriesData, versionId };
@@ -181,3 +182,5 @@ export default function WorkflowEditor(props) {
     </div>
   );
 }
+
+export default withRouter(WorkflowEditor);

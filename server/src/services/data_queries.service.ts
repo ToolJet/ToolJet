@@ -118,9 +118,9 @@ export class DataQueriesService {
     }
     const organizationId = user ? user.organizationId : app.organizationId;
 
+
     const dataSourceOptions = await this.appEnvironmentService.getOptions(dataSource.id, organizationId, environmentId);
     dataSource.options = dataSourceOptions.options;
-
     let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
       dataSource,
       dataQuery,

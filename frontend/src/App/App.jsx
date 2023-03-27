@@ -9,7 +9,6 @@ import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
 import { SignupPage } from '@/SignupPage';
 import { TooljetDatabase } from '@/TooljetDatabase';
-import { Workflows } from '../Workflows';
 import { OrganizationInvitationPage } from '@/ConfirmationPage';
 import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
@@ -26,8 +25,9 @@ import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
-import WorkflowEditor from '../WorkflowEditor';
 import 'react-tooltip/dist/react-tooltip.css';
+import { Workflows } from '../Workflows';
+import WorkflowEditor from '../WorkflowEditor';
 
 const AppWrapper = (props) => {
   return (
@@ -165,13 +165,6 @@ class AppComponent extends React.Component {
             />
             <Route
               exact
-              path="/workflows/:id/"
-              component={WorkflowEditor}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            />
-            <PrivateRoute
-              exact
               path="/applications/:id/versions/:versionId/:pageHandle?"
               element={
                 <PrivateRoute>
@@ -240,7 +233,16 @@ class AppComponent extends React.Component {
               path="/workflows"
               element={
                 <PrivateRoute>
-                  <WorkflowEditor />
+                  <Workflows switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              exact
+              path="/workflows/:id/"
+              element={
+                <PrivateRoute>
+                  <WorkflowEditor switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                 </PrivateRoute>
               }
             />
