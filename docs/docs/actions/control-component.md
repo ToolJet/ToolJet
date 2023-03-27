@@ -1,6 +1,6 @@
 ---
 id: control-component
-title: Control component
+title: Control component (Component Specific Actions)
 ---
 
 Control component action invokes the component specific actions. Component specific actions are the actions that are exclusive actions for a particular widget. Component specific actions can be triggered either through the event handlers or from the Run JavaScript code query.
@@ -14,19 +14,20 @@ Check out the **[live demo](https://youtu.be/JIhSH3YeM3E)** of Component specifi
 | Widget | Component Specific Actions |
 |--------|---------------------------|
 | Button | Click, Set label, Disable, Visibility, Loading |
-| Text   | Set text, Set Visibility |
-| Text Input | Set text, Clear, Set Focus, Set Blur, Disable, Visibility |
-| Text Area | Set text, Clear |
-| Modal     | Show, Close |
-| Table   | Set page, Select row, Deselect Row, Discard changes |
-| Dropdown   | Select option |
-| Multiselect   | Select option, Deselect option, Clear selection |
-| Map   | Set location |
 | Checkbox   | Set checked |
+| Color picker   | Set color |
+| Dropdown   | Select option |
+| File picker    | Clear files |
+| Kanban   | Add card, Delete card, Move card, Update card data |
+| Map   | Set location |
+| Modal     | Show, Close |
+| Multiselect   | Select option, Deselect option, Clear selection |
 | Radio button | Select option |
 | Tabs   | Set tab |
-| Color picker   | Set color |
-| File picker    | Clear files |
+| Table   | Set page, Select row, Deselect Row, Discard changes |
+| Text   | Set text, Set Visibility |
+| Text Area | Set text, Clear |
+| Text Input | Set text, Clear, Set Focus, Set Blur, Disable, Visibility |
 
 :::info
 Currently, Component specific actions are supported only by the above listed widgets. We are working on bringing component specific actions for the remaining widgets.

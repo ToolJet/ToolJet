@@ -2,7 +2,7 @@ import React from 'react';
 import SelectSearch from 'react-select-search';
 import { useTranslation } from 'react-i18next';
 
-export const CustomSelect = ({ options, value, multiple, onChange, darkMode, isEditable }) => {
+export const CustomSelect = ({ options, value, multiple, onChange, darkMode, isEditable, width }) => {
   const { t } = useTranslation();
 
   function renderValue(valueProps) {
@@ -27,7 +27,7 @@ export const CustomSelect = ({ options, value, multiple, onChange, darkMode, isE
   }
 
   return (
-    <div className="custom-select">
+    <div className="custom-select" style={{ width: width }}>
       <SelectSearch
         options={options}
         printOptions="on-focus"

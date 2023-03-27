@@ -50,13 +50,15 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, dar
               {!queryPreviewData && <div className="col preview-default-container"></div>}
               <Tab.Pane eventKey="json" transition={false}>
                 {previewLoading === false && isJson && (
-                  <div className="w-100 ">
+                  <div className="w-100 " data-cy="preview-json-data-container">
                     <JSONTree theme={theme} data={queryPreviewData} invertTheme={!darkMode} collectionLimit={100} />
                   </div>
                 )}
               </Tab.Pane>
               <Tab.Pane eventKey="raw" transition={false}>
-                <div className={`p-3 raw-container `}>{renderRawData()}</div>
+                <div className={`p-3 raw-container `} data-cy="preview-raw-data-container">
+                  {renderRawData()}
+                </div>
               </Tab.Pane>
             </Tab.Content>
           </Row>

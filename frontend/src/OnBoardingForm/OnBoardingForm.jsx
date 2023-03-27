@@ -10,6 +10,9 @@ import { getuserName } from '@/_helpers/utils';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
 import LogoLightMode from '@assets/images/Logomark.svg';
 import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
+import startsWith from 'lodash.startswith';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
   const Logo = darkMode ? LogoDarkMode : LogoLightMode;
@@ -21,6 +24,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     companyName: '',
     role: '',
     companySize: '',
+    phoneNumber: '',
   });
 
   const pageProps = {
@@ -43,15 +47,18 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           token: token,
           organizationToken: organizationToken,
           ...(password?.length > 0 && { password }),
+          phoneNumber: formData?.phoneNumber,
         })
         .then((user) => {
           authenticationService.updateUser(user);
           authenticationService.deleteLoginOrganizationId();
           setIsLoading(false);
           navigate('/');
+          setCompleted(false);
         })
         .catch((res) => {
           setIsLoading(false);
+          setCompleted(false);
           toast.error(res.error || 'Something went wrong', {
             id: 'toast-login-auth-error',
             position: 'top-center',
@@ -65,7 +72,8 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     `Where do you work ${userDetails?.name}?`,
     'What best describes your role?',
     'What is the size of your company?',
-    'What is the size of your company?', //dummy placeholder
+    'Enter your phone number',
+    'Enter your phone number', //dummy for styling
   ];
   const FormSubTitles = ['This information will help us improve ToolJet.'];
 
@@ -165,8 +173,10 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
               <Page0 {...pageProps} />
             ) : page == 1 ? (
               <Page1 {...pageProps} />
-            ) : (
+            ) : page == 2 ? (
               <Page2 {...pageProps} setIsLoading={setIsLoading} />
+            ) : (
+              <Page3 {...pageProps} setIsLoading={setIsLoading} />
             )}
           </div>
         </div>
@@ -210,8 +220,30 @@ export function Page1({ formData, setFormData, setPage, page, setCompleted, isLo
   );
 }
 
-export function Page2({ formData, setFormData, setPage, page, setCompleted, isLoading, setIsLoading, darkMode }) {
+export function Page2({ formData, setFormData, setPage, page, setCompleted, isLoading, darkMode }) {
   const props = { formData, setFormData, fieldType: 'companySize' };
+  const btnProps = {
+    setPage,
+    page,
+    formData,
+    setCompleted,
+    isLoading,
+    darkMode,
+  };
+  return (
+    <div className="onboarding-pages-wrapper">
+      {ON_BOARDING_SIZE.map((field) => (
+        <div key={field}>
+          <OnBoardingRadioInput {...props} field={field} />
+        </div>
+      ))}
+      <ContinueButton {...btnProps} />
+    </div>
+  );
+}
+
+export function Page3({ formData, setFormData, setPage, page, setCompleted, isLoading, setIsLoading, darkMode }) {
+  const props = { formData, setFormData };
   const btnProps = {
     setPage,
     page,
@@ -223,11 +255,20 @@ export function Page2({ formData, setFormData, setPage, page, setCompleted, isLo
   };
   return (
     <div className="onboarding-pages-wrapper">
-      {ON_BOARDING_SIZE.map((field) => (
-        <div key={field}>
-          <OnBoardingRadioInput {...props} field={field} />
-        </div>
-      ))}
+      <PhoneInput
+        inputProps={{
+          autoFocus: true,
+        }}
+        value={formData?.phoneNumber}
+        inputClass="tj-onboarding-phone-input"
+        containerClass="tj-onboarding-phone-input-wrapper"
+        onChange={(phone) => setFormData({ ...formData, phoneNumber: phone })}
+        isValid={(inputNumber, country, countries) => {
+          return countries.some((country) => {
+            return startsWith(inputNumber, country.dialCode) || startsWith(country.dialCode, inputNumber);
+          });
+        }}
+      />
       <ContinueButton {...btnProps} />
     </div>
   );

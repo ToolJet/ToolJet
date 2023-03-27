@@ -1,5 +1,5 @@
 import React from 'react';
-import { datasourceService, authenticationService, pluginsService } from '@/_services';
+import { datasourceService, authenticationService, pluginsService, globalDatasourceService } from '@/_services';
 import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
@@ -53,6 +53,9 @@ class DataSourceManagerComponent extends React.Component {
       filteredDatasources: [],
       activeDatasourceList: '#alldatasources',
       suggestingDatasources: false,
+      scope: props?.scope,
+      modalProps: props?.modalProps ?? {},
+      showBackButton: props?.showBackButton ?? true,
     };
   }
 
@@ -155,6 +158,7 @@ class DataSourceManagerComponent extends React.Component {
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
     const appVersionId = this.props.editingVersionId;
+    const scope = this.state?.scope || selectedDataSource?.scope;
 
     const parsedOptions = Object.keys(options).map((key) => {
       const keyMeta = selectedDataSource.options[key];
@@ -166,28 +170,45 @@ class DataSourceManagerComponent extends React.Component {
       };
     });
     if (name.trim() !== '') {
+      let service = scope === 'global' ? globalDatasourceService : datasourceService;
       if (selectedDataSource.id) {
         this.setState({ isSaving: true });
-        datasourceService.save(selectedDataSource.id, appId, name, parsedOptions).then(() => {
-          this.setState({ isSaving: false });
-          this.hideModal();
-          toast.success(
-            this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceSaved', 'Datasource Saved'),
-            { position: 'top-center' }
-          );
-          this.props.dataSourcesChanged();
-        });
+        service
+          .save(selectedDataSource.id, name, parsedOptions, appId)
+          .then(() => {
+            this.setState({ isSaving: false });
+            this.hideModal();
+            toast.success(
+              this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceSaved', 'Datasource Saved'),
+              { position: 'top-center' }
+            );
+            this.props.dataSourcesChanged();
+            this.props.globalDataSourcesChanged();
+          })
+          .catch(({ error }) => {
+            this.setState({ isSaving: false });
+            this.hideModal();
+            error && toast.error(error, { position: 'top-center' });
+          });
       } else {
         this.setState({ isSaving: true });
-        datasourceService.create(appId, appVersionId, pluginId, name, kind, parsedOptions).then(() => {
-          this.setState({ isSaving: false });
-          this.hideModal();
-          toast.success(
-            this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
-            { position: 'top-center' }
-          );
-          this.props.dataSourcesChanged();
-        });
+        service
+          .create(pluginId, name, kind, parsedOptions, appId, appVersionId, scope)
+          .then(() => {
+            this.setState({ isSaving: false });
+            this.hideModal();
+            toast.success(
+              this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
+              { position: 'top-center' }
+            );
+            this.props.dataSourcesChanged();
+            this.props.globalDataSourcesChanged();
+          })
+          .catch(({ error }) => {
+            this.setState({ isSaving: false });
+            this.hideModal();
+            error && toast.error(error, { position: 'top-center' });
+          });
       }
     } else {
       toast.error(
@@ -313,6 +334,7 @@ class DataSourceManagerComponent extends React.Component {
                         onClear={this.handleBackToAllDatasources}
                         queryString={this.state.queryString}
                         activeDatasourceList={this.state.activeDatasourceList}
+                        scope={this.state.scope}
                       />
                     </div>
                     {datasources.map((datasource) => (
@@ -600,9 +622,11 @@ class DataSourceManagerComponent extends React.Component {
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
           animation={false}
           onExit={this.onExit}
+          container={this.props.container}
+          {...this.props.modalProps}
         >
           <Modal.Header className="justify-content-start">
-            {selectedDataSource && (
+            {selectedDataSource && this.props.showBackButton && (
               <div
                 className={`back-btn me-3 ${this.props.darkMode ? 'dark' : ''}`}
                 role="button"
@@ -869,7 +893,7 @@ const EmptyStateContainer = ({
   );
 };
 
-const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceList, dataCy }) => {
+const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceList, dataCy, scope }) => {
   const [searchText, setSearchText] = React.useState(queryString ?? '');
   const { t } = useTranslation();
   const handleChange = (e) => {
@@ -900,12 +924,18 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
     if (searchText === '') {
       onClear();
     }
+    let element = document.querySelector('.input-icon .form-control:not(:first-child)');
+
+    if (scope === 'global') {
+      element = document.querySelector('.input-icon .form-control');
+    }
+
     if (searchText) {
-      document.querySelector('.input-icon .form-control:not(:first-child)').style.paddingLeft = '0.5rem';
+      element.style.paddingLeft = '0.5rem';
     }
 
     return () => {
-      document.querySelector('.input-icon .form-control:not(:first-child)').style.paddingLeft = '2.5rem';
+      element.style.paddingLeft = '2.5rem';
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);
