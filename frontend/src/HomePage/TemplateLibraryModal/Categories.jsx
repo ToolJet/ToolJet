@@ -11,7 +11,6 @@ const categoryTitles = {
 
 export default function Categories(props) {
   const { categories, selectedCategory, selectCategory } = props;
-  console.log('check', selectedCategory);
   return (
     <div className="mt-2 template-categories">
       {categories.map((category) => (

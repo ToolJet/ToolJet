@@ -2,25 +2,21 @@
   "iconList": [
     "apps",
     "archive",
-    "arrowsort",
-    "arrowup",
-    "booksearch",
-    "branch",
-    "bug",
+    "globe",
     "floppydisk",
-    "folder",
+    "layers",
     "folderupload",
     "grid",
     "home",
-    "sadrectangle",
     "sentfast",
     "server",
-    "setting",
+    "globe",
     "share",
     "shield",
-    "signpost",
     "sun",
-    "table"
+    "table",
+    "menuhome"
+
   ],
   "defaultIcon": "apps"
 }

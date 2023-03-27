@@ -290,7 +290,6 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                   <>
                     <tr {...row.getRowProps()} key={index}>
                       {row.cells.map((cell, index) => {
-                        console.log('----qa-checking----', cell);
                         const dataCy =
                           cell.column.id === 'selection'
                             ? `${cell.row.values?.id}-checkbox`

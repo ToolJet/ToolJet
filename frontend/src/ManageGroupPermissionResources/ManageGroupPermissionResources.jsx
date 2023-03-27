@@ -35,9 +35,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   }
 
   componentDidMount() {
-    console.log('props', this.props);
     if (this.props.groupPermissionId) this.fetchGroupAndResources(this.props.groupPermissionId);
-    // searchUsersNotInGroup('',)
   }
 
   componentDidUpdate(prevProps) {
@@ -79,12 +77,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       groupPermissionService
         .getUsersNotInGroup(query, groupPermissionId)
         .then(({ users }) => {
-          console.log('called', users, groupPermissionId);
           resolve(
             users.map((user) => {
               return {
-                // name: `${this.userFullName(user)} (${user.email})`,
-                // value: user.id,
+                name: `${this.userFullName(user)} (${user.email})`,
+                value: user.id,
                 first_name: user.first_name,
                 last_name: user.last_name,
                 email: user.email,
@@ -146,11 +143,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       update: action === 'edit',
     };
 
-    if (action === 'readOnDashboard') {
-      actionParams['readOnDashboard'] = !this.canAppGroupPermission(app, groupPermissionId, 'readOnDashboard');
+    if (action === 'hideFromDashboard') {
+      actionParams['hideFromDashboard'] = !this.canAppGroupPermission(app, groupPermissionId, 'hideFromDashboard');
     }
 
-    if (action === 'edit') actionParams['readOnDashboard'] = false;
+    if (action === 'edit') actionParams['hideFromDashboard'] = false;
 
     groupPermissionService
       .updateAppGroupPermission(groupPermissionId, appGroupPermission.id, actionParams)
@@ -171,7 +168,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         return appGroupPermission?.read && appGroupPermission?.update;
       case 'view':
         return appGroupPermission?.read && !appGroupPermission?.update;
-      case 'readOnDashboard':
+      case 'hideFromDashboard':
         return appGroupPermission?.read && appGroupPermission?.read_on_dashboard;
       default:
         return false;
@@ -533,7 +530,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                                 this.updateAppGroupPermission(
                                                   app,
                                                   groupPermission.id,
-                                                  'readOnDashboard'
+                                                  'hideFromDashboard'
                                                 );
                                               }}
                                               disabled={
@@ -543,7 +540,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                               checked={this.canAppGroupPermission(
                                                 app,
                                                 groupPermission.id,
-                                                'readOnDashboard'
+                                                'hideFromDashboard'
                                               )}
                                             />
                                             <span

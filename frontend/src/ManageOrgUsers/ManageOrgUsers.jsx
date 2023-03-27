@@ -43,7 +43,6 @@ class ManageOrgUsersComponent extends React.Component {
   handleValidation() {
     let fields = this.state.fields;
     let errors = {};
-    console.log('fullname', fields['fullName']);
     if (!fields['fullName']) {
       errors['fullName'] = 'This field is required';
     }
@@ -174,7 +173,6 @@ class ManageOrgUsersComponent extends React.Component {
 
   createUser = (event) => {
     event.preventDefault();
-    console.log('fields check', this.state);
 
     if (this.handleValidation()) {
       if (!this.state.fields.fullName?.trim()) {
@@ -190,7 +188,6 @@ class ManageOrgUsersComponent extends React.Component {
       this.setState({
         creatingUser: true,
       });
-      console.log('state', this.state);
 
       organizationUserService
         .create(

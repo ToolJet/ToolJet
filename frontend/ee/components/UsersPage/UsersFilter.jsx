@@ -39,7 +39,6 @@ const UsersFilter = ({ filterList }) => {
   };
 
   useEffect(() => {
-    console.log('options', options);
     const debouncedFilter = debounce(() => {
       filterList(options);
     }, 500);

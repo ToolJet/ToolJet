@@ -1570,7 +1570,7 @@ button {
   height: 36px;
   width: 100%;
   padding: 0 16px;
-  background-color: $dark-background  !important;
+  background-color: var(--base) !important;
   color: #ffffff !important;
   outline: none;
   font-family: "Roboto", sans-serif;
@@ -4517,41 +4517,41 @@ input[type="text"] {
   }
 }
 
-// .onboarding-modal.dark .modal-content {
-//   @extend .modal-content.home-modal-component.dark;
-// }
+.onboarding-modal.dark .modal-content {
+  @extend .modal-content.home-modal-component.dark;
+}
 
-// .modal-content.home-modal-component.dark {
-//   background-color: $bg-dark-light !important;
-//   color: $white !important;
+.modal-content.home-modal-component.dark {
+  background-color: $bg-dark-light  !important;
+  color: $white  !important;
 
-//   .modal-header {
-//     background-color: $bg-dark-light !important;
-//   }
+  .modal-header {
+    background-color: $bg-dark-light  !important;
+  }
 
-//   .btn-close {
-//     filter: brightness(0) invert(1);
-//   }
+  .btn-close {
+    filter: brightness(0) invert(1);
+  }
 
-//   .form-control {
-//     border-color: $border-grey-dark !important;
-//     color: inherit;
-//   }
+  .form-control {
+    border-color: $border-grey-dark  !important;
+    color: inherit;
+  }
 
-//   input {
-//     background-color: $bg-dark-light !important;
-//   }
+  input {
+    background-color: $bg-dark-light  !important;
+  }
 
-//   .form-select {
-//     background-color: $bg-dark !important;
-//     color: $white !important;
-//     border-color: $border-grey-dark !important;
-//   }
+  .form-select {
+    background-color: $bg-dark  !important;
+    color: $white  !important;
+    border-color: $border-grey-dark  !important;
+  }
 
-//   .text-muted {
-//     color: $white !important;
-//   }
-// }
+  .text-muted {
+    color: $white  !important;
+  }
+}
 
 .radio-img {
   input {
@@ -7022,7 +7022,6 @@ tbody {
   max-width: 288px;
   background-color: var(--base);
   border-right: 1px solid var(--slate5);
-  // min-height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr auto;
 }
@@ -8712,7 +8711,7 @@ tbody {
 
 .sso-main-box {
   justify-content: center;
-  background: var(--base);
+  background: var(--slate6);
   padding: 8px 16px;
   width: 96px;
   height: 40px;
@@ -9444,36 +9443,6 @@ tbody {
 }
 
 
-//   background-color: var(--base);
-
-//   .css-1bugkci-control,
-//   .css-1bugkci-control:hover {
-//     background: var(--base);
-//     border: 1px solid var(--slate7) !important;
-//   }
-
-//   .css-6t9fnh-control {
-//     background: var(--base);
-//   }
-
-//   .css-2kg7t4-MenuList {
-//     div {
-//       background-color: var(--base);
-
-//       &:hover {
-//         background-color: var(--slate3) !important;
-//         border-radius: 6px;
-
-//         .tj-org-dropdown,
-//         .org-name {
-//           background-color: var(--slate3) !important;
-//         }
-//       }
-//     }
-//   }
-// }
-
-
 .org-custom-select-header-wrap {
   border-bottom: 1px solid var(--slate5);
 }
@@ -9705,6 +9674,13 @@ tbody {
   flex-direction: column;
   font-family: 'IBM Plex Sans';
   font-style: normal;
+
+  .text-danger {
+    font-weight: 400 !important;
+    font-size: 10px !important;
+    line-height: 16px !important;
+    color: var(--tomato10) !important;
+  }
 
   label {
     font-family: 'IBM Plex Sans';

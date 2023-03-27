@@ -134,7 +134,6 @@ function InviteUsersForm({
                         ref={hiddenFileInput}
                         onChange={(e) => {
                           const file = e.target.files[0];
-                          console.log('files', file);
                           if (Math.round(file.size / 1024) > 1024) {
                             toast.error('File size cannot exceed more than 1MB');
                             e.target.value = null;

@@ -37,16 +37,13 @@ function MultiSelectUser({
     [setSearchText, onSearch, selectedValues]
   );
 
-  function renderCustom(props, option, snapshot) {
-    console.log('options', option, snapshot, props);
-
+  function renderCustom(option) {
     return (
       <div className={`item-renderer`}>
         <div>
           <input
             type="checkbox"
             onClick={(e) => {
-              console.log('click working', e);
               onSelect([...selectedValues, option]);
             }}
           />
