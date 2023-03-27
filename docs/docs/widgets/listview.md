@@ -38,7 +38,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/properties.png" alt="ToolJet - List view widget" />
+<img className="screenshot-full" src="/img/widgets/list-view/props2.png" alt="ToolJet - List view widget" width="300"/>
 
 </div>
 
@@ -47,6 +47,8 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 | List data | Enter the data that you want to display into the widget. Data in the form of an array of objects or data from a query that returns an array of objects.| `{{ [ {id: 0, name: ABC, email: abc@bla.com}, {id: 1, name: XYZ, email: xyz@bla.com} ] }}` or `{{queries.xyz.data}}` |
 | Row height | Enter a numerical value to set the row height accordingly. | Any number between `1` to `100` |
 | Show bottom border | This property allows you to show or hide the row bottom border. | By default its `{{true}}`, set `{{false}}` to hide the border  |
+| Enable pagination | Enable it to set the number of rows per page. | Pagination is disabled by default. You can programmatically set to `{{true}}` to show a particular number of rows per page.  |
+
 
 ### General
 #### Tooltip
