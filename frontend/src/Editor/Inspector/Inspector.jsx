@@ -112,8 +112,8 @@ export const Inspector = ({
 
   function paramUpdated(param, attr, value, paramType) {
     console.log({ param, attr, value, paramType });
-    let newDefinition = _.cloneDeep(component.component.definition);
 
+    let newDefinition = _.cloneDeep(component.component.definition);
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
     if (!paramObject) {
