@@ -33,15 +33,14 @@ export const NumberInput = function NumberInput({
   };
 
   useEffect(() => {
-    setValue(parseInt(properties.value));
-  }, [properties.value]);
+    const { minValue } = properties;
+    if (value < minValue) setValue(parseInt(properties.minValue));
+  }, [properties.minValue]);
 
   useEffect(() => {
-    if (!isNaN(value)) {
-      setExposedVariable('value', value);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+    const { value, maxValue } = properties;
+    if (value > maxValue) setValue(parseInt(properties.maxValue));
+  }, [properties.maxValue]);
 
   const computedStyles = {
     height,
