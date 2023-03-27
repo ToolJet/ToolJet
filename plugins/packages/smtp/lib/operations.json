@@ -42,9 +42,9 @@
       "className": "codehinter-plugins",
       "lineNumbers": false
     },
-    "cc_to": {
+    "cc": {
       "label": "CC mail to",
-      "key": "cc_to",
+      "key": "cc",
       "type": "codehinter",
       "lineNumbers": false,
       "description": "Enter CC recipient(s)",
@@ -53,9 +53,9 @@
       "height": "36px",
       "className": "codehinter-plugins"
     },
-    "bcc_to": {
+    "bcc": {
       "label": "BCC mail to",
-      "key": "bcc_to",
+      "key": "bcc",
       "type": "codehinter",
       "lineNumbers": false,
       "description": "Enter BCC recipient(s)",
