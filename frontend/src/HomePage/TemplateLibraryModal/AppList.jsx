@@ -57,8 +57,10 @@ const SearchBoxContainer = ({ onChange, queryString }) => {
     }
 
     return () => {
-      document.querySelector('.template-search-box .input-icon .form-control:not(:first-child)').style.paddingLeft =
-        '2.5rem';
+      if (document.querySelector('.template-search-box .input-icon .form-control:not(:first-child)')) {
+        document.querySelector('.template-search-box .input-icon .form-control:not(:first-child)').style.paddingLeft =
+          '2.5rem';
+      }
     };
   }, [searchText]);
 

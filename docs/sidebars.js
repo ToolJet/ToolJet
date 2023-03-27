@@ -25,6 +25,7 @@ const sidebars = {
         'setup/heroku',
         'setup/ec2',
         'setup/ecs',
+        'setup/openshift',
         'setup/kubernetes',
         'setup/kubernetes-gke',
         'setup/kubernetes-aks',
@@ -103,6 +104,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Components library',
           'items': [
+            'widgets/bounded-box',
             'widgets/button',
             'widgets/button-group',
             'widgets/calendar',
@@ -291,6 +293,7 @@ const sidebars = {
         ]
       },
       'items': [
+        'how-to/build-plugin-for-marketplace',
         'how-to/use-inspector',
         'how-to/use-form-component',
         'how-to/access-cellvalue-rowdata',

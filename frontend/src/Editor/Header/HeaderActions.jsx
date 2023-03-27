@@ -1,5 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
+import { Tooltip } from 'react-tooltip';
 
 function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout, toggleCurrentLayout }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -64,11 +65,11 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout
       <svg
         onClick={handleUndo}
         xmlns="http://www.w3.org/2000/svg"
+        data-cy={`editor-undo-button`}
         className={cx('undo-button cursor-pointer icon icon-tabler icon-tabler-arrow-back-up', {
           disabled: !canUndo,
         })}
         width="44"
-        data-tip="undo"
         height="44"
         viewBox="0 0 24 24"
         strokeWidth="1.5"
@@ -76,6 +77,8 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
+        data-tooltip-id="tooltip-for-undo"
+        data-tooltip-content="Undo"
       >
         <path stroke="none" d="M0 0h24v24H0z" fill="none">
           <title>undo</title>
@@ -86,9 +89,9 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout
       </svg>
       <svg
         title="redo"
-        data-tip="redo"
         onClick={handleRedo}
         xmlns="http://www.w3.org/2000/svg"
+        data-cy={`editor-redo-button`}
         className={cx('redo-button cursor-pointer icon icon-tabler icon-tabler-arrow-forward-up', {
           disabled: !canRedo,
         })}
@@ -100,12 +103,16 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
+        data-tooltip-id="tooltip-for-redo"
+        data-tooltip-content="Redo"
       >
         <path stroke="none" d="M0 0h24v24H0z" fill="none">
           <title>redo</title>
         </path>
         <path d="M15 13l4 -4l-4 -4m4 4h-11a4 4 0 0 0 0 8h1" />
       </svg>
+      <Tooltip id="tooltip-for-undo" className="tooltip" />
+      <Tooltip id="tooltip-for-redo" className="tooltip" />
     </div>
   );
 }

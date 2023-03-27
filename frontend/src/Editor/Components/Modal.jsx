@@ -53,23 +53,15 @@ export const Modal = function Modal({
   );
 
   useEffect(() => {
-    if (exposedVariables.show !== showModal) {
-      setExposedVariable('show', showModal).then(() => fireEvent(showModal ? 'onOpen' : 'onClose'));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal]);
-
-  useEffect(() => {
     const canShowModal = exposedVariables.show ?? false;
-    if (canShowModal !== showModal) {
-      setShowModal(canShowModal);
-      fireEvent(canShowModal ? 'onOpen' : 'onClose');
-    }
+    setShowModal(exposedVariables.show ?? false);
+    fireEvent(canShowModal ? 'onOpen' : 'onClose');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
 
   function hideModal() {
     setShowModal(false);
+    setExposedVariable('show', false).then(() => fireEvent('onClose'));
   }
 
   const customStyles = {
@@ -121,6 +113,7 @@ export const Modal = function Modal({
           onClick={(event) => {
             event.stopPropagation();
             setShowModal(true);
+            setExposedVariable('show', true).then(() => fireEvent('onOpen'));
           }}
         >
           {triggerButtonLabel ?? 'Show Modal'}
@@ -205,7 +198,15 @@ const Component = ({ children, ...restProps }) => {
         <BootstrapModal.Header style={{ ...customStyles.modalHeader }}>
           <BootstrapModal.Title id="contained-modal-title-vcenter">{title}</BootstrapModal.Title>
           {!hideCloseButton && (
-            <span className="cursor-pointer" size="sm" onClick={() => hideModal()}>
+            <span
+              className="cursor-pointer"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                hideModal();
+              }}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="icon icon-tabler icon-tabler-x"

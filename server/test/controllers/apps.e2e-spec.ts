@@ -417,9 +417,9 @@ describe('apps controller', () => {
         user: adminUserData.user,
       });
 
-      const version = await createApplicationVersion(app, application);
+      await createApplicationVersion(app, application);
 
-      await createAppEnvironments(app, version.id);
+      await createAppEnvironments(app, adminUserData.user.organizationId);
 
       let response = await request(app.getHttpServer())
         .post(`/api/apps/${application.id}/clone`)
@@ -931,7 +931,7 @@ describe('apps controller', () => {
             appVersion: version,
           });
 
-          const appEnvironments = await createAppEnvironments(app, version.id);
+          const appEnvironments = await createAppEnvironments(app, adminUserData.user.organizationId);
 
           await createDataSourceOption(app, {
             dataSource,
@@ -1265,12 +1265,15 @@ describe('apps controller', () => {
           delete: false,
         });
 
+        let count = 0;
+
         for (const userData of [adminUserData, developerUserData]) {
+          count++;
           const response = await request(app.getHttpServer())
             .put(`/api/apps/${application.id}/versions/${version.id}`)
             .set('Authorization', authHeaderForUser(userData.user))
             .send({
-              name: 'test',
+              name: 'test' + count,
               definition: { components: {} },
             });
 
@@ -1481,9 +1484,9 @@ describe('apps controller', () => {
         slug: 'foo',
       });
 
-      const version = await createApplicationVersion(app, application);
+      await createApplicationVersion(app, application);
 
-      await createAppEnvironments(app, version.id);
+      await createAppEnvironments(app, adminUserData.user.organizationId);
 
       // setup app permissions for developer
       const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({

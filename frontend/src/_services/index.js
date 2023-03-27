@@ -18,3 +18,4 @@ export * from './plugins.service';
 export * from './marketplace.service';
 export * from './tooljetDatabase.service';
 export * from './workflow_executions.service';
+export * from './globalDatasource.service';

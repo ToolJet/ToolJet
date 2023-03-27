@@ -101,7 +101,7 @@ class Chart extends React.Component {
 
     if (plotFromJson) {
       items.push({
-        title: 'Json description',
+        title: 'JSON description',
         children: (
           <CodeHinter
             currentState={this.props.currentState}

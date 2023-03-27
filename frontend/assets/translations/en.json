@@ -106,7 +106,7 @@
         "workEmail": "Email",
         "joinTooljet": "Join ToolJet",
         "getStartedForFree": "Get started for free",
-        "passwordCharacter": "Password must be at least 5 character",
+        "passwordCharacter": "Password must be at least 5 characters",
         "enterFullName": "Enter your full name",
         "enterNewPassword": "Enter new password"
     },
@@ -186,6 +186,7 @@
             "eventManager": {
                 "event": "Event",
                 "action": "Action",
+                "debounce": "Debounce",
                 "actionOptions": "Action Options",
                 "message": "Message",
                 "alertType": "Alert Type",
