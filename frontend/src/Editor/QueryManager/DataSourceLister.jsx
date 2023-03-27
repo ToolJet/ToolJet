@@ -13,6 +13,7 @@ function DataSourceLister({
   handleBackButton,
   darkMode,
   dataSourceModalHandler,
+  showAddDatasourceBtn = true,
 }) {
   const [allSources, setAllSources] = useState([...dataSources, ...staticDataSources]);
   const { t } = useTranslation();
@@ -65,10 +66,12 @@ function DataSourceLister({
           </div>
         );
       })}
-      <div className="query-datasource-card" style={computedStyles} onClick={dataSourceModalHandler}>
-        <AddIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
-        <p>{t('editor.queryManager.addDatasource', 'Add datasource')}</p>
-      </div>
+      {showAddDatasourceBtn && (
+        <div className="query-datasource-card" style={computedStyles} onClick={dataSourceModalHandler}>
+          <AddIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
+          <p>{t('editor.queryManager.addDatasource', 'Add datasource')}</p>
+        </div>
+      )}
     </div>
   );
 }

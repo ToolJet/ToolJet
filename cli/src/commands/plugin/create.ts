@@ -74,6 +74,21 @@ export default class Create extends Command {
 
     let repoUrl;
 
+    const commonHygenArgs = [
+      'plugin',
+      'new',
+      '--name',
+      `${args.plugin_name}`,
+      '--type',
+      `${type}`,
+      '--display_name',
+      `${name}`,
+      '--plugins_path',
+      `${pluginsPath}`,
+    ];
+
+    const hygenArgs = !marketplace ? [...commonHygenArgs, '--docs_path', `${docsPath}`] : commonHygenArgs;
+
     if (marketplace) {
       const buffer = fs.readFileSync(path.join('server', 'src', 'assets', 'marketplace', 'plugins.json'), 'utf8');
       const pluginsJson = JSON.parse(buffer);
@@ -88,21 +103,6 @@ export default class Create extends Command {
         required: false,
       });
     }
-
-    const hygenArgs = [
-      'plugin',
-      'new',
-      '--name',
-      `${args.plugin_name}`,
-      '--type',
-      `${type}`,
-      '--display_name',
-      `${name}`,
-      '--plugins_path',
-      `${pluginsPath}`,
-      '--docs_path',
-      `${docsPath}`,
-    ];
 
     CliUx.ux.action.start('creating plugin');
 

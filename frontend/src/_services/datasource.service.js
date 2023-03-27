@@ -17,25 +17,25 @@ function getAll(appVersionId) {
   return fetch(`${config.apiUrl}/data_sources?` + searchParams, requestOptions).then(handleResponse);
 }
 
-function create(app_id, app_version_id, plugin_id, name, kind, options) {
+function create(plugin_id, name, kind, options, app_id, app_version_id) {
   const body = {
-    app_id,
-    app_version_id,
     plugin_id,
     name,
     kind,
     options,
+    app_id,
+    app_version_id,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/data_sources`, requestOptions).then(handleResponse);
 }
 
-function save(id, app_id, name, options) {
+function save(id, name, options, app_id) {
   const body = {
-    app_id,
     name,
     options,
+    app_id,
   };
 
   const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body) };
