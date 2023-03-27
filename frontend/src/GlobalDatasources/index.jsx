@@ -47,7 +47,7 @@ export const GlobalDatasources = (props) => {
       .catch(() => setDataSources([]));
   };
 
-  const handleToggleSourceManaferModal = () => {
+  const handleToggleSourceManagerModal = () => {
     toggleDataSourceManagerModal(
       (prevState) => !prevState,
       () => setEditing((prev) => !prev)
@@ -56,10 +56,10 @@ export const GlobalDatasources = (props) => {
 
   const handleModalVisibility = () => {
     if (selectedDataSource) {
-      return setSelectedDataSource(null, () => handleToggleSourceManaferModal());
+      return setSelectedDataSource(null, () => handleToggleSourceManagerModal());
     }
 
-    handleToggleSourceManaferModal();
+    handleToggleSourceManagerModal();
   };
 
   const value = useMemo(
