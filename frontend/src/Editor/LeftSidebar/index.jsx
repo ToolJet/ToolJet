@@ -10,6 +10,7 @@ import { LeftSidebarComment } from './SidebarComment';
 import LeftSidebarPageSelector from './SidebarPageSelector';
 import { ConfirmDialog } from '@/_components';
 import config from 'config';
+import { usePanelHeight } from '@/stores/queryPanelStore';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -20,8 +21,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     darkMode = false,
     components,
     toggleComments,
-    dataSources = [],
-    globalDataSources = [],
     dataSourcesChanged,
     globalDataSourcesChanged,
     dataQueriesChanged,
@@ -48,8 +47,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
     apps,
     dataQueries,
     clonePage,
-    queryPanelHeight,
   } = props;
+  const queryPanelHeight = usePanelHeight();
   const [selectedSidebarItem, setSelectedSidebarItem] = useState();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -109,26 +108,21 @@ export const LeftSidebar = forwardRef((props, ref) => {
         setSelectedComponent={setSelectedComponent}
         removeComponent={removeComponent}
         runQuery={runQuery}
-        dataSources={dataSources}
         popoverContentHeight={popoverContentHeight}
       />
-      {dataSources?.length > 0 && (
-        <LeftSidebarDataSources
-          darkMode={darkMode}
-          selectedSidebarItem={selectedSidebarItem}
-          setSelectedSidebarItem={handleSelectedSidebarItem}
-          appId={appId}
-          editingVersionId={appVersionsId}
-          dataSources={dataSources}
-          globalDataSources={globalDataSources}
-          dataSourcesChanged={dataSourcesChanged}
-          globalDataSourcesChanged={globalDataSourcesChanged}
-          dataQueriesChanged={dataQueriesChanged}
-          toggleDataSourceManagerModal={toggleDataSourceManagerModal}
-          showDataSourceManagerModal={showDataSourceManagerModal}
-          popoverContentHeight={popoverContentHeight}
-        />
-      )}
+      <LeftSidebarDataSources
+        darkMode={darkMode}
+        selectedSidebarItem={selectedSidebarItem}
+        setSelectedSidebarItem={handleSelectedSidebarItem}
+        appId={appId}
+        editingVersionId={appVersionsId}
+        dataSourcesChanged={dataSourcesChanged}
+        globalDataSourcesChanged={globalDataSourcesChanged}
+        dataQueriesChanged={dataQueriesChanged}
+        toggleDataSourceManagerModal={toggleDataSourceManagerModal}
+        showDataSourceManagerModal={showDataSourceManagerModal}
+        popoverContentHeight={popoverContentHeight}
+      />
       {config.COMMENT_FEATURE_ENABLE && (
         <LeftSidebarComment
           appVersionsId={appVersionsId}

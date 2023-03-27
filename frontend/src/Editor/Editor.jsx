@@ -1,12 +1,10 @@
 import React from 'react';
 import {
-  datasourceService,
   dataqueryService,
   appService,
   authenticationService,
   appVersionService,
   orgEnvironmentVariableService,
-  globalDatasourceService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -56,6 +54,7 @@ import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg'
 import EditorHeader from './Header';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
+import { useDataSourcesStore } from '@/stores/dataSourceStore';
 
 setAutoFreeze(false);
 enablePatches();
@@ -122,8 +121,6 @@ class EditorComponent extends React.Component {
       users: null,
       appId,
       editingVersion: null,
-      loadingDataSources: true,
-      loadingGlobalDataSources: true,
       loadingDataQueries: true,
       showLeftSidebar: true,
       showComments: false,
@@ -162,9 +159,6 @@ class EditorComponent extends React.Component {
       pages: {},
       draftQuery: null,
       selectedDataSource: null,
-      queryPanelHeight: this.queryManagerPreferences?.isExpanded
-        ? this.queryManagerPreferences?.queryPanelHeight
-        : 95 ?? 70,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -253,7 +247,9 @@ class EditorComponent extends React.Component {
     this.socket?.addEventListener('message', (event) => {
       if (event.data === 'versionReleased') this.fetchApp();
       else if (event.data === 'dataQueriesChanged') this.fetchDataQueries();
-      else if (event.data === 'dataSourcesChanged') this.fetchDataSources();
+      else if (event.data === 'dataSourcesChanged') {
+        this.fetchDataSources(this.state.editingVersion?.id);
+      }
     });
   }
 
@@ -276,37 +272,13 @@ class EditorComponent extends React.Component {
     this.canRedo = false;
   };
 
-  fetchDataSources = () => {
-    this.setState(
-      {
-        loadingDataSources: true,
-      },
-      () => {
-        datasourceService.getAll(this.state.editingVersion?.id).then((data) =>
-          this.setState({
-            dataSources: data.data_sources,
-            loadingDataSources: false,
-          })
-        );
-      }
-    );
+  fetchDataSources = (id) => {
+    useDataSourcesStore.getState().actions.fetchDataSources(id);
   };
 
   fetchGlobalDataSources = () => {
-    this.setState(
-      {
-        loadingGlobalDataSources: true,
-      },
-      () => {
-        const { organization_id: organizationId } = this.state.currentUser;
-        globalDatasourceService.getAll(organizationId).then((data) =>
-          this.setState({
-            globalDataSources: data.data_sources,
-            loadingGlobalDataSources: false,
-          })
-        );
-      }
-    );
+    const { organization_id: organizationId } = this.state.currentUser;
+    useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
   };
 
   fetchDataQueries = () => {
@@ -369,14 +341,6 @@ class EditorComponent extends React.Component {
                     },
                   },
                   addingQuery: true,
-                  // showQuerySearchField: false,
-                });
-              }
-
-              if (data.data_queries.length === 0) {
-                this.setState({
-                  dataQueriesDefaultText: 'No queries added',
-                  // showQuerySearchField: false,
                 });
               }
             }
@@ -464,7 +428,7 @@ class EditorComponent extends React.Component {
         }
       );
 
-      this.fetchDataSources();
+      this.fetchDataSources(data.editing_version?.id);
       this.fetchDataQueries();
       this.fetchGlobalDataSources();
       initEditorWalkThrough();
@@ -492,7 +456,7 @@ class EditorComponent extends React.Component {
     });
 
     this.saveEditingVersion();
-    this.fetchDataSources();
+    this.fetchDataSources(this.state.editingVersion?.id);
     this.fetchDataQueries();
     this.initComponentVersioning();
   };
@@ -509,7 +473,7 @@ class EditorComponent extends React.Component {
         })
       );
     } else {
-      this.fetchDataSources();
+      this.fetchDataSources(this.state.editingVersion?.id);
     }
   };
 
@@ -1745,11 +1709,6 @@ class EditorComponent extends React.Component {
     });
   };
 
-  computeCurrentQueryPanelHeight = (height) => {
-    this.setState({
-      queryPanelHeight: height,
-    });
-  };
   render() {
     const {
       currentSidebarTab,
@@ -1758,15 +1717,12 @@ class EditorComponent extends React.Component {
       appId,
       slug,
       dataSources,
-      globalDataSources = [],
       loadingDataQueries,
       dataQueries,
-      loadingDataSources,
       addingQuery,
       selectedQuery,
       editingQuery,
       app,
-      queryPanelHeight,
       showLeftSidebar,
       currentState,
       isLoading,
@@ -1855,8 +1811,6 @@ class EditorComponent extends React.Component {
                 components={currentState.components}
                 appId={appId}
                 darkMode={this.props.darkMode}
-                dataSources={this.state.dataSources}
-                globalDataSources={globalDataSources}
                 dataSourcesChanged={this.dataSourcesChanged}
                 dataQueriesChanged={this.dataQueriesChanged}
                 globalDataSourcesChanged={this.globalDataSourcesChanged}
@@ -1894,7 +1848,6 @@ class EditorComponent extends React.Component {
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
                 dataQueries={dataQueries}
-                queryPanelHeight={queryPanelHeight}
               />
               {!showComments && (
                 <Selecto
@@ -2013,7 +1966,7 @@ class EditorComponent extends React.Component {
                     )}
                   </div>
                 </div>
-                <QueryPanel computeCurrentQueryPanelHeight={this.computeCurrentQueryPanelHeight}>
+                <QueryPanel>
                   {({
                     toggleQueryEditor,
                     showSaveConfirmation,
@@ -2106,7 +2059,7 @@ class EditorComponent extends React.Component {
                                     <EmptyQueriesIllustration />
                                     <span data-cy="no-query-message" className="mute-text pt-3">
                                       {dataQueriesDefaultText}
-                                    </span>{' '}
+                                    </span>
                                     <br />
                                   </div>
                                 )}
@@ -2123,7 +2076,6 @@ class EditorComponent extends React.Component {
                                 }
                                 toggleQueryEditor={toggleQueryEditor}
                                 dataSources={dataSources}
-                                globalDataSources={globalDataSources}
                                 dataQueries={dataQueries}
                                 mode={editingQuery ? 'edit' : 'create'}
                                 selectedQuery={selectedQuery}
@@ -2133,7 +2085,6 @@ class EditorComponent extends React.Component {
                                 editingVersionId={editingVersion?.id}
                                 addingQuery={addingQuery || dataQueries?.length === 0}
                                 editingQuery={editingQuery}
-                                queryPanelHeight={queryPanelHeight}
                                 currentState={currentState}
                                 darkMode={this.props.darkMode}
                                 apps={apps}
@@ -2146,7 +2097,6 @@ class EditorComponent extends React.Component {
                                 appDefinition={appDefinition}
                                 editorState={this}
                                 showQueryConfirmation={queryConfirmationList.length > 0}
-                                loadingDataSources={loadingDataSources}
                                 createDraftQuery={this.createDraftQuery}
                                 clearDraftQuery={this.clearDraftQuery}
                                 isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}

@@ -15,6 +15,7 @@ import { Popover as PopoverBS, OverlayTrigger } from 'react-bootstrap';
 // eslint-disable-next-line import/no-unresolved
 import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
 import VerticalIcon from '@assets/images/icons/vertical-menu.svg';
+import { useDataSources } from '@/stores/dataSourceStore';
 
 export const LeftSidebarDataSources = ({
   appId,
@@ -22,8 +23,6 @@ export const LeftSidebarDataSources = ({
   selectedSidebarItem,
   setSelectedSidebarItem,
   darkMode,
-  dataSources = [],
-  globalDataSources = [],
   dataSourcesChanged,
   globalDataSourcesChanged,
   dataQueriesChanged,
@@ -31,6 +30,7 @@ export const LeftSidebarDataSources = ({
   showDataSourceManagerModal,
   popoverContentHeight,
 }) => {
+  const dataSources = useDataSources();
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
@@ -180,10 +180,11 @@ export const LeftSidebarDataSources = ({
       darkMode={darkMode}
       RenderDataSource={RenderDataSource}
       dataSources={dataSources}
-      globalDataSources={globalDataSources}
       toggleDataSourceManagerModal={toggleDataSourceManagerModal}
     />
   );
+
+  if (dataSources?.length <= 0) return;
 
   return (
     <>
@@ -230,7 +231,7 @@ export const LeftSidebarDataSources = ({
   );
 };
 
-const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [], globalDataSources = [] }) => {
+const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [] }) => {
   const { t } = useTranslation();
   return (
     <div>

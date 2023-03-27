@@ -9,6 +9,7 @@ import RunpyIcon from '../Icons/runpy.svg';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import Popover from '@/_ui/Popover';
+import { useDataSources } from '@/stores/dataSourceStore';
 
 export const LeftSidebarInspector = ({
   darkMode,
@@ -19,9 +20,9 @@ export const LeftSidebarInspector = ({
   setSelectedComponent,
   removeComponent,
   runQuery,
-  dataSources,
   popoverContentHeight,
 }) => {
+  const dataSources = useDataSources();
   const [pinned, setPinned] = useState(false);
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
   const queryDefinitions = appDefinition['queries'];

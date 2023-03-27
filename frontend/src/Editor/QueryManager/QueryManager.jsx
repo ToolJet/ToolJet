@@ -19,6 +19,7 @@ import cx from 'classnames';
 import { diff } from 'deep-object-diff';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { ChangeDataSource } from './ChangeDataSource';
+import { useDataSources, useDataSourcesStore } from '@/stores/dataSourceStore';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -59,9 +60,10 @@ class QueryManagerComponent extends React.Component {
     const selectedQuery = props.selectedQuery;
 
     const dataSourceId = selectedQuery?.data_source_id;
-    const source = [...props.dataSources, ...props.globalDataSources].find(
-      (datasource) => datasource.id === dataSourceId
-    );
+    const source = [
+      ...useDataSourcesStore.getState().dataSources,
+      ...useDataSourcesStore.getState().globalDataSources,
+    ].find((datasource) => datasource.id === dataSourceId);
     const selectedDataSource =
       paneHeightChanged || queryPaneDragged ? this.state.selectedDataSource : props.selectedDataSource;
     const dataSourceMeta = selectedQuery?.pluginId
@@ -75,14 +77,13 @@ class QueryManagerComponent extends React.Component {
     this.setState(
       {
         appId: props.appId,
-        dataSources: props.dataSources,
-        globalDataSources: props.globalDataSources,
+        globalDataSources: useDataSourcesStore.getState().globalDataSources,
+        dataSources: useDataSourcesStore.getState().dataSources,
         dataQueries: dataQueries,
         appDefinition: props.appDefinition,
         mode: props.mode,
         addingQuery: props.addingQuery,
         editingQuery: props.editingQuery,
-        queryPanelHeight: props.queryPanelHeight,
         isQueryPaneDragging: props.isQueryPaneDragging,
         currentState: props.currentState,
         selectedSource: source,
@@ -121,9 +122,10 @@ class QueryManagerComponent extends React.Component {
         shouldRunQuery: props.mode === 'edit' ? this.state.isFieldsChanged : this.props.isSourceSelected,
       },
       () => {
-        let source = [...props.dataSources, ...props.globalDataSources].find(
-          (datasource) => datasource.id === selectedQuery?.data_source_id
-        );
+        let source = [
+          ...useDataSourcesStore.getState().dataSources,
+          ...useDataSourcesStore.getState().globalDataSources,
+        ].find((datasource) => datasource.id === selectedQuery?.data_source_id);
         if (selectedQuery?.kind === 'restapi') {
           if (!selectedQuery.data_source_id) {
             source = { kind: 'restapi', id: 'null', name: 'REST API' };
@@ -168,7 +170,7 @@ class QueryManagerComponent extends React.Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.loadingDataSources) return;
+    if (useDataSourcesStore.getState().loadingDataSources) return;
     if (this.props.showQueryConfirmation && !nextProps.showQueryConfirmation) {
       if (this.state.isUpdating) {
         this.setState({
@@ -547,7 +549,7 @@ class QueryManagerComponent extends React.Component {
     return (
       <div
         className={cx(`query-manager ${this.props.darkMode ? 'theme-dark' : ''}`, {
-          'd-none': this.props.loadingDataSources,
+          'd-none': useDataSourcesStore.getState().loadingDataSources,
         })}
         key={selectedQuery ? selectedQuery.id : ''}
       >
@@ -944,7 +946,7 @@ class QueryManagerComponent extends React.Component {
                       Change Datasource
                     </div>
                     <ChangeDataSource
-                      dataSources={[...globalDataSources, ...this.props.dataSources]}
+                      dataSources={[...globalDataSources, ...useDataSourcesStore.getState().dataSources]}
                       value={selectedDataSource}
                       selectedQuery={selectedQuery}
                       onChange={(selectedDataSource) => {
