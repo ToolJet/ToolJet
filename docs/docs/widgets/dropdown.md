@@ -123,3 +123,18 @@ You can align the text inside the widget in following ways: left, right, center,
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Exposed variables
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/dropdown/variables.png" alt="ToolJet - Widget Reference - Dropdown widget" />
+
+</div>
+
+| Variable | Description |
+| -------- | ----------- |
+| Value | This variable holds the value of the currently selected item on the dropdown. Value can be accesed using `{{components.dropdown1.value}}` |
+| searchText | This variable is initially empty and will hold the value whenever the user searches on the dropdown. searchText's value can be accesed using`{{components.dropdown1.searchText}}` |
+| label | The variable label holds the label name of the dropdown. label's value can be accesed using`{{components.dropdown1.searchText}}` |
+| optionLabels | The optionLabels holds the option labels for the values of the dropdown. optionLabels can be accesed using`{{components.dropdown1.optionLabels}}` for all the option labels in the array form or `{{components.dropdown1.optionLabels[0]}}` for particular option label |
