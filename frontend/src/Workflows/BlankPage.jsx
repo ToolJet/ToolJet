@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import TemplateLibraryModal from './TemplateLibraryModal/';
-import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { libraryAppService } from '@/_services';
 import EmptyIllustration from '@assets/images/no-apps.svg';
+import { useNavigate } from 'react-router-dom';
 
 export const BlankPage = function BlankPage({
   createApp,
@@ -19,7 +18,7 @@ export const BlankPage = function BlankPage({
 }) {
   const { t } = useTranslation();
   const [deploying, setDeploying] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const staticTemplates = [
     { id: 's3-file-explorer', name: 'S3 File Explorer' },
@@ -37,7 +36,7 @@ export const BlankPage = function BlankPage({
           setDeploying(false);
           toast.dismiss(loadingToastId);
           toast.success('App created.');
-          history.push(`/apps/${data.id}`);
+          navigate(`/apps/${data.id}`);
         })
         .catch((e) => {
           toast.dismiss(loadingToastId);
@@ -59,11 +58,11 @@ export const BlankPage = function BlankPage({
                   <h3
                     className="empty-welcome-header"
                     style={{ color: darkMode && '#ffffff' }}
-                    data-cy="empty-welcome-header"
+                    data-cy="empty-homepage-welcome-header"
                   >
                     {t('blankPage.welcomeToToolJet', 'Welcome to your new ToolJet workspace')}
                   </h3>
-                  <p className={`empty-title ${darkMode && 'text-white-50'}`} data-cy="empty-description">
+                  <p className={`empty-title ${darkMode && 'text-white-50'}`} data-cy="empty-homepage-description">
                     {t(
                       'blankPage.getStartedCreateNewApp',
                       'You can get started by creating a new application or by creating an application using a template in ToolJet Library.'
@@ -120,30 +119,44 @@ export const BlankPage = function BlankPage({
                             />
                           </svg>
                           &nbsp;{t('blankPage.importApplication', 'Import an application')}
-                          <input type="file" ref={fileInput} style={{ display: 'none' }} />
+                          <input
+                            type="file"
+                            ref={fileInput}
+                            style={{ display: 'none' }}
+                            data-cy="import-option-input"
+                          />
                         </label>
                       </a>
                     </div>
                   </div>
                 </div>
-                <div className="col-6">
+                <div className="col-6" data-cy="empty-home-page-image">
                   <EmptyIllustration />
                 </div>
               </div>
               <div className="hr-text" data-cy="action-option">
                 Or choose from templates
               </div>
-              <div className="row">
+              <div className="row" data-cy="app-template-row">
                 {staticTemplates.map(({ id, name }) => {
                   return (
                     <div key={id} className="col-4" onClick={() => deployApp(id)}>
-                      <div className="card cursor-pointer">
+                      <div
+                        className="card cursor-pointer"
+                        data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-card`}
+                      >
                         <div
                           className="img-responsive img-responsive-21x9 card-img-top"
                           style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}
+                          data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-image`}
                         />
                         <div className="card-body">
-                          <h3 className="card-title">{name}</h3>
+                          <h3
+                            className="card-title"
+                            data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-title`}
+                          >
+                            {name}
+                          </h3>
                         </div>
                       </div>
                     </div>
@@ -151,7 +164,11 @@ export const BlankPage = function BlankPage({
                 })}
               </div>
               <div className="m-auto text-center mt-4">
-                <span className="btn btn-link text-decoration-none" onClick={viewTemplateLibraryModal}>
+                <span
+                  className="btn btn-link text-decoration-none"
+                  onClick={viewTemplateLibraryModal}
+                  data-cy="see-all-apps-template-buton"
+                >
                   See all templates
                 </span>
               </div>
@@ -159,12 +176,6 @@ export const BlankPage = function BlankPage({
           </div>
         </div>
       </div>
-      <TemplateLibraryModal
-        show={showTemplateLibraryModal}
-        onHide={hideTemplateLibraryModal}
-        onCloseButtonClick={hideTemplateLibraryModal}
-        darkMode={darkMode}
-      />
     </div>
   );
 };

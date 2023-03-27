@@ -235,12 +235,14 @@ class AppComponent extends React.Component {
                 </PrivateRoute>
               }
             />
-            <PrivateRoute
+            <Route
               exact
               path="/workflows"
-              component={Workflows}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
+              element={
+                <PrivateRoute>
+                  <WorkflowEditor />
+                </PrivateRoute>
+              }
             />
             {window.public_config?.ENABLE_MARKETPLACE_FEATURE === 'true' && (
               <Route
