@@ -43,7 +43,6 @@ class TableComponent extends React.Component {
       popOverRootCloseBlockers: [],
     };
   }
-
   componentDidMount() {
     const {
       dataQueries,
@@ -212,15 +211,18 @@ class TableComponent extends React.Component {
             <label data-cy={`label-column-name`} className="form-label">
               {this.props.t('widget.Table.columnName', 'Column name')}
             </label>
-            <input
-              data-cy={`input-column-name`}
-              type="text"
-              className="form-control text-field"
-              onBlur={(e) => {
-                e.stopPropagation();
-                this.onColumnItemChange(index, 'name', e.target.value);
+            <CodeHinter
+              currentState={this.props.currentState}
+              initialValue={column.name}
+              theme={this.props.darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={column.name}
+              onChange={(value) => this.onColumnItemChange(index, 'name', value)}
+              componentName={this.getPopoverFieldSource(column.columnType, 'name')}
+              popOverCallback={(showing) => {
+                this.setColumnPopoverRootCloseBlocker('name', showing);
               }}
-              defaultValue={column.name}
             />
           </div>
           {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
@@ -759,7 +761,6 @@ class TableComponent extends React.Component {
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'backgroundColor', color)}
             cyLabel={`action-button-bg`}
           />
-
           <Color
             param={{ name: 'actionButtonTextColor' }}
             paramType="properties"
@@ -767,6 +768,18 @@ class TableComponent extends React.Component {
             definition={{ value: action.textColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
             cyLabel={`action-button-text`}
+          />
+          <ProgramaticallyHandleToggleSwitch
+            label="Disable button"
+            currentState={this.state.currentState}
+            index={index}
+            darkMode={this.props.darkMode}
+            callbackFunction={this.onActionButtonPropertyChanged}
+            property="disableActionButton"
+            props={action}
+            component={this.props.component}
+            paramMeta={{ type: 'toggle', displayName: 'Disable action button' }}
+            paramType="properties"
           />
           <EventManager
             component={dummyComponentForActionButton}
@@ -968,6 +981,7 @@ class TableComponent extends React.Component {
               {({ innerRef, droppableProps, placeholder }) => (
                 <div className="w-100" {...droppableProps} ref={innerRef}>
                   {columns.value.map((item, index) => {
+                    const resolvedItemName = resolveReferences(item.name, this.state.currentState);
                     return (
                       <Draggable key={item.id} draggableId={item.id} index={index}>
                         {(provided, snapshot) => (
@@ -985,22 +999,22 @@ class TableComponent extends React.Component {
                               rootClose={this.state.popOverRootCloseBlockers.length === 0}
                               overlay={this.columnPopover(item, index)}
                             >
-                              <div key={item.name}>
+                              <div key={resolvedItemName}>
                                 <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
                                   <div className="col-auto">
                                     <img
-                                      data-cy={`draggable-handle-column-${item.name}`}
+                                      data-cy={`draggable-handle-column-${resolvedItemName}`}
                                       src="../../assets/images/icons/dragicon.svg"
                                     />
                                   </div>
                                   <div className="col">
-                                    <div className="text" data-cy={`column-${item.name}`}>
-                                      {item.name}
+                                    <div className="text" data-cy={`column-${resolvedItemName}`}>
+                                      {resolvedItemName}
                                     </div>
                                   </div>
                                   <div className="col-auto">
                                     <svg
-                                      data-cy={`button-delete-${item.name}`}
+                                      data-cy={`button-delete-${resolvedItemName}`}
                                       onClick={() => this.removeColumn(index)}
                                       width="10"
                                       height="16"
