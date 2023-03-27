@@ -68,11 +68,11 @@ export const Container = ({
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
 
-  useHotkeys('⌘+z, control+z', () => handleUndo());
-  useHotkeys('⌘+shift+z, control+shift+z', () => handleRedo());
+  useHotkeys('meta+z, control+z', () => handleUndo());
+  useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
 
   useHotkeys(
-    '⌘+v, control+v',
+    'meta+v, control+v',
     () => {
       if (isContainerFocused) {
         navigator.clipboard.readText().then((cliptext) => {

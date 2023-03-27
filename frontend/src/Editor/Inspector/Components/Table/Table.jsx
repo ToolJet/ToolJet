@@ -1,18 +1,19 @@
 import React from 'react';
 import Accordion from '@/_ui/Accordion';
 
-import { renderElement } from '../Utils';
+import { renderElement } from '../../Utils';
 import { computeActionName, resolveReferences } from '@/_helpers/utils';
 // eslint-disable-next-line import/no-unresolved
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import { Color } from '../Elements/Color';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { Color } from '../../Elements/Color';
+import SelectSearch from 'react-select-search';
 import { v4 as uuidv4 } from 'uuid';
-import { EventManager } from '../EventManager';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { EventManager } from '../../EventManager';
+import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
+import { ProgramaticallyHandleToggleSwitch } from './ProgramaticallyHandleToggleSwitch';
 class TableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -42,7 +43,6 @@ class TableComponent extends React.Component {
       popOverRootCloseBlockers: [],
     };
   }
-
   componentDidMount() {
     const {
       dataQueries,
@@ -166,14 +166,21 @@ class TableComponent extends React.Component {
       { name: '+13:00', value: 'Pacific/Auckland' },
     ];
     return (
-      <Popover id="popover-basic-2" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
-        <Popover.Content>
+      <Popover
+        id="popover-basic-2"
+        className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}
+        style={{
+          maxHeight: resolveReferences(column.isEditable, this.state.currentState) ? '100vh' : 'inherit',
+          overflowY: 'auto',
+        }}
+      >
+        <Popover.Body>
           <div className="field mb-2" data-cy={`dropdown-column-type`}>
             <label data-cy={`label-column-type`} className="form-label">
               {this.props.t('widget.Table.columnType', 'Column type')}
             </label>
             <SelectSearch
-              className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+              className={`${this.props.darkMode ? 'select-search' : 'select-search'}`}
               options={[
                 { name: 'Default', value: 'default' },
                 { name: 'String', value: 'string' },
@@ -195,7 +202,7 @@ class TableComponent extends React.Component {
               onChange={(value) => {
                 this.onColumnItemChange(index, 'columnType', value);
               }}
-              filterOptions={fuzzySearch}
+              fuzzySearch
               placeholder={this.props.t('globals.select', 'Select') + '...'}
             />
           </div>
@@ -203,15 +210,18 @@ class TableComponent extends React.Component {
             <label data-cy={`label-column-name`} className="form-label">
               {this.props.t('widget.Table.columnName', 'Column name')}
             </label>
-            <input
-              data-cy={`input-column-name`}
-              type="text"
-              className="form-control text-field"
-              onBlur={(e) => {
-                e.stopPropagation();
-                this.onColumnItemChange(index, 'name', e.target.value);
+            <CodeHinter
+              currentState={this.props.currentState}
+              initialValue={column.name}
+              theme={this.props.darkMode ? 'monokai' : 'default'}
+              mode="javascript"
+              lineNumbers={false}
+              placeholder={column.name}
+              onChange={(value) => this.onColumnItemChange(index, 'name', value)}
+              componentName={this.getPopoverFieldSource(column.columnType, 'name')}
+              popOverCallback={(showing) => {
+                this.setColumnPopoverRootCloseBlocker('name', showing);
               }}
-              defaultValue={column.name}
             />
           </div>
           {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
@@ -220,7 +230,7 @@ class TableComponent extends React.Component {
                 {this.props.t('widget.Table.overflow', 'Overflow')}
               </label>
               <SelectSearch
-                className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                className={'select-search'}
                 options={[
                   { name: 'Wrap', value: 'wrap' },
                   { name: 'Scroll', value: 'scroll' },
@@ -232,7 +242,7 @@ class TableComponent extends React.Component {
                 onChange={(value) => {
                   this.onColumnItemChange(index, 'textWrap', value);
                 }}
-                filterOptions={fuzzySearch}
+                fuzzySearch
                 placeholder={this.props.t('globals.select', 'Select') + '...'}
               />
             </div>
@@ -293,7 +303,7 @@ class TableComponent extends React.Component {
                 />
               </div>
 
-              {column.isEditable && (
+              {resolveReferences(column.isEditable, this.state.currentState) && (
                 <div>
                   <div data-cy={`header-validation`} className="hr-text">
                     {this.props.t('widget.Table.validation', 'Validation')}
@@ -367,7 +377,7 @@ class TableComponent extends React.Component {
             </div>
           )}
 
-          {column.columnType === 'number' && column.isEditable && (
+          {column.columnType === 'number' && resolveReferences(column.isEditable, this.state.currentState) && (
             <div>
               <div className="hr-text" data-cy={`header-validation`}>
                 {this.props.t('widget.Table.validation', 'Validation')}
@@ -483,7 +493,7 @@ class TableComponent extends React.Component {
 
           {column.columnType === 'dropdown' && (
             <>
-              {column.isEditable && (
+              {resolveReferences(column.isEditable, this.state.currentState) && (
                 <div>
                   <div data-cy={`header-validations`} className="hr-text">
                     {this.props.t('widget.Table.validation', 'Validation')}
@@ -550,7 +560,7 @@ class TableComponent extends React.Component {
               </label>
               <div data-cy={`input-parse-timezone`} className="field mb-2">
                 <SelectSearch
-                  className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                  className={'select-search'}
                   options={timeZoneOptions}
                   value={column.timeZoneValue}
                   search={true}
@@ -558,7 +568,7 @@ class TableComponent extends React.Component {
                   onChange={(value) => {
                     this.onColumnItemChange(index, 'timeZoneValue', value);
                   }}
-                  filterOptions={fuzzySearch}
+                  fuzzySearch
                   placeholder="Select.."
                 />
               </div>
@@ -567,7 +577,7 @@ class TableComponent extends React.Component {
               </label>
               <div ata-cy={`input-display-time-zone`} className="field mb-2">
                 <SelectSearch
-                  className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                  className={'select-search'}
                   options={timeZoneOptions}
                   value={column.timeZoneDisplay}
                   search={true}
@@ -575,7 +585,7 @@ class TableComponent extends React.Component {
                   onChange={(value) => {
                     this.onColumnItemChange(index, 'timeZoneDisplay', value);
                   }}
-                  filterOptions={fuzzySearch}
+                  fuzzySearch
                   placeholder="Select.."
                 />
               </div>
@@ -641,7 +651,7 @@ class TableComponent extends React.Component {
               <div data-cy={`input-and-label-object-fit`} className="field mb-2">
                 <label className="form-label">{this.props.t('widget.Table.objectFit', 'Object fit')}</label>
                 <SelectSearch
-                  className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                  className={'select-search'}
                   options={[
                     { name: 'Cover', value: 'cover' },
                     { name: 'Contain', value: 'contain' },
@@ -653,7 +663,7 @@ class TableComponent extends React.Component {
                   onChange={(value) => {
                     this.onColumnItemChange(index, 'objectFit', value);
                   }}
-                  filterOptions={fuzzySearch}
+                  fuzzySearch
                   placeholder={this.props.t('Select') + '...'}
                 />
               </div>
@@ -661,20 +671,20 @@ class TableComponent extends React.Component {
           )}
 
           {column.columnType !== 'image' && (
-            <div className="form-check form-switch my-4">
-              <input
-                data-cy={`toggle-make-editable`}
-                className="form-check-input"
-                type="checkbox"
-                onClick={() => this.onColumnItemChange(index, 'isEditable', !column.isEditable)}
-                checked={column.isEditable}
-              />
-              <span data-cy={`label-make-editable`} className="form-check-label">
-                {this.props.t('widget.Table.makeEditable', 'make editable')}
-              </span>
-            </div>
+            <ProgramaticallyHandleToggleSwitch
+              label="make editable"
+              currentState={this.state.currentState}
+              index={index}
+              darkMode={this.props.darkMode}
+              callbackFunction={this.onColumnItemChange}
+              property="isEditable"
+              props={column}
+              component={this.props.component}
+              paramMeta={{ type: 'toggle', displayName: 'make editable' }}
+              paramType="properties"
+            />
           )}
-        </Popover.Content>
+        </Popover.Body>
       </Popover>
     );
   };
@@ -690,7 +700,7 @@ class TableComponent extends React.Component {
 
     return (
       <Popover id="popover-basic" className={`${this.props.darkMode && 'popover-dark-themed theme-dark'} shadow`}>
-        <Popover.Content>
+        <Popover.Body>
           <div className="field mb-2">
             <label data-cy={`label-action-button-text`} className="form-label">
               {this.props.t('widget.Table.buttonText', 'Button Text')}
@@ -711,7 +721,7 @@ class TableComponent extends React.Component {
               {this.props.t('widget.Table.buttonPosition', 'Button Position')}
             </label>
             <SelectSearch
-              className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+              className={'select-search'}
               options={[
                 { name: 'Left', value: 'left' },
                 { name: 'Right', value: 'right' },
@@ -722,7 +732,7 @@ class TableComponent extends React.Component {
               onChange={(value) => {
                 this.onActionButtonPropertyChanged(index, 'position', value);
               }}
-              filterOptions={fuzzySearch}
+              fuzzySearch
               placeholder="Select position"
             />
           </div>
@@ -734,7 +744,6 @@ class TableComponent extends React.Component {
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'backgroundColor', color)}
             cyLabel={`action-button-bg`}
           />
-
           <Color
             param={{ name: 'actionButtonTextColor' }}
             paramType="properties"
@@ -742,6 +751,18 @@ class TableComponent extends React.Component {
             definition={{ value: action.textColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
             cyLabel={`action-button-text`}
+          />
+          <ProgramaticallyHandleToggleSwitch
+            label="Disable button"
+            currentState={this.state.currentState}
+            index={index}
+            darkMode={this.props.darkMode}
+            callbackFunction={this.onActionButtonPropertyChanged}
+            property="disableActionButton"
+            props={action}
+            component={this.props.component}
+            paramMeta={{ type: 'toggle', displayName: 'Disable action button' }}
+            paramType="properties"
           />
           <EventManager
             component={dummyComponentForActionButton}
@@ -760,7 +781,7 @@ class TableComponent extends React.Component {
           <button className="btn btn-sm btn-outline-danger mt-2 col" onClick={() => this.removeAction(index)}>
             {this.props.t('widget.Table.remove', 'Remove')}
           </button>
-        </Popover.Content>
+        </Popover.Body>
       </Popover>
     );
   };
@@ -943,6 +964,7 @@ class TableComponent extends React.Component {
               {({ innerRef, droppableProps, placeholder }) => (
                 <div className="w-100" {...droppableProps} ref={innerRef}>
                   {columns.value.map((item, index) => {
+                    const resolvedItemName = resolveReferences(item.name, this.state.currentState);
                     return (
                       <Draggable key={item.id} draggableId={item.id} index={index}>
                         {(provided, snapshot) => (
@@ -960,22 +982,22 @@ class TableComponent extends React.Component {
                               rootClose={this.state.popOverRootCloseBlockers.length === 0}
                               overlay={this.columnPopover(item, index)}
                             >
-                              <div key={item.name}>
+                              <div key={resolvedItemName}>
                                 <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
                                   <div className="col-auto">
                                     <img
-                                      data-cy={`draggable-handle-column-${item.name}`}
+                                      data-cy={`draggable-handle-column-${resolvedItemName}`}
                                       src="../../assets/images/icons/dragicon.svg"
                                     />
                                   </div>
                                   <div className="col">
-                                    <div className="text" data-cy={`column-${item.name}`}>
-                                      {item.name}
+                                    <div className="text" data-cy={`column-${resolvedItemName}`}>
+                                      {resolvedItemName}
                                     </div>
                                   </div>
                                   <div className="col-auto">
                                     <svg
-                                      data-cy={`button-delete-${item.name}`}
+                                      data-cy={`button-delete-${resolvedItemName}`}
                                       onClick={() => this.removeColumn(index)}
                                       width="10"
                                       height="16"

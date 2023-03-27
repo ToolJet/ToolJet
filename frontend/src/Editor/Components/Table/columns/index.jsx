@@ -1,6 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import SelectSearch from 'react-select-search';
 import { resolveReferences, validateWidget } from '@/_helpers/utils';
 import { CustomSelect } from '../CustomSelect';
 import { Tags } from '../Tags';
@@ -55,10 +55,9 @@ export default function generateColumnsData({
     }
 
     const width = columnSize || defaultColumn.width;
-
     return {
       id: column.id,
-      Header: column.name,
+      Header: resolveReferences(column.name, currentState) ?? '',
       accessor: column.key || column.name,
       filter: customFilter,
       width: width,
@@ -74,7 +73,7 @@ export default function generateColumnsData({
       maxLength: column.maxLength,
       regex: column.regex,
       customRule: column?.customRule,
-      Cell: function (cell) {
+      Cell: function ({ cell, isEditable }) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.name] ?? cell.value : cell.value;
         const rowData = tableData[cell.row.index];
@@ -99,7 +98,7 @@ export default function generateColumnsData({
               color: textColor ?? '',
             };
 
-            if (column.isEditable) {
+            if (isEditable) {
               const validationData = validateWidget({
                 validationObject: {
                   regex: {
@@ -159,7 +158,11 @@ export default function generateColumnsData({
                 </div>
               );
             }
-            return <span style={cellStyles}>{String(cellValue)}</span>;
+            return (
+              <div className="d-flex align-items-center h-100" style={cellStyles}>
+                {String(cellValue)}
+              </div>
+            );
           }
           case 'number': {
             const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
@@ -167,7 +170,7 @@ export default function generateColumnsData({
             const cellStyles = {
               color: textColor ?? '',
             };
-            if (column.isEditable) {
+            if (isEditable) {
               const validationData = validateWidget({
                 validationObject: {
                   minValue: {
@@ -222,7 +225,11 @@ export default function generateColumnsData({
                 </div>
               );
             }
-            return <span style={cellStyles}>{cellValue}</span>;
+            return (
+              <div className="d-flex align-items-center h-100" style={cellStyles}>
+                {cellValue}
+              </div>
+            );
           }
           case 'text': {
             return (
@@ -231,16 +238,16 @@ export default function generateColumnsData({
                 className={`form-control-plaintext text-container ${
                   darkMode ? 'text-light textarea-dark-theme' : 'text-muted'
                 }`}
-                readOnly={!column.isEditable}
+                readOnly={!isEditable}
                 style={{ maxWidth: width, minWidth: width - 10 }}
                 onBlur={(e) => {
-                  if (column.isEditable) {
+                  if (isEditable) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}
                 onKeyDown={(e) => {
                   e.persist();
-                  if (e.key === 'Enter' && column.isEditable) {
+                  if (e.key === 'Enter' && isEditable) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}
@@ -280,9 +287,9 @@ export default function generateColumnsData({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
-                  filterOptions={fuzzySearch}
+                  fuzzySearch
                   placeholder={t('globals.select', 'Select') + '...'}
-                  disabled={!column.isEditable}
+                  disabled={!isEditable}
                   className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
@@ -302,7 +309,7 @@ export default function generateColumnsData({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
-                  disabled={!column.isEditable}
+                  disabled={!isEditable}
                   className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 />
               </div>
@@ -320,7 +327,8 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   darkMode={darkMode}
-                  isEditable={column.isEditable}
+                  isEditable={isEditable}
+                  width={width}
                 />
               </div>
             );
@@ -333,6 +341,7 @@ export default function generateColumnsData({
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
+                  readOnly={!isEditable}
                 />
               </div>
             );
@@ -362,7 +371,7 @@ export default function generateColumnsData({
                 <Radio
                   options={columnOptions.selectOptions}
                   value={cellValue}
-                  readOnly={!column.isEditable}
+                  readOnly={!isEditable}
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
@@ -375,7 +384,7 @@ export default function generateColumnsData({
               <div className="h-100 d-flex align-items-center">
                 <Toggle
                   value={cellValue}
-                  readOnly={!column.isEditable}
+                  readOnly={!isEditable}
                   activeColor={column.activeColor}
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original).then(
@@ -401,7 +410,7 @@ export default function generateColumnsData({
                   dateDisplayFormat={column.dateFormat}
                   isTimeChecked={column.isTimeChecked}
                   value={cellValue}
-                  readOnly={column.isEditable}
+                  readOnly={isEditable}
                   parseDateFormat={column.parseDateFormat}
                   onChange={(value) => {
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);

@@ -478,8 +478,14 @@
   top: 8px;
 }
 .sidebar-h-100-popover {
+  position: relative;
   height: 100vh;
   margin-top: 0px;
+
+  .add-datasource-btn {
+    position: absolute;
+    bottom: 3rem;
+  }
 }
 .sidebar-h-100-popover-inspector {
   min-width: 422px;

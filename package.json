@@ -19,9 +19,9 @@
   },
   "devDependencies": {
     "@tooljet/cli": "^0.0.13",
-    "eslint": "^7.25.0",
-    "husky": "^7.0.2",
-    "lint-staged": "^11.2.3"
+    "eslint": "^8.34.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.1.2"
   },
   "scripts": {
     "prebuild:plugins": "npm run install:plugins",
