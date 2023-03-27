@@ -318,7 +318,6 @@ export function Table({
         actions,
         columnSizes,
         defaultColumn,
-        actionButtonRadius,
         fireEvent,
         setExposedVariables,
       }),
@@ -333,7 +332,6 @@ export function Table({
   };
 
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
-
   const columns = useMemo(
     () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [
@@ -904,6 +902,15 @@ export function Table({
                         cellValue,
                         rowData,
                       });
+                      const actionButtonsArray = actions.map((action) => {
+                        return {
+                          ...action,
+                          isDisabled: resolveReferences(action?.disableActionButton ?? false, currentState, '', {
+                            cellValue,
+                            rowData,
+                          }),
+                        };
+                      });
                       const isEditable = resolveReferences(cell.column?.isEditable ?? false, currentState, '', {
                         cellValue,
                         rowData,
@@ -935,7 +942,7 @@ export function Table({
                             <GenerateEachCellValue
                               cellValue={cellValue}
                               globalFilter={state.globalFilter}
-                              cellRender={cell.render('Cell', { cell, isEditable })}
+                              cellRender={cell.render('Cell', { cell, actionButtonsArray, isEditable })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
                               columnType={cell.column.columnType}

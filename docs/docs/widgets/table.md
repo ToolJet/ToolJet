@@ -132,7 +132,7 @@ If the condition is true, the validation passes, otherwise return a string that 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/action.png" alt="ToolJet - Widget Reference - Table" width="400" />
+<img className="screenshot-full" src="/img/widgets/table/action2.png" alt="ToolJet - Widget Reference - Table" width="800" />
 
 </div>
 
@@ -140,8 +140,11 @@ Action buttons will be displayed as the last column of the table. The styles of 
 
 | Property | Description |
 | -------- | ------------ |
+| BUtton text | Set the text that you want to be displayed on the action button. |
+| Button position | Set the button position to the left or right |
 | Background color (Action Button) | Background color of the action button. |
 | Text color (Action Button) | Color of button-text of the action button. |
+| Disable Action Button | Toggle on to disable the action button. You can programmatically set its value by clicking on the `Fx` button next to it, if set to `{{true}}`, the component will be disabled and becomes non-functional. By default, its value is set to `{{false}}`. |
 
 ## Options
 

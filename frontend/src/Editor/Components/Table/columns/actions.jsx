@@ -1,8 +1,9 @@
 import React from 'react';
 
-const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, setExposedVariables }) => {
-  const leftActions = () => actions.filter((action) => action.position === 'left');
-  const rightActions = () => actions.filter((action) => [undefined, 'right'].includes(action.position));
+const generateActionsData = ({ actions: actionItems, columnSizes, defaultColumn, fireEvent, setExposedVariables }) => {
+  const leftActions = (actions = actionItems) => actions.filter((action) => action.position === 'left');
+  const rightActions = (actions = actionItems) =>
+    actions.filter((action) => [undefined, 'right'].includes(action.position));
 
   const leftActionsCellData =
     leftActions().length > 0
@@ -12,8 +13,8 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
             Header: 'Actions',
             accessor: 'edit',
             width: columnSizes.leftActions || defaultColumn.width,
-            Cell: (cell) => {
-              return leftActions().map((action) => (
+            Cell: ({ cell, actionButtonsArray }) => {
+              return leftActions(actionButtonsArray).map((action) => (
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
@@ -35,6 +36,7 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                       });
                     });
                   }}
+                  disabled={action.isDisabled}
                 >
                   {action.buttonText}
                 </button>
@@ -52,8 +54,8 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
             Header: 'Actions',
             accessor: 'edit',
             width: columnSizes.rightActions || defaultColumn.width,
-            Cell: (cell) => {
-              return rightActions().map((action) => (
+            Cell: ({ cell, actionButtonsArray }) => {
+              return rightActions(actionButtonsArray).map((action) => (
                 <button
                   key={action.name}
                   className="btn btn-sm m-1 btn-light"
@@ -75,6 +77,7 @@ const generateActionsData = ({ actions, columnSizes, defaultColumn, fireEvent, s
                       });
                     });
                   }}
+                  disabled={action.isDisabled}
                 >
                   {action.buttonText}
                 </button>

@@ -43,7 +43,6 @@ class TableComponent extends React.Component {
       popOverRootCloseBlockers: [],
     };
   }
-
   componentDidMount() {
     const {
       dataQueries,
@@ -742,7 +741,6 @@ class TableComponent extends React.Component {
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'backgroundColor', color)}
             cyLabel={`action-button-bg`}
           />
-
           <Color
             param={{ name: 'actionButtonTextColor' }}
             paramType="properties"
@@ -750,6 +748,18 @@ class TableComponent extends React.Component {
             definition={{ value: action.textColor }}
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
             cyLabel={`action-button-text`}
+          />
+          <ProgramaticallyHandleToggleSwitch
+            label="Disable button"
+            currentState={this.state.currentState}
+            index={index}
+            darkMode={this.props.darkMode}
+            callbackFunction={this.onActionButtonPropertyChanged}
+            property="disableActionButton"
+            props={action}
+            component={this.props.component}
+            paramMeta={{ type: 'toggle', displayName: 'Disable action button' }}
+            paramType="properties"
           />
           <EventManager
             component={dummyComponentForActionButton}
