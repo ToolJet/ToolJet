@@ -126,7 +126,6 @@ export function Table({
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
   const mounted = useMounted();
-  const prevDynamicColumn = useRef([]);
 
   useEffect(() => {
     setExposedVariable(
@@ -196,7 +195,6 @@ export function Table({
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
 
-    fireEvent('onCellValueChanged');
     return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
   }
 
@@ -303,7 +301,7 @@ export function Table({
   const tableRef = useRef();
 
   const columnData = generateColumnsData({
-    columnProperties: generatedColumn.length > 0 ? generatedColumn : component.definition.properties.columns.value,
+    columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
     columnSizes,
     currentState,
     handleCellValueChange,
@@ -371,16 +369,16 @@ export function Table({
 
   useEffect(() => {
     if (tableData.length != 0 && component.definition.properties.autogenerateColumns?.value && mode === 'edit') {
-      const prevColumn = prevDynamicColumn.current.length > 0 && dynamicColumn.length === 0;
       const generatedColumnFromData = autogenerateColumns(
         tableData,
-        prevColumn ? [] : component.definition.properties.columns.value,
+        component.definition.properties.columns.value,
         component.definition.properties?.columnDeletionHistory?.value ?? [],
+        useDynamicColumn,
         dynamicColumn,
         setProperty
       );
-      useDynamicColumn && dynamicColumn.length > 0 && setGeneratedColumn(generatedColumnFromData);
-      prevDynamicColumn.current = [...dynamicColumn];
+
+      useDynamicColumn && setGeneratedColumn(generatedColumnFromData);
     }
   }, [JSON.stringify(tableData), JSON.stringify(dynamicColumn)]);
 
