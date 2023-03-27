@@ -323,6 +323,15 @@ class AppComponent extends React.Component {
                 </PrivateRoute>
               }
             />
+            <Route
+              exact
+              path="/:workspaceId/global-datasources"
+              element={
+                <PrivateRoute>
+                  <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
+            />
             {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
               <Route
                 exact
@@ -334,15 +343,6 @@ class AppComponent extends React.Component {
                 }
               />
             )}
-            <Route
-              exact
-              path="/global-datasources"
-              element={
-                <PrivateRoute>
-                  <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
             {window.public_config?.ENABLE_MARKETPLACE_FEATURE === 'true' && (
               <Route
                 exact
