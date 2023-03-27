@@ -40,29 +40,30 @@ const DynamicForm = ({
 
   React.useEffect(() => {
     const { properties } = schema;
-    if (isEmpty(properties)) return null;
+    if (!isEmpty(properties)) {
+      let fields = {};
+      let encrpytedFieldsProps = {};
+      const flipComponentDropdown = find(properties, ['type', 'dropdown-component-flip']);
 
-    let fields = {};
-    let encrpytedFieldsProps = {};
-    const flipComponentDropdown = find(properties, ['type', 'dropdown-component-flip']);
+      if (flipComponentDropdown) {
+        const selector = options?.[flipComponentDropdown?.key]?.value;
+        fields = { ...flipComponentDropdown?.commonFields, ...properties[selector] };
+      } else {
+        fields = { ...properties };
+      }
 
-    if (flipComponentDropdown) {
-      const selector = options?.[flipComponentDropdown?.key]?.value;
-      fields = { ...flipComponentDropdown?.commonFields, ...properties[selector] };
-    } else {
-      fields = { ...properties };
+      Object.keys(fields).map((key) => {
+        const { type, encrypted } = fields[key];
+        if ((type === 'password' || encrypted) && !(key in computedProps)) {
+          //Editable encrypted fields only if datasource doesn't exists
+          encrpytedFieldsProps[key] = {
+            disabled: !!selectedDataSource?.id,
+          };
+        }
+      });
+      setComputedProps({ ...computedProps, ...encrpytedFieldsProps });
     }
 
-    Object.keys(fields).map((key) => {
-      const { type, encrypted } = fields[key];
-      if ((type === 'password' || encrypted) && !(key in computedProps)) {
-        //Editable encrypted fields only if datasource doesn't exists
-        encrpytedFieldsProps[key] = {
-          disabled: !!selectedDataSource?.id,
-        };
-      }
-    });
-    setComputedProps({ ...computedProps, ...encrpytedFieldsProps });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options]);
 
@@ -253,6 +254,7 @@ const DynamicForm = ({
           auth_url: options.auth_url?.value,
           custom_auth_params: options.custom_auth_params?.value,
           custom_query_params: options.custom_query_params?.value,
+          spec: options.spec?.value,
         };
       default:
         return {};

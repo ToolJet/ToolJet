@@ -8,14 +8,8 @@ export default class Github implements QueryService {
 
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const operation: Operation = queryOptions.operation;
-    console.log('---octakit operation', {
-      queryOptions
-
-    });
-
     const octokit:Octokit = await this.getConnection(sourceOptions);
     let result = {};
-
 
     try {
       switch (operation) {

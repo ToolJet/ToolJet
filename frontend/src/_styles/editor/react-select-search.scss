@@ -3,6 +3,22 @@
  * Main wrapper
  */
  @import "../colors.scss";
+
+ .custom-select{
+    .select-search-container .select-search-select {
+        position: absolute;
+        z-index: 2;
+        top: 44px;
+        right: 0;
+        left: 0;
+        border-radius: 4px;
+        display: none;
+    }
+    .select-search-container.select-search-has-focus .select-search-select {
+        display: block;
+    }
+}
+
 .select-search-container {
     --select-search-background: #fff;
     --select-search-border: #dadcde;

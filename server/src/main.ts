@@ -7,7 +7,7 @@ import * as helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { urlencoded, json } from 'express';
 import { AllExceptionsFilter } from './all-exceptions-filter';
-import { RequestMethod, ValidationPipe } from '@nestjs/common';
+import { RequestMethod, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
 import { join } from 'path';
@@ -86,6 +86,11 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
   app.useStaticAssets(join(__dirname, 'assets'), { prefix: (UrlPrefix ? UrlPrefix : '/') + 'assets' });
+
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: VERSION_NEUTRAL,
+  });
 
   const port = parseInt(process.env.PORT) || 3000;
 

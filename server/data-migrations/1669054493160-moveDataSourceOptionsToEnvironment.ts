@@ -27,15 +27,14 @@ export class moveDataSourceOptionsToEnvironment1669054493160 implements Migratio
     const encryptionService = this.nestApp.get(EncryptionService);
 
     for (const { name, isDefault } of defaultAppEnvironments) {
-      const environment: AppEnvironment = await entityManager.save(
-        entityManager.create(AppEnvironment, {
-          name,
-          isDefault,
-          appVersionId: appVersion.id,
-        })
+      const environment: AppEnvironment = await entityManager.query(
+        'insert into app_environments (name, is_default, app_version_id, created_at, updated_at) values ($1, $2, $3, $4, $4) returning *',
+        [name, isDefault, appVersion.id, new Date()]
       );
-      // Get all data sources under app
-      const dataSources = await entityManager.query('select * from data_sources where app_id = $1', [appVersion.appId]);
+      // Get all data sources under app version
+      const dataSources = await entityManager.query('select * from data_sources where app_version_id = $1', [
+        appVersion.id,
+      ]);
 
       if (dataSources?.length) {
         for (const dataSource of dataSources) {
