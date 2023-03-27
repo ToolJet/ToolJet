@@ -10,7 +10,7 @@ const userStatusOptions = [
 ];
 
 const UsersFilter = ({ filterList }) => {
-  const [options, setOptions] = React.useState({ email: '', firstName: '', lastName: '', status: '' });
+  const [options, setOptions] = React.useState({ searchText: '', status: '' });
   const [statusVal, setStatusVal] = useState('');
   const [queryVal, setQueryVal] = useState();
 
@@ -18,9 +18,7 @@ const UsersFilter = ({ filterList }) => {
     let newOptions = {};
     newOptions = {
       ...options,
-      email: queryVal,
-      firstName: queryVal,
-      lastName: queryVal,
+      searchText: queryVal,
       status: event,
     };
     setOptions(newOptions);
@@ -31,9 +29,7 @@ const UsersFilter = ({ filterList }) => {
     newOptions = {
       ...options,
       status: statusVal,
-      email: event.target.value,
-      firstName: event.target.value,
-      lastName: event.target.value,
+      searchText: event.target.value,
     };
     setOptions(newOptions);
   };

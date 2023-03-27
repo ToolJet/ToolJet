@@ -62,7 +62,7 @@ class AppComponent extends React.Component {
     }
   };
 
-  componentDidMount () {
+  componentDidMount() {
     authenticationService.currentUser.subscribe((x) => {
       this.setState({ currentUser: x }, this.fetchMetadata);
       setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
@@ -74,7 +74,7 @@ class AppComponent extends React.Component {
     localStorage.setItem('darkMode', newMode);
   };
 
-  render () {
+  render() {
     const { updateAvailable, darkMode, currentUser } = this.state;
     let toastOptions = {
       style: {
