@@ -44,6 +44,9 @@ export class User extends BaseEntity {
   @Column()
   email: string;
 
+  @Column({ name: 'phone_number' })
+  phoneNumber: string;
+
   @Column({
     type: 'enum',
     enumName: 'status',

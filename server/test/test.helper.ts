@@ -149,7 +149,7 @@ export async function createApplicationVersion(nestApp, application, { name = 'v
   );
 }
 
-export async function createAppEnvironments(nestApp, appVersionId): Promise<AppEnvironment[]> {
+export async function createAppEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
   let appEnvironmentRepository: Repository<AppEnvironment>;
   appEnvironmentRepository = nestApp.get('AppEnvironmentRepository');
 
@@ -157,7 +157,7 @@ export async function createAppEnvironments(nestApp, appVersionId): Promise<AppE
     defaultAppEnvironments.map(async (env) => {
       return await appEnvironmentRepository.save(
         appEnvironmentRepository.create({
-          appVersionId,
+          organizationId,
           name: env.name,
           isDefault: env.isDefault,
         })
@@ -466,7 +466,7 @@ export async function createDataSource(
   return dataSource;
 }
 
-export async function createDataQuery(nestApp, { name = 'defaultquery', dataSource, options }: any) {
+export async function createDataQuery(nestApp, { name = 'defaultquery', dataSource, appVersion, options }: any) {
   let dataQueryRepository: Repository<DataQuery>;
   dataQueryRepository = nestApp.get('DataQueryRepository');
 
@@ -475,6 +475,7 @@ export async function createDataQuery(nestApp, { name = 'defaultquery', dataSour
       options,
       name,
       dataSource,
+      appVersion,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -672,7 +673,7 @@ export const generateAppDefaults = async (
   });
 
   const appVersion = await createApplicationVersion(app, application);
-  const appEnvironments = await createAppEnvironments(app, appVersion.id);
+  const appEnvironments = await createAppEnvironments(app, user.organizationId);
 
   let dataQuery: any;
   let dataSource: any;
@@ -687,6 +688,7 @@ export const generateAppDefaults = async (
     if (isQueryNeeded) {
       dataQuery = await createDataQuery(app, {
         dataSource,
+        appVersion,
         options: {
           method: 'get',
           url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',

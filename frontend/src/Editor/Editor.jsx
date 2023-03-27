@@ -6,6 +6,7 @@ import {
   authenticationService,
   appVersionService,
   orgEnvironmentVariableService,
+  globalDatasourceService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -113,6 +114,7 @@ class EditorComponent extends React.Component {
       appId,
       editingVersion: null,
       loadingDataSources: true,
+      loadingGlobalDataSources: true,
       loadingDataQueries: true,
       showLeftSidebar: true,
       showComments: false,
@@ -315,6 +317,23 @@ class EditorComponent extends React.Component {
     );
   };
 
+  fetchGlobalDataSources = () => {
+    this.setState(
+      {
+        loadingGlobalDataSources: true,
+      },
+      () => {
+        const { organization_id: organizationId } = this.state.currentUser;
+        globalDatasourceService.getAll(organizationId).then((data) =>
+          this.setState({
+            globalDataSources: data.data_sources,
+            loadingGlobalDataSources: false,
+          })
+        );
+      }
+    );
+  };
+
   fetchDataQueries = () => {
     this.setState(
       {
@@ -472,6 +491,7 @@ class EditorComponent extends React.Component {
 
       this.fetchDataSources();
       this.fetchDataQueries();
+      this.fetchGlobalDataSources();
       initEditorWalkThrough();
     };
 
@@ -516,6 +536,10 @@ class EditorComponent extends React.Component {
     } else {
       this.fetchDataSources();
     }
+  };
+
+  globalDataSourcesChanged = () => {
+    this.fetchGlobalDataSources();
   };
 
   /**
@@ -675,7 +699,6 @@ class EditorComponent extends React.Component {
     this.setState({ isSaving: true, appDefinition: newDefinition, appDefinitionLocalVersion: uuid() }, () => {
       if (!opts.skipAutoSave) this.autoSave();
     });
-    computeComponentState(this, newDefinition.pages[currentPageId]?.components ?? {});
   };
 
   handleInspectorView = () => {
@@ -1760,6 +1783,7 @@ class EditorComponent extends React.Component {
       appId,
       slug,
       dataSources,
+      globalDataSources = [],
       loadingDataQueries,
       dataQueries,
       loadingDataSources,
@@ -1858,8 +1882,10 @@ class EditorComponent extends React.Component {
                 appId={appId}
                 darkMode={this.props.darkMode}
                 dataSources={this.state.dataSources}
+                globalDataSources={globalDataSources}
                 dataSourcesChanged={this.dataSourcesChanged}
                 dataQueriesChanged={this.dataQueriesChanged}
+                globalDataSourcesChanged={this.globalDataSourcesChanged}
                 onZoomChanged={this.onZoomChanged}
                 toggleComments={this.toggleComments}
                 switchDarkMode={this.changeDarkMode}
@@ -2123,6 +2149,7 @@ class EditorComponent extends React.Component {
                                 }
                                 toggleQueryEditor={toggleQueryEditor}
                                 dataSources={dataSources}
+                                globalDataSources={globalDataSources}
                                 dataQueries={dataQueries}
                                 mode={editingQuery ? 'edit' : 'create'}
                                 selectedQuery={selectedQuery}

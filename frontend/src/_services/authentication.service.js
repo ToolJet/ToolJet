@@ -134,7 +134,7 @@ function resendInvite(email) {
       return response;
     });
 }
-function onboarding({ companyName, companySize, role, token, organizationToken, source, password }) {
+function onboarding({ companyName, companySize, role, token, organizationToken, source, password, phoneNumber }) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -147,6 +147,7 @@ function onboarding({ companyName, companySize, role, token, organizationToken, 
       ...(organizationToken?.length > 0 && { organizationToken }),
       ...(source?.length > 0 && { source }),
       ...(password?.length > 0 && { password }),
+      ...(phoneNumber?.length > 0 && { phoneNumber: `+${phoneNumber}` }),
     }),
   };
 
@@ -156,7 +157,7 @@ function onboarding({ companyName, companySize, role, token, organizationToken, 
       return response;
     });
 }
-function setupAdmin({ companyName, companySize, name, role, workspace, password, email }) {
+function setupAdmin({ companyName, companySize, name, role, workspace, password, email, phoneNumber }) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -169,6 +170,7 @@ function setupAdmin({ companyName, companySize, name, role, workspace, password,
       workspace,
       email,
       password,
+      ...(phoneNumber?.length > 0 && { phoneNumber: `+${phoneNumber}` }),
     }),
   };
   return fetch(`${config.apiUrl}/setup-admin`, requestOptions)

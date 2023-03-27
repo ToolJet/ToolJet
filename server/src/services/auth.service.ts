@@ -317,7 +317,7 @@ export class AuthService {
   }
 
   async setupAdmin(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
-    const { companyName, companySize, name, role, workspace, password, email } = userCreateDto;
+    const { companyName, companySize, name, role, workspace, password, email, phoneNumber } = userCreateDto;
 
     const nameObj = this.splitName(name);
 
@@ -334,6 +334,7 @@ export class AuthService {
           companyName,
           companySize,
           role,
+          phoneNumber,
         },
         organization.id,
         ['all_users', 'admin'],
@@ -351,7 +352,7 @@ export class AuthService {
   }
 
   async setupAccountFromInvitationToken(response: Response, userCreateDto: CreateUserDto) {
-    const { companyName, companySize, token, role, organizationToken, password, source } = userCreateDto;
+    const { companyName, companySize, token, role, organizationToken, password, source, phoneNumber } = userCreateDto;
 
     if (!token) {
       throw new BadRequestException('Invalid token');
@@ -394,6 +395,7 @@ export class AuthService {
             ...(role ? { role } : {}),
             companySize,
             companyName,
+            phoneNumber,
             invitationToken: null,
             ...(isPasswordMandatory(user.source) ? { password } : {}),
             ...lifecycleParams,

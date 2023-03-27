@@ -754,3 +754,29 @@ export const getAvatar = (organization) => {
 
 export const getSubpath = () =>
   window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
+export function isExpectedDataType(data, expectedDataType) {
+  function getCurrentDataType(node) {
+    return Object.prototype.toString.call(node).slice(8, -1).toLowerCase();
+  }
+
+  const currentDataType = getCurrentDataType(data);
+
+  if (currentDataType !== expectedDataType) {
+    switch (expectedDataType) {
+      case 'string':
+        return String(data) ? data : undefined;
+      case 'number':
+        return Object.prototype.toString.call(data).slice(8, -1).toLowerCase() === 'number' ? data : undefined;
+      case 'boolean':
+        return Boolean();
+      case 'array':
+        return Object.prototype.toString.call(data).slice(8, -1).toLowerCase() === 'array' ? data : [];
+      case 'object':
+        return Object.prototype.toString.call(data).slice(8, -1).toLowerCase() === 'object' ? data : {};
+      default:
+        return null;
+    }
+  }
+
+  return data;
+}
