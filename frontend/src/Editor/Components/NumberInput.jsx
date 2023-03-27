@@ -32,18 +32,27 @@ export const NumberInput = function NumberInput({
     fireEvent('onChange');
   };
 
+  const handleMinValuChange = () => {
+    const { minValue } = properties;
+    if (value < minValue) setValue(parseInt(properties.minValue));
+  };
+
+  const handleMaxValueChange = () => {
+    const { maxValue } = properties;
+    if (value > maxValue) setValue(parseInt(properties.maxValue));
+  };
+
   useEffect(() => {
-    setValue(parseInt(properties.value));
+    handleMinValuChange();
+    handleMaxValueChange();
   }, [properties.value]);
 
   useEffect(() => {
-    const { minValue } = properties;
-    if (value < minValue) setValue(parseInt(properties.minValue));
+    handleMinValuChange();
   }, [properties.minValue]);
 
   useEffect(() => {
-    const { value, maxValue } = properties;
-    if (value > maxValue) setValue(parseInt(properties.maxValue));
+    handleMaxValueChange();
   }, [properties.maxValue]);
 
   useEffect(() => {
