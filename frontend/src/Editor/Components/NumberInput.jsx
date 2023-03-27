@@ -42,6 +42,13 @@ export const NumberInput = function NumberInput({
     if (value > maxValue) setValue(parseInt(properties.maxValue));
   }, [properties.maxValue]);
 
+  useEffect(() => {
+    if (!isNaN(value)) {
+      setExposedVariable('value', value);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
   const computedStyles = {
     height,
     display: visibility ? '' : 'none',
