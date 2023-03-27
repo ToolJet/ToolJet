@@ -167,8 +167,18 @@ class AppComponent extends React.Component {
                   this.authorizeUserAndHandleErrors(workspaceId);
                 })
                 .catch(() => {
-                  if (!this.isThisWorkspaceLoginPage())
-                    return (window.location = `${subpath ?? ''}/login/${workspaceId}`);
+                  organizationService.getOrganizations().then((response) => {
+                    const current_organization_name = response.organizations.find(
+                      (org) => org.id === current_organization_id
+                    )?.name;
+
+                    this.updateCurrentSession({
+                      current_organization_name,
+                    });
+
+                    if (!this.isThisWorkspaceLoginPage())
+                      return (window.location = `${subpath ?? ''}/login/${workspaceId}`);
+                  });
                 });
             })
             .catch(() => this.logout());

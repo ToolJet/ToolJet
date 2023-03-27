@@ -26,6 +26,7 @@ class LoginPageComponent extends React.Component {
       configs: undefined,
       emailError: false,
       navigateToLogin: false,
+      current_organization_name: null,
     };
     this.organizationId = props.params.organizationId;
   }
@@ -42,6 +43,8 @@ class LoginPageComponent extends React.Component {
     this.setRedirectUrlToCookie();
     authenticationService.deleteLoginOrganizationId();
     this.currentSessionObservable = authenticationService.currentSession.subscribe((newSession) => {
+      if (newSession?.current_organization_name)
+        this.setState({ current_organization_name: newSession.current_organization_name });
       if (newSession?.group_permissions || newSession?.id) {
         if (
           (!this.organizationId && newSession?.current_organization_id) ||
@@ -393,22 +396,23 @@ class LoginPageComponent extends React.Component {
                             )}
                           </ButtonSolid>
                         )}
-                        {authenticationService?.currentSessionValue?.current_organization_name &&
-                          this.organizationId && (
-                            <div
-                              className="text-center-onboard mt-3"
-                              data-cy={`back-to-${String(
-                                authenticationService?.currentSessionValue?.current_organization_name
-                              )
-                                .toLowerCase()
-                                .replace(/\s+/g, '-')}`}
+                        {this.state.current_organization_name && this.organizationId && (
+                          <div
+                            className="text-center-onboard mt-3"
+                            data-cy={`back-to-${String(this.state.current_organization_name)
+                              .toLowerCase()
+                              .replace(/\s+/g, '-')}`}
+                          >
+                            back to&nbsp;{' '}
+                            <Link
+                              onClick={() =>
+                                (window.location = `/${authenticationService.currentSessionValue?.current_organization_id}`)
+                              }
                             >
-                              back to&nbsp;{' '}
-                              <Link to="/">
-                                {authenticationService?.currentSessionValue?.current_organization_name}
-                              </Link>
-                            </div>
-                          )}
+                              {this.state.current_organization_name}
+                            </Link>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
