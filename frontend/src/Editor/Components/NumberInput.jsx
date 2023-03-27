@@ -33,6 +33,10 @@ export const NumberInput = function NumberInput({
   };
 
   useEffect(() => {
+    setValue(parseInt(properties.value));
+  }, [properties.value]);
+
+  useEffect(() => {
     const { minValue } = properties;
     if (value < minValue) setValue(parseInt(properties.minValue));
   }, [properties.minValue]);

@@ -110,38 +110,10 @@ export const Inspector = ({
     return null;
   };
 
-  const validateNumberInput = ({ param, value, properties }) => {
-    const { name } = param;
-    const { minValue, maxValue } = properties;
-    if (name === 'value') {
-      if (parseInt(value) < parseInt(minValue.value)) value = minValue.value;
-      if (parseInt(value) > parseInt(maxValue.value)) value = maxValue.value;
-    }
-
-    if (name === 'minValue') {
-      if (parseInt(properties['value'].value) < parseInt(value)) properties['value'].value = value;
-    }
-
-    if (name === 'maxValue') {
-      if (parseInt(properties['value'].value) > parseInt(value)) properties['value'].value = value;
-    }
-
-    return value;
-  };
-
-  const validateComponent = (component) => {
-    const validationMap = {
-      NumberInput: validateNumberInput,
-    };
-
-    return validationMap[component];
-  };
-
   function paramUpdated(param, attr, value, paramType) {
     console.log({ param, attr, value, paramType });
     let newDefinition = _.cloneDeep(component.component.definition);
 
-    value = validateComponent(component.component.component)({ param, value, properties: newDefinition.properties });
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
     if (!paramObject) {
