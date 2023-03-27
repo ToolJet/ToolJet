@@ -1,8 +1,7 @@
 import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import config from 'config';
-import { BrowserRouter, Route, Redirect, Switch, Routes } from 'react-router-dom';
-import { history } from '@/_helpers';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import {
   getWorkspaceIdFromURL,
   appendWorkspaceId,
@@ -246,15 +245,6 @@ class AppComponent extends React.Component {
             </div>
           )}
           <Routes>
-            <Route
-              exact
-              path="*"
-              element={
-                <PrivateRoute>
-                  <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
             <Route path="/login/:organizationId" exact element={<LoginPage />} />
             <Route path="/login" exact element={<LoginPage />} />
             <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
@@ -280,7 +270,7 @@ class AppComponent extends React.Component {
             />
             <Route
               exact
-              path="/apps/:id/:pageHandle?/*"
+              path="/:workspaceId/apps/:id/:pageHandle?/*"
               element={
                 <PrivateRoute>
                   <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
@@ -316,7 +306,7 @@ class AppComponent extends React.Component {
             />
             <Route
               exact
-              path="/workspace-settings"
+              path="/:workspaceId/workspace-settings"
               element={
                 <PrivateRoute>
                   <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
@@ -325,7 +315,7 @@ class AppComponent extends React.Component {
             />
             <Route
               exact
-              path="/settings"
+              path="/:workspaceId/settings"
               element={
                 <PrivateRoute>
                   <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
@@ -335,7 +325,7 @@ class AppComponent extends React.Component {
             {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
               <Route
                 exact
-                path="/database"
+                path="/:workspaceId/database"
                 element={
                   <PrivateRoute>
                     <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
@@ -354,6 +344,34 @@ class AppComponent extends React.Component {
                 }
               />
             )}
+            <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
+            <Route
+              exact
+              path="/switch-workspace"
+              element={
+                <PrivateRoute>
+                  <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              exact
+              path="/:workspaceId"
+              element={
+                <PrivateRoute>
+                  <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="*"
+              render={() => {
+                if (authenticationService?.currentSessionValue?.current_organization_id) {
+                  return <Navigate to="/:workspaceId" />;
+                }
+                return <Navigate to="/login" />;
+              }}
+            />
           </Routes>
         </div>
         <Toast toastOptions={toastOptions} />
