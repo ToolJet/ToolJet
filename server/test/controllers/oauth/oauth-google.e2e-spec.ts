@@ -11,15 +11,7 @@ describe('oauth controller', () => {
   let ssoConfigsRepository: Repository<SSOConfigs>;
   let orgRepository: Repository<Organization>;
 
-  const authResponseKeys = [
-    'id',
-    'email',
-    'first_name',
-    'last_name',
-    'auth_token',
-    'current_organization_id',
-    'current_organization_name',
-  ].sort();
+  const authResponseKeys = ['id', 'email', 'first_name', 'last_name', 'current_organization_id'].sort();
 
   beforeEach(async () => {
     await clearDB();
@@ -203,13 +195,12 @@ describe('oauth controller', () => {
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const { email, first_name, last_name, current_organization_id, current_organization_name } = response.body;
+          const { email, first_name, last_name, current_organization_id } = response.body;
 
           expect(email).toEqual('anotherUser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
           expect(current_organization_id).toBe(current_organization.id);
-          expect(current_organization_name).toBe(current_organization.name);
         });
         it('should return login info when the user exist but invited status', async () => {
           const { orgUser } = await createUser(app, {
@@ -242,13 +233,12 @@ describe('oauth controller', () => {
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const { email, first_name, last_name, current_organization_id, current_organization_name } = response.body;
+          const { email, first_name, last_name, current_organization_id } = response.body;
 
           expect(email).toEqual('anotherUser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
           expect(current_organization_id).toBe(current_organization.id);
-          expect(current_organization_name).toBe(current_organization.name);
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
         });
