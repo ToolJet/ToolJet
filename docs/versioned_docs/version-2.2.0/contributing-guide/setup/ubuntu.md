@@ -10,15 +10,18 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
 
 1. Set up the environment
 
-    1.1 Install Node.js
+    1.1 Install NVM
     ```bash
-    curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+    ```
 
-    # Required for compilation of Plugins (https://stackoverflow.com/a/44182915/19432410)
-    apt-get -y install build-essential gcc g++ make python3-dev
-    
-    # Ensure you have the correct version of npm, or it will cause an error about fsevents.
+    Close and reopen your terminal to start using nvm
+    ```bash
+    nvm install 18.3.0
+    ```
+
+    Ensure you have the correct version of npm, or it will cause an error about fsevents.
+    ```bash
     npm i -g npm@8.11.0
     ```
 
