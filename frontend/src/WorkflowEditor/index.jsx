@@ -1,5 +1,11 @@
 import React, { useReducer, useEffect, useMemo } from 'react';
-import { appService, datasourceService, appVersionService, workflowExecutionsService } from '@/_services';
+import {
+  appService,
+  datasourceService,
+  globalDatasourceService,
+  appVersionService,
+  workflowExecutionsService,
+} from '@/_services';
 import { LeftSidebar } from './LeftSidebar';
 import { reducer, initialState } from './reducer/reducer';
 import FlowBuilder from './FlowBuilder';
@@ -31,15 +37,22 @@ function WorkflowEditor(props) {
       .getApp(editorSession.app.id)
       .then((appData) => {
         const versionId = appData.editing_version.id;
+        const organizationId = appData.organizationId;
         editorSessionActions.setAppVersionId(versionId);
         if (appData.definition) {
           editorSessionActions.updateFlow({ edges: appData.definition.edges, nodes: appData.definition.nodes });
           // editorSessionActions.setQueries(appData.definition.queries);
         }
-        return { definition: appData.definition, queriesData: appData.data_queries, versionId };
+        return { definition: appData.definition, queriesData: appData.data_queries, versionId, organizationId };
       })
-      .then(({ definition, queriesData, versionId }) => {
+      .then(({ definition, queriesData, versionId, organizationId }) => {
         datasourceService.getAll(versionId, true).then((dataSourceData) => {
+          editorSessionActions.setDataSources(dataSourceData.data_sources);
+        });
+        return { definition, queriesData, versionId, organizationId };
+      })
+      .then(({ definition, queriesData, versionId, organizationId }) => {
+        globalDatasourceService.getAll(organizationId, true).then((dataSourceData) => {
           editorSessionActions.setDataSources(dataSourceData.data_sources);
         });
         return { definition, queriesData, versionId };

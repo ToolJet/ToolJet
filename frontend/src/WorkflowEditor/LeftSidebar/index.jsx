@@ -1,7 +1,6 @@
 import '@/_styles/left-sidebar.scss';
 import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
 
-import { LeftSidebarDataSources } from './SidebarDatasources';
 import { DarkMode } from '../../_components/DarkModeToggle';
 import useRouter from '../../_hooks/use-router';
 import { ConfirmDialog } from '@/_components';
@@ -10,15 +9,7 @@ import { getSvgIcon } from '@/_helpers/appUtils';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
-  const {
-    appId,
-    switchDarkMode,
-    darkMode = false,
-    dataSources = [],
-    dataSourcesChanged,
-    appVersionsId,
-    queryPanelHeight,
-  } = props;
+  const { appId, switchDarkMode, darkMode = false, appVersionsId, queryPanelHeight } = props;
   const [selectedSidebarItem, setSelectedSidebarItem] = useState();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -44,20 +35,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
 
   return (
     <div className="left-sidebar" data-cy="left-sidebar-inspector">
-      <div className="w-90">
-        <LeftSidebarDataSources
-          darkMode={darkMode}
-          selectedSidebarItem={selectedSidebarItem}
-          setSelectedSidebarItem={handleSelectedSidebarItem}
-          appId={appId}
-          editingVersionId={appVersionsId}
-          dataSources={dataSources}
-          dataSourcesChanged={dataSourcesChanged}
-          toggleDataSourceManagerModal={toggleDataSourceManagerModal}
-          showDataSourceManagerModal={showDataSourceManagerModal}
-          popoverContentHeight={popoverContentHeight}
-        />
-      </div>
+      <div className="w-90"></div>
     </div>
   );
 });

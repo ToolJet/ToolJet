@@ -43,7 +43,7 @@ export const reducer = (state = initialState(), { payload, type }) => {
       return { ...state, app: { ...state.app, name: payload.name } };
     }
     case 'SET_DATA_SOURCES': {
-      return { ...state, dataSources: payload.dataSources };
+      return { ...state, dataSources: [...state.dataSources, ...payload.dataSources] };
     }
 
     case 'UPDATE_FLOW': {
