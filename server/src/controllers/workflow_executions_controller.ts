@@ -1,5 +1,5 @@
 import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { WorkflowExecutionsService } from '@services/workflow_executions.service';
 import { decamelizeKeys } from 'humps';
 
@@ -10,5 +10,12 @@ export class WorkflowExecutionsController {
   @Post()
   async create(@Body() createWorkflowExecutionDto: CreateWorkflowExecutionDto) {
     return decamelizeKeys(await this.workflowExecutionsService.create(createWorkflowExecutionDto));
+  }
+
+  @Get(':id')
+  async show(@Param('id') id: any) {
+    console.log('yo boys')
+    console.log({ id });
+    return decamelizeKeys(await this.workflowExecutionsService.getStatus(id));
   }
 }

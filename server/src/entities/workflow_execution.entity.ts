@@ -4,6 +4,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -25,6 +26,9 @@ export class WorkflowExecution {
   @OneToOne(() => WorkflowExecutionNode)
   @JoinColumn({ name: 'start_node_id' })
   startNode: WorkflowExecutionNode;
+
+  @OneToMany(() => WorkflowExecutionNode, (node) => node.workflowExecution)
+  nodes: WorkflowExecutionNode[];
 
   @ManyToOne(() => AppVersion, (appVersion) => appVersion.id)
   @JoinColumn({ name: 'app_version_id' })

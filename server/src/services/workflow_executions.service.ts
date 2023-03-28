@@ -116,4 +116,25 @@ export class WorkflowExecutionsService {
 
     return [];
   }
+
+  async completeNodeExecution(node: WorkflowExecutionNode, result: any) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(WorkflowExecutionNode, node.id, { executed: true, result });
+    });
+  }
+
+  async getStatus(workflowExecutionId: string) {
+    const workflowExecution = await this.workflowExecutionRepository.findOne(workflowExecutionId);
+    const workflowExecutionNodes = await this.workflowExecutionNodeRepository.find({
+      where: {
+        workflowExecutionId: workflowExecution.id,
+      },
+    });
+
+    return workflowExecutionNodes.map((node) => ({
+      id: node.id,
+      executed: node.executed,
+      result: node.result,
+    }));
+  }
 }

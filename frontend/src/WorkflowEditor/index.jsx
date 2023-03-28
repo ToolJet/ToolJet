@@ -6,8 +6,7 @@ import {
   appVersionService,
   workflowExecutionsService,
 } from '@/_services';
-import { LeftSidebar } from './LeftSidebar';
-import { reducer, initialState } from './reducer/reducer';
+import { reducer, initialState, Modes } from './reducer/reducer';
 import FlowBuilder from './FlowBuilder';
 import { ReactFlowProvider } from 'reactflow';
 import { EditorContextWrapper } from '@/Editor/Context/EditorContextWrapper';
@@ -112,8 +111,15 @@ function WorkflowEditor(props) {
       .then(() => editorSessionActions.setAppSavingStatus(false));
   };
 
-  const executeWorkflow = () => {
-    workflowExecutionsService.create(editorSession.app.versionId).then(console.log);
+  const executeWorkflow = async () => {
+    const execution = await workflowExecutionsService.create(editorSession.app.versionId);
+    editorSessionActions.setMode(Modes.Running);
+    editorSessionActions.setExecutionId(execution.id);
+    const intervalHandle = setInterval(async () => {
+      const status = await workflowExecutionsService.getStatus(execution.id);
+      editorSessionActions.updateExecutionStatus(status);
+    }, 10000);
+    editorSessionActions.storeExecutionStatusCheckerIntervalHandle(intervalHandle);
   };
 
   const addQuery = (kind = 'runjs', options = {}, dataSourceId = undefined, pluginId = undefined) => {
@@ -160,19 +166,6 @@ function WorkflowEditor(props) {
         </div>
       </div>
       <div className="body">
-        <div className="left-sidebar-column">
-          <LeftSidebar
-            appId={editorSession.app.id}
-            appVersionsId={editorSession.app.versionId}
-            queryPanelHeight={200}
-            dataSources={editorSession.dataSources}
-            dataSourcesChanged={() => {
-              datasourceService.getAll(editorSession.app.versionId).then((dataSourceData) => {
-                editorSessionActions.setDataSources(dataSourceData.data_sources);
-              });
-            }}
-          ></LeftSidebar>
-        </div>
         <EditorContextWrapper>
           <div className="flow-editor-column">
             <ReactFlowProvider>

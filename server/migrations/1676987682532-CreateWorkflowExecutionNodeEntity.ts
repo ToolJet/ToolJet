@@ -30,6 +30,12 @@ export class CreateWorkflowExecutionNodeEntity1676987682532 implements Migration
             isNullable: false,
           },
           {
+            name: 'result',
+            type: 'varchar',
+            default: false,
+            isNullable: true,
+          },
+          {
             name: 'workflow_execution_id',
             type: 'uuid',
             isNullable: false,

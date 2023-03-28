@@ -2,6 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { defaultNode } from './defaults';
 import { find } from 'lodash';
 
+export const Modes = {
+  Editing: 'Editing',
+  Running: 'Running',
+};
+
 export const initialState = ({ appId, appVersionId }) => ({
   app: {
     id: appId,
@@ -21,6 +26,7 @@ export const initialState = ({ appId, appVersionId }) => ({
     },
   },
   queries: [],
+  mode: Modes.Editing,
   editingActivity: { type: 'IDLE' },
   appSavingStatus: {
     status: false,
@@ -28,6 +34,7 @@ export const initialState = ({ appId, appVersionId }) => ({
   },
   dataSources: [],
   bootupComplete: false,
+  execution: {},
 });
 
 export const reducer = (state = initialState(), { payload, type }) => {
@@ -47,18 +54,6 @@ export const reducer = (state = initialState(), { payload, type }) => {
     }
 
     case 'UPDATE_FLOW': {
-      // const { nodes, edges } = payload.flow;
-
-      // const nodeIdsToWhichEdgesPoint = map(edges, 'source').concat(map(edges, 'target'));
-      // const newNodes = nodes.filter((node) => nodeIdsToWhichEdgesPoint.includes(node.id));
-
-      // const allNodeIds = map(nodes, 'id');
-      // const newEdges = edges.filter((edge) => allNodeIds.includes(edge.source) || allNodeIds.includes(edge.target));
-      // const newState = {
-      //   ...state,
-      //   app: { ...state.app, flow: { edges: newEdges, nodes: newNodes } },
-      // };
-
       return {
         ...state,
         app: { ...state.app, flow: payload.flow },
@@ -228,6 +223,35 @@ export const reducer = (state = initialState(), { payload, type }) => {
         ...state,
         bootupComplete: status,
       };
+    }
+
+    case 'SET_MODE': {
+      const { mode } = payload;
+
+      return {
+        ...state,
+        mode,
+      };
+    }
+
+    case 'SET_EXECUTION_ID': {
+      const { id } = payload;
+
+      return {
+        ...state,
+        execution: {
+          ...state.execution,
+          id,
+        },
+      };
+    }
+
+    case 'UPDATE_EXECUTION_STATUS': {
+      const { status } = payload;
+
+      console.log({ status });
+
+      return state;
     }
 
     default: {

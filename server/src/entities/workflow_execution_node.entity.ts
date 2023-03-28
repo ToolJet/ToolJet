@@ -19,6 +19,9 @@ export class WorkflowExecutionNode {
   @Column({ name: 'executed' })
   executed: boolean;
 
+  @Column({ name: 'result' })
+  result: string;
+
   @Column({ name: 'id_on_workflow_definition' })
   idOnWorkflowDefinition: string;
 

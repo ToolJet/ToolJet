@@ -71,6 +71,7 @@ export class WorkflowNodeConsumer {
         [query.name]: result,
       };
 
+      void this.workflowExecutionService.completeNodeExecution(workflowExecutionNode, result);
       void this.workflowExecutionService.enqueueForwardNodes(workflowExecutionNode, newState, userId);
     } catch (exception) {
       console.log({ exception });
