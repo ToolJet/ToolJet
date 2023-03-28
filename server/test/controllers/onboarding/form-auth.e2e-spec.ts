@@ -4,12 +4,12 @@ import { Organization } from 'src/entities/organization.entity';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { User } from 'src/entities/user.entity';
 import {
-  authHeaderForUser,
   clearDB,
   createNestAppInstanceWithEnvMock,
   createUser,
   verifyInviteToken,
   setUpAccountFromToken,
+  authenticateUser,
 } from '../../test.helper';
 import { Repository } from 'typeorm';
 
@@ -19,6 +19,8 @@ describe('Form Onboarding', () => {
   let orgRepository: Repository<Organization>;
   let orgUserRepository: Repository<OrganizationUser>;
   let current_user: User;
+  let loggedUser: any;
+  let loggedOrgUser: any;
   let current_organization: Organization;
   let org_user: User;
   let org_user_organization: Organization;
@@ -102,10 +104,11 @@ describe('Form Onboarding', () => {
         });
 
         it('should allow user to view apps', async () => {
+          loggedUser = await authenticateUser(app, current_user.email);
           const response = await request(app.getHttpServer())
             .get(`/api/apps`)
             .set('tj-workspace-id', current_user?.defaultOrganizationId)
-            .set('Authorization', authHeaderForUser(current_user));
+            .set('Cookie', loggedUser.tokenCookie);
 
           expect(response.statusCode).toBe(200);
         });
@@ -117,7 +120,7 @@ describe('Form Onboarding', () => {
             .post('/api/organization_users')
             .send({ email: 'org_user@tooljet.com', first_name: 'test', last_name: 'test' })
             .set('tj-workspace-id', current_user?.defaultOrganizationId)
-            .set('Authorization', authHeaderForUser(current_user));
+            .set('Cookie', loggedUser.tokenCookie);
           const { status } = response;
           expect(status).toBe(201);
         });
@@ -149,10 +152,11 @@ describe('Form Onboarding', () => {
         });
 
         it('should allow user to view apps', async () => {
+          loggedOrgUser = await authenticateUser(app, org_user.email);
           const response = await request(app.getHttpServer())
             .get(`/api/apps`)
             .set('tj-workspace-id', org_user?.defaultOrganizationId)
-            .set('Authorization', authHeaderForUser(org_user));
+            .set('Cookie', loggedOrgUser.tokenCookie);
 
           expect(response.statusCode).toBe(200);
         });
@@ -167,7 +171,7 @@ describe('Form Onboarding', () => {
             .post('/api/organization_users')
             .send({ email: 'admin@tooljet.com' })
             .set('tj-workspace-id', org_user?.defaultOrganizationId)
-            .set('Authorization', authHeaderForUser(org_user));
+            .set('Cookie', loggedOrgUser.tokenCookie);
           const { status } = response;
           expect(status).toBe(201);
         });
@@ -207,7 +211,7 @@ describe('Form Onboarding', () => {
           const response = await request(app.getHttpServer())
             .get(`/api/apps`)
             .set('tj-workspace-id', invitedUser?.defaultOrganizationId)
-            .set('Authorization', authHeaderForUser(invitedUser));
+            .set('Cookie', loggedUser.tokenCookie);
 
           expect(response.statusCode).toBe(200);
         });
@@ -225,6 +229,7 @@ describe('Form Onboarding', () => {
           });
           current_user = user;
           current_organization = organization;
+          loggedUser = await authenticateUser(app, user.email);
         });
         it('should signup user', async () => {
           const response = await request(app.getHttpServer())
@@ -253,7 +258,7 @@ describe('Form Onboarding', () => {
             .post('/api/organization_users')
             .send({ email: 'another_user@tooljet.com' })
             .set('tj-workspace-id', current_user?.defaultOrganizationId)
-            .set('Authorization', authHeaderForUser(current_user));
+            .set('Cookie', loggedUser.tokenCookie);
           const { status } = response;
           expect(status).toBe(201);
         });
@@ -290,6 +295,7 @@ describe('Form Onboarding', () => {
           });
           current_user = user;
           current_organization = organization;
+          loggedUser = await authenticateUser(app, user.email);
         });
         it('should signup user', async () => {
           const response = await request(app.getHttpServer())
@@ -318,7 +324,7 @@ describe('Form Onboarding', () => {
             .post('/api/organization_users')
             .send({ email: 'another_user@tooljet.com' })
             .set('tj-workspace-id', current_user?.defaultOrganizationId)
-            .set('Authorization', authHeaderForUser(current_user));
+            .set('Cookie', loggedUser.tokenCookie);
           const { status } = response;
           expect(status).toBe(201);
         });
@@ -359,13 +365,14 @@ describe('Form Onboarding', () => {
           });
           current_user = user;
           current_organization = organization;
+          loggedUser = await authenticateUser(app, 'admin@tooljet.com');
         });
         it('should invite user to another workspace', async () => {
           const response = await request(app.getHttpServer())
             .post('/api/organization_users')
             .send({ email: 'another_user@tooljet.com', first_name: 'another', last_name: 'user', password: 'password' })
             .set('tj-workspace-id', current_user?.defaultOrganizationId)
-            .set('Authorization', authHeaderForUser(current_user));
+            .set('Cookie', loggedUser.tokenCookie);
           const { status } = response;
           expect(status).toBe(201);
 
@@ -428,13 +435,14 @@ describe('Form Onboarding', () => {
           });
           current_user = user;
           current_organization = organization;
+          loggedUser = await authenticateUser(app, user.email);
         });
         it('should invite user to another workspace', async () => {
           const response = await request(app.getHttpServer())
             .post('/api/organization_users')
             .send({ email: 'another_user@tooljet.com', first_name: 'another', last_name: 'user', password: 'password' })
             .set('tj-workspace-id', current_user?.defaultOrganizationId)
-            .set('Authorization', authHeaderForUser(current_user));
+            .set('Cookie', loggedUser.tokenCookie);
           const { status } = response;
           expect(status).toBe(201);
 
