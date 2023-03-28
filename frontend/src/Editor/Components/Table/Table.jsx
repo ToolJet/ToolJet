@@ -28,6 +28,7 @@ import generateColumnsData from './columns';
 import generateActionsData from './columns/actions';
 import autogenerateColumns from './columns/autogenerateColumns';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
+// eslint-disable-next-line import/no-unresolved
 import { useTranslation } from 'react-i18next';
 // eslint-disable-next-line import/no-unresolved
 import JsPDF from 'jspdf';
@@ -35,7 +36,7 @@ import JsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 // eslint-disable-next-line import/no-unresolved
-import { IconEyeOff } from '@tabler/icons';
+import { IconEyeOff } from '@tabler/icons-react';
 import * as XLSX from 'xlsx/xlsx.mjs';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -43,6 +44,7 @@ import { useMounted } from '@/_hooks/use-mount';
 import GenerateEachCellValue from './GenerateEachCellValue';
 // eslint-disable-next-line import/no-unresolved
 import { toast } from 'react-hot-toast';
+import { Tooltip } from 'react-tooltip';
 
 // utility function
 function removeAllAddedElements(array, addedElements) {
@@ -180,6 +182,7 @@ export function Table({
 
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
   const [hoverAdded, setHoverAdded] = useState(false);
+  const [generatedColumn, setGeneratedColumn] = useState([]);
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
   const mounted = useMounted();
@@ -254,7 +257,6 @@ export function Table({
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
 
-    fireEvent('onCellValueChanged');
     return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
   }
 
@@ -387,9 +389,15 @@ export function Table({
     }
   }, [color, darkMode]);
 
-  let tableData = [];
+  let tableData = [],
+    dynamicColumn = [];
+
+  const useDynamicColumn = resolveReferences(component.definition.properties?.useDynamicColumn?.value);
   if (currentState) {
     tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
+    dynamicColumn = useDynamicColumn
+      ? resolveReferences(component.definition.properties?.columnData?.value, currentState, []) ?? []
+      : [];
     if (!Array.isArray(tableData)) tableData = [];
   }
 
@@ -398,7 +406,7 @@ export function Table({
   const tableRef = useRef();
 
   const columnData = generateColumnsData({
-    columnProperties: component.definition.properties.columns.value,
+    columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
     columnSizes,
     currentState,
     handleCellValueChange,
@@ -421,7 +429,6 @@ export function Table({
         actions,
         columnSizes,
         defaultColumn,
-        actionButtonRadius,
         fireEvent,
         setExposedVariables,
       }),
@@ -436,7 +443,6 @@ export function Table({
   };
 
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
-
   const columns = useMemo(
     () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
     [
@@ -453,6 +459,7 @@ export function Table({
       darkMode,
     ] // Hack: need to fix
   );
+
   const data = useMemo(
     () =>
       isAddingNewRowRef && !_.isEmpty(tableDetails.changeSet) && !_.isEmpty(tableDetails.newRowDataUpdate)
@@ -468,15 +475,23 @@ export function Table({
   );
 
   useEffect(() => {
-    if (tableData.length != 0 && component.definition.properties.autogenerateColumns?.value && mode === 'edit') {
-      autogenerateColumns(
+    if (
+      tableData.length != 0 &&
+      component.definition.properties.autogenerateColumns?.value &&
+      (useDynamicColumn || mode === 'edit')
+    ) {
+      const generatedColumnFromData = autogenerateColumns(
         tableData,
         component.definition.properties.columns.value,
         component.definition.properties?.columnDeletionHistory?.value ?? [],
+        useDynamicColumn,
+        dynamicColumn,
         setProperty
       );
+
+      useDynamicColumn && setGeneratedColumn(generatedColumnFromData);
     }
-  }, [JSON.stringify(tableData)]);
+  }, [JSON.stringify(tableData), JSON.stringify(dynamicColumn)]);
 
   const computedStyles = {
     // width: `${width}px`,
@@ -714,7 +729,7 @@ export function Table({
         className={`${darkMode && 'popover-dark-themed theme-dark'} shadow table-widget-download-popup`}
         placement="bottom"
       >
-        <Popover.Content>
+        <Popover.Body>
           <div className="d-flex flex-column">
             <span data-cy={`option-download-CSV`} className="cursor-pointer" onClick={() => exportData('csv', true)}>
               Download as CSV
@@ -734,7 +749,7 @@ export function Table({
               Download as PDF
             </span>
           </div>
-        </Popover.Content>
+        </Popover.Body>
       </Popover>
     );
   }
@@ -751,7 +766,6 @@ export function Table({
         borderRadius: Number.parseFloat(borderRadius),
       }}
       onClick={(event) => {
-        event.stopPropagation();
         onComponentClick(id, component, event);
       }}
       ref={tableRef}
@@ -787,19 +801,34 @@ export function Table({
                 <img src="assets/images/icons/plus.svg" width="15" height="15" />
               </span>
               {showFilterButton && (
-                <span data-tip="Filter data" className="btn btn-light btn-sm p-1 mx-1" onClick={() => showFilters()}>
-                  <img src="assets/images/icons/filter.svg" width="15" height="15" />
-                  {tableDetails.filterDetails.filters.length > 0 && (
-                    <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                  )}
-                </span>
+                <>
+                  <span
+                    className="btn btn-light btn-sm p-1 mx-1"
+                    onClick={() => showFilters()}
+                    data-tooltip-id="tooltip-for-filter-data"
+                    data-tooltip-content="Filter data"
+                  >
+                    <img src="assets/images/icons/filter.svg" width="15" height="15" />
+                    {tableDetails.filterDetails.filters.length > 0 && (
+                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                    )}
+                  </span>
+                  <Tooltip id="tooltip-for-filter-data" className="tooltip" />
+                </>
               )}
               {showDownloadButton && (
-                <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
-                  <span data-tip="Download" className="btn btn-light btn-sm p-1">
-                    <img src="assets/images/icons/download.svg" width="15" height="15" />
-                  </span>
-                </OverlayTrigger>
+                <>
+                  <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
+                    <span
+                      className="btn btn-light btn-sm p-1"
+                      data-tooltip-id="tooltip-for-download"
+                      data-tooltip-content="Download"
+                    >
+                      <img src="assets/images/icons/download.svg" width="15" height="15" />
+                    </span>
+                  </OverlayTrigger>
+                  <Tooltip id="tooltip-for-download" className="tooltip" />
+                </>
               )}
               {!hideColumnSelectorButton && (
                 <OverlayTrigger
@@ -1011,6 +1040,19 @@ export function Table({
                         cellValue,
                         rowData,
                       });
+                      const actionButtonsArray = actions.map((action) => {
+                        return {
+                          ...action,
+                          isDisabled: resolveReferences(action?.disableActionButton ?? false, currentState, '', {
+                            cellValue,
+                            rowData,
+                          }),
+                        };
+                      });
+                      const isEditable = resolveReferences(cell.column?.isEditable ?? false, currentState, '', {
+                        cellValue,
+                        rowData,
+                      });
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
@@ -1020,7 +1062,7 @@ export function Table({
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
                           className={cx(`${wrapAction ? wrapAction : 'wrap'}-wrapper`, {
                             'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
-                            'has-text': cell.column.columnType === 'text' || cell.column.isEditable,
+                            'has-text': cell.column.columnType === 'text' || isEditable,
                             'has-dropdown': cell.column.columnType === 'dropdown',
                             'has-multiselect': cell.column.columnType === 'multiselect',
                             'has-datepicker': cell.column.columnType === 'datepicker',
@@ -1038,9 +1080,9 @@ export function Table({
                             <GenerateEachCellValue
                               cellValue={cellValue}
                               globalFilter={state.globalFilter}
-                              cellRender={cell.render('Cell')}
+                              cellRender={cell.render('Cell', { cell, actionButtonsArray, isEditable })}
                               rowChangeSet={rowChangeSet}
-                              isEditable={cell.column.isEditable}
+                              isEditable={isEditable}
                               columnType={cell.column.columnType}
                               isColumnTypeAction={['rightActions', 'leftActions'].includes(cell.column.id)}
                               cellTextColor={cellTextColor}

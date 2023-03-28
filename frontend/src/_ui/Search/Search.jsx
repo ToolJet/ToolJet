@@ -23,8 +23,10 @@ export const SearchBox = ({ onChange, ...restProps }) => {
     }
 
     return () => {
-      document.querySelector('.searchbox-wrapper .input-icon .form-control:not(:first-child)').style.paddingLeft =
-        '2.5rem';
+      if (document.querySelector('.searchbox-wrapper .input-icon .form-control:not(:first-child)')) {
+        document.querySelector('.searchbox-wrapper .input-icon .form-control:not(:first-child)').style.paddingLeft =
+          '2.5rem';
+      }
     };
   }, [searchText]);
 

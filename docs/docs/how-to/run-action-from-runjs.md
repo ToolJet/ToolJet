@@ -174,6 +174,9 @@ actions.goToApp('slug',queryparams)
 
 ```javascript
 actions.showAlert(alert type , message ) // alert types are info, success, warning, and danger
+
+ex:
+actions.showAlert('error' , 'This is an error' )
 ```
 
 <div style={{textAlign: 'center'}}>
