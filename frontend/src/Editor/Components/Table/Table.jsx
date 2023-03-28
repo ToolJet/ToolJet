@@ -1,6 +1,15 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useMemo, useState, useEffect, useCallback, useContext, useReducer, useRef } from 'react';
+import React, {
+  useMemo,
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+  useReducer,
+  useRef,
+  useDeferredValue,
+} from 'react';
 import {
   useTable,
   useFilters,
@@ -103,6 +112,7 @@ export function Table({
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
+  const deferredDataFromProps = useDeferredValue(properties.data);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
@@ -294,9 +304,8 @@ export function Table({
 
   let tableData = [];
   if (currentState) {
-    tableData = _.isEmpty(updatedDataReference.current)
-      ? resolveReferences(component.definition.properties.data.value, currentState, [])
-      : updatedDataReference.current;
+    tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
+
     if (!Array.isArray(tableData)) tableData = [];
   }
 
@@ -361,15 +370,17 @@ export function Table({
 
   console.log('columns--- ', columns);
 
-  const data = useMemo(
-    () => tableData,
-    [
-      tableData.length,
-      tableDetails.changeSet,
-      component.definition.properties.data.value,
-      JSON.stringify(properties.data),
-    ]
-  );
+  const data = useMemo(() => {
+    if (!_.isEmpty(updatedDataReference.current) && !_.isEqual(properties.data, deferredDataFromProps)) {
+      updatedDataReference.current = [];
+    }
+    return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
+  }, [
+    tableData.length,
+    tableDetails.changeSet,
+    component.definition.properties.data.value,
+    JSON.stringify(properties.data),
+  ]);
 
   useEffect(() => {
     if (tableData?.length != 0 && component.definition.properties.autogenerateColumns?.value && mode === 'edit') {
