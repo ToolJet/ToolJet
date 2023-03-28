@@ -54,7 +54,7 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
     if (result) {
       const { error } = await pluginsService.deletePlugin(id);
       if (error) {
-        toast.error(error?.message || 'unable to delete plugin');
+        toast.error(error?.message || 'Unable to delete plugin');
         return;
       }
       toast.success(`${capitalizeFirstLetter(name)} deleted`);
@@ -75,10 +75,10 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
     setUpdating(false);
 
     if (error) {
-      toast.error(error?.message || `Unable to update ${name}`);
+      toast.error(error?.message || `Unable to update ${capitalizeFirstLetter(name)}`);
       return;
     }
-    toast.success(`${name} updated`);
+    toast.success(`${capitalizeFirstLetter(name)} updated`);
     fetchPlugins();
   };
 
@@ -88,10 +88,10 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
     setUpdating(false);
 
     if (error) {
-      toast.error(error?.message || `Unable to reload ${name}`);
+      toast.error(error?.message || `Unable to reload ${capitalizeFirstLetter(name)}`);
       return;
     }
-    toast.success(`${name} reloaded`);
+    toast.success(`${capitalizeFirstLetter(name)} reloaded`);
   };
 
   return (
