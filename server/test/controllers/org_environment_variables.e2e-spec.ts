@@ -1,14 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import {
-  authHeaderForUser,
-  clearDB,
-  createUser,
-  createNestAppInstance,
-  createGroupPermission,
-  authenticateUser,
-} from '../test.helper';
+import { clearDB, createUser, createNestAppInstance, createGroupPermission, authenticateUser } from '../test.helper';
 import { getManager } from 'typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
