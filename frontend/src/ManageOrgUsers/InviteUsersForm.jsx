@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import SolidIcon from '../_ui/Icon/SolidIcons';
-import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '../_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
+import { useDropzone } from 'react-dropzone';
+import { FileDropzone } from './FileDropzone';
 
 function InviteUsersForm({
   onClose,
@@ -18,10 +19,36 @@ function InviteUsersForm({
 }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(1);
+
   const hiddenFileInput = React.useRef(null);
-  const handleClick = (event) => {
+  const { acceptedFiles } = useDropzone({
+    onDrop,
+    accept: 'text/csv',
+  });
+
+  const onDrop = useCallback((acceptedFiles) => {
+    const file = acceptedFiles[0];
+    if (Math.round(file.size / 1024) > 1024) {
+      toast.error('File size cannot exceed more than 1MB');
+    } else {
+      handleFileChange(file);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleClick = () => {
     hiddenFileInput.current.click();
   };
+
+  const files = acceptedFiles.map((file) => (
+    <li key={file.path}>
+      {file.path} - {file.size} bytes
+    </li>
+  ));
+
+  useEffect(() => {
+    console.log('acceptedFiles', acceptedFiles);
+  }, [acceptedFiles]);
 
   return (
     <div>
@@ -115,43 +142,21 @@ function InviteUsersForm({
                       download="sample_upload.csv"
                       variant="tertiary"
                       className="download-template-btn"
+                      as={'a'}
                     >
                       Download Template
                     </ButtonSolid>
                   </div>
                 </div>
-                <form onSubmit={inviteBulkUsers} noValidate className="upload-user-form" id="inviteBulkUsers">
-                  <div className="form-group mb-3 ">
-                    <div>
-                      {' '}
-                      <div className="csv-upload-icon-wrap" onClick={handleClick}>
-                        <BulkIcon name="fileupload" width="27" fill="#3E63DD" />
-                      </div>
-                      <p className="tj-text tj-text-md font-weight-500 select-csv-text">Select a CSV file to upload</p>
-                      <span className="tj-text tj-text-sm drag-and-drop-text">Or drag and drop it here</span>
-                      <input
-                        style={{ display: 'none' }}
-                        ref={hiddenFileInput}
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (Math.round(file.size / 1024) > 1024) {
-                            toast.error('File size cannot exceed more than 1MB');
-                            e.target.value = null;
-                          } else {
-                            handleFileChange(file);
-                          }
-                        }}
-                        accept=".csv"
-                        type="file"
-                        className="form-control"
-                      />
-                      <span className="file-upload-error" data-cy="file-error">
-                        {errors['file']}
-                      </span>
-                    </div>
-                  </div>
-                </form>
               </div>
+              <FileDropzone
+                handleClick={handleClick}
+                hiddenFileInput={hiddenFileInput}
+                errors={errors}
+                handleFileChange={handleFileChange}
+                inviteBulkUsers={inviteBulkUsers}
+                onDrop={onDrop}
+              />
             </div>
           )}
           <div className="manage-users-drawer-footer">

@@ -7955,7 +7955,7 @@ tbody {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 110px;
+      max-width: 140px;
     }
   }
 
@@ -9185,7 +9185,7 @@ tbody {
   border: 2px dashed var(--indigo9);
   border-radius: 6px;
   align-items: center;
-  margin-top: 24px;
+  margin: 24px auto;
   text-align: center;
 
   .select-csv-text {

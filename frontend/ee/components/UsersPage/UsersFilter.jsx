@@ -45,10 +45,6 @@ const UsersFilter = ({ filterList }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options]);
 
-  // const handleEnterKey = (e) => {
-  //   if (e.key === 'Enter') filterList(options);
-  // };
-
   return (
     <div className="workspace-settings-table-wrap workspace-settings-filter-wrap">
       <div className="row workspace-settings-filters">

@@ -37,7 +37,7 @@ function MultiSelectUser({
     [setSearchText, onSearch, selectedValues]
   );
 
-  function renderCustom(option) {
+  function renderCustom(props, option) {
     return (
       <div className={`item-renderer`}>
         <div>

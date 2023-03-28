@@ -381,7 +381,7 @@ class HomePageComponent extends React.Component {
         onClick={() => this.setState({ appOperations: { ...appOperations, selectedIcon: icon } })}
         key={index}
       >
-        <BulkIcon name={icon} />
+        <BulkIcon name={icon} data-cy={`${icon}-icon`} />
       </li>
     ));
   };

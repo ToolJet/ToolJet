@@ -155,15 +155,6 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
               data-cy="allowed-domain-input"
             />
           </div>
-          {/* <InputField
-            className="sso-page-inputs"
-            type="text"
-            label={t('header.organization.menus.manageSSO.generalSettings.allowedDomains', `Allowed domains`)}
-            placeholder={t('header.organization.menus.manageSSO.generalSettings.enterDomains', `Enter Domains`)}
-            name="domain"
-            value={domain}
-            onChange={(e) => setDomain(e.target.value)}
-          /> */}
           <div className="tj-text-xxsm mb-3">
             <div data-cy="allowed-domain-helper-text">
               {t(
