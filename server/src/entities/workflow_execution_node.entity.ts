@@ -16,6 +16,9 @@ export class WorkflowExecutionNode {
   @PrimaryGeneratedColumn()
   public id: string;
 
+  @Column({ name: 'type' })
+  type: string;
+
   @Column({ name: 'executed' })
   executed: boolean;
 

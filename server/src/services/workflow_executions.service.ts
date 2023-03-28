@@ -49,6 +49,7 @@ export class WorkflowExecutionsService {
         const node = await manager.save(
           WorkflowExecutionNode,
           manager.create(WorkflowExecutionNode, {
+            type: nodeData.type,
             workflowExecutionId: workflowExecution.id,
             idOnWorkflowDefinition: nodeData.id,
             definition: nodeData.data,
@@ -88,7 +89,11 @@ export class WorkflowExecutionsService {
 
     const startNode = await this.workflowExecutionNodeRepository.findOne(workflowExecution.startNodeId);
 
-    await this.enqueueForwardNodes(startNode, {}, createWorkflowExecutionDto.userId);
+    await this.workflowsQueue.add('execute', {
+      userId: createWorkflowExecutionDto.userId,
+      nodeId: startNode.id,
+      state: {},
+    });
 
     return workflowExecution;
   }
@@ -133,6 +138,7 @@ export class WorkflowExecutionsService {
 
     return workflowExecutionNodes.map((node) => ({
       id: node.id,
+      idOnDefinition: node.idOnWorkflowDefinition,
       executed: node.executed,
       result: node.result,
     }));

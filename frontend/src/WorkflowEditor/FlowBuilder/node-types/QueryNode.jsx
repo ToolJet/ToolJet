@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Handle } from 'reactflow';
 import { allSources } from '../../../Editor/QueryManager/QueryEditors';
 import Select from 'react-select';
@@ -6,6 +6,7 @@ import WorkflowEditorContext from '../../context';
 import { capitalize, isUndefined } from 'lodash';
 import { find } from 'lodash';
 import { generateQueryName } from '../../utils';
+import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 
 import './query-node-styles.scss';
 
@@ -31,7 +32,7 @@ const staticDataSourceSchemas = {
 
 export default function QueryNode(props) {
   const { editorSession, updateQuery } = useContext(WorkflowEditorContext);
-  const { data: nodeData } = props;
+  const { data: nodeData, id } = props;
   const queryData = find(editorSession.queries, { idOnDefinition: nodeData.idOnDefinition });
 
   if (isUndefined(queryData)) {
@@ -57,6 +58,23 @@ export default function QueryNode(props) {
     });
   };
 
+  const executionDetails = useMemo(() => {
+    const details = find(editorSession.execution.nodes, { id_on_definition: id }) ?? {};
+    const result = details?.result ?? '{}';
+    try {
+      const parsedResult = JSON.parse(result);
+      return { ...details, result: parsedResult };
+    } catch (e) {
+      return { ...details, result: {} };
+    }
+  }, [editorSession.execution.nodes, id]);
+
+  const [showResult, setShowResult] = useState(false);
+
+  useEffect(() => {
+    if (executionDetails?.executed) setShowResult(true);
+  }, [executionDetails]);
+
   return (
     <div className="query-node">
       <div className="left-handle">
@@ -70,8 +88,23 @@ export default function QueryNode(props) {
       </div>
       <div className="body">
         <div className="grid">
-          <div className="row">
-            <h3>{queryData.name}</h3>
+          <div className="row" style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row' }}>
+            <h3 style={{ width: 150 }}>{queryData.name}</h3>
+            <div className="results-switch" style={{ width: 100 }}>
+              <div className="form-check form-switch">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  id="flexSwitchCheckDefault"
+                  checked={showResult}
+                  onChange={() => setShowResult((prevValue) => !prevValue)}
+                />
+                <label className="form-check-label" for="flexSwitchCheckDefault">
+                  Results
+                </label>
+              </div>
+            </div>
           </div>
           <div className="row">
             <Select
@@ -82,20 +115,33 @@ export default function QueryNode(props) {
             />
           </div>
           <div className="row">
-            <QueryBuilder
-              pluginSchema={schema}
-              isEditMode={true}
-              queryName={'RunJS'}
-              options={queryData.options}
-              currentState={{}}
-              optionsChanged={(options) => updateQuery(queryData.idOnDefinition, { options })}
-              optionchanged={(key, value) =>
-                updateQuery(queryData.idOnDefinition, {
-                  ...queryData,
-                  options: { ...queryData.options, [key]: value },
-                })
-              }
-            />
+            {!showResult ? (
+              <QueryBuilder
+                pluginSchema={schema}
+                isEditMode={true}
+                queryName={'RunJS'}
+                options={queryData.options}
+                currentState={{}}
+                optionsChanged={(options) => updateQuery(queryData.idOnDefinition, { options })}
+                optionchanged={(key, value) =>
+                  updateQuery(queryData.idOnDefinition, {
+                    ...queryData,
+                    options: { ...queryData.options, [key]: value },
+                  })
+                }
+              />
+            ) : (
+              <JSONTreeViewer
+                data={executionDetails.result}
+                useIcons={false}
+                useIndentedBlock={true}
+                enableCopyToClipboard={false}
+                useActions={false}
+                actionIdentifier="id"
+                expandWithLabels={true}
+                fontSize={'10px'}
+              />
+            )}
           </div>
         </div>
       </div>

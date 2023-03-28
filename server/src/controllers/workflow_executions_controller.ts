@@ -14,8 +14,6 @@ export class WorkflowExecutionsController {
 
   @Get(':id')
   async show(@Param('id') id: any) {
-    console.log('yo boys')
-    console.log({ id });
     return decamelizeKeys(await this.workflowExecutionsService.getStatus(id));
   }
 }

@@ -14,6 +14,12 @@ export class CreateWorkflowExecutionNodeEntity1676987682532 implements Migration
             isPrimary: true,
           },
           {
+            name: 'type',
+            type: 'varchar',
+            default: false,
+            isNullable: false,
+          },
+          {
             name: 'id_on_workflow_definition',
             type: 'varchar',
             isNullable: false,

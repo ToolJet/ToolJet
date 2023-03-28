@@ -34,7 +34,9 @@ export const initialState = ({ appId, appVersionId }) => ({
   },
   dataSources: [],
   bootupComplete: false,
-  execution: {},
+  execution: {
+    nodes: [],
+  },
 });
 
 export const reducer = (state = initialState(), { payload, type }) => {
@@ -247,11 +249,15 @@ export const reducer = (state = initialState(), { payload, type }) => {
     }
 
     case 'UPDATE_EXECUTION_STATUS': {
-      const { status } = payload;
+      const { nodes } = payload;
 
-      console.log({ status });
-
-      return state;
+      return {
+        ...state,
+        execution: {
+          ...state.execution,
+          nodes: nodes,
+        },
+      };
     }
 
     default: {

@@ -18,7 +18,7 @@ export default function generateActions(dispatch) {
     setQueries: (queries) => dispatch({ type: 'SET_QUERIES', payload: { queries } }),
     setBootupComplete: (status) => dispatch({ type: 'SET_BOOTUP_COMPLETE', payload: { status } }),
     setExecutionId: (id) => dispatch({ type: 'SET_EXECUTION_ID', payload: { id } }),
-    updateExecutionStatus: (status) => dispatch({ type: 'UPDATE_EXECUTION_STATUS', payload: { status } }),
+    updateExecutionStatus: (nodes) => dispatch({ type: 'UPDATE_EXECUTION_STATUS', payload: { nodes } }),
     storeExecutionStatusCheckerIntervalHandle: (handle) =>
       dispatch({ type: 'STORE_EXECUTION_STATUS_CHECKER_INTERVAL_HANDLE', payload: { handle } }),
   };

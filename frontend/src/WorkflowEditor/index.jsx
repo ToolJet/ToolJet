@@ -12,7 +12,7 @@ import { ReactFlowProvider } from 'reactflow';
 import { EditorContextWrapper } from '@/Editor/Context/EditorContextWrapper';
 import generateActions from './actions';
 import WorkflowEditorContext from './context';
-import { debounce, find, merge } from 'lodash';
+import { debounce, find, merge, every, map } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { generateQueryName } from './utils';
 import { Link } from 'react-router-dom';
@@ -116,10 +116,14 @@ function WorkflowEditor(props) {
     editorSessionActions.setMode(Modes.Running);
     editorSessionActions.setExecutionId(execution.id);
     const intervalHandle = setInterval(async () => {
-      const status = await workflowExecutionsService.getStatus(execution.id);
-      editorSessionActions.updateExecutionStatus(status);
-    }, 10000);
-    editorSessionActions.storeExecutionStatusCheckerIntervalHandle(intervalHandle);
+      const nodes = await workflowExecutionsService.getStatus(execution.id);
+      editorSessionActions.updateExecutionStatus(nodes);
+      console.log({ nodes });
+      if (every(map(nodes, 'executed'))) {
+        clearInterval(intervalHandle);
+        editorSessionActions.setMode(Modes.Editing);
+      }
+    }, 100);
   };
 
   const addQuery = (kind = 'runjs', options = {}, dataSourceId = undefined, pluginId = undefined) => {
@@ -157,8 +161,9 @@ function WorkflowEditor(props) {
                 type="button"
                 className="btn btn-primary"
                 style={{ height: '30px', marginRight: 6 }}
+                disabled={editorSession.mode === Modes.Running}
               >
-                Run
+                {editorSession.mode === Modes.Running ? 'Running' : 'Run'}
               </button>
               {editorSession.appSavingStatus.status ? 'Saving..' : 'All changes saved'}
             </div>
