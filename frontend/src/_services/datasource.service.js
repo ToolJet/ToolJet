@@ -22,12 +22,12 @@ function getAll(appVersionId, environment_id) {
 
 function create(app_id, app_version_id, plugin_id, name, kind, options, environment_id) {
   const body = {
-    app_id,
-    app_version_id,
     plugin_id,
     name,
     kind,
     options,
+    app_id,
+    app_version_id,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
@@ -38,9 +38,9 @@ function create(app_id, app_version_id, plugin_id, name, kind, options, environm
 
 function save(id, app_id, name, options, environment_id) {
   const body = {
-    app_id,
     name,
     options,
+    app_id,
   };
 
   const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body) };

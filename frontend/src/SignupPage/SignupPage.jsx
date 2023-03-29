@@ -16,6 +16,7 @@ import { withTranslation } from 'react-i18next';
 import { ShowLoading } from '@/_components';
 import Spinner from '@/_ui/Spinner';
 import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
+import { withRouter } from '@/_hoc/withRouter';
 class SignupPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -47,7 +48,7 @@ class SignupPageComponent extends React.Component {
         if (response.data.statusCode !== 404) {
           this.setState({ isGettingConfigs: false });
         } else {
-          return this.props.history.push('/setup');
+          return this.props.navigate('/setup');
         }
       }
     );
@@ -345,4 +346,4 @@ class SignupPageComponent extends React.Component {
   }
 }
 
-export const SignupPage = withTranslation()(SignupPageComponent);
+export const SignupPage = withTranslation()(withRouter(SignupPageComponent));

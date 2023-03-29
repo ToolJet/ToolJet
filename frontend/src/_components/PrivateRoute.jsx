@@ -1,73 +1,69 @@
 import React from 'react';
-import { Route, Redirect } from 'react-router-dom';
+import { Route, Navigate, useLocation } from 'react-router-dom';
 import { authenticationService } from '@/_services';
 
-export const PrivateRoute = ({ component: Component, switchDarkMode, darkMode, ...rest }) => (
-  <Route
-    {...rest}
-    render={(props) => {
-      const currentUser = authenticationService.currentUserValue;
-      if (!currentUser && !props.location.pathname.startsWith('/applications/')) {
-        // not logged in so redirect to login page with the return url
-        return (
-          <Redirect
-            to={{
-              pathname: '/login',
-              search: `?redirectTo=${props.location.pathname}`,
-              state: { from: props.location },
-            }}
-          />
-        );
-      }
+export const PrivateRoute = ({ children }) => {
+  const location = useLocation();
+  const currentUser = authenticationService.currentUserValue;
+  if (!currentUser && !location.pathname.startsWith('/applications/')) {
+    // not logged in so redirect to login page with the return url
+    return (
+      <Navigate
+        to={{
+          pathname: '/login',
+          search: `?redirectTo=${location.pathname}`,
+          state: { from: location },
+        }}
+        replace
+      />
+    );
+  }
 
-      const superAdminRoutes = ['/all-users', '/instance-settings'];
-      if (currentUser && superAdminRoutes.includes(props.location.pathname) && !currentUser.super_admin) {
-        return (
-          <Redirect
-            to={{
-              pathname: '/',
-              state: { from: props.location },
-            }}
-          />
-        );
-      }
+  const superAdminRoutes = ['/all-users', '/instance-settings'];
+  if (currentUser && superAdminRoutes.includes(location.pathname) && !currentUser.super_admin) {
+    return (
+      <Navigate
+        to={{
+          pathname: '/',
+          state: { from: location },
+        }}
+        replace
+      />
+    );
+  }
 
-      // authorised so return component
-      return <Component {...props} switchDarkMode={switchDarkMode} darkMode={darkMode} />;
-    }}
-  />
-);
+  // authorised so return component
+  return children;
+};
 
-export const AdminRoute = ({ component: Component, switchDarkMode, darkMode, ...rest }) => (
-  <Route
-    {...rest}
-    render={(props) => {
-      const currentUser = authenticationService.currentUserValue;
-      if (!currentUser && !props.location.pathname.startsWith('/applications/')) {
-        return (
-          <Redirect
-            to={{
-              pathname: '/login',
-              search: `?redirectTo=${props.location.pathname}`,
-              state: { from: props.location },
-            }}
-          />
-        );
-      }
+export const AdminRoute = ({ children }) => {
+  const location = useLocation();
+  const currentUser = authenticationService.currentUserValue;
+  if (!currentUser && !location.pathname.startsWith('/applications/')) {
+    return (
+      <Navigate
+        to={{
+          pathname: '/login',
+          search: `?redirectTo=${location.pathname}`,
+          state: { from: location },
+        }}
+        replace
+      />
+    );
+  }
 
-      if (!currentUser?.admin) {
-        return (
-          <Redirect
-            to={{
-              pathname: '/',
-              search: `?redirectTo=${props.location.pathname}`,
-              state: { from: props.location },
-            }}
-          />
-        );
-      }
+  if (!currentUser?.admin) {
+    return (
+      <Navigate
+        to={{
+          pathname: '/',
+          search: `?redirectTo=${location.pathname}`,
+          state: { from: location },
+        }}
+        replace
+      />
+    );
+  }
 
-      return <Component {...props} switchDarkMode={switchDarkMode} darkMode={darkMode} />;
-    }}
-  />
-);
+  return children;
+};

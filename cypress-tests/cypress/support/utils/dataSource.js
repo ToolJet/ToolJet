@@ -7,8 +7,8 @@ export const verifyCouldnotConnectWithAlert = (dangerText) => {
   }).verifyVisibleElement("have.text", postgreSqlText.couldNotConnect, {
     timeout: 5000,
   });
-  cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
-    "contain.text",
-    dangerText
-  );
+  cy.get(postgreSqlSelector.dangerAlertNotSupportSSL)
+    .should("be.visible")
+    .invoke("text")
+    .contain(dangerText);
 };

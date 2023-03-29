@@ -125,7 +125,9 @@ describe('data queries controller', () => {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
     });
-    const { application, dataSource } = await generateAppDefaults(app, adminUserData.user, { isQueryNeeded: false });
+    const { application, dataSource, appVersion } = await generateAppDefaults(app, adminUserData.user, {
+      isQueryNeeded: false,
+    });
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -142,6 +144,7 @@ describe('data queries controller', () => {
     for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const dataQuery = await createDataQuery(app, {
         dataSource,
+        appVersion,
         options: {
           method: 'get',
           url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
@@ -166,6 +169,7 @@ describe('data queries controller', () => {
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
       const dataQuery = await createDataQuery(app, {
         dataSource,
+        appVersion,
         options: {
           method: 'get',
           url: 'https://api.github.com/repos/tooljet/tooljet/stargazers',
@@ -242,6 +246,7 @@ describe('data queries controller', () => {
 
     await createDataQuery(app, {
       dataSource,
+      appVersion,
       kind: 'restapi',
       options: { method: 'get' },
     });
@@ -282,6 +287,7 @@ describe('data queries controller', () => {
 
     await createDataQuery(app, {
       dataSource,
+      appVersion,
       kind: 'restapi',
       options: { method: 'get' },
     });

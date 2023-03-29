@@ -30,8 +30,8 @@ class OrganizationInvitationPageComponent extends React.Component {
     };
     this.formRef = React.createRef(null);
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
-    this.organizationId = new URLSearchParams(props?.location?.state?.search).get('oid');
-    this.source = new URLSearchParams(props?.location?.state?.search).get('source');
+    this.organizationId = new URLSearchParams(props?.location?.search).get('oid');
+    this.source = new URLSearchParams(props?.location?.search).get('source');
   }
 
   componentDidMount() {
@@ -64,7 +64,7 @@ class OrganizationInvitationPageComponent extends React.Component {
     }
 
     authenticationService
-      .verifyOrganizationToken(this.props?.location?.state?.token)
+      .verifyOrganizationToken(this.props?.params?.token)
       .then((data) => {
         this.setState({ userDetails: data });
         if (data?.email !== '') {
@@ -88,7 +88,7 @@ class OrganizationInvitationPageComponent extends React.Component {
     e.preventDefault();
 
     const isSetPassword = !!this.state?.userDetails?.onboarding_details?.password;
-    const token = this.props?.location?.state?.token;
+    const token = this.props?.params?.token;
     const { password } = this.state;
     this.setState({ isLoading: true });
 
@@ -119,9 +119,9 @@ class OrganizationInvitationPageComponent extends React.Component {
             json.then((res) => {
               authenticationService.updateUser(res?.user);
               authenticationService.deleteLoginOrganizationId();
-              this.props.history.push('/login');
+              this.props.navigate('/login');
             });
-          } else this.props.history.push('/login');
+          } else this.props.navigate('/login');
         }
       })
       .catch(() => {

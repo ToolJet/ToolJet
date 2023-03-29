@@ -10,7 +10,7 @@ import { CreateAppEnvironmentDto, UpdateAppEnvironmentDto } from '@dto/app_envir
 
 @Controller('app-environments')
 export class AppEnvironmentsController {
-  constructor(private appEnvironmentServices: AppEnvironmentService, private appsAbilityFactory: AppsAbilityFactory) {}
+  constructor(private appEnvironmentServices: AppEnvironmentService, private appsAbilityFactory: AppsAbilityFactory) { }
 
   @UseGuards(JwtAuthGuard)
   @Get(':versionId')
@@ -51,7 +51,7 @@ export class AppEnvironmentsController {
     @Param('versionId') versionId: string,
     @Body() updateAppEnvironmentDto: UpdateAppEnvironmentDto
   ) {
-    const version = await (await this.appEnvironmentServices.get(versionId, id)).appVersion;
+    const version = await (await this.appEnvironmentServices.getVersion(versionId));
     const ability = await this.appsAbilityFactory.appsActions(user, version.appId);
 
     if (!ability.can('updateEnvironments', App)) {
@@ -65,7 +65,7 @@ export class AppEnvironmentsController {
   @UseGuards(JwtAuthGuard)
   @Delete(':versionId/:id')
   async delete(@User() user, @Param('id') id: string, @Param('versionId') versionId: string) {
-    const version = await (await this.appEnvironmentServices.get(versionId, id)).appVersion;
+    const version = await (await this.appEnvironmentServices.getVersion(versionId));
     const ability = await this.appsAbilityFactory.appsActions(user, version.appId);
 
     if (!ability.can('deleteEnvironments', App)) {

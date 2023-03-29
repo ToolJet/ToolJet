@@ -8,6 +8,7 @@ export const dataqueryService = {
   update,
   del,
   preview,
+  changeQueryDataSource,
 };
 
 function getAll(appVersionId) {
@@ -69,4 +70,12 @@ function preview(query, options, versionId, environmentId) {
   return fetch(`${config.apiUrl}/data_queries/preview${environmentId ? `/${environmentId}` : ''}`, requestOptions).then(
     handleResponse
   );
+}
+
+function changeQueryDataSource(id, dataSourceId) {
+  const body = {
+    data_source_id: dataSourceId,
+  };
+  const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/data_queries/${id}/data_source`, requestOptions).then(handleResponse);
 }

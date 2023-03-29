@@ -4,6 +4,7 @@ import Avatar from '../../../src/_ui/Avatar';
 import Skeleton from 'react-loading-skeleton';
 import cx from 'classnames';
 import { Pagination } from '@/_components';
+import { Tooltip } from 'react-tooltip';
 
 const UsersTable = ({
   isLoading,

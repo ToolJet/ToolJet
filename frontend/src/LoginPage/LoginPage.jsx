@@ -16,6 +16,7 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
+import { withRouter } from '@/_hoc/withRouter';
 
 class LoginPageComponent extends React.Component {
   constructor(props) {
@@ -28,7 +29,7 @@ class LoginPageComponent extends React.Component {
       emailError: false,
     };
     this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
-    this.organizationId = props.match.params.organizationId;
+    this.organizationId = props.params.organizationId;
   }
   darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -181,37 +182,37 @@ class LoginPageComponent extends React.Component {
                         this.state?.configs?.git?.enabled ||
                         configs?.form?.enabled ||
                         this.state?.configs?.openid?.enabled) && (
-                        <>
-                          <h2 className="common-auth-section-header sign-in-header" data-cy="sign-in-header">
-                            {this.props.t('loginSignupPage.signIn', `Sign in`)}
-                          </h2>
-                          {this.organizationId && (
-                            <p
-                              className="text-center-onboard workspace-login-description"
-                              data-cy="workspace-sign-in-sub-header"
-                            >
-                              Sign in to your workspace - {configs?.name}
-                            </p>
-                          )}
-                          <div className="tj-text-input-label">
-                            {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
-                              <div className="common-auth-sub-header sign-in-sub-header" data-cy="sign-in-sub-header">
-                                {this.props.t('newToTooljet', ` New to ${retrieveWhiteLabelText()}?`, {
-                                  whiteLabelText: retrieveWhiteLabelText(),
-                                })}
-                                <Link
-                                  to={'/signup'}
-                                  tabIndex="-1"
-                                  style={{ marginLeft: '4px' }}
-                                  data-cy="create-an-account-link"
-                                >
-                                  {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
-                                </Link>
-                              </div>
+                          <>
+                            <h2 className="common-auth-section-header sign-in-header" data-cy="sign-in-header">
+                              {this.props.t('loginSignupPage.signIn', `Sign in`)}
+                            </h2>
+                            {this.organizationId && (
+                              <p
+                                className="text-center-onboard workspace-login-description"
+                                data-cy="workspace-sign-in-sub-header"
+                              >
+                                Sign in to your workspace - {configs?.name}
+                              </p>
                             )}
-                          </div>
-                        </>
-                      )}
+                            <div className="tj-text-input-label">
+                              {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
+                                <div className="common-auth-sub-header sign-in-sub-header" data-cy="sign-in-sub-header">
+                                  {this.props.t('newToTooljet', ` New to ${retrieveWhiteLabelText()}?`, {
+                                    whiteLabelText: retrieveWhiteLabelText(),
+                                  })}
+                                  <Link
+                                    to={'/signup'}
+                                    tabIndex="-1"
+                                    style={{ marginLeft: '4px' }}
+                                    data-cy="create-an-account-link"
+                                  >
+                                    {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
+                                  </Link>
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        )}
                       {this.state?.configs?.git?.enabled && (
                         <div className="login-sso-wrapper">
                           <GitSSOLoginButton configs={this.state?.configs?.git?.configs} />
@@ -308,8 +309,8 @@ class LoginPageComponent extends React.Component {
                                           ? '#D1D5DB'
                                           : '#656565'
                                         : this.state?.password?.length
-                                        ? '#384151'
-                                        : '#D1D5DB'
+                                          ? '#384151'
+                                          : '#D1D5DB'
                                     }
                                   />
                                 ) : (
@@ -320,8 +321,8 @@ class LoginPageComponent extends React.Component {
                                           ? '#D1D5DB'
                                           : '#656565'
                                         : this.state?.password?.length
-                                        ? '#384151'
-                                        : '#D1D5DB'
+                                          ? '#384151'
+                                          : '#D1D5DB'
                                     }
                                   />
                                 )}
@@ -383,4 +384,4 @@ class LoginPageComponent extends React.Component {
   }
 }
 
-export const LoginPage = withTranslation()(LoginPageComponent);
+export const LoginPage = withTranslation()(withRouter(LoginPageComponent));
