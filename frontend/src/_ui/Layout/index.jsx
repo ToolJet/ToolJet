@@ -153,7 +153,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
               {marketplaceEnabled && (
                 <li className="text-center mt-3 d-flex flex-column">
                   <Link to="/integrations">
-                    <ToolTip message="Marketplace" placement="right">
+                    <ToolTip message="Marketplace (Beta)" placement="right">
                       <div
                         className="layout-sidebar-icon cursor-pointer"
                         style={{
