@@ -287,7 +287,7 @@ export function Table({
   let tableData = [],
     dynamicColumn = [];
 
-  const useDynamicColumn = resolveReferences(component.definition.properties?.useDynamicColumn?.value);
+  const useDynamicColumn = resolveReferences(component.definition.properties?.useDynamicColumn?.value, currentState);
   if (currentState) {
     tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
     dynamicColumn = useDynamicColumn
