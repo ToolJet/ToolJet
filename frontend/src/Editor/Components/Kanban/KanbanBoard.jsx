@@ -86,7 +86,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
   }, [shouldUpdateData.current, JSON.stringify(cardDataAsObj)]);
 
   useEffect(() => {
-    droppableItemsColumnId.current = containers.find((container) => items[container].length > 0);
+    droppableItemsColumnId.current = containers.find((container) => items[container]?.length > 0);
   }, [items, containers]);
 
   registerAction(
