@@ -26,23 +26,40 @@ export const GlobalDatasources = (props) => {
     }
   }, [admin]);
 
-  const fetchDataSources = async (resetSelection = false) => {
+  const fetchDataSources = async (resetSelection = false, dsName = null) => {
     globalDatasourceService
       .getAll(organizationId)
       .then((data) => {
-        setDataSources([...(data.data_sources ?? [])]);
-        if (data.data_sources.length && resetSelection) {
-          setSelectedDataSource(data.data_sources[0]);
+        const orderedDataSources = data.data_sources.sort((a, b) => a.name.localeCompare(b.name));
+        setDataSources([...(orderedDataSources ?? [])]);
+        const ds = dsName && orderedDataSources.find((ds) => ds.name === dsName);
+
+        if (!resetSelection && ds) {
+          setSelectedDataSource(ds);
+          toggleDataSourceManagerModal(true);
+        }
+
+        if (orderedDataSources.length && resetSelection) {
+          setSelectedDataSource(orderedDataSources[0]);
           toggleDataSourceManagerModal(true);
         }
       })
       .catch(() => setDataSources([]));
   };
 
+  const handleToggleSourceManagerModal = () => {
+    toggleDataSourceManagerModal(
+      (prevState) => !prevState,
+      () => setEditing((prev) => !prev)
+    );
+  };
+
   const handleModalVisibility = () => {
-    setSelectedDataSource(null);
-    setEditing(false);
-    toggleDataSourceManagerModal(true);
+    if (selectedDataSource) {
+      return setSelectedDataSource(null, () => handleToggleSourceManagerModal());
+    }
+
+    handleToggleSourceManagerModal();
   };
 
   const value = useMemo(

@@ -9,15 +9,15 @@ export const ListItem = ({ dataSource, key, active, onDelete }) => {
   const { setSelectedDataSource, toggleDataSourceManagerModal } = useContext(GlobalDataSourcesContext);
 
   const getSourceMetaData = (dataSource) => {
-    if (dataSource.plugin_id) {
-      return dataSource.plugin?.manifest_file?.data.source;
+    if (dataSource.pluginId) {
+      return dataSource.plugin?.manifestFile?.data.source;
     }
 
     return DataSourceTypes.find((source) => source.kind === dataSource.kind);
   };
 
   const sourceMeta = getSourceMetaData(dataSource);
-  const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 24, 24, dataSource?.plugin?.icon_file?.data);
+  const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 24, 24, dataSource?.plugin?.iconFile?.data);
 
   const focusModal = () => {
     const element = document.getElementsByClassName('form-control-plaintext form-control-plaintext-sm')[0];
