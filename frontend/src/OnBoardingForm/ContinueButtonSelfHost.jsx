@@ -49,11 +49,6 @@ function ContinueButtonSelfHost({
           }
         }
         if (page < 5) setPage((currPage) => currPage + 1);
-        if (page == 5) {
-          setIsLoading(true);
-          setCompleted(true);
-          return;
-        }
       }
     };
     document.addEventListener('keydown', keyDownHandler);
@@ -90,7 +85,7 @@ function ContinueButtonSelfHost({
         </div>
       ) : (
         <>
-          <p className="mb-0">Continue</p>
+          <p className="mb-0">Continasue</p>
           <EnterIcon
             className="enter-icon-onboard"
             fill={activeCondition || isLoading ? (darkMode ? '#656565' : ' #D1D5DB') : '#fff'}

@@ -14,10 +14,6 @@ function ContinueButton({ setPage, formData, page, setCompleted, isLoading, setI
     const keyDownHandler = (event) => {
       if (event.key === 'Enter' && !activeCondition) {
         if (page < 3) setPage((currPage) => currPage + 1);
-        if (page == 3) {
-          setIsLoading(true);
-          setCompleted(true);
-        }
       }
     };
     document.addEventListener('keydown', keyDownHandler);
@@ -47,7 +43,7 @@ function ContinueButton({ setPage, formData, page, setCompleted, isLoading, setI
         </div>
       ) : (
         <>
-          <p className="mb-0">Continue</p>
+          <p className="mb-0">Contixsnue</p>
           <EnterIcon
             className="enter-icon-onboard"
             fill={
