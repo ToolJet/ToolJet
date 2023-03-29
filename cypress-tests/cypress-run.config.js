@@ -70,7 +70,11 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: [
-      "cypress/e2e/editor/widget/*.cy.js"],
+      "cypress/e2e/editor/widget/*.cy.js",
+      "cypress/e2e/editor/app-version/*.cy.js","cypress/e2e/editor/multipage/*.cy.js",
+      "cypress/e2e/dashboard/**/*.cy.js",
+      "cypress/e2e/database/**/*.cy.js",
+      "cypress/e2e/exportImport/**/*.cy.js"],
     numTestsKeptInMemory: 1,
     redirectionLimit: 10,
     experimentalRunAllSpecs: true,
