@@ -61,10 +61,8 @@ export function Authorize() {
       {(success || error) && (
         <Navigate
           replace
-          to={{
-            pathname: `/login${error && organizationId ? `/${organizationId}` : ''}`,
-            state: { errorMessage: error && error },
-          }}
+          to={`/login${error && organizationId ? `/${organizationId}` : ''}`}
+          state={{ errorMessage: error && error }}
         />
       )}
     </div>
