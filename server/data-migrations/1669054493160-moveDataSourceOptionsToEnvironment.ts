@@ -31,8 +31,6 @@ export class moveDataSourceOptionsToEnvironment1669054493160 implements Migratio
         [name, isDefault, appVersion.id, new Date()]
       );
 
-      console.log(`test print${environment}`);
-
       // Get all data sources under app version
       const dataSources = await entityManager.query('select * from data_sources where app_version_id = $1', [
         appVersion.id,
