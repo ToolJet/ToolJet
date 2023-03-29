@@ -13,7 +13,7 @@ ToolJet marketplace is a place where you can find custom plugins and install the
 
 ## Getting started
 ### 1. Enabling the marketplace for your instance
-To enable the marketplace for your instance, you need to set the `ENABLE_MARKETPLACE` environment variable to `true` in your `.env` file.
+To enable the marketplace for your instance, you need to set the `ENABLE_MARKETPLACE` and `ENABLE_MARKETPLACE_DEV_MODE` environment variable to `true` in your `.env` file.
 Marketplacwe is disabled by default.
 Once you set the environment variable, restart your ToolJet instance. You can find the instructions to run ToolJet locally [here](/docs/setup/).
 Marketplace can be accessed from '/integrations' route.
@@ -68,7 +68,7 @@ github/
 
 
 :::info
-**Why do we need a manifest.json file or a operations.json file?**
+**Why do we need a manifest.json file or an operations.json file?**
 
 The manifest.json files are consumed by a React component to create dynamic UI for connection forms by defining the schema of an API or data source. The schema includes information about the source, such as its name, type, and any exposed variables. It also includes options for authentication and other properties that can be customized by the user. The properties section defines the specific fields and their types that are required for connecting to the API or data source. The React component reads the manifest.json file and generates the necessary UI components based on the schema, allowing users to enter the required information for connecting to the source. This can include text inputs, dropdowns, checkboxes, and other UI elements, depending on the schema defined in the manifest.json file.
 
@@ -82,7 +82,20 @@ In conclusion, *manifest.json* and *operations.json* files play an important rol
 :::
 
 
-### 4. Defining the manifest.json file
+### 4. Running the watcher script
+The watcher script will watch for changes in the plugin directory and will automatically build the plugin. Reload the app if the plugin is already installed. 
+This will help us to see the changes in the plugin immediately.
+```bash
+# run the watcher script from /marketplace
+npm run start:dev
+```
+
+:::info
+  In order to obtain the most recent updates to the plugin, it is necessary to reload the plugin from the marketplace. When in development mode, a reload button will appear, allowing the latest files to be read from the file stream and served.
+:::
+
+
+### 5. Defining the manifest.json file
 We need to include the necessary options to construct the connection form.
 ```json
   "properties": {
@@ -112,7 +125,7 @@ We need to include the necessary options to construct the connection form.
 ```
 It includes information about authentication options, specifically a dropdown to choose a type of credentials and a field to enter a personal access token. The label, key, type, description, and hint properties are used to define the specific fields and their types required for connecting to the API or data source.
 
-### 5. Defining the operations.json file
+### 6. Defining the operations.json file
 ```json
   "properties": {
     "operation": {
@@ -270,7 +283,7 @@ It includes information about authentication options, specifically a dropdown to
 ```
 The operations.json file defines the operations that can be performed on the data source. It includes information about the operation type, the fields required to perform the operation, and the type of each field. The label, key, type, description, and hint properties are used to define the specific fields and their types required for connecting to the API or data source.
 
-### 6. Add the npm package of Gitub to the plugin dependencies
+### 7. Add the npm package of Gitub to the plugin dependencies
 
 ```bash
 # change directory to the plugin directory and install the npm package
@@ -290,7 +303,7 @@ The command `npm i <npm-package-name> --workspace=<plugin-name-in-package-json>`
 The *--workspace* flag is used to specify the workspace where the package should be installed. In this case, we are installing the package in the *@tooljet-marketplace/github* workspace.
 :::
 
-### 7. Implement the query execution logic in index.ts
+### 8. Implement the query execution logic in index.ts
 The QueryService for the Github plugin handles the logic for running queries in index.ts. The QueryService receives the metadata of the data source, including the credentials and configurations for connecting and parameters for the query that was run.
 
 For the Github datasource, the sourceOptions will include the credentials required for authentication, such as the personal access token. The queryOptions will have the configurations and parameters for the specific query, including the operation to be performed, such as getting the list of repositories for a specific user.
