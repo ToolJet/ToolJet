@@ -189,7 +189,6 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       </div>
                     </ToolTip>
                   </Link>
-                  {router.pathname !== '/integrations' && <span class="badge bg-color-primary mt-1">beta</span>}
                 </li>
               )}
               <li className="m-auto">
