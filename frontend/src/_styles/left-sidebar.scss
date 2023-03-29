@@ -385,6 +385,10 @@
   cursor: pointer;
 }
 
+.close-btn.dark,.back-btn.dark {
+  background-color: revert !important;
+}
+
 .suggestion-container {
   h4 {
     margin-top: 2rem;
