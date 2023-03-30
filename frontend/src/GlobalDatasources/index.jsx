@@ -13,7 +13,7 @@ export const GlobalDataSourcesContext = createContext({
 
 export const GlobalDatasources = (props) => {
   const { organization_id, admin } = JSON.parse(localStorage.getItem('currentUser')) || {};
-  const [organizationId, setOrganizationId] = useState(organization_id);
+
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -24,11 +24,12 @@ export const GlobalDatasources = (props) => {
     if (!admin) {
       navigate('/');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [admin]);
 
   const fetchDataSources = async (resetSelection = false, dsName = null) => {
     globalDatasourceService
-      .getAll(organizationId)
+      .getAll(organization_id)
       .then((data) => {
         const orderedDataSources = data.data_sources.sort((a, b) => a.name.localeCompare(b.name));
         setDataSources([...(orderedDataSources ?? [])]);
@@ -74,6 +75,7 @@ export const GlobalDatasources = (props) => {
       isEditing,
       setEditing,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedDataSource, dataSources, showDataSourceManagerModal, isEditing]
   );
 

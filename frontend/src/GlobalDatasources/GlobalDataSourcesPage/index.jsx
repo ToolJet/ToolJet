@@ -33,6 +33,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
     if (!isEditing) {
       setModalProps({ ...modalProps, backdrop: true });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDataSource, isEditing]);
 
   const handleHideModal = () => {
