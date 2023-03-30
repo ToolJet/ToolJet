@@ -43,7 +43,7 @@ function ContinueButton({ setPage, formData, page, setCompleted, isLoading, setI
         </div>
       ) : (
         <>
-          <p className="mb-0">Contixsnue</p>
+          <p className="mb-0">Continue</p>
           <EnterIcon
             className="enter-icon-onboard"
             fill={

@@ -85,7 +85,7 @@ function ContinueButtonSelfHost({
         </div>
       ) : (
         <>
-          <p className="mb-0">Continasue</p>
+          <p className="mb-0">Continue</p>
           <EnterIcon
             className="enter-icon-onboard"
             fill={activeCondition || isLoading ? (darkMode ? '#656565' : ' #D1D5DB') : '#fff'}
