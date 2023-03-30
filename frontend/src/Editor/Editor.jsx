@@ -486,15 +486,18 @@ class EditorComponent extends React.Component {
       skipYmapUpdate: true,
       versionChanged: true,
     });
-    this.setState({
-      editingVersion: version,
-      isSaving: false,
-    });
-
-    this.saveEditingVersion();
-    this.fetchDataSources();
-    this.fetchDataQueries();
-    this.initComponentVersioning();
+    this.setState(
+      {
+        editingVersion: version,
+        isSaving: false,
+      },
+      () => {
+        this.saveEditingVersion();
+        this.fetchDataSources();
+        this.fetchDataQueries();
+        this.initComponentVersioning();
+      }
+    );
   };
 
   /**
