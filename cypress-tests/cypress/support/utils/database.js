@@ -1,5 +1,5 @@
-import { databaseSelectors, createNewColumnSelectors, createNewRowSelectors, filterSelectors, sortSelectors } from "Selectors/database";
-import { databaseText, createNewColumnText, createNewRowText, filterText, sortText } from "Texts/database";
+import { databaseSelectors, createNewColumnSelectors, createNewRowSelectors, filterSelectors, sortSelectors, editRowSelectors } from "Selectors/database";
+import { databaseText, createNewColumnText, createNewRowText, editRowText } from "Texts/database";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 
@@ -172,7 +172,6 @@ export const addNewRowAndVerify = (tableName, noDefaultValue = true, columnName 
   );
   cy.get('[data-cy*="-column-id-table-cell"]').should("be.visible");
 };
-
 export const verifyAllElementsOfAddTableSection = () => {
   cy.get(databaseSelectors.tableNameLabel).verifyVisibleElement(
     "have.text",
@@ -216,7 +215,6 @@ export const verifyAllElementsOfAddTableSection = () => {
       cy.get(databaseSelectors.deleteIcon).should("be.visible").click();
     });
 };
-
 export const filterOperation = (
   tableName,
   columnName = [],
@@ -259,7 +257,6 @@ export const filterOperation = (
   cy.get('.table-responsive').click();
   cy.get(databaseSelectors.idColumnHeader).should("be.visible");
 };
-
 export const sortOperation = (tableName, columnName = [], order = []) => {
   navigateToTable(tableName);
   cy.get(sortSelectors.sortButton).should("be.visible").click();
@@ -282,7 +279,6 @@ export const sortOperation = (tableName, columnName = [], order = []) => {
   cy.get(sortSelectors.sortButton).click();
   cy.get(databaseSelectors.idColumnHeader).should("be.visible");
 };
-
 export const deleteCondition = (selector, columnName = [], deleteIcon) => {
   cy.get(selector).click();
   cy.get('.card-body').eq(1).should("be.visible");
@@ -292,10 +288,8 @@ export const deleteCondition = (selector, columnName = [], deleteIcon) => {
   }
 };
 export const deleteRowAndVerify = (tableName, rowNumber = []) => {
-  cy.get('body').find(".table>>tr").its('length').then(totalRowLength => {
-    cy.log(totalRowLength)
-    let rowsWithoutHeaderLength = totalRowLength - 1;
-    cy.log(rowsWithoutHeaderLength)
+  navigateToTable(tableName);
+  cy.get('body').find(".table>>tr").its('length').then(() => {
     for (let i = 0; i < rowNumber.length; i++) {
       cy.get(databaseSelectors.checkboxCell(rowNumber[i])).click();
     }
@@ -309,5 +303,58 @@ export const deleteRowAndVerify = (tableName, rowNumber = []) => {
       commonSelectors.toastMessage,
       databaseText.deleteRowToast(tableName, rowNumber.length)
     );
-  })
+  });
+};
+export const getRowData = (rowNumber, columnName = []) => {
+  let rowData = [];
+  cy.log(columnName);
+  for (let i = 0; i < columnName.length; i++) {
+    cy.get(editRowSelectors.getRowData(rowNumber, columnName[i]))
+      .invoke('text')
+      .then((text) => {
+        rowData[i] = text
+      })
+    cy.log(rowData);
+    rowData.forEach(textes => {
+      cy.log(textes)
+      return rowData;
+    }
+    );
+  }
+};
+export const editRowAndVerify = (tableName, rowNumber, columnName = [], rowFieldData = []) => {
+  //cy.intercept("GET", "api/tooljet_db/organizations/**").as("dbLoad");
+  // navigateToTable(tableName);
+  // cy.wait("@dbLoad");
+
+  cy.get(editRowSelectors.editRowbutton).should("be.visible").click();
+  cy.get(editRowSelectors.editRowHeader).verifyVisibleElement("have.text", editRowText.editRowHeader);
+  cy.get(editRowSelectors.idColumnNameLabel).verifyVisibleElement("contain", databaseText.idColumnName);
+  cy.contains(createNewRowText.serialDataTypeLabel).should("be.visible");
+  cy.contains(editRowText.selectRowToEditText).should("be.visible");
+  cy.get(editRowSelectors.selectRowDropdown).should("be.visible").click();
+  cy.get(editRowSelectors.selectRowDropdown).type(rowNumber);
+  cy.get(`[id*="react-select-"]`).should("be.visible")
+  cy.contains(`[id*="react-select-"]`, rowNumber).click();
+  cy.log(rowFieldData)
+
+  for (let i = 0; i < columnName.length - 1; i++) {
+    cy.log(rowFieldData[i])
+    cy.get(createNewRowSelectors.columnNameLabel(columnName[(i + 1)])).verifyVisibleElement("contain", columnName[(i + 1)])
+    cy.get(createNewRowSelectors.columnNameInputField(columnName[(i + 1)])).should("be.visible");
+    cy.get(createNewRowSelectors.columnNameInputField(columnName[(i + 1)])).realClick().clear().realType(`${rowFieldData[i]}`);
+    cy.wait(500);
+    cy.get(createNewRowSelectors.columnNameInputField(columnName[(i + 1)])).invoke('val')
+      .then((text) => {
+        expect(text).to.contain(rowFieldData[i]);
+      })
+  }
+    cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
+    .verifyVisibleElement("have.text", commonText.cancelButton);
+  cy.get(commonSelectors.buttonSelector(commonText.saveChangesButton))
+    .verifyVisibleElement("have.text", commonText.saveChangesButton).realClick();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    createNewRowText.rowCreatedSuccessfullyToast
+  );
 }

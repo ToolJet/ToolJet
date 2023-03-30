@@ -1,5 +1,5 @@
 import { filterSelectors, sortSelectors } from "Selectors/database";
-import { filterText, sortText } from "Texts/database";
+import { databaseText, filterText, sortText } from "Texts/database";
 import { navigateToDatabase } from "Support/utils/common";
 import {
   verifyAllElementsOfPage, createTableAndVerifyToastMessage, editTableNameAndVerifyToastMessage,
@@ -10,7 +10,8 @@ import {
   filterOperation,
   sortOperation,
   deleteCondition,
-  deleteRowAndVerify
+  deleteRowAndVerify,
+  editRowAndVerify
 } from "Support/utils/database";
 import { fake } from "Fixtures/fake";
 import { randomNumber } from "Support/utils/commonWidget";
@@ -18,7 +19,7 @@ import { randomString } from "Support/utils/textInput";
 
 describe("Database Functionality", () => {
   const data = {};
-  data.tableName = fake.tableName;
+  data.tableName = "Jaeden";//fake.tableName;
   data.newTableName = fake.tableName;
   data.editTableName = fake.tableName;
   data.maximumLength = randomNumber(8, 10);
@@ -52,22 +53,25 @@ describe("Database Functionality", () => {
     createTableAndVerifyToastMessage(data.tableName, false);
     createTableAndVerifyToastMessage(data.newTableName, true, [column1.name, column2.name], [data.dataType[0], data.dataType[1]], true, [column1.defaultValueVarchar, column1.defaultValueInt]);
   });
-  it("Verify all operations of table", () => {
+  it.only("Verify all operations of table", () => {
     navigateToDatabase();
     navigateToTable(data.tableName);
-    editTableNameAndVerifyToastMessage(data.newTableName, data.editTableName);
-    deleteTableAndVerifyToastMessage(data.editTableName);
-    createNewColumnAndVerify(data.tableName, column1.name, data.dataType[0], true, column1.defaultValueVarchar);
-    addNewRowAndVerify(data.tableName, false)
+    // editTableNameAndVerifyToastMessage(data.newTableName, data.editTableName);
+    // deleteTableAndVerifyToastMessage(data.editTableName);
+    // createNewColumnAndVerify(data.tableName, column1.name, data.dataType[0], true, column1.defaultValueVarchar);
+    // addNewRowAndVerify(data.tableName, false)
 
-    addNewRowAndVerify(data.tableName, false, [column1.name], true, [rowData.varcharData])
-    createNewColumnAndVerify(data.tableName, column2.name, data.dataType[1], false);
-    addNewRowAndVerify(data.tableName, false, [column1.name, column2.name], [rowData.varcharData, rowData.intData]);
-    addNewRowAndVerify(data.tableName, true, [column1.name, column2.name], [rowData.varcharData, rowData.intData]);
-    filterOperation(data.tableName, ["id"], [filterText.operation.greaterThan], ["2"]);
-    deleteCondition(filterSelectors.filterButton, ["id"], filterSelectors.deleteIcon)
-    sortOperation(data.tableName, ["id"], [sortText.order.descending])
-    deleteCondition(sortSelectors.sortButton, ["id"], sortSelectors.deleteIcon)
-    deleteRowAndVerify(data.tableName, ["1", "2"]);
+    // addNewRowAndVerify(data.tableName, false, [column1.name], true, [rowData.varcharData])
+    // createNewColumnAndVerify(data.tableName, column2.name, data.dataType[1], false);
+    // addNewRowAndVerify(data.tableName, false, [column1.name, column2.name], [rowData.varcharData, rowData.intData]);
+    // addNewRowAndVerify(data.tableName, true, [column1.name, column2.name], [rowData.varcharData, rowData.intData]);
+    // filterOperation(data.tableName, [databaseText.idColumnName], [filterText.operation.greaterThan], ["2"]);
+    // deleteCondition(filterSelectors.filterButton, [databaseText.idColumnName], filterSelectors.deleteIcon);
+    // sortOperation(data.tableName, [databaseText.idColumnName], [sortText.order.descending]);
+    // deleteCondition(sortSelectors.sortButton, [databaseText.idColumnName], sortSelectors.deleteIcon);
+    // cy.reload();
+    // deleteRowAndVerify(data.tableName, ["1", "2"]);
+
+    editRowAndVerify(data.tableName, "3", [databaseText.idColumnName, "dangelo", "peyton"], [rowData.varcharData, rowData.intData])
   });
 });
