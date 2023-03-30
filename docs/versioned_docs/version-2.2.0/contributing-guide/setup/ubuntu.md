@@ -41,6 +41,12 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
 
     Please follow the installation [PostgREST](https://postgrest.org/en/stable/install.html) guide
 
+    **Note:** Clone the GitHub repo locally using: 
+    
+    ```bash
+    git clone https://github.com/ToolJet/ToolJet.git
+    ```
+
     
 2. Set up environment variables
 
