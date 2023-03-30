@@ -949,7 +949,6 @@ class EditorComponent extends React.Component {
     if (newName && !isNewQueryNameAlreadyExists) {
       if (id === 'draftQuery') {
         toast.success('Query Name Updated');
-        this.dataQueriesChanged();
         this.renameQueryNameId.current = null;
         return this.setState({
           draftQuery: { ...this.state.draftQuery, name: newName },
