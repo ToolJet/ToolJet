@@ -12,7 +12,7 @@ import config from 'config';
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
   const { admin } = authenticationService.currentUserValue;
-  const marketplaceEnabled = config.ENABLE_MARKETPLACE_FEATURE === 'true';
+
   return (
     <div className="row m-auto">
       <div className="col-auto p-0">
@@ -150,7 +150,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </Link>
                 </li>
               )}
-              {marketplaceEnabled && (
+              {window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true' && (
                 <li className="text-center mt-3 d-flex flex-column">
                   <Link to="/integrations">
                     <ToolTip message="Marketplace (Beta)" placement="right">
