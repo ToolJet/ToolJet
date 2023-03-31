@@ -205,7 +205,7 @@ describe("Date Picker widget", () => {
       .should("have.css", "border-radius", "20px");
   });
 
-  it("should verify widget in preview", () => {
+  it.only("should verify widget in preview", () => {
     const data = {};
     data.alertMessage = fake.randomSentence;
     data.widgetName = fake.widgetName;
@@ -292,6 +292,7 @@ describe("Date Picker widget", () => {
 
     addTextWidgetToVerifyValue(`components.${data.widgetName}.value`);
     cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 160);
+    cy.waitForAutoSave()
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
 

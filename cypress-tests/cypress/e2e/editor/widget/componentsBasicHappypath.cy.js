@@ -38,6 +38,7 @@ describe("Basic components", () => {
     cy.createApp();
     cy.modifyCanvasSize(900, 900);
     cy.renameApp(data.appName);
+    cy.intercept("GET", "/api/comments/*").as("loadComments");
   });
 
   it("Should verify Toggle switch", () => {
@@ -50,12 +51,16 @@ describe("Basic components", () => {
     editAndVerifyWidgetName("toggleswitch2");
 
     verifyAndModifyParameter(commonWidgetText.parameterLabel, "label");
+    cy.forceClickOnCanvas()
     cy.waitForAutoSave();
-
+    cy.get('[data-cy="draggable-widget-toggleswitch2"] > .form-check-label').should('have.text', 'label')
+    
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
     verifyComponent("toggleswitch2");
+    cy.get('[data-cy="draggable-widget-toggleswitch2"] > .form-check-label').should('have.text', 'label')
 
     cy.go("back");
+    cy.wait('@appVersion')
     deleteComponentAndVerify("toggleswitch2");
     cy.get(commonSelectors.editorPageLogo).click();
 
