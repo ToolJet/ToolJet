@@ -115,11 +115,11 @@ class App extends React.Component {
         console.log(e);
       }
 
+      posthog.init('phc_26ABY7KUsjfqamS7V0WxcLzfTr6AT4Du21CAEvCISo7', {
+        api_host: 'https://app.posthog.com',
+        autocapture: false,
+      });
       if (x) {
-        posthog.init('1OhSAF2367nMhuGI3cLvE6m5D0PJPBEA5zR5JFTM-yw', {
-          api_host: 'https://app.posthog.com',
-          autocapture: false,
-        });
         posthog.identify(
           x.email, // distinct_id, required
           { name: `${x.first_name} ${x.last_name}` }

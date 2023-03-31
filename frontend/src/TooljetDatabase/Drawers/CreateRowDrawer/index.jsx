@@ -3,7 +3,8 @@ import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import CreateRowForm from '../../Forms/RowForm';
 import { TooljetDatabaseContext } from '../../index';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService, authenticationService } from '@/_services';
+import posthog from 'posthog-js';
 
 const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
   const { organizationId, selectedTable, setSelectedTableData, setTotalRecords } = useContext(TooljetDatabaseContext);
@@ -11,7 +12,18 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
   return (
     <>
       <button
-        onClick={() => setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen)}
+        onClick={() => {
+          posthog.capture('click_add_new_row', {
+            user_id:
+              authenticationService?.currentUserValue?.id ||
+              authenticationService?.currentSessionValue?.current_user?.id,
+            workspace_id:
+              authenticationService?.currentUserValue?.organization_id ||
+              authenticationService?.currentSessionValue?.current_organization_id,
+            datasource: 'tooljet_db',
+          });
+          setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen);
+        }}
         className="btn border-0 mx-1"
         style={{ backgroundColor: '#F0F4FF', color: '#F0F4FF', fontWeight: 500, fontSize: 12 }}
       >

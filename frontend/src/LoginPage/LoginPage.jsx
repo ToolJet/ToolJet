@@ -16,6 +16,7 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
+import posthog from 'posthog-js';
 
 class LoginPageComponent extends React.Component {
   constructor(props) {
@@ -128,7 +129,11 @@ class LoginPageComponent extends React.Component {
       .then(this.authSuccessHandler, this.authFailureHandler);
   };
 
-  authSuccessHandler = () => {
+  authSuccessHandler = ({ id, organization_id, current_organization_id }) => {
+    posthog.capture('signin_email', {
+      user_id: id,
+      workspace_id: organization_id || current_organization_id,
+    });
     authenticationService.deleteLoginOrganizationId();
     const params = queryString.parse(this.props.location.search);
     const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };

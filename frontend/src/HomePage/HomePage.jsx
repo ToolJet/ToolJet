@@ -18,6 +18,7 @@ import { withTranslation } from 'react-i18next';
 import { sample } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
+import posthog from 'posthog-js';
 
 const { iconList, defaultIcon } = configs;
 
@@ -118,6 +119,14 @@ class HomePageComponent extends React.Component {
     appService
       .createApp({ icon: sample(iconList) })
       .then((data) => {
+        posthog.capture('click_new_app_button', {
+          user_id:
+            authenticationService?.currentUserValue?.id || authenticationService?.currentSessionValue?.current_user?.id,
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          app_id: data?.id,
+        });
         _self.props.history.push(`/apps/${data.id}`);
       })
       .catch(({ error }) => {
@@ -324,6 +333,16 @@ class HomePageComponent extends React.Component {
     }
     this.setState({ appOperations: { ...appOperations, isAdding: true } });
 
+    posthog.capture('click_add_to_folder_button', {
+      user_id:
+        authenticationService?.currentUserValue?.id || authenticationService?.currentSessionValue?.current_user?.id,
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      app_id: appOperations?.selectedApp?.id,
+      folder_id: appOperations?.selectedFolder,
+    });
+
     folderService
       .addToFolder(appOperations.selectedApp.id, appOperations.selectedFolder)
       .then(() => {
@@ -432,6 +451,13 @@ class HomePageComponent extends React.Component {
   };
 
   showTemplateLibraryModal = () => {
+    posthog.capture('click_import_from_template', {
+      user_id:
+        authenticationService?.currentUserValue?.id || authenticationService?.currentSessionValue?.current_user?.id,
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+    });
     appService.getLicenseTerms().then(() => this.setState({ showTemplateLibraryModal: true }));
   };
   hideTemplateLibraryModal = () => {
@@ -609,6 +635,16 @@ class HomePageComponent extends React.Component {
                           ref={this.fileInput}
                           style={{ display: 'none' }}
                           data-cy="import-option-input"
+                          onClick={() => {
+                            posthog.capture('click_import_dropdown_button', {
+                              user_id:
+                                authenticationService?.currentUserValue?.id ||
+                                authenticationService?.currentSessionValue?.current_user?.id,
+                              workspace_id:
+                                authenticationService?.currentUserValue?.organization_id ||
+                                authenticationService?.currentSessionValue?.current_organization_id,
+                            });
+                          }}
                         />
                       </label>
                     </Dropdown.Menu>

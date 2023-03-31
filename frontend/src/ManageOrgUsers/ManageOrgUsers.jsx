@@ -7,6 +7,7 @@ import urlJoin from 'url-join';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import UsersTable from '../../ee/components/UsersPage/UsersTable';
 import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
+import posthog from 'posthog-js';
 
 class ManageOrgUsersComponent extends React.Component {
   constructor(props) {
@@ -145,6 +146,14 @@ class ManageOrgUsersComponent extends React.Component {
           toast.success(res.message, {
             position: 'top-center',
           });
+          posthog.capture('create_bulk_users', {
+            user_id:
+              authenticationService?.currentUserValue?.id ||
+              authenticationService?.currentSessionValue?.current_user?.id,
+            workspace_id:
+              authenticationService?.currentUserValue?.organization_id ||
+              authenticationService?.currentSessionValue?.current_organization_id,
+          });
           this.fetchUsers();
           this.setState({
             uploadingUsers: false,
@@ -190,6 +199,14 @@ class ManageOrgUsersComponent extends React.Component {
         )
         .then(() => {
           toast.success('User has been created');
+          posthog.capture('create_new_user', {
+            user_id:
+              authenticationService?.currentUserValue?.id ||
+              authenticationService?.currentSessionValue?.current_user?.id,
+            workspace_id:
+              authenticationService?.currentUserValue?.organization_id ||
+              authenticationService?.currentSessionValue?.current_organization_id,
+          });
           this.fetchUsers();
           this.setState({
             creatingUser: false,
@@ -262,7 +279,17 @@ class ManageOrgUsersComponent extends React.Component {
                     {!showUploadUserForm && !showNewUserForm && (
                       <div
                         className="btn btn-primary mx-2"
-                        onClick={() => this.setState({ showUploadUserForm: true })}
+                        onClick={() => {
+                          posthog.capture('click_invite_bulk_users', {
+                            user_id:
+                              authenticationService?.currentUserValue?.id ||
+                              authenticationService?.currentSessionValue?.current_user?.id,
+                            workspace_id:
+                              authenticationService?.currentUserValue?.organization_id ||
+                              authenticationService?.currentSessionValue?.current_organization_id,
+                          });
+                          this.setState({ showUploadUserForm: true });
+                        }}
                         data-cy="invite-bulk-user-button"
                       >
                         Invite bulk users
@@ -271,7 +298,17 @@ class ManageOrgUsersComponent extends React.Component {
                     {!showNewUserForm && !showUploadUserForm && (
                       <div
                         className="btn btn-primary"
-                        onClick={() => this.setState({ showNewUserForm: true })}
+                        onClick={() => {
+                          posthog.capture('click_invite_new_user', {
+                            user_id:
+                              authenticationService?.currentUserValue?.id ||
+                              authenticationService?.currentSessionValue?.current_user?.id,
+                            workspace_id:
+                              authenticationService?.currentUserValue?.organization_id ||
+                              authenticationService?.currentSessionValue?.current_organization_id,
+                          });
+                          this.setState({ showNewUserForm: true });
+                        }}
                         data-cy="invite-new-user"
                       >
                         {this.props.t('header.organization.menus.manageUsers.inviteNewUser', 'Invite new user')}
@@ -411,6 +448,16 @@ class ManageOrgUsersComponent extends React.Component {
                                   type="file"
                                   className="form-control"
                                   data-cy="bulk-user-upload-input"
+                                  onClick={() => {
+                                    posthog.capture('click_choose_bulkuser_file', {
+                                      user_id:
+                                        authenticationService?.currentUserValue?.id ||
+                                        authenticationService?.currentSessionValue?.current_user?.id,
+                                      workspace_id:
+                                        authenticationService?.currentUserValue?.organization_id ||
+                                        authenticationService?.currentSessionValue?.current_organization_id,
+                                    });
+                                  }}
                                 />
                                 <span className="text-danger" data-cy="file-error">
                                   {this.state.errors['file']}

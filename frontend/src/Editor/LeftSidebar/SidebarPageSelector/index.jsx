@@ -9,6 +9,8 @@ import SortableList from '@/_components/SortableList';
 import Popover from '@/_ui/Popover';
 // eslint-disable-next-line import/no-unresolved
 import EmptyIllustration from '@assets/images/no-results.svg';
+import posthog from 'posthog-js';
+import { authenticationService } from '@/_services';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -78,7 +80,17 @@ const LeftSidebarPageSelector = ({
             <div className="d-flex justify-content-end">
               <Button
                 title={'Add Page'}
-                onClick={() => setNewPageBeingCreated(true)}
+                onClick={() => {
+                  posthog.capture('click_add_page_plus_icon', {
+                    user_id:
+                      authenticationService?.currentUserValue?.id ||
+                      authenticationService?.currentSessionValue?.current_user?.id,
+                    workspace_id:
+                      authenticationService?.currentUserValue?.organization_id ||
+                      authenticationService?.currentSessionValue?.current_organization_id,
+                  });
+                  setNewPageBeingCreated(true);
+                }}
                 darkMode={darkMode}
                 size="sm"
                 styles={{ width: '28px', padding: 0 }}

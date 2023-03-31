@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
 import { ManageGroupPermissionResources } from '@/ManageGroupPermissionResources';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
+import posthog from 'posthog-js';
 
 class ManageGroupPermissionsComponent extends React.Component {
   constructor(props) {
@@ -82,6 +83,13 @@ class ManageGroupPermissionsComponent extends React.Component {
     groupPermissionService
       .create(this.state.newGroupName)
       .then(() => {
+        posthog.capture('create_group', {
+          user_id:
+            authenticationService?.currentUserValue?.id || authenticationService?.currentSessionValue?.current_user?.id,
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+        });
         this.setState({
           creatingGroup: false,
           showNewGroupForm: false,
@@ -198,7 +206,17 @@ class ManageGroupPermissionsComponent extends React.Component {
                     {!showNewGroupForm && !showGroupNameUpdateForm && (
                       <div
                         className="btn btn-primary"
-                        onClick={() => this.setState({ showNewGroupForm: true, isSaveBtnDisabled: true })}
+                        onClick={() => {
+                          posthog.capture('create_new_group', {
+                            user_id:
+                              authenticationService?.currentUserValue?.id ||
+                              authenticationService?.currentSessionValue?.current_user?.id,
+                            workspace_id:
+                              authenticationService?.currentUserValue?.organization_id ||
+                              authenticationService?.currentSessionValue?.current_organization_id,
+                          });
+                          this.setState({ showNewGroupForm: true, isSaveBtnDisabled: true });
+                        }}
                         data-cy="create-new-group-button"
                       >
                         {this.props.t(

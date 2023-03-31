@@ -3,6 +3,7 @@ import { authenticationService, organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import posthog from 'posthog-js';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -20,6 +21,10 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     setIsCreating(true);
     organizationService.createOrganization(newOrgName).then(
       (data) => {
+        posthog.capture('create_workspace', {
+          user_id: data.id,
+          workspace_id: data.organization_id || data.current_organization_id,
+        });
         setIsCreating(false);
         authenticationService.updateCurrentUserDetails(data);
         window.location.href = '';

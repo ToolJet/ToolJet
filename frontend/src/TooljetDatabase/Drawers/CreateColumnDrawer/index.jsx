@@ -3,7 +3,8 @@ import Drawer from '@/_ui/Drawer';
 import { toast } from 'react-hot-toast';
 import CreateColumnForm from '../../Forms/ColumnForm';
 import { TooljetDatabaseContext } from '../../index';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService, authenticationService } from '@/_services';
+import posthog from 'posthog-js';
 
 const CreateColumnDrawer = () => {
   const { organizationId, selectedTable, setColumns, setSelectedTableData } = useContext(TooljetDatabaseContext);
@@ -12,7 +13,18 @@ const CreateColumnDrawer = () => {
   return (
     <>
       <button
-        onClick={() => setIsCreateColumnDrawerOpen(!isCreateColumnDrawerOpen)}
+        onClick={() => {
+          posthog.capture('click_add_new_column', {
+            user_id:
+              authenticationService?.currentUserValue?.id ||
+              authenticationService?.currentSessionValue?.current_user?.id,
+            workspace_id:
+              authenticationService?.currentUserValue?.organization_id ||
+              authenticationService?.currentSessionValue?.current_organization_id,
+            datasource: 'tooljet_db',
+          });
+          setIsCreateColumnDrawerOpen(!isCreateColumnDrawerOpen);
+        }}
         className="btn border-0"
         data-cy="add-new-column-button"
       >

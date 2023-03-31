@@ -3,7 +3,8 @@ import { toast } from 'react-hot-toast';
 import Drawer from '@/_ui/Drawer';
 import CreateTableForm from '../../Forms/TableForm';
 import { TooljetDatabaseContext } from '../../index';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService, authenticationService } from '@/_services';
+import posthog from 'posthog-js';
 
 export default function CreateTableDrawer() {
   const { organizationId, setSelectedTable, setTables } = useContext(TooljetDatabaseContext);
@@ -15,7 +16,18 @@ export default function CreateTableDrawer() {
         className="add-table-btn btn btn-primary active w-100"
         data-cy="add-table-button"
         type="button"
-        onClick={() => setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen)}
+        onClick={() => {
+          posthog.capture('click_add_tooljet_table_button', {
+            user_id:
+              authenticationService?.currentUserValue?.id ||
+              authenticationService?.currentSessionValue?.current_user?.id,
+            workspace_id:
+              authenticationService?.currentUserValue?.organization_id ||
+              authenticationService?.currentSessionValue?.current_organization_id,
+            datasource: 'tooljet_db',
+          });
+          setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen);
+        }}
       >
         <svg className="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path

@@ -9,8 +9,9 @@ import OnBoardingBubbles from './OnBoardingBubbles';
 import AppLogo from '../_components/AppLogo';
 import { getuserName, retrieveWhiteLabelText } from '@/_helpers/utils';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
+import posthog from 'posthog-js';
 
-function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
+function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode, source }) {
   const history = useHistory();
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -43,6 +44,14 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           ...(password?.length > 0 && { password }),
         })
         .then((user) => {
+          const ssoType = localStorage.getItem('ph-sso-type');
+          const event = `signup_${
+            source === 'sso' ? (ssoType === 'google' ? 'google' : ssoType === 'openid' ? 'openid' : 'github') : 'email'
+          }`;
+          posthog.capture(event, {
+            user_id: user.id,
+            workspace_id: user.organization_id || user.current_organization_id,
+          });
           authenticationService.updateUser(user);
           authenticationService.deleteLoginOrganizationId();
           setIsLoading(false);
