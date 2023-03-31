@@ -480,8 +480,8 @@ class EditorComponent extends React.Component {
     );
   };
 
-  setAppDefinitionFromVersion = (version) => {
-    if (version?.id != this.state.editingVersion?.id) {
+  setAppDefinitionFromVersion = (version, shouldWeEditVersion = true) => {
+    if (version?.id !== this.state.editingVersion?.id) {
       this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), {
         skipAutoSave: true,
         skipYmapUpdate: true,
@@ -493,7 +493,7 @@ class EditorComponent extends React.Component {
           isSaving: false,
         },
         () => {
-          this.saveEditingVersion();
+          shouldWeEditVersion && this.saveEditingVersion();
           this.fetchDataSources();
           this.fetchDataQueries();
           this.initComponentVersioning();
