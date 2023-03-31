@@ -82,6 +82,7 @@ Cypress.Commands.add("appLogin", () => {
 });
 
 Cypress.Commands.add("waitForAutoSave", () => {
+  cy.wait(500);
   cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
     "have.text",
     commonText.autoSave
