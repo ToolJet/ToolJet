@@ -32,6 +32,9 @@ export const databaseText = {
   },
   deleteRowToast: (tableName, rowNumber) => {
     return `Deleted ${rowNumber} rows from table "${tableName}"`
+  },
+  invalidErrorText: (value) => {
+    return `invalid input syntax for type integer: "${value}"`
   }
 };
 
