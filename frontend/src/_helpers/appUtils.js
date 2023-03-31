@@ -1581,7 +1581,6 @@ const getSelectedText = () => {
 };
 
 function convertMapSet(obj) {
-  console.log('-------checking test', obj);
   if (obj instanceof Map) {
     return Object.fromEntries(Array.from(obj, ([key, value]) => [key, convertMapSet(value)]));
   } else if (obj instanceof Set) {
