@@ -25,11 +25,15 @@ This action allows you to specify a `key` and its corresponding `value` to be st
 
 </div>
 
-3. Select the text label we've added and set its value to the name item from localStorage
+3. Select the text label we've added and set its value to the name item from localStorage. 
+
+:::info
+Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300`
+:::
 
 <div style={{textAlign: 'center'}}>
 
-![ToolJet - Action reference -Set local storage sample app](/img/actions/localstorage/3.png)
+![ToolJet - Action reference -Set local storage sample app](/img/actions/localstorage/debounce.png)
 
 </div>
 

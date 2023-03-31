@@ -1,10 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-// todo: legacy package, remove this and upgrade to react-router-dom v6 (https://reactrouter.com/en/main/upgrading/v5)
-// v6 has an official way to support breadcrumbs https://reactrouter.com/en/main/hooks/use-matches#breadcrumbs
-import withBreadcrumbs from 'react-router-breadcrumbs-hoc';
+import useBreadcrumbs from 'use-react-router-breadcrumbs';
 
-const Breadcrumbs = ({ breadcrumbs }) => {
+export const Breadcrumbs = () => {
+  const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
   return (
     <ol className="breadcrumb breadcrumb-arrows">
       {breadcrumbs.length === 0 && (
@@ -12,10 +11,11 @@ const Breadcrumbs = ({ breadcrumbs }) => {
           <Link to={'/'}>Apps</Link>
         </li>
       )}
-      {breadcrumbs.map(({ breadcrumb, dataCy }) => {
+      {breadcrumbs.map(({ breadcrumb, dataCy, beta }) => {
         return (
           <li key={breadcrumb.key} className="breadcrumb-item font-weight-500" data-cy={dataCy ?? ''}>
-            <Link to={breadcrumb.key}>{breadcrumb}</Link>
+            <span to={breadcrumb.key}>{breadcrumb}</span>
+            {beta && <span class="badge bg-color-primary mx-3">beta</span>}
           </li>
         );
       })}
@@ -26,8 +26,8 @@ const Breadcrumbs = ({ breadcrumbs }) => {
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
   // { path: '/', breadcrumb: 'Apps' },
-  { path: '/database', breadcrumb: 'Tables', dataCy: 'tables-page-header' },
+  { path: '/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
+  { path: '/global-datasources', breadcrumb: 'Global Datasources' },
+  { path: '/integrations', breadcrumb: 'Integrations / plugins', props: { beta: true } },
 ];
-
-export default withBreadcrumbs(routes, { excludePaths: ['/'] })(Breadcrumbs);

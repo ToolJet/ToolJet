@@ -14,7 +14,8 @@ import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
-import { DataSourceTypes } from 'src/helpers/data_source.constants';
+import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
+import { Organization } from 'src/entities/organization.entity';
 
 @Injectable()
 export class AppImportExportService {
@@ -61,14 +62,23 @@ export class AppImportExportService {
 
       const appEnvironments = await manager
         .createQueryBuilder(AppEnvironment, 'app_environments')
-        .where('app_environments.appVersionId IN(:...versionId)', {
-          versionId: appVersions.map((v) => v.id),
+        .where('app_environments.organizationId = :organizationId', {
+          organizationId: user.organizationId,
         })
         .orderBy('app_environments.createdAt', 'ASC')
         .getMany();
 
       let dataQueries: DataQuery[] = [];
       let dataSourceOptions: DataSourceOptions[] = [];
+
+      const globalQueries: DataQuery[] = await manager
+        .createQueryBuilder(DataQuery, 'data_query')
+        .leftJoinAndSelect('data_query.dataSource', 'dataSource')
+        .where('data_query.appVersionId IN(:...versionId)', {
+          versionId: appVersions.map((v) => v.id),
+        })
+        .andWhere('dataSource.scope = :scope', { scope: DataSourceScopes.GLOBAL })
+        .getMany();
 
       if (dataSources?.length) {
         dataQueries = await manager
@@ -86,6 +96,10 @@ export class AppImportExportService {
           })
           .orderBy('data_source_options.createdAt', 'ASC')
           .getMany();
+      }
+
+      if (globalQueries?.length) {
+        dataQueries = [...dataQueries, ...globalQueries];
       }
 
       appToExport['dataQueries'] = dataQueries;
@@ -125,7 +139,7 @@ export class AppImportExportService {
 
     await dbTransactionWrap(async (manager) => {
       importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user);
-      await this.buildImportedAppAssociations(manager, importedApp, schemaUnifiedAppParams);
+      await this.buildImportedAppAssociations(manager, importedApp, schemaUnifiedAppParams, user);
       await this.createAdminGroupPermissions(manager, importedApp);
     });
 
@@ -153,7 +167,7 @@ export class AppImportExportService {
     return importedApp;
   }
 
-  async buildImportedAppAssociations(manager: EntityManager, importedApp: App, appParams: any) {
+  async buildImportedAppAssociations(manager: EntityManager, importedApp: App, appParams: any, user: User) {
     const dataSourceMapping = {};
     const defaultDataSourceIdMapping = {};
     const dataQueryMapping = {};
@@ -183,23 +197,34 @@ export class AppImportExportService {
       await manager.update(App, importedApp, { currentVersionId: version.id });
 
       // Create default data sources
-      const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(version.id, [], manager);
-
-      const envIdArray = [];
-      await Promise.all(
-        defaultAppEnvironments.map(async (en) => {
-          const env = manager.create(AppEnvironment, {
-            appVersionId: version.id,
-            name: en.name,
-            isDefault: en.isDefault,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-          await manager.save(env);
-          envIdArray.push(env.id);
-        })
+      const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
+        user.organizationId,
+        version.id,
+        [],
+        manager
       );
 
+      let envIdArray: string[] = [];
+      const organization: Organization = await manager.findOne(Organization, {
+        where: { id: user.organizationId },
+        relations: ['appEnvironments'],
+      });
+      envIdArray = [...organization.appEnvironments.map((env) => env.id)];
+      if (!envIdArray.length) {
+        await Promise.all(
+          defaultAppEnvironments.map(async (en) => {
+            const env = manager.create(AppEnvironment, {
+              organizationId: user.organizationId,
+              name: en.name,
+              isDefault: en.isDefault,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            await manager.save(env);
+            envIdArray.push(env.id);
+          })
+        );
+      }
       for (const source of dataSources) {
         const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
 
@@ -237,6 +262,7 @@ export class AppImportExportService {
           name: query.name,
           options: query.options,
           dataSourceId: !dataSourceId ? defaultDataSourceIds[query.kind] : dataSourceId,
+          appVersionId: query.appVersionId,
         });
         await manager.save(newQuery);
         dataQueryMapping[query.id] = newQuery.id;
@@ -270,25 +296,14 @@ export class AppImportExportService {
       });
       await manager.save(version);
 
-      if (!appEnvironments?.length) {
-        // v1
-        const envIdArray = [];
-        await Promise.all(
-          defaultAppEnvironments.map(async (en) => {
-            const env = manager.create(AppEnvironment, {
-              appVersionId: version.id,
-              name: en.name,
-              isDefault: en.isDefault,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            });
-            await manager.save(env);
-            envIdArray.push(env.id);
-          })
-        );
+      let envIdArray: string[] = [];
+      const organization: Organization = await manager.findOne(Organization, {
+        where: { id: user.organizationId },
+        relations: ['appEnvironments'],
+      });
+      envIdArray = [...organization.appEnvironments.map((env) => env.id)];
 
-        appDefaultEnvironmentMapping[appVersion.id] = envIdArray;
-      }
+      appDefaultEnvironmentMapping[appVersion.id] = envIdArray;
 
       if (appVersion.id == appParams.currentVersionId) {
         currentVersionId = version.id;
@@ -299,17 +314,28 @@ export class AppImportExportService {
 
     // associate App environments for each of the app versions
     for (const appVersion of appVersions) {
-      for (const appEnvironment of appEnvironments?.filter((ae) => ae.appVersionId === appVersion.id)) {
-        const env = manager.create(AppEnvironment, {
-          appVersionId: appVersionMapping[appEnvironment.appVersionId],
-          name: appEnvironment.name,
-          isDefault: appEnvironment.isDefault,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-        await manager.save(env);
+      const currentOrgEnvironments = await this.appEnvironmentService.getAll(user.organizationId, manager);
 
-        appEnvironmentMapping[appEnvironment.id] = env.id;
+      if (!appEnvironments?.length) {
+        currentOrgEnvironments.map((env) => (appEnvironmentMapping[env.id] = env.id));
+      } else {
+        //For apps imported on v2 where organizationId not available
+        for (const currentOrgEnv of currentOrgEnvironments) {
+          const appEnvironment = appEnvironments.filter((appEnv) => appEnv.name === currentOrgEnv.name)[0];
+          if (appEnvironment) {
+            appEnvironmentMapping[appEnvironment.id] = currentOrgEnv.id;
+          } else {
+            const env = manager.create(AppEnvironment, {
+              organizationId: user.organizationId,
+              name: currentOrgEnv.name,
+              isDefault: currentOrgEnv.isDefault,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            await manager.save(env);
+            appEnvironmentMapping[env.id] = env.id;
+          }
+        }
       }
 
       const dsKindsToCreate = [];
@@ -333,6 +359,7 @@ export class AppImportExportService {
       if (dsKindsToCreate.length > 0) {
         // Create default data sources
         defaultDataSourceIdMapping[appVersion.id] = await this.createDefaultDataSourceForVersion(
+          user.organizationId,
           appVersionMapping[appVersion.id],
           dsKindsToCreate,
           manager
@@ -341,6 +368,9 @@ export class AppImportExportService {
 
       let dataSourcesToIterate = dataSources; // 0.9.0 -> add all data sources & queries to all versions
       let dataQueriesToIterate = dataQueries;
+      const globalQueriesToIterate = dataQueries?.filter(
+        (dq) => dq.dataSource?.scope === DataSourceScopes.GLOBAL && dq.appVersionId === appVersion.id
+      );
 
       if (dataSources[0]?.appVersionId || dataQueries[0]?.appVersionId) {
         // v1 - Data queries without dataSourceId present
@@ -365,7 +395,6 @@ export class AppImportExportService {
           await Promise.all(
             appDefaultEnvironmentMapping[appVersion.id].map(async (envId) => {
               const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
-
               const dsOption = manager.create(DataSourceOptions, {
                 environmentId: envId,
                 dataSourceId: newSource.id,
@@ -378,25 +407,27 @@ export class AppImportExportService {
           );
         }
 
-        for (const dataSourceOption of dataSourceOptions?.filter((dso) => dso.dataSourceId === source.id)) {
-          const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
-          const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
-
-          const dsOption = manager.create(DataSourceOptions, {
-            options: newOptions,
-            environmentId: appEnvironmentMapping[dataSourceOption.environmentId],
-            dataSourceId: newSource.id,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-          await manager.save(dsOption);
+        for (const dataSourceOption of dataSourceOptions.filter((dso) => dso.dataSourceId === source.id)) {
+          if (dataSourceOption?.environmentId in appEnvironmentMapping) {
+            const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+            const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
+            const dsOption = manager.create(DataSourceOptions, {
+              options: newOptions,
+              environmentId: appEnvironmentMapping[dataSourceOption.environmentId],
+              dataSourceId: newSource.id,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            await manager.save(dsOption);
+          }
         }
 
-        for (const query of dataQueries?.filter((dq) => dq.dataSourceId === source.id)) {
+        for (const query of dataQueries.filter((dq) => dq.dataSourceId === source.id)) {
           const newQuery = manager.create(DataQuery, {
             name: query.name,
             options: query.options,
             dataSourceId: newSource.id,
+            appVersionId: appVersionMapping[appVersion.id],
           });
           await manager.save(newQuery);
           dataQueryMapping[query.id] = newQuery.id;
@@ -410,6 +441,19 @@ export class AppImportExportService {
           name: query.name,
           options: query.options,
           dataSourceId: defaultDataSourceIdMapping[appVersion.id][query.kind],
+          appVersionId: appVersionMapping[appVersion.id],
+        });
+        await manager.save(newQuery);
+        dataQueryMapping[query.id] = newQuery.id;
+        newDataQueries.push(newQuery);
+      }
+
+      for (const query of globalQueriesToIterate) {
+        const newQuery = manager.create(DataQuery, {
+          name: query.name,
+          options: query.options,
+          dataSourceId: query.dataSourceId,
+          appVersionId: appVersionMapping[appVersion.id],
         });
         await manager.save(newQuery);
         dataQueryMapping[query.id] = newQuery.id;
@@ -435,6 +479,7 @@ export class AppImportExportService {
   }
 
   async createDefaultDataSourceForVersion(
+    organizationId: string,
     versionId: string,
     kinds: string[] = ['restapi', 'runjs', 'tooljetdb'],
     manager: EntityManager
@@ -444,7 +489,7 @@ export class AppImportExportService {
     for (const defaultSource of kinds) {
       const dataSource = await this.dataSourcesService.createDefaultDataSource(defaultSource, versionId, null, manager);
       response[defaultSource] = dataSource.id;
-      await this.appEnvironmentService.createDataSourceInAllEnvironments(versionId, dataSource.id, manager);
+      await this.appEnvironmentService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
     }
     return response;
   }

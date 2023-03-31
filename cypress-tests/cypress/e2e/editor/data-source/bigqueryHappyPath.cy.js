@@ -104,7 +104,7 @@ describe("Data source BigQuery", () => {
     fillDataSourceTextField(
       firestoreText.privateKey,
       bigqueryText.placehlderPrivateKey,
-      JSON.stringify(Cypress.env("bigquery_pvt_key")),
+      `${JSON.stringify(Cypress.env("bigquery_pvt_key"))}`,
       "contain",
       { parseSpecialCharSequences: false, delay: 0 }
     );
@@ -120,9 +120,11 @@ describe("Data source BigQuery", () => {
     );
 
     cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
+    cy.get("#radix-2").click();
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("have.text", bigqueryText.cypressBigQuery)
       .find("button")
+      .invoke("show")
       .should("be.visible");
   });
 });

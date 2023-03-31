@@ -88,3 +88,9 @@ export function validateDefaultValue(value: any, params: any) {
   if (data_type === 'boolean') return value || 'false';
   return value;
 }
+
+export async function dropForeignKey(tableName: string, columnName: string, queryRunner) {
+  const table = await queryRunner.getTable(tableName);
+  const foreignKey = table.foreignKeys.find((fk) => fk.columnNames.indexOf(columnName) !== -1);
+  await queryRunner.dropForeignKey(tableName, foreignKey);
+}

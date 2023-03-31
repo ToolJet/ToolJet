@@ -28,7 +28,7 @@ The table component will **auto-generate all the columns** as soon as the expect
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/columns.png" alt="ToolJet - Widget Reference - Table" width="400" />
+<img className="screenshot-full" src="/img/widgets/table/columns2.png" alt="ToolJet - Widget Reference - Table" width="400" />
 
 </div>
 
@@ -77,6 +77,10 @@ To display email column, the key for the column should be `user.email`.
 
 ### Saving data
 Enable `editable` property of a column to make the cells editable. If a data type is not selected, `string` is selected as the data type.
+
+:::tip
+You can programatically **enable**/**disable** the make **editable** field in the columns property by clicking on the **Fx** button.
+:::
 
 If the data in a cell is changed, `changeSet` property of the table object will have the index of the row and the field that changed.
 For example, if the name field of second row of example in the 'Displaying Data' section is changed, `changeSet` will look like this:
@@ -128,7 +132,7 @@ If the condition is true, the validation passes, otherwise return a string that 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/action.png" alt="ToolJet - Widget Reference - Table" width="400" />
+<img className="screenshot-full" src="/img/widgets/table/action2.png" alt="ToolJet - Widget Reference - Table" width="800" />
 
 </div>
 
@@ -136,8 +140,11 @@ Action buttons will be displayed as the last column of the table. The styles of 
 
 | Property | Description |
 | -------- | ------------ |
+| Button text | Set the text that you want to be displayed on the action button. |
+| Button position | Set the button position to the left or right |
 | Background color (Action Button) | Background color of the action button. |
 | Text color (Action Button) | Color of button-text of the action button. |
+| Disable Action Button | Toggle on to disable the action button. You can programmatically set its value by clicking on the `Fx` button next to it, if set to `{{true}}`, the action button will be disabled and becomes non-functional. By default, its value is set to `{{false}}`. |
 
 ## Options
 

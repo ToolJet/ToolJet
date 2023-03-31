@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { organizationService } from '@/_services';
 import { Menu } from '@/_components';
-import ReactTooltip from 'react-tooltip';
 import { GeneralSettings } from './GeneralSettings';
 import { Google } from './Google';
 import { Loader } from './Loader';
 import { Git } from './Git';
 import { Form } from './Form';
+// eslint-disable-next-line import/no-unresolved
 import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { toast } from 'react-hot-toast';
@@ -99,7 +99,6 @@ export function ManageSSO({ darkMode }) {
   return (
     <ErrorBoundary showFallback={true}>
       <div className="wrapper manage-sso animation-fade">
-        <ReactTooltip type="dark" effect="solid" delayShow={250} />
         <div className="page-wrapper">
           <div className="container-xl">
             <div className="page-header d-print-none">

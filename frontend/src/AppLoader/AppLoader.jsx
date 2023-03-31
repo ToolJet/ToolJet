@@ -7,10 +7,12 @@ import config from 'config';
 import { safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import useRouter from '@/_hooks/use-router';
+import { useParams } from 'react-router-dom';
 
 const AppLoaderComponent = (props) => {
   const router = useRouter();
-  const appId = props.match.params.id;
+  const params = useParams();
+  const appId = params.id;
   const currentUser = authenticationService.currentUserValue;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

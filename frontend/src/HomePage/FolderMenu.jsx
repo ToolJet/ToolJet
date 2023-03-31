@@ -45,8 +45,13 @@ export const FolderMenu = function FolderMenu({
         setOpen(isOpen);
       }}
       overlay={
-        <Popover id="popover-app-menu" className={darkMode && 'popover-dark-themed'} data-cy="folder-card">
-          <Popover.Content bsPrefix="popover-body">
+        <Popover
+          id="popover-app-menu"
+          className={darkMode && 'popover-dark-themed'}
+          data-cy="folder-card"
+          style={{ transition: 'none' }}
+        >
+          <Popover.Body bsPrefix="popover-body">
             <div>
               {canUpdateFolder && (
                 <Field text={t('homePage.foldersSection.editFolder', 'Edit folder')} onClick={editFolder} />
@@ -59,7 +64,7 @@ export const FolderMenu = function FolderMenu({
                 />
               )}
             </div>
-          </Popover.Content>
+          </Popover.Body>
         </Popover>
       }
     >
