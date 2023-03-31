@@ -73,7 +73,11 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
-RUN chgrp -R 0 /app && chmod -R g=u /app
+# Define non-sudo user
+RUN useradd --create-home appuser \
+    && chown -R appuser:appuser /app
+USER appuser
+
 WORKDIR /app
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1

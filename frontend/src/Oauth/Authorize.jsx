@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import useRouter from '@/_hooks/use-router';
 import { authenticationService } from '@/_services';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
 import { RedirectLoader } from '../_components';
 
@@ -59,11 +59,10 @@ export function Authorize() {
     <div>
       <RedirectLoader origin={Configs[router.query.origin] ? router.query.origin : 'unknown'} />
       {(success || error) && (
-        <Redirect
-          to={{
-            pathname: `/login${error && organizationId ? `/${organizationId}` : ''}`,
-            state: { errorMessage: error && error },
-          }}
+        <Navigate
+          replace
+          to={`/login${error && organizationId ? `/${organizationId}` : ''}`}
+          state={{ errorMessage: error && error }}
         />
       )}
     </div>

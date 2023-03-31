@@ -15,7 +15,7 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
 
   const popover = (
     <Popover id="storage-filter-popover" className={cx({ 'theme-dark': darkMode })} data-cy="filter-section">
-      <Popover.Content bsPrefix="storage-filter-popover">
+      <Popover.Body bsPrefix="storage-filter-popover">
         <div className="card-body" data-cy="filter-card-body">
           {Object.values(filters).map((filter, index) => {
             return (
@@ -47,7 +47,7 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
           </svg>
           &nbsp;Add Condition
         </div>
-      </Popover.Content>
+      </Popover.Body>
     </Popover>
   );
 
