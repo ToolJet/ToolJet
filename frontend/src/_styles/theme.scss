@@ -7620,7 +7620,7 @@ tbody {
 
 .home-page-content {
   height: calc(100vh - 64px) !important;
-  overflow-y: scroll;
+  overflow-y: auto;
   background: var(--slate2);
 }
 
@@ -8510,7 +8510,7 @@ tbody {
   margin: 0 auto;
 
   .card-body {
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 
   .card-header {
@@ -9640,7 +9640,7 @@ tbody {
 
 .tj-user-table-wrapper {
   height: calc(100vh - 270px); //52+64+40+32+20+62
-  overflow-y: scroll;
+  overflow-y: auto;
   background: var(--base);
   border-right: 1px solid var(--slate7);
   border-bottom: 1px solid var(--slate7);
