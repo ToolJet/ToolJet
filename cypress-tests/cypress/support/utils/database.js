@@ -483,7 +483,7 @@ export const editRowAndVerify = (
   verifyRowData(rowNumber, columnName, rowFieldData);
 };
 
-export const editRowAndVerifyWithInvalid = (
+export const editRowWithInvalidData = (
   tableName,
   rowNumber,
   columnName,
