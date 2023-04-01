@@ -109,6 +109,32 @@ Along with `changeSet`, `dataUpdates` property will also be changed when the val
 
 If the data of a cell is changed, "save changes" button will be shown at the bottom of the table. This button when clicked will trigger the `Bulk update query` event. This event can be used to run a query to update the data on your data source.
 
+### Use dynamic column
+
+Enabling the **Use dynamic column** toggle will allow users to set the **Column data** where users can link the column data dynamically from a query. 
+
+The **column data** field expects a JSON value:
+```json
+{
+   "name":"Name",
+   "columnType":"string",
+   "key":"first_name",
+   "cellBackgroundColor":"#000",
+   "textColor":"#fff",
+   "isEditable":true,
+   "regex":"",
+   "maxLength":10,
+   "minLength":5,
+   "customRule":""
+}
+```
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/dynamic_column.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
 ## Validation
 
 Under column properties, expand the detailed view of a column type to access a toggle button called `make editable`. You can toggle it `ON` to apply the validations for each column respectively using the following.
