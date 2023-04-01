@@ -862,7 +862,7 @@ export const EventManager = ({
     );
   };
 
-  const componentName = componentMeta.name ? componentMeta.name : 'query';
+  const componentName = componentMeta.name ? componentMeta.name : 'page';
 
   if (events.length === 0) {
     return (
