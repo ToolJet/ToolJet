@@ -747,6 +747,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onRowHovered',
       'onSubmit',
       'onInvalid',
+      'onNewRowAdded',
     ].includes(eventName)
   ) {
     const { component } = options;

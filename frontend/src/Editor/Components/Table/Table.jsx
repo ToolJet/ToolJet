@@ -76,7 +76,9 @@ function utilityToUpdateTableDetails(pageIndex, clonedTableData, newRowAddedChan
   return {
     [newRowIndex]: { ...newRow },
     ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
-      if (calCondition(key)) {
+      console.log('Table--- inside reduce function key---', key);
+      // if (calCondition(key)) {
+      if (Number(key) < rowsPerPage * pageIndex + rowsPerPage && Number(key) >= newRowIndex) {
         accumulator[Number(key) + 1] = newRowAddedChangeSet[key];
       } else {
         accumulator = { ...newRowAddedChangeSet };
@@ -320,32 +322,39 @@ export function Table({
 
   function handleChangesSaved() {
     let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
-    const clonedTableData = _.isEmpty(updatedDataReference.current) ? _.cloneDeep(tableData) : _.cloneDeep(tableData);
-    Object.keys(changeSet).forEach((key) => {
-      if (changeSet[key]?.isAddingNewRow) {
+    const clonedTableData = _.isEmpty(updatedDataReference.current)
+      ? _.cloneDeep(tableData)
+      : _.cloneDeep(updatedDataReference.current);
+    if (!_.isEmpty(changeSet)) {
+      Object.keys(changeSet).forEach((key) => {
+        clonedTableData[key] = { ..._.merge(clonedTableData[key], changeSet[key]) };
+        updatedDataReference.current = clonedTableData;
+      });
+    }
+    if (!_.isEmpty(tableDetails?.newRowAddedChangeSet)) {
+      Object.keys(tableDetails?.newRowAddedChangeSet).forEach((key) => {
         mergeToTableDetailsObj.newRowDataUpdate = [];
         const clonedChangeSet = { ...changeSet[key] };
         delete clonedChangeSet.isAddingNewRow;
         clonedTableData.splice(Number(key), 0, { ...clonedChangeSet });
-        isAddingNewRowRef.current = false;
-      } else {
-        clonedTableData[key] = {
-          ..._.merge(clonedTableData[key], changeSet[key]),
-        };
-      }
-      updatedDataReference.current = _.cloneDeep(clonedTableData);
-    });
-    // Object.keys(new)
+      });
+    }
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    }).then(() => mergeToTableDetails(mergeToTableDetailsObj));
+    }).then(() => {
+      if (!_.isEmpty(changeSet)) onEvent('onBulkUpdate', { component });
+      if (isAddingNewRowRef.current) {
+        isAddingNewRowRef.current = false;
+        onEvent('onNewRowAdded', { component });
+      }
+      mergeToTableDetails(mergeToTableDetailsObj);
+    });
   }
 
   function handleAddNewRow(pageIndex) {
+    if (!isAddingNewRowRef.current) isAddingNewRowRef.current = true;
     let newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
-    // let newlyRowAddedChangeSet = { ...newRowAddedChangeSet };
-    isAddingNewRowRef.current = true;
     const clonedTableData = _.isEmpty(updatedDataReference.current)
       ? _.cloneDeep(tableData)
       : _.cloneDeep(updatedDataReference.current);
@@ -362,7 +371,7 @@ export function Table({
       newRow,
       rowsPerPage
     );
-    console.log('Table--- inside hnadle add new', clonedTableData);
+    console.log('Table--- inside hnadle add new', clonedTableData, newRowAddedChangeSet);
     updatedDataReference.current = clonedTableData;
     mergeToTableDetails({ newRowAddedChangeSet: newRowAddedChangeSet, newRowDataUpdate: clonedTableData });
     return setExposedVariables({
@@ -376,10 +385,12 @@ export function Table({
     let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
     let exposedvariablesObj = { changeSet: {}, dataUpdates: [] };
     const newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
-    if (isAddingNewRowRef.current && updatedDataReference.current) {
+    if (isAddingNewRowRef.current && newRowAddedChangeSet) {
       const updatedData = discardChangesUtility(updatedDataReference.current, tableDetails.newRowAddedChangeSet);
+      console.log('Table--- inside updated data after discard function', updatedData);
       exposedvariablesObj.updatedData = updatedData;
       mergeToTableDetailsObj.newRowDataUpdate = [];
+      mergeToTableDetailsObj.newRowAddedChangeSet = {};
       isAddingNewRowRef.current = false;
       updatedDataReference.current = updatedData;
     }
@@ -803,7 +814,6 @@ export function Table({
               <span
                 className="btn btn-light btn-sm p-1 mx-1"
                 onClick={(e) => {
-                  e.persist();
                   handleAddNewRow(pageIndex);
                 }}
                 data-tip="Add new row"
@@ -1143,11 +1153,7 @@ export function Table({
                 <>
                   <button
                     className={`btn btn-primary btn-sm mx-2 ${tableDetails.isSavingChanges ? 'btn-loading' : ''}`}
-                    onClick={() =>
-                      onEvent('onBulkUpdate', { component }).then(() => {
-                        handleChangesSaved();
-                      })
-                    }
+                    onClick={() => handleChangesSaved()}
                     data-cy={`table-button-save-changes`}
                   >
                     Save Changes
