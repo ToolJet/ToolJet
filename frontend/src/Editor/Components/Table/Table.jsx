@@ -67,16 +67,14 @@ function removeAllAddedElements(array, addedElements) {
 function utilityToUpdateTableDetails(pageIndex, clonedTableData, newRowAddedChangeSet, newRow, rowsPerPage) {
   const startIndexOfSpliceMethod = pageIndex === 0 ? 0 : pageIndex * rowsPerPage;
   const newRowIndex = pageIndex === 0 ? 0 : pageIndex * rowsPerPage;
-  function calCondition(key) {
-    return pageIndex === 0 ? Number(key) < rowsPerPage : Number(key) >= rowsPerPage * pageIndex;
-  }
+  // function calCondition(key) {
+  //   return pageIndex === 0 ? Number(key) < rowsPerPage : Number(key) >= rowsPerPage * pageIndex;
+  // }
   clonedTableData.splice(startIndexOfSpliceMethod, 0, newRow);
-  console.log('Table--- inside utility function', clonedTableData);
 
   return {
     [newRowIndex]: { ...newRow },
     ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
-      console.log('Table--- inside reduce function key---', key);
       // if (calCondition(key)) {
       if (Number(key) < rowsPerPage * pageIndex + rowsPerPage && Number(key) >= newRowIndex) {
         accumulator[Number(key) + 1] = newRowAddedChangeSet[key];
@@ -98,8 +96,8 @@ function setExposedVariableUtility(originalArray, isAddingNewRowRef) {
   let clonedArray = [];
   if (isAddingNewRowRef) {
     clonedArray = _.cloneDeep(originalArray);
-    const addedElements = clonedArray.map((row) => {
-      if (row.original?.isAddingNewRow) {
+    const addedElements = clonedArray.filter((row) => {
+      if (row.original.isAddingNewRow) {
         return row;
       }
     });
@@ -322,7 +320,7 @@ export function Table({
 
   function handleChangesSaved() {
     let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
-    const clonedTableData = _.isEmpty(updatedDataReference.current)
+    let clonedTableData = _.isEmpty(updatedDataReference.current)
       ? _.cloneDeep(tableData)
       : _.cloneDeep(updatedDataReference.current);
     if (!_.isEmpty(changeSet)) {
@@ -334,14 +332,16 @@ export function Table({
     if (!_.isEmpty(tableDetails?.newRowAddedChangeSet)) {
       Object.keys(tableDetails?.newRowAddedChangeSet).forEach((key) => {
         mergeToTableDetailsObj.newRowDataUpdate = [];
-        const clonedChangeSet = { ...changeSet[key] };
+        mergeToTableDetailsObj.newRowAddedChangeSet = {};
+        const clonedChangeSet = key;
         delete clonedChangeSet.isAddingNewRow;
-        clonedTableData.splice(Number(key), 0, { ...clonedChangeSet });
       });
     }
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
+      newRowDataUpdate: [],
+      newRowAddedChangeSet: {},
     }).then(() => {
       if (!_.isEmpty(changeSet)) onEvent('onBulkUpdate', { component });
       if (isAddingNewRowRef.current) {
@@ -358,11 +358,11 @@ export function Table({
     const clonedTableData = _.isEmpty(updatedDataReference.current)
       ? _.cloneDeep(tableData)
       : _.cloneDeep(updatedDataReference.current);
-    const newRow = Object.keys(clonedTableData[0]).reduce((accumulator, currentValue) => {
+    const newRow = Object.keys(tableData[0]).reduce((accumulator, currentValue) => {
       accumulator[currentValue] = '';
       return accumulator;
     }, {});
-    newRow.__proto__.isAddingNewRow = true;
+    newRow.isAddingNewRow = true;
 
     newRowAddedChangeSet = utilityToUpdateTableDetails(
       pageIndex,
@@ -371,7 +371,6 @@ export function Table({
       newRow,
       rowsPerPage
     );
-    console.log('Table--- inside hnadle add new', clonedTableData, newRowAddedChangeSet);
     updatedDataReference.current = clonedTableData;
     mergeToTableDetails({ newRowAddedChangeSet: newRowAddedChangeSet, newRowDataUpdate: clonedTableData });
     return setExposedVariables({
@@ -383,19 +382,20 @@ export function Table({
 
   function handleChangesDiscarded() {
     let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
-    let exposedvariablesObj = { changeSet: {}, dataUpdates: [] };
+    let exposedVariablesObj = { changeSet: {}, dataUpdates: [] };
     const newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
     if (isAddingNewRowRef.current && newRowAddedChangeSet) {
       const updatedData = discardChangesUtility(updatedDataReference.current, tableDetails.newRowAddedChangeSet);
-      console.log('Table--- inside updated data after discard function', updatedData);
-      exposedvariablesObj.updatedData = updatedData;
+      exposedVariablesObj.updatedData = updatedData;
+      exposedVariablesObj.newRowDataUpdate = [];
+      exposedVariablesObj.newRowAddedChangeSet = {};
       mergeToTableDetailsObj.newRowDataUpdate = [];
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
       isAddingNewRowRef.current = false;
       updatedDataReference.current = updatedData;
     }
-    setExposedVariables(exposedvariablesObj).then(() => {
-      mergeToTableDetails(mergeToTableDetailsObj);
+    setExposedVariables(exposedVariablesObj).then(() => {
+      mergeToTableDetails({ ...mergeToTableDetailsObj });
       fireEvent('onCancelChanges');
     });
   }
@@ -662,8 +662,11 @@ export function Table({
         if (isAddingNewRowRef.current) {
           const updatedDataArray = _.cloneDeep(tableDetails?.newRowDataUpdate || []);
           const updatedData = discardChangesUtility(updatedDataArray, tableDetails.changeSet);
-          mergeToTableDetailsObj.newRowDataUpdate = [];
           exposedVariablesObj.updatedData = updatedData;
+          exposedVariablesObj.newRowDataUpdate = [];
+          exposedVariablesObj.newRowAddedChangeSet = {};
+          mergeToTableDetailsObj.newRowDataUpdate = [];
+          mergeToTableDetailsObj.newRowAddedChangeSet = {};
           isAddingNewRowRef.current = false;
         }
         setExposedVariables(exposedVariablesObj).then(() => {
@@ -689,14 +692,14 @@ export function Table({
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
 
   useEffect(() => {
-    const pageData = setExposedVariableUtility(page, isAddingNewRowRef.current);
+    const currentPageData = setExposedVariableUtility(page, isAddingNewRowRef.current);
     onComponentOptionsChanged(component, [
-      ['currentPageData', pageData],
+      ['currentPageData', currentPageData],
       ['currentData', isAddingNewRowRef.current ? tableData : data],
       ['selectedRow', []],
       ['selectedRowId', null],
     ]);
-  }, [tableData.length, tableDetails.changeSet, page, data]);
+  }, [tableData.length, tableDetails.changeSet, page, data, JSON.stringify(tableDetails?.newRowAddedChangeSet)]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
@@ -725,11 +728,7 @@ export function Table({
   useEffect(() => {
     const globalFilterRowsArrayToMap = setExposedVariableUtility(globalFilteredRows, isAddingNewRowRef.current);
     setExposedVariable('filteredData', globalFilterRowsArrayToMap);
-  }, [
-    JSON.stringify(globalFilteredRows.map((row) => row.original)),
-    JSON.stringify(tableDetails.changeSet),
-    JSON.stringify(tableDetails.newRowDataUpdate),
-  ]);
+  }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
 
   const rowHover = () => {
     mergeToTableDetails(rowDetails);
