@@ -268,6 +268,7 @@ export function Table({
         ..._.merge(clonedTableData[key], newChangeset[key]),
       };
     });
+    // updatedDataReference.current = clonedTableData;
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
 
@@ -326,6 +327,7 @@ export function Table({
       onEvent('onPageChanged', { component, data: {} });
     });
   }
+  const changeSet = tableDetails?.changeSet ?? {};
 
   function handleChangesSaved() {
     let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
@@ -335,8 +337,8 @@ export function Table({
     if (!_.isEmpty(changeSet)) {
       Object.keys(changeSet).forEach((key) => {
         clonedTableData[key] = { ..._.merge(clonedTableData[key], changeSet[key]) };
-        updatedDataReference.current = clonedTableData;
       });
+      updatedDataReference.current = clonedTableData;
     }
     if (!_.isEmpty(tableDetails?.newRowAddedChangeSet)) {
       Object.keys(tableDetails?.newRowAddedChangeSet).forEach((key) => {
@@ -412,8 +414,6 @@ export function Table({
       fireEvent('onCancelChanges');
     });
   }
-
-  const changeSet = tableDetails?.changeSet ?? {};
 
   const computeFontColor = useCallback(() => {
     if (color !== undefined) {
@@ -497,6 +497,19 @@ export function Table({
   const data = useMemo(() => {
     if (!_.isEmpty(updatedDataReference.current) && !_.isEqual(properties.data, deferredDataFromProps)) {
       updatedDataReference.current = [];
+      let tableDetailsAndExposedVarObject = {};
+      if (!_.isEmpty(tableDetails.changeSet)) {
+        tableDetailsAndExposedVarObject.changeSet = {};
+        tableDetailsAndExposedVarObject.dataUpdates = [];
+      }
+      if (!_.isEmpty(tableDetails.newRowAddedChangeSet)) {
+        isAddingNewRowRef.current = false;
+        tableDetailsAndExposedVarObject.newRowAddedChangeSet = {};
+        tableDetailsAndExposedVarObject.newRowDataUpdate = {};
+      }
+      setExposedVariables({ ...tableDetailsAndExposedVarObject, updatedData: [] }).then(() => {
+        mergeToTableDetails(tableDetailsAndExposedVarObject);
+      });
     }
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
   }, [
@@ -751,7 +764,10 @@ export function Table({
   };
   useEffect(() => {
     if (_.isEmpty(changeSet)) {
-      setExposedVariable('updatedData', tableData);
+      setExposedVariable(
+        'updatedData',
+        _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current
+      );
     }
   }, [JSON.stringify(changeSet)]);
   function downlaodPopover() {
