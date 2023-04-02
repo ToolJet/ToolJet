@@ -97,7 +97,7 @@ export const CreateVersion = ({
           <div className="ts-control" data-cy="create-version-from-input-field">
             <Select
               options={options}
-              defaultValue={options[options.length - 1]}
+              defaultValue={options[0]}
               onChange={(version) => {
                 setAppDefinitionFromVersion(version, false);
               }}
