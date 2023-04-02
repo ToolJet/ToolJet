@@ -404,11 +404,11 @@ export function Table({
       exposedVariablesObj.newRowAddedChangeSet = {};
       mergeToTableDetailsObj.newRowDataUpdate = [];
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
-      isAddingNewRowRef.current = false;
       updatedDataReference.current = updatedData;
+      isAddingNewRowRef.current = false;
     }
     setExposedVariables(exposedVariablesObj).then(() => {
-      mergeToTableDetails({ ...mergeToTableDetailsObj });
+      mergeToTableDetails(mergeToTableDetailsObj);
       fireEvent('onCancelChanges');
     });
   }
@@ -669,23 +669,23 @@ export function Table({
   registerAction(
     'discardChanges',
     async function () {
-      if (Object.keys(tableDetails.changeSet || {}).length > 0) {
-        let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
-        let exposedVariablesObj = { changeSet: {}, dataUpdates: [] };
-        if (isAddingNewRowRef.current) {
-          const updatedDataArray = _.cloneDeep(tableDetails?.newRowDataUpdate || []);
-          const updatedData = discardChangesUtilityForNewlyAddedRow(updatedDataArray, tableDetails.changeSet);
-          exposedVariablesObj.updatedData = updatedData;
-          exposedVariablesObj.newRowDataUpdate = [];
-          exposedVariablesObj.newRowAddedChangeSet = {};
-          mergeToTableDetailsObj.newRowDataUpdate = [];
-          mergeToTableDetailsObj.newRowAddedChangeSet = {};
-          isAddingNewRowRef.current = false;
-        }
-        setExposedVariables(exposedVariablesObj).then(() => {
-          mergeToTableDetails(mergeToTableDetailsObj);
-        });
+      let exposedVariablesObj = { changeSet: {}, dataUpdates: [] };
+      let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
+      if (isAddingNewRowRef.current && Object.keys(tableDetails?.newRowAddedChangeSet || {}).length > 0) {
+        const updatedDataArray = _.cloneDeep(updatedDataReference?.current || []);
+        const updatedData = discardChangesUtilityForNewlyAddedRow(updatedDataArray, tableDetails.newRowAddedChangeSet);
+        exposedVariablesObj.updatedData = updatedData;
+        exposedVariablesObj.newRowDataUpdate = [];
+        exposedVariablesObj.newRowAddedChangeSet = {};
+        mergeToTableDetailsObj.newRowDataUpdate = [];
+        mergeToTableDetailsObj.newRowAddedChangeSet = {};
+        isAddingNewRowRef.current = false;
+        updatedDataReference.current = updatedData;
       }
+      setExposedVariables(exposedVariablesObj).then(() => {
+        mergeToTableDetails(mergeToTableDetailsObj);
+        fireEvent('onCancelChanges');
+      });
     },
     [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet), JSON.stringify(tableDetails.newRowDataUpdate)]
   );
