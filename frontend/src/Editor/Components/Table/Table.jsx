@@ -56,7 +56,7 @@ import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 
 // utility function
-function removeAllAddedElements(array, addedElements) {
+function discardAllAddedRows(array, addedElements) {
   for (let i = 0; i < addedElements.length; i++) {
     const index = array.indexOf(addedElements[i]);
     if (index !== -1) {
@@ -64,7 +64,13 @@ function removeAllAddedElements(array, addedElements) {
     }
   }
 }
-function utilityToUpdateTableDetails(pageIndex, clonedTableData, newRowAddedChangeSet, newRow, rowsPerPage) {
+function utilityToUpdateNewRowAddedChangeSetToTableDetails(
+  pageIndex,
+  clonedTableData,
+  newRowAddedChangeSet,
+  newRow,
+  rowsPerPage
+) {
   const startIndexOfSpliceMethod = pageIndex === 0 ? 0 : pageIndex * rowsPerPage;
   const newRowIndex = pageIndex === 0 ? 0 : pageIndex * rowsPerPage;
   // function calCondition(key) {
@@ -88,7 +94,7 @@ function utilityToUpdateTableDetails(pageIndex, clonedTableData, newRowAddedChan
 function discardChangesUtility(newRowDataUpdate = [], newRowAddedChangeSet = {}) {
   const updatedData = _.cloneDeep(newRowDataUpdate);
   const addedElements = Object.keys(newRowAddedChangeSet).map((key) => updatedData[key]);
-  removeAllAddedElements(updatedData, addedElements);
+  discardAllAddedRows(updatedData, addedElements);
   let data = updatedData;
   return data;
 }
@@ -101,7 +107,7 @@ function setExposedVariableUtility(originalArray, isAddingNewRowRef) {
         return row;
       }
     });
-    removeAllAddedElements(clonedArray, addedElements);
+    discardAllAddedRows(clonedArray, addedElements);
   }
   const arrayOfData = isAddingNewRowRef ? [...clonedArray] : [...originalArray];
   const data = arrayOfData.map((row) => row.original);
@@ -364,7 +370,7 @@ export function Table({
     }, {});
     newRow.isAddingNewRow = true;
 
-    newRowAddedChangeSet = utilityToUpdateTableDetails(
+    newRowAddedChangeSet = utilityToUpdateNewRowAddedChangeSetToTableDetails(
       pageIndex,
       clonedTableData,
       newRowAddedChangeSet,
