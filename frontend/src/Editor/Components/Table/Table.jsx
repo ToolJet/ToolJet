@@ -94,7 +94,7 @@ function utilityToUpdateNewRowAddedChangeSetToTableDetails(
   };
 }
 
-function discardChangesUtility(newRowDataUpdate = [], newRowAddedChangeSet = {}) {
+function discardChangesUtilityForNewlyAddedRow(newRowDataUpdate = [], newRowAddedChangeSet = {}) {
   let clonedData = _.cloneDeep(newRowDataUpdate);
   const addedElements = Object.keys(newRowAddedChangeSet).map((key) => clonedData[key]);
   let updatedData = discardAllAddedRows(clonedData, addedElements);
@@ -395,7 +395,10 @@ export function Table({
     let exposedVariablesObj = { changeSet: {}, dataUpdates: [] };
     const newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
     if (isAddingNewRowRef.current && newRowAddedChangeSet) {
-      const updatedData = discardChangesUtility(updatedDataReference.current, tableDetails.newRowAddedChangeSet);
+      const updatedData = discardChangesUtilityForNewlyAddedRow(
+        updatedDataReference.current,
+        tableDetails.newRowAddedChangeSet
+      );
       exposedVariablesObj.updatedData = updatedData;
       exposedVariablesObj.newRowDataUpdate = [];
       exposedVariablesObj.newRowAddedChangeSet = {};
@@ -671,7 +674,7 @@ export function Table({
         let exposedVariablesObj = { changeSet: {}, dataUpdates: [] };
         if (isAddingNewRowRef.current) {
           const updatedDataArray = _.cloneDeep(tableDetails?.newRowDataUpdate || []);
-          const updatedData = discardChangesUtility(updatedDataArray, tableDetails.changeSet);
+          const updatedData = discardChangesUtilityForNewlyAddedRow(updatedDataArray, tableDetails.changeSet);
           exposedVariablesObj.updatedData = updatedData;
           exposedVariablesObj.newRowDataUpdate = [];
           exposedVariablesObj.newRowAddedChangeSet = {};
