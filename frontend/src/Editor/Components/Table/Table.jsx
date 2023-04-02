@@ -57,13 +57,16 @@ import { Tooltip } from 'react-tooltip';
 
 // utility function
 function discardAllAddedRows(array, addedElements) {
+  const data = [...array];
   for (let i = 0; i < addedElements.length; i++) {
-    const index = array.indexOf(addedElements[i]);
+    const index = data.indexOf(addedElements[i]);
     if (index !== -1) {
-      array.splice(index, 1);
+      data.splice(index, 1);
     }
   }
+  return data;
 }
+
 function utilityToUpdateNewRowAddedChangeSetToTableDetails(
   pageIndex,
   clonedTableData,
@@ -71,45 +74,45 @@ function utilityToUpdateNewRowAddedChangeSetToTableDetails(
   newRow,
   rowsPerPage
 ) {
+  let copyOfClonedTableData = [...clonedTableData];
   const startIndexOfSpliceMethod = pageIndex === 0 ? 0 : pageIndex * rowsPerPage;
   const newRowIndex = pageIndex === 0 ? 0 : pageIndex * rowsPerPage;
-  // function calCondition(key) {
-  //   return pageIndex === 0 ? Number(key) < rowsPerPage : Number(key) >= rowsPerPage * pageIndex;
-  // }
-  clonedTableData.splice(startIndexOfSpliceMethod, 0, newRow);
-
+  copyOfClonedTableData.splice(startIndexOfSpliceMethod, 0, newRow);
   return {
-    [newRowIndex]: { ...newRow },
-    ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
-      // if (calCondition(key)) {
-      if (Number(key) < rowsPerPage * pageIndex + rowsPerPage && Number(key) >= newRowIndex) {
-        accumulator[Number(key) + 1] = newRowAddedChangeSet[key];
-      } else {
-        accumulator = { ...newRowAddedChangeSet };
-      }
-      return accumulator;
-    }, {}),
+    updatedData: [...copyOfClonedTableData],
+    newRowAddedChangeSet: {
+      [newRowIndex]: { ...newRow },
+      ...Object.keys(newRowAddedChangeSet)?.reduce((accumulator, key) => {
+        if (Number(key) < rowsPerPage * pageIndex + rowsPerPage && Number(key) >= newRowIndex) {
+          accumulator[Number(key) + 1] = newRowAddedChangeSet[key];
+        } else {
+          accumulator = { ...newRowAddedChangeSet };
+        }
+        return accumulator;
+      }, {}),
+    },
   };
 }
+
 function discardChangesUtility(newRowDataUpdate = [], newRowAddedChangeSet = {}) {
-  const updatedData = _.cloneDeep(newRowDataUpdate);
-  const addedElements = Object.keys(newRowAddedChangeSet).map((key) => updatedData[key]);
-  discardAllAddedRows(updatedData, addedElements);
-  let data = updatedData;
-  return data;
+  let clonedData = _.cloneDeep(newRowDataUpdate);
+  const addedElements = Object.keys(newRowAddedChangeSet).map((key) => clonedData[key]);
+  let updatedData = discardAllAddedRows(clonedData, addedElements);
+  return updatedData;
 }
+
 function setExposedVariableUtility(originalArray, isAddingNewRowRef) {
-  let clonedArray = [];
+  let updatedArray = [];
   if (isAddingNewRowRef) {
-    clonedArray = _.cloneDeep(originalArray);
+    let clonedArray = _.cloneDeep(originalArray);
     const addedElements = clonedArray.filter((row) => {
       if (row.original.isAddingNewRow) {
         return row;
       }
     });
-    discardAllAddedRows(clonedArray, addedElements);
+    updatedArray = discardAllAddedRows(clonedArray, addedElements);
   }
-  const arrayOfData = isAddingNewRowRef ? [...clonedArray] : [...originalArray];
+  const arrayOfData = isAddingNewRowRef ? [...updatedArray] : [...originalArray];
   const data = arrayOfData.map((row) => row.original);
   return data;
 }
@@ -370,19 +373,20 @@ export function Table({
     }, {});
     newRow.isAddingNewRow = true;
 
-    newRowAddedChangeSet = utilityToUpdateNewRowAddedChangeSetToTableDetails(
-      pageIndex,
-      clonedTableData,
-      newRowAddedChangeSet,
-      newRow,
-      rowsPerPage
-    );
-    updatedDataReference.current = clonedTableData;
-    mergeToTableDetails({ newRowAddedChangeSet: newRowAddedChangeSet, newRowDataUpdate: clonedTableData });
+    const { newRowAddedChangeSet: updatedNewRowAddedChangeSet, updatedData } =
+      utilityToUpdateNewRowAddedChangeSetToTableDetails(
+        pageIndex,
+        clonedTableData,
+        newRowAddedChangeSet,
+        newRow,
+        rowsPerPage
+      );
+    updatedDataReference.current = updatedData;
+    mergeToTableDetails({ newRowAddedChangeSet: updatedNewRowAddedChangeSet, newRowDataUpdate: updatedData });
     return setExposedVariables({
-      newRowAddedChangeSet: newRowAddedChangeSet,
-      updatedData: clonedTableData,
-      newRowDataUpdate: newRowAddedChangeSet,
+      newRowAddedChangeSet: updatedNewRowAddedChangeSet,
+      updatedData: updatedData,
+      newRowDataUpdate: updatedNewRowAddedChangeSet,
     });
   }
 
