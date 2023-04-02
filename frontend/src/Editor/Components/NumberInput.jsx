@@ -15,45 +15,30 @@ export const NumberInput = function NumberInput({
 
   const [value, setValue] = React.useState(parseInt(properties.value));
 
-  const handleChange = (e) => {
+  const handleValueChange = (newValue) => {
     if (
       !isNaN(parseInt(properties.minValue)) &&
       !isNaN(parseInt(properties.maxValue)) &&
       parseInt(properties.minValue) > parseInt(properties.maxValue)
     ) {
       setValue(parseInt(properties.maxValue));
-    } else if (!isNaN(parseInt(properties.maxValue)) && parseInt(e.target.value) > parseInt(properties.maxValue)) {
+    } else if (!isNaN(parseInt(properties.maxValue)) && parseInt(newValue) > parseInt(properties.maxValue)) {
       setValue(parseInt(properties.maxValue));
-    } else if (!isNaN(parseInt(properties.minValue)) && parseInt(e.target.value) < parseInt(properties.minValue)) {
+    } else if (!isNaN(parseInt(properties.minValue)) && parseInt(newValue) < parseInt(properties.minValue)) {
       setValue(parseInt(properties.minValue));
     } else {
-      setValue(parseInt(e.target.value));
+      setValue(parseInt(newValue));
     }
+  };
+
+  const handleChange = (e) => {
+    handleValueChange(e.target.value);
     fireEvent('onChange');
   };
 
-  const handleMinValuChange = () => {
-    const { minValue } = properties;
-    if (value < minValue) setValue(parseInt(properties.minValue));
-  };
-
-  const handleMaxValueChange = () => {
-    const { maxValue } = properties;
-    if (value > maxValue) setValue(parseInt(properties.maxValue));
-  };
-
   useEffect(() => {
-    handleMinValuChange();
-    handleMaxValueChange();
-  }, [properties.value]);
-
-  useEffect(() => {
-    handleMinValuChange();
-  }, [properties.minValue]);
-
-  useEffect(() => {
-    handleMaxValueChange();
-  }, [properties.maxValue]);
+    handleValueChange(value);
+  }, [properties.value, properties.minValue, properties.maxValue]);
 
   useEffect(() => {
     if (!isNaN(value)) {
