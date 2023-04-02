@@ -73,7 +73,7 @@ export default function generateColumnsData({
       maxLength: column.maxLength,
       regex: column.regex,
       customRule: column?.customRule,
-      Cell: function ({ cell, isEditable }) {
+      Cell: function ({ cell, isEditable, isFirstRowIsNewlyAddedRow }) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
 
@@ -154,6 +154,7 @@ export default function generateColumnsData({
                     }}
                     className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
+                    autoFocus={isFirstRowIsNewlyAddedRow}
                   />
                   <div className="invalid-feedback">{validationError}</div>
                 </div>
@@ -219,6 +220,7 @@ export default function generateColumnsData({
                         );
                       }
                     }}
+                    autoFocus={isFirstRowIsNewlyAddedRow}
                     className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                   />
@@ -252,6 +254,7 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}
+                autoFocus={isFirstRowIsNewlyAddedRow}
                 defaultValue={cellValue}
               ></textarea>
             );

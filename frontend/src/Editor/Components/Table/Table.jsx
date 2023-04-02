@@ -1068,10 +1068,13 @@ export function Table({
                           }),
                         };
                       });
-                      const isEditable = resolveReferences(cell.column?.isEditable ?? false, currentState, '', {
-                        cellValue,
-                        rowData,
-                      });
+                      const isFirstRowIsNewlyAddedRow = index === 0 && cell.row.original?.isAddingNewRow ? true : false;
+                      const isEditable = isFirstRowIsNewlyAddedRow
+                        ? true
+                        : resolveReferences(cell.column?.isEditable ?? false, currentState, '', {
+                            cellValue,
+                            rowData,
+                          });
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
@@ -1099,7 +1102,12 @@ export function Table({
                             <GenerateEachCellValue
                               cellValue={cellValue}
                               globalFilter={state.globalFilter}
-                              cellRender={cell.render('Cell', { cell, actionButtonsArray, isEditable })}
+                              cellRender={cell.render('Cell', {
+                                cell,
+                                actionButtonsArray,
+                                isEditable,
+                                isFirstRowIsNewlyAddedRow,
+                              })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
                               columnType={cell.column.columnType}
@@ -1107,6 +1115,7 @@ export function Table({
                               cellTextColor={cellTextColor}
                               cell={cell}
                               currentState={currentState}
+                              isFirstRowIsNewlyAddedRow={isFirstRowIsNewlyAddedRow}
                             />
                           </div>
                         </td>

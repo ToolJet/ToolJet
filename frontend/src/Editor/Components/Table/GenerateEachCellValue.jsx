@@ -14,6 +14,7 @@ export default function GenerateEachCellValue({
   cellTextColor,
   cell,
   currentState,
+  isFirstRowIsNewlyAddedRow,
 }) {
   const updateCellValue = useRef();
   const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
@@ -100,7 +101,10 @@ export default function GenerateEachCellValue({
       }}
       className="w-100 h-100"
     >
-      {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells ? (
+      {!isFirstRowIsNewlyAddedRow &&
+      !isColumnTypeAction &&
+      columnTypeAllowToRenderMarkElement.includes(columnType) &&
+      showHighlightedCells ? (
         <div className="d-flex justify-content-center flex-column w-100 h-100">
           <div
             style={{ color: cellTextColor }}
