@@ -175,6 +175,10 @@ class EditorComponent extends React.Component {
     document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
   }
 
+  onVersionDelete = () => {
+    this.fetchApp(this.props.params.pageHandle);
+  };
+
   componentDidMount() {
     this.autoSave();
     this.fetchApps(0);
@@ -1850,6 +1854,7 @@ class EditorComponent extends React.Component {
             handleSlugChange={this.handleSlugChange}
             onVersionRelease={this.onVersionRelease}
             saveEditingVersion={this.saveEditingVersion}
+            onVersionDelete={this.onVersionDelete}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
