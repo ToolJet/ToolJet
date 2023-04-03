@@ -451,13 +451,6 @@ class HomePageComponent extends React.Component {
   };
 
   showTemplateLibraryModal = () => {
-    posthog.capture('click_import_from_template', {
-      user_id:
-        authenticationService?.currentUserValue?.id || authenticationService?.currentSessionValue?.current_user?.id,
-      workspace_id:
-        authenticationService?.currentUserValue?.organization_id ||
-        authenticationService?.currentSessionValue?.current_organization_id,
-    });
     appService.getLicenseTerms().then(() => this.setState({ showTemplateLibraryModal: true }));
   };
   hideTemplateLibraryModal = () => {
@@ -620,7 +613,20 @@ class HomePageComponent extends React.Component {
                     </Button>
                     <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
                     <Dropdown.Menu className="import-lg-position">
-                      <Dropdown.Item onClick={this.showTemplateLibraryModal} data-cy="choose-from-template-button">
+                      <Dropdown.Item
+                        onClick={() => {
+                          posthog.capture('click_import_from_template', {
+                            user_id:
+                              authenticationService?.currentUserValue?.id ||
+                              authenticationService?.currentSessionValue?.current_user?.id,
+                            workspace_id:
+                              authenticationService?.currentUserValue?.organization_id ||
+                              authenticationService?.currentSessionValue?.current_organization_id,
+                          });
+                          this.showTemplateLibraryModal();
+                        }}
+                        data-cy="choose-from-template-button"
+                      >
                         {this.props.t('homePage.header.chooseFromTemplate', 'Choose from template')}
                       </Dropdown.Item>
                       <label

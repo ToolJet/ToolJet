@@ -4,8 +4,9 @@ import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import TemplateLibraryModal from './TemplateLibraryModal/';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { libraryAppService } from '@/_services';
+import { libraryAppService, authenticationService } from '@/_services';
 import EmptyIllustration from '@assets/images/no-apps.svg';
+import posthog from 'posthog-js';
 
 export const BlankPage = function BlankPage({
   createApp,
@@ -78,7 +79,17 @@ export const BlankPage = function BlankPage({
                   <div className="row mt-4">
                     <div className="col">
                       <a
-                        onClick={createApp}
+                        onClick={() => {
+                          posthog.capture('click_new_app_from_scratch', {
+                            user_id:
+                              authenticationService?.currentUserValue?.id ||
+                              authenticationService?.currentSessionValue?.current_user?.id,
+                            workspace_id:
+                              authenticationService?.currentUserValue?.organization_id ||
+                              authenticationService?.currentSessionValue?.current_organization_id,
+                          });
+                          createApp();
+                        }}
                         className={`btn btn-primary ${creatingApp ? 'btn-loading' : ''}`}
                         data-cy="create-new-application"
                       >
@@ -131,6 +142,16 @@ export const BlankPage = function BlankPage({
                             ref={fileInput}
                             style={{ display: 'none' }}
                             data-cy="import-option-input"
+                            onClick={() => {
+                              posthog.capture('click_import_an_application_button', {
+                                user_id:
+                                  authenticationService?.currentUserValue?.id ||
+                                  authenticationService?.currentSessionValue?.current_user?.id,
+                                workspace_id:
+                                  authenticationService?.currentUserValue?.organization_id ||
+                                  authenticationService?.currentSessionValue?.current_organization_id,
+                              });
+                            }}
                           />
                         </label>
                       </a>
@@ -147,7 +168,22 @@ export const BlankPage = function BlankPage({
               <div className="row" data-cy="app-template-row">
                 {staticTemplates.map(({ id, name }) => {
                   return (
-                    <div key={id} className="col-4" onClick={() => deployApp(id)}>
+                    <div
+                      key={id}
+                      className="col-4"
+                      onClick={() => {
+                        posthog.capture('create_application_from_template_card', {
+                          user_id:
+                            authenticationService?.currentUserValue?.id ||
+                            authenticationService?.currentSessionValue?.current_user?.id,
+                          workspace_id:
+                            authenticationService?.currentUserValue?.organization_id ||
+                            authenticationService?.currentSessionValue?.current_organization_id,
+                          template_name: name,
+                        });
+                        deployApp(id);
+                      }}
+                    >
                       <div
                         className="card cursor-pointer"
                         data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-card`}
@@ -173,7 +209,17 @@ export const BlankPage = function BlankPage({
               <div className="m-auto text-center mt-4">
                 <span
                   className="btn btn-link text-decoration-none"
-                  onClick={viewTemplateLibraryModal}
+                  onClick={() => {
+                    posthog.capture('click_see_all_templates_button', {
+                      user_id:
+                        authenticationService?.currentUserValue?.id ||
+                        authenticationService?.currentSessionValue?.current_user?.id,
+                      workspace_id:
+                        authenticationService?.currentUserValue?.organization_id ||
+                        authenticationService?.currentSessionValue?.current_organization_id,
+                    });
+                    viewTemplateLibraryModal();
+                  }}
                   data-cy="see-all-apps-template-buton"
                 >
                   See all templates
