@@ -55,10 +55,9 @@ export default function generateColumnsData({
     }
 
     const width = columnSize || defaultColumn.width;
-
     return {
       id: column.id,
-      Header: column.name,
+      Header: resolveReferences(column.name, currentState) ?? '',
       accessor: column.key || column.name,
       filter: customFilter,
       width: width,
@@ -76,7 +75,8 @@ export default function generateColumnsData({
       customRule: column?.customRule,
       Cell: function ({ cell, isEditable }) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
-        let cellValue = rowChangeSet ? rowChangeSet[column.name] ?? cell.value : cell.value;
+        let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
+
         const rowData = tableData[cell.row.index];
         if (
           cell.row.index === 0 &&

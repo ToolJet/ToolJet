@@ -181,7 +181,7 @@ class DataSourceManagerComponent extends React.Component {
               this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceSaved', 'Datasource Saved'),
               { position: 'top-center' }
             );
-            this.props.dataSourcesChanged();
+            this.props.dataSourcesChanged(false, name);
             this.props.globalDataSourcesChanged();
           })
           .catch(({ error }) => {
@@ -200,7 +200,7 @@ class DataSourceManagerComponent extends React.Component {
               this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
               { position: 'top-center' }
             );
-            this.props.dataSourcesChanged();
+            this.props.dataSourcesChanged(false, name);
             this.props.globalDataSourcesChanged();
           })
           .catch(({ error }) => {
