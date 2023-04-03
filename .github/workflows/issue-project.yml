@@ -1,0 +1,28 @@
+name: Add issue to GitHub project on roadmap label
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  add_issue_to_project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if label is roadmap
+        run: |
+          if [ "${{ github.event.label.name }}" != "roadmap" ]; then
+            echo "Label is not roadmap, exiting..."
+            exit 0
+          fi
+      - name: Add issue to GitHub project
+        uses: peter-evans/create-issue-from-file@v2
+        with:
+          title: ${{ github.event.issue.title }}
+          body: ${{ github.event.issue.body }}
+          labels: ${{ github.event.issue.labels }}
+          project-name: testing-project
+          column-name: To do
+          assignees: ${{ github.event.issue.assignees }}
+          milestone: ${{ github.event.issue.milestone }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
