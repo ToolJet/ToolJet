@@ -82,6 +82,15 @@ export class WorkflowNodeConsumer {
           void this.workflowExecutionService.completeNodeExecution(workflowExecutionNode, JSON.stringify(result));
           void this.workflowExecutionService.enqueueForwardNodes(workflowExecutionNode, newState, userId);
         } catch (exception) {
+          const result = { status: 'failed' };
+
+          const newState = {
+            ...state,
+            [query.name]: result,
+          };
+
+          void this.workflowExecutionService.completeNodeExecution(workflowExecutionNode, JSON.stringify(result));
+          void this.workflowExecutionService.enqueueForwardNodes(workflowExecutionNode, newState, userId);
           console.log({ exception });
         }
 
