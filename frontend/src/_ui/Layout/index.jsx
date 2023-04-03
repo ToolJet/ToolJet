@@ -12,7 +12,7 @@ import { getPrivateRoute } from '../../_helpers/routes';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
-  const currentUserValue = authenticationService.currentUserValue;
+  const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
   const marketplaceEnabled = config.ENABLE_MARKETPLACE_FEATURE === 'true';
 
