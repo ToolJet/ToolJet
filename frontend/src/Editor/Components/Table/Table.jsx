@@ -331,6 +331,7 @@ export function Table({
 
   function handleChangesSaved() {
     let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
+    let setExposedVarObj = { dataUpdates: {}, changeSet: {} };
     let clonedTableData = _.isEmpty(updatedDataReference.current)
       ? _.cloneDeep(tableData)
       : _.cloneDeep(updatedDataReference.current);
@@ -341,24 +342,13 @@ export function Table({
       updatedDataReference.current = clonedTableData;
     }
     if (!_.isEmpty(tableDetails?.newRowAddedChangeSet)) {
-      Object.keys(tableDetails?.newRowAddedChangeSet).forEach((key) => {
-        mergeToTableDetailsObj.newRowDataUpdate = [];
-        mergeToTableDetailsObj.newRowAddedChangeSet = {};
-        const clonedChangeSet = key;
-        delete clonedChangeSet.isAddingNewRow;
-      });
+      isAddingNewRowRef.current = false;
+      mergeToTableDetailsObj.newRowDataUpdate = [];
+      mergeToTableDetailsObj.newRowAddedChangeSet = {};
+      setExposedVarObj.newRowAddedChangeSet = {};
+      setExposedVarObj.newRowDataUpdate = [];
     }
-    setExposedVariables({
-      changeSet: {},
-      dataUpdates: [],
-      newRowDataUpdate: [],
-      newRowAddedChangeSet: {},
-    }).then(() => {
-      if (!_.isEmpty(changeSet)) onEvent('onBulkUpdate', { component });
-      if (isAddingNewRowRef.current) {
-        isAddingNewRowRef.current = false;
-        onEvent('onNewRowAdded', { component });
-      }
+    setExposedVariables(setExposedVarObj).then(() => {
       mergeToTableDetails(mergeToTableDetailsObj);
     });
   }
@@ -374,8 +364,7 @@ export function Table({
       return accumulator;
     }, {});
     newRow.isAddingNewRow = true;
-
-    const { newRowAddedChangeSet: updatedNewRowAddedChangeSet, updatedData } =
+    const { newRowAddedChangeSet: updatedNewRowAddedChangeSetTableDetails, updatedData } =
       utilityToUpdateNewRowAddedChangeSetToTableDetails(
         pageIndex,
         clonedTableData,
@@ -383,12 +372,27 @@ export function Table({
         newRow,
         rowsPerPage
       );
+    const updatedNewRowADdedChangeSetExposedVar = Object.keys(updatedNewRowAddedChangeSetTableDetails).reduce(
+      (accumulator, key) => {
+        const data = updatedNewRowAddedChangeSetTableDetails[key];
+        if (data?.isAddingNewRow) {
+          delete data.isAddingNewRow;
+        }
+        accumulator[key] = data;
+        return accumulator;
+      },
+      {}
+    );
     updatedDataReference.current = updatedData;
-    mergeToTableDetails({ newRowAddedChangeSet: updatedNewRowAddedChangeSet, newRowDataUpdate: updatedData });
-    return setExposedVariables({
-      newRowAddedChangeSet: updatedNewRowAddedChangeSet,
+    setExposedVariables({
+      newRowAddedChangeSet: updatedNewRowADdedChangeSetExposedVar,
       updatedData: updatedData,
-      newRowDataUpdate: updatedNewRowAddedChangeSet,
+      newRowDataUpdate: updatedNewRowADdedChangeSetExposedVar,
+    }).then(() => {
+      mergeToTableDetails({
+        newRowAddedChangeSet: updatedNewRowAddedChangeSetTableDetails,
+        newRowDataUpdate: updatedData,
+      });
     });
   }
 
@@ -763,13 +767,13 @@ export function Table({
     });
   };
   useEffect(() => {
-    if (_.isEmpty(changeSet)) {
+    if (_.isEmpty(changeSet) || _.isEmpty(tableDetails?.newRowAddedChangeSet)) {
       setExposedVariable(
         'updatedData',
         _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current
       );
     }
-  }, [JSON.stringify(changeSet)]);
+  }, [JSON.stringify(changeSet), JSON.stringify(tableDetails?.newRowAddedChangeSet)]);
   function downlaodPopover() {
     return (
       <Popover
@@ -839,15 +843,16 @@ export function Table({
               />
             )}
             <div>
-              <span
+              <button
                 className="btn btn-light btn-sm p-1 mx-1"
                 onClick={(e) => {
                   handleAddNewRow(pageIndex);
                 }}
                 data-tip="Add new row"
+                disabled={_.isEmpty(tableDetails.changeSet) ? false : true}
               >
                 <img src="assets/images/icons/plus.svg" width="15" height="15" />
-              </span>
+              </button>
               {showFilterButton && (
                 <>
                   <span
@@ -1190,7 +1195,25 @@ export function Table({
                 <>
                   <button
                     className={`btn btn-primary btn-sm mx-2 ${tableDetails.isSavingChanges ? 'btn-loading' : ''}`}
-                    onClick={() => handleChangesSaved()}
+                    onClick={() => {
+                      if (!_.isEmpty(changeSet) && _.isEmpty(tableDetails.newRowAddedChangeSet)) {
+                        onEvent('onBulkUpdate', { component }).then(() => {
+                          return handleChangesSaved();
+                        });
+                      }
+                      if (_.isEmpty(changeSet) && !_.isEmpty(tableDetails.newRowAddedChangeSet)) {
+                        onEvent('onNewRowAdded', { component }).then(() => {
+                          return handleChangesSaved();
+                        });
+                      }
+                      if (!_.isEmpty(changeSet) && !_.isEmpty(tableDetails.newRowAddedChangeSet)) {
+                        onEvent('onBulkUpdate', { component }).then(() => {
+                          onEvent('onNewRowAdded', { component }).then(() => {
+                            return handleChangesSaved();
+                          });
+                        });
+                      }
+                    }}
                     data-cy={`table-button-save-changes`}
                   >
                     Save Changes
