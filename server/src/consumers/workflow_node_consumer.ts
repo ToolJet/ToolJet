@@ -42,59 +42,94 @@ export class WorkflowNodeConsumer {
     private workflowExecutionService: WorkflowExecutionsService
   ) {}
 
+  async getStateAndPreviousNodesExecutionCompletionStatus(node: WorkflowExecutionNode) {
+    const incomingEdges = await this.workflowExecutionEdgeRepository.find({
+      where: {
+        targetWorkflowExecutionNodeId: node.id,
+      },
+      relations: ['sourceWorkflowExecutionNode'],
+    });
+
+    const incomingNodes = await Promise.all(incomingEdges.map((edge) => edge.sourceWorkflowExecutionNode));
+
+    const previousNodesExecutionCompletionStatus = !incomingNodes.map((node) => node.executed).includes(false);
+
+    const state = incomingNodes.reduce((existingState, node) => {
+      const nodeState = node.state ?? {};
+      return { ...existingState, ...nodeState };
+    }, {});
+
+    return { state, previousNodesExecutionCompletionStatus };
+  }
+
   @Process('execute')
   async execute(job: Job<any>) {
-    const { nodeId, userId, state } = job.data;
+    const { nodeId, userId } = job.data;
     const workflowExecutionNode = await this.workflowExecutionNodeRepository.findOne(nodeId);
     const workflowExecution = await this.workflowExecutionRepository.findOne(workflowExecutionNode.workflowExecutionId);
     const appVersion = await this.appVersionsRepository.findOne(workflowExecution.appVersionId);
 
-    switch (workflowExecutionNode.type) {
-      case 'input': {
-        void this.workflowExecutionService.completeNodeExecution(workflowExecutionNode, '');
-        void this.workflowExecutionService.enqueueForwardNodes(workflowExecutionNode, {}, userId);
-        break;
-      }
+    const { state, previousNodesExecutionCompletionStatus } =
+      await this.getStateAndPreviousNodesExecutionCompletionStatus(workflowExecutionNode);
 
-      case 'query': {
-        const queryId = find(appVersion.definition.queries, {
-          idOnDefinition: workflowExecutionNode.definition.idOnDefinition,
-        }).id;
-
-        const query = await this.dataQueriesService.findOne(queryId);
-        const user = await this.userRepository.findOne(userId, { relations: ['organization'] });
-        user.organizationId = user.organization.id;
-        try {
-          void getQueryVariables(query.options, state);
-        } catch (e) {
-          console.log({ e });
+    if (!previousNodesExecutionCompletionStatus) {
+      void this.workflowExecutionService.enqueueNode(workflowExecutionNode, userId);
+    } else {
+      switch (workflowExecutionNode.type) {
+        case 'input': {
+          void this.workflowExecutionService.completeNodeExecution(workflowExecutionNode, '', {});
+          void this.workflowExecutionService.enqueueForwardNodes(workflowExecutionNode, {}, userId);
+          break;
         }
 
-        const options = getQueryVariables(query.options, state);
-        try {
-          const result = await this.dataQueriesService.runQuery(user, query, options);
+        case 'query': {
+          const queryId = find(appVersion.definition.queries, {
+            idOnDefinition: workflowExecutionNode.definition.idOnDefinition,
+          }).id;
 
-          const newState = {
-            ...state,
-            [query.name]: result,
-          };
+          const query = await this.dataQueriesService.findOne(queryId);
+          const user = await this.userRepository.findOne(userId, { relations: ['organization'] });
+          user.organizationId = user.organization.id;
+          try {
+            void getQueryVariables(query.options, state);
+          } catch (e) {
+            console.log({ e });
+          }
 
-          void this.workflowExecutionService.completeNodeExecution(workflowExecutionNode, JSON.stringify(result));
-          void this.workflowExecutionService.enqueueForwardNodes(workflowExecutionNode, newState, userId);
-        } catch (exception) {
-          const result = { status: 'failed' };
+          const options = getQueryVariables(query.options, state);
+          try {
+            const result = await this.dataQueriesService.runQuery(user, query, options);
 
-          const newState = {
-            ...state,
-            [query.name]: result,
-          };
+            const newState = {
+              ...state,
+              [query.name]: result,
+            };
 
-          void this.workflowExecutionService.completeNodeExecution(workflowExecutionNode, JSON.stringify(result));
-          void this.workflowExecutionService.enqueueForwardNodes(workflowExecutionNode, newState, userId);
-          console.log({ exception });
+            void this.workflowExecutionService.completeNodeExecution(
+              workflowExecutionNode,
+              JSON.stringify(result),
+              newState
+            );
+            void this.workflowExecutionService.enqueueForwardNodes(workflowExecutionNode, newState, userId);
+          } catch (exception) {
+            const result = { status: 'failed' };
+
+            const newState = {
+              ...state,
+              [query.name]: result,
+            };
+
+            void this.workflowExecutionService.completeNodeExecution(
+              workflowExecutionNode,
+              JSON.stringify(result),
+              newState
+            );
+            void this.workflowExecutionService.enqueueForwardNodes(workflowExecutionNode, newState, userId);
+            console.log({ exception });
+          }
+
+          break;
         }
-
-        break;
       }
     }
 

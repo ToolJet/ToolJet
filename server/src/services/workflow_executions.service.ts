@@ -98,6 +98,13 @@ export class WorkflowExecutionsService {
     return workflowExecution;
   }
 
+  async enqueueNode(node: WorkflowExecutionNode, userId: string): Promise<any> {
+    return await this.workflowsQueue.add('execute', {
+      userId,
+      nodeId: node.id,
+    });
+  }
+
   async enqueueForwardNodes(
     startNode: WorkflowExecutionNode,
     state: object = {},
@@ -122,9 +129,9 @@ export class WorkflowExecutionsService {
     return [];
   }
 
-  async completeNodeExecution(node: WorkflowExecutionNode, result: any) {
+  async completeNodeExecution(node: WorkflowExecutionNode, result: any, state: object) {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(WorkflowExecutionNode, node.id, { executed: true, result });
+      await manager.update(WorkflowExecutionNode, node.id, { executed: true, result, state });
     });
   }
 

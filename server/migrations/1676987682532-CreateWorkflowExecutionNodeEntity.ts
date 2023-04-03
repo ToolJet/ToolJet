@@ -42,6 +42,11 @@ export class CreateWorkflowExecutionNodeEntity1676987682532 implements Migration
             isNullable: true,
           },
           {
+            name: 'state',
+            type: 'json',
+            isNullable: true,
+          },
+          {
             name: 'workflow_execution_id',
             type: 'uuid',
             isNullable: false,

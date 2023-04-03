@@ -25,6 +25,9 @@ export class WorkflowExecutionNode {
   @Column({ name: 'result' })
   result: string;
 
+  @Column('simple-json', { name: 'state' })
+  state;
+
   @Column({ name: 'id_on_workflow_definition' })
   idOnWorkflowDefinition: string;
 
