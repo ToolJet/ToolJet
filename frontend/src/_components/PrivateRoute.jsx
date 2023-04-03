@@ -26,7 +26,10 @@ export const PrivateRoute = ({ children }) => {
   ) {
     return children;
   } else {
-    if (session?.authentication_status === false && !location.pathname.startsWith('/applications/')) {
+    if (
+      (session?.authentication_status === false || session?.authentication_failed) &&
+      !location.pathname.startsWith('/applications/')
+    ) {
       // not logged in so redirect to login page with the return url'
       return (
         <Navigate

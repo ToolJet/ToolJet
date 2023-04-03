@@ -727,10 +727,13 @@ export const getWorkspaceId = () =>
   getWorkspaceIdFromURL() || authenticationService.currentSessionValue?.current_organization_id;
 
 export const excludeWorkspaceIdFromURL = (pathname) => {
-  const paths = pathname?.split('/').filter((path) => path !== '');
-  paths.shift();
-  const newPath = paths.join('/');
-  return newPath ? `/${newPath}` : '/';
+  if (!pathname.includes('/applications/')) {
+    const paths = pathname?.split('/').filter((path) => path !== '');
+    paths.shift();
+    const newPath = paths.join('/');
+    return newPath ? `/${newPath}` : '/';
+  }
+  return pathname;
 };
 
 export const handleUnSubscription = (subsciption) => {
