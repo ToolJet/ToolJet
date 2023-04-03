@@ -920,6 +920,9 @@ class TableComponent extends React.Component {
     const enabledSort = component.component.definition.properties.enabledSort?.value
       ? resolveReferences(component.component.definition.properties.enabledSort?.value, currentState)
       : true;
+    const useDynamicColumn = component.component.definition.properties.useDynamicColumn?.value
+      ? resolveReferences(component.component.definition.properties.useDynamicColumn?.value, currentState) ?? false
+      : false;
 
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
@@ -946,84 +949,90 @@ class TableComponent extends React.Component {
       title: 'Columns',
       children: (
         <div>
-          <div className="col-auto text-right mb-3">
-            <button
-              data-cy={`button-add-column`}
-              onClick={this.addNewColumn}
-              className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
-            >
-              {this.props.t('widget.Table.addColumn', '+ Add column')}
-            </button>
-          </div>
-          <DragDropContext
-            onDragEnd={(result) => {
-              this.onDragEnd(result);
-            }}
-          >
-            <Droppable droppableId="droppable">
-              {({ innerRef, droppableProps, placeholder }) => (
-                <div className="w-100" {...droppableProps} ref={innerRef}>
-                  {columns.value.map((item, index) => {
-                    const resolvedItemName = resolveReferences(item.name, this.state.currentState);
-                    return (
-                      <Draggable key={item.id} draggableId={item.id} index={index}>
-                        {(provided, snapshot) => (
-                          <div
-                            className={`card p-2 column-sort-row mb-1 ${this.props.darkMode ? '' : 'bg-light'}`}
-                            key={index}
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            style={this.getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
-                          >
-                            <OverlayTrigger
-                              trigger="click"
-                              placement="left"
-                              rootClose={this.state.popOverRootCloseBlockers.length === 0}
-                              overlay={this.columnPopover(item, index)}
-                            >
-                              <div key={resolvedItemName}>
-                                <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
-                                  <div className="col-auto">
-                                    <img
-                                      data-cy={`draggable-handle-column-${resolvedItemName}`}
-                                      src="../../assets/images/icons/dragicon.svg"
-                                    />
-                                  </div>
-                                  <div className="col">
-                                    <div className="text" data-cy={`column-${resolvedItemName}`}>
-                                      {resolvedItemName}
+          {!useDynamicColumn && (
+            <>
+              <div className="col-auto text-right mb-3">
+                <button
+                  data-cy={`button-add-column`}
+                  onClick={this.addNewColumn}
+                  className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
+                >
+                  {this.props.t('widget.Table.addColumn', '+ Add column')}
+                </button>
+              </div>
+              <DragDropContext
+                onDragEnd={(result) => {
+                  this.onDragEnd(result);
+                }}
+              >
+                <Droppable droppableId="droppable">
+                  {({ innerRef, droppableProps, placeholder }) => (
+                    <div className="w-100" {...droppableProps} ref={innerRef}>
+                      {columns.value.map((item, index) => {
+                        const resolvedItemName = resolveReferences(item.name, this.state.currentState);
+                        return (
+                          <Draggable key={item.id} draggableId={item.id} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                className={`card p-2 column-sort-row mb-1 ${this.props.darkMode ? '' : 'bg-light'}`}
+                                key={index}
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                style={this.getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
+                              >
+                                <OverlayTrigger
+                                  trigger="click"
+                                  placement="left"
+                                  rootClose={this.state.popOverRootCloseBlockers.length === 0}
+                                  overlay={this.columnPopover(item, index)}
+                                >
+                                  <div key={resolvedItemName}>
+                                    <div className={`row ${this.props.darkMode ? '' : 'bg-light'}`} role="button">
+                                      <div className="col-auto">
+                                        <img
+                                          data-cy={`draggable-handle-column-${resolvedItemName}`}
+                                          src="../../assets/images/icons/dragicon.svg"
+                                        />
+                                      </div>
+                                      <div className="col">
+                                        <div className="text" data-cy={`column-${resolvedItemName}`}>
+                                          {resolvedItemName}
+                                        </div>
+                                      </div>
+                                      <div className="col-auto">
+                                        <svg
+                                          data-cy={`button-delete-${resolvedItemName}`}
+                                          onClick={() => this.removeColumn(index)}
+                                          width="10"
+                                          height="16"
+                                          viewBox="0 0 10 16"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <path
+                                            d="M0 13.8333C0 14.75 0.75 15.5 1.66667 15.5H8.33333C9.25 15.5 10 14.75 10 13.8333V3.83333H0V13.8333ZM1.66667 5.5H8.33333V13.8333H1.66667V5.5ZM7.91667 1.33333L7.08333 0.5H2.91667L2.08333 1.33333H0V3H10V1.33333H7.91667Z"
+                                            fill="#8092AC"
+                                          />
+                                        </svg>
+                                      </div>
                                     </div>
                                   </div>
-                                  <div className="col-auto">
-                                    <svg
-                                      data-cy={`button-delete-${resolvedItemName}`}
-                                      onClick={() => this.removeColumn(index)}
-                                      width="10"
-                                      height="16"
-                                      viewBox="0 0 10 16"
-                                      fill="none"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                      <path
-                                        d="M0 13.8333C0 14.75 0.75 15.5 1.66667 15.5H8.33333C9.25 15.5 10 14.75 10 13.8333V3.83333H0V13.8333ZM1.66667 5.5H8.33333V13.8333H1.66667V5.5ZM7.91667 1.33333L7.08333 0.5H2.91667L2.08333 1.33333H0V3H10V1.33333H7.91667Z"
-                                        fill="#8092AC"
-                                      />
-                                    </svg>
-                                  </div>
-                                </div>
+                                </OverlayTrigger>
                               </div>
-                            </OverlayTrigger>
-                          </div>
-                        )}
-                      </Draggable>
-                    );
-                  })}
-                  {placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+                            )}
+                          </Draggable>
+                        );
+                      })}
+                      {placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
+            </>
+          )}
+          <div style={{ marginTop: useDynamicColumn ? '0px' : '30px' }}>{renderCustomElement('useDynamicColumn')}</div>
+          {useDynamicColumn && <div>{renderCustomElement('columnData')}</div>}
         </div>
       ),
     });

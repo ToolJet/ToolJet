@@ -211,10 +211,6 @@ export const DraggableBox = function DraggableBox({
           }}
           onMouseLeave={() => onComponentHover?.(false)}
           style={getStyles(isDragging, isSelectedComponent)}
-          onClick={(e) => {
-            e.stopPropagation();
-            setSelectedComponent && setSelectedComponent(id);
-          }}
         >
           <Rnd
             style={{ ...style }}
@@ -248,8 +244,7 @@ export const DraggableBox = function DraggableBox({
               setDragging(false);
               onDragStop(e, id, direction, currentLayout, layoutData);
             }}
-            cancel={`div.table-responsive.jet-data-table, div.calendar-widget, div.text-input, .textarea, .map-widget, .range-slider, .kanban-container`}
-            onDragStart={(e) => e.stopPropagation()}
+            cancel={`div.table-responsive.jet-data-table, div.calendar-widget, div.text-input, .textarea, .map-widget, .range-slider, .kanban-container, div.real-canvas`}
             onResizeStop={(e, direction, ref, d, position) => {
               setResizing(false);
               onResizeStop(id, e, direction, ref, d, position);

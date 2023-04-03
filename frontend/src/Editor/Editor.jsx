@@ -480,21 +480,26 @@ class EditorComponent extends React.Component {
     );
   };
 
-  setAppDefinitionFromVersion = (version) => {
-    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), {
-      skipAutoSave: true,
-      skipYmapUpdate: true,
-      versionChanged: true,
-    });
-    this.setState({
-      editingVersion: version,
-      isSaving: false,
-    });
-
-    this.saveEditingVersion();
-    this.fetchDataSources();
-    this.fetchDataQueries();
-    this.initComponentVersioning();
+  setAppDefinitionFromVersion = (version, shouldWeEditVersion = true) => {
+    if (version?.id !== this.state.editingVersion?.id) {
+      this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), {
+        skipAutoSave: true,
+        skipYmapUpdate: true,
+        versionChanged: true,
+      });
+      this.setState(
+        {
+          editingVersion: version,
+          isSaving: false,
+        },
+        () => {
+          shouldWeEditVersion && this.saveEditingVersion();
+          this.fetchDataSources();
+          this.fetchDataQueries();
+          this.initComponentVersioning();
+        }
+      );
+    }
   };
 
   /**

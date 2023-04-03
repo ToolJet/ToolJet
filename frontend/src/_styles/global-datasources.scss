@@ -83,5 +83,9 @@
                 }
             }
         }
+        .close-btn.dark {
+            filter: none !important;
+            background-color: revert !important;
+        }
     }
 }
