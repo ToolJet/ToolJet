@@ -76,7 +76,12 @@ export class DataSourcesService {
     });
 
     if (!environmentId && dataSource.dataSourceOptions?.length > 1) {
-      throw new NotAcceptableException('Environment id should not be empty');
+      if (dataSource.dataSourceOptions?.length > 1) {
+        const env = await this.appEnvironmentService.get(dataSource.appVersionId, null);
+        environmentId = env?.id;
+      } else {
+        throw new NotAcceptableException('Environment id should not be empty');
+      }
     }
     if (environmentId) {
       dataSource.options = (await this.appEnvironmentService.getOptions(dataSourceId, null, environmentId)).options;
