@@ -8,7 +8,7 @@ import DataSourceFolder from '@assets/images/icons/datasource-folder.svg';
 export const GlobalDataSourcesPage = ({ darkMode }) => {
   const containerRef = useRef(null);
   const [modalProps, setModalProps] = useState({
-    backdrop: true,
+    backdrop: false,
     dialogClassName: 'datasource-edit-modal',
     enforceFocus: false,
   });
@@ -28,10 +28,12 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
   useEffect(() => {
     if (selectedDataSource) {
       setModalProps({ ...modalProps, backdrop: false });
-    } else {
+    }
+
+    if (!isEditing) {
       setModalProps({ ...modalProps, backdrop: true });
     }
-  }, [selectedDataSource]);
+  }, [selectedDataSource, isEditing]);
 
   const handleHideModal = () => {
     if (dataSources?.length) {
@@ -82,7 +84,10 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
             <button
               className="add-datasource-btn btn btn-primary active w-100 mt-3"
               type="button"
-              onClick={handleModalVisibility}
+              onClick={() => {
+                handleModalVisibility();
+                setEditing(false);
+              }}
             >
               Add new datasource
             </button>

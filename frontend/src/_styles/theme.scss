@@ -3929,13 +3929,14 @@ input[type="text"] {
   overflow-y: overlay;
   overflow-x: hidden;
 }
-
 .jet-listview::-webkit-scrollbar-track {
   background: transparent;
+
 }
 
 .jet-listview::-webkit-scrollbar-thumb {
   background: transparent;
+
 }
 
 .code-hinter-wrapper .popup-btn {
@@ -4477,6 +4478,9 @@ input[type="text"] {
 /**
  * Home page modal
  */
+ .home-modal-backdrop {
+  z-index: 9991;
+ }
 .modal-content.home-modal-component {
   border-radius: 8px;
   overflow: hidden;

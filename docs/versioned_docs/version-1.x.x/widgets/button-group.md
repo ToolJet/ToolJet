@@ -41,9 +41,9 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 | Properties  | description | Expected value |
 | ----------- | ----------- | -------------- |
 | label | label is used to set the heading of the button group. | Any **String** value |
-| values |Values for button group items. | **Array** of strings  |
-| labels | It can be used to set the labels of the button group items. |  Array of **strings**|
-| Default  selected | Initial selected values can be set using this. | Array of **strings**  |
+| values |Values for button group items. | **Array** of strings and numbers  |
+| labels | It can be used to set the labels of the button group items. |  **Array** of strings and numbers |
+| Default  selected | Initial selected values can be set using this. | **Array** of strings and numbers  |
 | Enable multiple selection | Toggle this to allow multiple button selection. | Toggle to true/false |
 
 ### General

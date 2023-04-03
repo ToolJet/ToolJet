@@ -258,10 +258,18 @@ export function Page3({ formData, setFormData, setPage, page, setCompleted, isLo
         inputProps={{
           autoFocus: true,
         }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            setIsLoading(true);
+            setCompleted(true);
+          }
+        }}
         value={formData?.phoneNumber}
         inputClass="tj-onboarding-phone-input"
         containerClass="tj-onboarding-phone-input-wrapper"
-        onChange={(phone) => setFormData({ ...formData, phoneNumber: phone })}
+        onChange={(phone) => {
+          setFormData({ ...formData, phoneNumber: phone });
+        }}
         isValid={(inputNumber, country, countries) => {
           return countries.some((country) => {
             return startsWith(inputNumber, country.dialCode) || startsWith(country.dialCode, inputNumber);

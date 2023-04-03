@@ -6,7 +6,6 @@ export const Pagination = function Pagination({ currentPage, count, pageChanged,
   const totalPages = useMemo(() => {
     return Math.floor((count - 1) / itemsPerPage) + 1;
   }, [count, itemsPerPage]);
-
   const getPageLinks = (index) => {
     if (index < 1 || index > totalPages) {
       return;
@@ -22,7 +21,10 @@ export const Pagination = function Pagination({ currentPage, count, pageChanged,
       );
     }
   };
-
+  if (currentPage > totalPages) {
+    currentPage = totalPages;
+    pageChanged(currentPage);
+  }
   function gotoPage(page) {
     pageChanged(page);
   }

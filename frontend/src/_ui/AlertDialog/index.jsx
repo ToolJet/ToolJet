@@ -12,13 +12,15 @@ export default function AlertDialog({ title, size = 'sm', show, closeModal, cust
       })}
       show={show}
       size={size}
-      backdrop={true}
+      backdrop={'static'}
       keyboard={true}
       enforceFocus={false}
       animation={false}
       onEscapeKeyDown={() => closeModal()}
       centered
       data-cy={'modal-component'}
+      style={{ zIndex: 9992 }}
+      backdropClassName="home-modal-backdrop"
     >
       {title && (
         <Modal.Header>

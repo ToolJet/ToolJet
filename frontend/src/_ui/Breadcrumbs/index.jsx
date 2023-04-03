@@ -20,7 +20,7 @@ export const Breadcrumbs = ({ darkMode }) => {
           </div>
         </li>
       )}
-      {breadcrumbs.map(({ breadcrumb, dataCy }) => {
+      {breadcrumbs.map(({ breadcrumb, dataCy, beta }) => {
         return (
           <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
             <p className=" tj-text-xsm ">{breadcrumb}</p>
@@ -28,6 +28,8 @@ export const Breadcrumbs = ({ darkMode }) => {
             <li className="breadcrumb-item font-weight-500">
               <Link to={breadcrumb.key}> {sidebarNav}</Link>
             </li>
+            {beta && <span class="badge bg-color-primary mx-3">beta</span>}
+
           </div>
         );
       })}
@@ -40,4 +42,5 @@ const routes = [
   { path: '/database', breadcrumb: 'Tables', dataCy: 'tables-page-header' },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/global-datasources', breadcrumb: 'Global Datasources' },
+  { path: '/integrations', breadcrumb: 'Integrations / plugins', props: { beta: true } },
 ];

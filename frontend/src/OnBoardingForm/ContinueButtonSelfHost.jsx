@@ -49,11 +49,6 @@ function ContinueButtonSelfHost({
           }
         }
         if (page < 5) setPage((currPage) => currPage + 1);
-        if (page == 5) {
-          setIsLoading(true);
-          setCompleted(true);
-          return;
-        }
       }
     };
     document.addEventListener('keydown', keyDownHandler);
