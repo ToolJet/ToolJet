@@ -83,8 +83,9 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
 
 export function fetchOAuthToken(authUrl, dataSourceId) {
   localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
-  const { current_organization_id } = authenticationService.currentSessionValue;
-  current_organization_id && setCookie('orgIdForOauth', current_organization_id);
+  const currentSessionValue = authenticationService.currentSessionValue;
+  currentSessionValue?.current_organization_id &&
+    setCookie('orgIdForOauth', currentSessionValue?.current_organization_id);
   window.open(authUrl);
 }
 
@@ -810,10 +811,10 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query?.id, true);
     } else if (query.kind === 'tooljetdb') {
-      const { current_organization_id } = authenticationService.currentSessionValue;
+      const currentSessionValue = authenticationService.currentSessionValue;
       queryExecutionPromise = tooljetDbOperations.perform(
         query.options,
-        current_organization_id,
+        currentSessionValue?.current_organization_id,
         _ref.state.currentState
       );
     } else if (query.kind === 'runpy') {
@@ -939,10 +940,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       } else if (query.kind === 'runpy') {
         queryExecutionPromise = executeRunPycode(_self, query.options.code, query, _ref, false, mode);
       } else if (query.kind === 'tooljetdb') {
-        const { current_organization_id } = authenticationService.currentSessionValue;
+        const currentSessionValue = authenticationService.currentSessionValue;
         queryExecutionPromise = tooljetDbOperations.perform(
           query.options,
-          current_organization_id,
+          currentSessionValue?.current_organization_id,
           _self.state.currentState
         );
       } else {

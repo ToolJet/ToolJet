@@ -12,8 +12,10 @@ import { getPrivateRoute } from '../../_helpers/routes';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
-  const { admin } = authenticationService.currentUserValue;
+  const currentUserValue = authenticationService.currentUserValue;
+  const admin = currentUserValue?.admin;
   const marketplaceEnabled = config.ENABLE_MARKETPLACE_FEATURE === 'true';
+
   return (
     <div className="row m-auto">
       <div className="col-auto p-0">
