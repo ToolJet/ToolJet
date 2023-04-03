@@ -71,7 +71,7 @@ describe('oauth controller', () => {
             json: () => {
               return {
                 name: 'SSO UserGit',
-                email: 'ssoUserGit@tooljet.io',
+                email: 'ssousergit@tooljet.io',
               };
             },
           };
@@ -108,7 +108,7 @@ describe('oauth controller', () => {
             json: () => {
               return {
                 name: 'SSO UserGit',
-                email: 'ssoUserGit@tooljet.io',
+                email: 'ssousergit@tooljet.io',
               };
             },
           };

@@ -52,7 +52,7 @@ describe('oauth controller', () => {
         googleVerifyMock.mockImplementation(() => ({
           getPayload: () => ({
             sub: 'someSSOId',
-            email: 'ssoUser@tooljet.io',
+            email: 'ssouser@tooljet.io',
             name: 'SSO User',
             hd: 'tooljet.io',
           }),
@@ -77,7 +77,7 @@ describe('oauth controller', () => {
         googleVerifyMock.mockImplementation(() => ({
           getPayload: () => ({
             sub: 'someSSOId',
-            email: 'ssoUser@tooljet.io',
+            email: 'ssouser@tooljet.io',
             name: 'SSO User',
             hd: 'tooljet.io',
           }),
@@ -109,7 +109,7 @@ describe('oauth controller', () => {
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
               sub: 'someSSOId',
-              email: 'ssoUser@tooljet.io',
+              email: 'ssouser@tooljet.io',
               name: 'SSO User',
               hd: 'tooljet.io',
             }),
@@ -149,7 +149,7 @@ describe('oauth controller', () => {
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
               sub: 'someSSOId',
-              email: 'ssoUser@tooljet.io',
+              email: 'ssouser@tooljet.io',
               name: 'SSO User',
               hd: 'tooljet.io',
             }),
@@ -175,7 +175,7 @@ describe('oauth controller', () => {
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
               sub: 'someSSOId',
-              email: 'ssoUser@tooljet.io',
+              email: 'ssouser@tooljet.io',
               name: 'SSO User',
               hd: 'tooljet.io',
             }),
