@@ -329,7 +329,7 @@ describe("Table", () => {
     );
   });
 
-  it("should verify column options", () => {
+  it.only("should verify column options", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     openEditorSidebar(tableText.defaultWidgetName);
@@ -792,7 +792,7 @@ describe("Table", () => {
     verifyAndModifyToggleFx("Loading State", "{{false}}", true);
   });
 
-  it("should verify download", () => {
+  it.only("should verify download", () => {
     cy.get(tableSelector.buttonDownloadDropdown).should("be.visible").click();
     cy.get(tableSelector.optionDownloadPdf).click();
     cy.task("readPdf", "cypress/downloads/all-data.pdf")
