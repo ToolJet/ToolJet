@@ -205,7 +205,7 @@ describe("Date Picker widget", () => {
       .should("have.css", "border-radius", "20px");
   });
 
-  it.only("should verify widget in preview", () => {
+  it("should verify widget in preview", () => {
     const data = {};
     data.alertMessage = fake.randomSentence;
     data.widgetName = fake.widgetName;

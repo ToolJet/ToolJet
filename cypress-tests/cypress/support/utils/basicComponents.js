@@ -22,7 +22,7 @@ export const verifyComponentWithOutLabel=(component, defaultName, fakeName, appN
   cy.get(`[data-cy="draggable-widget-${defaultName}"]`).click({ force: true });
   verifyComponent(defaultName);
 
-  cy.resizeWidget(defaultName, 850, 600);
+  cy.resizeWidget(defaultName, 650, 400);
 
   openEditorSidebar(defaultName);
   editAndVerifyWidgetName(fakeName, properties);
