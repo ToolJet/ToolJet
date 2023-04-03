@@ -34,7 +34,7 @@ function SwitchWorkspaceModal({ organizations, switchOrganization, ...props }) {
         <p>
           {t(
             'globals.workspace-modal.wrong-link-desc',
-            'You’ve entered a incorrect workspace link. Select an active workspace to continue this session'
+            'You’ve entered an incorrect workspace link. Select an active workspace to continue this session'
           )}
         </p>
       </Modal.Header>
