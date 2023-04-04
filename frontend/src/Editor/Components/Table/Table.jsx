@@ -173,8 +173,6 @@ export function Table({
     hideColumnSelectorButton,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
-  const isAddingNewRowRef = useRef(false);
-  const updatedDataReference = useRef([]);
   const deferredDataFromProps = useDeferredValue(properties.data);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
@@ -242,9 +240,9 @@ export function Table({
   function handleCellValueChange(index, key, value, rowData) {
     const changeSet = tableDetails.changeSet;
     const dataUpdates = tableDetails.dataUpdates || [];
-    const clonedTableData = _.isEmpty(updatedDataReference.current)
+    const clonedTableData = _.isEmpty(tableDetails.updatedDataReference)
       ? _.cloneDeep(tableData)
-      : _.cloneDeep(updatedDataReference.current);
+      : _.cloneDeep(tableDetails.updatedDataReference);
 
     let obj = changeSet ? changeSet[index] || {} : {};
     obj = _.set(obj, key, value);
@@ -268,7 +266,6 @@ export function Table({
         ..._.merge(clonedTableData[key], newChangeset[key]),
       };
     });
-    // updatedDataReference.current = clonedTableData;
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
 
@@ -332,21 +329,19 @@ export function Table({
   function handleChangesSaved() {
     let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
     let setExposedVarObj = { dataUpdates: {}, changeSet: {} };
-    let clonedTableData = _.isEmpty(updatedDataReference.current)
+    let clonedTableData = _.isEmpty(tableDetails.updatedDataReference)
       ? _.cloneDeep(tableData)
-      : _.cloneDeep(updatedDataReference.current);
+      : _.cloneDeep(tableDetails.updatedDataReference);
     if (!_.isEmpty(changeSet)) {
       Object.keys(changeSet).forEach((key) => {
         clonedTableData[key] = { ..._.merge(clonedTableData[key], changeSet[key]) };
       });
-      updatedDataReference.current = clonedTableData;
+      mergeToTableDetails({ updatedDataReference: clonedTableData });
     }
     if (!_.isEmpty(tableDetails?.newRowAddedChangeSet)) {
-      isAddingNewRowRef.current = false;
-      mergeToTableDetailsObj.newRowDataUpdate = [];
+      mergeToTableDetailsObj.isAddingNewRowRef = false;
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
       setExposedVarObj.newRowAddedChangeSet = {};
-      setExposedVarObj.newRowDataUpdate = [];
     }
     setExposedVariables(setExposedVarObj).then(() => {
       mergeToTableDetails(mergeToTableDetailsObj);
@@ -354,11 +349,10 @@ export function Table({
   }
 
   function handleAddNewRow(pageIndex) {
-    if (!isAddingNewRowRef.current) isAddingNewRowRef.current = true;
     let newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
-    const clonedTableData = _.isEmpty(updatedDataReference.current)
+    const clonedTableData = _.isEmpty(tableDetails.updatedDataReference)
       ? _.cloneDeep(tableData)
-      : _.cloneDeep(updatedDataReference.current);
+      : _.cloneDeep(tableDetails.updatedDataReference);
     const newRow = Object.keys(tableData[0]).reduce((accumulator, currentValue) => {
       accumulator[currentValue] = '';
       return accumulator;
@@ -372,7 +366,7 @@ export function Table({
         newRow,
         rowsPerPage
       );
-    const updatedNewRowADdedChangeSetExposedVar = Object.keys(updatedNewRowAddedChangeSetTableDetails).reduce(
+    const updatedNewRowAddedChangeSetExposedVar = Object.keys(updatedNewRowAddedChangeSetTableDetails).reduce(
       (accumulator, key) => {
         const data = updatedNewRowAddedChangeSetTableDetails[key];
         if (data?.isAddingNewRow) {
@@ -383,15 +377,14 @@ export function Table({
       },
       {}
     );
-    updatedDataReference.current = updatedData;
     setExposedVariables({
-      newRowAddedChangeSet: updatedNewRowADdedChangeSetExposedVar,
+      newRowAddedChangeSet: updatedNewRowAddedChangeSetExposedVar,
       updatedData: updatedData,
-      newRowDataUpdate: updatedNewRowADdedChangeSetExposedVar,
     }).then(() => {
       mergeToTableDetails({
         newRowAddedChangeSet: updatedNewRowAddedChangeSetTableDetails,
-        newRowDataUpdate: updatedData,
+        isAddingNewRowRef: true,
+        updatedDataReference: updatedData,
       });
     });
   }
@@ -400,18 +393,16 @@ export function Table({
     let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
     let exposedVariablesObj = { changeSet: {}, dataUpdates: [] };
     const newRowAddedChangeSet = tableDetails?.newRowAddedChangeSet || {};
-    if (isAddingNewRowRef.current && newRowAddedChangeSet) {
+    if (tableDetails.isAddingNewRowRef && newRowAddedChangeSet) {
       const updatedData = discardChangesUtilityForNewlyAddedRow(
-        updatedDataReference.current,
+        tableDetails.updatedDataReference,
         tableDetails.newRowAddedChangeSet
       );
       exposedVariablesObj.updatedData = updatedData;
-      exposedVariablesObj.newRowDataUpdate = [];
       exposedVariablesObj.newRowAddedChangeSet = {};
-      mergeToTableDetailsObj.newRowDataUpdate = [];
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
-      updatedDataReference.current = updatedData;
-      isAddingNewRowRef.current = false;
+      mergeToTableDetailsObj.updatedDataReference = updatedData;
+      mergeToTableDetailsObj.isAddingNewRowRef = false;
     }
     setExposedVariables(exposedVariablesObj).then(() => {
       mergeToTableDetails(mergeToTableDetailsObj);
@@ -499,23 +490,25 @@ export function Table({
   );
 
   const data = useMemo(() => {
-    if (!_.isEmpty(updatedDataReference.current) && !_.isEqual(properties.data, deferredDataFromProps)) {
-      updatedDataReference.current = [];
-      let tableDetailsAndExposedVarObject = {};
+    if (!_.isEmpty(tableDetails.updatedDataReference) && !_.isEqual(properties.data, deferredDataFromProps)) {
+      let exposedVarObject = {};
+      let tableDetailsPayload = { updatedDataReference: [] };
       if (!_.isEmpty(tableDetails.changeSet)) {
-        tableDetailsAndExposedVarObject.changeSet = {};
-        tableDetailsAndExposedVarObject.dataUpdates = [];
+        exposedVarObject.changeSet = {};
+        exposedVarObject.dataUpdates = [];
+        tableDetailsPayload.changeSet = {};
+        tableDetailsPayload.dataUpdates = [];
       }
       if (!_.isEmpty(tableDetails.newRowAddedChangeSet)) {
-        isAddingNewRowRef.current = false;
-        tableDetailsAndExposedVarObject.newRowAddedChangeSet = {};
-        tableDetailsAndExposedVarObject.newRowDataUpdate = {};
+        tableDetailsPayload.isAddingNewRowRef = false;
+        exposedVarObject.newRowAddedChangeSet = {};
+        tableDetailsPayload.newRowAddedChangeSet = {};
       }
-      setExposedVariables({ ...tableDetailsAndExposedVarObject, updatedData: [] }).then(() => {
-        mergeToTableDetails(tableDetailsAndExposedVarObject);
+      setExposedVariables({ ...exposedVarObject, updatedData: [] }).then(() => {
+        mergeToTableDetails(tableDetailsPayload);
       });
     }
-    return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
+    return _.isEmpty(tableDetails.updatedDataReference) ? tableData : tableDetails.updatedDataReference;
   }, [
     tableData.length,
     tableDetails.changeSet,
@@ -688,23 +681,25 @@ export function Table({
     async function () {
       let exposedVariablesObj = { changeSet: {}, dataUpdates: [] };
       let mergeToTableDetailsObj = { dataUpdates: {}, changeSet: {} };
-      if (isAddingNewRowRef.current && Object.keys(tableDetails?.newRowAddedChangeSet || {}).length > 0) {
-        const updatedDataArray = _.cloneDeep(updatedDataReference?.current || []);
+      if (tableDetails.isAddingNewRowRef && Object.keys(tableDetails?.newRowAddedChangeSet || {}).length > 0) {
+        const updatedDataArray = _.cloneDeep(tableDetails.updatedDataReference || []);
         const updatedData = discardChangesUtilityForNewlyAddedRow(updatedDataArray, tableDetails.newRowAddedChangeSet);
         exposedVariablesObj.updatedData = updatedData;
-        exposedVariablesObj.newRowDataUpdate = [];
         exposedVariablesObj.newRowAddedChangeSet = {};
-        mergeToTableDetailsObj.newRowDataUpdate = [];
         mergeToTableDetailsObj.newRowAddedChangeSet = {};
-        isAddingNewRowRef.current = false;
-        updatedDataReference.current = updatedData;
+        mergeToTableDetailsObj.isAddingNewRowRef = false;
+        mergeToTableDetailsObj.updatedDataReference = updatedData;
       }
       setExposedVariables(exposedVariablesObj).then(() => {
         mergeToTableDetails(mergeToTableDetailsObj);
         fireEvent('onCancelChanges');
       });
     },
-    [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet), JSON.stringify(tableDetails.newRowDataUpdate)]
+    [
+      JSON.stringify(tableData),
+      JSON.stringify(tableDetails.changeSet),
+      JSON.stringify(tableDetails.newRowAddedChangeSet),
+    ]
   );
 
   useEffect(() => {
@@ -722,10 +717,10 @@ export function Table({
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
 
   useEffect(() => {
-    const currentPageData = setExposedVariableUtility(page, isAddingNewRowRef.current);
+    const currentPageData = setExposedVariableUtility(page, tableDetails.isAddingNewRowRef);
     onComponentOptionsChanged(component, [
       ['currentPageData', currentPageData],
-      ['currentData', isAddingNewRowRef.current ? tableData : data],
+      ['currentData', tableDetails.isAddingNewRowRef ? tableData : data],
       ['selectedRow', []],
       ['selectedRowId', null],
     ]);
@@ -756,7 +751,7 @@ export function Table({
   }, [rowDetails]);
 
   useEffect(() => {
-    const globalFilterRowsArrayToMap = setExposedVariableUtility(globalFilteredRows, isAddingNewRowRef.current);
+    const globalFilterRowsArrayToMap = setExposedVariableUtility(globalFilteredRows, tableDetails.isAddingNewRowRef);
     setExposedVariable('filteredData', globalFilterRowsArrayToMap);
   }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
 
@@ -770,7 +765,7 @@ export function Table({
     if (_.isEmpty(changeSet) || _.isEmpty(tableDetails?.newRowAddedChangeSet)) {
       setExposedVariable(
         'updatedData',
-        _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current
+        _.isEmpty(tableDetails.updatedDataReference) ? tableData : tableDetails.updatedDataReference
       );
     }
   }, [JSON.stringify(changeSet), JSON.stringify(tableDetails?.newRowAddedChangeSet)]);
@@ -1191,7 +1186,7 @@ export function Table({
             </div>
             <div className="col d-flex justify-content-end">
               {showBulkUpdateActions &&
-              (Object.keys(tableDetails.changeSet || {}).length > 0 || isAddingNewRowRef.current) ? (
+              (Object.keys(tableDetails.changeSet || {}).length > 0 || tableDetails.isAddingNewRowRef) ? (
                 <>
                   <button
                     className={`btn btn-primary btn-sm mx-2 ${tableDetails.isSavingChanges ? 'btn-loading' : ''}`}
