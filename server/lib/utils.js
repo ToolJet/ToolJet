@@ -653,3 +653,35 @@ export const getuserName = (formData) => {
     return `${nameArray?.[0][0]}${nameArray?.[1] != undefined && nameArray?.[1] != '' ? nameArray?.[1][0] : ''} `;
   return '';
 };
+
+export function getQueryVariables(options, state) {
+  const queryVariables = {};
+  const optionsType = typeof options;
+  switch (optionsType) {
+    case 'string': {
+      options = options.replace(/\n/g, ' ');
+      const dynamicVariables = getDynamicVariables(options) || [];
+      dynamicVariables.forEach((variable) => {
+        queryVariables[variable] = resolveReferences(variable, state);
+      });
+      break;
+    }
+
+    case 'object': {
+      if (Array.isArray(options)) {
+        options.forEach((element) => {
+          _.merge(queryVariables, getQueryVariables(element, state));
+        });
+      } else {
+        Object.keys(options || {}).forEach((key) => {
+          _.merge(queryVariables, getQueryVariables(options[key], state));
+        });
+      }
+      break;
+    }
+
+    default:
+      break;
+  }
+  return queryVariables;
+}

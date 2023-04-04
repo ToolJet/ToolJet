@@ -12,8 +12,7 @@ import { DataQueriesService } from '@services/data_queries.service';
 import { User } from 'src/entities/user.entity';
 import { DataQuery } from 'src/entities/data_query.entity';
 import { WorkflowExecutionsService } from '@services/workflow_executions.service';
-import { merge } from 'lodash';
-import { getDynamicVariables, resolveReferences } from '../../lib/utils';
+import { getQueryVariables } from '../../lib/utils';
 
 @Injectable()
 @Processor('workflows')
@@ -135,36 +134,4 @@ export class WorkflowNodeConsumer {
 
     return {};
   }
-}
-
-export function getQueryVariables(options, state) {
-  const queryVariables = {};
-  const optionsType = typeof options;
-  switch (optionsType) {
-    case 'string': {
-      options = options.replace(/\n/g, ' ');
-      const dynamicVariables = getDynamicVariables(options) || [];
-      dynamicVariables.forEach((variable) => {
-        queryVariables[variable] = resolveReferences(variable, state);
-      });
-      break;
-    }
-
-    case 'object': {
-      if (Array.isArray(options)) {
-        options.forEach((element) => {
-          merge(queryVariables, getQueryVariables(element, state));
-        });
-      } else {
-        Object.keys(options || {}).forEach((key) => {
-          merge(queryVariables, getQueryVariables(options[key], state));
-        });
-      }
-      break;
-    }
-
-    default:
-      break;
-  }
-  return queryVariables;
 }
