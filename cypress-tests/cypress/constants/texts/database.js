@@ -16,6 +16,7 @@ export const databaseText = {
   idColumnHeader: "id",
   noRecordsText: "You don't have any records yet.",
   deleteRecordButton: "Delete records",
+  idColumnName: "id",
 
   tableCreatedSuccessfullyToast: (tableName) => {
     return `${tableName} created successfully`;
@@ -31,6 +32,9 @@ export const databaseText = {
   },
   deleteRowToast: (tableName, rowNumber) => {
     return `Deleted ${rowNumber} rows from table "${tableName}"`
+  },
+  invalidErrorText: (value) => {
+    return `invalid input syntax for type integer: "${value}"`
   }
 };
 
@@ -72,4 +76,8 @@ export const sortText = {
     ascending: "Ascending",
     descending: "Descending"
   }
+}
+export const editRowText = {
+  editRowHeader: "Edit a row",
+  selectRowToEditText: "Select a row to edit"
 }
