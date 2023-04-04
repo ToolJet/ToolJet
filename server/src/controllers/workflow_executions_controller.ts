@@ -9,7 +9,9 @@ export class WorkflowExecutionsController {
 
   @Post()
   async create(@Body() createWorkflowExecutionDto: CreateWorkflowExecutionDto) {
-    return decamelizeKeys(await this.workflowExecutionsService.create(createWorkflowExecutionDto));
+    const workflowExecution = await this.workflowExecutionsService.create(createWorkflowExecutionDto);
+    await this.workflowExecutionsService.execute(workflowExecution);
+    return decamelizeKeys(workflowExecution);
   }
 
   @Get(':id')

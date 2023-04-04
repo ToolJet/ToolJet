@@ -36,7 +36,6 @@ import { AppEnvironmentService } from '@services/app_environments.service';
 import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
 import { WorkflowExecutionNode } from 'src/entities/workflow_execution_node.entity';
 import { WorkflowExecutionsService } from '@services/workflow_executions.service';
-import { WorkflowNodeConsumer } from 'src/consumers/workflow_node_consumer';
 import { WorkflowExecutionEdge } from 'src/entities/workflow_execution_edge.entity';
 import { BullModule } from '@nestjs/bull';
 import { DataQueriesService } from '@services/data_queries.service';
@@ -85,7 +84,6 @@ import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.en
     PluginsHelper,
     AppEnvironmentService,
     WorkflowExecutionsService,
-    WorkflowNodeConsumer,
     DataQueriesService,
   ],
   controllers: [AppsController, AppUsersController, AppsImportExportController, WorkflowExecutionsController],

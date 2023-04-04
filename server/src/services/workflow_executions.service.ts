@@ -8,8 +8,9 @@ import { WorkflowExecutionEdge } from 'src/entities/workflow_execution_edge.enti
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager, Repository } from 'typeorm';
 import { find } from 'lodash';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
+import { DataQueriesService } from './data_queries.service';
+import { User } from 'src/entities/user.entity';
+import { getQueryVariables } from 'lib/utils';
 
 @Injectable()
 export class WorkflowExecutionsService {
@@ -26,8 +27,10 @@ export class WorkflowExecutionsService {
     @InjectRepository(WorkflowExecutionNode)
     private workflowExecutionNodeRepository: Repository<WorkflowExecutionNode>,
 
-    @InjectQueue('workflows')
-    private workflowsQueue: Queue
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+
+    private dataQueriesService: DataQueriesService
   ) {}
 
   async create(createWorkflowExecutionDto: CreateWorkflowExecutionDto): Promise<WorkflowExecution> {
@@ -66,12 +69,13 @@ export class WorkflowExecutionsService {
 
       await manager.update(WorkflowExecution, workflowExecution.id, { startNode });
 
+      const edges = [];
       for (const edgeData of definition.edges) {
         // const sourceNode = find(nodes, (node) => node.idOnWorkflowDefinition === edgeData.source);
         // const targetNode = find(nodes, (node) => node.idOnWorkflowDefinition === edgeData.target);
 
         console.log({ nodes, edges: definition.edges });
-        await manager.save(
+        const edge = await manager.save(
           WorkflowExecutionEdge,
           manager.create(WorkflowExecutionEdge, {
             workflowExecutionId: workflowExecution.id,
@@ -82,57 +86,14 @@ export class WorkflowExecutionsService {
             updatedAt: new Date(),
           })
         );
+
+        edges.push(edge);
       }
 
       return workflowExecution;
     });
 
-    const startNode = await this.workflowExecutionNodeRepository.findOne(workflowExecution.startNodeId);
-
-    await this.workflowsQueue.add('execute', {
-      userId: createWorkflowExecutionDto.userId,
-      nodeId: startNode.id,
-      state: {},
-    });
-
     return workflowExecution;
-  }
-
-  async enqueueNode(node: WorkflowExecutionNode, userId: string): Promise<any> {
-    return await this.workflowsQueue.add('execute', {
-      userId,
-      nodeId: node.id,
-    });
-  }
-
-  async enqueueForwardNodes(
-    startNode: WorkflowExecutionNode,
-    state: object = {},
-    userId: string
-  ): Promise<WorkflowExecutionNode[]> {
-    const forwardEdges = await this.workflowExecutionEdgeRepository.find({
-      where: {
-        sourceWorkflowExecutionNode: startNode,
-      },
-    });
-
-    const forwardNodeIds = forwardEdges.map((edge) => edge.targetWorkflowExecutionNodeId);
-
-    for (const nodeId of forwardNodeIds) {
-      await this.workflowsQueue.add('execute', {
-        userId,
-        nodeId,
-        state,
-      });
-    }
-
-    return [];
-  }
-
-  async completeNodeExecution(node: WorkflowExecutionNode, result: any, state: object) {
-    await dbTransactionWrap(async (manager: EntityManager) => {
-      await manager.update(WorkflowExecutionNode, node.id, { executed: true, result, state });
-    });
   }
 
   async getStatus(workflowExecutionId: string) {
@@ -149,5 +110,133 @@ export class WorkflowExecutionsService {
       executed: node.executed,
       result: node.result,
     }));
+  }
+
+  async execute(workflowExecution: WorkflowExecution): Promise<boolean> {
+    const appVersion = await this.appVersionsRepository.findOne(workflowExecution.appVersionId);
+
+    workflowExecution = await this.workflowExecutionRepository.findOne({
+      where: {
+        id: workflowExecution.id,
+      },
+      relations: ['startNode', 'user'],
+    });
+
+    const queue = [];
+
+    queue.push(workflowExecution.startNode);
+
+    while (queue.length !== 0) {
+      const nodeToBeExecuted = queue.shift();
+
+      const currentNode = await this.workflowExecutionNodeRepository.findOne({ where: { id: nodeToBeExecuted.id } });
+
+      const { state, previousNodesExecutionCompletionStatus } =
+        await this.getStateAndPreviousNodesExecutionCompletionStatus(currentNode);
+
+      if (!previousNodesExecutionCompletionStatus) {
+        queue.push(currentNode);
+      } else {
+        switch (currentNode.type) {
+          case 'input': {
+            void this.completeNodeExecution(currentNode, '', {});
+            void queue.push(...(await this.forwardNodes(currentNode)));
+            break;
+          }
+
+          case 'query': {
+            const queryId = find(appVersion.definition.queries, {
+              idOnDefinition: currentNode.definition.idOnDefinition,
+            }).id;
+
+            const query = await this.dataQueriesService.findOne(queryId);
+            const user = await this.userRepository.findOne(workflowExecution.executingUserId, {
+              relations: ['organization'],
+            });
+            user.organizationId = user.organization.id;
+            try {
+              void getQueryVariables(query.options, state);
+            } catch (e) {
+              console.log({ e });
+            }
+
+            const options = getQueryVariables(query.options, state);
+            try {
+              const result = await this.dataQueriesService.runQuery(user, query, options);
+
+              const newState = {
+                ...state,
+                [query.name]: result,
+              };
+
+              void this.completeNodeExecution(currentNode, JSON.stringify(result), newState);
+              void queue.push(...(await this.forwardNodes(currentNode)));
+            } catch (exception) {
+              const result = { status: 'failed', exception };
+
+              const newState = {
+                ...state,
+                [query.name]: result,
+              };
+
+              void this.completeNodeExecution(currentNode, JSON.stringify(result), newState);
+              queue.push(...(await this.forwardNodes(currentNode)));
+              console.log({ exception });
+            }
+
+            break;
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  async completeNodeExecution(node: WorkflowExecutionNode, result: any, state: object) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(WorkflowExecutionNode, node.id, { executed: true, result, state });
+    });
+  }
+
+  async getStateAndPreviousNodesExecutionCompletionStatus(node: WorkflowExecutionNode) {
+    const incomingEdges = await this.workflowExecutionEdgeRepository.find({
+      where: {
+        targetWorkflowExecutionNodeId: node.id,
+      },
+      relations: ['sourceWorkflowExecutionNode'],
+    });
+
+    const incomingNodes = await Promise.all(incomingEdges.map((edge) => edge.sourceWorkflowExecutionNode));
+
+    const previousNodesExecutionCompletionStatus = !incomingNodes.map((node) => node.executed).includes(false);
+
+    const state = incomingNodes.reduce((existingState, node) => {
+      const nodeState = node.state ?? {};
+      return { ...existingState, ...nodeState };
+    }, {});
+
+    return { state, previousNodesExecutionCompletionStatus };
+  }
+
+  async forwardNodes(startNode: WorkflowExecutionNode): Promise<WorkflowExecutionNode[]> {
+    const forwardEdges = await this.workflowExecutionEdgeRepository.find({
+      where: {
+        sourceWorkflowExecutionNode: startNode,
+      },
+    });
+
+    const forwardNodeIds = forwardEdges.map((edge) => edge.targetWorkflowExecutionNodeId);
+
+    const forwardNodes = Promise.all(
+      forwardNodeIds.map((id) =>
+        this.workflowExecutionNodeRepository.findOne({
+          where: {
+            id,
+          },
+        })
+      )
+    );
+
+    return forwardNodes;
   }
 }

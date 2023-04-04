@@ -14,6 +14,11 @@ export class CreateWorkflowExecutionEntity1676983958469 implements MigrationInte
             isPrimary: true,
           },
           {
+            name: 'executing_user_id',
+            type: 'uuid',
+            isNullable: true,
+          },
+          {
             name: 'app_version_id',
             type: 'uuid',
             isNullable: false,

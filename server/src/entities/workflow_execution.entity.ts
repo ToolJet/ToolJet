@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { AppVersion } from './app_version.entity';
+import { User } from './user.entity';
 import { WorkflowExecutionNode } from './workflow_execution_node.entity';
 
 @Entity({ name: 'workflow_executions' })
@@ -22,6 +23,13 @@ export class WorkflowExecution {
 
   @Column({ name: 'start_node_id' })
   startNodeId: string;
+
+  @Column({ name: 'executing_user_id' })
+  executingUserId: string;
+
+  @OneToOne(() => User)
+  @JoinColumn({ name: 'executing_user_id' })
+  user: User;
 
   @OneToOne(() => WorkflowExecutionNode)
   @JoinColumn({ name: 'start_node_id' })
