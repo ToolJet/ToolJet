@@ -1,15 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {
-  useMemo,
-  useState,
-  useEffect,
-  useCallback,
-  useContext,
-  useReducer,
-  useRef,
-  useDeferredValue,
-} from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useContext, useReducer, useRef } from 'react';
 import {
   useTable,
   useFilters,
@@ -142,7 +133,8 @@ export function Table({
   const updatedDataReference = useRef([]);
   const isAddingNewRow = useRef(false);
 
-  const deferredDataFromProps = useDeferredValue(properties.data);
+  const prevDataFromProps = useRef();
+  useEffect(() => (prevDataFromProps.current = properties.data), [JSON.stringify(properties.data)]);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
@@ -502,7 +494,7 @@ export function Table({
   );
 
   const data = useMemo(() => {
-    if (!_.isEmpty(updatedDataReference.current) && !_.isEqual(properties.data, deferredDataFromProps)) {
+    if (!_.isEmpty(updatedDataReference.current) && !_.isEqual(properties.data, prevDataFromProps)) {
       let exposedVarObject = {};
       let tableDetailsPayload = {};
       updatedDataReference.current = [];
