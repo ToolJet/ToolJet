@@ -100,6 +100,8 @@ export function Table({
   mode,
   exposedVariables,
 }) {
+  const mounted = useMounted();
+
   const {
     color,
     serverSidePagination,
@@ -134,7 +136,9 @@ export function Table({
   const isAddingNewRow = useRef(false);
 
   const prevDataFromProps = useRef();
-  useEffect(() => (prevDataFromProps.current = properties.data), [JSON.stringify(properties.data)]);
+  useEffect(() => {
+    if (mounted) prevDataFromProps.current = properties.data;
+  }, [JSON.stringify(properties.data)]);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
@@ -159,7 +163,6 @@ export function Table({
   const [generatedColumn, setGeneratedColumn] = useState([]);
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
-  const mounted = useMounted();
 
   useEffect(() => {
     setExposedVariable(
@@ -494,7 +497,7 @@ export function Table({
   );
 
   const data = useMemo(() => {
-    if (!_.isEmpty(updatedDataReference.current) && !_.isEqual(properties.data, prevDataFromProps)) {
+    if (!_.isEmpty(updatedDataReference.current) && !_.isEqual(properties.data, prevDataFromProps.current)) {
       let exposedVarObject = {};
       let tableDetailsPayload = {};
       updatedDataReference.current = [];
