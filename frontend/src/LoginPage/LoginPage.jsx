@@ -406,7 +406,9 @@ class LoginPageComponent extends React.Component {
                             back to&nbsp;{' '}
                             <Link
                               onClick={() =>
-                                (window.location = `/${authenticationService.currentSessionValue?.current_organization_id}`)
+                                (window.location = `${getSubpath() ? getSubpath() : ''}/${
+                                  authenticationService.currentSessionValue?.current_organization_id
+                                }`)
                               }
                             >
                               {this.state.current_organization_name}
