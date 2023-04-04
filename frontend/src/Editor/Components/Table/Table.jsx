@@ -209,33 +209,75 @@ export function Table({
   function handleCellValueChange(index, key, value, rowData) {
     const changeSet = tableDetails.changeSet;
     const dataUpdates = tableDetails.dataUpdates || [];
+    const newRowAddedChangeSet = tableDetails.newRowAddedChangeSet || exposedVariables.newRowAddedChangeSet || {};
+    const newRowDataUpdates = tableDetails.newRowDataUpdate || {};
     const clonedTableData = _.isEmpty(updatedDataReference.current)
       ? _.cloneDeep(tableData)
       : _.cloneDeep(updatedDataReference.current);
 
-    let obj = changeSet ? changeSet[index] || {} : {};
-    obj = _.set(obj, key, value);
+    const indexOfNewRow = _.isEmpty(newRowAddedChangeSet) ? undefined : +Object.keys(newRowAddedChangeSet)[0];
+    let changesToBeSavedAndExposed = {};
 
-    let newChangeset = {
-      ...changeSet,
-      [index]: {
-        ...obj,
-      },
-    };
+    if (index === indexOfNewRow) {
+      let obj = newRowAddedChangeSet ? newRowAddedChangeSet[index] || {} : {};
+      obj = _.set(obj, key, value);
 
-    obj = _.set({ ...rowData }, key, value);
-
-    let newDataUpdates = {
-      ...dataUpdates,
-      [index]: { ...obj },
-    };
-
-    Object.keys(newChangeset).forEach((key) => {
-      clonedTableData[key] = {
-        ..._.merge(clonedTableData[key], newChangeset[key]),
+      let newRowChangeSet = {
+        ...newRowAddedChangeSet,
+        [index]: {
+          ...obj,
+        },
       };
-    });
-    const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
+
+      obj = _.set({ ...rowData }, key, value);
+
+      let newRowData = {
+        ...newRowDataUpdates,
+        [index]: { ...obj },
+      };
+
+      Object.keys(newRowChangeSet).forEach((key) => {
+        clonedTableData[key] = {
+          ..._.merge(clonedTableData[key], newRowChangeSet[key]),
+        };
+      });
+      updatedDataReference.current = clonedTableData;
+      changesToBeSavedAndExposed.newRowAddedChangeSet = newRowChangeSet;
+    } else {
+      let obj = changeSet ? changeSet[index] || {} : {};
+      obj = _.set(obj, key, value);
+
+      let newChangeset = {
+        ...changeSet,
+        [index]: {
+          ...obj,
+        },
+      };
+
+      obj = _.set({ ...rowData }, key, value);
+
+      let newDataUpdates = {
+        ...dataUpdates,
+        [index]: { ...obj },
+      };
+
+      Object.keys(newChangeset).forEach((key) => {
+        clonedTableData[key] = {
+          ..._.merge(clonedTableData[key], newChangeset[key]),
+        };
+      });
+      changesToBeSavedAndExposed.dataUpdates = newDataUpdates;
+      changesToBeSavedAndExposed.changeSet = newChangeset;
+    }
+    console.log(
+      'table---',
+      newRowAddedChangeSet,
+      newRowDataUpdates,
+      Object.keys(newRowAddedChangeSet)[0],
+      typeof Object.keys(newRowAddedChangeSet)[0],
+      typeof index
+    );
+    // const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
 
     return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
@@ -317,9 +359,11 @@ export function Table({
         }
         return { ...rowData };
       });
+      console.log('table---', 'updateddata---', updatedData, 'newUpdatedData---', newUpdatedData);
       updatedDataReference.current = newUpdatedData;
       mergeToTableDetailsObj.isAddingNewRowRef = false;
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
+      mergeToTableDetailsObj.newRowDataUpdate = {};
       setExposedVarObj.newRowAddedChangeSet = {};
     }
     setExposedVariables(setExposedVarObj).then(() => {
@@ -349,6 +393,7 @@ export function Table({
     }).then(() => {
       mergeToTableDetails({
         newRowAddedChangeSet: newRowAddedChangeSet,
+        newRowDataUpdate: newRowAddedChangeSet,
         isAddingNewRowRef: true,
       });
       updatedDataReference.current = updatedData;
@@ -368,6 +413,7 @@ export function Table({
       exposedVariablesObj.newRowAddedChangeSet = {};
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
       updatedDataReference.current = updatedData;
+      mergeToTableDetailsObj.newRowDataUpdate = {};
       mergeToTableDetailsObj.isAddingNewRowRef = false;
     }
     setExposedVariables(exposedVariablesObj).then(() => {
@@ -470,6 +516,7 @@ export function Table({
         tableDetailsPayload.isAddingNewRowRef = false;
         exposedVarObject.newRowAddedChangeSet = {};
         tableDetailsPayload.newRowAddedChangeSet = {};
+        tableDetails.newRowDataUpdate = {};
       }
       setExposedVariables({ ...exposedVarObject, updatedData: [] }).then(() => {
         mergeToTableDetails(tableDetailsPayload);
@@ -656,6 +703,7 @@ export function Table({
         exposedVariablesObj.updatedData = updatedData;
         exposedVariablesObj.newRowAddedChangeSet = {};
         mergeToTableDetailsObj.newRowAddedChangeSet = {};
+        mergeToTableDetailsObj.newRowDataUpdate = {};
         mergeToTableDetailsObj.isAddingNewRowRef = false;
         updatedDataReference.current = updatedData;
       }
@@ -722,9 +770,7 @@ export function Table({
   useEffect(() => {
     const globalFilterRowsArrayToMap = setFilteredAndCurrentPageDataExposedVar(
       globalFilteredRows,
-      tableDetails.isAddingNewRowRef,
-      'filteredData',
-      tableDetails.newRowAddedChangeSet
+      tableDetails.isAddingNewRowRef
     );
     setExposedVariable('filteredData', globalFilterRowsArrayToMap);
   }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
