@@ -150,7 +150,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </Link>
                 </li>
               )}
-              {window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true' && (
+              {admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true' && (
                 <li className="text-center mt-3 d-flex flex-column">
                   <Link to="/integrations">
                     <ToolTip message="Marketplace (Beta)" placement="right">

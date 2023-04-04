@@ -5,6 +5,7 @@ import { InstalledPlugins } from './InstalledPlugins';
 import { MarketplacePlugins } from './MarketplacePlugins';
 import { marketplaceService, pluginsService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import config from 'config';
 
 const MarketplacePage = ({ darkMode, switchDarkMode }) => {
@@ -14,6 +15,16 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
   const [fetchingInstalledPlugins, setFetching] = React.useState(false);
 
   const ENABLE_MARKETPLACE_DEV_MODE = config.ENABLE_MARKETPLACE_DEV_MODE === 'true';
+  const { admin } = JSON.parse(localStorage.getItem('currentUser')) || {};
+
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!admin) {
+      navigate('/');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [admin]);
 
   React.useEffect(() => {
     marketplaceService
