@@ -56,6 +56,7 @@ import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg'
 import EditorHeader from './Header';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
+import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
 
 setAutoFreeze(false);
 enablePatches();
@@ -165,6 +166,7 @@ class EditorComponent extends React.Component {
       queryPanelHeight: this.queryManagerPreferences?.isExpanded
         ? this.queryManagerPreferences?.queryPanelHeight
         : 95 ?? 70,
+      showReleasedVersionError: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -1208,7 +1210,7 @@ class EditorComponent extends React.Component {
 
   saveEditingVersion = () => {
     if (this.isVersionReleased()) {
-      this.setState({ isSaving: false, showCreateVersionModalPrompt: true });
+      this.setState({ isSaving: false, showReleasedVersionError: true });
     } else if (!isEmpty(this.state.editingVersion)) {
       appVersionService
         .save(this.state.appId, this.state.editingVersion.id, { definition: this.state.appDefinition })
@@ -1850,6 +1852,7 @@ class EditorComponent extends React.Component {
             handleSlugChange={this.handleSlugChange}
             onVersionRelease={this.onVersionRelease}
             saveEditingVersion={this.saveEditingVersion}
+            showReleasedVersionError={this.state.showReleasedVersionError}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
@@ -1976,6 +1979,7 @@ class EditorComponent extends React.Component {
                         </div>
                       </div>
                     )}
+                    {this.state.showReleasedVersionError && <ReleasedVersionError />}
                     {defaultComponentStateComputed && (
                       <>
                         <Container
@@ -2008,6 +2012,7 @@ class EditorComponent extends React.Component {
                           sideBarDebugger={this.sideBarDebugger}
                           dataQueries={dataQueries}
                           currentPageId={this.state.currentPageId}
+                          showReleasedVersionError={this.state.showReleasedVersionError}
                         />
                         <CustomDragLayer
                           snapToGrid={true}
