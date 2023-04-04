@@ -112,7 +112,7 @@ function SettingsPage(props) {
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper">
-        <div className="page-wrapper">
+        <div className="page-wrapper profile-page-content-wrap">
           <div className="container-xl">
             <div className="page-header d-print-none">
               <div className="row align-items-center">
@@ -128,7 +128,7 @@ function SettingsPage(props) {
 
           <div className="page-body">
             <div className="container-xl">
-              <div className="card">
+              <div className="profile-page-card">
                 <div className="card-header">
                   <h3 className="card-title" data-cy="card-title-profile">
                     {t('header.profileSettingPage.profile', 'Profile')}
@@ -137,7 +137,7 @@ function SettingsPage(props) {
                 <div className="card-body">
                   <div className="row">
                     <div className="col">
-                      <div className="mb-3">
+                      <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="first-name-label">
                           {t('header.profileSettingPage.firstName', 'First name')}
                         </label>
@@ -154,7 +154,7 @@ function SettingsPage(props) {
                       </div>
                     </div>
                     <div className="col">
-                      <div className="mb-3">
+                    <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="last-name-label">
                           {t('header.profileSettingPage.lastName', 'Last name')}
                         </label>
@@ -173,7 +173,7 @@ function SettingsPage(props) {
                   </div>
                   <div className="row">
                     <div className="col">
-                      <div className="mb-3">
+                    <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="email-label">
                           {t('header.profileSettingPage.email', 'Email')}
                         </label>
@@ -190,10 +190,10 @@ function SettingsPage(props) {
                       </div>
                     </div>
                     <div className="col">
-                      <div className="mb-3">
-                        <div className="form-label" data-cy="avatar-label">
+                    <div className="mb-3 tj-app-input">
+                        <label className="form-label" data-cy="avatar-label">
                           {t('header.profileSettingPage.avatar', 'Avatar')}
-                        </div>
+                        </label>
                         <input
                           onChange={(e) => {
                             const file = e.target.files[0];
@@ -225,7 +225,7 @@ function SettingsPage(props) {
                 </div>
               </div>
               <br />
-              <div className="card">
+              <div className="profile-page-card">
                 <div className="card-header">
                   <h3 className="card-title" data-cy="card-title-change-password">
                     {t('header.profileSettingPage.changePassword', 'Change password')}
@@ -234,7 +234,7 @@ function SettingsPage(props) {
                 <div className="card-body">
                   <div className="row">
                     <div className="col">
-                      <div className="mb-3">
+                    <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="current-password-label">
                           {t('header.profileSettingPage.currentPassword', 'Current password')}
                         </label>
@@ -250,7 +250,7 @@ function SettingsPage(props) {
                       </div>
                     </div>
                     <div className="col">
-                      <div className="mb-3">
+                    <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="new-password-label">
                           {t('header.profileSettingPage.newPassword', 'New password')}
                         </label>
@@ -268,7 +268,7 @@ function SettingsPage(props) {
                     </div>
                   </div>
                   <div className="w-50 confirm-input">
-                    <div className="mb-3">
+                  <div className="mb-3 tj-app-input">
                       <label className="form-label" data-cy="confirm-password-label">
                         {t('header.profileSettingPage.confirmNewPassword', 'Confirm new password')}
                       </label>

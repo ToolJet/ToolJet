@@ -38,7 +38,7 @@ function FolderList({
         </button>
       ) : (
         <Skeleton count={4} />
-      )}{' '}
+      )}
     </>
   );
 }

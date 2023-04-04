@@ -3929,6 +3929,7 @@ input[type="text"] {
   overflow-y: overlay;
   overflow-x: hidden;
 }
+
 .jet-listview::-webkit-scrollbar-track {
   background: transparent;
 
@@ -4478,9 +4479,10 @@ input[type="text"] {
 /**
  * Home page modal
  */
- .home-modal-backdrop {
+.home-modal-backdrop {
   z-index: 9991;
- }
+}
+
 .modal-content.home-modal-component {
   border-radius: 8px;
   overflow: hidden;
@@ -9966,4 +9968,17 @@ tbody {
   .react-tel-input .country-list .country.highlight {
     color: #6b6b6b;
   }
+}
+
+.profile-page-content-wrap {
+  background-color: var(--slate2);
+}
+
+.profile-page-card {
+  background-color: var(--base);
+  border-radius: 6px;
+}
+
+.all-apps-link-cotainer {
+  border-radius: 6px !important;
 }

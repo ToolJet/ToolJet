@@ -7,7 +7,6 @@ import VariablesTable from './VariablesTable';
 import { withTranslation } from 'react-i18next';
 import ManageOrgVarsDrawer from './ManageOrgVarsDrawer';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-// import ReactTooltip from 'react-tooltip';
 class ManageOrgVarsComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -289,7 +288,6 @@ class ManageOrgVarsComponent extends React.Component {
 
           <div className="workspace-variable-container-wrap">
             {isManageVarDrawerOpen ? (
-              <>
                 <ManageOrgVarsDrawer
                   isManageVarDrawerOpen={this.state.isManageVarDrawerOpen}
                   setIsManageVarDrawerOpen={this.setIsManageVarDrawerOpen}
@@ -303,7 +301,6 @@ class ManageOrgVarsComponent extends React.Component {
                   onCancelBtnClicked={this.onCancelBtnClicked}
                   addingVar={addingVar}
                 />
-              </>
             ) : (
               <>
                 {variables?.length > 0 ? (

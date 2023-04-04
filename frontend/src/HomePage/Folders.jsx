@@ -214,7 +214,7 @@ export const Folders = function Folders({
       </div>
 
       {!isLoading && (
-        <div data-testid="applicationFoldersList" className={cx(`mb-1`, { dark: darkMode })}>
+        <div data-testid="applicationFoldersList" className={cx(`mb-1 all-apps-link-cotainer`, { dark: darkMode })}>
           <a
             className={cx(
               `list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link tj-text-xsm`,
@@ -223,7 +223,7 @@ export const Folders = function Folders({
                 'bg-dark-indigo': !activeFolder.id && darkMode,
               }
             )}
-            style={{ height: '32px' }}
+            style={{ height: '32px'}}
             onClick={() => handleFolderChange({})}
             data-cy="all-applications-link"
           >

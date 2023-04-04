@@ -1,4 +1,4 @@
-import React from 'react';
+import React ,{useEffect} from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { useTranslation } from 'react-i18next';
@@ -17,7 +17,9 @@ export const AppMenu = function AppMenu({
   currentFolder,
 }) {
   const closeMenu = () => {
+    console.log("click");
     document.body.click();
+    onClick();
   };
   const { t } = useTranslation();
   const Field = ({ text, onClick, customClass }) => {
@@ -27,7 +29,6 @@ export const AppMenu = function AppMenu({
           role="button"
           onClick={() => {
             closeMenu();
-            onClick();
           }}
           data-cy={`${text.toLowerCase().replace(/\s+/g, '-')}-card-option`}
         >

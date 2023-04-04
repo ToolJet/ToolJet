@@ -869,7 +869,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                       </label>
                                     </div>
                                   </div>
-                                  {/* <td></td> */}
                                 </div>
                               </>
                             )}

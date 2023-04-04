@@ -9,12 +9,10 @@ import { authenticationService } from '@/_services';
 import { BreadCrumbContext } from '../App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
-// import { useTranslation } from 'react-i18next';
 
 export function OrganizationSettings(props) {
   const { admin } = authenticationService.currentUserValue;
   const [selectedTab, setSelectedTab] = useState(admin ? 'users' : 'manageEnvVars');
-  // const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
@@ -39,7 +37,6 @@ export function OrganizationSettings(props) {
   };
 
   return (
-    <>
       <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
         <div className="wrapper organization-settings-page">
           <div className="row gx-0">
@@ -82,6 +79,5 @@ export function OrganizationSettings(props) {
           </div>
         </div>
       </Layout>
-    </>
   );
 }

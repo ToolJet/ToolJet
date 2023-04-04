@@ -15,7 +15,6 @@ const ManageOrgUsersDrawer = ({
   inviteBulkUsers,
 }) => {
   return (
-    <>
       <Drawer
         disableFocus={true}
         isOpen={isInviteUsersDrawerOpen}
@@ -34,7 +33,6 @@ const ManageOrgUsersDrawer = ({
           onClose={() => setIsInviteUsersDrawerOpen(false)}
         />
       </Drawer>
-    </>
   );
 };
 

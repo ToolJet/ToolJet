@@ -16,7 +16,6 @@ const ManageOrgVarsDrawer = ({
   changeNewVariableOption,
 }) => {
   return (
-    <>
       <Drawer
         disableFocus={true}
         isOpen={isManageVarDrawerOpen}
@@ -35,7 +34,6 @@ const ManageOrgVarsDrawer = ({
           addingVar={addingVar}
         />
       </Drawer>
-    </>
   );
 };
 

@@ -2,7 +2,6 @@ import React from 'react';
 import './Toggle.scss';
 function Toggle({ onChange, checked = false, className = {}, disabled = false, label = '' }) {
   return (
-    <>
       <label className={`form-check form-switch ${className}`}>
         <input
           className="form-check-input tj-toggle-switch"
@@ -13,7 +12,6 @@ function Toggle({ onChange, checked = false, className = {}, disabled = false, l
         />
         <span className="tj-toggle-label">{label}</span>
       </label>
-    </>
   );
 }
 export default Toggle;
