@@ -435,6 +435,6 @@ describe('data sources controller', () => {
         code: 'oauth-auth-code',
       });
 
-    expect(response.statusCode).toBe(406);
+    expect(response.statusCode).toBe(403);
   });
 });
