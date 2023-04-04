@@ -1,11 +1,11 @@
 ---
-id: use-s3-presigned-url-to-upload-docs
-title: Use S3 pre-signed URL to upload documents
+id: use-s3-signed-url-to-upload-docs
+title: Use S3 signed URL to upload documents
 ---
 
-# Use S3 pre-signed URL to upload documents
+# Use S3 signed URL to upload documents
 
-In this how-to guide, you'll learn how you can upload documents to S3 buckets using the **S3 pre-signed URL** from a ToolJet application. 
+In this how-to guide, you'll learn to upload documents to S3 buckets using the **S3 signed URL** from a ToolJet application. 
 
 For this guide, We are going to use one of the existing templates on ToolJet: **S3 File explorer**
 
@@ -15,7 +15,7 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/how-to/uses3presignedurl/template.png" alt="Use S3 pre-signed URL to upload documents" width="700"/>
+<img className="screenshot-full" src="/img/how-to/uses3presignedurl/template.png" alt="Use S3 pre-signed URL to upload documents: Choose template" width="700"/>
 
 </div>  
 
@@ -23,7 +23,7 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/newversion.png" alt="Use S3 pre-signed URL to upload documents"/>
+  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/newversion.png" alt="Use S3 pre-signed URL to upload documents: new version"/>
 
   </div>
 
@@ -35,7 +35,7 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/s3connect.png" alt="Use S3 pre-signed URL to upload documents"/>
+  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/s3connect.png" alt="Use S3 pre-signed URL to upload documents: add datasource"/>
 
   </div>
 
@@ -43,7 +43,7 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/getbuckets.png" alt="Use S3 pre-signed URL to upload documents"/>
+  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/getbuckets.png" alt="Use S3 pre-signed URL to upload documents: getBuckets query"/>
 
   </div>
 
@@ -51,7 +51,7 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/dropdown.png" alt="Use S3 pre-signed URL to upload documents"/>
+  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/dropdown.png" alt="Use S3 pre-signed URL to upload documents: loading buckets"/>
 
   </div>
 
@@ -59,49 +59,7 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/fetchfiles.png" alt="Use S3 pre-signed URL to upload documents"/>
-
-  </div>
-
-- We will create two RunJS queries, for getting the data from the file picker and using selected file's `base64Data` to convert it into binary `Uint8 array`
-  - Create a **runjs1** query and copy the following code:
-  ```js
-  const base64String = components.filepicker1.file[0].base64Data
-  const decodedArray = new Uint8Array(atob(base64String).split('').map(c => c.charCodeAt(0)));
-  const file = new Blob([decodedArray], { type: 'text/plain' });
-  const fileName = 'hello.txt';
-  const fileObj = new File([file], fileName);
-  
-  return fileObj
-  ```
-
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/runjs1.png" alt="Use S3 pre-signed URL to upload documents"/>
-
-  </div>
-
-  - Create another **runjs2** query and copy the following code:
-  ```js
-  const file = queries.runjs2.data
-  const url = queries.s31.data.url
-
-  fetch(url, {
-    method: 'PUT',
-    body: file,
-    mode: 'cors',
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Content-Type': 'application/json'
-    }
-  })
-  .then(response => console.log('Upload successful!'))
-  .catch(error => console.error('Error uploading file:', error));
-  ```
-
-  <div style={{textAlign: 'center'}}>
-
-  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/runjs2.png" alt="Use S3 pre-signed URL to upload documents"/>
+  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/fetchfiles.png" alt="Use S3 pre-signed URL to upload documents: list objects in a bucket"/>
 
   </div>
 
@@ -118,7 +76,70 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
 
   </div>
 
-- Scroll down the query manager, and add an event handler to the **uploadToS3** query. Select the **Query Success** event, **Run Query** as the action, and **runjs1** as the query to be triggered. **Save** the query.
+- Create two **RunJS** queries: 
+  - Create a **runjs1** query and copy-paste the code below. This query gets the **base64data** from the file picker and convert the file's `base64Data` to into `BLOB`, and returns the file object.
+  ```js
+  const base64String = components.filepicker1.file[0].base64Data
+  const decodedArray = new Uint8Array(atob(base64String).split('').map(c => c.charCodeAt(0)));
+  const file = new Blob([decodedArray], { type: components.filepicker1.file[0].type });
+  const fileName = components.filepicker1.file[0].name;
+  const fileObj = new File([file], fileName); 
+  
+  return fileObj
+  ```
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/runjs1.png" alt="Use S3 pre-signed URL to upload documents"/>
+
+  </div>
+
+  - Create another **runjs2** query and copy-paste the code below. This query gets the data(file object) returned by the first runjs query, the url returned by the **uploadToS3** query, and then makes PUT request.
+  ```js
+  const file = queries.runjs2.data
+  const url = queries.s31.data.url
+
+  fetch(url, {
+    method: 'PUT',
+    body: file,
+    mode: 'cors',
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => console.log('Upload successful!'))
+  .catch(error => console.error('Error uploading file:', error));
+  ```
+  :::warning Enable Cross Origin Resource Sharing(CORS)
+  - For the file to be uploaded successfully, you will need to add the CORS configuration from the **Permissions** tab of your **Bucket** settings. Here's a sample CORS:
+  ```json
+  [
+    {
+        "AllowedHeaders": [
+            "*"
+        ],
+        "AllowedMethods": [
+            "GET",
+            "PUT",
+            "POST"
+        ],
+        "AllowedOrigins": [
+            "*"
+        ],
+        "ExposeHeaders": []
+    }
+  ]
+  ```
+  :::
+
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/how-to/uses3presignedurl/runjs2.png" alt="Use S3 pre-signed URL to upload documents"/>
+
+  </div>
+
+- Go to the **uploadToS3**, scroll down and add an event handler to the **uploadToS3** query. Select the **Query Success** event, **Run Query** as the action, and **runjs1** as the query to be triggered. **Save** the query.
   <div style={{textAlign: 'center'}}>
 
   <img className="screenshot-full" src="/img/how-to/uses3presignedurl/eventhandlerupload.png" alt="Use S3 pre-signed URL to upload documents"/>
