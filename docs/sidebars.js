@@ -301,6 +301,7 @@ const sidebars = {
         'how-to/access-currentuser',
         'how-to/use-axios-in-runjs',
         'how-to/import-external-libraries-using-runpy',
+        'how-to/import-external-libraries-using-runjs',
         'how-to/run-actions-from-runjs',
         'how-to/run-query-at-specified-intervals',
         'how-to/access-users-location',
