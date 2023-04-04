@@ -844,7 +844,7 @@ export function Table({
                   handleAddNewRow(pageIndex);
                 }}
                 data-tip="Add new row"
-                disabled={_.isEmpty(tableDetails.changeSet) ? false : true}
+                disabled={!_.isEmpty(tableDetails?.changeSet || {}) || tableDetails.isAddingNewRowRef ? true : false}
               >
                 <img src="assets/images/icons/plus.svg" width="15" height="15" />
               </button>
