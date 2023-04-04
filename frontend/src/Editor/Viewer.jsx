@@ -330,9 +330,7 @@ class ViewerComponent extends React.Component {
         slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
       } else if (currentSession?.authentication_failed && !slug) {
         const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
-        const pathname = window.public_config?.SUB_PATH
-          ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
-          : window.location.pathname;
+        const pathname = getSubpath() ? window.location.pathname.replace(getSubpath(), '') : window.location.pathname;
         window.location.href = loginPath + `?redirectTo=${excludeWorkspaceIdFromURL(pathname)}`;
       } else {
         slug && this.loadApplicationBySlug(slug);

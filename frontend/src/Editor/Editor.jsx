@@ -323,7 +323,7 @@ class EditorComponent extends React.Component {
         loadingGlobalDataSources: true,
       },
       () => {
-        const { organization_id: organizationId } = this.state.currentUser;
+        const { current_organization_id: organizationId } = this.state.currentUser;
         globalDatasourceService.getAll(organizationId).then((data) =>
           this.setState({
             globalDataSources: data.data_sources,
