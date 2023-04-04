@@ -10,10 +10,22 @@ jobs:
     steps:
       - name: Check if label is roadmap
         run: |
-          if [ "${{ github.event.label.name }}" != "roadmap" ]; then
-            echo "Label is not roadmap, exiting..."
+          if [ "${{ github.event.label.name }}" = "roadmap" ]; then
+            echo "Issue added to project"
             exit 0
+          else
+            echo "Label is not roadmap, exiting..."
+            exit 1
           fi
+
+      - name: Fetch issues with roadmap label
+        id: fetch-issues
+        uses: peter-evans/find-labeled-prs@v2
+        with:
+          label: 'roadmap'
+          state: 'open'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}     
+
       - name: Add issue to GitHub project
         uses: peter-evans/create-issue-from-file@v2
         with:
