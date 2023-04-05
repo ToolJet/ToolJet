@@ -123,4 +123,12 @@ export class GlobalDataSourcesController {
     await this.dataSourcesService.convertToGlobalSource(dataSourceId, user.organizationId);
     return;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/environment/:environment_id')
+  async getDataSourceByEnvironment(@User() user, @Param('id') dataSourceId, @Param('environment_id') environmentId) {
+    const dataSource = await this.dataSourcesService.findOneByEnvironment(dataSourceId, environmentId);
+    delete dataSource['dataSourceOptions'];
+    return decamelizeKeys(dataSource);
+  }
 }
