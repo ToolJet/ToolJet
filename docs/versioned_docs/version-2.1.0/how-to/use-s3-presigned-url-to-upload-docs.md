@@ -67,7 +67,7 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
   - **Operation**: Signed URL for upload
   - **Bucket**: `{{components.dropdown1.value}}` this will fetch the dynamic value from the dropdown
   - **Key**: `{{components.filepicker1.file[0].name}}` this will get the file name from the filepickers exposed variables
-  - **Expires in:** This sets an expiration time of URL, by default its `3600` sec(1 hours)
+  - **Expires in:** This sets an expiration time of URL, by default its `3600` seconds (1 hour)
   - **Content Type**: `{{components.filepicker1.file[0].type}}` this will get the file type from the filepickers exposed variables
 
   <div style={{textAlign: 'center'}}>
