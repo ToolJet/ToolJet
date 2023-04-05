@@ -1,7 +1,11 @@
 import React from 'react';
 import cx from 'classnames';
 
-export const ReleasedVersionError = ({ isUserEditingTheVersion }) => {
+export const ReleasedVersionError = ({ isUserEditingTheVersion, changeBackTheState }) => {
+  React.useState(() => {
+    setInterval(() => changeBackTheState(), 3000);
+  }, [isUserEditingTheVersion]);
+
   return (
     <div className="released-version-popup-container">
       <div className={cx('released-version-popup-cover', isUserEditingTheVersion && 'error-shake')}>

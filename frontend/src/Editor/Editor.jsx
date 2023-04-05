@@ -712,15 +712,7 @@ class EditorComponent extends React.Component {
       });
       this.handleInspectorView();
     } else if (this.isVersionReleased()) {
-      this.setState({ isUserEditingTheVersion: true }, () => {
-        setInterval(
-          () =>
-            this.setState({
-              isUserEditingTheVersion: false,
-            }),
-          3000
-        );
-      });
+      this.setState({ isUserEditingTheVersion: true });
     }
   };
 
@@ -762,15 +754,7 @@ class EditorComponent extends React.Component {
       });
       this.handleInspectorView();
     } else {
-      this.setState({ isUserEditingTheVersion: true }, () => {
-        setInterval(
-          () =>
-            this.setState({
-              isUserEditingTheVersion: false,
-            }),
-          3000
-        );
-      });
+      this.setState({ isUserEditingTheVersion: true });
     }
   };
 
@@ -1226,15 +1210,7 @@ class EditorComponent extends React.Component {
 
   saveEditingVersion = () => {
     if (this.isVersionReleased()) {
-      this.setState({ isSaving: false, isUserEditingTheVersion: true }, () => {
-        setInterval(
-          () =>
-            this.setState({
-              isUserEditingTheVersion: false,
-            }),
-          3000
-        );
-      });
+      this.setState({ isSaving: false, isUserEditingTheVersion: true });
     } else if (!isEmpty(this.state.editingVersion)) {
       appVersionService
         .save(this.state.appId, this.state.editingVersion.id, { definition: this.state.appDefinition })
@@ -1849,7 +1825,15 @@ class EditorComponent extends React.Component {
           darkMode={this.props.darkMode}
         />
         {this.isVersionReleased() && (
-          <ReleasedVersionError isUserEditingTheVersion={this.state.isUserEditingTheVersion} />
+          <ReleasedVersionError
+            isUserEditingTheVersion={this.state.isUserEditingTheVersion}
+            changeBackTheState={() => {
+              this.state.isUserEditingTheVersion &&
+                this.setState({
+                  isUserEditingTheVersion: false,
+                });
+            }}
+          />
         )}
         <EditorContextWrapper>
           <EditorHeader
