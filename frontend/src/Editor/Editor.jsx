@@ -585,6 +585,10 @@ class EditorComponent extends React.Component {
   };
 
   handleUndo = () => {
+    if (this.isVersionReleased()) {
+      this.setReleasedVersionPopupState();
+      return;
+    }
     if (this.canUndo) {
       let currentVersion = this.currentVersion[this.state.currentPageId];
 
@@ -616,6 +620,10 @@ class EditorComponent extends React.Component {
   };
 
   handleRedo = () => {
+    if (this.isVersionReleased()) {
+      this.setReleasedVersionPopupState();
+      return;
+    }
     if (this.canRedo) {
       let currentVersion = this.currentVersion[this.state.currentPageId];
 
@@ -712,7 +720,7 @@ class EditorComponent extends React.Component {
       });
       this.handleInspectorView();
     } else if (this.isVersionReleased()) {
-      this.setState({ isUserEditingTheVersion: true });
+      this.setReleasedVersionPopupState();
     }
   };
 
@@ -788,6 +796,10 @@ class EditorComponent extends React.Component {
     }
   };
 
+  setReleasedVersionPopupState = () => {
+    this.setState({ isUserEditingTheVersion: true });
+  };
+
   handleEditorEscapeKeyPress = () => {
     if (this.state?.selectedComponents?.length > 0) {
       this.setState({ selectedComponents: [] });
@@ -829,11 +841,23 @@ class EditorComponent extends React.Component {
     this.appDefinitionChanged(appDefinition);
   };
 
-  cutComponents = () => cloneComponents(this, this.appDefinitionChanged, false, true);
+  cutComponents = () => {
+    if (this.isVersionReleased()) {
+      this.setReleasedVersionPopupState();
+      return;
+    }
+    cloneComponents(this, this.appDefinitionChanged, false, true);
+  };
 
   copyComponents = () => cloneComponents(this, this.appDefinitionChanged, false);
 
-  cloneComponents = () => cloneComponents(this, this.appDefinitionChanged, true);
+  cloneComponents = () => {
+    if (this.isVersionReleased()) {
+      this.setReleasedVersionPopupState();
+      return;
+    }
+    cloneComponents(this, this.appDefinitionChanged, true);
+  };
 
   decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
@@ -1210,7 +1234,7 @@ class EditorComponent extends React.Component {
 
   saveEditingVersion = () => {
     if (this.isVersionReleased()) {
-      this.setState({ isSaving: false, isUserEditingTheVersion: true });
+      this.setState({ isSaving: false });
     } else if (!isEmpty(this.state.editingVersion)) {
       appVersionService
         .save(this.state.appId, this.state.editingVersion.id, { definition: this.state.appDefinition })
@@ -2021,6 +2045,8 @@ class EditorComponent extends React.Component {
                           sideBarDebugger={this.sideBarDebugger}
                           dataQueries={dataQueries}
                           currentPageId={this.state.currentPageId}
+                          setReleasedVersionPopupState={this.setReleasedVersionPopupState}
+                          isVersionReleased={this.isVersionReleased()}
                         />
                         <CustomDragLayer
                           snapToGrid={true}
