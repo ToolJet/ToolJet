@@ -133,7 +133,7 @@ export function Table({
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
-  const isAddingNewRow = useRef(false);
+  // const isAddingNewRow = useRef(false);
 
   const prevDataFromProps = useRef();
   useEffect(() => {
@@ -213,6 +213,7 @@ export function Table({
     const indexOfNewRow = _.isEmpty(newRowAddedChangeSet) ? undefined : +Object.keys(newRowAddedChangeSet)[0];
     let changesToBeSavedAndExposed = {};
 
+    //Added if else block to determine if the index of the row, whose cell value changed is equal to the index of newly added row and do the needful operation
     if (index === indexOfNewRow) {
       let obj = newRowAddedChangeSet ? newRowAddedChangeSet[index] || {} : {};
       obj = _.set(obj, key, value);

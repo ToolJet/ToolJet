@@ -2,7 +2,6 @@ export const initialState = () => ({
   loadingState: false,
   columnProperties: [],
   isAddingNewRowRef: false,
-  updatedDataReference: [],
   filterDetails: {
     filters: [],
     filtersVisible: false,
