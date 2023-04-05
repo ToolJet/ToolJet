@@ -56,7 +56,7 @@ module.exports = {
           'aria-label': 'GitHub repository',
         },
         {
-          href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
+          href: 'https://tooljet.com/slack',
           position: 'right',
           className: 'navbar-social-link navbar-slack-logo',
           'aria-label': 'Slack workspace',
@@ -86,7 +86,7 @@ module.exports = {
           items: [
             {
               label: 'Slack',
-              href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
+              href: 'https://tooljet.com/slack',
             },
           ],
         },
