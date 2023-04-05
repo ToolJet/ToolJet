@@ -23,7 +23,7 @@ export default class Openai implements QueryService {
           throw new QueryError('Query could not be completed', 'Invalid operation', {});
       }
     } catch (error) {
-      throw new QueryError('Query could not be completed', error.message, {});
+      throw new QueryError('Query could not be completed', error?.message, {});
     }
 
     return {
@@ -43,7 +43,7 @@ export default class Openai implements QueryService {
         }
       }
     } catch (error) {
-      throw new QueryError('Connection could not be established', error.message, {});
+      throw new QueryError('Connection could not be established', error?.message, {});
     }
   }
 

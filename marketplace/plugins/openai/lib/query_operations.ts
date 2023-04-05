@@ -18,8 +18,8 @@ export async function getCompletion(openai: OpenAIApi, options: QueryOptions): P
         
     } catch (error) {
         return {
-            error: error.message,
-            statusCode: error.response.status
+            error: error?.message,
+            statusCode: error?.response?.status
         }
     }
 }
@@ -47,8 +47,8 @@ export async function getChatCompletion(openai: OpenAIApi, options: QueryOptions
         return data.choices[0]['message']['content']
     } catch (error) {
         return {
-            error: error.message,
-            statusCode: error.response.status
+            error: error?.message,
+            statusCode: error?.response?.status
         }
     }
    
