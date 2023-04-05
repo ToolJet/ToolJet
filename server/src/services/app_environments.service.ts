@@ -46,9 +46,9 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  async update(id: string, name: string, appVersionId: string, manager?: EntityManager): Promise<UpdateResult> {
+  async update(id: string, name: string, organizationId: string, manager?: EntityManager): Promise<UpdateResult> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.update(AppEnvironment, { id, appVersionId }, { name });
+      return await manager.update(AppEnvironment, { id, organizationId }, { name });
     }, manager);
   }
 
@@ -58,12 +58,12 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  async delete(id: string, appVersionId: string) {
+  async delete(id: string, organizationId: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const env = await manager.findOne(AppEnvironment, {
         where: {
           id,
-          appVersionId,
+          organizationId,
         },
       });
 
@@ -71,7 +71,7 @@ export class AppEnvironmentService {
         throw Error("Can't delete the default environment");
       }
 
-      return await manager.delete(AppEnvironment, { where: { id, appVersionId } });
+      return await manager.delete(AppEnvironment, { where: { id, organizationId } });
     });
   }
 

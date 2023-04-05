@@ -19,6 +19,22 @@ function Layout({ children, switchDarkMode, darkMode }) {
     return;
   }
 
+  const canAnyGroupPerformAction = (action, permissions) => {
+    if (!permissions) {
+      return false;
+    }
+
+    return permissions.some((p) => p[action]);
+  };
+
+  const canCreateDataSource = () => {
+    return canAnyGroupPerformAction('data_source_create', currentUser.group_permissions) || currentUser.super_admin;
+  };
+
+  const canUpdateDataSource = () => {
+    return canAnyGroupPerformAction('update', currentUser.data_source_group_permissions) || currentUser.super_admin;
+  };
+
   return (
     <div className="row m-auto">
       <div className="col-auto p-0">
@@ -168,7 +184,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </Link>
                 </li>
               )}
-              {currentUser?.admin && (
+              {(canUpdateDataSource() || canCreateDataSource() || currentUser?.admin || currentUser.super_admin) && (
                 <li className="text-center mt-3 cursor-pointer">
                   <Link to="/global-datasources">
                     <ToolTip message="Global Datasources" placement="right">

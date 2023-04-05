@@ -1,14 +1,17 @@
 import allPlugins from '@tooljet/plugins/dist/server';
 import { Injectable, NotAcceptableException, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, getManager, Repository } from 'typeorm';
+import { Brackets, EntityManager, getManager, Repository } from 'typeorm';
 import { DataSource } from '../../src/entities/data_source.entity';
 import { CredentialsService } from './credentials.service';
-import { cleanObject, dbTransactionWrap } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { PluginsHelper } from '../helpers/plugins.helper';
 import { AppEnvironmentService } from './app_environments.service';
 import { App } from 'src/entities/app.entity';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
+import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
+import { User } from 'src/entities/user.entity';
+import { UsersService } from './users.service';
 
 @Injectable()
 export class DataSourcesService {
@@ -16,17 +19,19 @@ export class DataSourcesService {
     private readonly pluginsHelper: PluginsHelper,
     private credentialsService: CredentialsService,
     private appEnvironmentService: AppEnvironmentService,
+    private usersService: UsersService,
     @InjectRepository(DataSource)
     private dataSourcesRepository: Repository<DataSource>
-  ) { }
+  ) {}
 
-  async all(
-    query: object,
-    organizationId: string,
-    scope: DataSourceScopes = DataSourceScopes.LOCAL
-  ): Promise<DataSource[]> {
+  async all(query: object, user: User, scope: DataSourceScopes = DataSourceScopes.LOCAL): Promise<DataSource[]> {
     const { app_version_id: appVersionId, environmentId }: any = query;
     let selectedEnvironmentId = environmentId;
+    const { organizationId, id } = user;
+    const isAdmin = await this.usersService.hasGroup(user, 'admin', organizationId);
+    const groupPermissions = await user.groupPermissions;
+
+    const canPerformCreateOrDelete = groupPermissions?.some((gp) => gp['dataSourceCreate'] || gp['dataSourceDelete']);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {
@@ -42,6 +47,25 @@ export class DataSourcesService {
         .leftJoinAndSelect('plugin.operationsFile', 'operationsFile')
         .where('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
         .andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC });
+
+      if (!isSuperAdmin(user) || !isAdmin) {
+        if (!canPerformCreateOrDelete) {
+          query
+            .innerJoin('data_source.groupPermissions', 'group_permissions')
+            .innerJoin(
+              UserGroupPermission,
+              'user_group_permissions',
+              'data_source_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
+            )
+            .where(
+              new Brackets((qb) => {
+                qb.where('user_group_permissions.user_id = :userId', {
+                  userId: id,
+                }).andWhere('data_source_group_permissions.read = :value', { value: true });
+              })
+            );
+        }
+      }
 
       if (scope === DataSourceScopes.GLOBAL) {
         query

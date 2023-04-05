@@ -411,7 +411,7 @@ class ViewerComponent extends React.Component {
 
     if (this.state.slug) this.props.navigate(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
     else
-      this.props.history.push(
+      this.props.navigate(
         `/applications/${this.state.appId}/versions/${this.state.versionId}/environments/${this.state.environmentId}/${handle}?${queryParamsString}`
       );
   };

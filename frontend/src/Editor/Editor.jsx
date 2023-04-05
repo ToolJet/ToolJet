@@ -181,7 +181,7 @@ class EditorComponent extends React.Component {
     this.autoSave();
     this.fetchApps(0);
     this.setCurrentAppEnvironmentId();
-    this.fetchApp(this.props.match.params.pageHandle);
+    this.fetchApp(this.props.params.pageHandle);
     this.fetchOrgEnvironmentVariables();
     this.initComponentVersioning();
     this.initRealtimeSave();
@@ -1360,7 +1360,7 @@ class EditorComponent extends React.Component {
   };
 
   setCurrentAppEnvironmentId = () => {
-    const appId = this.props.match.params.id;
+    const appId = this.props.params.id;
     const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentAppEnvironmentIds') || JSON.stringify({}));
     this.setState({ currentAppEnvironmentId: currentEnvironmentObj[appId] });
   };

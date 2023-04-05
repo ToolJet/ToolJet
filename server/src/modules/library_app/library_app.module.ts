@@ -18,10 +18,23 @@ import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
+import { UsersService } from '@services/users.service';
+import { User } from 'src/entities/user.entity';
+import { Organization } from 'src/entities/organization.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([App, Credential, File, Plugin, DataSource, AppEnvironment, AppVersion]),
+    TypeOrmModule.forFeature([
+      App,
+      Credential,
+      File,
+      Plugin,
+      DataSource,
+      AppEnvironment,
+      AppVersion,
+      User,
+      Organization,
+    ]),
     CaslModule,
   ],
   providers: [
@@ -34,6 +47,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
     PluginsService,
     PluginsHelper,
     AppEnvironmentService,
+    UsersService,
   ],
   controllers: [LibraryAppsController],
 })

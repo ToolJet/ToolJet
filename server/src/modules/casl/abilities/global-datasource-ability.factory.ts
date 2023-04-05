@@ -18,7 +18,7 @@ export type GlobalDataSourcesAbility = Ability<[Actions, Subjects]>;
 export class GlobalDataSourceAbilityFactory {
   constructor(private usersService: UsersService) {}
 
-  async globalDataSourceActions(user: User) {
+  async globalDataSourceActions(user: User, dataSourceId?: string) {
     const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(
       Ability as AbilityClass<GlobalDataSourcesAbility>
     );
@@ -27,7 +27,7 @@ export class GlobalDataSourceAbilityFactory {
       can('createGlobalDataSource', DataSource);
     }
 
-    if (await this.usersService.userCan(user, 'update', 'GlobalDataSource')) {
+    if (await this.usersService.userCan(user, 'update', 'GlobalDataSource', dataSourceId)) {
       can('updateGlobalDataSource', DataSource);
     }
 

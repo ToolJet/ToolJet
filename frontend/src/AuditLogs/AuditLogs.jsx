@@ -8,7 +8,7 @@ import { appService } from '../_services/app.service';
 import { Pagination, MultiSelect, FilterPreview, ToolTip } from '@/_components';
 import Layout from '@/_ui/Layout';
 import moment from 'moment';
-
+import { withRouter } from '@/_hoc/withRouter';
 class AuditLogs extends React.Component {
   constructor(props) {
     super(props);
@@ -156,7 +156,7 @@ class AuditLogs extends React.Component {
 
     this.fetchAuditLogs(urlParams);
 
-    this.props.history.push({
+    this.props.navigate({
       pathname: '/audit-logs',
       search: new URLSearchParams(urlParams).toString(),
     });
@@ -588,4 +588,4 @@ class AuditLogs extends React.Component {
   }
 }
 
-export { AuditLogs };
+export const AuditLogsPage = withRouter(AuditLogs);

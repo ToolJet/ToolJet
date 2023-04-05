@@ -16,7 +16,9 @@ import {
 import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
 import { DataQuery } from './data_query.entity';
+import { DataSourceGroupPermission } from './data_source_group_permission.entity';
 import { DataSourceOptions } from './data_source_options.entity';
+import { GroupPermission } from './group_permission.entity';
 import { Plugin } from './plugin.entity';
 
 @Entity({ name: 'data_sources' })
@@ -76,6 +78,23 @@ export class DataSource extends BaseEntity {
   apps: App[];
 
   app: App;
+
+  @ManyToMany(() => GroupPermission)
+  @JoinTable({
+    name: 'data_source_group_permissions',
+    joinColumn: {
+      name: 'data_source_id',
+    },
+    inverseJoinColumn: {
+      name: 'group_permission_id',
+    },
+  })
+  groupPermissions: GroupPermission[];
+
+  @OneToMany(() => DataSourceGroupPermission, (dataSourceGroupPermission) => dataSourceGroupPermission.dataSource, {
+    onDelete: 'CASCADE',
+  })
+  dataSourceGroupPermissions: DataSourceGroupPermission[];
 
   @ManyToOne(() => Plugin, (plugin) => plugin.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'plugin_id' })

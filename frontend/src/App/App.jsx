@@ -13,7 +13,7 @@ import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/Editor';
 import { OrganizationSettings } from '@/OrganizationSettingsPage';
-import { AuditLogs } from '@/AuditLogs';
+import { AuditLogsPage } from '@/AuditLogs';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
@@ -212,18 +212,22 @@ class AppComponent extends React.Component {
             <Route
               exact
               path="/instance-settings"
-              component={InstanceSettings}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
+              element={
+                <PrivateRoute>
+                  <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
             />
-            {/* <PrivateRoute
+            <Route
               exact
               path="/audit-logs"
-              component={AuditLogs}
-              switchDarkMode={this.switchDarkMode}
-              darkMode={darkMode}
-            /> */}
-            {/* <PrivateRoute
+              element={
+                <PrivateRoute>
+                  <AuditLogsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
+            />
+            <Route
               exact
               path="/settings"
               element={
@@ -231,7 +235,7 @@ class AppComponent extends React.Component {
                   <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                 </PrivateRoute>
               }
-            /> */}
+            />
             {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
               <Route
                 exact

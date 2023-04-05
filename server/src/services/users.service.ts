@@ -15,6 +15,7 @@ import { USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_
 import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
+import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 
@@ -393,7 +394,6 @@ export class UsersService {
 
       case 'User':
       case 'Plugin':
-      case 'GlobalDataSource':
         return await this.hasGroup(user, 'admin');
 
       case 'Thread':
@@ -405,6 +405,9 @@ export class UsersService {
 
       case 'OrgEnvironmentVariable':
         return await this.canUserPerformActionOnEnvironmentVariable(user, action);
+
+      case 'GlobalDataSource':
+        return await this.canUserPerformActionOnDataSources(user, action, resourceId);
 
       default:
         return false;
@@ -429,6 +432,33 @@ export class UsersService {
           this.canAnyGroupPerformAction('delete', await this.appGroupPermissions(user, appId)) ||
           this.canAnyGroupPerformAction('appDelete', await this.groupPermissions(user)) ||
           (await this.isUserOwnerOfApp(user, appId));
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  async canUserPerformActionOnDataSources(user: User, action: string, dataSourceId?: string): Promise<boolean> {
+    let permissionGrant: boolean;
+
+    switch (action) {
+      case 'create':
+        permissionGrant = this.canAnyGroupPerformAction('dataSourceCreate', await this.groupPermissions(user));
+        break;
+      case 'read':
+      case 'update':
+        permissionGrant = this.canAnyGroupPerformAction(
+          action,
+          await this.dataSourceGroupPermissions(user, dataSourceId)
+        );
+        break;
+      case 'delete':
+        permissionGrant =
+          this.canAnyGroupPerformAction('delete', await this.dataSourceGroupPermissions(user)) ||
+          this.canAnyGroupPerformAction('dataSourceDelete', await this.groupPermissions(user));
         break;
       default:
         permissionGrant = false;
@@ -519,7 +549,10 @@ export class UsersService {
     });
   }
 
-  canAnyGroupPerformAction(action: string, permissions: AppGroupPermission[] | GroupPermission[]): boolean {
+  canAnyGroupPerformAction(
+    action: string,
+    permissions: AppGroupPermission[] | GroupPermission[] | DataSourceGroupPermission[]
+  ): boolean {
     return permissions.some((p) => p[action]);
   }
 
@@ -560,6 +593,36 @@ export class UsersService {
 
       if (appId) {
         query.andWhere('app_group_permissions.appId = :appId', { appId });
+      }
+      return await query.getMany();
+    }, manager);
+  }
+
+  async dataSourceGroupPermissions(
+    user: User,
+    dataSourceId?: string,
+    manager?: EntityManager
+  ): Promise<DataSourceGroupPermission[]> {
+    const orgUserGroupPermissions = await this.userGroupPermissions(user, user.organizationId, manager);
+    const groupIds = orgUserGroupPermissions.map((p) => p.groupPermissionId);
+
+    if (!groupIds || groupIds.length === 0) {
+      return [];
+    }
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const query = manager
+        .createQueryBuilder(DataSourceGroupPermission, 'data_source_group_permissions')
+        .innerJoin(
+          'data_source_group_permissions.groupPermission',
+          'group_permissions',
+          'group_permissions.organization_id = :organizationId',
+          {
+            organizationId: user.organizationId,
+          }
+        )
+        .where('data_source_group_permissions.groupPermissionId IN (:...groupIds)', { groupIds });
+      if (dataSourceId) {
+        query.andWhere('data_source_group_permissions.dataSourceId = :dataSourceId', { dataSourceId });
       }
       return await query.getMany();
     }, manager);

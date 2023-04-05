@@ -43,7 +43,7 @@ class LoginPageComponent extends React.Component {
       // redirect to home if already logged in
       // set redirect path for sso login
       const redirectPath = this.eraseRedirectUrl();
-      return this.props.history.push(redirectPath ? redirectPath : '/');
+      return this.props.navigate(redirectPath ? redirectPath : '/');
     }
     if (this.organizationId || this.single_organization)
       authenticationService.saveLoginOrganizationId(this.organizationId);
@@ -54,7 +54,7 @@ class LoginPageComponent extends React.Component {
       },
       (response) => {
         if (response.data.statusCode !== 404) {
-          return this.props.history.push({
+          return this.props.navigate({
             pathname: '/',
             state: { errorMessage: 'Error while login, please try again' },
           });
@@ -62,7 +62,7 @@ class LoginPageComponent extends React.Component {
         // If there is no organization found for single organization setup
         // show form to sign up
         // redirected here for self hosted version
-        this.props.history.push('/setup');
+        this.props.navigate('/setup');
 
         this.setState({
           isGettingConfigs: false,
@@ -134,7 +134,7 @@ class LoginPageComponent extends React.Component {
     const params = queryString.parse(this.props.location.search);
     const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
     const redirectPath = from.pathname === '/confirm' ? '/' : from;
-    this.props.history.push(redirectPath);
+    this.props.navigate(redirectPath);
     this.setState({ isLoading: false });
     this.eraseRedirectUrl();
   };
@@ -182,37 +182,37 @@ class LoginPageComponent extends React.Component {
                         this.state?.configs?.git?.enabled ||
                         configs?.form?.enabled ||
                         this.state?.configs?.openid?.enabled) && (
-                          <>
-                            <h2 className="common-auth-section-header sign-in-header" data-cy="sign-in-header">
-                              {this.props.t('loginSignupPage.signIn', `Sign in`)}
-                            </h2>
-                            {this.organizationId && (
-                              <p
-                                className="text-center-onboard workspace-login-description"
-                                data-cy="workspace-sign-in-sub-header"
-                              >
-                                Sign in to your workspace - {configs?.name}
-                              </p>
+                        <>
+                          <h2 className="common-auth-section-header sign-in-header" data-cy="sign-in-header">
+                            {this.props.t('loginSignupPage.signIn', `Sign in`)}
+                          </h2>
+                          {this.organizationId && (
+                            <p
+                              className="text-center-onboard workspace-login-description"
+                              data-cy="workspace-sign-in-sub-header"
+                            >
+                              Sign in to your workspace - {configs?.name}
+                            </p>
+                          )}
+                          <div className="tj-text-input-label">
+                            {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
+                              <div className="common-auth-sub-header sign-in-sub-header" data-cy="sign-in-sub-header">
+                                {this.props.t('newToTooljet', ` New to ${retrieveWhiteLabelText()}?`, {
+                                  whiteLabelText: retrieveWhiteLabelText(),
+                                })}
+                                <Link
+                                  to={'/signup'}
+                                  tabIndex="-1"
+                                  style={{ marginLeft: '4px' }}
+                                  data-cy="create-an-account-link"
+                                >
+                                  {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
+                                </Link>
+                              </div>
                             )}
-                            <div className="tj-text-input-label">
-                              {!this.organizationId && (configs?.form?.enable_sign_up || configs?.enable_sign_up) && (
-                                <div className="common-auth-sub-header sign-in-sub-header" data-cy="sign-in-sub-header">
-                                  {this.props.t('newToTooljet', ` New to ${retrieveWhiteLabelText()}?`, {
-                                    whiteLabelText: retrieveWhiteLabelText(),
-                                  })}
-                                  <Link
-                                    to={'/signup'}
-                                    tabIndex="-1"
-                                    style={{ marginLeft: '4px' }}
-                                    data-cy="create-an-account-link"
-                                  >
-                                    {this.props.t('loginSignupPage.createToolJetAccount', `Create an account`)}
-                                  </Link>
-                                </div>
-                              )}
-                            </div>
-                          </>
-                        )}
+                          </div>
+                        </>
+                      )}
                       {this.state?.configs?.git?.enabled && (
                         <div className="login-sso-wrapper">
                           <GitSSOLoginButton configs={this.state?.configs?.git?.configs} />
@@ -309,8 +309,8 @@ class LoginPageComponent extends React.Component {
                                           ? '#D1D5DB'
                                           : '#656565'
                                         : this.state?.password?.length
-                                          ? '#384151'
-                                          : '#D1D5DB'
+                                        ? '#384151'
+                                        : '#D1D5DB'
                                     }
                                   />
                                 ) : (
@@ -321,8 +321,8 @@ class LoginPageComponent extends React.Component {
                                           ? '#D1D5DB'
                                           : '#656565'
                                         : this.state?.password?.length
-                                          ? '#384151'
-                                          : '#D1D5DB'
+                                        ? '#384151'
+                                        : '#D1D5DB'
                                     }
                                   />
                                 )}

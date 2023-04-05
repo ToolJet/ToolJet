@@ -39,6 +39,7 @@ import { AppEnvironmentsModule } from '../app_environments/app_environments.modu
 import { AppVersion } from 'src/entities/app_version.entity';
 import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
+import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { MetadataService } from '@services/metadata.service';
       SSOConfigs,
       AppGroupPermission,
       UserGroupPermission,
+      DataSourceGroupPermission,
       AuditLog,
       DataSource,
       Credential,
