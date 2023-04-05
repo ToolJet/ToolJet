@@ -264,15 +264,6 @@ export function Table({
       changesToBeSavedAndExposed.dataUpdates = newDataUpdates;
       changesToBeSavedAndExposed.changeSet = newChangeset;
     }
-    console.log(
-      'table---',
-      newRowAddedChangeSet,
-      newRowDataUpdates,
-      Object.keys(newRowAddedChangeSet)[0],
-      typeof Object.keys(newRowAddedChangeSet)[0],
-      typeof index
-    );
-    // const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
 
     return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
@@ -354,7 +345,6 @@ export function Table({
         }
         return { ...rowData };
       });
-      console.log('table---', 'updateddata---', updatedData, 'newUpdatedData---', newUpdatedData);
       updatedDataReference.current = newUpdatedData;
       mergeToTableDetailsObj.isAddingNewRowRef = false;
       mergeToTableDetailsObj.newRowAddedChangeSet = {};
@@ -366,12 +356,13 @@ export function Table({
     });
   }
 
-  function handleAddNewRow(pageIndex) {
+  function handleAddNewRow(pageIndex, allColumns) {
     const clonedTableData = _.isEmpty(updatedDataReference.current)
       ? _.cloneDeep(tableData)
       : _.cloneDeep(updatedDataReference.current);
-    const newRow = Object.keys(tableData[0]).reduce((accumulator, currentValue) => {
-      accumulator[currentValue] = '';
+    const newRow = allColumns.reduce((accumulator, column) => {
+      const key = column.key ?? column.exportValue;
+      accumulator[key] = '';
       return accumulator;
     }, {});
     const newRowIndex = pageIndex === 0 ? 0 : pageIndex * rowsPerPage;
@@ -856,7 +847,7 @@ export function Table({
               <button
                 className="btn btn-light btn-sm p-1 mx-1"
                 onClick={(e) => {
-                  handleAddNewRow(pageIndex);
+                  handleAddNewRow(pageIndex, allColumns);
                 }}
                 data-tip="Add new row"
                 disabled={!_.isEmpty(tableDetails?.changeSet || {}) || tableDetails.isAddingNewRowRef ? true : false}
