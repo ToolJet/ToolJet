@@ -14,6 +14,8 @@ function DataSourceLister({
   darkMode,
   dataSourceModalHandler,
   showAddDatasourceBtn = true,
+  isVersionReleased,
+  setReleasedVersionPopupState,
 }) {
   const [allSources, setAllSources] = useState([...dataSources, ...staticDataSources]);
   const { t } = useTranslation();
@@ -56,7 +58,13 @@ function DataSourceLister({
             className="query-datasource-card"
             style={computedStyles}
             key={`${source.id}-${source.kind}`}
-            onClick={() => handleChangeDataSource(source)}
+            onClick={() => {
+              if (isVersionReleased) {
+                setReleasedVersionPopupState();
+                return;
+              }
+              handleChangeDataSource(source);
+            }}
           >
             {fetchIconForSource(source)}
             <p data-cy={`${String(source.name).toLocaleLowerCase().replace(/\s+/g, '-')}-add-query-card`}>

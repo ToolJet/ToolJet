@@ -34,6 +34,8 @@ const LeftSidebarPageSelector = ({
   apps,
   dataQueries,
   popoverContentHeight,
+  isVersionReleased,
+  setReleasedVersionPopupState,
 }) => {
   const [allpages, setPages] = useState(pages);
   const [pinned, setPinned] = useState(false);
@@ -72,13 +74,21 @@ const LeftSidebarPageSelector = ({
                 darkMode={darkMode}
                 showHideViewerNavigationControls={showHideViewerNavigationControls}
                 showPageViwerPageNavitation={appDefinition?.showViewerNavigation || false}
+                isVersionReleased={isVersionReleased}
+                setReleasedVersionPopupState={setReleasedVersionPopupState}
               />
             }
           >
             <div className="d-flex justify-content-end">
               <Button
                 title={'Add Page'}
-                onClick={() => setNewPageBeingCreated(true)}
+                onClick={() => {
+                  if (isVersionReleased) {
+                    setReleasedVersionPopupState();
+                    return;
+                  }
+                  setNewPageBeingCreated(true);
+                }}
                 darkMode={darkMode}
                 size="sm"
                 styles={{ width: '28px', padding: 0 }}
@@ -145,6 +155,8 @@ const LeftSidebarPageSelector = ({
                 allpages={pages}
                 components={appDefinition?.components ?? {}}
                 dataQueries={dataQueries}
+                isVersionReleased={isVersionReleased}
+                setReleasedVersionPopupState={setReleasedVersionPopupState}
               />
             ) : (
               <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>

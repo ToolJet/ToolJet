@@ -49,6 +49,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
     dataQueries,
     clonePage,
     queryPanelHeight,
+    isVersionReleased,
+    setReleasedVersionPopupState,
   } = props;
   const [selectedSidebarItem, setSelectedSidebarItem] = useState();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -99,6 +101,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
         apps={apps}
         dataQueries={dataQueries}
         popoverContentHeight={popoverContentHeight}
+        isVersionReleased={isVersionReleased}
+        setReleasedVersionPopupState={setReleasedVersionPopupState}
       />
       <LeftSidebarInspector
         darkMode={darkMode}
@@ -127,6 +131,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
           toggleDataSourceManagerModal={toggleDataSourceManagerModal}
           showDataSourceManagerModal={showDataSourceManagerModal}
           popoverContentHeight={popoverContentHeight}
+          isVersionReleased={isVersionReleased}
+          setReleasedVersionPopupState={setReleasedVersionPopupState}
         />
       )}
       {config.COMMENT_FEATURE_ENABLE && (

@@ -784,7 +784,7 @@ class DataSourceManagerComponent extends React.Component {
               <div className="col-auto" data-cy="db-connection-save-button">
                 <Button
                   className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
-                  disabled={isSaving}
+                  disabled={isSaving || this.props.isVersionReleased}
                   variant="primary"
                   onClick={this.createDataSource}
                 >
@@ -808,7 +808,12 @@ class DataSourceManagerComponent extends React.Component {
                 </small>
               </div>
               <div className="col-auto">
-                <Button className="m-2" disabled={isSaving} variant="primary" onClick={this.createDataSource}>
+                <Button
+                  className="m-2"
+                  disabled={isSaving || this.props.isVersionReleased}
+                  variant="primary"
+                  onClick={this.createDataSource}
+                >
                   {isSaving
                     ? this.props.t('editor.queryManager.dataSourceManager.saving' + '...', 'Saving...')
                     : this.props.t('globals.save', 'Save')}

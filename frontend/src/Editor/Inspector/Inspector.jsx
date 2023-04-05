@@ -31,6 +31,8 @@ export const Inspector = ({
   switchSidebarTab,
   removeComponent,
   pages,
+  isVersionReleased,
+  setReleasedVersionPopupState,
 }) => {
   const component = {
     id: selectedComponentId,
@@ -77,17 +79,19 @@ export const Inspector = ({
   };
 
   function handleComponentNameChange(newName) {
+    if (isVersionReleased) {
+      setReleasedVersionPopupState();
+      return;
+    }
     if (component.component.name === newName) return;
     if (newName.length === 0) {
       toast.error(t('widget.common.widgetNameEmptyError', 'Widget name cannot be empty'));
       return setInputFocus();
     }
-
     if (!validateComponentName(newName)) {
       toast.error(t('widget.common.componentNameExistsError', 'Component name already exists'));
       return setInputFocus();
     }
-
     if (validateQueryName(newName)) {
       let newComponent = { ...component };
       newComponent.component.name = newName;
@@ -111,15 +115,17 @@ export const Inspector = ({
   };
 
   function paramUpdated(param, attr, value, paramType) {
+    if (isVersionReleased) {
+      setReleasedVersionPopupState();
+      return;
+    }
     console.log({ param, attr, value, paramType });
-
     let newDefinition = _.cloneDeep(component.component.definition);
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
     if (!paramObject) {
       allParams[param.name] = {};
     }
-
     if (attr) {
       allParams[param.name][attr] = value;
       const defaultValue = getDefaultValue(value);
@@ -136,19 +142,20 @@ export const Inspector = ({
     } else {
       allParams[param.name] = value;
     }
-
     newDefinition[paramType] = allParams;
-
     let newComponent = _.merge(component, {
       component: {
         definition: newDefinition,
       },
     });
-
     componentDefinitionChanged(newComponent);
   }
 
   function layoutPropertyChanged(param, attr, value, paramType) {
+    if (isVersionReleased) {
+      setReleasedVersionPopupState();
+      return;
+    }
     paramUpdated(param, attr, value, paramType);
 
     // User wants to show the widget on mobile devices
@@ -198,6 +205,10 @@ export const Inspector = ({
   }
 
   function eventUpdated(event, actionId) {
+    if (isVersionReleased) {
+      setReleasedVersionPopupState();
+      return;
+    }
     let newDefinition = { ...component.component.definition };
     newDefinition.events[event.name] = { actionId };
 
@@ -209,6 +220,10 @@ export const Inspector = ({
   }
 
   function eventsChanged(newEvents, isReordered = false) {
+    if (isVersionReleased) {
+      setReleasedVersionPopupState();
+      return;
+    }
     let newDefinition;
     if (isReordered) {
       newDefinition = { ...component.component };
@@ -226,6 +241,10 @@ export const Inspector = ({
   }
 
   function eventOptionUpdated(event, option, value) {
+    if (isVersionReleased) {
+      setReleasedVersionPopupState();
+      return;
+    }
     console.log('eventOptionUpdated', event, option, value);
 
     let newDefinition = { ...component.component.definition };

@@ -26,6 +26,7 @@ export const PageHandler = ({
   pages,
   components,
   dataQueries,
+  isVersionReleased,
 }) => {
   const isHomePage = page.id === homePageId;
   const isSelected = page.id === currentPageId;
@@ -152,7 +153,7 @@ export const PageHandler = ({
             )}
           </div>
           <div className="col-auto">
-            {(isHovered || isSelected) && (
+            {(isHovered || isSelected) && !isVersionReleased && (
               <PagehandlerMenu
                 page={page}
                 darkMode={darkMode}
