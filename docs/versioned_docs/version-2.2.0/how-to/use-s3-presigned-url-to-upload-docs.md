@@ -67,7 +67,7 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
   - **Operation**: Signed URL for upload
   - **Bucket**: `{{components.dropdown1.value}}` this will fetch the dynamic value from the dropdown
   - **Key**: `{{components.filepicker1.file[0].name}}` this will get the file name from the filepickers exposed variables
-  - **Expires in:** This sets an expiration time of URL, by default its 3600(36 hours)
+  - **Expires in:** This sets an expiration time of URL, by default its `3600` sec(1 hours)
   - **Content Type**: `{{components.filepicker1.file[0].type}}` this will get the file type from the filepickers exposed variables
 
   <div style={{textAlign: 'center'}}>
@@ -112,7 +112,7 @@ On ToolJet Dashboard, Click on the down arrow on the right of the **New App** bu
   .catch(error => console.error('Error uploading file:', error));
   ```
   :::warning Enable Cross Origin Resource Sharing(CORS)
-  - For the file to be uploaded successfully, you will need to add the CORS configuration from the **Permissions** tab of your **Bucket** settings. Here's a sample CORS:
+  - For the file to be uploaded successfully, you will need to add the CORS policies from the **Permissions** tab of your **Bucket** settings. Here's a sample CORS:
   ```json
   [
     {
