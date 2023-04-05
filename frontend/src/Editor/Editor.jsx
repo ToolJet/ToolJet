@@ -166,7 +166,7 @@ class EditorComponent extends React.Component {
       queryPanelHeight: this.queryManagerPreferences?.isExpanded
         ? this.queryManagerPreferences?.queryPanelHeight
         : 95 ?? 70,
-      showReleasedVersionError: false,
+      isUserEditingTheVersion: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -712,7 +712,15 @@ class EditorComponent extends React.Component {
       });
       this.handleInspectorView();
     } else if (this.isVersionReleased()) {
-      this.setState({ showCreateVersionModalPrompt: true });
+      this.setState({ isUserEditingTheVersion: true }, () => {
+        setInterval(
+          () =>
+            this.setState({
+              isUserEditingTheVersion: false,
+            }),
+          3000
+        );
+      });
     }
   };
 
@@ -754,7 +762,15 @@ class EditorComponent extends React.Component {
       });
       this.handleInspectorView();
     } else {
-      this.setState({ showCreateVersionModalPrompt: true });
+      this.setState({ isUserEditingTheVersion: true }, () => {
+        setInterval(
+          () =>
+            this.setState({
+              isUserEditingTheVersion: false,
+            }),
+          3000
+        );
+      });
     }
   };
 
@@ -1210,7 +1226,15 @@ class EditorComponent extends React.Component {
 
   saveEditingVersion = () => {
     if (this.isVersionReleased()) {
-      this.setState({ isSaving: false, showReleasedVersionError: true });
+      this.setState({ isSaving: false, isUserEditingTheVersion: true }, () => {
+        setInterval(
+          () =>
+            this.setState({
+              isUserEditingTheVersion: false,
+            }),
+          3000
+        );
+      });
     } else if (!isEmpty(this.state.editingVersion)) {
       appVersionService
         .save(this.state.appId, this.state.editingVersion.id, { definition: this.state.appDefinition })
@@ -1824,6 +1848,9 @@ class EditorComponent extends React.Component {
           onCancel={() => this.cancelDeletePageRequest()}
           darkMode={this.props.darkMode}
         />
+        {this.isVersionReleased() && (
+          <ReleasedVersionError isUserEditingTheVersion={this.state.isUserEditingTheVersion} />
+        )}
         <EditorContextWrapper>
           <EditorHeader
             darkMode={this.props.darkMode}
@@ -1852,7 +1879,6 @@ class EditorComponent extends React.Component {
             handleSlugChange={this.handleSlugChange}
             onVersionRelease={this.onVersionRelease}
             saveEditingVersion={this.saveEditingVersion}
-            showReleasedVersionError={this.state.showReleasedVersionError}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
@@ -1979,7 +2005,6 @@ class EditorComponent extends React.Component {
                         </div>
                       </div>
                     )}
-                    {this.state.showReleasedVersionError && <ReleasedVersionError />}
                     {defaultComponentStateComputed && (
                       <>
                         <Container
@@ -2012,7 +2037,6 @@ class EditorComponent extends React.Component {
                           sideBarDebugger={this.sideBarDebugger}
                           dataQueries={dataQueries}
                           currentPageId={this.state.currentPageId}
-                          showReleasedVersionError={this.state.showReleasedVersionError}
                         />
                         <CustomDragLayer
                           snapToGrid={true}

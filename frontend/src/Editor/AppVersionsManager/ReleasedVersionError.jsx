@@ -1,18 +1,11 @@
 import React from 'react';
-import Modal from 'react-bootstrap/Modal';
+import cx from 'classnames';
 
-export const ReleasedVersionError = () => {
+export const ReleasedVersionError = ({ isUserEditingTheVersion }) => {
   return (
-    <>
-      <Modal
-        show={true}
-        onHide={() => {}}
-        dialogClassName="released-version-error-pop-up"
-        contentClassName="released-version-error-pop-up-content"
-        backdrop={false}
-        keyboard={false}
-      >
-        <div className="d-flex">
+    <div className="released-version-popup-container">
+      <div className={cx('released-version-popup-cover', isUserEditingTheVersion && 'error-shake')}>
+        <div className="d-flex popup-content">
           <div className="me-3">
             <svg width="28" height="27" viewBox="0 0 28 27" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle opacity="0.4" cx="14" cy="13.6289" r="13.3333" fill="#E54D2E" />
@@ -30,7 +23,7 @@ export const ReleasedVersionError = () => {
           </div>
           <p>This is a released app. Create a new version to make changes.</p>
         </div>
-      </Modal>
-    </>
+      </div>
+    </div>
   );
 };

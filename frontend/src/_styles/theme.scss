@@ -10,7 +10,7 @@
 @import "./typography.scss";
 @import "./designtheme.scss";
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,400;1,500;1,600;1,700&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,400;1,500;1,600;1,700&display=swap');
 // variables
 $border-radius: 4px;
 
@@ -1740,7 +1740,7 @@ button {
       padding: 10px;
       margin-left: -9px;
       background: white;
-      box-shadow: rgba(15, 15, 15, 0/05) 0px 0px 0px 1px,
+      box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px,
         rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
       white-space: initial;
     }
@@ -4469,7 +4469,7 @@ input[type="text"] {
 }
 
 .onboarding-modal.dark .modal-content {
-  @extend .modal-content.home-modal-component.dark;
+  @extend .modal-content, .home-modal-component, .dark;
 }
 
 .modal-content.home-modal-component.dark {
@@ -7572,15 +7572,57 @@ tbody {
 }
 }
 
-.released-version-error-pop-up {
-  top: 30px;
-  width: 250px;
-  height: 92px;
+.released-version-popup-container {
+  width: 100%;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  top: 55px;
+
+  .released-version-popup-cover {
+    width: 250px;
+    height: fit-content;
+    margin: 0;
+    z-index: 1;
+
+    .popup-content {
+      background-color: #121212;
+      padding: 16px 18px 0px 16px;
+      border-radius: 6px;
+  
+      p {
+        font-size: 14px;
+        font-family: IBM Plex Sans;
+        color: #ECEDEE;
+      }
+    }
+  }
+
+  .error-shake {
+    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 10000px;
+  }
+  
+  @keyframes shake {
+    10%, 90% {
+      transform: translate3d(-1px, 0, 0);
+    }
+    
+    20%, 80% {
+      transform: translate3d(2px, 0, 0);
+    }
+  
+    30%, 50%, 70% {
+      transform: translate3d(-4px, 0, 0);
+    }
+  
+    40%, 60% {
+      transform: translate3d(4px, 0, 0);
+    }
+  }
+
 }
 
-.released-version-error-pop-up-content {
-  background-color: #121212;
-  color: #ECEDEE;
-  padding: 16px 18px 0px 16px;
-  border-radius: 6px;
-}
+
