@@ -36,7 +36,7 @@ export class GlobalDataSourcesController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async fetchGlobalDataSources(@User() user, @Query() query) {
-    const dataSources = await this.dataSourcesService.all(query, user.organizationId, DataSourceScopes.GLOBAL);
+    const dataSources = await this.dataSourcesService.all(query, user, DataSourceScopes.GLOBAL);
     for (const dataSource of dataSources) {
       if (dataSource.pluginId) {
         dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
