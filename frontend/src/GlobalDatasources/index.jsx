@@ -1,7 +1,7 @@
 import React, { createContext, useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
-import { globalDatasourceService, authenticationService } from '@/_services';
+import { globalDatasourceService, appEnvironmentService } from '@/_services';
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
 
 export const GlobalDataSourcesContext = createContext({
@@ -18,91 +18,71 @@ export const GlobalDatasources = (props) => {
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [isEditing, setEditing] = useState(true);
+  const [environments, setEnvironments] = useState([]);
+  const [currentEnvironment, setCurrentEnvironment] = useState(null);
   const navigate = useNavigate();
-  const currentUser = authenticationService.currentUserValue;
 
-  const fetchDataSources = async (resetSelection = false) => {
+  useEffect(() => {
+    if (!admin) {
+      navigate('/');
+    }
+    fetchEnvironments();
+  }, [admin]);
+
+  const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     globalDatasourceService
       .getAll(organizationId)
       .then((data) => {
-        setDataSources([...(data.data_sources ?? [])]);
-        if (data.data_sources.length && resetSelection) {
-          setSelectedDataSource(data.data_sources[0]);
+        const orderedDataSources = data.data_sources.sort((a, b) => a.name.localeCompare(b.name));
+        setDataSources([...(orderedDataSources ?? [])]);
+        const ds = dataSource && orderedDataSources.find((ds) => ds.id === dataSource.id);
+
+        if (!resetSelection && ds) {
+          setEditing(true);
+          setSelectedDataSource(ds);
+          toggleDataSourceManagerModal(true);
+        }
+        if (orderedDataSources.length && resetSelection) {
+          setSelectedDataSource(orderedDataSources[0]);
           toggleDataSourceManagerModal(true);
         }
       })
-      .catch(() => setDataSources([]));
+      .catch(() => {
+        setDataSources([]);
+      });
   };
 
-  const canUserPerform = (user, action, dataSource) => {
-    if (currentUser?.super_admin) {
-      return true;
-    }
-    let permissionGrant;
-
-    switch (action) {
-      case 'create':
-        permissionGrant = canAnyGroupPerformAction('data_source_create', user.group_permissions);
-        break;
-      case 'read':
-      case 'update':
-        permissionGrant = canAnyGroupPerformActionOnDataSource(action, user.data_source_group_permissions, dataSource);
-        break;
-      case 'delete':
-        permissionGrant =
-          this.canAnyGroupPerformActionOnDataSource('delete', user.app_group_permissions, dataSource) ||
-          this.canAnyGroupPerformAction('data_source_delete', user.group_permissions);
-        break;
-      default:
-        permissionGrant = false;
-        break;
-    }
-
-    return permissionGrant;
-  };
-
-  const canAnyGroupPerformActionOnDataSource = (action, dataSourceGroupPermissions, dataSource) => {
-    if (!dataSourceGroupPermissions) {
-      return false;
-    }
-
-    const permissionsToCheck = dataSourceGroupPermissions.filter(
-      (permission) => permission.data_source_id == dataSource.id
+  const handleToggleSourceManagerModal = () => {
+    toggleDataSourceManagerModal(
+      (prevState) => !prevState,
+      () => setEditing((prev) => !prev)
     );
-    return this.canAnyGroupPerformAction(action, permissionsToCheck);
-  };
-
-  const canAnyGroupPerformAction = (action, permissions) => {
-    if (!permissions) {
-      return false;
-    }
-
-    return permissions.some((p) => p[action]);
-  };
-
-  const canCreateDataSource = () => {
-    return canUserPerform(currentUser, 'create');
-  };
-
-  const canUpdateDataSource = (dataSource) => {
-    return canUserPerform(currentUser, 'update', dataSource);
-  };
-
-  const canDeleteDataSource = (dataSource) => {
-    return canUserPerform(currentUser, 'delete', dataSource);
   };
 
   const handleModalVisibility = () => {
-    setSelectedDataSource(null);
-    setEditing(false);
-    toggleDataSourceManagerModal(true);
+    if (selectedDataSource) {
+      return setSelectedDataSource(null, () => handleToggleSourceManagerModal());
+    }
+
+    handleToggleSourceManagerModal();
   };
 
-  useEffect(() => {
-    if (!canCreateDataSource()) {
-      navigate('/');
-    }
-  }, []);
+  const fetchEnvironments = () => {
+    appEnvironmentService.getAllEnvironments().then((data) => {
+      const envArray = data?.environments;
+      setEnvironments(envArray);
+      if (envArray.length > 0) {
+        const env = envArray.find((env) => env.is_default === true);
+        setCurrentEnvironment(env);
+      }
+    });
+  };
+
+  const fetchDataSourceByEnvironment = (dataSourceId, envId) => {
+    globalDatasourceService.getDataSourceByEnvironmentId(dataSourceId, envId).then((data) => {
+      setSelectedDataSource(data);
+    });
+  };
 
   const value = useMemo(
     () => ({
@@ -115,11 +95,14 @@ export const GlobalDatasources = (props) => {
       handleModalVisibility,
       isEditing,
       setEditing,
-      canCreateDataSource,
-      canDeleteDataSource,
-      canUpdateDataSource,
+      fetchEnvironments,
+      environments,
+      currentEnvironment,
+      setCurrentEnvironment,
+      setDataSources,
+      fetchDataSourceByEnvironment,
     }),
-    [selectedDataSource, dataSources, showDataSourceManagerModal, isEditing]
+    [selectedDataSource, dataSources, showDataSourceManagerModal, isEditing, environments, currentEnvironment]
   );
 
   return (

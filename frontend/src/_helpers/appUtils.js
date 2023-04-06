@@ -24,6 +24,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
 import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
+import { flushSync } from 'react-dom'; // TODO: It can be removed once we've a proper state update flow
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -344,7 +345,24 @@ function logoutAction(_ref) {
 
   return Promise.resolve();
 }
-export const executeAction = (_ref, event, mode, customVariables) => {
+
+function debounce(func) {
+  let timer;
+  return (...args) => {
+    const event = args[1] || {};
+    if (event.debounce === undefined) {
+      return func.apply(this, args);
+    }
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      func.apply(this, args);
+    }, Number(event.debounce));
+  };
+}
+
+export const executeAction = debounce(executeActionWithDebounce);
+
+function executeActionWithDebounce(_ref, event, mode, customVariables) {
   console.log('nopski', customVariables);
   if (event) {
     switch (event.actionId) {
@@ -545,7 +563,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
       }
     }
   }
-};
+}
 
 export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
@@ -709,11 +727,13 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCalendarViewChange',
       'onSearchTextChanged',
       'onPageChange',
+      'onAddCardClick',
       'onCardAdded',
       'onCardRemoved',
       'onCardMoved',
       'onCardSelected',
       'onCardUpdated',
+      'onUpdate',
       'onTabSwitch',
       'onFocus',
       'onBlur',
@@ -956,48 +976,51 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
 
           if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
             const errorData = query.kind === 'runpy' ? data.data : data;
-            return _self.setState(
-              {
-                currentState: {
-                  ..._self.state.currentState,
-                  queries: {
-                    ..._self.state.currentState.queries,
-                    [queryName]: _.assign(
-                      {
-                        ..._self.state.currentState.queries[queryName],
-                        isLoading: false,
+            flushSync(() => {
+              return _self.setState(
+                {
+                  currentState: {
+                    ..._self.state.currentState,
+                    queries: {
+                      ..._self.state.currentState.queries,
+                      [queryName]: _.assign(
+                        {
+                          ..._self.state.currentState.queries[queryName],
+                          isLoading: false,
+                        },
+                        query.kind === 'restapi'
+                          ? {
+                              request: data.data.requestObject,
+                              response: data.data.responseObject,
+                              responseHeaders: data.data.responseHeaders,
+                            }
+                          : {}
+                      ),
+                    },
+                    errors: {
+                      ..._self.state.currentState.errors,
+                      [queryName]: {
+                        type: 'query',
+                        kind: query.kind,
+                        data: errorData,
+                        options: options,
                       },
-                      query.kind === 'restapi'
-                        ? {
-                            request: data.data.requestObject,
-                            response: data.data.responseObject,
-                            responseHeaders: data.data.responseHeaders,
-                          }
-                        : {}
-                    ),
-                  },
-                  errors: {
-                    ..._self.state.currentState.errors,
-                    [queryName]: {
-                      type: 'query',
-                      kind: query.kind,
-                      data: errorData,
-                      options: options,
                     },
                   },
                 },
-              },
-              () => {
-                resolve(data);
-                onEvent(_self, 'onDataQueryFailure', {
-                  definition: { events: dataQuery.options.events },
-                });
-                if (mode !== 'view') {
-                  const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
-                  toast.error(err?.message);
+                () => {
+                  resolve(data);
+                  onEvent(_self, 'onDataQueryFailure', {
+                    definition: { events: dataQuery.options.events },
+                  });
+                  if (mode !== 'view') {
+                    const err =
+                      query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
+                    toast.error(err?.message);
+                  }
                 }
-              }
-            );
+              );
+            });
           }
 
           let rawData = data.data;
@@ -1013,35 +1036,36 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               'edit'
             );
             if (finalData.status === 'failed') {
-              console.log('runPythonTransformation', finalData);
-              return _self.setState(
-                {
-                  currentState: {
-                    ..._self.state.currentState,
-                    queries: {
-                      ..._self.state.currentState.queries,
-                      [queryName]: {
-                        ..._self.state.currentState.queries[queryName],
-                        isLoading: false,
+              flushSync(() => {
+                return _self.setState(
+                  {
+                    currentState: {
+                      ..._self.state.currentState,
+                      queries: {
+                        ..._self.state.currentState.queries,
+                        [queryName]: {
+                          ..._self.state.currentState.queries[queryName],
+                          isLoading: false,
+                        },
                       },
-                    },
-                    errors: {
-                      ..._self.state.currentState.errors,
-                      [queryName]: {
-                        type: 'transformations',
-                        data: finalData,
-                        options: options,
+                      errors: {
+                        ..._self.state.currentState.errors,
+                        [queryName]: {
+                          type: 'transformations',
+                          data: finalData,
+                          options: options,
+                        },
                       },
                     },
                   },
-                },
-                () => {
-                  resolve(finalData);
-                  onEvent(_self, 'onDataQueryFailure', {
-                    definition: { events: dataQuery.options.events },
-                  });
-                }
-              );
+                  () => {
+                    resolve(finalData);
+                    onEvent(_self, 'onDataQueryFailure', {
+                      definition: { events: dataQuery.options.events },
+                    });
+                  }
+                );
+              });
             }
           }
 
@@ -1051,61 +1075,64 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               duration: notificationDuration,
             });
           }
-
-          _self.setState(
-            {
-              currentState: {
-                ..._self.state.currentState,
-                queries: {
-                  ..._self.state.currentState.queries,
-                  [queryName]: _.assign(
-                    {
-                      ..._self.state.currentState.queries[queryName],
-                      isLoading: false,
-                      data: finalData,
-                      rawData,
-                    },
-                    query.kind === 'restapi'
-                      ? {
-                          request: data.request,
-                          response: data.response,
-                          responseHeaders: data.responseHeaders,
-                        }
-                      : {}
-                  ),
-                },
-              },
-            },
-            () => {
-              resolve({ status: 'ok', data: finalData });
-              onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
-
-              if (mode !== 'view') {
-                toast(`Query (${queryName}) completed.`, {
-                  icon: '🚀',
-                });
-              }
-            }
-          );
-        })
-        .catch(({ error }) => {
-          if (mode !== 'view') toast.error(error ?? 'Unknown error');
-          _self.setState(
-            {
-              currentState: {
-                ..._self.state.currentState,
-                queries: {
-                  ..._self.state.currentState.queries,
-                  [queryName]: {
-                    isLoading: false,
+          flushSync(() => {
+            _self.setState(
+              {
+                currentState: {
+                  ..._self.state.currentState,
+                  queries: {
+                    ..._self.state.currentState.queries,
+                    [queryName]: _.assign(
+                      {
+                        ..._self.state.currentState.queries[queryName],
+                        isLoading: false,
+                        data: finalData,
+                        rawData,
+                      },
+                      query.kind === 'restapi'
+                        ? {
+                            request: data.request,
+                            response: data.response,
+                            responseHeaders: data.responseHeaders,
+                          }
+                        : {}
+                    ),
                   },
                 },
               },
-            },
-            () => {
-              resolve({ status: 'failed', message: error });
-            }
-          );
+              () => {
+                resolve({ status: 'ok', data: finalData });
+                onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
+
+                if (mode !== 'view') {
+                  toast(`Query (${queryName}) completed.`, {
+                    icon: '🚀',
+                  });
+                }
+              }
+            );
+          });
+        })
+        .catch(({ error }) => {
+          if (mode !== 'view') toast.error(error ?? 'Unknown error');
+          flushSync(() => {
+            _self.setState(
+              {
+                currentState: {
+                  ..._self.state.currentState,
+                  queries: {
+                    ..._self.state.currentState.queries,
+                    [queryName]: {
+                      isLoading: false,
+                    },
+                  },
+                },
+              },
+              () => {
+                resolve({ status: 'failed', message: error });
+              }
+            );
+          });
         });
     });
   });
@@ -1515,7 +1542,7 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.others.showOnMobile.value = true;
   }
 
-  const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form'];
+  const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form', 'Kanban'];
 
   const newComponent = {
     id: uuidv4(),

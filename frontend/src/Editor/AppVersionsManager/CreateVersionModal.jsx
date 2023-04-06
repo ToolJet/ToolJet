@@ -99,7 +99,7 @@ export const CreateVersion = ({
               options={options}
               defaultValue={options[options.length - 1]}
               onChange={(version) => {
-                setAppDefinitionFromVersion(version);
+                setAppDefinitionFromVersion(version, false);
               }}
               useMenuPortal={false}
               width="100%"

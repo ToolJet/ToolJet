@@ -32,7 +32,7 @@ export class DataQueriesService {
     private auditLoggerService: AuditLoggerService,
     @InjectRepository(OrgEnvironmentVariable)
     private orgEnvironmentVariablesRepository: Repository<OrgEnvironmentVariable>
-  ) { }
+  ) {}
 
   async findOne(dataQueryId: string): Promise<DataQuery> {
     return await this.dataQueriesRepository.findOne({
@@ -106,8 +106,8 @@ export class DataQueriesService {
       return !isAppPublic
         ? tokenData.find((token: any) => token.user_id === userId)
         : userId
-          ? tokenData.find((token: any) => token.user_id === userId)
-          : tokenData[0];
+        ? tokenData.find((token: any) => token.user_id === userId)
+        : tokenData[0];
     } else {
       return tokenData;
     }
@@ -156,11 +156,11 @@ export class DataQueriesService {
         const currentUserToken = sourceOptions['refresh_token']
           ? sourceOptions
           : this.getCurrentUserToken(
-            sourceOptions['multiple_auth_enabled'],
-            sourceOptions['tokenData'],
-            user?.id,
-            app?.isPublic
-          );
+              sourceOptions['multiple_auth_enabled'],
+              sourceOptions['tokenData'],
+              user?.id,
+              app?.isPublic
+            );
         if (currentUserToken && currentUserToken['refresh_token']) {
           console.log('Access token expired. Attempting refresh token flow.');
           let accessTokenDetails;
@@ -401,7 +401,6 @@ export class DataQueriesService {
           encrypted: false,
         },
       ];
-
     }
     await this.dataSourcesService.updateOptions(dataSource.id, tokenOptions, organizationId, environmentId);
     return;
@@ -495,7 +494,7 @@ export class DataQueriesService {
         }
       }
     } else if (Array.isArray(object)) {
-      object.forEach((element) => { });
+      object.forEach((element) => {});
 
       for (const [index, element] of object) {
         object[index] = await this.parseQueryOptions(element, options, organization_id);

@@ -11,10 +11,11 @@ export const Breadcrumbs = () => {
           <Link to={'/'}>Apps</Link>
         </li>
       )}
-      {breadcrumbs.map(({ breadcrumb, dataCy }) => {
+      {breadcrumbs.map(({ breadcrumb, dataCy, beta }) => {
         return (
           <li key={breadcrumb.key} className="breadcrumb-item font-weight-500" data-cy={dataCy ?? ''}>
-            <Link to={breadcrumb.key}>{breadcrumb}</Link>
+            <span to={breadcrumb.key}>{breadcrumb}</span>
+            {beta && <span class="badge bg-color-primary mx-3">beta</span>}
           </li>
         );
       })}
@@ -25,7 +26,8 @@ export const Breadcrumbs = () => {
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
   // { path: '/', breadcrumb: 'Apps' },
-  { path: '/database', breadcrumb: 'Tables', dataCy: 'tables-page-header' },
+  { path: '/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/global-datasources', breadcrumb: 'Global Datasources' },
+  { path: '/integrations', breadcrumb: 'Integrations / plugins', props: { beta: true } },
 ];

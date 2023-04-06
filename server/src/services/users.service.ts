@@ -205,7 +205,7 @@ export class UsersService {
     defaultOrganizationId?: string,
     manager?: EntityManager
   ): Promise<User> {
-    const { email, firstName, lastName, password, source, status } = userParams;
+    const { email, firstName, lastName, password, source, status, phoneNumber } = userParams;
     let user: User;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -220,6 +220,7 @@ export class UsersService {
           firstName,
           lastName,
           password,
+          phoneNumber,
           source,
           status,
           userType,

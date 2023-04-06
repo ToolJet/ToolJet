@@ -48,12 +48,7 @@ function ContinueButtonSelfHost({
             return;
           }
         }
-        page != 4 && setPage((currPage) => currPage + 1);
-        if (page == 4) {
-          setIsLoading(true);
-          setCompleted(true);
-          return;
-        }
+        if (page < 5) setPage((currPage) => currPage + 1);
       }
     };
     document.addEventListener('keydown', keyDownHandler);
@@ -75,8 +70,8 @@ function ContinueButtonSelfHost({
             return;
           }
         }
-        page != 4 && setPage((currPage) => currPage + 1);
-        if (page == 4) {
+        if (page < 5) setPage((currPage) => currPage + 1);
+        if (page == 5) {
           setIsLoading(true);
           setCompleted(true);
           return;

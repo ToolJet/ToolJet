@@ -341,6 +341,8 @@ export class AppsService {
         .getMany();
       const dataSources = versionFrom?.dataSources;
       const dataSourceMapping = {};
+      const newDataQueries = [];
+
       if (dataSources?.length) {
         for (const dataSource of dataSources) {
           const dataSourceParams: Partial<DataSource> = {
@@ -387,20 +389,19 @@ export class AppsService {
               appVersionId: appVersion.id,
             };
 
-            const newDataQueries = [];
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
             oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
             newDataQueries.push(newQuery);
-
-            for (const newQuery of newDataQueries) {
-              const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
-                newQuery.options,
-                oldDataQueryToNewMapping
-              );
-              newQuery.options = newOptions;
-              await manager.save(newQuery);
-            }
           }
+        }
+
+        for (const newQuery of newDataQueries) {
+          const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
+            newQuery.options,
+            oldDataQueryToNewMapping
+          );
+          newQuery.options = newOptions;
+          await manager.save(newQuery);
         }
 
         appVersion.definition = this.replaceDataQueryIdWithinDefinitions(

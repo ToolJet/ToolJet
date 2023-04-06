@@ -11,7 +11,7 @@ import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class SeedsService {
-  constructor(private readonly entityManager: EntityManager) { }
+  constructor(private readonly entityManager: EntityManager) {}
 
   async perform(): Promise<void> {
     await this.entityManager.transaction(async (manager) => {

@@ -122,7 +122,7 @@ Example:
 Let's say you need to install the `imagemagick` binary in your ToolJet server's container. You'd then need to make sure that `apt` installs `imagemagick` while building the image. The Dockerfile at `docker/server.Dockerfile.dev` for the server would then look something like this:
 
 ```
-FROM node:14.17.0-buster
+FROM node:18.3.0-buster AS builder
 
 RUN apt update && apt install -y \
   build-essential  \
@@ -179,4 +179,4 @@ docker-compose run --rm server npm --prefix server run test <path-to-file>
 
 ## Troubleshooting
 
-Please open a new issue at https://github.com/ToolJet/ToolJet/issues or join our Slack channel (https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg) if you encounter any issues when trying to run ToolJet locally.
+Please open a new issue at https://github.com/ToolJet/ToolJet/issues or join our [Slack Community](https://tooljet.com/slack) if you encounter any issues when trying to run ToolJet locally.

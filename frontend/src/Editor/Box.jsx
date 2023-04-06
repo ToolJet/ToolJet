@@ -45,6 +45,7 @@ import { VerticalDivider } from './Components/verticalDivider';
 import { PDF } from './Components/PDF';
 import { ColorPicker } from './Components/ColorPicker';
 import { KanbanBoard } from './Components/KanbanBoard/KanbanBoard';
+import { Kanban } from './Components/Kanban/Kanban';
 import { Steps } from './Components/Steps';
 import { TreeSelect } from './Components/TreeSelect';
 import { Icon } from './Components/Icon';
@@ -112,6 +113,7 @@ const AllComponents = {
   PDF,
   ColorPicker,
   KanbanBoard,
+  Kanban,
   Steps,
   TreeSelect,
   Link,

@@ -187,7 +187,14 @@ export const DraggableBox = function DraggableBox({
 
   return (
     <div
-      className={inCanvas ? '' : 'col-md-4 text-center align-items-center clearfix mb-2'}
+      className={
+        inCanvas
+          ? ''
+          : cx('text-center align-items-center clearfix mb-2', {
+              'col-md-4': component.component !== 'KanbanBoard',
+              'd-none': component.component === 'KanbanBoard',
+            })
+      }
       style={!inCanvas ? {} : { width: computeWidth() }}
     >
       {inCanvas ? (
@@ -237,8 +244,7 @@ export const DraggableBox = function DraggableBox({
               setDragging(false);
               onDragStop(e, id, direction, currentLayout, layoutData);
             }}
-            cancel={`div.table-responsive.jet-data-table, div.calendar-widget, div.text-input, .textarea, .map-widget, .range-slider, .kanban-container`}
-            onDragStart={(e) => e.stopPropagation()}
+            cancel={`div.table-responsive.jet-data-table, div.calendar-widget, div.text-input, .textarea, .map-widget, .range-slider, .kanban-container, div.real-canvas`}
             onResizeStop={(e, direction, ref, d, position) => {
               setResizing(false);
               onResizeStop(id, e, direction, ref, d, position);

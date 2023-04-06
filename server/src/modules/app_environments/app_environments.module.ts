@@ -4,8 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppEnvironmentService } from '@services/app_environments.service';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
-import { CaslModule } from '../casl/casl.module';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import { CaslModule } from '../casl/casl.module';
 
 @Module({
   controllers: [AppEnvironmentsController],
