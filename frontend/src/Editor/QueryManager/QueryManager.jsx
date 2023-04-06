@@ -934,7 +934,7 @@ class QueryManagerComponent extends React.Component {
                     }
                   />
                 </div>
-                {mode === 'edit' && (
+                {mode === 'edit' && selectedQuery.data_source_id && (
                   <div className="mt-2 pb-4">
                     <div
                       className={`border-top query-manager-border-color px-4 hr-text-left py-2 ${

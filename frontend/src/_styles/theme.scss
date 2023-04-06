@@ -4423,6 +4423,9 @@ input[type="text"] {
 /**
  * Home page modal
  */
+ .home-modal-backdrop {
+  z-index: 9991;
+ }
 .modal-content.home-modal-component {
   border-radius: 8px;
   overflow: hidden;

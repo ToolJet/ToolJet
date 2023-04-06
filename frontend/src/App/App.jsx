@@ -122,7 +122,7 @@ class AppComponent extends React.Component {
           <Routes>
             <Route
               exact
-              path="*"
+              path="/"
               element={
                 <PrivateRoute>
                   <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
