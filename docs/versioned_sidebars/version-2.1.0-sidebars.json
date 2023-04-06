@@ -288,6 +288,7 @@
         "how-to/access-cellvalue-rowdata",
         "how-to/bulk-update-multiple-rows",
         "how-to/access-currentuser",
+        "how-to/import-external-libraries-using-runjs",
         "how-to/use-axios-in-runjs",
         "how-to/import-external-libraries-using-runpy",
         "how-to/run-actions-from-runjs",
