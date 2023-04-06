@@ -261,8 +261,8 @@ const sidebars = {
           'type': 'category',
           'label': 'Workspaces',
           'items': [
-            'tutorial/multiworkspace',
-            'tutorial/workspace-environment-variables',
+            'tutorial/workspace_overview',
+            'tutorial/workspace-variables',
           ],
         },
         'org-management/permissions',
