@@ -1,5 +1,6 @@
 import React from 'react';
 import { datasourceService, authenticationService, pluginsService, globalDatasourceService } from '@/_services';
+import cx from 'classnames';
 import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
@@ -14,7 +15,7 @@ import {
 } from './SourceComponents';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import config from 'config';
-import { isEmpty } from 'lodash';
+import { capitalize, isEmpty } from 'lodash';
 import { Card } from '@/_ui/Card';
 import { withTranslation, useTranslation } from 'react-i18next';
 import { camelizeKeys, decamelizeKeys } from 'humps';
@@ -157,6 +158,7 @@ class DataSourceManagerComponent extends React.Component {
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
     const appVersionId = this.props.editingVersionId;
+    const currentEnvironment = this.props.currentEnvironment?.id;
     const scope = this.state?.scope || selectedDataSource?.scope;
 
     const parsedOptions = Object.keys(options).map((key) => {
@@ -173,7 +175,7 @@ class DataSourceManagerComponent extends React.Component {
       if (selectedDataSource.id) {
         this.setState({ isSaving: true });
         service
-          .save(selectedDataSource.id, name, parsedOptions, appId)
+          .save(selectedDataSource.id, name, parsedOptions, appId, currentEnvironment)
           .then(() => {
             this.setState({ isSaving: false });
             this.hideModal();
@@ -181,7 +183,7 @@ class DataSourceManagerComponent extends React.Component {
               this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceSaved', 'Datasource Saved'),
               { position: 'top-center' }
             );
-            this.props.dataSourcesChanged(false, name);
+            this.props.dataSourcesChanged(false, selectedDataSource);
             this.props.globalDataSourcesChanged();
           })
           .catch(({ error }) => {
@@ -193,14 +195,14 @@ class DataSourceManagerComponent extends React.Component {
         this.setState({ isSaving: true });
         service
           .create(pluginId, name, kind, parsedOptions, appId, appVersionId, scope)
-          .then(() => {
+          .then((data) => {
             this.setState({ isSaving: false });
             this.hideModal();
             toast.success(
               this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
               { position: 'top-center' }
             );
-            this.props.dataSourcesChanged(false, name);
+            this.props.dataSourcesChanged(false, data);
             this.props.globalDataSourcesChanged();
           })
           .catch(({ error }) => {
@@ -599,6 +601,26 @@ class DataSourceManagerComponent extends React.Component {
     );
   };
 
+  renderEnvironmentsTab = (selectedDataSource) => {
+    return (
+      selectedDataSource &&
+      selectedDataSource?.id &&
+      this.props.environment?.length > 1 && (
+        <nav className="nav nav-tabs mt-3">
+          {this.props?.environments.map((env) => (
+            <a
+              key={env?.id}
+              onClick={() => this.props.environmentChanged(env, selectedDataSource?.id)}
+              className={cx('nav-item nav-link', { active: this.props.currentEnvironment?.name === env.name })}
+            >
+              {capitalize(env.name)}
+            </a>
+          ))}
+        </nav>
+      )
+    );
+  };
+
   render() {
     const {
       dataSourceMeta,
@@ -624,10 +646,10 @@ class DataSourceManagerComponent extends React.Component {
           container={this.props.container}
           {...this.props.modalProps}
         >
-          <Modal.Header className="justify-content-start">
+          <Modal.Header className={cx('justify-content-start', { 'd-block': selectedDataSource?.id })}>
             {selectedDataSource && this.props.showBackButton && (
               <div
-                className={`back-btn me-3 ${this.props.darkMode ? 'dark' : ''}`}
+                className={`back-btn me-3 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
                 role="button"
                 onClick={() => this.setState({ selectedDataSource: false }, () => this.onExit())}
               >
@@ -640,7 +662,7 @@ class DataSourceManagerComponent extends React.Component {
                 />
               </div>
             )}
-            <Modal.Title>
+            <Modal.Title className="mt-3">
               {selectedDataSource && (
                 <div className="row selected-ds">
                   {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
@@ -673,8 +695,8 @@ class DataSourceManagerComponent extends React.Component {
             >
               <img src="assets/images/icons/close.svg" width="12" height="12" />
             </span>
+            {this.renderEnvironmentsTab(selectedDataSource)}
           </Modal.Header>
-
           <Modal.Body>
             {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind, isPlugin)}</div>}
             {!selectedDataSource && this.segregateDataSources(this.state.suggestingDatasources, this.props.darkMode)}

@@ -9,10 +9,9 @@ export const globalDatasourceService = {
   convertToGlobal,
 };
 
-function getAll(organizationId) {
+function getAll() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  let searchParams = new URLSearchParams(`organization_id=${organizationId}`);
-  return fetch(`${config.apiUrl}/v2/data_sources?` + searchParams, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/data_sources`, requestOptions).then(handleResponse);
 }
 
 function create(plugin_id, name, kind, options, app_id, app_version_id, scope) {
@@ -28,14 +27,16 @@ function create(plugin_id, name, kind, options, app_id, app_version_id, scope) {
   return fetch(`${config.apiUrl}/v2/data_sources`, requestOptions).then(handleResponse);
 }
 
-function save(id, name, options) {
+function save(id, name, options, appId, environment_id) {
   const body = {
     name,
     options,
   };
 
   const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
-  return fetch(`${config.apiUrl}/v2/data_sources/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/data_sources/${id}?environment_id=${environment_id}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function deleteDataSource(id) {
