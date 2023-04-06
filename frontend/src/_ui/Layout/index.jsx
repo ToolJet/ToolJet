@@ -8,7 +8,7 @@ import Logo from '@assets/images/rocket.svg';
 import Header from '../Header';
 import { authenticationService } from '@/_services';
 import config from 'config';
-import { getPrivateRoute } from '../../_helpers/routes';
+import { getPrivateRoute } from '@/_helpers/routes';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();

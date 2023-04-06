@@ -5,7 +5,7 @@ import axios from 'axios';
 import JSON5 from 'json5';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
-import { authenticationService } from '../_services/authentication.service';
+import { authenticationService } from '@/_services/authentication.service';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;

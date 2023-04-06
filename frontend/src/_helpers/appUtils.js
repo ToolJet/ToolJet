@@ -24,7 +24,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
 import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
-import { authenticationService } from '../_services/authentication.service';
+import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
 import { flushSync } from 'react-dom'; // TODO: It can be removed once we've a proper state update flow
 

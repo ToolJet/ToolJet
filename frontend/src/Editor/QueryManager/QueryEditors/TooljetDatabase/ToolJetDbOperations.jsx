@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService, authenticationService } from '@/_services';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { ListRows } from './ListRows';
 import { CreateRow } from './CreateRow';
@@ -9,7 +9,6 @@ import { toast } from 'react-hot-toast';
 import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { useMounted } from '@/_hooks/use-mount';
-import { authenticationService } from '../../../../_services/authentication.service';
 
 const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode }) => {
   const computeSelectStyles = (darkMode, width) => {

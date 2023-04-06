@@ -1,9 +1,8 @@
 import React, { createContext, useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
-import { globalDatasourceService } from '@/_services';
+import { globalDatasourceService, authenticationService } from '@/_services';
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
-import { authenticationService } from '../_services/authentication.service';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,

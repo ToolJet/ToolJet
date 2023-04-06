@@ -8,7 +8,7 @@ import { debounce } from 'lodash';
 import Textarea from '@/_ui/Textarea';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { getPrivateRoute } from '../_helpers/routes';
+import { getPrivateRoute } from '@/_helpers/routes';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {

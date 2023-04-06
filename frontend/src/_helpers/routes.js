@@ -1,5 +1,5 @@
 import { getWorkspaceIdFromURL } from '@/_helpers/utils';
-import { authenticationService } from '../_services/authentication.service';
+import { authenticationService } from '@/_services/authentication.service';
 
 export const getPrivateRoute = (page, params = {}) => {
   const routes = {

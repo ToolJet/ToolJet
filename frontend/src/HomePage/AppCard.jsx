@@ -9,7 +9,7 @@ import configs from './Configs/AppIcon.json';
 import { Link, useNavigate } from 'react-router-dom';
 import urlJoin from 'url-join';
 import { useTranslation } from 'react-i18next';
-import { getPrivateRoute } from '../_helpers/routes';
+import { getPrivateRoute } from '@/_helpers/routes';
 const { defaultIcon } = configs;
 
 export default function AppCard({

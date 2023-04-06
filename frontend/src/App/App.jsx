@@ -100,7 +100,6 @@ class AppComponent extends React.Component {
           })
           .catch(() => {
             if (!this.isThisWorkspaceLoginPage(true) && !isApplicationsPath) {
-              // window.location = `${getSubpath() ?? ''}/login`;
               this.updateCurrentSession({
                 authentication_status: false,
               });

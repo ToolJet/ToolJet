@@ -5,7 +5,7 @@ import Avatar from '@/_ui/Avatar';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useTranslation } from 'react-i18next';
 import { ToolTip } from '@/_components/ToolTip';
-import { getPrivateRoute } from '../_helpers/routes';
+import { getPrivateRoute } from '@/_helpers/routes';
 
 export const Profile = function Header({ switchDarkMode, darkMode }) {
   const currentSession = authenticationService.currentSessionValue;
