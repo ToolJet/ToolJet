@@ -622,6 +622,22 @@ export function Table({
     },
     [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]
   );
+  registerAction(
+    'discardNewlyAddedRows',
+    async function () {
+      if (
+        tableDetails.addNewRowsDetails.addingNewRows &&
+        Object.keys(tableDetails.addNewRowsDetails.newRowsChangeSet || {}).length > 0
+      ) {
+        setExposedVariables({
+          newAddedRows: [],
+        }).then(() => {
+          mergeToAddNewRowsDetails({ newRowsChangeSet: {}, newRowsDataUpdates: {} });
+        });
+      }
+    },
+    [JSON.stringify(tableDetails.addNewRowsDetails.newRowsChangeSet), tableDetails.addNewRowsDetails.addingNewRows]
+  );
 
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);

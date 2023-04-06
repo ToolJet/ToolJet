@@ -398,6 +398,10 @@ export const widgets = [
         handle: 'discardChanges',
         displayName: 'Discard Changes',
       },
+      {
+        handle: 'discardNewlyAddedRows',
+        displayName: 'Discard newly added rows',
+      },
     ],
     definition: {
       others: {
