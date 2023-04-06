@@ -35,6 +35,7 @@ import * as request from 'supertest';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import * as cookieParser from 'cookie-parser';
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -46,6 +47,7 @@ export async function createNestAppInstance(): Promise<INestApplication> {
 
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
+  app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   app.useWebSocketAdapter(new WsAdapter(app));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
@@ -72,6 +74,7 @@ export async function createNestAppInstanceWithEnvMock(): Promise<{
 
   app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
+  app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter(moduleRef.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useWebSocketAdapter(new WsAdapter(app));
@@ -629,44 +632,12 @@ export const setUpAccountFromToken = async (app: INestApplication, user: User, o
   const { status } = response;
   expect(status).toBe(201);
 
-  const {
-    email,
-    first_name,
-    last_name,
-    admin,
-    group_permissions,
-    app_group_permissions,
-    organization_id,
-    organization,
-  } = response.body;
+  const { email, first_name, last_name, current_organization_id } = response.body;
 
   expect(email).toEqual(user.email);
   expect(first_name).toEqual(user.firstName);
   expect(last_name).toEqual(user.lastName);
-  expect(admin).toBeTruthy();
-  expect(organization_id).toBe(org.id);
-  expect(organization).toBe(org.name);
-  expect(group_permissions).toHaveLength(2);
-  expect(group_permissions.some((gp) => gp.group === 'all_users')).toBeTruthy();
-  expect(group_permissions.some((gp) => gp.group === 'admin')).toBeTruthy();
-  expect(Object.keys(group_permissions[0]).sort()).toEqual(
-    [
-      'id',
-      'organization_id',
-      'group',
-      'app_create',
-      'app_delete',
-      'updated_at',
-      'created_at',
-      'folder_create',
-      'org_environment_variable_create',
-      'org_environment_variable_update',
-      'org_environment_variable_delete',
-      'folder_delete',
-      'folder_update',
-    ].sort()
-  );
-  expect(app_group_permissions).toHaveLength(0);
+  expect(current_organization_id).toBe(org.id);
   await user.reload();
   expect(user.status).toBe('active');
   expect(user.defaultOrganizationId).toBe(org.id);
@@ -753,4 +724,23 @@ export const getAppWithAllDetails = async (id: string) => {
   app['dataSources'] = dataSources;
 
   return app;
+};
+
+export const authenticateUser = async (app: INestApplication, email = 'admin@tooljet.io', password = 'password') => {
+  const sessionResponse = await request
+    .agent(app.getHttpServer())
+    .post('/api/authenticate')
+    .send({ email, password })
+    .expect(201);
+
+  return { user: sessionResponse.body, tokenCookie: sessionResponse.headers['set-cookie'] };
+};
+
+export const logoutUser = async (app: INestApplication, tokenCookie: any, organization_id: string) => {
+  return await request
+    .agent(app.getHttpServer())
+    .get('/api/logout')
+    .set('tj-workspace-id', organization_id)
+    .set('Cookie', tokenCookie)
+    .expect(200);
 };

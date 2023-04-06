@@ -10,7 +10,7 @@ export const globalDatasourceService = {
 };
 
 function getAll(organizationId) {
-  const requestOptions = { method: 'GET', headers: authHeader() };
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   let searchParams = new URLSearchParams(`organization_id=${organizationId}`);
   return fetch(`${config.apiUrl}/v2/data_sources?` + searchParams, requestOptions).then(handleResponse);
 }
@@ -24,7 +24,7 @@ function create(plugin_id, name, kind, options, app_id, app_version_id, scope) {
     scope,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/v2/data_sources`, requestOptions).then(handleResponse);
 }
 
@@ -34,16 +34,16 @@ function save(id, name, options) {
     options,
   };
 
-  const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/v2/data_sources/${id}`, requestOptions).then(handleResponse);
 }
 
 function deleteDataSource(id) {
-  const requestOptions = { method: 'DELETE', headers: authHeader() };
+  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/v2/data_sources/${id}`, requestOptions).then(handleResponse);
 }
 
 function convertToGlobal(id) {
-  const requestOptions = { method: 'POST', headers: authHeader() };
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/v2/data_sources/${id}/scope`, requestOptions).then(handleResponse);
 }

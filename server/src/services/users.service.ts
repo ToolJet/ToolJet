@@ -362,6 +362,11 @@ export class UsersService {
     return !!app && app.organizationId === user.organizationId;
   }
 
+  async returnOrgIdOfAnApp(appId: string): Promise<any> {
+    const app = await this.appsRepository.findOne(appId);
+    return app?.organizationId;
+  }
+
   async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const user = await manager.findOne(User, userId);
