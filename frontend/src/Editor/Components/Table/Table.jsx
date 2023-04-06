@@ -45,6 +45,7 @@ import GenerateEachCellValue from './GenerateEachCellValue';
 // eslint-disable-next-line import/no-unresolved
 import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
+import { AddNewRowComponent } from './AddNewRowComponent';
 
 export function Table({
   id,
@@ -125,6 +126,7 @@ export function Table({
   const [generatedColumn, setGeneratedColumn] = useState([]);
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
+  const mergeToAddNewRowDetails = (payload) => dispatch(reducerActions.mergeToAddNewRowDetails(payload));
   const mounted = useMounted();
 
   useEffect(() => {
@@ -154,6 +156,14 @@ export function Table({
 
   function hideFilters() {
     mergeToFilterDetails({ filtersVisible: false });
+  }
+
+  function showAddNewRowPopup() {
+    mergeToAddNewRowDetails({ addingNewRow: true });
+  }
+
+  function hideAddNewRowPopup() {
+    mergeToAddNewRowDetails({ addingNewRow: false });
   }
 
   const defaultColumn = React.useMemo(
@@ -463,6 +473,25 @@ export function Table({
         ]);
     }
   );
+
+  const newRow = [
+    allColumns.reduce((accumulator, column) => {
+      const key = column.key ?? column.exportValue;
+      accumulator[key] = '';
+      return accumulator;
+    }, {}),
+  ];
+
+  const newRowData = useTable(
+    {
+      columns,
+      data: newRow,
+      defaultColumn,
+    },
+    useBlockLayout
+  );
+
+  console.log('table--- page', page);
   const currentColOrder = React.useRef();
 
   const sortOptions = useMemo(() => {
@@ -674,6 +703,16 @@ export function Table({
               />
             )}
             <div>
+              <button
+                className="btn btn-light btn-sm p-1 mx-1"
+                onClick={(e) => {
+                  showAddNewRowPopup();
+                }}
+                data-tip="Add new row"
+                disabled={tableDetails.addNewRowDetails.addingNewRow}
+              >
+                <img src="assets/images/icons/plus.svg" width="15" height="15" />
+              </button>
               {showFilterButton && (
                 <>
                   <span
@@ -1045,6 +1084,14 @@ export function Table({
           darkMode={darkMode}
           setAllFilters={setAllFilters}
           fireEvent={fireEvent}
+        />
+      )}
+      {tableDetails.addNewRowDetails.addingNewRow && (
+        <AddNewRowComponent
+          newRowData={newRowData}
+          hideAddNewRowPopup={hideAddNewRowPopup}
+          tableType={tableType}
+          darkMode={darkMode}
         />
       )}
     </div>
