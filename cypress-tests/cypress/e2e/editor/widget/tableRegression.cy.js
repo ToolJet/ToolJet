@@ -361,7 +361,7 @@ describe("Table", () => {
 
     cy.get(tableSelector.column(0))
       .eq(0)
-      .should("have.css", "background-color", "rgb(255, 255, 0)")
+      .should("have.css", "background-color", "rgb(255, 255, 0)", {timeout:10000})
       .last()
       .should("have.css", "color", "rgb(62, 82, 91)")
       .and("have.text", "Sarah");

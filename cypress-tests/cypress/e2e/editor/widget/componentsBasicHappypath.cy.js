@@ -33,7 +33,7 @@ import {
 describe("Basic components", () => {
   const data = {};
   beforeEach(() => {
-    data.appName = `${fake.companyName}-App`;
+    data.appName = `${fake.companyName}-${fake.companyName}-App`;
     cy.appUILogin();
     cy.createApp();
     cy.modifyCanvasSize(900, 900);

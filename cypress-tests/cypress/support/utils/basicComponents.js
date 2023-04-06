@@ -11,9 +11,14 @@ export const verifyComponent = (widgetName) => {
 };
 
 export const deleteComponentAndVerify = (widgetName) => {
-  cy.get(commonWidgetSelector.draggableWidget(widgetName)).click();
+
+  cy.get(commonWidgetSelector.draggableWidget(widgetName)).click().realHover();
+
+  cy.get(commonWidgetSelector.draggableWidget(widgetName)).realHover();
+
+
   cy.get(`[data-cy="${widgetName}-delete-button"]`).last().realClick();
-  cy.verifyToastMessage(`.go3958317564`,'Component deleted! (ctrl + Z to undo)')
+  cy.verifyToastMessage(`.go3958317564`,'Component deleted! (⌘ + Z to undo)')
   cy.notVisible(commonWidgetSelector.draggableWidget(widgetName));
 };
 
