@@ -26,7 +26,6 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
     currentEnvironment,
     environments,
     setCurrentEnvironment,
-    fetchDataSourceByEnvironment,
   } = useContext(GlobalDataSourcesContext);
 
   useEffect(() => {
@@ -56,7 +55,6 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
 
   const environmentChanged = (env, dataSourceId) => {
     setCurrentEnvironment(env);
-    fetchDataSourceByEnvironment(dataSourceId, env?.id);
   };
 
   const dataSourcesChanged = (resetSelection, dataSource) => {

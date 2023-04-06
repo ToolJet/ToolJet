@@ -7,7 +7,6 @@ export const globalDatasourceService = {
   save,
   deleteDataSource,
   convertToGlobal,
-  getDataSourceByEnvironmentId,
 };
 
 function getAll(organizationId) {
@@ -49,11 +48,4 @@ function deleteDataSource(id) {
 function convertToGlobal(id) {
   const requestOptions = { method: 'POST', headers: authHeader() };
   return fetch(`${config.apiUrl}/v2/data_sources/${id}/scope`, requestOptions).then(handleResponse);
-}
-
-function getDataSourceByEnvironmentId(dataSourceId, environmentId) {
-  const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/v2/data_sources/${dataSourceId}/environment/${environmentId}`, requestOptions).then(
-    handleResponse
-  );
 }

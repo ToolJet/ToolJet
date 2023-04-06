@@ -78,12 +78,6 @@ export const GlobalDatasources = (props) => {
     });
   };
 
-  const fetchDataSourceByEnvironment = (dataSourceId, envId) => {
-    globalDatasourceService.getDataSourceByEnvironmentId(dataSourceId, envId).then((data) => {
-      setSelectedDataSource(data);
-    });
-  };
-
   const value = useMemo(
     () => ({
       selectedDataSource,
@@ -100,7 +94,6 @@ export const GlobalDatasources = (props) => {
       currentEnvironment,
       setCurrentEnvironment,
       setDataSources,
-      fetchDataSourceByEnvironment,
     }),
     [selectedDataSource, dataSources, showDataSourceManagerModal, isEditing, environments, currentEnvironment]
   );
