@@ -126,7 +126,7 @@ export function Table({
   const [generatedColumn, setGeneratedColumn] = useState([]);
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
-  const mergeToAddNewRowDetails = (payload) => dispatch(reducerActions.mergeToAddNewRowDetails(payload));
+  const mergeToAddNewRowsDetails = (payload) => dispatch(reducerActions.mergeToAddNewRowsDetails(payload));
   const mounted = useMounted();
 
   useEffect(() => {
@@ -134,7 +134,7 @@ export function Table({
       'filters',
       tableDetails.filterDetails.filters.map((filter) => filter.value)
     );
-  }, [JSON.stringify(tableDetails.filterDetails.filters)]);
+  }, [JSON.stringify(tableDetails?.filterDetails?.filters)]);
 
   useEffect(
     () => mergeToTableDetails({ columnProperties: component?.definition?.properties?.columns?.value }),
@@ -159,11 +159,12 @@ export function Table({
   }
 
   function showAddNewRowPopup() {
-    mergeToAddNewRowDetails({ addingNewRow: true });
+    mergeToAddNewRowsDetails({ addingNewRows: true });
   }
 
   function hideAddNewRowPopup() {
-    mergeToAddNewRowDetails({ addingNewRow: false });
+    mergeToAddNewRowsDetails({ addingNewRows: false, newRowsChangeSet: {}, newRowsDataUpdates: {} });
+    return setExposedVariable('newRowsAdded', []);
   }
 
   const defaultColumn = React.useMemo(
@@ -174,7 +175,7 @@ export function Table({
     []
   );
 
-  function handleCellValueChange(index, key, value, rowData) {
+  function handleExistingRowCellValueChange(index, key, value, rowData) {
     const changeSet = tableDetails.changeSet;
     const dataUpdates = tableDetails.dataUpdates || [];
     const clonedTableData = _.cloneDeep(tableData);
@@ -206,6 +207,38 @@ export function Table({
     mergeToTableDetails(changesToBeSavedAndExposed);
 
     return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
+  }
+
+  const copyOfTableDetails = useRef(tableDetails);
+  useEffect(() => {
+    copyOfTableDetails.current = _.cloneDeep(tableDetails);
+  }, [JSON.stringify(tableDetails)]);
+
+  function handleNewRowCellValueChange(index, key, value, rowData) {
+    const changeSet = copyOfTableDetails.current.addNewRowsDetails.newRowsChangeSet || {};
+    const dataUpdates = copyOfTableDetails.current.addNewRowsDetails.newRowsDataUpdates || {};
+    let obj = changeSet ? changeSet[index] || {} : {};
+    obj = _.set(obj, key, value);
+    let newChangeset = {
+      ...changeSet,
+      [index]: {
+        ...obj,
+      },
+    };
+    obj = _.set({ ...rowData, ...obj }, key, value);
+
+    let newDataUpdates = {
+      ...dataUpdates,
+      [index]: { ...obj },
+    };
+    const changesToBeSaved = { newRowsDataUpdates: newDataUpdates, newRowsChangeSet: newChangeset };
+    const changesToBeExposed = Object.keys(newDataUpdates).reduce((accumulator, row) => {
+      accumulator.push({ ...newDataUpdates[row] });
+      return accumulator;
+    }, []);
+
+    mergeToAddNewRowsDetails(changesToBeSaved);
+    return setExposedVariables({ newRowsAdded: changesToBeExposed });
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
@@ -310,14 +343,32 @@ export function Table({
 
   const tableRef = useRef();
 
-  const columnData = generateColumnsData({
+  const columnDataForExistingTableData = generateColumnsData({
     columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
     columnSizes,
     currentState,
-    handleCellValueChange,
+    handleCellValueChange: handleExistingRowCellValueChange,
     customFilter,
     defaultColumn,
     changeSet: tableDetails.changeSet,
+    tableData,
+    variablesExposedForPreview,
+    exposeToCodeHinter,
+    id,
+    fireEvent,
+    tableRef,
+    t,
+    darkMode,
+  });
+
+  const columnDataForAddNewRows = generateColumnsData({
+    columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
+    columnSizes,
+    currentState,
+    handleCellValueChange: handleNewRowCellValueChange,
+    customFilter,
+    defaultColumn,
+    changeSet: tableDetails.addNewRowsDetails.newRowsChangeSet,
     tableData,
     variablesExposedForPreview,
     exposeToCodeHinter,
@@ -347,9 +398,14 @@ export function Table({
     return wrapOption?.textWrap;
   };
 
+  const columnData = tableDetails.addNewRowsDetails.addingNewRows
+    ? columnDataForAddNewRows
+    : columnDataForExistingTableData;
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
   const columns = useMemo(
-    () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
+    () => {
+      return [...leftActionsCellData, ...columnData, ...rightActionsCellData];
+    },
     [
       JSON.stringify(columnData),
       JSON.stringify(tableData),
@@ -362,6 +418,7 @@ export function Table({
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
       darkMode,
+      tableDetails.addNewRowsDetails.addingNewRows,
     ] // Hack: need to fix
   );
 
@@ -491,7 +548,6 @@ export function Table({
     useBlockLayout
   );
 
-  console.log('table--- page', page);
   const currentColOrder = React.useRef();
 
   const sortOptions = useMemo(() => {
@@ -685,7 +741,7 @@ export function Table({
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
       {(displaySearchBox || showDownloadButton || showFilterButton) && (
-        <div className="card-body border-bottom py-3 ">
+        <div className={`card-body border-bottom py-3 ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'}`}>
           <div
             className={`d-flex align-items-center ms-auto text-muted ${
               displaySearchBox ? 'justify-content-between' : 'justify-content-end'
@@ -709,7 +765,7 @@ export function Table({
                   showAddNewRowPopup();
                 }}
                 data-tip="Add new row"
-                disabled={tableDetails.addNewRowDetails.addingNewRow}
+                disabled={tableDetails.addNewRowsDetails.addingNewRows}
               >
                 <img src="assets/images/icons/plus.svg" width="15" height="15" />
               </button>
@@ -805,7 +861,9 @@ export function Table({
       <div className="table-responsive jet-data-table">
         <table
           {...getTableProps()}
-          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'}`}
+          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'} ${
+            tableDetails.addNewRowsDetails.addingNewRows && 'disabled'
+          }`}
           style={computedStyles}
         >
           <thead>
@@ -1086,12 +1144,16 @@ export function Table({
           fireEvent={fireEvent}
         />
       )}
-      {tableDetails.addNewRowDetails.addingNewRow && (
+      {tableDetails.addNewRowsDetails.addingNewRows && (
         <AddNewRowComponent
           newRowData={newRowData}
           hideAddNewRowPopup={hideAddNewRowPopup}
           tableType={tableType}
           darkMode={darkMode}
+          mergeToAddNewRowsDetails={mergeToAddNewRowsDetails}
+          onEvent={onEvent}
+          component={component}
+          setExposedVariable={setExposedVariable}
         />
       )}
     </div>

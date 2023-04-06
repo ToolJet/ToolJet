@@ -5,8 +5,10 @@ export const initialState = () => ({
     filters: [],
     filtersVisible: false,
   },
-  addNewRowDetails: {
-    addingNewRow: false,
+  addNewRowsDetails: {
+    addingNewRows: false,
+    newRowsDataUpdates: {},
+    newRowsChangeSet: {},
   },
 });
 
@@ -20,15 +22,15 @@ const mergeToFilterDetails = (payload) => ({
   payload,
 });
 
-const mergeToAddNewRowDetails = (payload) => ({
-  type: 'MERGE_TO_ADD_NEW_ROW',
+const mergeToAddNewRowsDetails = (payload) => ({
+  type: 'MERGE_TO_ADD_NEW_ROWS',
   payload,
 });
 
 export const reducerActions = {
   mergeToFilterDetails,
   mergeToTableDetails,
-  mergeToAddNewRowDetails,
+  mergeToAddNewRowsDetails,
 };
 
 export const reducer = (state, action) => {
@@ -47,11 +49,11 @@ export const reducer = (state, action) => {
           ...action.payload,
         },
       };
-    case 'MERGE_TO_ADD_NEW_ROW':
+    case 'MERGE_TO_ADD_NEW_ROWS':
       return {
         ...state,
-        addNewRowDetails: {
-          ...state.addNewRowDetails,
+        addNewRowsDetails: {
+          ...state.addNewRowsDetails,
           ...action.payload,
         },
       };

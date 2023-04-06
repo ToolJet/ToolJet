@@ -297,6 +297,7 @@ export const widgets = [
       onSort: { displayName: 'Sort applied' },
       onCellValueChanged: { displayName: 'Cell value changed' },
       onFilterChanged: { displayName: 'Filter changed' },
+      onNewRowsAdded: { displayName: 'Add new rows' },
     },
     styles: {
       textColor: {

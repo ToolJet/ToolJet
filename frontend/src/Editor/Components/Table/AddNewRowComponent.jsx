@@ -1,7 +1,15 @@
 import React from 'react';
 
-export function AddNewRowComponent({ newRowData, hideAddNewRowPopup, tableType, darkMode }) {
-  console.log('table--- table type', tableType);
+export function AddNewRowComponent({
+  newRowData,
+  hideAddNewRowPopup,
+  tableType,
+  darkMode,
+  mergeToAddNewRowsDetails,
+  onEvent,
+  component,
+  setExposedVariable,
+}) {
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = newRowData;
 
   return (
@@ -65,8 +73,24 @@ export function AddNewRowComponent({ newRowData, hideAddNewRowPopup, tableType, 
         </table>
       </div>
       <div className="card-footer">
-        <button className="btn btn-light btn-sm">+ add row</button>
-        <button onClick={hideAddNewRowPopup} className="btn btn-light btn-sm mx-2">
+        <button
+          className="btn btn-primary btn-sm mx-2"
+          onClick={() => {
+            onEvent('onNewRowsAdded', { component }).then(() => {
+              setExposedVariable('newRowsAdded', []).then(() => {
+                mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {} });
+              });
+            });
+          }}
+        >
+          + add rows
+        </button>
+        <button
+          onClick={() => {
+            hideAddNewRowPopup();
+          }}
+          className="btn btn-light btn-sm"
+        >
           discard row
         </button>
       </div>
