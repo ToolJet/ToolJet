@@ -69,7 +69,11 @@ function setOauth2Token(dataSourceId, body) {
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(
     `${config.apiUrl}/data_sources/${dataSourceId}/authorize_oauth2?` +
-      constructSearchParams({ environment_id: localStorage.getItem('currentAppEnvironmentIdForOauth') }),
+      constructSearchParams({
+        ...(localStorage.getItem('currentAppEnvironmentIdForOauth') !== 'undefined' && {
+          environment_id: localStorage.getItem('currentAppEnvironmentIdForOauth'),
+        }),
+      }),
     requestOptions
   ).then(handleResponse);
 }
