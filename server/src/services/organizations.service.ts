@@ -169,6 +169,8 @@ export class OrganizationsService {
           orgEnvironmentVariableDelete: isAdmin,
           folderUpdate: isAdmin,
           folderDelete: isAdmin,
+          dataSourceDelete: isAdmin,
+          dataSourceCreate: isAdmin,
         });
         await manager.save(groupPermission);
         createdGroupPermissions.push(groupPermission);

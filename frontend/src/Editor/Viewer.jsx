@@ -289,10 +289,10 @@ class ViewerComponent extends React.Component {
   };
 
   componentDidMount() {
-    const slug = this.props.match.params.slug;
-    const appId = this.props.match.params.id;
-    const versionId = this.props.match.params.versionId;
-    const environmentId = this.props.match.params.environmentId;
+    const slug = this.props.params.slug;
+    const appId = this.props.params.id;
+    const versionId = this.props.params.versionId;
+    const environmentId = this.props.params.environmentId;
 
     this.setState({ isLoading: false, environmentId });
     slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
