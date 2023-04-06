@@ -2,7 +2,7 @@ import React from 'react';
 
 export function AddNewRowComponent({ newRowData, hideAddNewRowPopup, tableType, darkMode }) {
   console.log('table--- table type', tableType);
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow, headers, allColumns } = newRowData;
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = newRowData;
 
   return (
     <div className="table-add-new-row card">
@@ -44,15 +44,31 @@ export function AddNewRowComponent({ newRowData, hideAddNewRowPopup, tableType, 
               return (
                 <tr key={index} className="table-row" {...row.getRowProps()}>
                   {row.cells.map((cell, index) => {
-                    {
-                      cell.render('Cell', { cell, isEditable: true });
-                    }
+                    let cellProps = cell.getCellProps();
+                    const isEditable = true;
+                    return (
+                      <td key={index} {...cellProps} style={{ ...cellProps.style }}>
+                        <div
+                          className={`td-container ${cell.column.columnType === 'image' && 'jet-table-image-column'} ${
+                            cell.column.columnType !== 'image' && 'w-100 h-100'
+                          }`}
+                        >
+                          {cell.render('Cell', { cell, isEditable })}
+                        </div>
+                      </td>
+                    );
                   })}
                 </tr>
               );
             })}
           </tbody>
         </table>
+      </div>
+      <div className="card-footer">
+        <button className="btn btn-light btn-sm">+ add row</button>
+        <button onClick={hideAddNewRowPopup} className="btn btn-light btn-sm mx-2">
+          discard row
+        </button>
       </div>
     </div>
   );
