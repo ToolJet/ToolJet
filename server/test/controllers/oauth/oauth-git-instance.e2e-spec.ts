@@ -77,7 +77,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
@@ -111,7 +111,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
@@ -158,7 +158,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
@@ -297,7 +297,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
@@ -308,7 +308,7 @@ describe('oauth controller', () => {
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
-          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io');
+          const redirect_url = await generateRedirectUrl('ssousergit@tooljet.io');
 
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(redirect_url);
@@ -335,7 +335,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
@@ -348,7 +348,7 @@ describe('oauth controller', () => {
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id });
 
-          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+          const redirect_url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
 
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(redirect_url);
@@ -373,7 +373,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
@@ -384,7 +384,7 @@ describe('oauth controller', () => {
 
           const response = await request(app.getHttpServer()).post('/api/oauth/sign-in/common/git').send({ token });
 
-          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io');
+          const redirect_url = await generateRedirectUrl('ssousergit@tooljet.io');
 
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(redirect_url);
@@ -413,7 +413,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
@@ -426,7 +426,7 @@ describe('oauth controller', () => {
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id });
 
-          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+          const redirect_url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
 
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(redirect_url);
@@ -454,7 +454,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
@@ -467,7 +467,7 @@ describe('oauth controller', () => {
             .post('/api/oauth/sign-in/common/git')
             .send({ token, organizationId: current_organization.id });
 
-          const redirect_url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+          const redirect_url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
 
           expect(response.statusCode).toBe(201);
           expect(response.body.redirect_url).toEqual(redirect_url);
@@ -477,7 +477,7 @@ describe('oauth controller', () => {
           await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
             status: 'active',
@@ -501,7 +501,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
@@ -517,7 +517,7 @@ describe('oauth controller', () => {
 
           const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
           expect(current_organization_id).toBe(current_organization.id);
@@ -527,7 +527,7 @@ describe('oauth controller', () => {
           await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
             status: 'active',
@@ -550,7 +550,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
@@ -568,7 +568,7 @@ describe('oauth controller', () => {
 
           const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
           expect(current_organization_id).toBe(current_organization.id);
@@ -578,7 +578,7 @@ describe('oauth controller', () => {
           const { orgUser } = await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
             status: 'invited',
@@ -602,7 +602,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
@@ -618,7 +618,7 @@ describe('oauth controller', () => {
 
           const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
           expect(current_organization_id).not.toBe(current_organization.id);
@@ -630,7 +630,7 @@ describe('oauth controller', () => {
           const { orgUser } = await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
             status: 'invited',
@@ -653,7 +653,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
@@ -671,7 +671,7 @@ describe('oauth controller', () => {
 
           const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
           expect(current_organization_id).toBe(current_organization.id);
@@ -697,7 +697,7 @@ describe('oauth controller', () => {
           const { orgUser } = await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
           });
@@ -720,7 +720,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
@@ -739,7 +739,7 @@ describe('oauth controller', () => {
 
           const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
           expect(current_organization_id).toBe(current_organization.id);
@@ -765,7 +765,7 @@ describe('oauth controller', () => {
           const { orgUser } = await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
           });
@@ -788,7 +788,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
@@ -809,7 +809,7 @@ describe('oauth controller', () => {
 
           const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
           expect(current_organization_id).toBe(current_organization.id);

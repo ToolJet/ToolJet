@@ -84,7 +84,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
@@ -153,7 +153,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
@@ -168,7 +168,7 @@ describe('oauth controller', () => {
 
           expect(response.statusCode).toBe(201);
 
-          const url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
 
           const { redirect_url } = response.body;
           expect(redirect_url).toEqual(url);
@@ -196,7 +196,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
@@ -211,7 +211,7 @@ describe('oauth controller', () => {
 
           expect(response.statusCode).toBe(201);
 
-          const url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
 
           const { redirect_url } = response.body;
           expect(redirect_url).toEqual(url);
@@ -236,7 +236,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO UserGit',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
@@ -251,7 +251,7 @@ describe('oauth controller', () => {
 
           expect(response.statusCode).toBe(201);
 
-          const url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
 
           const { redirect_url } = response.body;
           expect(redirect_url).toEqual(url);
@@ -275,7 +275,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: '',
-                  email: 'ssoUserGit@tooljet.io',
+                  email: 'ssousergit@tooljet.io',
                 };
               },
             };
@@ -290,7 +290,7 @@ describe('oauth controller', () => {
 
           expect(response.statusCode).toBe(201);
 
-          const url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
 
           const { redirect_url } = response.body;
           expect(redirect_url).toEqual(url);
@@ -325,7 +325,7 @@ describe('oauth controller', () => {
               json: () => {
                 return [
                   {
-                    email: 'ssoUserGit@tooljet.io',
+                    email: 'ssousergit@tooljet.io',
                     primary: true,
                     verified: true,
                   },
@@ -349,7 +349,7 @@ describe('oauth controller', () => {
 
           expect(response.statusCode).toBe(201);
 
-          const url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
 
           const { redirect_url } = response.body;
           expect(redirect_url).toEqual(url);
@@ -358,7 +358,7 @@ describe('oauth controller', () => {
           await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
             status: 'active',
@@ -382,7 +382,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
@@ -400,7 +400,7 @@ describe('oauth controller', () => {
 
           const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
           expect(current_organization_id).toBe(current_organization.id);
@@ -409,7 +409,7 @@ describe('oauth controller', () => {
           const { orgUser } = await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
             status: 'invited',
@@ -433,7 +433,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
@@ -451,7 +451,7 @@ describe('oauth controller', () => {
 
           const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
           expect(current_organization_id).toBe(current_organization.id);
@@ -466,7 +466,7 @@ describe('oauth controller', () => {
           const { orgUser } = await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
           });
@@ -489,7 +489,7 @@ describe('oauth controller', () => {
               json: () => {
                 return {
                   name: 'SSO userExist',
-                  email: 'anotherUser1@tooljet.io',
+                  email: 'anotheruser1@tooljet.io',
                 };
               },
             };
@@ -510,7 +510,7 @@ describe('oauth controller', () => {
 
           const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
           expect(current_organization_id).toBe(current_organization.id);
@@ -550,12 +550,12 @@ describe('oauth controller', () => {
               json: () => {
                 return [
                   {
-                    email: 'ssoUserGit@tooljet.io',
+                    email: 'ssousergit@tooljet.io',
                     primary: true,
                     verified: true,
                   },
                   {
-                    email: 'ssoUserGit2@tooljet.io',
+                    email: 'ssousergit2@tooljet.io',
                     primary: false,
                     verified: true,
                   },
@@ -583,7 +583,7 @@ describe('oauth controller', () => {
 
           expect(response.statusCode).toBe(201);
 
-          const url = await generateRedirectUrl('ssoUserGit@tooljet.io', current_organization);
+          const url = await generateRedirectUrl('ssousergit@tooljet.io', current_organization);
 
           const { redirect_url } = response.body;
           expect(redirect_url).toEqual(url);

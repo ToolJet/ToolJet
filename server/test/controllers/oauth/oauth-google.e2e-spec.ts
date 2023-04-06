@@ -60,7 +60,7 @@ describe('oauth controller', () => {
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
               sub: 'someSSOId',
-              email: 'ssoUser@tooljet.io',
+              email: 'ssouser@tooljet.io',
               name: 'SSO User',
               hd: 'tooljet.io',
             }),
@@ -77,7 +77,7 @@ describe('oauth controller', () => {
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
               sub: 'someSSOId',
-              email: 'ssoUser@tooljett.io',
+              email: 'ssouser@tooljett.io',
               name: 'SSO User',
               hd: 'tooljet.io',
             }),
@@ -94,7 +94,7 @@ describe('oauth controller', () => {
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
               sub: 'someSSOId',
-              email: 'ssoUser@tooljet.io',
+              email: 'ssouser@tooljet.io',
               name: 'SSO User',
               hd: 'tooljet.io',
             }),
@@ -109,7 +109,7 @@ describe('oauth controller', () => {
             audience: sso_configs.configs.clientId,
           });
 
-          const url = await generateRedirectUrl('ssoUser@tooljet.io', current_organization);
+          const url = await generateRedirectUrl('ssouser@tooljet.io', current_organization);
           const { redirect_url } = response.body;
           expect(redirect_url).toEqual(url);
         });
@@ -119,7 +119,7 @@ describe('oauth controller', () => {
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
               sub: 'someSSOId',
-              email: 'ssoUser@tooljet.io',
+              email: 'ssouser@tooljet.io',
               name: 'SSO User',
               hd: 'tooljet.io',
             }),
@@ -134,7 +134,7 @@ describe('oauth controller', () => {
             audience: sso_configs.configs.clientId,
           });
 
-          const url = await generateRedirectUrl('ssoUser@tooljet.io', current_organization);
+          const url = await generateRedirectUrl('ssouser@tooljet.io', current_organization);
 
           const { redirect_url } = response.body;
           expect(redirect_url).toEqual(url);
@@ -144,7 +144,7 @@ describe('oauth controller', () => {
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
               sub: 'someSSOId',
-              email: 'ssoUser@tooljet.io',
+              email: 'ssouser@tooljet.io',
               name: '',
               hd: 'tooljet.io',
             }),
@@ -159,7 +159,7 @@ describe('oauth controller', () => {
             audience: sso_configs.configs.clientId,
           });
 
-          const url = await generateRedirectUrl('ssoUser@tooljet.io', current_organization);
+          const url = await generateRedirectUrl('ssouser@tooljet.io', current_organization);
 
           const { redirect_url } = response.body;
           expect(redirect_url).toEqual(url);
@@ -168,7 +168,7 @@ describe('oauth controller', () => {
           await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
             status: 'active',
@@ -177,7 +177,7 @@ describe('oauth controller', () => {
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
               sub: 'someSSOId',
-              email: 'anotherUser1@tooljet.io',
+              email: 'anotheruser1@tooljet.io',
               name: 'SSO User',
               hd: 'tooljet.io',
             }),
@@ -197,7 +197,7 @@ describe('oauth controller', () => {
 
           const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
           expect(current_organization_id).toBe(current_organization.id);
@@ -206,7 +206,7 @@ describe('oauth controller', () => {
           const { orgUser } = await createUser(app, {
             firstName: 'SSO',
             lastName: 'userExist',
-            email: 'anotherUser1@tooljet.io',
+            email: 'anotheruser1@tooljet.io',
             groups: ['all_users'],
             organization: current_organization,
             status: 'invited',
@@ -215,7 +215,7 @@ describe('oauth controller', () => {
           googleVerifyMock.mockImplementation(() => ({
             getPayload: () => ({
               sub: 'someSSOId',
-              email: 'anotherUser1@tooljet.io',
+              email: 'anotheruser1@tooljet.io',
               name: 'SSO User',
               hd: 'tooljet.io',
             }),
@@ -235,7 +235,7 @@ describe('oauth controller', () => {
 
           const { email, first_name, last_name, current_organization_id } = response.body;
 
-          expect(email).toEqual('anotherUser1@tooljet.io');
+          expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
           expect(current_organization_id).toBe(current_organization.id);
