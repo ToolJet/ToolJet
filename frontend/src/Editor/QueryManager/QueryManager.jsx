@@ -19,7 +19,7 @@ import cx from 'classnames';
 import { diff } from 'deep-object-diff';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { ChangeDataSource } from './ChangeDataSource';
-import { useDataSources, useDataSourcesStore } from '@/stores/dataSourceStore';
+import { useDataSources, useDataSourcesStore } from '@/_stores/dataSourcesStore';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 

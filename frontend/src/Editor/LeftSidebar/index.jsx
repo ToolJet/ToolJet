@@ -10,7 +10,7 @@ import { LeftSidebarComment } from './SidebarComment';
 import LeftSidebarPageSelector from './SidebarPageSelector';
 import { ConfirmDialog } from '@/_components';
 import config from 'config';
-import { usePanelHeight } from '@/stores/queryPanelStore';
+import { usePanelHeight } from '@/_stores/queryPanelStore';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();

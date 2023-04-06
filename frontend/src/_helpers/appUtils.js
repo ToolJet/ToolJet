@@ -24,6 +24,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
 import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -1571,3 +1572,5 @@ const getSelectedText = () => {
     navigator.clipboard.writeText(window.document.selection.createRange().text);
   }
 };
+
+export const checkExistingQueryName = (newName) => useDataQueriesStore.getState().dataQueries.some((query) => query.name === newName);

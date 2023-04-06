@@ -18,9 +18,7 @@ export const useDataSourcesStore = create((set) => ({
     },
     fetchGlobalDataSources: (organizationId) => {
       globalDatasourceService.getAll(organizationId).then((data) => {
-        console.log('data.data_sources--- ', data.data_sources);
-
-        this.setState({
+        set({
           globalDataSources: data.data_sources,
         });
       });

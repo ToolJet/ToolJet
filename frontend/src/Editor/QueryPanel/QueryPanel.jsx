@@ -1,7 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useEventListener } from '@/_hooks/use-event-listener';
 import { Tooltip } from 'react-tooltip';
-import { useQueryPanelActions } from '@/stores/queryPanelStore';
+import { useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { QueryDataPane } from './QueryDataPane';
 
 const QueryPanel = ({ children }) => {
   const { updateQueryPanelHeight } = useQueryPanelActions();
@@ -128,13 +129,21 @@ const QueryPanel = ({ children }) => {
           cursor: isDragging || isTopOfQueryPanel ? 'row-resize' : 'default',
         }}
       >
-        {children({
-          toggleQueryEditor,
-          showSaveConfirmation,
-          setSaveConfirmation,
-          queryCancelData,
-          setCancelData,
-        })}
+        <div className="row main-row">
+          <QueryDataPane
+            showSaveConfirmation={showSaveConfirmation}
+            setSaveConfirmation={setSaveConfirmation}
+            queryCancelData={queryCancelData}
+            setCancelData={setCancelData}
+          />
+          {children({
+            toggleQueryEditor,
+            showSaveConfirmation,
+            setSaveConfirmation,
+            queryCancelData,
+            setCancelData,
+          })}
+        </div>
       </div>
       <Tooltip id="tooltip-for-show-query-editor" className="tooltip" />
     </>

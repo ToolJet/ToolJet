@@ -15,7 +15,7 @@ import { Popover as PopoverBS, OverlayTrigger } from 'react-bootstrap';
 // eslint-disable-next-line import/no-unresolved
 import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
 import VerticalIcon from '@assets/images/icons/vertical-menu.svg';
-import { useDataSources } from '@/stores/dataSourceStore';
+import { useDataSources } from '@/_stores/dataSourcesStore';
 
 export const LeftSidebarDataSources = ({
   appId,
