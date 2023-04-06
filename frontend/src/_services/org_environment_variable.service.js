@@ -10,7 +10,7 @@ export const orgEnvironmentVariableService = {
 };
 
 function getVariables() {
-  const requestOptions = { method: 'GET', headers: authHeader() };
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/organization-variables`, requestOptions).then(handleResponse);
 }
 
@@ -27,7 +27,7 @@ function create(variable_name, value, variable_type, encrypted) {
     encrypted,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/organization-variables`, requestOptions).then(handleResponse);
 }
 
@@ -37,11 +37,11 @@ function update(id, variable_name, value) {
     value,
   };
 
-  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/organization-variables/${id}`, requestOptions).then(handleResponse);
 }
 
 function deleteVariable(id) {
-  const requestOptions = { method: 'DELETE', headers: authHeader() };
+  const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/organization-variables/${id}`, requestOptions).then(handleResponse);
 }

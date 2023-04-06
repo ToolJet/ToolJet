@@ -39,7 +39,6 @@ class DataSourceManagerComponent extends React.Component {
     }
 
     this.state = {
-      currentUser: authenticationService.currentUserValue,
       showModal: true,
       appId: props.appId,
       selectedDataSource,

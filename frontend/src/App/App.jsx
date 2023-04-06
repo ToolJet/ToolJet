@@ -1,9 +1,16 @@
 import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import config from 'config';
-import { Route, Routes, BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import {
+  getWorkspaceIdFromURL,
+  appendWorkspaceId,
+  stripTrailingSlash,
+  getSubpath,
+  pathnameWithoutSubpath,
+} from '@/_helpers/utils';
+import { authenticationService, tooljetService, organizationService } from '@/_services';
 import { withRouter } from '@/_hoc/withRouter';
-import { authenticationService, tooljetService } from '@/_services';
 import { PrivateRoute, AdminRoute } from '@/_components';
 import { HomePage } from '@/HomePage';
 import { LoginPage } from '@/LoginPage';
@@ -18,6 +25,7 @@ import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
 import { MarketplacePage } from '@/MarketplacePage';
+import SwitchWorkspacePage from '@/HomePage/SwitchWorkspacePage';
 import { GlobalDatasources } from '@/GlobalDatasources';
 import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
@@ -49,22 +57,149 @@ class AppComponent extends React.Component {
   }
 
   fetchMetadata = () => {
-    if (this.state.currentUser) {
-      tooljetService.fetchMetaData().then((data) => {
-        localStorage.setItem('currentVersion', data.installed_version);
-        if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
-          this.setState({ updateAvailable: true });
-        }
-      });
-    }
+    tooljetService.fetchMetaData().then((data) => {
+      localStorage.setItem('currentVersion', data.installed_version);
+      if (data.latest_version && lt(data.installed_version, data.latest_version) && data.version_ignored === false) {
+        this.setState({ updateAvailable: true });
+      }
+    });
+  };
+
+  isThisExistedRoute = () => {
+    const existedPaths = [
+      'forgot-password',
+      'reset-password',
+      'invitations',
+      'organization-invitations',
+      'setup',
+      'confirm',
+      'confirm-invite',
+    ];
+    return existedPaths.find((path) => window.location.pathname.includes(path));
   };
 
   componentDidMount() {
-    authenticationService.currentUser.subscribe((x) => {
-      this.setState({ currentUser: x }, this.fetchMetadata);
-      setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
-    });
+    if (!this.isThisExistedRoute()) {
+      const workspaceId = getWorkspaceIdFromURL();
+      if (workspaceId) {
+        this.authorizeUserAndHandleErrors(workspaceId);
+      } else {
+        const isApplicationsPath = window.location.pathname.includes('/applications/');
+        const appId = isApplicationsPath ? pathnameWithoutSubpath(window.location.pathname).split('/')[2] : null;
+        authenticationService
+          .validateSession(appId)
+          .then(({ current_organization_id }) => {
+            //check if the page is not switch-workspace, if then redirect to the page
+            if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
+              this.authorizeUserAndHandleErrors(current_organization_id);
+            } else {
+              this.updateCurrentSession({
+                current_organization_id,
+              });
+            }
+          })
+          .catch(() => {
+            if (!this.isThisWorkspaceLoginPage(true) && !isApplicationsPath) {
+              this.updateCurrentSession({
+                authentication_status: false,
+              });
+            } else if (isApplicationsPath) {
+              this.updateCurrentSession({
+                authentication_failed: true,
+              });
+            }
+          });
+      }
+    }
+
+    this.fetchMetadata();
+    setInterval(this.fetchMetadata, 1000 * 60 * 60 * 1);
   }
+
+  isThisWorkspaceLoginPage = (justLoginPage = false) => {
+    const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
+    const pathname = location.pathname.replace(subpath, '');
+    const pathnames = pathname.split('/').filter((path) => path !== '');
+    return (justLoginPage && pathnames.includes('login')) || (pathnames.length === 2 && pathnames.includes('login'));
+  };
+
+  authorizeUserAndHandleErrors = (workspaceId) => {
+    const subpath = getSubpath();
+    this.updateCurrentSession({
+      current_organization_id: workspaceId,
+    });
+    authenticationService
+      .authorize()
+      .then((data) => {
+        organizationService.getOrganizations().then((response) => {
+          const current_organization_name = response.organizations.find((org) => org.id === workspaceId)?.name;
+          // this will add the other details like permission and user previlliage details to the subject
+          this.updateCurrentSession({
+            ...data,
+            current_organization_name,
+            organizations: response.organizations,
+          });
+
+          // if user is trying to load the workspace login page, then redirect to the dashboard
+          if (this.isThisWorkspaceLoginPage())
+            return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
+        });
+      })
+      .catch((error) => {
+        // if the auth token didn't contain workspace-id, try switch workspace fn
+        if (error && error?.data?.statusCode === 401) {
+          //get current session workspace id
+          authenticationService
+            .validateSession()
+            .then(({ current_organization_id }) => {
+              // change invalid or not authorized org id to previous one
+              this.updateCurrentSession({
+                current_organization_id,
+              });
+
+              organizationService
+                .switchOrganization(workspaceId)
+                .then((data) => {
+                  this.updateCurrentSession(data);
+                  if (this.isThisWorkspaceLoginPage())
+                    return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
+                  this.authorizeUserAndHandleErrors(workspaceId);
+                })
+                .catch(() => {
+                  organizationService.getOrganizations().then((response) => {
+                    const current_organization_name = response.organizations.find(
+                      (org) => org.id === current_organization_id
+                    )?.name;
+
+                    this.updateCurrentSession({
+                      current_organization_name,
+                    });
+
+                    if (!this.isThisWorkspaceLoginPage())
+                      return (window.location = `${subpath ?? ''}/login/${workspaceId}`);
+                  });
+                });
+            })
+            .catch(() => this.logout());
+        } else if ((error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404) {
+          window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
+        } else {
+          if (!this.isThisWorkspaceLoginPage() && !this.isThisWorkspaceLoginPage(true))
+            this.updateCurrentSession({
+              authentication_status: false,
+            });
+        }
+      });
+  };
+
+  updateCurrentSession = (newSession) => {
+    const currentSession = authenticationService.currentSessionValue;
+    authenticationService.updateCurrentSession({ ...currentSession, ...newSession });
+  };
+
+  logout = () => {
+    authenticationService.logout();
+  };
 
   switchDarkMode = (newMode) => {
     this.setState({ darkMode: newMode });
@@ -120,15 +255,6 @@ class AppComponent extends React.Component {
             </div>
           )}
           <Routes>
-            <Route
-              exact
-              path="/"
-              element={
-                <PrivateRoute>
-                  <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
             <Route path="/login/:organizationId" exact element={<LoginPage />} />
             <Route path="/login" exact element={<LoginPage />} />
             <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
@@ -154,7 +280,7 @@ class AppComponent extends React.Component {
             />
             <Route
               exact
-              path="/apps/:id/:pageHandle?/*"
+              path="/:workspaceId/apps/:id/:pageHandle?/*"
               element={
                 <PrivateRoute>
                   <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
@@ -190,7 +316,7 @@ class AppComponent extends React.Component {
             />
             <Route
               exact
-              path="/workspace-settings"
+              path="/:workspaceId/workspace-settings"
               element={
                 <PrivateRoute>
                   <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
@@ -199,17 +325,26 @@ class AppComponent extends React.Component {
             />
             <Route
               exact
-              path="/settings"
+              path="/:workspaceId/settings"
               element={
                 <PrivateRoute>
                   <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                 </PrivateRoute>
               }
             />
+            <Route
+              exact
+              path="/:workspaceId/global-datasources"
+              element={
+                <PrivateRoute>
+                  <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
+            />
             {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
               <Route
                 exact
-                path="/database"
+                path="/:workspaceId/database"
                 element={
                   <PrivateRoute>
                     <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
@@ -217,15 +352,6 @@ class AppComponent extends React.Component {
                 }
               />
             )}
-            <Route
-              exact
-              path="/global-datasources"
-              element={
-                <PrivateRoute>
-                  <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
             {window.public_config?.ENABLE_MARKETPLACE_FEATURE === 'true' && (
               <Route
                 exact
@@ -237,6 +363,34 @@ class AppComponent extends React.Component {
                 }
               />
             )}
+            <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
+            <Route
+              exact
+              path="/switch-workspace"
+              element={
+                <PrivateRoute>
+                  <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              exact
+              path="/:workspaceId"
+              element={
+                <PrivateRoute>
+                  <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="*"
+              render={() => {
+                if (authenticationService?.currentSessionValue?.current_organization_id) {
+                  return <Navigate to="/:workspaceId" />;
+                }
+                return <Navigate to="/login" />;
+              }}
+            />
           </Routes>
         </div>
         <Toast toastOptions={toastOptions} />

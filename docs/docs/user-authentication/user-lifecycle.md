@@ -5,75 +5,8 @@ title: User Lifecycle
 
 # User Lifecycle
 
-## Single-Workspace
-
-### User onboarding
-- If no user is present in the system, there will be `Sign-up` option in the login page. User can sign up by entering their email address. Tooljet will be sending a welcome email with activation URL to the email address. User can follow the activation URL and onboard to ToolJet.
-
-  <div style={{textAlign: 'center'}}>
-
-  ![ToolJet - Single-Workspace sign up](/img/user-lifecycle/single-ws-signup.png)
-
-  </div>
-
-- User with admin privileges can invite members
-
-  <div style={{textAlign: 'center'}}>
-
-  ![ToolJet - Single-Workspace invite user](/img/user-lifecycle/user-invite-sw.png)
-
-  </div>
-
-- Invited user will receive welcome email with activation URL, unregistered user can follow the link and setup Tooljet account
-
-  <div style={{textAlign: 'center'}}>
-
-  ![ToolJet - Single-Workspace accept invite](/img/user-lifecycle/accept-invite-sw.png)
-
-  </div>
-
-- Invited user can onboard through SSO login, without using an invitation link
-
-  <div style={{textAlign: 'center'}}>
-
-  ![ToolJet - Single-Workspace accept invite](/img/user-lifecycle/sso-onboard-sw.png)
-
-  </div>
-
-- If `enable signup` option in enabled in SSO general settings, user can setup account through SSO login without an invite
-
-  <div style={{textAlign: 'center'}}>
-
-  ![ToolJet - Single-Workspace sign up using SSO](/img/user-lifecycle/sso-enable-signup-sw.png)
-
-  </div>
-
-### Archive user
-  - User can be archived by workspace admin from using `Manage User` page
-
-    <div style={{textAlign: 'center'}}>
-
-    ![ToolJet - Single-Workspace Archive user](/img/user-lifecycle/archive-user.png)
-
-    </div>
-
-### Unarchive user
-  - User can be unArchived by workspace admin from using `Manage User` page
-
-    <div style={{textAlign: 'center'}}>
-
-    ![ToolJet - Single-Workspace Unarchive user](/img/user-lifecycle/unarchive-sw.png)
-
-    </div>
-
-  :::info
-  Archive or unarchive will affect user login, user won't be able to login using email id and password unless user is in active state
-  :::
-
-## Multi-Workspace
-
 :::info
-Check Multi-workspace docs [here](/docs/tutorial/multiworkspace).
+Check Workspace docs [here](/docs/tutorial/workspace_overview).
 :::
 
 ### User onboarding
@@ -82,7 +15,7 @@ Check Multi-workspace docs [here](/docs/tutorial/multiworkspace).
 
     <div style={{textAlign: 'center'}}>
 
-    ![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/signup-mw.png)
+    ![ToolJet - Workspace sign up](/img/user-lifecycle/signup-mw.png)
 
     </div>
 
@@ -90,7 +23,7 @@ Check Multi-workspace docs [here](/docs/tutorial/multiworkspace).
 
     <div style={{textAlign: 'center'}}>
 
-    ![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/user-mw.png)
+    ![ToolJet - Workspace sign up](/img/user-lifecycle/user-mw.png)
 
     </div>
 
@@ -98,7 +31,7 @@ Check Multi-workspace docs [here](/docs/tutorial/multiworkspace).
 
     <div style={{textAlign: 'center'}}>
 
-    ![ToolJet - Multi-Workspace sign up](/img/user-lifecycle/invite-link-mw.png)
+    ![ToolJet - Workspace sign up](/img/user-lifecycle/invite-link-mw.png)
 
     </div>
 
@@ -106,7 +39,7 @@ Check Multi-workspace docs [here](/docs/tutorial/multiworkspace).
 
     <div style={{textAlign: 'center'}}>
 
-    ![ToolJet - Single-Workspace accept invite](/img/user-lifecycle/sso-onboard-sw.png)
+    ![ToolJet - Workspace accept invite](/img/user-lifecycle/sso-onboard-sw.png)
 
     </div>
 
@@ -114,7 +47,7 @@ Check Multi-workspace docs [here](/docs/tutorial/multiworkspace).
 
     <div style={{textAlign: 'center'}}>
 
-    ![ToolJet - Single-Workspace sign up using SSO](/img/user-lifecycle/sso-enable-signup-sw.png)
+    ![ToolJet - Workspace sign up using SSO](/img/user-lifecycle/sso-enable-signup-sw.png)
 
     </div>
 
@@ -123,7 +56,7 @@ Check Multi-workspace docs [here](/docs/tutorial/multiworkspace).
 
     <div style={{textAlign: 'center'}}>
 
-    ![ToolJet - Single-Workspace Archive user](/img/user-lifecycle/archive-user.png)
+    ![ToolJet -Workspace Archive user](/img/user-lifecycle/archive-user.png)
 
     </div>
 
@@ -144,7 +77,7 @@ Check Multi-workspace docs [here](/docs/tutorial/multiworkspace).
 
   <div style={{textAlign: 'center'}}>
 
-  ![ToolJet - Single-Workspace sign up using SSO](/img/user-lifecycle/switch.png)
+  ![ToolJet - Workspace sign up using SSO](/img/user-lifecycle/switch.png)
 
   </div>
 
@@ -157,11 +90,11 @@ Check Multi-workspace docs [here](/docs/tutorial/multiworkspace).
 | invited  | No (Yes with SSO)| Login through SSO or invitation link |
 | archived | No               | Not able to activate. Invite from `Manage Users` page, status will be changed to invited |
 
-## Multi-Workspace SSO flow
+## Workspace SSO flow
   - Diagram shows how SSO configurations are chosen in common login page and workspace login page. Instance level SSO is configured in environment variables and Workspace level SSO is configured in respective `Manage SSO` page.
 
   <div style={{textAlign: 'center'}}>
 
-    ![ToolJet - SSO Flow](/img/user-lifecycle/sso-flow.png)
+  ![ToolJet - SSO Flow](/img/user-lifecycle/sso-flow.png)
 
   </div>
