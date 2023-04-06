@@ -1,7 +1,6 @@
 import React, { createContext, useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
-import { globalDatasourceService, appEnvironmentService } from '@/_services';
 import { globalDatasourceService, appEnvironmentService, authenticationService } from '@/_services';
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
 
@@ -13,8 +12,7 @@ export const GlobalDataSourcesContext = createContext({
 });
 
 export const GlobalDatasources = (props) => {
-  const { current_organization_id, admin } = authenticationService.currentSessionValue;
-  const [organizationId, setOrganizationId] = useState(current_organization_id);
+  const { admin } = authenticationService.currentSessionValue;
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -32,7 +30,7 @@ export const GlobalDatasources = (props) => {
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     globalDatasourceService
-      .getAll(organizationId)
+      .getAll()
       .then((data) => {
         const orderedDataSources = data.data_sources.sort((a, b) => a.name.localeCompare(b.name));
         setDataSources([...(orderedDataSources ?? [])]);
