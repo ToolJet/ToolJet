@@ -25,12 +25,11 @@ class WebSocketConnection {
     // Connection opened
     this.socket.addEventListener('open', (event) => {
       console.log('connection established', event);
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 
+      //TODO: verify if the socket functionality is working or not
       this.socket.send(
         JSON.stringify({
           event: 'authenticate',
-          data: currentUser.auth_token,
         })
       );
 

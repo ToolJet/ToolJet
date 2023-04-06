@@ -5,6 +5,7 @@ import axios from 'axios';
 import JSON5 from 'json5';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
+import { authenticationService } from '@/_services/authentication.service';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -667,6 +668,95 @@ export const getuserName = (formData) => {
   return '';
 };
 
+export const pathnameWithoutSubpath = (path) => {
+  const subpath = getSubpath();
+  if (subpath) return path.replace(subpath, '');
+  return path;
+};
+
+// will replace or append workspace-id in a path
+export const appendWorkspaceId = (workspaceId, path, replaceId = false) => {
+  const subpath = getSubpath();
+  path = pathnameWithoutSubpath(path);
+
+  let newPath = path;
+  if (path === '/:workspaceId' || path.split('/').length === 2) {
+    newPath = `/${workspaceId}`;
+  } else {
+    const paths = path.split('/').filter((path) => path !== '');
+    if (replaceId) {
+      paths[0] = workspaceId;
+    } else {
+      paths.unshift(workspaceId);
+    }
+    newPath = `/${paths.join('/')}`;
+  }
+  return subpath ? `${subpath}${newPath}` : newPath;
+};
+
+export const getWorkspaceIdFromURL = () => {
+  const pathname = window.location.pathname;
+  const pathnameArray = pathname.split('/').filter((path) => path !== '');
+  const subpath = window?.public_config?.SUB_PATH;
+  const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
+  const existedPaths = [
+    'forgot-password',
+    'switch-workspace',
+    'reset-password',
+    'invitations',
+    'organization-invitations',
+    'sso',
+    'setup',
+    'confirm',
+    ':workspaceId',
+    'confirm-invite',
+    'oauth2',
+    'applications',
+    'integrations',
+  ];
+
+  if (pathname.includes('login')) {
+    return subpath ? pathnameArray[subpathArray.length + 1] : pathnameArray[1];
+  }
+
+  const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
+  return !existedPaths.includes(workspaceId) ? workspaceId : '';
+};
+
+export const getWorkspaceId = () =>
+  getWorkspaceIdFromURL() || authenticationService.currentSessionValue?.current_organization_id;
+
+export const excludeWorkspaceIdFromURL = (pathname) => {
+  if (!pathname.includes('/applications/')) {
+    const paths = pathname?.split('/').filter((path) => path !== '');
+    paths.shift();
+    const newPath = paths.join('/');
+    return newPath ? `/${newPath}` : '/';
+  }
+  return pathname;
+};
+
+export const handleUnSubscription = (subsciption) => {
+  setTimeout(() => {
+    subsciption.unsubscribe();
+  }, 5000);
+};
+
+export const getAvatar = (organization) => {
+  if (!organization) return;
+
+  const orgName = organization.split(' ').filter((e) => e && !!e.trim());
+  if (orgName.length > 1) {
+    return `${orgName[0]?.[0]}${orgName[1]?.[0]}`;
+  } else if (organization.length >= 2) {
+    return `${organization[0]}${organization[1]}`;
+  } else {
+    return `${organization[0]}${organization[0]}`;
+  }
+};
+
+export const getSubpath = () =>
+  window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
 export function isExpectedDataType(data, expectedDataType) {
   function getCurrentDataType(node) {
     return Object.prototype.toString.call(node).slice(8, -1).toLowerCase();

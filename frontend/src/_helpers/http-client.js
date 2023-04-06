@@ -2,6 +2,7 @@ import config from 'config';
 import { authenticationService } from '@/_services';
 import urlJoin from 'url-join';
 import { isEmpty } from 'lodash';
+import { handleUnSubscription } from '@/_helpers/utils';
 
 const HttpVerb = {
   Get: 'GET',
@@ -34,11 +35,19 @@ class HttpClient {
     const options = {
       method,
       headers: this.headers,
+      credentials: 'include',
     };
-    const user = JSON.parse(localStorage.getItem('currentUser')) || {};
-    if (user?.auth_token) {
-      options.headers['Authorization'] = `Bearer ${user?.auth_token}`;
+    let session = authenticationService.currentSessionValue;
+
+    let subsciption;
+    if (!subsciption || (subsciption?.isClosed && subsciption?.isStopped)) {
+      subsciption = authenticationService.currentSession.subscribe((newSession) => {
+        session = newSession;
+      });
+      handleUnSubscription(subsciption);
     }
+
+    options.headers['tj-workspace-id'] = session?.current_organization_id;
     if (data) {
       options.body = JSON.stringify(data);
     }

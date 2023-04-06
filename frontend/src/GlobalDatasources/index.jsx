@@ -1,7 +1,7 @@
 import React, { createContext, useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
-import { globalDatasourceService } from '@/_services';
+import { globalDatasourceService, authenticationService } from '@/_services';
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
 
 export const GlobalDataSourcesContext = createContext({
@@ -12,8 +12,8 @@ export const GlobalDataSourcesContext = createContext({
 });
 
 export const GlobalDatasources = (props) => {
-  const { organization_id, admin } = JSON.parse(localStorage.getItem('currentUser')) || {};
-  const [organizationId, setOrganizationId] = useState(organization_id);
+  const { current_organization_id, admin } = authenticationService.currentSessionValue;
+  const [organizationId, setOrganizationId] = useState(current_organization_id);
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
