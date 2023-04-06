@@ -165,7 +165,6 @@ class TableComponent extends React.Component {
       { name: '+12:00', value: 'Etc/GMT-12' },
       { name: '+13:00', value: 'Pacific/Auckland' },
     ];
-    console.log('table-- column', column);
     return (
       <Popover
         id="popover-basic-2"
