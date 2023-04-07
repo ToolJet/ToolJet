@@ -73,7 +73,7 @@ export class AppImportExportService {
 
       const globalQueries: DataQuery[] = await manager
         .createQueryBuilder(DataQuery, 'data_query')
-        .leftJoinAndSelect('data_query.dataSource', 'dataSource')
+        .innerJoinAndSelect('data_query.dataSource', 'dataSource')
         .where('data_query.appVersionId IN(:...versionId)', {
           versionId: appVersions.map((v) => v.id),
         })
@@ -102,10 +102,6 @@ export class AppImportExportService {
           .getMany();
       }
 
-      // if (globalQueries?.length) {
-      dataQueries = [...dataQueries];
-      // }
-
       appToExport['dataQueries'] = dataQueries;
       appToExport['dataSources'] = dataSources;
       appToExport['appVersions'] = appVersions;
@@ -114,6 +110,7 @@ export class AppImportExportService {
       appToExport['schemaDetails'] = {
         multiPages: true,
         multiEnv: true,
+        globalDataSources: true,
       };
 
       return { appV2: appToExport };
