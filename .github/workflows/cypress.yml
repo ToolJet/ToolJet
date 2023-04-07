@@ -3,6 +3,8 @@ name: Cypress E2E Test
 on:
   pull_request_target:
     types: [labeled, unlabeled, closed]
+    branches: cypress-secrets
+  
 
   workflow_dispatch:
 
@@ -19,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: cypress-secrets
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup node 18.3.0
         uses: actions/setup-node@v3
