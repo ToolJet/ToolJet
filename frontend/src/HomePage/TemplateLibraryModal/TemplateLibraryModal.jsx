@@ -95,7 +95,11 @@ export default function TemplateLibraryModal(props) {
             <Col xs={9} style={{ height: '100%' }}>
               <Container fluid>
                 <Row style={{ height: '90%' }}>
-                  <Col className="template-list-column" xs={3} style={{ borderRight: '1px solid #D2DDEC' }}>
+                  <Col
+                    className="template-list-column"
+                    xs={3}
+                    style={{ borderRight: '1px solid #D2DDEC', height: '100%', overflowY: 'auto' }}
+                  >
                     <AppList apps={filteredApps} selectApp={selectApp} selectedApp={selectedApp} />
                   </Col>
                   <Col xs={9} style={{}}>
