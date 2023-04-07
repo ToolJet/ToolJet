@@ -1,19 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SearchBox } from '@/_components/SearchBox';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
-import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 import { QueryCard } from './QueryCard';
 import Fuse from 'fuse.js';
+
+import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 
 export const QueryDataPane = ({
   showSaveConfirmation,
   setSaveConfirmation,
-  queryCancelData,
   setCancelData,
+  draftQuery,
+  handleAddNewQuery,
+  setDraftQuery,
+  setSelectedDataSource,
   darkMode,
 }) => {
   const { t } = useTranslation();
@@ -25,40 +29,28 @@ export const QueryDataPane = ({
     setFilteredQueries(dataQueries);
   }, [JSON.stringify(dataQueries)]);
 
-  const filterQueries = (value) => {
-    if (value) {
-      const fuse = new Fuse(dataQueries, { keys: ['name'] });
-      const results = fuse.search(value);
-      let filterDataQueries = [];
-      results.every((result) => {
-        if (result.item.name === value) {
-          filterDataQueries = [];
+  const filterQueries = useCallback(
+    (value) => {
+      if (value) {
+        const fuse = new Fuse(dataQueries, { keys: ['name'] });
+        const results = fuse.search(value);
+        let filterDataQueries = [];
+        results.every((result) => {
+          if (result.item.name === value) {
+            filterDataQueries = [];
+            filterDataQueries.push(result.item);
+            return false;
+          }
           filterDataQueries.push(result.item);
-          return false;
-        }
-        filterDataQueries.push(result.item);
-        return true;
-      });
-      setFilteredQueries(filterDataQueries);
-    } else {
-      setFilteredQueries(dataQueries);
-    }
-  };
-
-  const handleAddNewQuery = (setSaveConfirmation, setCancelData) => {
-    // const stateToBeUpdated = {
-    //     selectedDataSource: null,
-    //     selectedQuery: {},
-    //     editingQuery: false,
-    //     addingQuery: true,
-    //     isSourceSelected: false,
-    //     draftQuery: null,
-    // };
-    // if (this.state.isUnsavedQueriesAvailable) {
-    // setSaveConfirmation(true);
-    // setCancelData(stateToBeUpdated);
-    // } else this.setState({ ...stateToBeUpdated });
-  };
+          return true;
+        });
+        setFilteredQueries(filterDataQueries);
+      } else {
+        setFilteredQueries(dataQueries);
+      }
+    },
+    [JSON.stringify(dataQueries)]
+  );
 
   return (
     <div className="data-pane">
@@ -80,9 +72,7 @@ export const QueryDataPane = ({
             className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button  ${
               darkMode && 'theme-dark'
             }`}
-            onClick={() => {
-              handleAddNewQuery(setSaveConfirmation, setCancelData);
-            }}
+            onClick={handleAddNewQuery}
             data-tooltip-id="tooltip-for-add-query"
             data-tooltip-content="Add new query"
           >
@@ -106,19 +96,30 @@ export const QueryDataPane = ({
         ) : (
           <div className="query-list">
             <div>
-              {/* {draftQuery !== null &&
-                  this.renderDraftQuery(setSaveConfirmation, setCancelData)} */}
+              {draftQuery !== null ? (
+                <QueryCard
+                  key={draftQuery.id}
+                  dataQuery={draftQuery}
+                  setSaveConfirmation={setSaveConfirmation}
+                  setCancelData={setCancelData}
+                  setDraftQuery={setDraftQuery}
+                  setSelectedDataSource={setSelectedDataSource}
+                />
+              ) : (
+                ''
+              )}
               {filteredQueries.map((query) => (
                 <QueryCard
                   key={query.id}
                   dataQuery={query}
                   setSaveConfirmation={setSaveConfirmation}
                   setCancelData={setCancelData}
+                  setDraftQuery={setDraftQuery}
+                  setSelectedDataSource={setSelectedDataSource}
                 />
               ))}
             </div>
-            {filteredQueries.length === 0 && (
-              // {filteredQueries.length === 0 && draftQuery === null && (
+            {filteredQueries.length === 0 && draftQuery === null && (
               <div className=" d-flex  flex-column align-items-center justify-content-start">
                 <EmptyQueriesIllustration />
                 <span data-cy="no-query-message" className="mute-text pt-3">

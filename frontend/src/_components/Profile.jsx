@@ -1,25 +1,52 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { authenticationService } from '@/_services';
 import Avatar from '@/_ui/Avatar';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { useTranslation } from 'react-i18next';
 import { ToolTip } from '@/_components/ToolTip';
+import { getPrivateRoute } from '@/_helpers/routes';
 
 export const Profile = function Header({ switchDarkMode, darkMode }) {
-  const { first_name, last_name, avatar_id } = authenticationService.currentUserValue;
+  const currentSession = authenticationService.currentSessionValue;
+  const [currentUser, setCurrentUser] = React.useState({
+    first_name: currentSession?.current_user.first_name,
+    last_name: currentSession?.current_user.last_name,
+    avatar_id: currentSession?.current_user.avatar_id,
+  });
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   function logout() {
     authenticationService.logout();
-    navigate('/login');
   }
+
+  function getUserDetails() {
+    authenticationService.getUserDetails().then((currentUser) => {
+      const { firstName, lastName, avatarId } = currentUser;
+      setCurrentUser({ first_name: firstName, last_name: lastName, avatar_id: avatarId });
+    });
+  }
+
+  React.useEffect(() => {
+    const observable = authenticationService.currentSession.subscribe((session) => {
+      if (session.isUserUpdated) {
+        getUserDetails();
+        authenticationService.updateCurrentSession({ ...session, isUserUpdated: false });
+      }
+    });
+
+    () => observable.unsubscribe();
+  }, []);
 
   const getOverlay = () => {
     return (
       <div className={`profile-card card ${darkMode && 'dark'}`}>
-        <Link data-testid="settingsBtn" to="/settings" className="dropdown-item" data-cy="profile-link">
+        <Link
+          data-testid="settingsBtn"
+          to={getPrivateRoute('settings')}
+          className="dropdown-item"
+          data-cy="profile-link"
+        >
           <svg
             className="icon mx-1"
             width="12"
@@ -101,7 +128,12 @@ export const Profile = function Header({ switchDarkMode, darkMode }) {
       <div className="user-avatar-nav-item cursor-pointer">
         <ToolTip message="Profile">
           <div className="d-xl-block" data-cy="profile-settings">
-            <Avatar avatarId={avatar_id} text={`${first_name ? first_name[0] : ''}${last_name ? last_name[0] : ''}`} />
+            <Avatar
+              avatarId={currentUser?.avatar_id}
+              text={`${currentUser?.first_name ? currentUser?.first_name[0] : ''}${
+                currentUser?.last_name ? currentUser?.last_name[0] : ''
+              }`}
+            />
           </div>
         </ToolTip>
       </div>

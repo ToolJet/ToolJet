@@ -5,20 +5,25 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { getSvgIcon, checkExistingQueryName } from '@/_helpers/appUtils';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
-import { useDataQueriesActions, useSelectedQuery, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
+
+import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useQueryPanelActions, useSelectedQuery, useUnsavedChanges } from '@/_stores/queryPanelStore';
 
 export const QueryCard = ({
   dataQuery,
   setSaveConfirmation,
   setCancelData,
+  setDraftQuery,
+  setSelectedDataSource,
   darkMode = false,
-  isDraftQuery = false,
 }) => {
   const selectedQuery = useSelectedQuery();
+  const isUnsavedChangesAvailable = useUnsavedChanges();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
-  const { setSelectedQuery, deleteDataQueries, renameQuery } = useDataQueriesActions();
+  const { deleteDataQueries, renameQuery } = useDataQueriesActions();
+  const { setSelectedQuery, setUnSavedChanges } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [renamingQuery, setRenamingQuery] = useState(false);
 
@@ -38,8 +43,6 @@ export const QueryCard = ({
   if (selectedQuery) {
     isSeletedQuery = dataQuery.id === selectedQuery.id;
   }
-  // const isQueryBeingDeleted = isDeletingDataQuery && isSeletedQuery;
-  const isQueryBeingDeleted = false;
 
   const deleteDataQuery = (e) => {
     e.stopPropagation();
@@ -53,20 +56,16 @@ export const QueryCard = ({
   const updateQueryName = (selectedQuery, newName) => {
     const { id, name } = selectedQuery;
     if (name === newName) {
-      // this.renameQueryNameId.current = null;
       return setRenamingQuery(false);
     }
     const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
     if (newName && !isNewQueryNameAlreadyExists) {
       if (id === 'draftQuery') {
         toast.success('Query Name Updated');
-        this.renameQueryNameId.current = null;
-        return this.setState({
-          draftQuery: { ...this.state.draftQuery, name: newName },
-          renameQueryName: false,
-        });
+        setDraftQuery((query) => ({ ...query, name: newName }));
+      } else {
+        renameQuery(dataQuery?.id, newName);
       }
-      renameQuery(dataQuery?.id, newName);
       setRenamingQuery(false);
     } else {
       if (isNewQueryNameAlreadyExists) {
@@ -77,33 +76,16 @@ export const QueryCard = ({
   };
 
   const executeDataQueryDeletion = () => {
-    // const { queryToBeDeleted, selectedQuery, isUnsavedQueriesAvailable } = this.state;
     setShowDeleteConfirmation(false);
+    if (dataQuery?.id === 'draftQuery') {
+      toast.success('Query Deleted');
+      setDraftQuery(null);
+      setSelectedQuery(null);
+      setUnSavedChanges(false);
+      setSelectedDataSource(null);
+      return;
+    }
     deleteDataQueries(dataQuery?.id);
-
-    // this.setState({
-    //     showDataQueryDeletionConfirmation: false,
-    //     isDeletingDataQuery: true,
-    // });
-    // if (this.state.queryToBeDeleted === 'draftQuery') {
-    //     toast.success('Query Deleted');
-    //     return this.clearDraftQuery();
-    // }
-    // dataqueryService
-    //     .del(queryToBeDeleted)
-    //     .then(() => {
-    //         toast.success('Query Deleted');
-    //         this.setState({
-    //             isDeletingDataQuery: false,
-    //             isUnsavedQueriesAvailable: queryToBeDeleted === selectedQuery?.id ? false : isUnsavedQueriesAvailable,
-    //             queryToBeDeleted: null,
-    //         });
-    //         this.dataQueriesChanged();
-    //     })
-    //     .catch(({ error }) => {
-    //         this.setState({ isDeletingDataQuery: false });
-    //         toast.error(error);
-    //     });
   };
 
   return (
@@ -113,17 +95,18 @@ export const QueryCard = ({
       onClick={() => {
         if (selectedQuery?.id === dataQuery?.id) return;
         const stateToBeUpdated = { editingQuery: true, selectedQuery: dataQuery, draftQuery: null };
-        setSelectedQuery(dataQuery.id);
-        // if (this.state.isUnsavedQueriesAvailable) {
-        //   setSaveConfirmation(true);
-        //   setCancelData(stateToBeUpdated);
-        // } else this.setState({ ...stateToBeUpdated });
+        if (isUnsavedChangesAvailable) {
+          setSaveConfirmation(true);
+          setCancelData(stateToBeUpdated);
+        } else {
+          setSelectedQuery(dataQuery?.id);
+          setDraftQuery(null);
+        }
       }}
       role="button"
     >
       <div className="col-auto query-icon d-flex">{icon}</div>
       <div className="col query-row-query-name">
-        {/* {this.state?.renameQueryName && this.renameQueryNameId?.current === dataQuery.id ? ( */}
         {renamingQuery ? (
           <input
             data-cy={`query-edit-input-field`}
@@ -172,12 +155,12 @@ export const QueryCard = ({
           </span>
         </div>
         <div className="col-auto">
-          {isQueryBeingDeleted ? (
+          {isDeletingQueryInProcess ? (
             <div className="px-2">
               <div className="text-center spinner-border spinner-border-sm" role="status"></div>
             </div>
           ) : (
-            <span className="delete-query" onClick={deleteDataQuery} disabled={isDraftQuery}>
+            <span className="delete-query" onClick={deleteDataQuery} disabled={dataQuery?.id === 'draftQuery'}>
               <span className="d-flex">
                 <svg
                   data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}

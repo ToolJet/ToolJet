@@ -25,7 +25,6 @@ import {
   runQuery,
   setStateAsync,
   computeComponentState,
-  getSvgIcon,
   debuggerActions,
   cloneComponents,
   removeSelectedComponent,
@@ -34,15 +33,11 @@ import { Confirm } from './Viewer/Confirm';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import CommentNotifications from './CommentNotifications';
 import { WidgetManager } from './WidgetManager';
-import Fuse from 'fuse.js';
 import config from 'config';
 import queryString from 'query-string';
 import { toast } from 'react-hot-toast';
 const { produce, enablePatches, setAutoFreeze, applyPatches } = require('immer');
-import { SearchBox } from '@/_components/SearchBox';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
-import Tooltip from 'react-bootstrap/Tooltip';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
@@ -50,10 +45,11 @@ import Selecto from 'react-selecto';
 import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
-import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import EditorHeader from './Header';
+import { getWorkspaceId } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
+
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
@@ -69,25 +65,15 @@ class EditorComponent extends React.Component {
 
     const pageHandle = this.props.params.pageHandle;
 
-    const currentUser = authenticationService.currentUserValue;
-
     const { socket } = createWebsocketConnection(appId);
 
     this.renameQueryNameId = React.createRef();
 
     this.socket = socket;
-    let userVars = {};
-
-    if (currentUser) {
-      userVars = {
-        email: currentUser.email,
-        firstName: currentUser.first_name,
-        lastName: currentUser.last_name,
-        groups: currentUser?.group_permissions.map((group) => group.group),
-      };
-    }
 
     const defaultPageId = uuid();
+
+    this.subscription = null;
 
     this.defaultDefinition = {
       showViewerNavigation: true,
@@ -116,7 +102,7 @@ class EditorComponent extends React.Component {
     this.selectionDragRef = React.createRef();
     this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
     this.state = {
-      currentUser: authenticationService.currentUserValue,
+      currentUser: {},
       app: {},
       allComponentTypes: componentTypes,
       isLoading: true,
@@ -134,7 +120,6 @@ class EditorComponent extends React.Component {
         queries: {},
         components: {},
         globals: {
-          currentUser: userVars,
           theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
         },
@@ -171,7 +156,40 @@ class EditorComponent extends React.Component {
     document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
   }
 
+  getCurrentOrganizationDetails() {
+    const currentSession = authenticationService.currentSessionValue;
+    const currentUser = currentSession?.current_user;
+    this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
+      if (currentUser && currentSession?.group_permissions) {
+        const userVars = {
+          email: currentUser.email,
+          firstName: currentUser.first_name,
+          lastName: currentUser.last_name,
+          groups: currentSession.group_permissions?.map((group) => group.group),
+        };
+
+        this.setState({
+          currentUser,
+          currentState: {
+            ...this.state.currentState,
+            globals: {
+              ...this.state.currentState.globals,
+              userVars: {
+                email: currentUser.email,
+                firstName: currentUser.first_name,
+                lastName: currentUser.last_name,
+                groups: currentSession.group_permissions?.map((group) => group.group) || [],
+              },
+            },
+          },
+          userVars,
+        });
+      }
+    });
+  }
+
   componentDidMount() {
+    this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
     this.fetchApp(this.props.params.pageHandle);
@@ -247,7 +265,8 @@ class EditorComponent extends React.Component {
 
   initEventListeners() {
     this.socket?.addEventListener('message', (event) => {
-      if (event.data === 'versionReleased') this.fetchApp();
+      const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
+      if (data === 'versionReleased') this.fetchApp();
       else if (event.data === 'dataQueriesChanged') this.fetchDataQueries(this.state.editingVersion?.id);
       else if (event.data === 'dataSourcesChanged') {
         this.fetchDataSources(this.state.editingVersion?.id);
@@ -258,6 +277,7 @@ class EditorComponent extends React.Component {
   componentWillUnmount() {
     document.title = 'Tooljet - Dashboard';
     this.socket && this.socket?.close();
+    this.subscription && this.subscription.unsubscribe();
     if (config.ENABLE_MULTIPLAYER_EDITING) this.props?.provider?.disconnect();
   }
 
@@ -279,12 +299,12 @@ class EditorComponent extends React.Component {
   };
 
   fetchGlobalDataSources = () => {
-    const { organization_id: organizationId } = this.state.currentUser;
+    const { current_organization_id: organizationId } = this.state.currentUser;
     useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
   };
 
-  fetchDataQueries = (id) => {
-    useDataQueriesStore.getState().actions.fetchDataQueries(id);
+  fetchDataQueries = (id, selectFirstQuery = false) => {
+    useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery);
     this.setState(
       {
         loadingDataQueries: true,
@@ -434,7 +454,7 @@ class EditorComponent extends React.Component {
       );
 
       this.fetchDataSources(data.editing_version?.id);
-      this.fetchDataQueries(data.editing_version?.id);
+      this.fetchDataQueries(data.editing_version?.id, true);
       this.fetchGlobalDataSources();
       initEditorWalkThrough();
     };
@@ -449,21 +469,26 @@ class EditorComponent extends React.Component {
     );
   };
 
-  setAppDefinitionFromVersion = (version) => {
-    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), {
-      skipAutoSave: true,
-      skipYmapUpdate: true,
-      versionChanged: true,
-    });
-    this.setState({
-      editingVersion: version,
-      isSaving: false,
-    });
-
-    this.saveEditingVersion();
-    this.fetchDataSources(this.state.editingVersion?.id);
-    this.fetchDataQueries(this.state.editingVersion?.id);
-    this.initComponentVersioning();
+  setAppDefinitionFromVersion = (version, shouldWeEditVersion = true) => {
+    if (version?.id !== this.state.editingVersion?.id) {
+      this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), {
+        skipAutoSave: true,
+        skipYmapUpdate: true,
+        versionChanged: true,
+      });
+      this.setState(
+        {
+          editingVersion: version,
+          isSaving: false,
+        },
+        () => {
+          shouldWeEditVersion && this.saveEditingVersion();
+          this.fetchDataSources(this.state.editingVersion?.id);
+          this.fetchDataQueries(this.state.editingVersion?.id);
+          this.initComponentVersioning();
+        }
+      );
+    }
   };
 
   /**
@@ -821,238 +846,6 @@ class EditorComponent extends React.Component {
     );
   };
 
-  getSourceMetaData = (dataSource) => {
-    if (dataSource.plugin_id) {
-      return dataSource.plugin?.manifest_file?.data.source;
-    }
-
-    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
-  };
-
-  deleteDataQuery = (e, dataQuery) => {
-    e.stopPropagation();
-    this.setState({ showDataQueryDeletionConfirmation: true, queryToBeDeleted: dataQuery });
-  };
-
-  cancelDeleteDataQuery = () => {
-    this.setState({ showDataQueryDeletionConfirmation: false, queryToBeDeleted: null });
-  };
-
-  executeDataQueryDeletion = () => {
-    const { queryToBeDeleted, selectedQuery, isUnsavedQueriesAvailable } = this.state;
-
-    this.setState({
-      showDataQueryDeletionConfirmation: false,
-      isDeletingDataQuery: true,
-    });
-    if (this.state.queryToBeDeleted === 'draftQuery') {
-      toast.success('Query Deleted');
-      return this.clearDraftQuery();
-    }
-    dataqueryService
-      .del(queryToBeDeleted)
-      .then(() => {
-        toast.success('Query Deleted');
-        this.setState({
-          isDeletingDataQuery: false,
-          isUnsavedQueriesAvailable: queryToBeDeleted === selectedQuery?.id ? false : isUnsavedQueriesAvailable,
-          queryToBeDeleted: null,
-        });
-        this.dataQueriesChanged();
-      })
-      .catch(({ error }) => {
-        this.setState({ isDeletingDataQuery: false });
-        toast.error(error);
-      });
-  };
-
-  createDraftQuery = (queryDetails, source = null) => {
-    this.setState({
-      selectedQuery: queryDetails,
-      draftQuery: queryDetails,
-      selectedDataSource: source,
-      isSourceSelected: source ? true : false,
-    });
-  };
-
-  createInputFieldToRenameQuery = (id) => {
-    this.renameQueryNameId.current = id;
-    this.setState({ renameQueryName: true });
-  };
-
-  updateDraftQueryName = (newName) => {
-    return this.setState({
-      draftQuery: { ...this.state.draftQuery, name: newName },
-    });
-  };
-
-  updateQueryName = (selectedQuery, newName) => {
-    const { id, name } = selectedQuery;
-    if (name === newName) {
-      this.renameQueryNameId.current = null;
-      return this.setState({ renameQueryName: false });
-    }
-    const isNewQueryNameAlreadyExists = this.state.allDataQueries.some((query) => query.name === newName);
-    if (newName && !isNewQueryNameAlreadyExists) {
-      if (id === 'draftQuery') {
-        toast.success('Query Name Updated');
-        this.renameQueryNameId.current = null;
-        return this.setState({
-          draftQuery: { ...this.state.draftQuery, name: newName },
-          renameQueryName: false,
-        });
-      }
-      dataqueryService
-        .update(id, newName)
-        .then(() => {
-          toast.success('Query Name Updated');
-          this.setState({
-            renameQueryName: false,
-          });
-          this.renameQueryNameId.current = null;
-          this.dataQueriesChanged();
-        })
-        .catch(({ error }) => {
-          this.setState({ renameQueryName: false });
-          this.renameQueryNameId.current = null;
-          toast.error(error);
-        });
-    } else {
-      if (isNewQueryNameAlreadyExists) {
-        toast.error('Query name already exists');
-      }
-      this.setState({ renameQueryName: false });
-      this.renameQueryNameId.current = null;
-    }
-  };
-
-  clearDraftQuery = () => {
-    this.setState({
-      draftQuery: null,
-      selectedQuery: {},
-      isDeletingDataQuery: false,
-      isSourceSelected: false,
-      selectedDataSource: null,
-      isUnsavedQueriesAvailable: false,
-    });
-  };
-
-  renderDraftQuery = (setSaveConfirmation, setCancelData) => {
-    return this.renderDataQuery(this.state.draftQuery, setSaveConfirmation, setCancelData, true);
-  };
-
-  renderDataQuery = (dataQuery, setSaveConfirmation, setCancelData, isDraftQuery = false) => {
-    const sourceMeta = this.getSourceMetaData(dataQuery);
-    const iconFile = dataQuery?.plugin?.iconFile?.data || dataQuery?.plugin?.icon_file?.data;
-    const icon = getSvgIcon(sourceMeta?.kind.toLowerCase(), 20, 20, iconFile);
-
-    let isSeletedQuery = false;
-    if (this.state.selectedQuery) {
-      isSeletedQuery = dataQuery.id === this.state.selectedQuery.id;
-    }
-    const isQueryBeingDeleted = this.state.isDeletingDataQuery && isSeletedQuery;
-
-    return (
-      <div
-        className={'row query-row' + (isSeletedQuery ? ' query-row-selected' : '')}
-        key={dataQuery.id}
-        onClick={() => {
-          if (this.state.selectedQuery?.id === dataQuery?.id) return;
-          const stateToBeUpdated = { editingQuery: true, selectedQuery: dataQuery, draftQuery: null };
-          if (this.state.isUnsavedQueriesAvailable) {
-            setSaveConfirmation(true);
-            setCancelData(stateToBeUpdated);
-          } else this.setState({ ...stateToBeUpdated });
-        }}
-        role="button"
-      >
-        <div className="col-auto query-icon d-flex">{icon}</div>
-        <div className="col query-row-query-name">
-          {this.state?.renameQueryName && this.renameQueryNameId?.current === dataQuery.id ? (
-            <input
-              data-cy={`query-edit-input-field`}
-              className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${
-                this.props.darkMode && 'text-white'
-              }`}
-              type="text"
-              defaultValue={dataQuery.name}
-              autoFocus={true}
-              onBlur={({ target }) => {
-                this.updateQueryName(this.state.selectedQuery, target.value);
-              }}
-            />
-          ) : (
-            <OverlayTrigger
-              trigger={['hover', 'focus']}
-              placement="top"
-              delay={{ show: 800, hide: 100 }}
-              overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
-            >
-              <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
-                {dataQuery.name}
-              </div>
-            </OverlayTrigger>
-          )}
-        </div>
-        <div className="col-auto query-rename-delete-btn">
-          <div
-            className={`col-auto ${this.state.renameQueryName && 'display-none'} rename-query`}
-            onClick={() => this.createInputFieldToRenameQuery(dataQuery.id)}
-          >
-            <span className="d-flex">
-              <svg
-                data-cy={`edit-query-${dataQuery.name.toLowerCase()}`}
-                width="auto"
-                height="auto"
-                viewBox="0 0 19 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M13.7087 1.40712C14.29 0.826221 15.0782 0.499893 15.9 0.499893C16.7222 0.499893 17.5107 0.82651 18.0921 1.40789C18.6735 1.98928 19.0001 2.7778 19.0001 3.6C19.0001 4.42197 18.6737 5.21028 18.0926 5.79162C18.0924 5.79178 18.0928 5.79145 18.0926 5.79162L16.8287 7.06006C16.7936 7.11191 16.753 7.16118 16.7071 7.20711C16.6621 7.25215 16.6138 7.292 16.563 7.32665L9.70837 14.2058C9.52073 14.3942 9.26584 14.5 9 14.5H6C5.44772 14.5 5 14.0523 5 13.5V10.5C5 10.2342 5.10585 9.97927 5.29416 9.79163L12.1733 2.93697C12.208 2.88621 12.2478 2.83794 12.2929 2.79289C12.3388 2.74697 12.3881 2.70645 12.4399 2.67132L13.7079 1.40789C13.7082 1.40763 13.7084 1.40738 13.7087 1.40712ZM13.0112 4.92545L7 10.9153V12.5H8.58474L14.5745 6.48876L13.0112 4.92545ZM15.9862 5.07202L14.428 3.51376L15.1221 2.82211C15.3284 2.6158 15.6082 2.49989 15.9 2.49989C16.1918 2.49989 16.4716 2.6158 16.6779 2.82211C16.8842 3.02842 17.0001 3.30823 17.0001 3.6C17.0001 3.89177 16.8842 4.17158 16.6779 4.37789L15.9862 5.07202ZM0.87868 5.37868C1.44129 4.81607 2.20435 4.5 3 4.5H4C4.55228 4.5 5 4.94772 5 5.5C5 6.05228 4.55228 6.5 4 6.5H3C2.73478 6.5 2.48043 6.60536 2.29289 6.79289C2.10536 6.98043 2 7.23478 2 7.5V16.5C2 16.7652 2.10536 17.0196 2.29289 17.2071C2.48043 17.3946 2.73478 17.5 3 17.5H12C12.2652 17.5 12.5196 17.3946 12.7071 17.2071C12.8946 17.0196 13 16.7652 13 16.5V15.5C13 14.9477 13.4477 14.5 14 14.5C14.5523 14.5 15 14.9477 15 15.5V16.5C15 17.2957 14.6839 18.0587 14.1213 18.6213C13.5587 19.1839 12.7957 19.5 12 19.5H3C2.20435 19.5 1.44129 19.1839 0.87868 18.6213C0.31607 18.0587 0 17.2957 0 16.5V7.5C0 6.70435 0.31607 5.94129 0.87868 5.37868Z"
-                  fill="#11181C"
-                />
-              </svg>
-            </span>
-          </div>
-          <div className="col-auto">
-            {isQueryBeingDeleted ? (
-              <div className="px-2">
-                <div className="text-center spinner-border spinner-border-sm" role="status"></div>
-              </div>
-            ) : (
-              <span
-                className="delete-query"
-                onClick={(e) => this.deleteDataQuery(e, dataQuery.id)}
-                disabled={isDraftQuery}
-              >
-                <span className="d-flex">
-                  <svg
-                    data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
-                    width="auto"
-                    height="auto"
-                    viewBox="0 0 18 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M5.58579 0.585786C5.96086 0.210714 6.46957 0 7 0H11C11.5304 0 12.0391 0.210714 12.4142 0.585786C12.7893 0.960859 13 1.46957 13 2V4H15.9883C15.9953 3.99993 16.0024 3.99993 16.0095 4H17C17.5523 4 18 4.44772 18 5C18 5.55228 17.5523 6 17 6H16.9201L15.9997 17.0458C15.9878 17.8249 15.6731 18.5695 15.1213 19.1213C14.5587 19.6839 13.7957 20 13 20H5C4.20435 20 3.44129 19.6839 2.87868 19.1213C2.32687 18.5695 2.01223 17.8249 2.00035 17.0458L1.07987 6H1C0.447715 6 0 5.55228 0 5C0 4.44772 0.447715 4 1 4H1.99054C1.9976 3.99993 2.00466 3.99993 2.0117 4H5V2C5 1.46957 5.21071 0.960859 5.58579 0.585786ZM3.0868 6L3.99655 16.917C3.99885 16.9446 4 16.9723 4 17C4 17.2652 4.10536 17.5196 4.29289 17.7071C4.48043 17.8946 4.73478 18 5 18H13C13.2652 18 13.5196 17.8946 13.7071 17.7071C13.8946 17.5196 14 17.2652 14 17C14 16.9723 14.0012 16.9446 14.0035 16.917L14.9132 6H3.0868ZM11 4H7V2H11V4ZM6.29289 10.7071C5.90237 10.3166 5.90237 9.68342 6.29289 9.29289C6.68342 8.90237 7.31658 8.90237 7.70711 9.29289L9 10.5858L10.2929 9.29289C10.6834 8.90237 11.3166 8.90237 11.7071 9.29289C12.0976 9.68342 12.0976 10.3166 11.7071 10.7071L10.4142 12L11.7071 13.2929C12.0976 13.6834 12.0976 14.3166 11.7071 14.7071C11.3166 15.0976 10.6834 15.0976 10.2929 14.7071L9 13.4142L7.70711 14.7071C7.31658 15.0976 6.68342 15.0976 6.29289 14.7071C5.90237 14.3166 5.90237 13.6834 6.29289 13.2929L7.58579 12L6.29289 10.7071Z"
-                      fill="#DB4324"
-                    />
-                  </svg>
-                </span>
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   onNameChanged = (newName) => {
     this.setState({
       app: { ...this.state.app, name: newName },
@@ -1079,29 +872,6 @@ class EditorComponent extends React.Component {
           selectedComponents: [...(multiSelect ? prevState.selectedComponents : []), { id, component }],
         };
       });
-    }
-  };
-
-  filterQueries = (value) => {
-    if (value) {
-      const fuse = new Fuse(this.state.allDataQueries, { keys: ['name'] });
-      const results = fuse.search(value);
-      let filterDataQueries = [];
-      results.every((result) => {
-        if (result.item.name === value) {
-          filterDataQueries = [];
-          filterDataQueries.push(result.item);
-          return false;
-        }
-        filterDataQueries.push(result.item);
-        return true;
-      });
-      this.setState({
-        filterDataQueries,
-        dataQueriesDefaultText: 'No Queries found.',
-      });
-    } else {
-      this.fetchDataQueries();
     }
   };
 
@@ -1221,12 +991,6 @@ class EditorComponent extends React.Component {
       },
     });
     this.props.switchDarkMode(newMode);
-  };
-
-  setStateOfUnsavedQueries = (state) => {
-    this.setState({
-      isUnsavedQueriesAvailable: state,
-    });
   };
 
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
@@ -1599,7 +1363,7 @@ class EditorComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    this.props.navigate(`/apps/${this.state.appId}/${handle}?${queryParamsString}`);
+    this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.appId}/${handle}?${queryParamsString}`);
 
     const { globals: existingGlobals } = this.state.currentState;
 
@@ -1670,22 +1434,6 @@ class EditorComponent extends React.Component {
     return Object.entries(this.state.appDefinition.pages).map(([id, page]) => ({ ...page, id }));
   };
 
-  handleAddNewQuery = (setSaveConfirmation, setCancelData) => {
-    const stateToBeUpdated = {
-      options: {},
-      selectedDataSource: null,
-      selectedQuery: {},
-      editingQuery: false,
-      addingQuery: true,
-      isSourceSelected: false,
-      draftQuery: null,
-    };
-    if (this.state.isUnsavedQueriesAvailable) {
-      setSaveConfirmation(true);
-      setCancelData(stateToBeUpdated);
-    } else this.setState({ ...stateToBeUpdated });
-  };
-
   toggleCurrentLayout = (selectedLayout) => {
     this.setState({
       currentLayout: selectedLayout,
@@ -1703,7 +1451,6 @@ class EditorComponent extends React.Component {
       loadingDataQueries,
       dataQueries,
       addingQuery,
-      selectedQuery,
       editingQuery,
       app,
       showLeftSidebar,
@@ -1738,14 +1485,6 @@ class EditorComponent extends React.Component {
           queryConfirmationData={queryConfirmationList[0]}
           darkMode={this.props.darkMode}
           key={queryConfirmationList[0]?.queryName}
-        />
-        <Confirm
-          show={showDataQueryDeletionConfirmation}
-          message={'Do you really want to delete this query?'}
-          confirmButtonLoading={isDeletingDataQuery}
-          onConfirm={() => this.executeDataQueryDeletion()}
-          onCancel={() => this.cancelDeleteDataQuery()}
-          darkMode={this.props.darkMode}
         />
         <Confirm
           show={this.state.showPageDeletionConfirmation?.isOpen ?? false}
@@ -1784,6 +1523,7 @@ class EditorComponent extends React.Component {
             handleSlugChange={this.handleSlugChange}
             onVersionRelease={this.onVersionRelease}
             saveEditingVersion={this.saveEditingVersion}
+            currentUser={this.state.currentUser}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
@@ -1815,7 +1555,6 @@ class EditorComponent extends React.Component {
                 runQuery={(queryId, queryName) => runQuery(this, queryId, queryName)}
                 ref={this.dataSourceModalRef}
                 isSaving={this.state.isSaving}
-                isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
                 currentPageId={this.state.currentPageId}
                 addNewPage={this.addNewPage}
                 switchPage={this.switchPage}
@@ -1949,70 +1688,52 @@ class EditorComponent extends React.Component {
                     )}
                   </div>
                 </div>
-                <QueryPanel>
+                <QueryPanel dataQueriesChanged={this.dataQueriesChanged}>
                   {({
                     toggleQueryEditor,
-                    showSaveConfirmation,
                     setSaveConfirmation,
-                    queryCancelData,
                     setCancelData,
+                    selectedDataSource,
+                    createDraftQuery,
+                    isUnsavedQueriesAvailable,
+                    selectedQuery,
+                    dataQueries,
+                    handleAddNewQuery,
+                    editingQuery,
+                    updateDataQueries,
+                    updateDraftQueryName,
                   }) => (
                     <>
-                      <Confirm
-                        show={showSaveConfirmation}
-                        message={`Query ${selectedQuery?.name} has unsaved changes`}
-                        onConfirm={() => {
-                          setSaveConfirmation(false);
-                        }}
-                        onCancel={(data) => {
-                          setSaveConfirmation(false);
-                          this.setState({
-                            ...data,
-                            isUnsavedQueriesAvailable: false,
-                            draftQuery: this.state.draftQuery !== null ? null : this.state.draftQuery,
-                          });
-                        }}
-                        confirmButtonText="Continue editing"
-                        cancelButtonText="Discard changes"
-                        callCancelFnOnConfirm={false}
-                        queryCancelData={queryCancelData}
-                      />
-
                       <div className="query-definition-pane-wrapper">
                         <div className="query-definition-pane">
                           <div>
                             <QueryManager
-                              addNewQueryAndDeselectSelectedQuery={() =>
-                                this.handleAddNewQuery(setSaveConfirmation, setCancelData)
-                              }
+                              addNewQueryAndDeselectSelectedQuery={handleAddNewQuery}
                               toggleQueryEditor={toggleQueryEditor}
                               dataQueries={dataQueries}
                               mode={editingQuery ? 'edit' : 'create'}
                               selectedQuery={selectedQuery}
-                              selectedDataSource={this.state.selectedDataSource}
-                              dataQueriesChanged={this.dataQueriesChanged}
+                              selectedDataSource={selectedDataSource}
+                              dataQueriesChanged={updateDataQueries}
                               appId={appId}
                               editingVersionId={editingVersion?.id}
-                              addingQuery={addingQuery || dataQueries?.length === 0}
+                              addingQuery={!editingQuery || dataQueries?.length === 0}
                               editingQuery={editingQuery}
                               currentState={currentState}
                               darkMode={this.props.darkMode}
                               apps={apps}
                               allComponents={appDefinition.pages[this.state.currentPageId]?.components ?? {}}
-                              isSourceSelected={this.state.isSourceSelected}
+                              isSourceSelected={selectedDataSource !== null}
                               isQueryPaneDragging={this.state.isQueryPaneDragging}
                               runQuery={this.runQuery}
                               dataSourceModalHandler={this.dataSourceModalHandler}
-                              setStateOfUnsavedQueries={this.setStateOfUnsavedQueries}
                               appDefinition={appDefinition}
                               editorState={this}
                               showQueryConfirmation={queryConfirmationList.length > 0}
-                              createDraftQuery={this.createDraftQuery}
+                              createDraftQuery={createDraftQuery}
                               clearDraftQuery={this.clearDraftQuery}
-                              isUnsavedQueriesAvailable={this.state.isUnsavedQueriesAvailable}
-                              setSaveConfirmation={setSaveConfirmation}
-                              setCancelData={setCancelData}
-                              updateDraftQueryName={this.updateDraftQueryName}
+                              isUnsavedQueriesAvailable={isUnsavedQueriesAvailable}
+                              updateDraftQueryName={updateDraftQueryName}
                             />
                           </div>
                         </div>

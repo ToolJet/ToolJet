@@ -1,23 +1,31 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { dataqueryService } from '@/_services';
-import { useAppDataStore } from '@/_stores/appDataStore';
 import { toast } from 'react-hot-toast';
+
+import { useAppDataStore } from '@/_stores/appDataStore';
+import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 
 export const useDataQueriesStore = create(
   devtools((set, get) => ({
     dataQueries: [],
     loadingDataQueries: true,
     isDeletingQueryInProcess: false,
-    selectedQuery: null,
     actions: {
-      fetchDataQueries: (appId) => {
+      fetchDataQueries: (appId, selectFirstQuery = false) => {
         set({ loadingDataQueries: true });
         dataqueryService.getAll(appId).then((data) => {
           set({
             dataQueries: data.data_queries,
             loadingDataQueries: false,
           });
+          const { actions, selectedQuery } = useQueryPanelStore.getState();
+          if (selectFirstQuery || selectedQuery?.id === 'draftQuery') {
+            actions.setSelectedQuery(data.data_queries[0]?.id, data.data_queries[0]);
+          } else if (selectedQuery?.id) {
+            const query = data.data_queries.find((query) => query.id === selectedQuery?.id);
+            actions.setSelectedQuery(query?.id);
+          }
         });
       },
       deleteDataQueries: (queryId) => {
@@ -29,7 +37,12 @@ export const useDataQueriesStore = create(
             set({
               isDeletingQueryInProcess: false,
             });
-            get().actions.fetchDataQueries(useAppDataStore.getState().editingVersion?.id);
+            const { actions, isUnsavedChangesAvailable, selectedQuery } = useQueryPanelStore.getState();
+            actions.setUnSavedChanges(queryId === selectedQuery?.id ? false : isUnsavedChangesAvailable);
+            get().actions.fetchDataQueries(
+              useAppDataStore.getState().editingVersion?.id,
+              selectedQuery?.id === queryId
+            );
           })
           .catch(({ error }) => {
             set({
@@ -49,16 +62,9 @@ export const useDataQueriesStore = create(
             toast.error(error);
           });
       },
-      setSelectedQuery: (queryId) => {
-        set((state) => {
-          const query = state.dataQueries.find((query) => query.id === queryId);
-          return { selectedQuery: query };
-        });
-      },
     },
   }))
 );
 
 export const useDataQueries = () => useDataQueriesStore((state) => state.dataQueries);
-export const useSelectedQuery = () => useDataQueriesStore((state) => state.selectedQuery);
 export const useDataQueriesActions = () => useDataQueriesStore((state) => state.actions);

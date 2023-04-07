@@ -8,7 +8,7 @@ import DataSourceFolder from '@assets/images/icons/datasource-folder.svg';
 export const GlobalDataSourcesPage = ({ darkMode }) => {
   const containerRef = useRef(null);
   const [modalProps, setModalProps] = useState({
-    backdrop: true,
+    backdrop: false,
     dialogClassName: 'datasource-edit-modal',
     enforceFocus: false,
   });
@@ -23,15 +23,20 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
     handleModalVisibility,
     isEditing,
     setEditing,
+    currentEnvironment,
+    environments,
+    setCurrentEnvironment,
   } = useContext(GlobalDataSourcesContext);
 
   useEffect(() => {
     if (selectedDataSource) {
       setModalProps({ ...modalProps, backdrop: false });
-    } else {
+    }
+
+    if (!isEditing) {
       setModalProps({ ...modalProps, backdrop: true });
     }
-  }, [selectedDataSource]);
+  }, [selectedDataSource, isEditing]);
 
   const handleHideModal = () => {
     if (dataSources?.length) {
@@ -46,6 +51,15 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
     } else {
       handleModalVisibility();
     }
+  };
+
+  const environmentChanged = (env, dataSourceId) => {
+    setCurrentEnvironment(env);
+  };
+
+  const dataSourcesChanged = (resetSelection, dataSource) => {
+    setCurrentEnvironment(environments[0]);
+    fetchDataSources(resetSelection, dataSource);
   };
 
   return (
@@ -64,9 +78,12 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
             darkMode={darkMode}
             hideModal={handleHideModal}
             scope="global"
-            dataSourcesChanged={fetchDataSources}
+            dataSourcesChanged={dataSourcesChanged}
             selectedDataSource={selectedDataSource}
             modalProps={modalProps}
+            currentEnvironment={currentEnvironment}
+            environments={environments}
+            environmentChanged={environmentChanged}
             container={selectedDataSource ? containerRef?.current : null}
           />
         )}
@@ -82,7 +99,10 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
             <button
               className="add-datasource-btn btn btn-primary active w-100 mt-3"
               type="button"
-              onClick={handleModalVisibility}
+              onClick={() => {
+                handleModalVisibility();
+                setEditing(false);
+              }}
             >
               Add new datasource
             </button>

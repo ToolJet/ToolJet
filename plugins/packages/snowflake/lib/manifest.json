@@ -7,7 +7,7 @@
     "name": "Snowflake",
     "kind": "snowflake",
     "exposedVariables": {
-      "isLoading": {},
+      "isLoading": false,
       "data": {},
       "rawData": {}
     },

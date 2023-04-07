@@ -386,7 +386,7 @@
 }
 
 .close-btn.dark,.back-btn.dark {
-  filter: brightness(0) invert(1);
+  background-color: revert !important;
 }
 
 .suggestion-container {
