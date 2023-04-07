@@ -26,12 +26,12 @@ jobs:
         with:
           node-version: 18.3.0
 
-      - name: Checking the PR URL
-        run: |
-          while true; do
-          curl --silent --fail http://13.57.209.185 && break
-          sleep 1
-          done
+      # - name: Checking the PR URL
+      #   run: |
+      #     while true; do
+      #     curl --silent --fail http://13.57.209.185 && break
+      #     sleep 1
+      #     done
 
       - name: Getting cypress secrets
         # use quotes around the secret, as its value
