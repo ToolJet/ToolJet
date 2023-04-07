@@ -1,15 +1,16 @@
 name: Cypress E2E Test
 
 on:
-  pull_request_target:
+  pull_request:
     types: [labeled, unlabeled, closed]
-    branches: cypress-secrets
+    branches: 
+      - cypress-secrets
   
 
   workflow_dispatch:
 
 env:
-  # PR_NUMBER: ${{ github.event.number }}
+  PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
@@ -28,12 +29,12 @@ jobs:
         with:
           node-version: 18.3.0
 
-      # - name: Checking the PR URL
-      #   run: |
-      #     while true; do
-      #     curl --silent --fail http://13.57.209.185 && break
-      #     sleep 1
-      #     done
+      - name: Checking the PR URL
+        run: |
+          while true; do
+          curl --silent --fail http://13.57.209.185 && break
+          sleep 1
+          done
 
       - name: Getting cypress secrets
         # use quotes around the secret, as its value
