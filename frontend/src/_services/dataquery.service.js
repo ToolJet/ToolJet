@@ -71,6 +71,6 @@ function changeQueryDataSource(id, dataSourceId) {
   const body = {
     data_source_id: dataSourceId,
   };
-  const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = { method: 'PUT', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/data_queries/${id}/data_source`, requestOptions).then(handleResponse);
 }
