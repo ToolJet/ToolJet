@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  PR_NUMBER: ${{ github.event.number }}
+  # PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
@@ -26,12 +26,12 @@ jobs:
         with:
           node-version: 18.3.0
 
-      - name: Checking the PR URL
-        run: |
-          while true; do
-          curl --silent --fail http://13.57.209.185 && break
-          sleep 1
-          done
+      # - name: Checking the PR URL
+      #   run: |
+      #     while true; do
+      #     curl --silent --fail http://13.57.209.185 && break
+      #     sleep 1
+      #     done
 
       - name: Getting cypress secrets
         # use quotes around the secret, as its value
@@ -43,7 +43,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://13.57.209.185"
+          config: "baseUrl=http://13.57.209.18"
           config-file: cypress-run.config.js
 
       - name: Capturing screenshots
