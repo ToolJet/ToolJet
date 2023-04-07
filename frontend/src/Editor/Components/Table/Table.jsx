@@ -163,8 +163,7 @@ export function Table({
   }
 
   function hideAddNewRowPopup() {
-    mergeToAddNewRowsDetails({ addingNewRows: false, newRowsChangeSet: {}, newRowsDataUpdates: {} });
-    return setExposedVariable('newRowsAdded', []);
+    mergeToAddNewRowsDetails({ addingNewRows: false });
   }
 
   const defaultColumn = React.useMemo(
@@ -236,7 +235,6 @@ export function Table({
       accumulator.push({ ...newDataUpdates[row] });
       return accumulator;
     }, []);
-
     mergeToAddNewRowsDetails(changesToBeSaved);
     return setExposedVariables({ newRowsAdded: changesToBeExposed });
   }
@@ -529,23 +527,6 @@ export function Table({
           ...columns,
         ]);
     }
-  );
-
-  const newRow = [
-    allColumns.reduce((accumulator, column) => {
-      const key = column.key ?? column.exportValue;
-      accumulator[key] = '';
-      return accumulator;
-    }, {}),
-  ];
-
-  const newRowData = useTable(
-    {
-      columns,
-      data: newRow,
-      defaultColumn,
-    },
-    useBlockLayout
   );
 
   const currentColOrder = React.useRef();
@@ -1162,7 +1143,6 @@ export function Table({
       )}
       {tableDetails.addNewRowsDetails.addingNewRows && (
         <AddNewRowComponent
-          newRowData={newRowData}
           hideAddNewRowPopup={hideAddNewRowPopup}
           tableType={tableType}
           darkMode={darkMode}
@@ -1170,6 +1150,10 @@ export function Table({
           onEvent={onEvent}
           component={component}
           setExposedVariable={setExposedVariable}
+          allColumns={allColumns}
+          defaultColumn={defaultColumn}
+          columns={columns}
+          addNewRowsDetails={tableDetails.addNewRowsDetails}
         />
       )}
     </div>

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useTable, useBlockLayout } from 'react-table';
+import _ from 'lodash';
 
 export function AddNewRowComponent({
-  newRowData,
   hideAddNewRowPopup,
   tableType,
   darkMode,
@@ -9,7 +10,48 @@ export function AddNewRowComponent({
   onEvent,
   component,
   setExposedVariable,
+  allColumns,
+  defaultColumn,
+  columns,
+  addNewRowsDetails,
 }) {
+  const getNewRowObject = () =>
+    allColumns.reduce((accumulator, column) => {
+      const key = column.key ?? column.exportValue;
+      accumulator[key] = '';
+      return accumulator;
+    }, {});
+  const newRow = getNewRowObject();
+  const existingAddedNewRows = _.isEmpty(addNewRowsDetails.newRowsDataUpdates)
+    ? { status: false, data: null }
+    : {
+        status: true,
+        data: Object.keys(addNewRowsDetails.newRowsDataUpdates).reduce((accumulator, row) => {
+          accumulator[row] = addNewRowsDetails.newRowsDataUpdates[row];
+          return accumulator;
+        }, []),
+      };
+  const [newRowsState, setNewRowsState] = useState(existingAddedNewRows.status ? existingAddedNewRows.data : [newRow]);
+  const newRowData = useTable(
+    {
+      columns,
+      data: newRowsState,
+      defaultColumn,
+    },
+    useBlockLayout
+  );
+  useEffect(() => {
+    if (!existingAddedNewRows.status) {
+      const newRowDataUpdates = newRowsState.reduce((accumulator, row, index) => {
+        accumulator[index] = newRowsState[index];
+        return accumulator;
+      }, {});
+      setExposedVariable('newRowsAdded', newRowsState).then(() => {
+        mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
+      });
+    }
+  }, []);
+
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = newRowData;
 
   return (
@@ -71,6 +113,26 @@ export function AddNewRowComponent({
             })}
           </tbody>
         </table>
+        <button
+          className="btn btn-primary btn-sm my-2"
+          onClick={() => {
+            const rowData = _.cloneDeep(newRowsState);
+            const index = rowData.length;
+            rowData.push(newRow);
+            let newRowDataUpdates = addNewRowsDetails.newRowsDataUpdates;
+            newRowDataUpdates[index] = newRow;
+            let newRowAddedExposedVar = Object.keys(newRowDataUpdates).reduce((accumulator, row) => {
+              accumulator.push(newRowDataUpdates[row]);
+              return accumulator;
+            }, []);
+            setExposedVariable('newRowsAdded', newRowAddedExposedVar).then(() => {
+              mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
+              setNewRowsState(rowData);
+            });
+          }}
+        >
+          + add new row
+        </button>
       </div>
       <div className="card-footer">
         <button
@@ -79,6 +141,7 @@ export function AddNewRowComponent({
             onEvent('onNewRowsAdded', { component }).then(() => {
               setExposedVariable('newRowsAdded', []).then(() => {
                 mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {} });
+                setNewRowsState([]);
               });
             });
           }}
@@ -87,11 +150,14 @@ export function AddNewRowComponent({
         </button>
         <button
           onClick={() => {
-            hideAddNewRowPopup();
+            setExposedVariable('newRowsAdded', []).then(() => {
+              mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {} });
+              setNewRowsState([]);
+            });
           }}
           className="btn btn-light btn-sm"
         >
-          discard row
+          discard rows
         </button>
       </div>
     </div>
