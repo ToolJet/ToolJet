@@ -17,7 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: (request) => {
-        return request?.cookies['auth_token'];
+        return request?.cookies['tj_auth_token'];
       },
       ignoreExpiration: true,
       secretOrKey: configService.get<string>('SECRET_KEY_BASE'),
