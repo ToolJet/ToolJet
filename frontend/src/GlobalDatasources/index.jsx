@@ -23,11 +23,8 @@ export const GlobalDatasources = (props) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!admin) {
-      navigate('/');
-    }
     fetchEnvironments();
-  }, [admin]);
+  }, []);
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     globalDatasourceService

@@ -159,7 +159,7 @@ class DataSourceManagerComponent extends React.Component {
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
     const appVersionId = this.props.editingVersionId;
-    const currentAppEnvironmentId = this.props.currentAppEnvironmentId;
+    const currentAppEnvironmentId = this.props.currentAppEnvironmentId ?? this.props.currentEnvironment?.id;
     const scope = this.state?.scope || selectedDataSource?.scope;
 
     const parsedOptions = Object.keys(options).map((key) => {
@@ -607,7 +607,7 @@ class DataSourceManagerComponent extends React.Component {
     return (
       selectedDataSource &&
       selectedDataSource?.id &&
-      this.props.environment?.length > 1 && (
+      this.props.environments?.length > 1 && (
         <nav className="nav nav-tabs mt-3">
           {this.props?.environments.map((env) => (
             <a

@@ -12,6 +12,8 @@ import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.const
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { User } from 'src/entities/user.entity';
 import { UsersService } from './users.service';
+import { GroupPermission } from 'src/entities/group_permission.entity';
+import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 
 @Injectable()
 export class DataSourcesService {
@@ -29,9 +31,6 @@ export class DataSourcesService {
     let selectedEnvironmentId = environmentId;
     const { organizationId, id } = user;
     const isAdmin = await this.usersService.hasGroup(user, 'admin', organizationId);
-    const groupPermissions = await user.groupPermissions;
-
-    const canPerformCreateOrDelete = groupPermissions?.some((gp) => gp['dataSourceCreate'] || gp['dataSourceDelete']);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {
@@ -49,22 +48,20 @@ export class DataSourcesService {
         .andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC });
 
       if (!isSuperAdmin(user) || !isAdmin) {
-        if (!canPerformCreateOrDelete) {
-          query
-            .innerJoin('data_source.groupPermissions', 'group_permissions')
-            .innerJoin(
-              UserGroupPermission,
-              'user_group_permissions',
-              'data_source_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
-            )
-            .where(
-              new Brackets((qb) => {
-                qb.where('user_group_permissions.user_id = :userId', {
-                  userId: id,
-                }).andWhere('data_source_group_permissions.read = :value', { value: true });
-              })
-            );
-        }
+        query
+          .innerJoin('data_source.groupPermissions', 'group_permissions')
+          .innerJoin(
+            UserGroupPermission,
+            'user_group_permissions',
+            'data_source_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
+          )
+          .where(
+            new Brackets((qb) => {
+              qb.where('user_group_permissions.user_id = :userId', {
+                userId: id,
+              }).andWhere('data_source_group_permissions.read = :value', { value: true });
+            })
+          );
       }
 
       if (scope === DataSourceScopes.GLOBAL) {
@@ -245,8 +242,45 @@ export class DataSourcesService {
           })
         );
       }
+      await this.createDataSourceGroupPermissionsForAdmin(dataSource, manager);
       return dataSource;
     });
+  }
+
+  async createDataSourceGroupPermissionsForAdmin(dataSource: DataSource, manager: EntityManager): Promise<void> {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const orgDefaultGroupPermissions = await manager.find(GroupPermission, {
+        where: {
+          organizationId: dataSource.organizationId,
+          group: 'admin',
+        },
+      });
+
+      for (const groupPermission of orgDefaultGroupPermissions) {
+        const dataSourceGroupPermission = manager.create(DataSourceGroupPermission, {
+          groupPermissionId: groupPermission.id,
+          dataSourceId: dataSource.id,
+          ...this.fetchDefaultDataSourceGroupPermissions(groupPermission.group),
+        });
+
+        await manager.save(dataSourceGroupPermission);
+      }
+    }, manager);
+  }
+
+  fetchDefaultDataSourceGroupPermissions(group: string): {
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+  } {
+    switch (group) {
+      case 'all_users':
+        return { read: true, update: false, delete: false };
+      case 'admin':
+        return { read: true, update: true, delete: true };
+      default:
+        throw `${group} is not a default group`;
+    }
   }
 
   async update(

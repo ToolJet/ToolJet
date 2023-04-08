@@ -31,14 +31,17 @@ export class GlobalDataSourceAbilityFactory {
 
     if (await this.usersService.userCan(user, 'update', 'GlobalDataSource', dataSourceId)) {
       can('updateGlobalDataSource', DataSource);
+      can('fetchEnvironments', DataSource);
     }
 
     if (await this.usersService.userCan(user, 'delete', 'GlobalDataSource')) {
       can('deleteGlobalDataSource', DataSource);
+      can('fetchEnvironments', DataSource);
     }
 
     if (await this.usersService.userCan(user, 'create', 'GlobalDataSource')) {
       can('authorizeOauthForSource', DataSource);
+      can('fetchEnvironments', DataSource);
     }
 
     return build({

@@ -36,6 +36,10 @@ function Layout({ children, switchDarkMode, darkMode }) {
     return canAnyGroupPerformAction('update', currentUser.data_source_group_permissions) || currentUser.super_admin;
   };
 
+  const canReadDataSource = () => {
+    return canAnyGroupPerformAction('read', currentUser.data_source_group_permissions) || currentUser.super_admin;
+  };
+
   const marketplaceEnabled = config.ENABLE_MARKETPLACE_FEATURE === 'true';
   return (
     <div className="row m-auto">
@@ -186,7 +190,11 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </Link>
                 </li>
               )}
-              {(canUpdateDataSource() || canCreateDataSource() || currentUser?.admin || currentUser.super_admin) && (
+              {(canReadDataSource() ||
+                canUpdateDataSource() ||
+                canCreateDataSource() ||
+                currentUser?.admin ||
+                currentUser.super_admin) && (
                 <li className="text-center mt-3 cursor-pointer">
                   <Link to="/global-datasources">
                     <ToolTip message="Global Datasources" placement="right">

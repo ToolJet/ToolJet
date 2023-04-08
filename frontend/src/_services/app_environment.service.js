@@ -10,7 +10,9 @@ export const appEnvironmentService = {
 
 function getAllEnvironments(versionId) {
   const requestOptions = { method: 'GET', headers: authHeader() };
-  return fetch(`${config.apiUrl}/app-environments/${versionId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/app-environments${versionId ? `/${versionId}` : ''}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function create(name, versionId) {
