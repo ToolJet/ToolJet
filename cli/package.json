@@ -7,7 +7,7 @@
   },
   "bugs": "https://github.com/tooljet/tooljet/issues",
   "dependencies": {
-    "@oclif/core": "^1.6.0",
+    "@oclif/core": "^1.26.2",
     "@oclif/plugin-help": "^5.1.12",
     "@oclif/plugin-plugins": "^2.1.0",
     "@types/inquirer": "^8.1.3",
