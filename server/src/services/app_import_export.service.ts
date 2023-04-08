@@ -80,7 +80,8 @@ export class AppImportExportService {
         .andWhere('dataSource.scope = :scope', { scope: DataSourceScopes.GLOBAL })
         .getMany();
 
-      const globalDataSources = globalQueries.map((gq) => gq.dataSource);
+      const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
+      console.log({ exportedGlobal: globalDataSources });
 
       dataSources = [...dataSources, ...globalDataSources];
 
@@ -101,6 +102,8 @@ export class AppImportExportService {
           .orderBy('data_source_options.createdAt', 'ASC')
           .getMany();
       }
+
+      console.log({ dataQueries });
 
       appToExport['dataQueries'] = dataQueries;
       appToExport['dataSources'] = dataSources;
@@ -449,8 +452,10 @@ export class AppImportExportService {
 
     //Convert Global DataSources to Local
     const globalDataSourcesToIterate = dataSources?.filter((ds) => ds.scope === DataSourceScopes.GLOBAL);
+    console.log({ globalDataSourcesToIterate });
 
     for (const appVersion of appVersions) {
+      console.log({ appVersion });
       for (const source of globalDataSourcesToIterate) {
         const newSource = manager.create(DataSource, {
           name: source.name,
@@ -458,6 +463,7 @@ export class AppImportExportService {
           type: source.type || DataSourceTypes.DEFAULT,
           appVersionId: appVersionMapping[appVersion.id],
         });
+        console.log({ source });
         await manager.save(newSource);
 
         for (const dataSourceOption of dataSourceOptions.filter((dso) => dso.dataSourceId === source.id)) {
@@ -474,8 +480,11 @@ export class AppImportExportService {
             await manager.save(dsOption);
           }
         }
-
-        for (const query of dataQueries.filter((dq) => dq.dataSourceId === source.id)) {
+        console.log({ dataQueries });
+        for (const query of dataQueries.filter(
+          (dq) => dq.dataSourceId === source.id && dq.appVersionId === appVersion.id
+        )) {
+          console.log({ query });
           const newQuery = manager.create(DataQuery, {
             name: query.name,
             options: query.options,
