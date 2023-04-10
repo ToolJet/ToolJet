@@ -26,6 +26,7 @@ export class GlobalDataSourceAbilityFactory {
 
     if (await this.usersService.userCan(user, 'create', 'GlobalDataSource')) {
       can('createGlobalDataSource', DataSource);
+      can('updateGlobalDataSource', DataSource);
       can('fetchEnvironments', DataSource);
     }
 

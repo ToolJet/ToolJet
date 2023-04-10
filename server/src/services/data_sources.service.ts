@@ -31,6 +31,8 @@ export class DataSourcesService {
     let selectedEnvironmentId = environmentId;
     const { organizationId, id } = user;
     const isAdmin = await this.usersService.hasGroup(user, 'admin', organizationId);
+    const groupPermissions = await this.usersService.groupPermissions(user);
+    const canPerformCreateOrDelete = groupPermissions?.some((gp) => gp['dataSourceCreate'] || gp['dataSourceDelete']);
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {
@@ -48,20 +50,22 @@ export class DataSourcesService {
         .andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC });
 
       if (!isSuperAdmin(user) || !isAdmin) {
-        query
-          .innerJoin('data_source.groupPermissions', 'group_permissions')
-          .innerJoin(
-            UserGroupPermission,
-            'user_group_permissions',
-            'data_source_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
-          )
-          .where(
-            new Brackets((qb) => {
-              qb.where('user_group_permissions.user_id = :userId', {
-                userId: id,
-              }).andWhere('data_source_group_permissions.read = :value', { value: true });
-            })
-          );
+        if (!canPerformCreateOrDelete) {
+          query
+            .innerJoin('data_source.groupPermissions', 'group_permissions')
+            .innerJoin(
+              UserGroupPermission,
+              'user_group_permissions',
+              'data_source_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
+            )
+            .where(
+              new Brackets((qb) => {
+                qb.where('user_group_permissions.user_id = :userId', {
+                  userId: id,
+                }).andWhere('data_source_group_permissions.read = :value', { value: true });
+              })
+            );
+        }
       }
 
       if (scope === DataSourceScopes.GLOBAL) {
