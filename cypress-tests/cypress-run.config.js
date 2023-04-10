@@ -70,7 +70,7 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: [
-      "cypress/e2e/editor/data-source/mogoDbHappyPath.cy.js"],
+      "cypress/e2e/editor/widget/*.cy.js"],
     numTestsKeptInMemory: 1,
     redirectionLimit: 10,
     experimentalRunAllSpecs: true,
