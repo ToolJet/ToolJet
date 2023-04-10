@@ -14,7 +14,7 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
   const [fetchingInstalledPlugins, setFetching] = React.useState(false);
 
   const { admin } = authenticationService.currentSessionValue;
-  const ENABLE_MARKETPLACE_DEV_MODE = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
+  const ENABLE_MARKETPLACE_DEV_MODE = window.public_config?.ENABLE_MARKETPLACE_DEV_MODE == 'true';
 
   const navigate = useNavigate();
 
