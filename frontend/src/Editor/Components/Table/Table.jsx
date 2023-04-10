@@ -608,16 +608,21 @@ export function Table({
     async function () {
       if (
         tableDetails.addNewRowsDetails.addingNewRows &&
-        Object.keys(tableDetails.addNewRowsDetails.newRowsChangeSet || {}).length > 0
+        (Object.keys(tableDetails.addNewRowsDetails.newRowsChangeSet || {}).length > 0 ||
+          Object.keys(tableDetails.addNewRowsDetails.newRowsDataUpdates || {}).length > 0)
       ) {
         setExposedVariables({
-          newAddedRows: [],
+          newRowsAdded: [],
         }).then(() => {
-          mergeToAddNewRowsDetails({ newRowsChangeSet: {}, newRowsDataUpdates: {} });
+          mergeToAddNewRowsDetails({ newRowsChangeSet: {}, newRowsDataUpdates: {}, addingNewRows: false });
         });
       }
     },
-    [JSON.stringify(tableDetails.addNewRowsDetails.newRowsChangeSet), tableDetails.addNewRowsDetails.addingNewRows]
+    [
+      JSON.stringify(tableDetails.addNewRowsDetails.newRowsChangeSet),
+      tableDetails.addNewRowsDetails.addingNewRows,
+      JSON.stringify(tableDetails.addNewRowsDetails.newRowsDataUpdates),
+    ]
   );
 
   useEffect(() => {
