@@ -3,9 +3,6 @@ name: Cypress E2E Test
 on:
   pull_request:
     types: [labeled, unlabeled, closed]
-    branches: 
-      - cypress-secrets
-  
 
   workflow_dispatch:
 
@@ -17,7 +14,7 @@ jobs:
   Run-Cypress:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress' }}
 
-    runs-on: ubuntu-latest-4-cores
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -32,7 +29,7 @@ jobs:
       - name: Checking the PR URL
         run: |
           while true; do
-          curl --silent --fail http://13.57.209.185 && break
+          curl --silent --fail https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com && break
           sleep 1
           done
 
@@ -46,7 +43,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=http://13.57.209.18"
+          config: "baseUrl=https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
           config-file: cypress-run.config.js
 
       - name: Capturing screenshots
