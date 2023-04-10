@@ -13,7 +13,17 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 12,
     sourceType: 'module',
+    project: ['./tsconfig.json'],
   },
+  overrides: [
+    {
+      files: ['*.ts'],
+      parserOptions: {
+        project: ['./tsconfig.json'],
+        tsconfigRootDir: __dirname,
+      },
+    },
+  ],
   plugins: ['@typescript-eslint', 'jest', 'prettier'],
   rules: {
     'prettier/prettier': [
@@ -43,16 +53,4 @@ module.exports = {
       },
     ],
   },
-  overrides: [
-    {
-      files: ['*.ts'],
-      parserOptions: {
-        project: ['./tsconfig.json'],
-        tsconfigRootDir: __dirname,
-      },
-      rules: {
-        '@typescript-eslint/no-floating-promises': ['error', { ignoreVoid: true }],
-      },
-    },
-  ],
 };
