@@ -4,6 +4,7 @@ import TemplateLibraryModal from './TemplateLibraryModal/';
 import { useTranslation } from 'react-i18next';
 import { libraryAppService } from '@/_services';
 import EmptyIllustration from '@assets/images/no-apps.svg';
+import { getWorkspaceId } from '../_helpers/utils';
 import { useNavigate } from 'react-router-dom';
 
 export const BlankPage = function BlankPage({
@@ -37,7 +38,7 @@ export const BlankPage = function BlankPage({
           setDeploying(false);
           toast.dismiss(loadingToastId);
           toast.success('App created.');
-          navigate(`/apps/${data.id}`);
+          navigate(`/${getWorkspaceId()}/apps/${data.id}`);
         })
         .catch((e) => {
           toast.dismiss(loadingToastId);

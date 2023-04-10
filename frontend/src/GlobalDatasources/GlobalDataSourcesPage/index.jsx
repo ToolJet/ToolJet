@@ -23,6 +23,9 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
     handleModalVisibility,
     isEditing,
     setEditing,
+    currentEnvironment,
+    environments,
+    setCurrentEnvironment,
   } = useContext(GlobalDataSourcesContext);
 
   useEffect(() => {
@@ -51,6 +54,15 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
     }
   };
 
+  const environmentChanged = (env, dataSourceId) => {
+    setCurrentEnvironment(env);
+  };
+
+  const dataSourcesChanged = (resetSelection, dataSource) => {
+    setCurrentEnvironment(environments[0]);
+    fetchDataSources(resetSelection, dataSource);
+  };
+
   return (
     <div className="row gx-0">
       <Sidebar />
@@ -67,9 +79,12 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
             darkMode={darkMode}
             hideModal={handleHideModal}
             scope="global"
-            dataSourcesChanged={fetchDataSources}
+            dataSourcesChanged={dataSourcesChanged}
             selectedDataSource={selectedDataSource}
             modalProps={modalProps}
+            currentEnvironment={currentEnvironment}
+            environments={environments}
+            environmentChanged={environmentChanged}
             container={selectedDataSource ? containerRef?.current : null}
           />
         )}
