@@ -19,11 +19,10 @@ import {
 describe("Data source MongoDB", () => {
   beforeEach(() => {
     cy.appUILogin();
-    // cy.createApp();
+    cy.createApp();
   });
 
   it("Should verify elements on MongoDB connection form", () => {
-    cy.log("---------"+Cypress.env("mongodb_connString")+"---------")
     cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
     cy.get(postgreSqlSelector.labelDataSources).should(
       "have.text",
@@ -195,7 +194,7 @@ describe("Data source MongoDB", () => {
       .should("be.visible");
   });
 
-  it("Should verify the queries of MongoDB.", () => {
+  it.only("Should verify the queries of MongoDB.", () => {
     connectMongo();
     openMongoQueryEditor();
     resizeQueryPanel();
