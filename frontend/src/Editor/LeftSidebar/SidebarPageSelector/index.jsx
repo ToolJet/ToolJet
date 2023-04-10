@@ -32,7 +32,6 @@ const LeftSidebarPageSelector = ({
   updateOnPageLoadEvents,
   currentState,
   apps,
-  dataQueries,
   popoverContentHeight,
 }) => {
   const [allpages, setPages] = useState(pages);
@@ -144,7 +143,6 @@ const LeftSidebarPageSelector = ({
                 apps={apps}
                 allpages={pages}
                 components={appDefinition?.components ?? {}}
-                dataQueries={dataQueries}
               />
             ) : (
               <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>

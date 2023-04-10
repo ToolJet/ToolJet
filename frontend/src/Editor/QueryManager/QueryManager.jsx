@@ -20,7 +20,7 @@ import { diff } from 'deep-object-diff';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { ChangeDataSource } from './ChangeDataSource';
 
-import { useDataSources, useDataSourcesStore } from '@/_stores/dataSourcesStore';
+import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');

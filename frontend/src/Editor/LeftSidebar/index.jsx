@@ -45,7 +45,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     updateOnSortingPages,
     updateOnPageLoadEvents,
     apps,
-    dataQueries,
     clonePage,
   } = props;
   const queryPanelHeight = usePanelHeight();
@@ -96,7 +95,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         updateOnPageLoadEvents={updateOnPageLoadEvents}
         currentState={currentState}
         apps={apps}
-        dataQueries={dataQueries}
         popoverContentHeight={popoverContentHeight}
       />
       <LeftSidebarInspector

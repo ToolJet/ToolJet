@@ -97,7 +97,6 @@ export const DraggableBox = function DraggableBox({
   onComponentHover,
   sideBarDebugger,
   isMultipleComponentsSelected,
-  dataQueries,
   childComponents = null,
 }) {
   const [isResizing, setResizing] = useState(false);
@@ -292,7 +291,6 @@ export const DraggableBox = function DraggableBox({
                   parentId={parentId}
                   allComponents={allComponents}
                   sideBarDebugger={sideBarDebugger}
-                  dataQueries={dataQueries}
                   childComponents={childComponents}
                 />
               </ErrorBoundary>

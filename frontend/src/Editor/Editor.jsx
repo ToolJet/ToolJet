@@ -264,9 +264,9 @@ class EditorComponent extends React.Component {
     this.socket?.addEventListener('message', (event) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
       if (data === 'versionReleased') this.fetchApp();
-      else if (event.data === 'dataQueriesChanged') {
+      else if (data === 'dataQueriesChanged') {
         this.fetchDataQueries(this.state.editingVersion?.id);
-      } else if (event.data === 'dataSourcesChanged') {
+      } else if (data === 'dataSourcesChanged') {
         this.fetchDataSources(this.state.editingVersion?.id);
       }
     });
@@ -1409,7 +1409,6 @@ class EditorComponent extends React.Component {
       appDefinition,
       appId,
       slug,
-      dataQueries,
       app,
       showLeftSidebar,
       currentState,
@@ -1499,7 +1498,6 @@ class EditorComponent extends React.Component {
                 debuggerActions={this.sideBarDebugger}
                 appDefinition={{
                   components: appDefinition.pages[this.state.currentPageId]?.components ?? {},
-                  queries: dataQueries,
                   selectedComponent: selectedComponents ? selectedComponents[selectedComponents.length - 1] : {},
                   pages: this.state.appDefinition.pages,
                   homePageId: this.state.appDefinition.homePageId,
@@ -1524,7 +1522,6 @@ class EditorComponent extends React.Component {
                 showHideViewerNavigationControls={this.showHideViewerNavigation}
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
-                dataQueries={dataQueries}
               />
               {!showComments && (
                 <Selecto
@@ -1631,7 +1628,6 @@ class EditorComponent extends React.Component {
                           onComponentHover={this.handleComponentHover}
                           hoveredComponent={hoveredComponent}
                           sideBarDebugger={this.sideBarDebugger}
-                          dataQueries={dataQueries}
                           currentPageId={this.state.currentPageId}
                         />
                         <CustomDragLayer
@@ -1714,7 +1710,6 @@ class EditorComponent extends React.Component {
                       <Inspector
                         moveComponents={this.moveComponents}
                         componentDefinitionChanged={this.componentDefinitionChanged}
-                        dataQueries={dataQueries}
                         removeComponent={this.removeComponent}
                         selectedComponentId={selectedComponents[0].id}
                         currentState={currentState}

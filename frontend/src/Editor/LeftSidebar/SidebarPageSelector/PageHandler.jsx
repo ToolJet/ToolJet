@@ -25,7 +25,6 @@ export const PageHandler = ({
   apps,
   pages,
   components,
-  dataQueries,
 }) => {
   const isHomePage = page.id === homePageId;
   const isSelected = page.id === currentPageId;
@@ -181,7 +180,6 @@ export const PageHandler = ({
               apps={apps}
               pages={pages}
               components={components}
-              dataQueries={dataQueries}
             />
           </div>
         </div>
