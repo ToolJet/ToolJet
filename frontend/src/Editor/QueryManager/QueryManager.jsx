@@ -171,7 +171,7 @@ class QueryManagerComponent extends React.Component {
     );
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (useDataSourcesStore.getState().loadingDataSources) return;
     if (this.props.showQueryConfirmation && !nextProps.showQueryConfirmation) {
       if (this.state.isUpdating) {
@@ -547,11 +547,12 @@ class QueryManagerComponent extends React.Component {
     }
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
+    const { loadingDataSources } = useDataSourcesStore.getState();
 
     return (
       <div
         className={cx(`query-manager ${this.props.darkMode ? 'theme-dark' : ''}`, {
-          'd-none': useDataSourcesStore.getState().loadingDataSources,
+          'd-none': loadingDataSources,
         })}
         key={selectedQuery ? selectedQuery?.id : ''}
       >
