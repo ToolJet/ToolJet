@@ -44,7 +44,7 @@ describe("Multipage", () => {
     cy.createApp();
   });
 
-  it("should verify the elements on multipage", () => {
+  it.only("should verify the elements on multipage", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
@@ -249,7 +249,7 @@ describe("Multipage", () => {
       multipageText.samePagehandleToast
     );
   });
-  it.only("should verify the basic bunctions of multipage", () => {
+  it("should verify the basic functions of multipage", () => {
     cy.get(multipageSelector.sidebarPageButton).click();
     cy.get(multipageSelector.pagesPinIcon).click();
     addNewPage('pageOne');
