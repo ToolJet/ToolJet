@@ -112,6 +112,40 @@ describe("Self host onboarding", () => {
 
     signup.verifyandModifySizeOftheCompany();
 
+    cy.get(commonSelectors.pageLogo).should("be.visible");
+    cy.get(commonSelectors.setUpadminCheckPoint).verifyVisibleElement(
+      "have.text",
+      commonText.setUpadminCheckPoint
+    );
+    cy.get(commonSelectors.setUpworkspaceCheckPoint).verifyVisibleElement(
+      "have.text",
+      commonText.setUpworkspaceCheckPoint
+    );
+    cy.get(commonSelectors.companyProfileCheckPoint).verifyVisibleElement(
+      "have.text",
+      commonText.companyProfileCheckPoint
+    );
+    cy.get(commonSelectors.onboardingPageSubHeader).verifyVisibleElement(
+      "have.text",
+      commonText.onboardingPageSubHeader
+    );
+    cy.get(commonSelectors.continueButton).verifyVisibleElement(
+      "have.text",
+      commonText.continueButton
+    );
+
+    signup.commonElementsWorkspaceSetup();
+    cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
+      "have.text",
+      "Enter your phone number"
+    );
+
+    cy.get(".form-control").should("be.visible");
+    cy.get(".tj-onboarding-phone-input-wrapper")
+      .find("input")
+      .type("919876543210");
+    cy.get(commonSelectors.continueButton).click();
+
     cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
       "My workspace"

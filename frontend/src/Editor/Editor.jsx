@@ -54,6 +54,7 @@ import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import EditorHeader from './Header';
+import { getWorkspaceId } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 
@@ -68,25 +69,15 @@ class EditorComponent extends React.Component {
 
     const pageHandle = this.props.params.pageHandle;
 
-    const currentUser = authenticationService.currentUserValue;
-
     const { socket } = createWebsocketConnection(appId);
 
     this.renameQueryNameId = React.createRef();
 
     this.socket = socket;
-    let userVars = {};
-
-    if (currentUser) {
-      userVars = {
-        email: currentUser.email,
-        firstName: currentUser.first_name,
-        lastName: currentUser.last_name,
-        groups: currentUser?.group_permissions.map((group) => group.group),
-      };
-    }
 
     const defaultPageId = uuid();
+
+    this.subscription = null;
 
     this.defaultDefinition = {
       showViewerNavigation: true,
@@ -115,7 +106,7 @@ class EditorComponent extends React.Component {
     this.selectionDragRef = React.createRef();
     this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
     this.state = {
-      currentUser: authenticationService.currentUserValue,
+      currentUser: {},
       app: {},
       allComponentTypes: componentTypes,
       isLoading: true,
@@ -135,7 +126,6 @@ class EditorComponent extends React.Component {
         queries: {},
         components: {},
         globals: {
-          currentUser: userVars,
           theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
         },
@@ -175,7 +165,40 @@ class EditorComponent extends React.Component {
     document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
   }
 
+  getCurrentOrganizationDetails() {
+    const currentSession = authenticationService.currentSessionValue;
+    const currentUser = currentSession?.current_user;
+    this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
+      if (currentUser && currentSession?.group_permissions) {
+        const userVars = {
+          email: currentUser.email,
+          firstName: currentUser.first_name,
+          lastName: currentUser.last_name,
+          groups: currentSession.group_permissions?.map((group) => group.group),
+        };
+
+        this.setState({
+          currentUser,
+          currentState: {
+            ...this.state.currentState,
+            globals: {
+              ...this.state.currentState.globals,
+              userVars: {
+                email: currentUser.email,
+                firstName: currentUser.first_name,
+                lastName: currentUser.last_name,
+                groups: currentSession.group_permissions?.map((group) => group.group) || [],
+              },
+            },
+          },
+          userVars,
+        });
+      }
+    });
+  }
+
   componentDidMount() {
+    this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
     this.fetchApp(this.props.params.pageHandle);
@@ -251,15 +274,17 @@ class EditorComponent extends React.Component {
 
   initEventListeners() {
     this.socket?.addEventListener('message', (event) => {
-      if (event.data === 'versionReleased') this.fetchApp();
-      else if (event.data === 'dataQueriesChanged') this.fetchDataQueries();
-      else if (event.data === 'dataSourcesChanged') this.fetchDataSources();
+      const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
+      if (data === 'versionReleased') this.fetchApp();
+      else if (data === 'dataQueriesChanged') this.fetchDataQueries();
+      else if (data === 'dataSourcesChanged') this.fetchDataSources();
     });
   }
 
   componentWillUnmount() {
     document.title = 'Tooljet - Dashboard';
     this.socket && this.socket?.close();
+    this.subscription && this.subscription.unsubscribe();
     if (config.ENABLE_MULTIPLAYER_EDITING) this.props?.provider?.disconnect();
   }
 
@@ -298,7 +323,7 @@ class EditorComponent extends React.Component {
         loadingGlobalDataSources: true,
       },
       () => {
-        const { organization_id: organizationId } = this.state.currentUser;
+        const { current_organization_id: organizationId } = this.state.currentUser;
         globalDatasourceService.getAll(organizationId).then((data) =>
           this.setState({
             globalDataSources: data.data_sources,
@@ -1657,7 +1682,7 @@ class EditorComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    this.props.navigate(`/apps/${this.state.appId}/${handle}?${queryParamsString}`);
+    this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.appId}/${handle}?${queryParamsString}`);
 
     const { globals: existingGlobals } = this.state.currentState;
 
@@ -1850,6 +1875,7 @@ class EditorComponent extends React.Component {
             handleSlugChange={this.handleSlugChange}
             onVersionRelease={this.onVersionRelease}
             saveEditingVersion={this.saveEditingVersion}
+            currentUser={this.state.currentUser}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">

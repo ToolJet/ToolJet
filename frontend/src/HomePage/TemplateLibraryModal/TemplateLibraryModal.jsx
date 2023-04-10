@@ -8,6 +8,7 @@ import _ from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { getWorkspaceId } from '../../_helpers/utils';
 
 const identifyUniqueCategories = (templates) =>
   ['all', ...new Set(_.map(templates, 'category'))].map((categoryId) => ({
@@ -49,7 +50,8 @@ export default function TemplateLibraryModal(props) {
 
   const [deploying, setDeploying] = useState(false);
 
-  function deployApp() {
+  function deployApp(event) {
+    event.preventDefault();
     const id = selectedApp.id;
     setDeploying(true);
     libraryAppService
@@ -60,7 +62,7 @@ export default function TemplateLibraryModal(props) {
         toast.success('App created.', {
           position: 'top-center',
         });
-        navigate(`/apps/${data.id}`);
+        navigate(`/${getWorkspaceId()}/apps/${data.id}`);
       })
       .catch((e) => {
         toast.error(e.error, {
@@ -113,9 +115,7 @@ export default function TemplateLibraryModal(props) {
                       <a
                         href="#"
                         className={`btn btn-primary ms-2 ${deploying ? 'btn-loading' : ''}`}
-                        onClick={() => {
-                          deployApp();
-                        }}
+                        onClick={deployApp}
                       >
                         {t('homePage.templateLibraryModal.createAppfromTemplate', 'Create application from template')}
                       </a>

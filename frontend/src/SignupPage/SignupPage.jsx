@@ -27,8 +27,6 @@ class SignupPageComponent extends React.Component {
       isGettingConfigs: true,
       disableOnEdit: false,
     };
-
-    this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   }
 
   backtoSignup = (email, name) => {
@@ -93,10 +91,7 @@ class SignupPageComponent extends React.Component {
   };
 
   isFormSignUpEnabled = () => {
-    return (
-      (!this.single_organization && this.state.configs?.form?.enable_sign_up) ||
-      (this.single_organization && !this.state.configs)
-    );
+    return this.state.configs?.form?.enable_sign_up;
   };
 
   render() {
