@@ -12,7 +12,8 @@ export const GlobalDataSourcesContext = createContext({
 });
 
 export const GlobalDatasources = (props) => {
-  const { organization_id, admin } = JSON.parse(localStorage.getItem('currentUser')) || {};
+  const { organization_id, admin, data_source_group_permissions, group_permissions, super_admin } =
+    JSON.parse(localStorage.getItem('currentUser')) || {};
   const [organizationId, setOrganizationId] = useState(organization_id);
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [dataSources, setDataSources] = useState([]);
@@ -23,8 +24,35 @@ export const GlobalDatasources = (props) => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!canCreateDataSource() && !canReadDataSource() && !canUpdateDataSource() && !canDeleteDataSource()) {
+      navigate('/');
+    }
     fetchEnvironments();
   }, []);
+
+  const canAnyGroupPerformAction = (action, permissions) => {
+    if (!permissions) {
+      return false;
+    }
+
+    return permissions.some((p) => p[action]);
+  };
+
+  const canReadDataSource = () => {
+    return canAnyGroupPerformAction('read', data_source_group_permissions) || super_admin || admin;
+  };
+
+  const canCreateDataSource = () => {
+    return canAnyGroupPerformAction('data_source_create', group_permissions) || super_admin || admin;
+  };
+
+  const canUpdateDataSource = () => {
+    return canAnyGroupPerformAction('update', data_source_group_permissions) || super_admin || admin;
+  };
+
+  const canDeleteDataSource = () => {
+    return canAnyGroupPerformAction('data_source_delete', group_permissions) || super_admin || admin;
+  };
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     globalDatasourceService
@@ -98,6 +126,10 @@ export const GlobalDatasources = (props) => {
       setCurrentEnvironment,
       setDataSources,
       fetchDataSourceByEnvironment,
+      canReadDataSource,
+      canUpdateDataSource,
+      canDeleteDataSource,
+      canCreateDataSource,
     }),
     [selectedDataSource, dataSources, showDataSourceManagerModal, isEditing, environments, currentEnvironment]
   );

@@ -40,6 +40,10 @@ function Layout({ children, switchDarkMode, darkMode }) {
     return canAnyGroupPerformAction('read', currentUser.data_source_group_permissions) || currentUser.super_admin;
   };
 
+  const canDeleteDataSource = () => {
+    return canAnyGroupPerformAction('data_source_delete', currentUser.group_permissions) || currentUser.super_admin;
+  };
+
   const marketplaceEnabled = config.ENABLE_MARKETPLACE_FEATURE === 'true';
   return (
     <div className="row m-auto">
@@ -193,6 +197,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
               {(canReadDataSource() ||
                 canUpdateDataSource() ||
                 canCreateDataSource() ||
+                canDeleteDataSource() ||
                 currentUser?.admin ||
                 currentUser.super_admin) && (
                 <li className="text-center mt-3 cursor-pointer">
