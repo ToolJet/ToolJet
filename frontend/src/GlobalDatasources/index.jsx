@@ -26,6 +26,7 @@ export const GlobalDatasources = (props) => {
       navigate('/');
     }
     fetchEnvironments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [admin]);
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
@@ -94,6 +95,7 @@ export const GlobalDatasources = (props) => {
       setCurrentEnvironment,
       setDataSources,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedDataSource, dataSources, showDataSourceManagerModal, isEditing, environments, currentEnvironment]
   );
 

@@ -1,5 +1,4 @@
 module.exports = {
-  root: true,
   env: {
     node: true,
     jest: true,
@@ -8,25 +7,13 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
-    'plugin:cypress/recommended',
   ],
   ignorePatterns: ['.eslintrc.js'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 12,
     sourceType: 'module',
-    project: ['./tsconfig.json'],
-    "warnOnUnsupportedTypeScriptVersion": false
   },
-  overrides: [
-    {
-      files: ['*.ts'],
-      parserOptions: {
-        project: ['./tsconfig.json'],
-        tsconfigRootDir: __dirname,
-      },
-    },
-  ],
   plugins: ['@typescript-eslint', 'jest', 'prettier'],
   rules: {
     'prettier/prettier': [
@@ -38,6 +25,7 @@ module.exports = {
         singleQuote: true,
       },
     ],
+    '@typescript-eslint/no-floating-promises': ['error'],
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -45,7 +33,6 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['error', { vars: 'all', args: 'none' }],
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-empty-function': 0,
-    'no-unsafe-optional-chaining': 'off',
     '@typescript-eslint/ban-types': [
       'error',
       {
@@ -56,4 +43,16 @@ module.exports = {
       },
     ],
   },
+  overrides: [
+    {
+      files: ['*.ts'],
+      parserOptions: {
+        project: ['./tsconfig.json'],
+        tsconfigRootDir: __dirname,
+      },
+      rules: {
+        '@typescript-eslint/no-floating-promises': ['error', { ignoreVoid: true }],
+      },
+    },
+  ],
 };
