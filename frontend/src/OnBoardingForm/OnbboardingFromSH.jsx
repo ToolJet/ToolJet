@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
 import OnBoardingInput from './OnBoardingInput';
 import OnBoardingRadioInput from './OnBoardingRadioInput';
 import AdminSetup from './AdminSetup';
 import OnboardingBubblesSH from './OnboardingBubblesSH';
 import ContinueButtonSelfHost from './ContinueButtonSelfHost';
-import { getuserName } from '@/_helpers/utils';
+import { getuserName, getSubpath } from '@/_helpers/utils';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
 import LogoLightMode from '@assets/images/Logomark.svg';
 import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
@@ -17,7 +16,6 @@ import 'react-phone-input-2/lib/style.css';
 
 function OnbboardingFromSH({ darkMode }) {
   const Logo = darkMode ? LogoDarkMode : LogoLightMode;
-  const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,10 +56,11 @@ function OnbboardingFromSH({ darkMode }) {
           phoneNumber: formData?.phoneNumber,
         })
         .then((user) => {
-          authenticationService.updateUser(user);
           authenticationService.deleteLoginOrganizationId();
           setIsLoading(false);
-          navigate('/');
+          window.location = getSubpath()
+            ? `${getSubpath()}/${user?.current_organization_id}`
+            : `/${user?.current_organization_id}`;
           setCompleted(false);
         })
         .catch((res) => {
