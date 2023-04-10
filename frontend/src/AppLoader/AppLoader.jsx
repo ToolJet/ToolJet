@@ -28,7 +28,7 @@ const AppLoaderComponent = (props) => {
     const sub_path = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : '';
     organizationService.switchOrganization(orgId).then(
       () => {
-        window.location.href = `${sub_path}${path}`;
+        window.location.href = `${sub_path}/${orgId}${path}`;
       },
       () => {
         return (window.location.href = `${sub_path}/login/${orgId}?redirectTo=${path}`);
