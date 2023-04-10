@@ -352,9 +352,37 @@ export function Table({
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
       darkMode,
+      JSON.stringify(columnData),
     ] // Hack: need to fix
   );
-
+  const columnsIncludesDynamicValue = columns.reduce((accumulator, column) => {
+    if (column.columnValue) {
+      accumulator.push({ header: column.accessor, value: column.columnValue });
+    }
+    return accumulator;
+  }, []);
+  if (!_.isEmpty(columnsIncludesDynamicValue)) {
+    const clonedTableData = _.cloneDeep(tableData);
+    tableData = clonedTableData.reduce((accumulator, data) => {
+      columnsIncludesDynamicValue.forEach((column) => {
+        const isColumnValueHasCurlyBraces =
+          typeof column.value === 'string' &&
+          column.value.split('')[0] === '{' &&
+          column.value.split('')[1] === '{' &&
+          column.value.split('')[column.value.split('').length - 1] === '}' &&
+          column.value.split('')[column.value.split('').length - 2] === '}';
+        const value = isColumnValueHasCurlyBraces
+          ? column.value
+              .replace(/[^a-zA-Z0-9\s]/gi, '')
+              .replace(/\s+/g, ' ')
+              .trim()
+          : column.value;
+        data[column.header] = value.replace('cellValue', `${data[column.header]}`);
+      });
+      accumulator.push(data);
+      return accumulator;
+    }, []);
+  }
   const data = useMemo(
     () => tableData,
     [
@@ -362,6 +390,8 @@ export function Table({
       tableDetails.changeSet,
       component.definition.properties.data.value,
       JSON.stringify(properties.data),
+      JSON.stringify(columnsIncludesDynamicValue),
+      JSON.stringify(columns),
     ]
   );
 
@@ -900,15 +930,9 @@ export function Table({
                       const wrapAction = textWrapActions(cell.column.id);
                       const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
                       const rowData = tableData[cell.row.index];
-                      const value = cell.column?.columnValue
-                        ? resolveReferences(cell.column.columnValue, currentState, '', {
-                            cellValue: cell.value,
-                            rowData,
-                          }) ?? cell.value
-                        : cell.value;
                       const cellValue = rowChangeSet
-                        ? rowChangeSet[cell.column.key || cell.column.name] || value
-                        : value;
+                        ? rowChangeSet[cell.column.key || cell.column.name] || cell.value
+                        : cell.value;
                       const cellBackgroundColor = resolveReferences(
                         cell.column?.cellBackgroundColor,
                         currentState,
