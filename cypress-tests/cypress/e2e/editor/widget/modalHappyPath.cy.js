@@ -21,14 +21,14 @@ import {
   selectColourFromColourPicker,
 } from "Support/utils/commonWidget";
 
-describe("Number Input", () => {
+describe("Modal", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.createApp();
-    cy.dragAndDropWidget("Number Input");
+    cy.dragAndDropWidget("Modal");
   });
 
-  it("should verify the properties of the number input widget", () => {
+  it.only("should verify the properties of the number input widget", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
@@ -39,11 +39,11 @@ describe("Number Input", () => {
 
     cy.renameApp(data.appName);
 
-    openEditorSidebar(numberInputText.defaultWidgetName);
-    editAndVerifyWidgetName(data.widgetName);
-    cy.get(
-      commonWidgetSelector.draggableWidget(data.widgetName)
-    ).verifyVisibleElement("have.value", "99");
+    openEditorSidebar('modal1');
+    editAndVerifyWidgetName(data.widgetName, ["Options", "Properties", "Layout"]);
+    cy.get(`${
+      commonWidgetSelector.draggableWidget(data.widgetName)}>button`
+    ).verifyVisibleElement("have.text", "Launch Modal");
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties, [
@@ -52,35 +52,17 @@ describe("Number Input", () => {
       "Layout",
     ]);
     verifyAndModifyParameter(
-      commonWidgetText.labelDefaultValue,
-      data.randomNumber
+      'Title',
+      "fakeName"
     );
     cy.forceClickOnCanvas();
-    cy.get(
-      commonWidgetSelector.draggableWidget(data.widgetName)
-    ).verifyVisibleElement("have.value", data.randomNumber);
+    cy.get(`${
+        commonWidgetSelector.draggableWidget(data.widgetName)}>button`
+      ).click();
 
-    verifyComponentValueFromInspector(data.widgetName, data.randomNumber);
-    cy.forceClickOnCanvas();
+      cy.get('.modal-header').verifyVisibleElement('have.text', "fakeName")
 
-    openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionProperties, [
-      "Events",
-      "Properties",
-      "Layout",
-    ]);
-    verifyAndModifyParameter(
-      commonWidgetText.labelMinimumValue,
-      data.minimumvalue
-    );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
-    cy.clearAndType(
-      commonWidgetSelector.draggableWidget(data.widgetName),
-      randomNumber(1, 4)
-    );
-    cy.get(
-      commonWidgetSelector.draggableWidget(data.widgetName)
-    ).verifyVisibleElement("have.value", data.minimumvalue);
+    cy.get('.modal-header> [class="cursor-pointer"]').click();
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties, [
@@ -88,53 +70,124 @@ describe("Number Input", () => {
       "Properties",
       "Layout",
     ]);
-    verifyAndModifyParameter(
-      commonWidgetText.labelMaximumValue,
-      data.maximumValue
-    );
-    cy.clearAndType(
-      commonWidgetSelector.draggableWidget(data.widgetName),
-      randomNumber(100, 110)
-    );
-    cy.get(
-      commonWidgetSelector.draggableWidget(data.widgetName)
-    ).verifyVisibleElement("have.value", data.maximumValue);
 
-    openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionProperties, [
-      "Events",
-      "Properties",
-      "Layout",
-    ]);
-    verifyAndModifyParameter(
-      commonWidgetText.labelPlaceHolder,
-      data.randomNumber
-    );
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
-    cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
-      .invoke("attr", "placeholder")
-      .should("contain", data.randomNumber);
+    verifyAndModifyToggleFx(
+        'Loading State',
+        commonWidgetText.codeMirrorLabelFalse
+      );
 
-    verifyPropertiesGeneralAccordion(data.widgetName, data.tooltipText);
+      cy.get(`${
+        commonWidgetSelector.draggableWidget(data.widgetName)}>button`
+      ).click();
 
-    // verifyLayout(data.widgetName);
+      cy.get('[class="spinner-border mt-5"]').should('be.visible');
 
-    // cy.get(commonWidgetSelector.changeLayoutButton).click();
+      verifyAndModifyToggleFx(
+        'Hide title bar',
+        commonWidgetText.codeMirrorLabelFalse
+      );
+      cy.notVisible('.modal-header')
+      cy.get('[data-cy="hide-title-bar-toggle-button"]').click()
+      cy.get('.modal-header').should('be.visible');
+      
+      verifyAndModifyToggleFx(
+        'Hide close button',
+        commonWidgetText.codeMirrorLabelFalse
+      );
+      cy.notVisible('.modal-header> [class="cursor-pointer"]')
+      cy.get('[data-cy="hide-close-button-toggle-button"]').click()
+      cy.get('.modal-header> [class="cursor-pointer"]').should('be.visible');
+
+      cy.realPress("Escape")
+      cy.notVisible('.modal-header')
+
+      cy.get(`${
+        commonWidgetSelector.draggableWidget(data.widgetName)}>button`
+      ).click();
+        verifyAndModifyToggleFx(
+                'Hide on escape',
+                commonWidgetText.codeMirrorLabelTrue
+            );
+      cy.get('.modal-header> [class="cursor-pointer"]').should('be.visible');
+
+
+
+
+    // verifyComponentValueFromInspector(data.widgetName, data.randomNumber);
+    // cy.forceClickOnCanvas();
+
+    // openEditorSidebar(data.widgetName);
+    // openAccordion(commonWidgetText.accordionProperties, [
+    //   "Events",
+    //   "Properties",
+    //   "Layout",
+    // ]);
+    // verifyAndModifyParameter(
+    //   commonWidgetText.labelMinimumValue,
+    //   data.minimumvalue
+    // );
+    // cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    // cy.clearAndType(
+    //   commonWidgetSelector.draggableWidget(data.widgetName),
+    //   randomNumber(1, 4)
+    // );
     // cy.get(
-    //   commonWidgetSelector.parameterTogglebutton(
-    //     commonWidgetText.parameterShowOnDesktop
-    //   )
-    // ).click();
+    //   commonWidgetSelector.draggableWidget(data.widgetName)
+    // ).verifyVisibleElement("have.value", data.minimumvalue);
 
-    cy.get(commonWidgetSelector.widgetDocumentationLink).should(
-      "have.text",
-      numberInputText.numberInputDocumentationLink
-    );
+    // openEditorSidebar(data.widgetName);
+    // openAccordion(commonWidgetText.accordionProperties, [
+    //   "Events",
+    //   "Properties",
+    //   "Layout",
+    // ]);
+    // verifyAndModifyParameter(
+    //   commonWidgetText.labelMaximumValue,
+    //   data.maximumValue
+    // );
+    // cy.clearAndType(
+    //   commonWidgetSelector.draggableWidget(data.widgetName),
+    //   randomNumber(100, 110)
+    // );
+    // cy.get(
+    //   commonWidgetSelector.draggableWidget(data.widgetName)
+    // ).verifyVisibleElement("have.value", data.maximumValue);
+
+    // openEditorSidebar(data.widgetName);
+    // openAccordion(commonWidgetText.accordionProperties, [
+    //   "Events",
+    //   "Properties",
+    //   "Layout",
+    // ]);
+    // verifyAndModifyParameter(
+    //   commonWidgetText.labelPlaceHolder,
+    //   data.randomNumber
+    // );
+    // cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    // cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
+    //   .invoke("attr", "placeholder")
+    //   .should("contain", data.randomNumber);
+
+    // verifyPropertiesGeneralAccordion(data.widgetName, data.tooltipText);
+
+    // // verifyLayout(data.widgetName);
+
+    // // cy.get(commonWidgetSelector.changeLayoutButton).click();
+    // // cy.get(
+    // //   commonWidgetSelector.parameterTogglebutton(
+    // //     commonWidgetText.parameterShowOnDesktop
+    // //   )
+    // // ).click();
+
+    // cy.get(commonWidgetSelector.widgetDocumentationLink).should(
+    //   "have.text",
+    //   numberInputText.numberInputDocumentationLink
+    // );
 
     cy.get(commonSelectors.editorPageLogo).click();
     cy.deleteApp(data.appName);
   });
-  it("should verify the styles of the number input widget", () => {
+  it("should verify the styles of the number Modal component", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
     data.colourHex = fake.randomRgbaHex;
@@ -239,7 +292,10 @@ describe("Number Input", () => {
       commonWidgetText.parameterBorderRadius,
       commonWidgetText.borderRadiusInput
     );
+
     cy.forceClickOnCanvas();
+    cy.waitForAutoSave();
+    cy.reload();
 
     openEditorSidebar(numberInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
