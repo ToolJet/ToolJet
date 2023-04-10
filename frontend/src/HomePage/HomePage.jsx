@@ -629,7 +629,7 @@ class HomePageComponent extends React.Component {
               })}
               data-cy="home-page-content"
             >
-              <div className="w-100 mb-5 container" style={{ maxWidth: 880 }}>
+              <div className="w-100 mb-5 container home-page-content-container">
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />

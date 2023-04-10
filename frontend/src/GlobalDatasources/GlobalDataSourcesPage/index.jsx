@@ -9,7 +9,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
   const containerRef = useRef(null);
   const [modalProps, setModalProps] = useState({
     backdrop: false,
-    dialogClassName: 'datasource-edit-modal',
+    dialogClassName: `datasource-edit-modal ${darkMode && 'dark-theme'}`,
     enforceFocus: false,
   });
 
@@ -70,6 +70,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
             selectedDataSource={selectedDataSource}
             modalProps={modalProps}
             container={selectedDataSource ? containerRef?.current : null}
+            isEditing={isEditing}
           />
         )}
         {!selectedDataSource && isEditing && (

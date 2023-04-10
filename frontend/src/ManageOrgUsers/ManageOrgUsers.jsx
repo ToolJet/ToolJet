@@ -296,9 +296,11 @@ class ManageOrgUsersComponent extends React.Component {
                 />
 
                 {users?.length === 0 && (
-                  <div className="d-flex justify-content-center flex-column">
-                    <span className="text-center pt-5 font-weight-bold">No result found</span>
-                    <small className="text-center text-muted">Try changing the filters</small>
+                  <div className="workspace-settings-table-wrap">
+                    <div className="d-flex justify-content-center flex-column tj-user-table-wrapper">
+                      <span className="text-center font-weight-bold">No result found</span>
+                      <small className="text-center text-muted">Try changing the filters</small>
+                    </div>
                   </div>
                 )}
 

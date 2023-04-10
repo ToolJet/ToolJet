@@ -15,13 +15,25 @@
     .datasources-list {
         display: flex;
 
+        &:focus-visible {
+            box-shadow: 0px 0px 0px 4px #DFE3E6;
+            outline: none;
+        }
+
         &:hover {
-            background-color: var(--indigo2);
+            background: var(--slate4);
+            border-radius: 6px;
 
             .ds-delete-btn {
                 display: block;
             }
         }
+
+        &:active {
+            background: var(--indigo4);
+            box-shadow: none;
+        }
+
 
         .ds-delete-btn {
             display: none;
@@ -68,6 +80,11 @@
 .datasource-modal-container {
     position: relative;
     background: var(--slate2);
+    background-color: var(--base) !important;
+
+    .modal-header {
+        background-color: var(--base) !important;
+    }
 
     .modal {
         position: absolute;
@@ -75,6 +92,7 @@
 
     .modal-content {
         border: 1px solid var(--slate5);
+        background-color: var(--base) !important;
 
         .input-icon {
             &:hover {
@@ -87,6 +105,7 @@
                 }
             }
         }
+
         .close-btn.dark {
             filter: none !important;
             background-color: revert !important;

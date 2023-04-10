@@ -37,47 +37,47 @@ export function OrganizationSettings(props) {
   };
 
   return (
-      <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
-        <div className="wrapper organization-settings-page">
-          <div className="row gx-0">
-            <div className="organization-page-sidebar col ">
-              <div className="workspace-nav-list-wrap">
-                {sideBarNavs.map((item, index) => {
-                  return (
-                    <>
-                      <FolderList
-                        className="workspace-settings-nav-items"
-                        key={index}
-                        onClick={() => {
-                          setSelectedTab(defaultOrgName(item));
-                          updateSidebarNAV(item);
-                        }}
-                        selectedItem={selectedTab == defaultOrgName(item)}
-                      >
-                        {item}
-                      </FolderList>
-                    </>
-                  );
-                })}
-              </div>
-              <OrganizationList />
-            </div>
-
-            <div
-              className={cx('col workspace-content-wrapper', {
-                'bg-light-gray': !props.darkMode,
+    <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
+      <div className="wrapper organization-settings-page">
+        <div className="row gx-0">
+          <div className="organization-page-sidebar col ">
+            <div className="workspace-nav-list-wrap">
+              {sideBarNavs.map((item, index) => {
+                return (
+                  <>
+                    <FolderList
+                      className="workspace-settings-nav-items"
+                      key={index}
+                      onClick={() => {
+                        setSelectedTab(defaultOrgName(item));
+                        updateSidebarNAV(item);
+                      }}
+                      selectedItem={selectedTab == defaultOrgName(item)}
+                    >
+                      {item}
+                    </FolderList>
+                  </>
+                );
               })}
-              style={{ paddingTop: '40px', paddingLeft: '16px' }}
-            >
-              <div className="w-100">
-                {selectedTab === 'users' && <ManageOrgUsers darkMode={props.darkMode} />}
-                {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
-                {selectedTab === 'manageSSO' && <ManageSSO />}
-                {selectedTab === 'manageEnvVars' && <ManageOrgVars darkMode={props.darkMode} />}
-              </div>
+            </div>
+            <OrganizationList />
+          </div>
+
+          <div
+            className={cx('col workspace-content-wrapper', {
+              'bg-light-gray': !props.darkMode,
+            })}
+            style={{ paddingTop: '40px' }}
+          >
+            <div className="w-100">
+              {selectedTab === 'users' && <ManageOrgUsers darkMode={props.darkMode} />}
+              {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
+              {selectedTab === 'manageSSO' && <ManageSSO />}
+              {selectedTab === 'manageEnvVars' && <ManageOrgVars darkMode={props.darkMode} />}
             </div>
           </div>
         </div>
-      </Layout>
+      </div>
+    </Layout>
   );
 }

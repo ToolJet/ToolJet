@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { authenticationService, userService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Layout from '@/_ui/Layout';
+import { ButtonSolid } from '../_ui/AppButton/AppButton';
+import { BreadCrumbContext } from '@/App/App';
 
 function SettingsPage(props) {
   const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name);
@@ -17,6 +19,14 @@ function SettingsPage(props) {
   const [selectedFile, setSelectedFile] = React.useState(null);
   const focusRef = React.useRef(null);
   const { t } = useTranslation();
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  // updateSidebarNAV('')
+
+  useEffect(() => {
+    updateSidebarNAV('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateDetails = async () => {
     const firstNameMatch = firstName.match(/^ *$/);
@@ -113,20 +123,7 @@ function SettingsPage(props) {
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper">
         <div className="page-wrapper profile-page-content-wrap">
-          <div className="container-xl">
-            <div className="page-header d-print-none">
-              <div className="row align-items-center">
-                <div className="col">
-                  <div className="page-pretitle"></div>
-                  <h2 className="page-title" data-cy="page-title">
-                    {t('header.profileSettingPage.profileSettings', 'Profile Settings')}
-                  </h2>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="page-body">
+          <div style={{ height: `calc(100vh - 2.5rem - 64px)` }}>
             <div className="container-xl">
               <div className="profile-page-card">
                 <div className="card-header">
@@ -154,7 +151,7 @@ function SettingsPage(props) {
                       </div>
                     </div>
                     <div className="col">
-                    <div className="mb-3 tj-app-input">
+                      <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="last-name-label">
                           {t('header.profileSettingPage.lastName', 'Last name')}
                         </label>
@@ -173,7 +170,7 @@ function SettingsPage(props) {
                   </div>
                   <div className="row">
                     <div className="col">
-                    <div className="mb-3 tj-app-input">
+                      <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="email-label">
                           {t('header.profileSettingPage.email', 'Email')}
                         </label>
@@ -190,7 +187,7 @@ function SettingsPage(props) {
                       </div>
                     </div>
                     <div className="col">
-                    <div className="mb-3 tj-app-input">
+                      <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="avatar-label">
                           {t('header.profileSettingPage.avatar', 'Avatar')}
                         </label>
@@ -212,13 +209,9 @@ function SettingsPage(props) {
                       </div>
                     </div>
                   </div>
-                  <button
-                    className={'btn btn-primary' + (updateInProgress ? '  btn-loading' : '')}
-                    onClick={updateDetails}
-                    data-cy="update-button"
-                  >
+                  <ButtonSolid isLoading={updateInProgress} onClick={updateDetails} data-cy="update-button">
                     {t('header.profileSettingPage.update', 'Update')}
-                  </button>
+                  </ButtonSolid>
                   {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
                   {/* The div below is a placeholder to prevent it from affecting the button above.  */}
                   <div></div>
@@ -234,7 +227,7 @@ function SettingsPage(props) {
                 <div className="card-body">
                   <div className="row">
                     <div className="col">
-                    <div className="mb-3 tj-app-input">
+                      <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="current-password-label">
                           {t('header.profileSettingPage.currentPassword', 'Current password')}
                         </label>
@@ -250,7 +243,7 @@ function SettingsPage(props) {
                       </div>
                     </div>
                     <div className="col">
-                    <div className="mb-3 tj-app-input">
+                      <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="new-password-label">
                           {t('header.profileSettingPage.newPassword', 'New password')}
                         </label>
@@ -268,7 +261,7 @@ function SettingsPage(props) {
                     </div>
                   </div>
                   <div className="w-50 confirm-input">
-                  <div className="mb-3 tj-app-input">
+                    <div className="mb-3 tj-app-input">
                       <label className="form-label" data-cy="confirm-password-label">
                         {t('header.profileSettingPage.confirmNewPassword', 'Confirm new password')}
                       </label>
@@ -285,14 +278,14 @@ function SettingsPage(props) {
                       />
                     </div>
                   </div>
-                  <button
-                    className={'btn btn-primary' + (passwordChangeInProgress ? '  btn-loading' : '')}
+                  <ButtonSolid
+                    isLoading={passwordChangeInProgress}
+                    disabled={newPassword.length < 5 || confirmPassword.length < 5}
                     onClick={changePassword}
                     data-cy="change-password-button"
-                    disabled={newPassword.length < 5 || confirmPassword.length < 5}
                   >
                     {t('header.profileSettingPage.changePassword', 'Change password')}
-                  </button>
+                  </ButtonSolid>
                   {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
                   {/* The div below is a placeholder to prevent it from affecting the button above.  */}
                   <div></div>

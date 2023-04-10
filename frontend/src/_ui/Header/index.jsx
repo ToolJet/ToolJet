@@ -8,6 +8,8 @@ function Header() {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const routes = (path) => {
+    console.log('path', path);
+
     switch (path) {
       case '/':
         return 'Applications';
@@ -17,6 +19,8 @@ function Header() {
         return 'Workspace settings';
       case '/global-datasources':
         return 'Datasources';
+      case '/settings':
+        return 'Profile settings';
       default:
         return;
     }

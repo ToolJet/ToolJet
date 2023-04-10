@@ -129,9 +129,11 @@ function InviteUsersForm({
             </div>
           ) : (
             <div className="manage-users-drawer-content-bulk">
-              <div>
+              <div className="manage-users-drawer-content-bulk-download-prompt">
                 <div className="user-csv-template-wrap">
-                  <SolidIcon name="information" fill="#F76808" width="28" />
+                  <div>
+                    <SolidIcon name="information" fill="#F76808" width="26" />
+                  </div>
                   <div>
                     <p className="tj-text tj-text-sm">
                       Download the ToolJet template to add user details or format your file in the same as the template.
@@ -143,6 +145,8 @@ function InviteUsersForm({
                       variant="tertiary"
                       className="download-template-btn"
                       as={'a'}
+                      leftIcon="folderdownload"
+                      iconWidth="13"
                     >
                       Download Template
                     </ButtonSolid>
@@ -177,12 +181,12 @@ function InviteUsersForm({
               variant="primary"
               disabled={uploadingUsers}
               data-cy="create-users-button"
-              leftIcon="sent"
+              leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"
               fill={'#FDFDFE'}
               isLoading={uploadingUsers}
             >
-              {t('header.organization.menus.manageUsers.inviteUsers', 'Invite Users')}
+              {activeTab == 1 ? t('header.organization.menus.manageUsers.inviteUsers', 'Invite Users') : 'Upload users'}
             </ButtonSolid>
           </div>
         </div>

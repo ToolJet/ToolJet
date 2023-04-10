@@ -141,7 +141,7 @@ button {
 .editor {
   .header-container {
     max-width: 100%;
-    padding: 0 10px;
+    padding: 0 10px 0 0;
     min-height: 45px;
   }
 
@@ -3008,7 +3008,7 @@ input:focus-visible {
     background-color: #1f2936;
 
     .text-muted {
-      color: var(--base) !important;
+      color: var(--slate09) !important;
     }
   }
 
@@ -6964,14 +6964,6 @@ tbody {
       background-color: #1F2936;
     }
   }
-
-  .launch-button {
-    svg {
-      path {
-        fill: white !important;
-      }
-    }
-  }
 }
 
 :root {
@@ -7013,6 +7005,11 @@ tbody {
 .workspace-content-wrapper,
 .database-page-content-wrap {
   background: var(--slate2);
+}
+
+.workspace-variable-table-card {
+  margin: 0 auto;
+  width: 880px;
 }
 
 .organization-page-sidebar {
@@ -7062,6 +7059,7 @@ tbody {
 
 .create-new-app-dropdown {
   width: 248px !important;
+
 
   .dropdown-toggle-split {
     border-left: 1px solid var(--indigo11) !important;
@@ -7485,9 +7483,11 @@ tbody {
 
 .editor .navbar-brand {
   border-right: 1px solid var(--slate7);
-  padding-right: 12px !important;
-  padding-left: 4px;
   padding-bottom: 1rem;
+  border-right: 1px solid var(--slate7);
+  width: 48px;
+  display: flex;
+  justify-content: center;
 }
 
 .theme-dark {
@@ -8396,18 +8396,19 @@ tbody {
   align-items: center;
 }
 
-.add-new-variable-btn {
-  margin-bottom: 10px;
-  margin-right: 10px;
-  display: flex;
-  align-items: center;
+.workspace-variable-header {
+  width: 880px;
   justify-content: end;
+  margin: 0 auto;
+  display: flex;
+  padding: 0;
 }
 
 .add-new-variables-button {
-  margin-right: 20px !important;
+  margin-bottom: 20px;
+  width: 169px;
+  height: 32px;
 }
-
 
 .org-users-page-sidebar,
 .left-menu {
@@ -8517,6 +8518,7 @@ tbody {
 
   .card-body {
     overflow-y: auto;
+    padding: 40px;
   }
 
   .card-header {
@@ -9023,7 +9025,7 @@ tbody {
 .password-disable-danger-wrap {
   padding: 16px;
   gap: 16px;
-  width: 612px;
+  width: 574px;
   height: 116px;
   background: var(--tomato3);
   border: 1px solid var(--tomato5);
@@ -9133,6 +9135,8 @@ tbody {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: var(--slate4);
+
 
   span {
     margin-left: 4px !important;
@@ -9161,7 +9165,7 @@ tbody {
 .user-csv-template-wrap {
   display: flex;
   padding: 24px;
-  gap: 32px;
+  gap: 14px;
 
   width: 486px;
   height: 152px;
@@ -9210,6 +9214,7 @@ tbody {
 .download-template-btn {
   width: 184px;
   height: 32px;
+  padding: 0px !important;
 }
 
 .csv-upload-icon-wrap {
@@ -9233,13 +9238,21 @@ tbody {
 
 
 .manage-users-drawer-content-bulk {
-  div:first-child {
+  form {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
   }
+
+  .manage-users-drawer-content-bulk-download-prompt {
+    display: flex;
+    flex-direction: row !important;
+    justify-content: center;
+    align-items: flex-start !important;
+  }
 }
+
 
 .manage-users-drawer-content {
   margin: 24px 32px;
@@ -9393,9 +9406,6 @@ tbody {
     tr>th,
     tbody>tr>td {
       background: var(--base) !important;
-      border-bottom: 1px solid var(--slate5) !important;
-      border-bottom-color: var(--slate5) !important;
-
     }
   }
 
@@ -9972,6 +9982,7 @@ tbody {
 
 .profile-page-content-wrap {
   background-color: var(--slate2);
+  padding-top: 40px;
 }
 
 .profile-page-card {
@@ -9981,4 +9992,133 @@ tbody {
 
 .all-apps-link-cotainer {
   border-radius: 6px !important;
+}
+
+.variables-table-wrapper {
+  tr {
+    border-width: 0px !important;
+  }
+}
+
+.home-page-content-container {
+  max-width: 880px;
+}
+
+@media only screen and (max-width: 1583px) and (min-width: 1312px) {
+
+  .homepage-app-card-list-item {
+    max-width: 264px;
+  }
+
+}
+
+@media only screen and (min-width: 1728px) {
+
+  .homepage-app-card-list-item {
+    max-width: 304px;
+  }
+
+  .home-page-content-container {
+    max-width: 976px;
+  }
+
+  .liner {
+    width: 976px;
+  }
+}
+
+@media only screen and (max-width: 992px) {
+  .homepage-app-card-list-item-wrap {
+    display: flex;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    margin-top: 22px;
+  }
+
+  .homepage-app-card-list-item {
+    max-width: 304px !important;
+    flex-basis: 100%;
+  }
+}
+
+@media only screen and (min-width: 993px) and (max-width: 1311px) {
+  .home-page-content-container {
+    max-width: 568px;
+  }
+
+  .homepage-app-card-list-item-wrap {
+    row-gap: 20px;
+  }
+
+  .homepage-app-card-list-item {
+    max-width: 269px;
+    flex-basis: 100%;
+  }
+
+  .liner {
+    width: 568px;
+  }
+}
+
+.tj-docs-link {
+  color: var(--indigo9) !important;
+  text-decoration: none;
+  list-style: none;
+}
+
+.datasource-copy-button {
+  width: 87px;
+  height: 32px;
+}
+
+.datasource-edit-btn {
+  height: 27px;
+  margin-left: 12px;
+}
+
+.datasource-edit-modal {
+
+  .modal-content,
+  .modal-body,
+  .modal-header,
+  .modal-title,
+  .modal-body-content,
+  .modal-sidebar,
+  .card {
+    background-color: var(--base) !important;
+    color: var(--slate12) !important;
+    border-color: var(--slate5) !important;
+  }
+
+  .datasource-modal-sidebar-footer {
+    .footer-text {
+      color: var(--slate12) !important;
+    }
+  }
+
+  .form-control-plaintext {
+    color: var(--slate12) !important;
+  }
+
+  .card {
+    &:hover {
+      background-color: var(--slate2) !important;
+    }
+  }
+}
+
+.org-edit-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  svg {
+    height: 14px;
+    width: 14px;
+  }
 }

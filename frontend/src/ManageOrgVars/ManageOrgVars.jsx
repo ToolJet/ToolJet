@@ -265,9 +265,9 @@ class ManageOrgVarsComponent extends React.Component {
 
         <div className="page-wrapper">
           <div className="container-xl">
-            <div className="page-header d-print-none">
-              <div className="row align-items-center">
-                <div className="add-new-variable-btn">
+            <div>
+              <div className="row align-items-center ">
+                <div className="workspace-variable-header">
                   {!isManageVarDrawerOpen && this.canCreateVariable() && (
                     <ButtonSolid
                       data-cy="add-new-variables-button"
@@ -288,19 +288,19 @@ class ManageOrgVarsComponent extends React.Component {
 
           <div className="workspace-variable-container-wrap">
             {isManageVarDrawerOpen ? (
-                <ManageOrgVarsDrawer
-                  isManageVarDrawerOpen={this.state.isManageVarDrawerOpen}
-                  setIsManageVarDrawerOpen={this.setIsManageVarDrawerOpen}
-                  fields={this.state.fields}
-                  errors={this.state.errors}
-                  selectedVariableId={this.state.selectedVariableId}
-                  createOrUpdate={this.createOrUpdate}
-                  changeNewVariableOption={this.changeNewVariableOption}
-                  handleEncryptionToggle={this.handleEncryptionToggle}
-                  handleVariableTypeSelect={this.handleVariableTypeSelect}
-                  onCancelBtnClicked={this.onCancelBtnClicked}
-                  addingVar={addingVar}
-                />
+              <ManageOrgVarsDrawer
+                isManageVarDrawerOpen={this.state.isManageVarDrawerOpen}
+                setIsManageVarDrawerOpen={this.setIsManageVarDrawerOpen}
+                fields={this.state.fields}
+                errors={this.state.errors}
+                selectedVariableId={this.state.selectedVariableId}
+                createOrUpdate={this.createOrUpdate}
+                changeNewVariableOption={this.changeNewVariableOption}
+                handleEncryptionToggle={this.handleEncryptionToggle}
+                handleVariableTypeSelect={this.handleVariableTypeSelect}
+                onCancelBtnClicked={this.onCancelBtnClicked}
+                addingVar={addingVar}
+              />
             ) : (
               <>
                 {variables?.length > 0 ? (

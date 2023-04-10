@@ -13,6 +13,14 @@
   display: flex;
   align-items: center;
 
+  &:hover {
+    border: 1px solid var(--indigo9) !important;
+  }
+
+  &:focus-visible {
+    border: 1px solid var(--indigo9);
+  }
+
   .select-search__select {
     top: 34px;
   }
@@ -24,7 +32,7 @@
 
     &:focus-visible {
       background: #F8FAFF;
-      border: 1px solid #3E63DD;
+      border: 1px solid var(--indigo9);
     }
   }
 
@@ -191,22 +199,22 @@
   }
 }
 
-.theme-dark .tj-ms {
-  background-color: #273342;
-  border: 1px solid #232e3c;
+// .theme-dark .tj-ms {
+//   background-color: #273342;
+//   border: 1px solid #232e3c;
 
-  &:hover {
-    border-color: $white;
-  }
+//   &:hover {
+//     border-color: $white;
+//   }
 
-  .tj-ms-count {
-    color: $white;
-  }
+//   .tj-ms-count {
+//     color: $white;
+//   }
 
-  .tj-ms-preview {
-    color: #273342;
-  }
-}
+//   .tj-ms-preview {
+//     color: #273342;
+//   }
+// }
 
 .selected-section {
   overflow: auto;

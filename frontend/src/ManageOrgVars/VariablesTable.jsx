@@ -19,7 +19,7 @@ class VariablesTable extends React.Component {
     const { isLoading, variables } = this.props;
     return (
       <div className="container-xl">
-        <div className="card">
+        <div className="card workspace-variable-table-card">
           <div
             className="card-table fixedHeader table-responsive table-bordered"
             ref={this.tableRef}
@@ -27,7 +27,7 @@ class VariablesTable extends React.Component {
           >
             <table
               data-testid="variablesTable"
-              className="table table-vcenter"
+              className="table table-vcenter variables-table-wrapper"
               disabled={true}
               data-cy="workspace-variable-table"
             >

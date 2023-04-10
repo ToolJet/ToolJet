@@ -51,7 +51,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSidebarNAV }
         </span>
       </div>
       <div className="col-auto">
-        <button className="btn btn-sm ds-delete-btn" onClick={() => onDelete(dataSource)}>
+        <button className="ds-delete-btn" onClick={() => onDelete(dataSource)}>
           <div>
             <DeleteIcon width="14" height="14" />
           </div>

@@ -113,6 +113,7 @@ import ZoomOutRectangle from './ZoomOutRectangle.jsx';
 import AddRectangle from './AddRectangle.jsx';
 import Lock from './Lock.jsx';
 import Mail from './Mail.jsx';
+import Logs from './Logs.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -230,6 +231,8 @@ const Icon = (props) => {
       return <Lock {...props} />;
     case 'logout':
       return <Logout {...props} />;
+    case 'logs':
+      return <Logs {...props} />;
     case 'menu':
       return <Menu {...props} />;
     case 'menuhome':

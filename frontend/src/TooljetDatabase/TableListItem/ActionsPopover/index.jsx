@@ -48,7 +48,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
 
   return (
     <div
-      className={cx(`float-right cursor-pointer table-list-item-popover ${darkMode && 'dark'}`, {
+      className={cx(`float-right cursor-pointer table-list-item-popover`, {
         'd-grid': open,
       })}
       data-cy="table-kebab-icon"

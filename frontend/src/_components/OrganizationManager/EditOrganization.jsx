@@ -36,6 +36,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
       show={showEditOrg}
       closeModal={() => setShowEditOrg(false)}
       title={t('header.organization.editWorkspace', 'Edit workspace')}
+      checkForBackground={false}
     >
       <div className="row mb-3">
         <div className="col modal-main tj-app-input">
