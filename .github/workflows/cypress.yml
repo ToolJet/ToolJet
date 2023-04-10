@@ -1,7 +1,7 @@
 name: Cypress E2E Test
 
 on:
-  pull_request:
+  pull_request_target:
     types: [labeled, unlabeled, closed]
 
   workflow_dispatch:
