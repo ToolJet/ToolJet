@@ -118,6 +118,7 @@ export function AddNewRowComponent({
           onClick={() => {
             const rowData = _.cloneDeep(newRowsState);
             const index = rowData.length;
+            const newRow = getNewRowObject();
             rowData.push(newRow);
             let newRowDataUpdates = addNewRowsDetails.newRowsDataUpdates;
             newRowDataUpdates[index] = newRow;
@@ -140,7 +141,7 @@ export function AddNewRowComponent({
           onClick={() => {
             onEvent('onNewRowsAdded', { component }).then(() => {
               setExposedVariable('newRowsAdded', []).then(() => {
-                mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {} });
+                mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
                 setNewRowsState([]);
               });
             });
@@ -151,7 +152,7 @@ export function AddNewRowComponent({
         <button
           onClick={() => {
             setExposedVariable('newRowsAdded', []).then(() => {
-              mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {} });
+              mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
               setNewRowsState([]);
             });
           }}

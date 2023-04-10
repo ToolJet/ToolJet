@@ -765,6 +765,10 @@ export function Table({
                 disabled={tableDetails.addNewRowsDetails.addingNewRows}
               >
                 <img src="assets/images/icons/plus.svg" width="15" height="15" />
+                {!tableDetails.addNewRowsDetails.addingNewRows &&
+                  !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
+                    <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                  )}
               </button>
               {showFilterButton && (
                 <>
