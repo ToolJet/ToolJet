@@ -150,11 +150,6 @@ export const QueryPanel = ({ dataQueriesChanged, children }) => {
           if (data.hasOwnProperty('editingQuery')) {
             setEditingQuery(data.editingQuery);
           }
-          // this.setState({
-          //   ...data,
-          //   isUnsavedQueriesAvailable: false,
-          //   draftQuery: this.state.draftQuery !== null ? null : this.state.draftQuery,
-          // });
         }}
         confirmButtonText="Continue editing"
         cancelButtonText="Discard changes"
@@ -219,8 +214,6 @@ export const QueryPanel = ({ dataQueriesChanged, children }) => {
           />
           {children({
             toggleQueryEditor,
-            setSaveConfirmation,
-            setCancelData,
             selectedDataSource,
             createDraftQuery,
             isUnsavedQueriesAvailable,

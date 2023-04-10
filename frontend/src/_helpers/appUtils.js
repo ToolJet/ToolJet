@@ -887,7 +887,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
 }
 
 export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit') {
-  const query = _ref.state.app.data_queries.find((query) => query.id === queryId);
+  const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
   let dataQuery = {};
 
   if (query) {
@@ -900,22 +900,24 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
   if (dataQuery.options.requestConfirmation) {
-    // eslint-disable-next-line no-unsafe-optional-chaining
-    const queryConfirmationList = _ref.state?.queryConfirmationList ? [..._ref.state?.queryConfirmationList] : [];
-    const queryConfirmation = {
-      queryId,
-      queryName,
-    };
-    if (!queryConfirmationList.some((query) => queryId === query.queryId)) {
-      queryConfirmationList.push(queryConfirmation);
-    }
+    flushSync(() => {
+      // eslint-disable-next-line no-unsafe-optional-chaining
+      const queryConfirmationList = _ref.state?.queryConfirmationList ? [..._ref.state?.queryConfirmationList] : [];
+      const queryConfirmation = {
+        queryId,
+        queryName,
+      };
+      if (!queryConfirmationList.some((query) => queryId === query.queryId)) {
+        queryConfirmationList.push(queryConfirmation);
+      }
 
-    if (confirmed === undefined) {
-      _ref.setState({
-        queryConfirmationList,
-      });
-      return;
-    }
+      if (confirmed === undefined) {
+        _ref.setState({
+          queryConfirmationList,
+        });
+        return;
+      }
+    });
   }
   const newState = {
     ..._ref.state.currentState,
@@ -1611,3 +1613,11 @@ function convertMapSet(obj) {
 
 export const checkExistingQueryName = (newName) =>
   useDataQueriesStore.getState().dataQueries.some((query) => query.name === newName);
+
+export const runQueries = (queries, _ref) => {
+  queries.forEach((query) => {
+    if (query.options.runOnPageLoad) {
+      runQuery(_ref, query.id, query.name);
+    }
+  });
+};

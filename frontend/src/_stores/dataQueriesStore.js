@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
+import { runQueries } from '@/_helpers/appUtils';
 
 export const useDataQueriesStore = create(
   devtools((set, get) => ({
@@ -12,13 +13,15 @@ export const useDataQueriesStore = create(
     loadingDataQueries: true,
     isDeletingQueryInProcess: false,
     actions: {
-      fetchDataQueries: (appId, selectFirstQuery = false) => {
+      // TODO: Remove editor state while refactoring QueryManager
+      fetchDataQueries: (appId, selectFirstQuery = false, runQueriesOnAppLoad = false, editorState) => {
         set({ loadingDataQueries: true });
         dataqueryService.getAll(appId).then((data) => {
           set({
             dataQueries: data.data_queries,
             loadingDataQueries: false,
           });
+          if (runQueriesOnAppLoad) runQueries(data.data_queries, editorState);
           const { actions, selectedQuery } = useQueryPanelStore.getState();
           if (selectFirstQuery || selectedQuery?.id === 'draftQuery') {
             actions.setSelectedQuery(data.data_queries[0]?.id, data.data_queries[0]);

@@ -13,7 +13,7 @@ export const useQueryPanelStore = create(
     actions: {
       updateQueryPanelHeight: (newHeight) => set(() => ({ queryPanelHeight: newHeight })),
       setSelectedQuery: (queryId, dataQuery = {}) => {
-        set((state) => {
+        set(() => {
           if (queryId === null) {
             return { selectedQuery: null };
           } else if (queryId === 'draftQuery') {

@@ -109,7 +109,6 @@ class EditorComponent extends React.Component {
       users: null,
       appId,
       editingVersion: null,
-      loadingDataQueries: true,
       showLeftSidebar: true,
       showComments: false,
       zoomLevel: 1.0,
@@ -133,8 +132,6 @@ class EditorComponent extends React.Component {
         },
       },
       apps: [],
-      dataQueriesDefaultText: 'No queries added',
-      isDeletingDataQuery: false,
       queryConfirmationList: [],
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
@@ -267,8 +264,9 @@ class EditorComponent extends React.Component {
     this.socket?.addEventListener('message', (event) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
       if (data === 'versionReleased') this.fetchApp();
-      else if (event.data === 'dataQueriesChanged') this.fetchDataQueries(this.state.editingVersion?.id);
-      else if (event.data === 'dataSourcesChanged') {
+      else if (event.data === 'dataQueriesChanged') {
+        this.fetchDataQueries(this.state.editingVersion?.id);
+      } else if (event.data === 'dataSourcesChanged') {
         this.fetchDataSources(this.state.editingVersion?.id);
       }
     });
@@ -303,81 +301,46 @@ class EditorComponent extends React.Component {
     useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
   };
 
-  fetchDataQueries = (id, selectFirstQuery = false) => {
-    useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery);
-    this.setState(
-      {
-        loadingDataQueries: true,
-      },
-      () => {
-        dataqueryService.getAll(this.state.editingVersion?.id).then((data) => {
-          this.setState(
-            {
-              allDataQueries: data.data_queries,
-              dataQueries: data.data_queries,
-              filterDataQueries: data.data_queries,
-              loadingDataQueries: false,
-              app: {
-                ...this.state.app,
-                data_queries: data.data_queries,
-              },
+  fetchDataQueries = (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
+    useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, this);
+    this.setState(() => {
+      dataqueryService.getAll(id).then((data) => {
+        this.setState(
+          {
+            dataQueries: data.data_queries,
+            app: {
+              ...this.state.app,
+              data_queries: data.data_queries,
             },
-            () => {
-              let queryState = {};
-              data.data_queries.forEach((query) => {
-                if (query.plugin?.plugin_id) {
-                  queryState[query.name] = {
-                    ...query.plugin.manifest_file.data.source.exposedVariables,
-                    kind: query.plugin.manifest_file.data.source.kind,
-                    ...this.state.currentState.queries[query.name],
-                  };
-                } else {
-                  queryState[query.name] = {
-                    ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-                    kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
-                    ...this.state.currentState.queries[query.name],
-                  };
-                }
-              });
-
-              // Select first query by default
-              if (this.state.draftQuery === null) {
-                let selectedQuery =
-                  data.data_queries.find((dq) => dq.id === this.state.selectedQuery?.id) || data.data_queries[0];
-                let editingQuery = selectedQuery ? true : false;
-                this.setState({
-                  selectedQuery,
-                  editingQuery,
-                  currentState: {
-                    ...this.state.currentState,
-                    queries: {
-                      ...queryState,
-                    },
-                  },
-                });
+          },
+          () => {
+            let queryState = {};
+            data.data_queries.forEach((query) => {
+              if (query.plugin?.plugin_id) {
+                queryState[query.name] = {
+                  ...query.plugin.manifest_file.data.source.exposedVariables,
+                  kind: query.plugin.manifest_file.data.source.kind,
+                  ...this.state.currentState.queries[query.name],
+                };
               } else {
-                this.setState({
-                  currentState: {
-                    ...this.state.currentState,
-                    queries: {
-                      ...queryState,
-                    },
-                  },
-                  addingQuery: true,
-                });
+                queryState[query.name] = {
+                  ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+                  kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
+                  ...this.state.currentState.queries[query.name],
+                };
               }
-            }
-          );
-        });
-      }
-    );
-  };
-
-  runQueries = (queries) => {
-    queries.forEach((query) => {
-      if (query.options.runOnPageLoad) {
-        runQuery(this, query.id, query.name);
-      }
+            });
+            this.setState({
+              currentState: {
+                ...this.state.currentState,
+                queries: {
+                  ...queryState,
+                },
+              },
+            });
+          }
+        );
+      });
     });
   };
 
@@ -441,7 +404,6 @@ class EditorComponent extends React.Component {
         },
         async () => {
           computeComponentState(this, this.state.appDefinition.pages[homePageId]?.components ?? {}).then(async () => {
-            this.runQueries(data.data_queries);
             this.setWindowTitle(data.name);
             this.setState({
               showComments: !!queryString.parse(this.props.location.search).threadId,
@@ -1447,11 +1409,7 @@ class EditorComponent extends React.Component {
       appDefinition,
       appId,
       slug,
-      dataSources,
-      loadingDataQueries,
       dataQueries,
-      addingQuery,
-      editingQuery,
       app,
       showLeftSidebar,
       currentState,
@@ -1459,9 +1417,6 @@ class EditorComponent extends React.Component {
       zoomLevel,
       currentLayout,
       deviceWindowWidth,
-      dataQueriesDefaultText,
-      showDataQueryDeletionConfirmation,
-      isDeletingDataQuery,
       apps,
       defaultComponentStateComputed,
       showComments,
@@ -1691,8 +1646,6 @@ class EditorComponent extends React.Component {
                 <QueryPanel dataQueriesChanged={this.dataQueriesChanged}>
                   {({
                     toggleQueryEditor,
-                    setSaveConfirmation,
-                    setCancelData,
                     selectedDataSource,
                     createDraftQuery,
                     isUnsavedQueriesAvailable,
