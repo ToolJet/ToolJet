@@ -7,7 +7,7 @@ import CommentHeader from '@/Editor/Comment/CommentHeader';
 import CommentBody from '@/Editor/Comment/CommentBody';
 import CommentFooter from '@/Editor/Comment/CommentFooter';
 import usePopover from '@/_hooks/use-popover';
-import { commentsService, organizationService } from '@/_services';
+import { commentsService, organizationService, authenticationService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
 import DOMPurify from 'dompurify';
 import { capitalize } from 'lodash';
@@ -25,10 +25,15 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
     item: { threadId, name: 'comment' },
   }));
   const router = useRouter();
+  const [currentUser, setCurrentUser] = React.useState();
 
   React.useEffect(() => {
     // Listen for messages
     // TODO: add check if user is the initiator of this event, don't fetch data
+    const currentSession = authenticationService.currentSessionValue;
+    const currentUser = currentSession?.current_user;
+    setCurrentUser(currentUser);
+
     socket?.addEventListener('message', function (event) {
       if (event.data === threadId) fetchData();
     });
@@ -100,8 +105,6 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
     );
   };
 
-  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-
   const searchUser = (query, callback) => {
     if (!query) {
       return;
@@ -163,7 +166,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
             socket={socket}
             threadId={threadId}
             fetchThreads={fetchThreads}
-            isThreadOwner={currentUser.id === user.id}
+            isThreadOwner={currentUser?.id === user.id}
             isResolved={isResolved}
           />
           <CommentBody
@@ -173,6 +176,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
             fetchComments={fetchData}
             isLoading={loading}
             thread={thread}
+            currentUser={currentUser}
           />
           <CommentFooter
             searchUser={searchUser}

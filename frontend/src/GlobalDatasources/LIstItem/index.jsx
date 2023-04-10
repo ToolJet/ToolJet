@@ -6,7 +6,8 @@ import { getSvgIcon } from '@/_helpers/appUtils';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 
 export const ListItem = ({ dataSource, key, active, onDelete }) => {
-  const { setSelectedDataSource, toggleDataSourceManagerModal } = useContext(GlobalDataSourcesContext);
+  const { setSelectedDataSource, toggleDataSourceManagerModal, environments, setCurrentEnvironment } =
+    useContext(GlobalDataSourcesContext);
 
   const getSourceMetaData = (dataSource) => {
     if (dataSource.pluginId) {
@@ -35,6 +36,7 @@ export const ListItem = ({ dataSource, key, active, onDelete }) => {
         role="button"
         onClick={() => {
           setSelectedDataSource(dataSource);
+          setCurrentEnvironment(environments[0]);
           toggleDataSourceManagerModal(true);
           focusModal();
         }}

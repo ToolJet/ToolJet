@@ -101,6 +101,7 @@ export const Modal = function Modal({
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [containerProps.mode, parentRef]);
 
   return (

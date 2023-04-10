@@ -1,6 +1,11 @@
 const { defineConfig } = require("cypress");
 const { rmdir } = require("fs");
+const fs = require("fs");
+const XLSX = require("node-xlsx");
+
 const pg = require("pg");
+const path = require("path");
+const pdf = require("pdf-parse");
 
 module.exports = defineConfig({
   execTimeout: 1800000,
@@ -65,6 +70,7 @@ module.exports = defineConfig({
 
       return require("./cypress/plugins/index.js")(on, config);
     },
+    downloadsFolder:"cypress/downloads",
     experimentalRunAllSpecs: true,
     experimentalModfyObstructiveThirdPartyCode: true,
     experimentalRunAllSpecs: true,

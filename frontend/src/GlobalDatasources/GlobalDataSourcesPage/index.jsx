@@ -23,6 +23,9 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
     handleModalVisibility,
     isEditing,
     setEditing,
+    currentEnvironment,
+    environments,
+    setCurrentEnvironment,
   } = useContext(GlobalDataSourcesContext);
 
   useEffect(() => {
@@ -33,6 +36,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
     if (!isEditing) {
       setModalProps({ ...modalProps, backdrop: true });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDataSource, isEditing]);
 
   const handleHideModal = () => {
@@ -48,6 +52,15 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
     } else {
       handleModalVisibility();
     }
+  };
+
+  const environmentChanged = (env, dataSourceId) => {
+    setCurrentEnvironment(env);
+  };
+
+  const dataSourcesChanged = (resetSelection, dataSource) => {
+    setCurrentEnvironment(environments[0]);
+    fetchDataSources(resetSelection, dataSource);
   };
 
   return (
@@ -66,9 +79,12 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
             darkMode={darkMode}
             hideModal={handleHideModal}
             scope="global"
-            dataSourcesChanged={fetchDataSources}
+            dataSourcesChanged={dataSourcesChanged}
             selectedDataSource={selectedDataSource}
             modalProps={modalProps}
+            currentEnvironment={currentEnvironment}
+            environments={environments}
+            environmentChanged={environmentChanged}
             container={selectedDataSource ? containerRef?.current : null}
           />
         )}
