@@ -596,7 +596,7 @@ export class AuthService {
     };
     user.organizationId = organization.id;
 
-    response.cookie('auth_token', this.jwtService.sign(JWTPayload), {
+    response.cookie('tj_auth_token', this.jwtService.sign(JWTPayload), {
       httpOnly: true,
       sameSite: 'strict',
       maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years

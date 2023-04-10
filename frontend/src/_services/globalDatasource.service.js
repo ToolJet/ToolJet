@@ -14,7 +14,7 @@ function getAll() {
   return fetch(`${config.apiUrl}/v2/data_sources`, requestOptions).then(handleResponse);
 }
 
-function create(plugin_id, name, kind, options, app_id, app_version_id, scope) {
+function create({ plugin_id, name, kind, options, scope }) {
   const body = {
     plugin_id,
     name,
@@ -27,7 +27,7 @@ function create(plugin_id, name, kind, options, app_id, app_version_id, scope) {
   return fetch(`${config.apiUrl}/v2/data_sources`, requestOptions).then(handleResponse);
 }
 
-function save(id, name, options, appId, environment_id) {
+function save({ id, name, options, environment_id }) {
   const body = {
     name,
     options,
