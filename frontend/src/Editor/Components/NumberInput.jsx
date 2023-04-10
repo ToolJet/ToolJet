@@ -37,8 +37,8 @@ export const NumberInput = function NumberInput({
   };
 
   useEffect(() => {
-    handleValueChange(value);
-  }, [properties.value, properties.minValue, properties.maxValue]);
+    handleValueChange(properties.value);
+  }, [properties.minValue, properties.maxValue]);
 
   useEffect(() => {
     if (!isNaN(value)) {
