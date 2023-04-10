@@ -15,6 +15,7 @@ import { Popover as PopoverBS, OverlayTrigger } from 'react-bootstrap';
 // eslint-disable-next-line import/no-unresolved
 import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
 import VerticalIcon from '@assets/images/icons/vertical-menu.svg';
+import { getPrivateRoute } from '@/_helpers/routes';
 
 export const LeftSidebarDataSources = ({
   appId,
@@ -35,7 +36,7 @@ export const LeftSidebarDataSources = ({
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
 
-  const { admin } = authenticationService.currentUserValue;
+  const { admin } = authenticationService.currentSessionValue;
 
   const deleteDataSource = (selectedSource) => {
     setSelectedDataSource(selectedSource);
@@ -260,7 +261,7 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
         </div>
       </div>
       <div className="add-datasource-btn w-100 p-3">
-        <Link to="/global-datasources">
+        <Link to={getPrivateRoute('global_datasources')}>
           <div className="p-2 color-primary cursor-pointer">
             {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
           </div>
