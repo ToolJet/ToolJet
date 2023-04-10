@@ -720,21 +720,21 @@ class TableComponent extends React.Component {
             <label data-cy={`label-action-button-position`} className="form-label">
               {this.props.t('widget.Table.buttonPosition', 'Button Position')}
             </label>
-              <SelectSearch
-                className={'select-search'}
-                options={[
-                  { name: 'Left', value: 'left' },
-                  { name: 'Right', value: 'right' },
-                ]}
-                value={action.position ?? 'right'}
-                search={false}
-                closeOnSelect={true}
-                onChange={(value) => {
-                  this.onActionButtonPropertyChanged(index, 'position', value);
-                }}
-                fuzzySearch
-                placeholder="Select position"
-              />
+            <SelectSearch
+              className={'select-search'}
+              options={[
+                { name: 'Left', value: 'left' },
+                { name: 'Right', value: 'right' },
+              ]}
+              value={action.position ?? 'right'}
+              search={false}
+              closeOnSelect={true}
+              onChange={(value) => {
+                this.onActionButtonPropertyChanged(index, 'position', value);
+              }}
+              fuzzySearch
+              placeholder="Select position"
+            />
           </div>
           <Color
             param={{ name: 'actionButtonBackgroundColor' }}
