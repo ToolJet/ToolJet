@@ -285,7 +285,7 @@ export const widgets = [
     },
     defaultSize: {
       width: 20,
-      height: 300,
+      height: 358,
     },
     events: {
       onRowHovered: { displayName: 'Row hovered' },
