@@ -58,11 +58,15 @@ export class DataSourcesService {
               'user_group_permissions',
               'data_source_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
             )
+            .innerJoin('data_source.dataQueries', 'data_queries')
             .where(
               new Brackets((qb) => {
                 qb.where('user_group_permissions.user_id = :userId', {
                   userId: id,
                 }).andWhere('data_source_group_permissions.read = :value', { value: true });
+                if (appVersionId) {
+                  qb.orWhere('data_queries.app_version_id = :appVersionId', { appVersionId });
+                }
               })
             );
         }
