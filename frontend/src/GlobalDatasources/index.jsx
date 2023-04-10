@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
 import { globalDatasourceService, appEnvironmentService } from '@/_services';
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
+import { toast } from 'react-hot-toast';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
@@ -25,7 +26,8 @@ export const GlobalDatasources = (props) => {
 
   useEffect(() => {
     if (!canCreateDataSource() && !canReadDataSource() && !canUpdateDataSource() && !canDeleteDataSource()) {
-      navigate('/');
+      toast.error("You don't have access to GDS, contact your workspace admin to add datasources");
+      return navigate('/');
     }
     fetchEnvironments();
   }, []);
