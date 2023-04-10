@@ -93,3 +93,39 @@ By default, 4 datasources will be available on every app on ToolJet:
   <img className="screenshot-full" src="/img/datasource-reference/overview/default.png" alt="Datasources: Overview" />
 
   </div>
+
+## Permissions
+
+Only **Admins** and **[Super Admins](/docs/Enterprise/superadmin)** of the workspace can change the **[Permissions](/docs/tutorial/manage-users-groups#group-properties)** for Global Datasource. 
+
+From **Workspace Settings** -> **Groups Settings**, Admins and Super Admins can set the permission for a user group to:
+
+- **Create** and **Delete** datasources onto that workspace. If only **Create** permission is set then the users of the group will only be able to add new datasources on the workspace, and if only **Delete** permission is set then the users of the group will only be able to delete the connected datasources on the workspace.
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/datasource-reference/overview/create.png" alt="Datasources: Overview" />
+
+  </div>
+
+  - If any of the permission(Create or Delete) is not enabled for a user group then the users of the group will get an error toast when they try to Add or Delete the global datasource.
+    <div style={{textAlign: 'center'}}>
+
+    <img className="screenshot-full" src="/img/datasource-reference/overview/error.png" alt="Datasources: Overview" />
+
+    </div>
+
+- **View** or **Edit** allowed global datasources from the **Datasources** tab. If only **View** permission is set then the users of the group will only be able to connect to the allowed datasource, and if only **Edit** permission is set then the users of the group will be able to update the credentials of the allowed datasources.
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/datasource-reference/overview/view.png" alt="Datasources: Overview" />
+
+  </div>
+
+  - If any of the permission(View or Edit) is not enabled for a user group then the users of the group will get an error toast when they try to Add or Delete the global datasource.
+    <div style={{textAlign: 'center'}}>
+
+    <img className="screenshot-full" src="/img/datasource-reference/overview/edit.png" alt="Datasources: Overview" />
+
+    </div>
+
+
