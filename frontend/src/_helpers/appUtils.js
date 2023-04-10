@@ -24,6 +24,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
 import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
+import { authenticationService } from '@/_services/authentication.service';
+import { setCookie } from '@/_helpers/cookie';
 import { flushSync } from 'react-dom'; // TODO: It can be removed once we've a proper state update flow
 
 const ERROR_TYPES = Object.freeze({
@@ -81,6 +83,9 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
 
 export function fetchOAuthToken(authUrl, dataSourceId) {
   localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
+  const currentSessionValue = authenticationService.currentSessionValue;
+  currentSessionValue?.current_organization_id &&
+    setCookie('orgIdForOauth', currentSessionValue?.current_organization_id);
   window.open(authUrl);
 }
 
@@ -147,7 +152,7 @@ async function executeRunPycode(_ref, code, query, editorState, isPreview, mode)
       };
     }
 
-    return pyodide.isPyProxy(result) ? result.toJs() : result;
+    return pyodide.isPyProxy(result) ? convertMapSet(result.toJs()) : result;
   };
 
   return { data: await evaluatePythonCode(pyodide, code) };
@@ -806,8 +811,12 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query?.id, true);
     } else if (query.kind === 'tooljetdb') {
-      const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
-      queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _ref.state.currentState);
+      const currentSessionValue = authenticationService.currentSessionValue;
+      queryExecutionPromise = tooljetDbOperations.perform(
+        query.options,
+        currentSessionValue?.current_organization_id,
+        _ref.state.currentState
+      );
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, editorState, true, 'edit');
     } else {
@@ -931,8 +940,12 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       } else if (query.kind === 'runpy') {
         queryExecutionPromise = executeRunPycode(_self, query.options.code, query, _ref, false, mode);
       } else if (query.kind === 'tooljetdb') {
-        const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
-        queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _self.state.currentState);
+        const currentSessionValue = authenticationService.currentSessionValue;
+        queryExecutionPromise = tooljetDbOperations.perform(
+          query.options,
+          currentSessionValue?.current_organization_id,
+          _self.state.currentState
+        );
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }
@@ -1579,3 +1592,17 @@ const getSelectedText = () => {
     navigator.clipboard.writeText(window.document.selection.createRange().text);
   }
 };
+
+function convertMapSet(obj) {
+  if (obj instanceof Map) {
+    return Object.fromEntries(Array.from(obj, ([key, value]) => [key, convertMapSet(value)]));
+  } else if (obj instanceof Set) {
+    return Array.from(obj).map(convertMapSet);
+  } else if (Array.isArray(obj)) {
+    return obj.map(convertMapSet);
+  } else if (obj !== null && typeof obj === 'object') {
+    return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, convertMapSet(value)]));
+  } else {
+    return obj;
+  }
+}

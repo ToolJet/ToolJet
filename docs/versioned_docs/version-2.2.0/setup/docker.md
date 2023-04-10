@@ -24,7 +24,7 @@ There are two options to deploy ToolJet using Docker Compose:
 1.   **Using an external PostgreSQL database**. This setup is recommended if you want to use a managed PostgreSQL service such as AWS RDS or Google Cloud SQL.
 2.   **Using in-built PostgreSQL database**. This setup uses the official Docker image of PostgreSQL.
 
-Confused about which setup to select? Feel free to ask the community via Slack: https://tooljet.com/slack.
+Confused about which setup to select? Feel free to ask the community via Slack: https://tooljet.com/slack
 
 :::info
 We recommend using the managed PostgreSQL service on production for ease of administration, security, and management (backups, monitoring, etc).

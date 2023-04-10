@@ -37,7 +37,7 @@ export const LeftSidebarDataSources = ({
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
 
-  const { admin } = authenticationService.currentUserValue;
+  const { admin } = authenticationService.currentSessionValue;
 
   const deleteDataSource = (selectedSource) => {
     setSelectedDataSource(selectedSource);
@@ -247,7 +247,6 @@ const LeftSidebarDataSourcesContainer = ({
   darkMode,
   RenderDataSource,
   dataSources = [],
-  globalDataSources = [],
   isVersionReleased,
   setReleasedVersionPopupState,
 }) => {

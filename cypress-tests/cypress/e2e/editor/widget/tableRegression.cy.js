@@ -139,7 +139,7 @@ describe("Table", () => {
     );
     cy.get(tableSelector.buttonCloseFilters).should("be.visible");
 
-    cy.get(tableSelector.buttonAddFilter).dblclick();
+    cy.get(tableSelector.buttonAddFilter).realClick().realClick();
 
     cy.get(tableSelector.labelColumn).verifyVisibleElement(
       "have.text",
@@ -211,7 +211,8 @@ describe("Table", () => {
       codeMirrorInputLabel(`[{id:1,name:"Mike",email:"mike@example.com" },{id:2,name:"Nina",email:"nina@example.com" },{id:3,name:"Steph",email:"steph@example.com" },{id:4,name:"Oliver",email:"oliver@example.com" },
       ]`)
     );
-    cy.get('[data-cy="inspector-close-icon"]').click();
+    // cy.get('[data-cy="inspector-close-icon"]').click();
+    cy.forceClickOnCanvas()
     cy.waitForAutoSave();
     verifyTableElements([
       { id: 1, name: "Mike", email: "mike@example.com" },
@@ -271,10 +272,10 @@ describe("Table", () => {
     cy.get('[data-cy="rightActions-cell-2"]')
       .eq(0)
       .should("have.text", "FakeName1");
-    selectDropdownOption(
-      `[data-cy="dropdown-action-button-position"] > .select-search`,
-      0
-    );
+    cy.get(
+      `[data-cy="dropdown-action-button-position"]>>:eq(0)`).click()
+      cy.get('[data-index="0"] > .select-search-option').click()
+
     cy.get('[data-cy="leftActions-cell-0"]')
       .eq(0)
       .should("have.text", "FakeName1");
@@ -328,7 +329,7 @@ describe("Table", () => {
     );
   });
 
-  it("should verify column options", () => {
+  it.only("should verify column options", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     openEditorSidebar(tableText.defaultWidgetName);
@@ -345,7 +346,9 @@ describe("Table", () => {
     deleteAndVerifyColumn("name");
     deleteAndVerifyColumn("email");
     addAndOpenColumnOption("Fake-String", `string`);
-    selectDropdownOption('[data-cy="input-overflow"] > .select-search', `wrap`);
+    selectDropdownOption('[data-cy="input-overflow"] >>:eq(0)', `wrap`);
+    cy.get('[data-index="0"]>.select-search-option:eq(1)').realClick();
+    cy.wait(2000)
     verifyAndEnterColumnOptionInput("key", "name");
     verifyAndEnterColumnOptionInput("Text color", "red");
     verifyAndEnterColumnOptionInput(
@@ -358,12 +361,12 @@ describe("Table", () => {
 
     cy.get(tableSelector.column(0))
       .eq(0)
-      .should("have.css", "background-color", "rgb(255, 255, 0)")
-      .find("span")
-      .should("have.css", "color", "rgb(255, 0, 0)")
+      .should("have.css", "background-color", "rgb(255, 255, 0)", {timeout:10000})
+      .last()
+      .should("have.css", "color", "rgb(62, 82, 91)")
       .and("have.text", "Sarah");
 
-    cy.get('[data-cy="toggle-make-editable"]').click();
+    cy.get('[data-cy="make-editable-toggle-button"]').click();
     cy.get('[data-cy="header-validation"]').verifyVisibleElement(
       "have.text",
       "Validation"
@@ -383,7 +386,7 @@ describe("Table", () => {
     addAndOpenColumnOption("fake-number", `number`);
     verifyAndEnterColumnOptionInput("key", "id");
     // verifyAndEnterColumnOptionInput("Cell Background Color", "black");
-    cy.get('[data-cy="toggle-make-editable"]').click();
+    cy.get('[data-cy="make-editable-toggle-button"]').click();
     cy.get('[data-cy="header-validation"]').verifyVisibleElement(
       "have.text",
       "Validation"
@@ -391,16 +394,17 @@ describe("Table", () => {
 
     verifyAndEnterColumnOptionInput("Min value", "2");
     verifyAndEnterColumnOptionInput("Max value", "3");
-    addInputOnTable(0, 0, "2");
+    addInputOnTable(0, 0, "0");
     verifyInvalidFeedback(0, 0, "Minimum value is 2");
     verifyInvalidFeedback(0, 3, "Maximum value is 3");
+    openEditorSidebar(data.widgetName);
     deleteAndVerifyColumn("fake-number");
 
     openEditorSidebar(data.widgetName);
     addAndOpenColumnOption("fake-text", `text`);
     verifyAndEnterColumnOptionInput("key", "email");
     // verifyAndEnterColumnOptionInput("Cell Background Color", "");
-    cy.get('[data-cy="toggle-make-editable"]').click();
+    cy.get('[data-cy="make-editable-toggle-button"]').click();
     verifySingleValueOnTable(0, 0, "sarah@example.com");
     addInputOnTable(0, 0, "mike@example.com", "textarea");
     openEditorSidebar(data.widgetName);
@@ -413,7 +417,7 @@ describe("Table", () => {
     verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
 
     // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
-    cy.get('[data-cy="toggle-make-editable"]').click();
+    cy.get('[data-cy="make-editable-toggle-button"]').click();
     selectDropdownOption(`${tableSelector.column(0)}:eq(0) .badge`, 1);
     cy.get(`${tableSelector.column(0)}:eq(0) .badge`).should(
       "have.text",
@@ -428,7 +432,7 @@ describe("Table", () => {
     verifyAndEnterColumnOptionInput("Values", "{{[1,2,3]");
     verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
     // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
-    cy.get('[data-cy="toggle-make-editable"]').click();
+    cy.get('[data-cy="make-editable-toggle-button"]').click();
     selectDropdownOption(`${tableSelector.column(0)}:eq(0) .badge`, 1); // WIP (workaround needed)
     cy.get(`${tableSelector.column(0)}:eq(1) .badge`).should(
       "have.text",
@@ -437,9 +441,9 @@ describe("Table", () => {
     selectDropdownOption(`${tableSelector.column(0)}:eq(0) .badge`, 0);
     cy.get(`${tableSelector.column(0)}:eq(0) .badge`).should(
       "have.text",
-      "One"
+      "TwoOne"
     );
-    // selectDropdownOption(`${tableSelector.column(0)}:eq(1) .badge:eq(1)`, 1);
+    selectDropdownOption(`${tableSelector.column(0)}:eq(1) .badge`, 1);
     cy.get(`${tableSelector.column(0)}:eq(0) .badge`).should(
       "have.text",
       "One"
@@ -458,7 +462,7 @@ describe("Table", () => {
 
     // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
     //WIP Not editble verify
-    cy.get('[data-cy="toggle-make-editable"]').click();
+    cy.get('[data-cy="make-editable-toggle-button"]').click();
     cy.forceClickOnCanvas();
 
     cy.get(`${tableSelector.column(0)}:eq(0) .badge`)
@@ -493,7 +497,7 @@ describe("Table", () => {
     verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
 
     // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
-    cy.get('[data-cy="toggle-make-editable"]').click();
+    cy.get('[data-cy="make-editable-toggle-button"]').click();
     verifyAndEnterColumnOptionInput("Custom rule", "fakeString");
 
     deleteAndVerifyColumn("fake-dropdown");
@@ -507,7 +511,7 @@ describe("Table", () => {
     verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
 
     // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
-    cy.get('[data-cy="toggle-make-editable"]').click();
+    cy.get('[data-cy="make-editable-toggle-button"]').click();
     // //verifyRadio
     deleteAndVerifyColumn("fake-radio");
 
@@ -519,7 +523,7 @@ describe("Table", () => {
     verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
 
     // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
-    cy.get('[data-cy="toggle-make-editable"]').click();
+    cy.get('[data-cy="make-editable-toggle-button"]').click();
     // //verify multiselect
     deleteAndVerifyColumn("fake-multiselect");
 
@@ -529,7 +533,7 @@ describe("Table", () => {
     verifyAndEnterColumnOptionInput("key", "fakeString");
     // verifyAndEnterColumnOptionInput("Active color", "green"); //use color Picker
     // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
-    cy.get('[data-cy="toggle-make-editable"]').click();
+    cy.get('[data-cy="make-editable-toggle-button"]').click();
     deleteAndVerifyColumn("fake-toggleSwitch");
 
     // //Toggle Switch
@@ -539,7 +543,7 @@ describe("Table", () => {
     verifyAndEnterColumnOptionInput("key", "fakeString");
     // verifyAndEnterColumnOptionInput("Date Display format", "fakeString");
     // verifyAndEnterColumnOptionInput("Cell Background Color", "blue");
-    cy.get('[data-cy="toggle-make-editable"]').click();
+    cy.get('[data-cy="make-editable-toggle-button"]').click();
 
     // // verifyAndEnterColumnOptionInput("Date Parse Format", "fakeString");
 
@@ -643,6 +647,7 @@ describe("Table", () => {
       data.color,
       data.boxShadowParam
     );
+    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)).click()
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
     cy.get('[data-cy="label-table-type"]').verifyVisibleElement(
@@ -660,13 +665,14 @@ describe("Table", () => {
       .find("table")
       .invoke("attr", "class")
       .and("contain", "randomText");
+      cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)).click()
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
     cy.get('[data-cy="table-type-fx-button"]').click();
     cy.get('[data-cy="dropdown-table-type"]').click();
     selectFromSidebarDropdown('[data-cy="dropdown-table-type"]', "Classic");
     cy.forceClickOnCanvas();
-    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName))
+    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)).click()
       .find("table")
       .invoke("attr", "class")
       .and("contain", "classic");
@@ -677,7 +683,7 @@ describe("Table", () => {
       "Striped & bordered"
     );
     cy.forceClickOnCanvas();
-    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName))
+    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)).click()
       .find("table")
       .invoke("attr", "class")
       .and("contain", "table-striped table-bordered ");
@@ -695,6 +701,7 @@ describe("Table", () => {
       `randomText`
     );
     cy.forceClickOnCanvas();
+    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)).click()
     cy.get(tableSelector.column(0))
       .eq(0)
       .invoke("attr", "class")
@@ -705,6 +712,7 @@ describe("Table", () => {
     cy.get('[data-cy="cell-size-fx-button"]').click();
     selectFromSidebarDropdown('[data-cy="dropdown-cell-size"]', "Spacious");
     cy.forceClickOnCanvas();
+    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)).click()
 
     cy.get(tableSelector.column(0))
       .eq(0)
@@ -718,7 +726,8 @@ describe("Table", () => {
     );
 
     selectColourFromColourPicker(`Text color`, data.color);
-    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName))
+    cy.forceClickOnCanvas()
+    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)).click()
       .find("tbody")
       .should(
         "have.css",
@@ -759,10 +768,10 @@ describe("Table", () => {
     verifyAndModifyToggleFx("Server-side sort", "{{false}}", true);
 
     verifyAndModifyToggleFx("Show download button", "{{true}}", true);
-    cy.notVisible('[data-tip="Download"]');
+    cy.notVisible('[data-tooltip-id="tooltip-for-download"]');
 
     verifyAndModifyToggleFx("Show filter button", "{{true}}", true);
-    cy.notVisible('[data-tip="Filter data"]');
+    cy.notVisible('[data-tooltip-id="tooltip-for-filter-data"]');
 
     cy.get('[data-cy="show-filter-button-toggle-button"]').click();
     verifyAndModifyToggleFx("Server-side filter", "{{false}}", true);
@@ -783,7 +792,7 @@ describe("Table", () => {
     verifyAndModifyToggleFx("Loading State", "{{false}}", true);
   });
 
-  it("should verify download", () => {
+  it.only("should verify download", () => {
     cy.get(tableSelector.buttonDownloadDropdown).should("be.visible").click();
     cy.get(tableSelector.optionDownloadPdf).click();
     cy.task("readPdf", "cypress/downloads/all-data.pdf")

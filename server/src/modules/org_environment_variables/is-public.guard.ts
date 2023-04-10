@@ -11,7 +11,7 @@ export class IsPublicGuard implements CanActivate {
       return false;
     }
     const app = await this.appsService.findBySlug(request.params.app_slug);
-    request.app = app;
+    request.tj_app = app;
     return !!app?.isPublic;
   }
 }
