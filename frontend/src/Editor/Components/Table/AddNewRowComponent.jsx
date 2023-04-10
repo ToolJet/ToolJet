@@ -59,7 +59,7 @@ export function AddNewRowComponent({
       <div className="card-header row">
         <div className="col">
           <h4 data-cy={`header-filters`} className="font-weight-normal">
-            Add new row
+            Add new rows
           </h4>
         </div>
         <div className="col-auto">
@@ -132,7 +132,7 @@ export function AddNewRowComponent({
             });
           }}
         >
-          + add new row
+          + add another row
         </button>
       </div>
       <div className="card-footer">
@@ -147,7 +147,7 @@ export function AddNewRowComponent({
             });
           }}
         >
-          + add rows
+          Finish adding rows
         </button>
         <button
           onClick={() => {
@@ -158,7 +158,7 @@ export function AddNewRowComponent({
           }}
           className="btn btn-light btn-sm"
         >
-          discard rows
+          Discard
         </button>
       </div>
     </div>
