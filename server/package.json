@@ -82,7 +82,7 @@
     "semver": "^7.3.5",
     "ts-node": "^10.0.0",
     "tsconfig-paths": "^3.10.1",
-    "typeorm": "^0.2.38",
+    "typeorm": "^0.3.14",
     "ws": "^7.5.5",
     "y-websocket": "^1.4.0"
   },
