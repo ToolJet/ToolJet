@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  dataqueryService,
-  appService,
-  authenticationService,
-  appVersionService,
-  orgEnvironmentVariableService,
-} from '@/_services';
+import { appService, authenticationService, appVersionService, orgEnvironmentVariableService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
@@ -15,7 +9,6 @@ import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
 import { componentTypes } from './WidgetManager/components';
 import { Inspector } from './Inspector/Inspector';
-import { DataSourceTypes } from './DataSourceManager/SourceComponents';
 import { QueryManager, QueryPanel } from './QueryManager';
 import {
   onComponentOptionChanged,
@@ -303,45 +296,6 @@ class EditorComponent extends React.Component {
 
   fetchDataQueries = (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
     useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, this);
-    this.setState(() => {
-      dataqueryService.getAll(id).then((data) => {
-        this.setState(
-          {
-            dataQueries: data.data_queries,
-            app: {
-              ...this.state.app,
-              data_queries: data.data_queries,
-            },
-          },
-          () => {
-            let queryState = {};
-            data.data_queries.forEach((query) => {
-              if (query.plugin?.plugin_id) {
-                queryState[query.name] = {
-                  ...query.plugin.manifest_file.data.source.exposedVariables,
-                  kind: query.plugin.manifest_file.data.source.kind,
-                  ...this.state.currentState.queries[query.name],
-                };
-              } else {
-                queryState[query.name] = {
-                  ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-                  kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
-                  ...this.state.currentState.queries[query.name],
-                };
-              }
-            });
-            this.setState({
-              currentState: {
-                ...this.state.currentState,
-                queries: {
-                  ...queryState,
-                },
-              },
-            });
-          }
-        );
-      });
-    });
   };
 
   toggleAppMaintenance = () => {
@@ -477,18 +431,16 @@ class EditorComponent extends React.Component {
    * https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState
    */
   dataQueriesChanged = () => {
-    this.setState({ addingQuery: false }, () => {
-      if (this.socket instanceof WebSocket && this.socket?.readyState === WebSocket.OPEN) {
-        this.socket?.send(
-          JSON.stringify({
-            event: 'events',
-            data: { message: 'dataQueriesChanged', appId: this.state.appId },
-          })
-        );
-      } else {
-        this.fetchDataQueries(this.state.editingVersion?.id);
-      }
-    });
+    if (this.socket instanceof WebSocket && this.socket?.readyState === WebSocket.OPEN) {
+      this.socket?.send(
+        JSON.stringify({
+          event: 'events',
+          data: { message: 'dataQueriesChanged', appId: this.state.appId },
+        })
+      );
+    } else {
+      this.fetchDataQueries(this.state.editingVersion?.id);
+    }
   };
 
   switchSidebarTab = (tabIndex) => {

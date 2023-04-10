@@ -26,6 +26,7 @@ import urlJoin from 'url-join';
 import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
+import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
 import { flushSync } from 'react-dom'; // TODO: It can be removed once we've a proper state update flow
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
@@ -1620,4 +1621,34 @@ export const runQueries = (queries, _ref) => {
       runQuery(_ref, query.id, query.name);
     }
   });
+};
+
+export const computeQueryState = (queries, _ref) => {
+  let queryState = {};
+  queries.forEach((query) => {
+    if (query.plugin?.plugin_id) {
+      queryState[query.name] = {
+        ...query.plugin.manifest_file.data.source.exposedVariables,
+        kind: query.plugin.manifest_file.data.source.kind,
+        ..._ref.state.currentState.queries[query.name],
+      };
+    } else {
+      queryState[query.name] = {
+        ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+        kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
+        ..._ref.state.currentState.queries[query.name],
+      };
+    }
+  });
+  const hasDiffQueryState = _.isEqual(_ref.state?.currentState?.queries, queryState);
+  if (hasDiffQueryState) {
+    _ref.setState({
+      currentState: {
+        ..._ref.state.currentState,
+        queries: {
+          ...queryState,
+        },
+      },
+    });
+  }
 };

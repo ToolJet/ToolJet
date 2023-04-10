@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast';
 
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
-import { runQueries } from '@/_helpers/appUtils';
+import { runQueries, computeQueryState } from '@/_helpers/appUtils';
 
 export const useDataQueriesStore = create(
   devtools((set, get) => ({
@@ -21,7 +21,10 @@ export const useDataQueriesStore = create(
             dataQueries: data.data_queries,
             loadingDataQueries: false,
           });
+          // Runs query on loading application
           if (runQueriesOnAppLoad) runQueries(data.data_queries, editorState);
+          // Compute query state to be added in the current state
+          computeQueryState(data.data_queries, editorState);
           const { actions, selectedQuery } = useQueryPanelStore.getState();
           if (selectFirstQuery || selectedQuery?.id === 'draftQuery') {
             actions.setSelectedQuery(data.data_queries[0]?.id, data.data_queries[0]);
