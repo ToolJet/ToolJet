@@ -20,7 +20,7 @@ export async function getCompletion(
     return data.choices[0]['text'];
   } catch (error) {
     console.log('error openapi ===============', error);
-    
+
     return {
       error: error?.message,
       statusCode: error?.response?.status,
