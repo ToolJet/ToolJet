@@ -5,6 +5,7 @@ import { UsersService } from 'src/services/users.service';
 import { DataSource } from 'src/entities/data_source.entity';
 
 type Actions =
+  | 'readGlobalDataSource'
   | 'createGlobalDataSource'
   | 'updateGlobalDataSource'
   | 'deleteGlobalDataSource'
@@ -24,8 +25,9 @@ export class GlobalDataSourceAbilityFactory {
       Ability as AbilityClass<GlobalDataSourcesAbility>
     );
 
-    if (await this.usersService.userCan(user, 'read', 'GlobalDataSource')) {
+    if (await this.usersService.userCan(user, 'read', 'GlobalDataSource', dataSourceId)) {
       can('fetchEnvironments', DataSource);
+      can('readGlobalDataSource', DataSource);
     }
 
     if (await this.usersService.userCan(user, 'create', 'GlobalDataSource')) {

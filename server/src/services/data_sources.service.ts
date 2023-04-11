@@ -58,7 +58,7 @@ export class DataSourcesService {
               'user_group_permissions',
               'data_source_group_permissions.group_permission_id = user_group_permissions.group_permission_id'
             )
-            .innerJoin('data_source.dataQueries', 'data_queries')
+            .leftJoin('data_source.dataQueries', 'data_queries')
             .where(
               new Brackets((qb) => {
                 qb.where('user_group_permissions.user_id = :userId', {

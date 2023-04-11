@@ -27,6 +27,7 @@ import { EntityManager } from 'typeorm';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { App } from 'src/entities/app.entity';
+import { GlobalDataSourceAbilityFactory } from 'src/modules/casl/abilities/global-datasource-ability.factory';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -34,7 +35,8 @@ export class DataQueriesController {
     private appsService: AppsService,
     private dataQueriesService: DataQueriesService,
     private dataSourcesService: DataSourcesService,
-    private appsAbilityFactory: AppsAbilityFactory
+    private appsAbilityFactory: AppsAbilityFactory,
+    private globalDataSourcesAbilityFactory: GlobalDataSourceAbilityFactory
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -138,9 +140,21 @@ export class DataQueriesController {
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
     const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.app.id);
+    const globalDataSourceAbility = await this.globalDataSourcesAbilityFactory.globalDataSourceActions(
+      user,
+      dataQuery.dataSourceId
+    );
 
     if (!ability.can('updateQuery', dataQuery.app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
+    }
+
+    if (
+      !globalDataSourceAbility.can('createGlobalDataSource', dataQuery.dataSource) &&
+      !globalDataSourceAbility.can('readGlobalDataSource', dataQuery.dataSource) &&
+      !globalDataSourceAbility.can('deleteGlobalDataSource', dataQuery.dataSource)
+    ) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     const result = await this.dataQueriesService.update(dataQueryId, name, options);
@@ -152,9 +166,21 @@ export class DataQueriesController {
   async delete(@User() user, @Param('id') dataQueryId) {
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
     const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.app.id);
+    const globalDataSourceAbility = await this.globalDataSourcesAbilityFactory.globalDataSourceActions(
+      user,
+      dataQuery.dataSourceId
+    );
 
     if (!ability.can('deleteQuery', dataQuery.app)) {
       throw new ForbiddenException('you do not have permissions to perform this action');
+    }
+
+    if (
+      !globalDataSourceAbility.can('createGlobalDataSource', dataQuery.dataSource) &&
+      !globalDataSourceAbility.can('readGlobalDataSource', dataQuery.dataSource) &&
+      !globalDataSourceAbility.can('deleteGlobalDataSource', dataQuery.dataSource)
+    ) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     const result = await this.dataQueriesService.delete(dataQueryId);
