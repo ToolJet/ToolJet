@@ -4,6 +4,7 @@ import useBreadcrumbs from 'use-react-router-breadcrumbs';
 
 export const Breadcrumbs = () => {
   const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
+
   return (
     <ol className="breadcrumb breadcrumb-arrows">
       {breadcrumbs.length === 0 && (
@@ -26,7 +27,7 @@ export const Breadcrumbs = () => {
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
   { path: '/:worspace_id', breadcrumb: 'Apps' },
-  { path: '/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
+  { path: '/:worspace_id/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/global-datasources', breadcrumb: 'Global Datasources' },
   { path: '/integrations', breadcrumb: 'Integrations / plugins', props: { beta: true } },
