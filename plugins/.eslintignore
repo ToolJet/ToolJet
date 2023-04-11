@@ -3,4 +3,3 @@ dist
 packages/*/__tests__/*.js
 packages/*/dist/*
 client.js
-server.js
