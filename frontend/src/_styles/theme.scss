@@ -5,11 +5,12 @@
 @import "./queryManager.scss";
 @import "./onboarding.scss";
 @import "./components.scss";
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,400;1,500;1,600;1,700&display=swap');
+
 @import "./global-datasources.scss";
 
 @import "./typography.scss";
 @import "./designtheme.scss";
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,400;1,500;1,600;1,700&display=swap');
 
 // variables
 $border-radius: 4px;
@@ -7467,6 +7468,174 @@ tbody {
   }
 }
 
+@keyframes up-and-down {
+  to{
+      opacity: 0.2;
+      transform: translateY(-20px);
+      
+  }
+}
+
+.spin-loader {  
+  position: fixed;
+  width: 100%;
+  
+  .load{
+    display: flex;
+    justify-content: center;
+    margin: 200px auto;
+  }
+
+  .load div{
+    width: 20px;
+    height: 20px;
+    background-color: #3E63DD;
+    border-radius: 50%;
+    margin: 0 5px;
+    animation-name: #{up-and-down};
+    animation-duration: 0.8s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+
+  .load .two{
+    animation-delay: 0.3s;
+  }
+
+  .load .three{
+    animation-delay: 0.6s;
+  }
+}
+
+.organization-switch-modal {
+  font-family: 'IBM Plex Sans';
+
+  .modal-dialog{
+    width: 376px;
+  }
+
+  .modal-content{
+    background: linear-gradient(0deg, #FFFFFF, #FFFFFF),
+    linear-gradient(0deg, #DFE3E6, #DFE3E6);
+  }
+
+  .modal-header {
+    justify-content: center !important;
+    flex-direction: column;
+    padding: 40px 32px 20px 32px;
+
+    .header-text {
+      font-style: normal;
+      font-weight: 600;
+      font-size: 20px;
+      line-height: 36px;
+      margin: 24px 0 5px 0;
+    }
+
+    p {
+      font-style: normal;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 20px;
+      color:#687076;
+      text-align: Center;
+      margin-bottom: 0px;
+    }
+  }
+
+  .modal-body {
+    padding: 18px 32px;
+    
+    .org-list {
+      display: flex;
+      flex-direction: column;
+
+      .org-item{
+        height: 50px;
+        display: flex;
+        align-items: center;
+        padding: 0px 12px;
+        cursor: default;
+
+        input[type=radio] {
+          margin-right: 16px;
+          width: 16px;
+          height: 16px;
+        }
+
+        .avatar {
+          margin-right: 11px;
+          color: #11181C;
+          background-color: #F8FAFF;
+          width: 34px !important;
+          height: 34px !important;
+        }
+
+        span {
+          font-style: normal;
+          font-weight: 400;
+          font-size: 12px;
+          line-height: 20px;
+          color: #11181C;
+        }
+      }
+
+      .selected-item {
+        border-radius: 6px;
+        background-color: #F0F4FF;
+      }
+    }
+  }
+
+  .modal-footer {
+    justify-content: center;
+    padding: 24px 32px;
+    border-top: 1px solid #DFE3E6;
+
+    button {
+      width: 100%;
+      font-style: normal;
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 20px;
+    }
+  }
+}
+
+.organization-switch-modal.dark-mode {
+  .modal-footer,
+  .modal-header {
+    border-color: #232e3c !important;
+    p {
+      color: rgba(255, 255, 255, 0.5) !important;
+    }
+  }
+
+  .modal-body,
+  .modal-footer,
+  .modal-header,
+  .modal-content {
+    color: white;
+    background-color: #2b394a;
+  }
+
+  .modal-content {
+    border: none;
+  }
+
+
+  .modal-body { 
+    .org-list{ 
+      span {
+        color: white;
+      }
+
+      .selected-item {
+        background-color: #232e3c;
+      }
+    }
+  }
+}
 .datasources-category {
   color: var(--slate10);
 }
@@ -7569,5 +7738,5 @@ tbody {
 	}
   .react-tel-input .country-list .country.highlight {
     color: #6b6b6b;
-}
+  }
 }
