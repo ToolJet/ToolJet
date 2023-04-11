@@ -70,7 +70,7 @@ function updateCurrentUser(firstName, lastName) {
 
 function updateUserType(userId, userType) {
   const body = { userType, userId };
-  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/users/user-type`, requestOptions).then(handleResponse);
 }
 
@@ -81,6 +81,6 @@ function changePassword(currentPassword, newPassword) {
 }
 
 function getLicenseTerms() {
-  const requestOptions = { method: 'GET', headers: authHeader() };
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/users/license-terms`, requestOptions).then(handleResponse);
 }

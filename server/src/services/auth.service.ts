@@ -221,6 +221,7 @@ export class AuthService {
 
       return decamelizeKeys({
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
+        super_admin: user.userType === 'instance',
         groupPermissions: await this.usersService.groupPermissions(user, manager),
         appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
         dataSourceGroupPermissions: await this.usersService.dataSourceGroupPermissions(user, null, manager),
