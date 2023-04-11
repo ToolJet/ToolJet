@@ -372,11 +372,8 @@ export function Table({
           column.value.split('')[column.value.split('').length - 1] === '}' &&
           column.value.split('')[column.value.split('').length - 2] === '}';
         const value = isColumnValueHasCurlyBraces
-          ? column.value
-              .replace(/[^a-zA-Z0-9\s]/gi, '')
-              .replace(/\s+/g, ' ')
-              .trim()
-          : column.value;
+          ? resolveReferences(column.value, currentState, '', { rowData: data, cellValue: data[column.header] })
+          : data[column.header];
         data[column.header] = value.replace('cellValue', `${data[column.header]}`);
       });
       accumulator.push(data);
