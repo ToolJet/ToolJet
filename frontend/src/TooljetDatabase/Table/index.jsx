@@ -310,10 +310,10 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                   </>
                 );
               })
-              //   <button onClick={() => openCreateRowDrawer()} className="add-row-btn-database">
-              //   +
-              // </button>
             )}
+            <button onClick={() => openCreateRowDrawer()} className="add-row-btn-database">
+              +
+            </button>
           </tbody>
         </table>
 

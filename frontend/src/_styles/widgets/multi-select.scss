@@ -13,13 +13,6 @@
   display: flex;
   align-items: center;
 
-  &:hover {
-    border: 1px solid var(--indigo9) !important;
-  }
-
-  &:focus-visible {
-    border: 1px solid var(--indigo9);
-  }
 
   .select-search__select {
     top: 34px;
@@ -199,22 +192,15 @@
   }
 }
 
-// .theme-dark .tj-ms {
-//   background-color: #273342;
-//   border: 1px solid #232e3c;
+.tj-ms-count {
+  &:hover {
+    border: 1px solid var(--indigo9) !important;
+  }
 
-//   &:hover {
-//     border-color: $white;
-//   }
-
-//   .tj-ms-count {
-//     color: $white;
-//   }
-
-//   .tj-ms-preview {
-//     color: #273342;
-//   }
-// }
+  &:focus-visible {
+    border: 1px solid var(--indigo9);
+  }
+}
 
 .selected-section {
   overflow: auto;

@@ -10,7 +10,10 @@ const EditRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) => {
 
   return (
     <>
-      <button onClick={() => setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen)} className="edit-row-btn border-0">
+      <button
+        onClick={() => setIsCreateRowDrawerOpen(!isCreateRowDrawerOpen)}
+        className={`edit-row-btn border-0 ghost-black-operation ${isCreateRowDrawerOpen && 'open'}`}
+      >
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"

@@ -15,7 +15,7 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
   const isMounted = useMounted();
 
   const popover = (
-    <Popover id="storage-filter-popover" className={cx({ 'theme-dark dark-theme': darkMode })} data-cy="filter-section">
+    <Popover id="storage-filter-popover" className={cx({ 'dark-theme': darkMode })} data-cy="filter-section">
       <Popover.Body bsPrefix="storage-filter-popover">
         <div className="card-body" data-cy="filter-card-body">
           {Object.values(filters).map((filter, index) => {
@@ -87,7 +87,7 @@ const Filter = ({ filters, setFilters, handleBuildFilterQuery, resetFilterQuery 
       >
         <button
           data-cy="filter-button"
-          className={cx('tj-db-filter-btn tj-text-xsm font-weight-500', {
+          className={cx('tj-db-filter-btn tj-text-xsm font-weight-500 ghost-black-operation', {
             'tj-db-filter-btn-applied': areFiltersApplied,
             'tj-db-filter-btn-active': show,
           })}

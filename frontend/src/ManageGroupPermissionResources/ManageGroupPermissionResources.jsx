@@ -58,7 +58,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
   fetchGroupAndResources = (groupPermissionId) => {
     this.setState({ isLoadingGroup: true });
-
     this.fetchGroupPermission(groupPermissionId);
     this.fetchUsersInGroup(groupPermissionId);
     this.fetchAppsNotInGroup(groupPermissionId);
@@ -124,7 +123,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .update(groupPermissionId, params)
       .then(() => {
         toast.success('Group permissions updated');
-
         this.fetchGroupPermission(groupPermissionId);
       })
       .catch(({ error }) => {
@@ -642,10 +640,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                           </ButtonSolid>
                         </div>
                         <div className="row mt-2">
-                          {/* <div className="selected-section">
+                          <div className="selected-section">
                             <div className="selected-text">Selected Users:</div>
                             {this.generateSelection(selectedUsers)}
-                          </div> */}
+                          </div>
                         </div>
                       </div>
                     )}

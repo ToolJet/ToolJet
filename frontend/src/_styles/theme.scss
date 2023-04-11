@@ -9,6 +9,7 @@
 @import "./typography.scss";
 @import "./designtheme.scss";
 @import "./dropdown-custom.scss";
+@import "./ui-operations.scss";
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,400;1,500;1,600;1,700&display=swap');
 // variables
 $border-radius: 4px;
@@ -8528,6 +8529,7 @@ tbody {
   border: 1px solid var(--indigo9) !important;
   border-radius: 6px !important;
   justify-content: center;
+  color: var(--indigo9) !important;
 }
 
 .tj-db-header-add-new-row-btn {
@@ -8544,7 +8546,6 @@ tbody {
 
   span {
     color: var(--indigo9);
-
   }
 }
 

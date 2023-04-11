@@ -43,7 +43,7 @@ const UsersTable = ({
             </thead>
             {isLoading ? (
               <tbody className="w-100 h-auto">
-                {Array.from(Array(4)).map((_item, index) => (
+                {Array.from(Array(7)).map((_item, index) => (
                   <>
                     <tr key={index}>
                       <td className="col-2 p-3">

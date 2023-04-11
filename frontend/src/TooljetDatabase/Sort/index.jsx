@@ -90,7 +90,7 @@ const Sort = ({ filters, setFilters, handleBuildSortQuery, resetSortQuery }) => 
       className="sort-overlay-wrapper"
     >
       <button
-        className={cx('border-0 tj-db-sort-btn tj-text-xsm font-weight-500', {
+        className={cx('border-0 tj-db-sort-btn tj-text-xsm font-weight-500 ghost-black-operation', {
           'tj-db-sort-btn-applied': areFiltersApplied,
           'tj-db-sort-btn-active': show,
         })}
