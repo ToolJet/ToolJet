@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import cx from 'classnames';
 import { componentTypes } from '../WidgetManager/components';
-import { Table } from './Components/Table';
+import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
 import { renderElement } from './Utils';

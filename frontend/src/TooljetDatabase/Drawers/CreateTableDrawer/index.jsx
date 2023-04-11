@@ -13,6 +13,7 @@ export default function CreateTableDrawer() {
     <>
       <button
         className="add-table-btn btn btn-primary active w-100"
+        data-cy="add-table-button"
         type="button"
         onClick={() => setIsCreateTableDrawerOpen(!isCreateTableDrawerOpen)}
       >
