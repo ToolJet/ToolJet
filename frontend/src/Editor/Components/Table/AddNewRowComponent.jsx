@@ -50,6 +50,7 @@ export function AddNewRowComponent({
         mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = newRowData;
@@ -114,7 +115,7 @@ export function AddNewRowComponent({
           </tbody>
         </table>
         <button
-          className="btn btn-primary btn-sm my-2"
+          className="btn btn-primary btn-sm m-2"
           onClick={() => {
             const rowData = _.cloneDeep(newRowsState);
             const index = rowData.length;
