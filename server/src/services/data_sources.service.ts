@@ -27,7 +27,7 @@ export class DataSourcesService {
   ) {}
 
   async all(query: object, user: User, scope: DataSourceScopes = DataSourceScopes.LOCAL): Promise<DataSource[]> {
-    const { app_version_id: appVersionId, environmentId }: any = query;
+    const { app_version_id: appVersionId, environment_id: environmentId }: any = query;
     let selectedEnvironmentId = environmentId;
     const { organizationId, id } = user;
     const isAdmin = await this.usersService.hasGroup(user, 'admin', organizationId);

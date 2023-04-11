@@ -13,7 +13,7 @@ export const GlobalDataSourcesContext = createContext({
 });
 
 export const GlobalDatasources = (props) => {
-  const { admin, data_source_group_permissions, group_permissions, super_admin } =
+  const { admin, data_source_group_permissions, group_permissions, super_admin, current_organization_id } =
     authenticationService.currentSessionValue;
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [dataSources, setDataSources] = useState([]);
@@ -57,7 +57,7 @@ export const GlobalDatasources = (props) => {
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     globalDatasourceService
-      .getAll()
+      .getAll(current_organization_id)
       .then((data) => {
         const orderedDataSources = data.data_sources.sort((a, b) => a.name.localeCompare(b.name));
         setDataSources([...(orderedDataSources ?? [])]);

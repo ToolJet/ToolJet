@@ -168,7 +168,10 @@ class EditorComponent extends React.Component {
 
   getCurrentOrganizationDetails() {
     const currentSession = authenticationService.currentSessionValue;
-    const currentUser = currentSession?.current_user;
+    const currentUser = {
+      ...currentSession?.current_user,
+      current_organization_id: currentSession?.current_organization_id,
+    };
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
       if (currentUser && currentSession?.group_permissions) {
         const userVars = {
