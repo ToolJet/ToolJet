@@ -90,8 +90,9 @@ const UsersTable = ({
                       <td className="d-flex align-items-center">
                         <Avatar
                           avatarId={user.avatar_id}
-                          text={`${user.first_name ? user.first_name[0] : ''}${user.last_name ? user.last_name[0] : ''
-                            }`}
+                          text={`${user.first_name ? user.first_name[0] : ''}${
+                            user.last_name ? user.last_name[0] : ''
+                          }`}
                         />
                         <span className="mx-3" data-cy="user-name">
                           {user.name}

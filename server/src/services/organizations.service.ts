@@ -146,6 +146,8 @@ export class OrganizationsService {
   }
 
   async getSingleOrganization(): Promise<Organization> {
+    const resultt = await this.organizationsRepository.findOne({ relations: ['ssoConfigs'] });
+    console.log({ resultt: resultt?.ssoConfigs });
     return await this.organizationsRepository.findOne({ relations: ['ssoConfigs'] });
   }
 

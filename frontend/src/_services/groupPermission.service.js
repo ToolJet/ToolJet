@@ -92,6 +92,7 @@ function getDataSourcesInGroup(groupPermissionId) {
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
+    credentials: 'include',
   };
   return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}/data_sources`, requestOptions).then(
     handleResponse
@@ -102,6 +103,7 @@ function getDataSourcesNotInGroup(groupPermissionId) {
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
+    credentials: 'include',
   };
   return fetch(`${config.apiUrl}/group_permissions/${groupPermissionId}/addable_data_sources`, requestOptions).then(
     handleResponse
@@ -155,6 +157,7 @@ function updateDataSourceGroupPermission(groupPermissionId, dataSourceGroupPermi
     method: 'PUT',
     headers: authHeader(),
     body: JSON.stringify(body),
+    credentials: 'include',
   };
   return fetch(
     `${config.apiUrl}/group_permissions/${groupPermissionId}/data_source_group_permissions/${dataSourceGroupPermissionId}`,

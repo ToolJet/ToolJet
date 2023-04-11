@@ -151,8 +151,8 @@ class ViewerComponent extends React.Component {
           this.state.currentLayout === 'desktop'
             ? '100%'
             : mobileLayoutHasWidgets
-              ? `${this.state.deviceWindowWidth}px`
-              : '1292px',
+            ? `${this.state.deviceWindowWidth}px`
+            : '1292px',
         selectedComponent: null,
         currentState: {
           queries: queryState,
@@ -301,7 +301,6 @@ class ViewerComponent extends React.Component {
     const slug = this.props.params.slug;
     const appId = this.props.params.id;
     const versionId = this.props.params.versionId;
-
 
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
       if (currentSession?.group_permissions) {

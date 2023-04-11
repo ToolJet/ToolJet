@@ -12,6 +12,7 @@ export const getPrivateRoute = (page, params = {}) => {
     database: '/database',
     integrations: '/integrations',
     global_datasources: '/global-datasources',
+    audit_logs: '/audit-logs',
   };
 
   let url = routes[page];

@@ -49,13 +49,12 @@ import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
 import Selecto from 'react-selecto';
-import { retrieveWhiteLabelText } from '@/_helpers/utils';
+import { retrieveWhiteLabelText, getWorkspaceId } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import EditorHeader from './Header';
-import { getWorkspaceId } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 
@@ -1057,8 +1056,9 @@ class EditorComponent extends React.Component {
           {this.state?.renameQueryName && this.renameQueryNameId?.current === dataQuery.id ? (
             <input
               data-cy={`query-edit-input-field`}
-              className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${this.props.darkMode && 'text-white'
-                }`}
+              className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${
+                this.props.darkMode && 'text-white'
+              }`}
               type="text"
               defaultValue={dataQuery.name}
               autoFocus={true}
@@ -2113,8 +2113,9 @@ class EditorComponent extends React.Component {
                               </div>
                               <button
                                 data-cy={`button-add-new-queries`}
-                                className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button  ${this.props.darkMode && 'theme-dark'
-                                  }`}
+                                className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button  ${
+                                  this.props.darkMode && 'theme-dark'
+                                }`}
                                 onClick={() => {
                                   this.handleAddNewQuery(setSaveConfirmation, setCancelData);
                                 }}
@@ -2230,8 +2231,8 @@ class EditorComponent extends React.Component {
                 {currentSidebarTab === 1 && (
                   <div className="pages-container">
                     {selectedComponents.length === 1 &&
-                      !isEmpty(appDefinition.pages[this.state.currentPageId]?.components) &&
-                      !isEmpty(appDefinition.pages[this.state.currentPageId]?.components[selectedComponents[0].id]) ? (
+                    !isEmpty(appDefinition.pages[this.state.currentPageId]?.components) &&
+                    !isEmpty(appDefinition.pages[this.state.currentPageId]?.components[selectedComponents[0].id]) ? (
                       <Inspector
                         moveComponents={this.moveComponents}
                         componentDefinitionChanged={this.componentDefinitionChanged}

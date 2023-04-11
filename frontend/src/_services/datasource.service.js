@@ -72,11 +72,11 @@ function setOauth2Token(dataSourceId, body, current_organization_id) {
   };
   return fetch(
     `${config.apiUrl}/data_sources/${dataSourceId}/authorize_oauth2?` +
-    constructSearchParams({
-      ...(localStorage.getItem('currentAppEnvironmentIdForOauth') !== 'undefined' && {
-        environment_id: localStorage.getItem('currentAppEnvironmentIdForOauth'),
+      constructSearchParams({
+        ...(localStorage.getItem('currentAppEnvironmentIdForOauth') !== 'undefined' && {
+          environment_id: localStorage.getItem('currentAppEnvironmentIdForOauth'),
+        }),
       }),
-    }),
     requestOptions
   ).then(handleResponse);
 }

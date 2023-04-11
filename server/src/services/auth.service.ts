@@ -223,6 +223,7 @@ export class AuthService {
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
         groupPermissions: await this.usersService.groupPermissions(user, manager),
         appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+        dataSourceGroupPermissions: await this.usersService.dataSourceGroupPermissions(user, null, manager),
         currentUser: {
           id: user.id,
           email: user.email,

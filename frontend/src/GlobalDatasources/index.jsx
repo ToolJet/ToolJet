@@ -7,13 +7,14 @@ import { toast } from 'react-hot-toast';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
-  toggleDataSourceManagerModal: () => { },
+  toggleDataSourceManagerModal: () => {},
   selectedDataSource: null,
-  setSelectedDataSource: () => { },
+  setSelectedDataSource: () => {},
 });
 
 export const GlobalDatasources = (props) => {
-  const { admin, data_source_group_permissions, group_permissions, super_admin } = authenticationService.currentSessionValue;
+  const { admin, data_source_group_permissions, group_permissions, super_admin } =
+    authenticationService.currentSessionValue;
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);

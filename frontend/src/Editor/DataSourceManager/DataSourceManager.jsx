@@ -180,7 +180,7 @@ class DataSourceManagerComponent extends React.Component {
             name,
             options: parsedOptions,
             app_id: appId,
-            environment_id: currentEnvironment,
+            environment_id: currentAppEnvironmentId,
           })
           .then(() => {
             this.setState({ isSaving: false });

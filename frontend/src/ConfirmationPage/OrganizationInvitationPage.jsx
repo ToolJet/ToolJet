@@ -139,10 +139,11 @@ class OrganizationInvitationPageComponent extends React.Component {
                         </h2>
 
                         <div className="invite-sub-header" data-cy="workspace-invite-page-sub-header">
-                          {`You are invited to ${this.state?.configs?.name
+                          {`You are invited to ${
+                            this.state?.configs?.name
                               ? `a workspace ${this.state?.configs?.name}. Accept the invite to join the workspace.`
                               : retrieveWhiteLabelText()
-                            }`}
+                          }`}
                         </div>
 
                         <div className="org-page-inputs-wrapper">

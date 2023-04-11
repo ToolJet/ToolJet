@@ -55,7 +55,7 @@ function convertToGlobal(id) {
 }
 
 function getDataSourceByEnvironmentId(dataSourceId, environmentId) {
-  const requestOptions = { method: 'GET', headers: authHeader() };
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/v2/data_sources/${dataSourceId}/environment/${environmentId}`, requestOptions).then(
     handleResponse
   );

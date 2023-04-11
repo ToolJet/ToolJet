@@ -103,7 +103,7 @@ export class OrganizationsController {
       throw new NotFoundException();
     }
     if (!organizationId) {
-      const result = this.organizationsService.constructSSOConfigs();
+      const result = await this.organizationsService.constructSSOConfigs();
       return decamelizeKeys({ ssoConfigs: result });
     }
 
