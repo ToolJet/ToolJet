@@ -1,6 +1,5 @@
 {
   "name": "tooljet-marketplace",
-  "type": "module",
   "workspaces": [
     "plugins/*"
   ],
