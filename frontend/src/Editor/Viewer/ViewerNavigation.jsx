@@ -31,7 +31,9 @@ export const ViewerNavigation = ({ isMobileDevice, pages, currentPageId, switchP
               >
                 <div className={`card mb-1  ${id === currentPageId ? 'active' : ''}`}>
                   <div className="card-body">
-                    <span data-cy={`pages-name-${String(page.name).toLowerCase()}`} className="mx-3 text-wrap">{_.truncate(page.name, { length: 18 })}</span>
+                    <span data-cy={`pages-name-${String(page.name).toLowerCase()}`} className="mx-3 text-wrap">
+                      {_.truncate(page.name, { length: 18 })}
+                    </span>
                   </div>
                 </div>
               </div>
