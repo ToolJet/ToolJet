@@ -9,18 +9,21 @@ import Header from '../Header';
 import { authenticationService } from '@/_services';
 import SolidIcon from '../Icon/SolidIcons';
 import config from 'config';
+import { getPrivateRoute } from '@/_helpers/routes';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
-  const { admin } = authenticationService.currentUserValue;
+  const currentUserValue = authenticationService.currentSessionValue;
+  const admin = currentUserValue?.admin;
   const marketplaceEnabled = config.ENABLE_MARKETPLACE_FEATURE === 'true';
+
   return (
     <div className="row m-auto">
       <div className="col-auto p-0">
         <aside className="left-sidebar h-100 position-fixed">
           <div className="tj-leftsidebar-icon-wrap">
             <div className="application-brand" data-cy={`home-page-logo`}>
-              <Link to="/">
+              <Link to={getPrivateRoute('dashboard')}>
                 <Logo />
               </Link>
             </div>
@@ -34,7 +37,13 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     >
                       <SolidIcon
                         name="apps"
-                        fill={router.pathname === '/' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
+                        fill={
+                          router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')
+                            ? '#3E63DD'
+                            : darkMode
+                            ? '#4C5155'
+                            : '#C1C8CD'
+                        }
                       />
                     </Link>
                   </ToolTip>
@@ -43,33 +52,47 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   <li className="text-center  cursor-pointer">
                     <ToolTip message="Tables" placement="right">
                       <Link
-                        to="/database"
+                        to={getPrivateRoute('database')}
                         className={`tj-leftsidebar-icon-items  ${
-                          router.pathname === '/database' && `current-seleted-route`
+                          router.pathname === getPrivateRoute('database') &&
+                          `current-seleted-route` &&
+                          `current-seleted-route`
                         }`}
                       >
                         <SolidIcon
                           name="table"
-                          fill={router.pathname === '/database' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
+                          fill={
+                            router.pathname === getPrivateRoute('database') && `current-seleted-route`
+                              ? '#3E63DD'
+                              : darkMode
+                              ? '#4C5155'
+                              : '#C1C8CD'
+                          }
                         />
                       </Link>
                     </ToolTip>
                   </li>
                 )}
                 <li className="text-center cursor-pointer">
-                  <ToolTip message="Workspace settings" placement="right">
-                    <Link
-                      to="/workspace-settings"
-                      className={`tj-leftsidebar-icon-items  ${
-                        router.pathname === '/workspace-settings' && `current-seleted-route`
-                      }`}
-                    >
+                  <Link
+                    to={getPrivateRoute('workspace_settings')}
+                    className={`tj-leftsidebar-icon-items  ${
+                      router.pathname === '/workspace-settings' && `current-seleted-route`
+                    }`}
+                  >
+                    <ToolTip message="Workspace settings" placement="right">
                       <SolidIcon
                         name="setting"
-                        fill={router.pathname === '/workspace-settings' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
+                        fill={
+                          router.pathname === getPrivateRoute('workspace_settings')
+                            ? '#3E63DD'
+                            : darkMode
+                            ? '#4C5155'
+                            : '#C1C8CD'
+                        }
                       />
-                    </Link>
-                  </ToolTip>
+                    </ToolTip>
+                  </Link>
                 </li>
                 {/* DATASOURCES */}
 
@@ -93,10 +116,14 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </li>
                 )}
                 {marketplaceEnabled && (
-                <li className="text-center mt-3 d-flex flex-column">
-                  <Link to="/integrations">
-                    <ToolTip message="Marketplace (Beta)" placement="right">
-                      <div
+                  <li className="text-center mt-3 d-flex flex-column">
+                    <Link to="/integrations">
+                      <ToolTip message="Marketplace (Beta)" placement="right">
+                        <SolidIcon
+                          name="marketplace"
+                          fill={router.pathname === '/integrations' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
+                        />
+                        {/* <div
                         className="layout-sidebar-icon cursor-pointer"
                         style={{
                           width: '32px',
@@ -128,11 +155,11 @@ function Layout({ children, switchDarkMode, darkMode }) {
                             fill={router.pathname === '/integrations' ? '#3E63DD' : '#C1C8CD'}
                           />
                         </svg>
-                      </div>
-                    </ToolTip>
-                  </Link>
-                </li>
-              )}
+                      </div> */}
+                      </ToolTip>
+                    </Link>
+                  </li>
+                )}
                 <li className="tj-leftsidebar-icon-items-bottom text-center">
                   <NotificationCenter darkMode={darkMode} />
                   <div className="cursor-pointer  tj-leftsidebar-icon-items" onClick={() => switchDarkMode(!darkMode)}>

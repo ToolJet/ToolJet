@@ -71,7 +71,7 @@ export const addDefaultEventHandler = (message) => {
     .click();
   cy.get(commonWidgetSelector.eventHandlerCard).click();
   cy.get(commonWidgetSelector.alertMessageInputField)
-    .find('[data-cy*="-input-field"]')
+    .find('[data-cy*="-input-field"]').eq(0)
     .clearAndTypeOnCodeMirror(message);
 };
 

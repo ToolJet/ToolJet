@@ -11,27 +11,34 @@ function Header() {
     console.log('path', path);
 
     switch (path) {
-      case '/':
+      case 'workspaceId':
         return 'Applications';
-      case '/database':
+      case 'database':
         return 'Tables';
-      case '/workspace-settings':
+      case 'workspace-settings':
         return 'Workspace settings';
-      case '/global-datasources':
+      case 'global-datasources':
         return 'Datasources';
-      case '/settings':
+      case 'settings':
         return 'Profile settings';
+      case 'integrations':
+        return 'Integrations';
       default:
-        return;
+        return 'Applications';
     }
   };
   const location = useLocation();
+  console.log('location', location);
+
+  // checkSubstring=(string,)=>{
+  //   string.includes(substring)
+  // }
 
   return (
     <header className="layout-header">
       <div className="row w-100 gx-0">
         <div className="tj-dashboard-section-header" data-cy="workspace-selector">
-          <p className="tj-text-md font-weight-500">{routes(location?.pathname)}</p>
+          <p className="tj-text-md font-weight-500">{routes(location?.pathname.split('/').pop())}</p>
         </div>
         <div className="col tj-dashboard-header-wrap">
           <div className="d-flex justify-content-sm-between">

@@ -28,7 +28,7 @@ export const Breadcrumbs = ({ darkMode }) => {
             <li className="breadcrumb-item font-weight-500">
               <Link to={breadcrumb.key}> {sidebarNav}</Link>
             </li>
-            {beta && <span class="badge bg-color-primary mx-3">beta</span>}
+            {beta && <span className="badge bg-color-primary mx-3">beta</span>}
           </div>
         );
       })}
@@ -37,8 +37,8 @@ export const Breadcrumbs = ({ darkMode }) => {
 };
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
-  // { path: '/', breadcrumb: 'Apps' },
-  { path: '/database', breadcrumb: 'Tables', dataCy: 'tables-page-header' },
+  { path: '/:worspace_id', breadcrumb: 'Applications' },
+  { path: '/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/global-datasources', breadcrumb: 'Global Datasources' },
   { path: '/integrations', breadcrumb: 'Integrations / plugins', props: { beta: true } },

@@ -9,7 +9,7 @@ export const deleteInnerWidget = (widgetName, innerWidgetName) => {
     );
     cy.get("@innerWidget").first().click();
     cy.get(`[data-cy="${innerWidgetName}-delete-button"]`)
-      .click()
+      .realClick()
       .should("not.exist");
   });
 };

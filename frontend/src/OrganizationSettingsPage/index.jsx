@@ -11,7 +11,7 @@ import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
 
 export function OrganizationSettings(props) {
-  const { admin } = authenticationService.currentUserValue;
+  const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
   const [selectedTab, setSelectedTab] = useState(admin ? 'users' : 'manageEnvVars');
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
@@ -36,6 +36,17 @@ export function OrganizationSettings(props) {
     }
   };
 
+  useEffect(() => {
+    const subscription = authenticationService.currentSession.subscribe((newOrd) => {
+      setAdmin(newOrd?.admin);
+      admin ? setSelectedTab('users') : setSelectedTab('manageEnvVars');
+    });
+
+    () => subscription.unsubsciption();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authenticationService.currentSessionValue?.admin]);
+
+  const selectedClassName = props.darkMode ? 'bg-dark-indigo' : 'bg-light-indigo';
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper organization-settings-page">

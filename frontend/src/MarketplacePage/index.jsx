@@ -48,7 +48,7 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
     <Layout switchDarkMode={switchDarkMode} darkMode={darkMode}>
       <div className="wrapper">
         <div className="page-wrapper">
-          <div className="page-body">
+          <div className=" marketplace-body">
             <div className="p-3">
               <div className="row g-4">
                 <div className="col-3">

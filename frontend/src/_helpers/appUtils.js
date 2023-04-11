@@ -24,6 +24,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
 import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
+import { authenticationService } from '@/_services/authentication.service';
+import { setCookie } from '@/_helpers/cookie';
 import { flushSync } from 'react-dom'; // TODO: It can be removed once we've a proper state update flow
 
 const ERROR_TYPES = Object.freeze({
@@ -81,6 +83,9 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
 
 export function fetchOAuthToken(authUrl, dataSourceId) {
   localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
+  const currentSessionValue = authenticationService.currentSessionValue;
+  currentSessionValue?.current_organization_id &&
+    setCookie('orgIdForOauth', currentSessionValue?.current_organization_id);
   window.open(authUrl);
 }
 
@@ -147,7 +152,7 @@ async function executeRunPycode(_ref, code, query, editorState, isPreview, mode)
       };
     }
 
-    return pyodide.isPyProxy(result) ? result.toJs() : result;
+    return pyodide.isPyProxy(result) ? convertMapSet(result.toJs()) : result;
   };
 
   return { data: await evaluatePythonCode(pyodide, code) };
@@ -806,8 +811,12 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query?.id, true);
     } else if (query.kind === 'tooljetdb') {
-      const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
-      queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _ref.state.currentState);
+      const currentSessionValue = authenticationService.currentSessionValue;
+      queryExecutionPromise = tooljetDbOperations.perform(
+        query.options,
+        currentSessionValue?.current_organization_id,
+        _ref.state.currentState
+      );
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, editorState, true, 'edit');
     } else {
@@ -931,8 +940,12 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       } else if (query.kind === 'runpy') {
         queryExecutionPromise = executeRunPycode(_self, query.options.code, query, _ref, false, mode);
       } else if (query.kind === 'tooljetdb') {
-        const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
-        queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _self.state.currentState);
+        const currentSessionValue = authenticationService.currentSessionValue;
+        queryExecutionPromise = tooljetDbOperations.perform(
+          query.options,
+          currentSessionValue?.current_organization_id,
+          _self.state.currentState
+        );
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }
@@ -998,97 +1011,97 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                 }
               );
             });
-          }
+          } else {
+            let rawData = data.data;
+            let finalData = data.data;
 
-          let rawData = data.data;
-          let finalData = data.data;
-
-          if (dataQuery.options.enableTransformation) {
-            finalData = await runTransformation(
-              _ref,
-              finalData,
-              query.options.transformation,
-              query.options.transformationLanguage,
-              query,
-              'edit'
-            );
-            if (finalData.status === 'failed') {
-              flushSync(() => {
-                return _self.setState(
-                  {
-                    currentState: {
-                      ..._self.state.currentState,
-                      queries: {
-                        ..._self.state.currentState.queries,
-                        [queryName]: {
-                          ..._self.state.currentState.queries[queryName],
-                          isLoading: false,
+            if (dataQuery.options.enableTransformation) {
+              finalData = await runTransformation(
+                _ref,
+                finalData,
+                query.options.transformation,
+                query.options.transformationLanguage,
+                query,
+                'edit'
+              );
+              if (finalData.status === 'failed') {
+                flushSync(() => {
+                  return _self.setState(
+                    {
+                      currentState: {
+                        ..._self.state.currentState,
+                        queries: {
+                          ..._self.state.currentState.queries,
+                          [queryName]: {
+                            ..._self.state.currentState.queries[queryName],
+                            isLoading: false,
+                          },
                         },
-                      },
-                      errors: {
-                        ..._self.state.currentState.errors,
-                        [queryName]: {
-                          type: 'transformations',
-                          data: finalData,
-                          options: options,
+                        errors: {
+                          ..._self.state.currentState.errors,
+                          [queryName]: {
+                            type: 'transformations',
+                            data: finalData,
+                            options: options,
+                          },
                         },
                       },
                     },
-                  },
-                  () => {
-                    resolve(finalData);
-                    onEvent(_self, 'onDataQueryFailure', {
-                      definition: { events: dataQuery.options.events },
-                    });
-                  }
-                );
+                    () => {
+                      resolve(finalData);
+                      onEvent(_self, 'onDataQueryFailure', {
+                        definition: { events: dataQuery.options.events },
+                      });
+                    }
+                  );
+                });
+              }
+            }
+
+            if (dataQuery.options.showSuccessNotification) {
+              const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
+              toast.success(dataQuery.options.successMessage, {
+                duration: notificationDuration,
               });
             }
-          }
-
-          if (dataQuery.options.showSuccessNotification) {
-            const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
-            toast.success(dataQuery.options.successMessage, {
-              duration: notificationDuration,
-            });
-          }
-          flushSync(() => {
-            _self.setState(
-              {
-                currentState: {
-                  ..._self.state.currentState,
-                  queries: {
-                    ..._self.state.currentState.queries,
-                    [queryName]: _.assign(
-                      {
-                        ..._self.state.currentState.queries[queryName],
-                        isLoading: false,
-                        data: finalData,
-                        rawData,
-                      },
-                      query.kind === 'restapi'
-                        ? {
-                            request: data.request,
-                            response: data.response,
-                            responseHeaders: data.responseHeaders,
-                          }
-                        : {}
-                    ),
+            flushSync(() => {
+              _self.setState(
+                {
+                  currentState: {
+                    ..._self.state.currentState,
+                    queries: {
+                      ..._self.state.currentState.queries,
+                      [queryName]: _.assign(
+                        {
+                          ..._self.state.currentState.queries[queryName],
+                          isLoading: false,
+                          data: finalData,
+                          rawData,
+                        },
+                        query.kind === 'restapi'
+                          ? {
+                              request: data.request,
+                              response: data.response,
+                              responseHeaders: data.responseHeaders,
+                            }
+                          : {}
+                      ),
+                    },
                   },
                 },
-              },
-              () => {
-                resolve({ status: 'ok', data: finalData });
-                onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
+                () => {
+                  resolve({ status: 'ok', data: finalData });
+                  onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
 
-                if (mode !== 'view') {
-                  toast(`Query (${queryName}) completed.`, {
-                    icon: '🚀',
-                  });
+                  if (mode !== 'view') {
+                    toast(`Query (${queryName}) completed.`, {
+                      icon: '🚀',
+                    });
+                  }
                 }
-              }
-            );
-          });
+              );
+            });
+          }
         })
         .catch(({ error }) => {
           if (mode !== 'view') toast.error(error ?? 'Unknown error');
@@ -1579,3 +1592,17 @@ const getSelectedText = () => {
     navigator.clipboard.writeText(window.document.selection.createRange().text);
   }
 };
+
+function convertMapSet(obj) {
+  if (obj instanceof Map) {
+    return Object.fromEntries(Array.from(obj, ([key, value]) => [key, convertMapSet(value)]));
+  } else if (obj instanceof Set) {
+    return Array.from(obj).map(convertMapSet);
+  } else if (Array.isArray(obj)) {
+    return obj.map(convertMapSet);
+  } else if (obj !== null && typeof obj === 'object') {
+    return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, convertMapSet(value)]));
+  } else {
+    return obj;
+  }
+}

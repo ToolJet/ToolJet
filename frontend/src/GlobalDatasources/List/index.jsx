@@ -25,11 +25,12 @@ export const List = () => {
       .then(() => {
         setLoading(false);
       })
-      .catch((e) => {
+      .catch(() => {
         setLoading(false);
         toast.error('Failed to fetch datasources');
         return;
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

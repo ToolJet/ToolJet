@@ -114,6 +114,7 @@ import AddRectangle from './AddRectangle.jsx';
 import Lock from './Lock.jsx';
 import Mail from './Mail.jsx';
 import Logs from './Logs.jsx';
+import Marketplace from './Marketplace.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -345,6 +346,8 @@ const Icon = (props) => {
       return <ZoomOutRectangle {...props} />;
     case 'mail':
       return <Mail {...props} />;
+    case 'marketplace':
+      return <Marketplace {...props} />;
     default:
       return <div />;
   }

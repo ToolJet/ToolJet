@@ -8,7 +8,6 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { ConfirmDialog } from '@/_components';
 
 export function GeneralSettings({ settings, updateData, instanceSettings, darkMode }) {
-  const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const [enableSignUp, setEnableSignUp] = useState(settings?.enable_sign_up || false);
   const [inheritSSO, setInheritSSO] = useState(settings?.inherit_s_s_o || false);
   const [domain, setDomain] = useState(settings?.domain || '');
@@ -102,8 +101,8 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
               </div>
             </div>
           </div>
-          {!isSingleOrganization && (instanceSettings.google.enabled || instanceSettings.git.enabled) && (
-            <div className="form-group mb-3 ">
+          {(instanceSettings.google.enabled || instanceSettings.git.enabled) && (
+            <div className="form-group mb-3">
               <label className="form-check form-switch">
                 <input
                   className="form-check-input"
@@ -163,28 +162,27 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
               )}
             </div>
           </div>
-          {!isSingleOrganization && (
-            <div className="form-group mb-3">
-              <label className="form-label" data-cy="workspace-login-url-label">
-                {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
-              </label>
+          <div className="form-group mb-3">
+            <label className="form-label" data-cy="workspace-login-url-label">
+              {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
+            </label>
 
-              <div className="d-flex justify-content-between form-control align-items-center">
-                <p id="login-url" data-cy="workspace-login-url">
-                  {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentUserValue?.organization_id}`}
-                </p>
-                <SolidIcon name="copy" width="16" data-cy="copy-icon" onClick={() => copyFunction('login-url')} />
-              </div>
-              <div className="mt-1 tj-text-xxsm">
-                <div data-cy="workspace-login-help-text">
-                  {t(
-                    'header.organization.menus.manageSSO.generalSettings.workspaceLogin',
-                    `Use this URL to login directly to this workspace`
-                  )}
-                </div>
+            <div className="d-flex justify-content-between form-control align-items-center">
+              <p id="login-url" data-cy="workspace-login-url">
+                {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentSessionValue?.current_organization_id}`}
+              </p>
+              <SolidIcon name="copy" width="16" data-cy="copy-icon" onClick={() => copyFunction('login-url')} />
+            </div>
+            <div className="mt-1 tj-text-xxsm">
+              <div data-cy="workspace-login-help-text">
+                {t(
+                  'header.organization.menus.manageSSO.generalSettings.workspaceLogin',
+                  `Use this URL to login directly to this workspace`
+                )}
               </div>
             </div>
-          )}
+          </div>
+
           <ConfirmDialog
             show={showDisablingPasswordConfirmation}
             message={t(

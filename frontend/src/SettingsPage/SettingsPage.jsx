@@ -7,10 +7,10 @@ import { ButtonSolid } from '../_ui/AppButton/AppButton';
 import { BreadCrumbContext } from '@/App/App';
 
 function SettingsPage(props) {
-  const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name);
-  const email = authenticationService.currentUserValue.email;
-  const token = authenticationService.currentUserValue.auth_token;
-  const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name);
+  const currentSession = authenticationService.currentSessionValue;
+  const [firstName, setFirstName] = React.useState(currentSession?.current_user.first_name);
+  const [email, setEmail] = React.useState(currentSession?.current_user.email);
+  const [lastName, setLastName] = React.useState(currentSession?.current_user.last_name);
   const [currentpassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
@@ -20,8 +20,6 @@ function SettingsPage(props) {
   const focusRef = React.useRef(null);
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
-
-  // updateSidebarNAV('')
 
   useEffect(() => {
     updateSidebarNAV('');
@@ -45,20 +43,28 @@ function SettingsPage(props) {
 
     setUpdateInProgress(true);
     try {
-      const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
-      authenticationService.updateCurrentUserDetails(updatedDetails);
-
+      await userService.updateCurrentUser(firstName, lastName);
+      let avatar;
       if (selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
-        const avatarData = await userService.updateAvatar(formData, token);
-        authenticationService.updateCurrentUserDetails({ avatar_id: avatarData.id });
+        avatar = await userService.updateAvatar(formData);
       }
 
       toast.success('Details updated!', {
         duration: 3000,
       });
       setUpdateInProgress(false);
+      authenticationService.updateCurrentSession({
+        ...authenticationService.currentSessionValue,
+        current_user: {
+          ...authenticationService.currentSessionValue.current_user,
+          first_name: firstName,
+          last_name: lastName,
+          ...(avatar && { avatar_id: avatar.id }),
+        },
+        isUserUpdated: true,
+      });
     } catch (error) {
       toast.error('Something went wrong');
       setUpdateInProgress(false);

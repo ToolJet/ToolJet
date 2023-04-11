@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import BulkIcon from '@/_ui/Icon/BulkIcons';
 
+import { getPrivateRoute } from '@/_helpers/routes';
 const { defaultIcon } = configs;
 
 export default function AppCard({
@@ -117,7 +118,11 @@ export default function AppCard({
           {canUpdate && (
             <div>
               <ToolTip message="Open in app builder">
-                <Link to={`/apps/${app.id}`}>
+                <Link
+                  to={getPrivateRoute('editor', {
+                    id: app.id,
+                  })}
+                >
                   <button type="button" className="tj-primary-btn edit-button tj-text-xsm" data-cy="edit-button">
                     <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#11181C' : '#FDFDFE'} />
                     &nbsp;{t('globals.edit', 'Edit')}

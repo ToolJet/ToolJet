@@ -6,7 +6,8 @@ import { getSvgIcon } from '@/_helpers/appUtils';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 
 export const ListItem = ({ dataSource, key, active, onDelete, updateSidebarNAV }) => {
-  const { setSelectedDataSource, toggleDataSourceManagerModal } = useContext(GlobalDataSourcesContext);
+  const { setSelectedDataSource, toggleDataSourceManagerModal, environments, setCurrentEnvironment } =
+    useContext(GlobalDataSourcesContext);
 
   const getSourceMetaData = (dataSource) => {
     if (dataSource.pluginId) {
@@ -25,8 +26,8 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSidebarNAV }
   };
   useEffect(() => {
     if (active) updateSidebarNAV(dataSource?.name);
-    else if (dataSource?.lenght == 0) updateSidebarNAV('');
-  }, []);
+    else if (dataSource?.length == 0) updateSidebarNAV('');
+  }, [dataSource]);
 
   return (
     <div
@@ -39,6 +40,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSidebarNAV }
         role="button"
         onClick={() => {
           setSelectedDataSource(dataSource);
+          setCurrentEnvironment(environments[0]);
           toggleDataSourceManagerModal(true);
           focusModal();
           updateSidebarNAV(dataSource?.name);
