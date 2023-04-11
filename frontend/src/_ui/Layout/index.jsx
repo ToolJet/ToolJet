@@ -15,7 +15,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
   const navigate = useNavigate();
 
   function handleAuditLogClick() {
-    auditLogsService.getLicenseTerms().then(() => navigate('/audit-logs'));
+    auditLogsService.getLicenseTerms().then(() => navigate(getPrivateRoute('audit_logs')));
     document.activeElement.blur();
     return;
   }
@@ -305,14 +305,14 @@ function Layout({ children, switchDarkMode, darkMode }) {
                           width="32"
                           height="32"
                           rx="4"
-                          fill={router.pathname === '/audit-logs' ? '#E6EDFE' : '#none'}
+                          fill={router.pathname === getPrivateRoute('audit_logs') ? '#E6EDFE' : '#none'}
                         />
                         <g clipPath="url(#clip0_453_63684)">
                           <path
                             fillRule="evenodd"
                             clipRule="evenodd"
                             d="M11 9C10.7348 9 10.4804 9.10536 10.2929 9.29289C10.1054 9.48043 10 9.73478 10 10V22C10 22.2652 10.1054 22.5196 10.2929 22.7071C10.4804 22.8946 10.7348 23 11 23H13.615C14.1673 23 14.615 23.4477 14.615 24C14.615 24.5523 14.1673 25 13.615 25H11C10.2044 25 9.44129 24.6839 8.87868 24.1213C8.31607 23.5587 8 22.7956 8 22V10C8 9.20435 8.31607 8.44129 8.87868 7.87868C9.44129 7.31607 10.2044 7 11 7H19C19.7956 7 20.5587 7.31607 21.1213 7.87868C21.6839 8.44129 22 9.20435 22 10V18C22 18.5523 21.5523 19 21 19C20.4477 19 20 18.5523 20 18V10C20 9.73478 19.8946 9.48043 19.7071 9.29289C19.5196 9.10536 19.2652 9 19 9H11ZM12 12C12 11.4477 12.4477 11 13 11H17C17.5523 11 18 11.4477 18 12C18 12.5523 17.5523 13 17 13H13C12.4477 13 12 12.5523 12 12ZM12 16C12 15.4477 12.4477 15 13 15H15C15.5523 15 16 15.4477 16 16C16 16.5523 15.5523 17 15 17H13C12.4477 17 12 16.5523 12 16ZM24.7071 20.2929C25.0976 20.6834 25.0976 21.3166 24.7071 21.7071L20.7071 25.7071C20.3166 26.0976 19.6834 26.0976 19.2929 25.7071L17.2929 23.7071C16.9024 23.3166 16.9024 22.6834 17.2929 22.2929C17.6834 21.9024 18.3166 21.9024 18.7071 22.2929L20 23.5858L23.2929 20.2929C23.6834 19.9024 24.3166 19.9024 24.7071 20.2929Z"
-                            fill={router.pathname === '/audit-logs' ? '#3E63DD' : '#C1C8CD'}
+                            fill={router.pathname === getPrivateRoute('audit_logs') ? '#3E63DD' : '#C1C8CD'}
                           />
                         </g>
                         <defs>
