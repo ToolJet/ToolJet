@@ -181,6 +181,6 @@ function acceptInvite({ token, password }) {
 }
 
 function getLicenseTerms() {
-  const requestOptions = { method: 'GET', headers: authHeader() };
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/apps/license-terms`, requestOptions).then(handleResponse);
 }
