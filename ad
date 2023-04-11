@@ -1,0 +1,689 @@
+[33mcommit 6f8176aaa5ab2dee286280e57476aa827a249b27[m[33m ([m[1;36mHEAD -> [m[1;32mdevelop[m[33m, [m[1;31morigin/develop[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Tejashwa Rajvardhan <keshu023@gmail.com>
+Date:   Tue Apr 11 00:06:49 2023 +0530
+
+    #5101 resized Search text on search bar [docs]
+
+[33mcommit 2f2e79f3be471656bd8202377af121c3f43f5609[m
+Merge: a7cb6817 fe7766db
+Author: Midhun G S <gsmithun4@gmail.com>
+Date:   Mon Apr 10 16:53:17 2023 +0530
+
+    Merge pull request #5978 from ToolJet/main
+    
+    Merge main to develop
+
+[33mcommit fe7766db5094fceae5ec3f59b752a40572fd35f7[m
+Merge: ff0e0a49 4836874d
+Author: Midhun G S <gsmithun4@gmail.com>
+Date:   Mon Apr 10 16:48:06 2023 +0530
+
+    Merge pull request #5955 from ToolJet/release/v2.4.0
+    
+    Release v2.4.0
+
+[33mcommit 4836874d68b50586f1cde865cb6807e99fda360f[m
+Author: Muhsin Shah <muhsinshah21@gmail.com>
+Date:   Mon Apr 10 16:11:40 2023 +0530
+
+    fix: query handler issue - query success message is also showing with error toast
+
+[33mcommit 869c1daa5c99a1897215cdae503e55b0489032e5[m
+Author: vjaris42 <vjy239@gmail.com>
+Date:   Mon Apr 10 14:03:30 2023 +0530
+
+    Fixes query duplication on import on apps having multiple versions (#5971)
+    
+    * fix: app import with multiple versions
+    
+    * clenaup
+
+[33mcommit a7cb6817b188bb6593cfdbe208b0f7ef6f7724fb[m
+Author: Avirup Banik <81384443+Avirup-001@users.noreply.github.com>
+Date:   Mon Apr 10 13:53:13 2023 +0530
+
+    Fixed the typo in event handler screen in page menu (#5930)
+    
+    * Fixed the typo in event handler screen in page menu
+    
+    * Updated the code as per suggestion
+
+[33mcommit 9b4914b8c5c5b344df4513646f597aaa59cda997[m
+Author: Midhun Kumar E <midhun752@gmail.com>
+Date:   Mon Apr 10 12:08:13 2023 +0530
+
+    Added data-cy to fix cypress specs on v2.3.1 (#5974)
+    
+    * data-cy changes -temp
+    
+    * Revert unwanted chanches
+
+[33mcommit 117d74b720b768d998e70b1d71892998f2d7d9c3[m
+Author: Arpit <arpitnath42@gmail.com>
+Date:   Mon Apr 10 11:26:23 2023 +0530
+
+    Chore: eslint checkup (#5887)
+    
+    * updates eslint configs: frontend, marketplace
+    
+    * eslint fixes: frontend
+    
+    * added note for eslint
+    
+    ---------
+    
+    Co-authored-by: Shubhendra <withshubh@gmail.com>
+
+[33mcommit b5acc1630cd6c04221173d17ff642273014b3048[m
+Author: Midhun Kumar E <midhun752@gmail.com>
+Date:   Mon Apr 10 11:17:25 2023 +0530
+
+    Test/fix cypress editor v2.3 (#5914)
+    
+    * Fix specs
+    
+    * Modify config
+    
+    * data-cy changes -temp
+    
+    * Fix common component-fixes
+    
+    * Fix latest failures [table,listView]
+    
+    * Minor typo fix
+    
+    * Fix the headless failures
+    
+    * temp workflow changes
+    
+    * Temp cypress yml changes
+    
+    * Remove temp changes
+
+[33mcommit 2dc6ae8e4b5c19f4c090e86c103a42238800c4c9[m
+Author: Muhsin Shah <muhsinshah21@gmail.com>
+Date:   Fri Apr 7 18:57:04 2023 +0530
+
+    fix: subpath table column drag svg image issue
+
+[33mcommit 9ad8b72b83ee61adb9633cbe4363fa1b6ca07f1a[m
+Author: Arpit <arpitnath42@gmail.com>
+Date:   Fri Apr 7 16:30:50 2023 +0530
+
+    Improvement - handle resolved data structures from pyproxies (#5904)
+    
+    * handle resolved data structures from pyproxies
+    
+    * removes console.log
+
+[33mcommit a76e4189d30da50f6198f427ed51d338d15419ec[m
+Author: Muhsin Shah <muhsinshah21@gmail.com>
+Date:   Fri Apr 7 14:58:47 2023 +0530
+
+    fix: editor switch workspace issue
+
+[33mcommit 3d57e64d2c60719775afbea83fb7a0b4b93b0733[m
+Author: Muhsin Shah <muhsinshah21@gmail.com>
+Date:   Fri Apr 7 13:25:02 2023 +0530
+
+    fix: yjs token
+
+[33mcommit 6c1c692b12df1deae9428e5874c4705e1c69c7f7[m
+Author: Muhsin Shah C P <muhsinshah21@gmail.com>
+Date:   Fri Apr 7 13:10:43 2023 +0530
+
+    fix: conflict b/w yjs auth_token and session token (#5962)
+
+[33mcommit a5fb6551337f0b5daf2dfaded935f5b9dffd3462[m
+Author: Muhsin Shah <muhsinshah21@gmail.com>
+Date:   Fri Apr 7 12:40:42 2023 +0530
+
+    GD editor link issue
+
+[33mcommit 891bed545514f1dd357bc0321c84daf5483328f1[m
+Author: vjaris42 <vjy239@gmail.com>
+Date:   Fri Apr 7 11:48:20 2023 +0530
+
+    Fixes app import on different workspace (#5957)
+    
+    * fix: app import on different workspace
+    
+    * added schema details
+    
+    * changeQueryDataSource fix
+    
+    ---------
+    
+    Co-authored-by: gsmithun4 <gsmithun4@gmail.com>
+
+[33mcommit 6bbec4f081591462c070d5262220e0da3b9ba587[m
+Author: Midhun G S <gsmithun4@gmail.com>
+Date:   Thu Apr 6 21:10:14 2023 +0530
+
+    global data source improvement (#5958)
+
+[33mcommit e8675f0a4c97feff54e0faa97ec695b047152127[m
+Author: Shubhendra Singh Chauhan <withshubh@gmail.com>
+Date:   Thu Apr 6 19:09:47 2023 +0530
+
+    [docs] Added docs version 2.4.0 (#5956)
+    
+    * minor url fix
+    
+    * added docs version 2.4.0
+    
+    * default version set to 2.4
+
+[33mcommit 774fb9e43757f76e483f0825d73bce28199bff1a[m
+Author: gsmithun4 <gsmithun4@gmail.com>
+Date:   Thu Apr 6 18:15:51 2023 +0530
+
+    Fix for app-environments API service
+
+[33mcommit a2c2aaec54c821c8b55f0f20f8922674c05a5e5a[m
+Author: gsmithun4 <gsmithun4@gmail.com>
+Date:   Thu Apr 6 17:57:33 2023 +0530
+
+    bump version v2.4.0
+
+[33mcommit 542aa5b278ff8f55aebac72deb335136f0f76de2[m
+Author: vjaris42 <vjy239@gmail.com>
+Date:   Thu Apr 6 17:52:28 2023 +0530
+
+    API Support for getting data source options under a datasource (#5948)
+    
+    * feature: multi env support for datasources
+    
+    * revert: datasources by env id api
+    
+    * revert: datasources by env id api:frontend
+    
+    * lint fixes
+    
+    ---------
+    
+    Co-authored-by: Midhun G S <gsmithun4@gmail.com>
+
+[33mcommit ff0e0a49caea3cdd259d7fc2a85dfc3d065803ff[m
+Author: Kiran Ashok <stepinfwd@gmail.com>
+Date:   Thu Apr 6 16:43:41 2023 +0530
+
+    added :: fix for connection getting lost in snowflake (#5936)
+
+[33mcommit 32740743e1e2420f0e5bbd32fe54610cc242d59d[m
+Author: Muhsin Shah C P <muhsinshah21@gmail.com>
+Date:   Thu Apr 6 16:42:58 2023 +0530
+
+    [Improvement] URLs scoped with workspace id (#5487)
+    
+    * add: new URL prefix
+    
+    * fix: working on home page
+    
+    * add: profile path
+    
+    * playing with rxjs
+    
+    * removed context part
+    
+    * working on path changes
+    
+    * changing routes
+    - TODO: replace the workspaceId with actual id
+    
+    * redo: public apps path
+    
+    * initial commit
+    
+    * added authorize API
+    
+    * remove privileges from auth response
+    
+    * fixed some api issue
+    - added subscriptions
+    
+    * fix: redirect url workspace-id null issue
+    
+    * fix: switch workspace
+    
+    * fix: organization list mapping
+    - menu item paths
+    
+    * fix: preview url
+    - editor, viewer permission mapping
+    
+    * jwt fix
+    
+    * fix: some url issue
+    - permission mappings
+    - workspace login
+    
+    * fixed some issues
+    - user invite workspace-id
+    - org settings menu item default selected item issue
+    
+    * app viewer fixes
+    
+    * fixing workspace login issues
+    
+    * fix
+    
+    * fixing issues
+    - tooljet db
+    - path issues
+    - refatoring the code
+    
+    * fix: workspace vars permissions
+    
+    * fix: multi-page handle
+    
+    * fix: create app from template
+    
+    * fix: bulk user upload
+    
+    * fix: import app
+    - clone app
+    - upload profile image
+    
+    * fix: onboarding
+    
+    * fix: log out
+    
+    * fixed multi-workspace logout issue
+    
+    * fix: launch btn
+    
+    * fix: oauth2
+    
+    * fixes
+    
+    * fix: sso login
+    
+    * fix: workspace sso login
+    
+    * fixing sso issues
+    
+    * fix: moved list of orgs to rxjs
+    - fixed switching issues
+    
+    * reverting some changes
+    
+    * fixed some minor bugs
+    
+    * fixing sso redirect url issues
+    
+    * fix: switching network timing issues
+    
+    * fix: back to workspace-id
+    
+    * fix: tj-database
+    - refactored the code - removed org id from some pages
+    - will get the org id from the service file only
+    
+    * fix: multi-pages
+    
+    * fix: infinite loop issue
+    
+    * fixing workspace switching issue
+    
+    * fixes
+    - comment link
+    - logout & private route redirect url
+    
+    * fix: wrong uuid error
+    
+    * fixing subpath
+    - fixed most of the places
+    - need to test & fix workspace login, sso, new account
+    
+    * fix: subpath workspace login
+    
+    * fix: rxjs handle bug
+    
+    * Revert "fix: tj-database"
+    
+    This reverts commit 9632ec2ff0707c9d7b1777f64afbe15679203ca1.
+    
+    * fix: reverted tj-db changes
+    
+    * fix: subpath sso
+    
+    * typo fix
+    
+    * fix: existing session issues
+    
+    * new: switch workspace page
+    
+    * fix: modal dark-mode
+    
+    * added default sso support
+    
+    * fixes
+    - subpath workspace switching
+    - handle wrong routes
+    
+    * fix: manager user button
+    - refactored the code
+    
+    * removed SINGLE Workspace feature
+    
+    * rebase
+    
+    * add: change modal text
+    
+    * fix: added validation
+    
+    * fixed private app 401 issue
+    
+    * initial commit
+    
+    * fix: logged out session multi-tab issue
+    
+    * refactoring the code
+    
+    * fix: redirect url issue
+    
+    * added auth-token in cookies
+    
+    * Fix: failing e2e specs
+    
+    * added session API
+    
+    * fix: backend session guard
+    
+    * fix: removing user details from local storage
+    
+    * fix: null wid
+    
+    * undo and redo
+    
+    * fix: login page
+    
+    * fix: viewer login redirection
+    
+    * fix: login page redirection
+    
+    * fix: public apps logout issue
+    
+    * added session storage and scheduler
+    
+    * added profile api
+    
+    * fix: sso login
+    - switch workspace
+    - login page
+    - setup admin
+    
+    * working on fixes
+    
+    * fix: socket issue
+    
+    * fix: setup admin api
+    
+    * connected profile & logout apis
+    
+    * fix: malfunctioned auth token case
+    
+    * fix: realtime avatar
+    
+    * fix: profile avatar
+    
+    * fix: Realtime cursors avatar
+    
+    * setting max age for auth token cookie
+    
+    * add: Go to login page if logout api returns 401
+    
+    * fix: subpath login
+    
+    * fix
+    
+    * fix: app logout [viewer]
+    
+    * fix: authorize page
+    
+    * remove expiry from jwt
+    
+    * fix: integrations route
+    - session api
+    
+    * small fix
+    
+    * fix: updated profile
+    
+    * fix: workspace login [logged user]
+    
+    * fix: oauth and another workspace page issue
+    
+    * fixed app preview logout issue
+    
+    * subpath fix
+    
+    * fix: subpath app id
+    
+    * fix: selected state didnt change for apps page [subpath]
+    
+    * fix
+    
+    * add cookie parser to test app
+    
+    * specs added
+    
+    * increased user session expiry time
+    
+    * test: session & new apis
+    
+    * working on test cases
+    
+    * fix: onboarding issue
+    
+    * fixing specs
+    
+    * fix: test cases
+    
+    * fix: removing profile api calls
+    
+    * some fixes
+    
+    * fixing rebase issues
+    
+    * fix: global ds issues
+    
+    * fix: app is crashing
+    
+    * fix: back to text
+    
+    * fix: oauth test cases
+    
+    * fix: test-helper
+    
+    * fix: onboarding test cases
+    
+    * fix: tests again
+    
+    * refactoring the code
+    
+    * latest develop merging precautions
+    - fixed a minor null issue
+    
+    * fix: typo
+    
+    * fix :menu issues due to the merging
+    
+    * fix: - clicking on tooljet logo didnt redirect to login page for public apps
+    - private app preview doesnt load after login
+    
+    * subpath fixes
+    
+    * fixed back to issue
+    
+    * PR changes
+    
+    * fix: spec fixes for EE
+    
+    * doc: URL scoped for workspace
+    
+    ---------
+    
+    Co-authored-by: gsmithun4 <gsmithun4@gmail.com>
+    Co-authored-by: Shubhendra <withshubh@gmail.com>
+
+[33mcommit 6b2e42dc4ab2db7ecc27b57c3717cff0ef5c115c[m
+Author: Shubhendra Singh Chauhan <withshubh@gmail.com>
+Date:   Wed Apr 5 18:10:11 2023 +0530
+
+    [README] updated Slack Community URL (#5937)
+    
+    * updated tooljet slack community url
+    
+    * update tooljet slack community url on readme
+    
+    * Update CONTRIBUTING.md
+    
+    * Update config.yml
+    
+    * Update 03_documentation_report.yml
+
+[33mcommit 9ad68c1fdfd085cb4c121ca170563cb897d53458[m
+Author: Shubhendra Singh Chauhan <withshubh@gmail.com>
+Date:   Wed Apr 5 18:09:41 2023 +0530
+
+    Update slack url in the entire docs (#5938)
+
+[33mcommit c98270f7aafae63283e3f0566bd8a9bc54a90ffd[m
+Author: Shubhendra Singh Chauhan <withshubh@gmail.com>
+Date:   Tue Apr 4 19:02:10 2023 +0530
+
+    [docs] updated how-tos in 2.3 (#5927)
+
+[33mcommit a728762c304b0df32dd702738bd4483d0d5baeac[m
+Author: Shubhendra Singh Chauhan <withshubh@gmail.com>
+Date:   Tue Apr 4 12:32:10 2023 +0530
+
+    [docs] how-to:run multiple actions using runjs (#5919)
+
+[33mcommit c36d77ec21d521b818289340b7cbf1a6c689b9d4[m
+Author: Shubhendra Singh Chauhan <withshubh@gmail.com>
+Date:   Tue Apr 4 12:31:44 2023 +0530
+
+    [docs] version 2.3.0 (#5910)
+    
+    * added dynamic column
+    
+    * added docs-v2.3.0
+
+[33mcommit d6b58c8630220cfaff9050875e22d30abf626221[m
+Author: Shubhendra Singh Chauhan <withshubh@gmail.com>
+Date:   Tue Apr 4 12:31:28 2023 +0530
+
+    [docs] added how-to: import external libs using RunJs (#5908)
+
+[33mcommit d53b30b2e7f975af81a0fb225f8abc76070e1aa8[m
+Author: Shubhendra Singh Chauhan <withshubh@gmail.com>
+Date:   Tue Apr 4 12:31:11 2023 +0530
+
+    [docs] added how-to: import external libs using RunJs (#5908)
+
+[33mcommit a592e3aeb69720915d8f848230c1ad53522d2110[m
+Author: Mekhla Asopa <59684099+Mekhla-Asopa@users.noreply.github.com>
+Date:   Tue Apr 4 08:11:02 2023 +0530
+
+    Added automation for edit row feature in Database (#5890)
+    
+    * added method for edit row
+    
+    * update method for edit row
+    
+    * update method name
+
+[33mcommit 8dfcf92dd9fff7028caf77314bccbfb5f03d7f2e[m
+Author: Ajith KV <ajith.jaban@gmail.com>
+Date:   Mon Apr 3 12:29:54 2023 +0530
+
+    modify cypress test for onboarding phone number feature (#5848)
+
+[33mcommit d10f03055942b57c10c98353ebbff37144284146[m
+Merge: b56eb677 7dbebd55
+Author: Midhun G S <gsmithun4@gmail.com>
+Date:   Fri Mar 31 20:04:20 2023 +0530
+
+    Merge pull request #5905 from ToolJet/main
+    
+    Merge main to develop
+
+[33mcommit 7dbebd553435160fe2f05dafd1ff54568cdfe231[m
+Author: Muhsin Shah C P <muhsinshah21@gmail.com>
+Date:   Fri Mar 31 19:59:06 2023 +0530
+
+    fix - App version Issues  (#5882)
+    
+    * fix: app version issues
+    
+    * fix: creating version
+    
+    * fix: editing version issues
+
+[33mcommit b56eb6770d0c97782608d5dc68ccafe3b123e3ff[m
+Merge: 7e792bd6 c6d71908
+Author: Midhun G S <gsmithun4@gmail.com>
+Date:   Fri Mar 31 16:31:07 2023 +0530
+
+    Merge pull request #5902 from ToolJet/main
+    
+    Bump Version v2.3.0
+
+[33mcommit c6d71908a01d9441e8301b0cc83f3301b9484e56[m
+Merge: 38264b38 94ffe569
+Author: Midhun G S <gsmithun4@gmail.com>
+Date:   Fri Mar 31 16:23:19 2023 +0530
+
+    Merge pull request #5899 from ToolJet/release/v2.3.0
+    
+    Release v2.3.0
+
+[33mcommit 94ffe56999e7a88bbeed1d8e63ec232291134b1b[m
+Merge: e1e217cb 7e792bd6
+Author: gsmithun4 <gsmithun4@gmail.com>
+Date:   Fri Mar 31 14:50:55 2023 +0530
+
+    Merge branch 'develop' into release/v2.3.0
+
+[33mcommit 7e792bd6310b480e1eccd35b357ade76a045adac[m
+Merge: c6cd35cd db19e762
+Author: Midhun G S <gsmithun4@gmail.com>
+Date:   Fri Mar 31 14:48:40 2023 +0530
+
+    Merge pull request #5898 from ToolJet/merge/main-to-develop
+    
+    Merge main to develop
+
+[33mcommit db19e7627b6ed9b4d36d94ffe2624d18afc158c3[m
+Merge: c6cd35cd 38264b38
+Author: gsmithun4 <gsmithun4@gmail.com>
+Date:   Fri Mar 31 14:44:22 2023 +0530
+
+    Merge branch 'main' into merge/main-to-develop
+
+[33mcommit e1e217cbf0d209b347d66b23c6f7a6bf698f8787[m
+Author: gsmithun4 <gsmithun4@gmail.com>
+Date:   Fri Mar 31 14:35:35 2023 +0530
+
+    release v2.3.0
+
+[33mcommit c6cd35cd944f397311cf7925b7a4d1135bf1df33[m
+Author: Midhun G S <gsmithun4@gmail.com>
+Date:   Fri Mar 31 14:34:18 2023 +0530
+
+    fix for query event mapping to other query breaks (#5892)
+
+[33mcommit 90002c9df82598c3a2d92a9e850da6e98b55c134[m
+Author: Shubhendra Singh Chauhan <withshubh@gmail.com>
+Date:   Thu Mar 30 15:45:20 2023 +0530
+
+    [docs] Updated ubuntu contributing guides and action button (#5880)
+
+[33mcommit 5b136a0b137bd4d612d3de107e8cf3b461f95268[m
+Author: Shubhendra Singh Chauhan <withshubh@gmail.com>
+Date:   Thu Mar 30 15:45:00 2023 +0530
+
+    [docs] updated props of button group (#5805)
