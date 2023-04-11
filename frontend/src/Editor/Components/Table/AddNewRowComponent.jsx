@@ -15,12 +15,13 @@ export function AddNewRowComponent({
   columns,
   addNewRowsDetails,
 }) {
-  const getNewRowObject = () =>
+  const getNewRowObject = () => {
     allColumns.reduce((accumulator, column) => {
       const key = column.key ?? column.exportValue;
       accumulator[key] = '';
       return accumulator;
     }, {});
+  };
   const newRow = getNewRowObject();
   const existingAddedNewRows = _.isEmpty(addNewRowsDetails.newRowsDataUpdates)
     ? { status: false, data: null }
