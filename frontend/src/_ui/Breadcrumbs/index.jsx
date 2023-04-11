@@ -7,6 +7,7 @@ import useBreadcrumbs from 'use-react-router-breadcrumbs';
 export const Breadcrumbs = ({ darkMode }) => {
   const { sidebarNav } = useContext(BreadCrumbContext);
   const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
+
   return (
     <ol className="breadcrumb breadcrumb-arrows">
       {breadcrumbs.map(({ breadcrumb, dataCy, beta }, i) => {
@@ -31,8 +32,8 @@ export const Breadcrumbs = ({ darkMode }) => {
 };
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
-  { path: '/:worspace_id', breadcrumb: 'Applications' },
-  { path: '/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
+  { path: '/:worspace_id', breadcrumb: 'Apps' },
+  { path: '/:worspace_id/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/global-datasources', breadcrumb: 'Global Datasources' },
   { path: '/integrations', breadcrumb: 'Integrations / plugins', props: { beta: true } },
