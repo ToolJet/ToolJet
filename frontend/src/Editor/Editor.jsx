@@ -400,7 +400,7 @@ class EditorComponent extends React.Component {
         () => {
           shouldWeEditVersion && this.saveEditingVersion();
           this.fetchDataSources(this.state.editingVersion?.id);
-          this.fetchDataQueries(this.state.editingVersion?.id);
+          this.fetchDataQueries(this.state.editingVersion?.id, true);
           this.initComponentVersioning();
         }
       );
