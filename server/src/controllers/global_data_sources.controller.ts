@@ -14,7 +14,6 @@ import {
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
 import { GlobalDataSourceAbilityFactory } from 'src/modules/casl/abilities/global-datasource-ability.factory';
-import { DataQueriesService } from '@services/data_queries.service';
 import { DataSourcesService } from '@services/data_sources.service';
 import { CreateDataSourceDto, UpdateDataSourceDto } from '@dto/data-source.dto';
 import { decode } from 'js-base64';
@@ -29,8 +28,7 @@ import { DataSourceScopes } from 'src/helpers/data_source.constants';
 export class GlobalDataSourcesController {
   constructor(
     private globalDataSourceAbilityFactory: GlobalDataSourceAbilityFactory,
-    private dataSourcesService: DataSourcesService,
-    private dataQueriesService: DataQueriesService
+    private dataSourcesService: DataSourcesService
   ) {}
 
   @UseGuards(JwtAuthGuard)

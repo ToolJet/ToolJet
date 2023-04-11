@@ -21,6 +21,7 @@ function skipVersion() {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
+    credentials: 'include',
   };
 
   return fetch(`${config.apiUrl}/metadata/skip_version`, requestOptions).then(handleResponse);
@@ -30,6 +31,7 @@ function skipOnboarding() {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
+    credentials: 'include',
   };
 
   return fetch(`${config.apiUrl}/metadata/skip_onboarding`, requestOptions).then(handleResponse);
@@ -39,6 +41,7 @@ function finishOnboarding(options) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
+    credentials: 'include',
     body: JSON.stringify({
       ...options,
     }),

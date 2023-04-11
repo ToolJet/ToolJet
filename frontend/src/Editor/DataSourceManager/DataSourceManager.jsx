@@ -1,5 +1,5 @@
 import React from 'react';
-import { datasourceService, authenticationService, pluginsService, globalDatasourceService } from '@/_services';
+import { datasourceService, pluginsService, globalDatasourceService } from '@/_services';
 import cx from 'classnames';
 import { Modal, Button, Tab, Row, Col, ListGroup } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
@@ -39,7 +39,6 @@ class DataSourceManagerComponent extends React.Component {
     }
 
     this.state = {
-      currentUser: authenticationService.currentUserValue,
       showModal: true,
       appId: props.appId,
       selectedDataSource,
@@ -176,7 +175,13 @@ class DataSourceManagerComponent extends React.Component {
       if (selectedDataSource.id) {
         this.setState({ isSaving: true });
         service
-          .save(selectedDataSource.id, name, parsedOptions, appId, currentAppEnvironmentId)
+          .save({
+            id: selectedDataSource.id,
+            name,
+            options: parsedOptions,
+            app_id: appId,
+            environment_id: currentEnvironment,
+          })
           .then(() => {
             this.setState({ isSaving: false });
             this.hideModal();
@@ -195,7 +200,15 @@ class DataSourceManagerComponent extends React.Component {
       } else {
         this.setState({ isSaving: true });
         service
-          .create(pluginId, name, kind, parsedOptions, appId, appVersionId, scope)
+          .create({
+            plugin_id: pluginId,
+            name,
+            kind,
+            options: parsedOptions,
+            app_id: appId,
+            app_version_id: appVersionId,
+            scope,
+          })
           .then((data) => {
             this.setState({ isSaving: false });
             this.hideModal();
@@ -265,7 +278,7 @@ class DataSourceManagerComponent extends React.Component {
         hideModal={this.hideModal}
         selectedDataSource={this.state.selectedDataSource}
         isEditMode={!isEmpty(this.state.selectedDataSource)}
-        currentAppEnvironmentId={this.props.currentAppEnvironmentId}
+        currentAppEnvironmentId={this.props.currentEnvironment?.id}
       />
     );
   };

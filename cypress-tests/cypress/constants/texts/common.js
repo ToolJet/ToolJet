@@ -16,6 +16,7 @@ export const commonText = {
   password: "password",
   loginErrorToast: "Invalid email or password",
   welcomeToolJetText: "Welcome to ToolJet!",
+  welcomeTooljetWorkspace: "Welcome to your new ToolJet workspace",
   introductionMessage:
     "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
   changeIconOption: "Change Icon",

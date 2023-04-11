@@ -40,6 +40,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
+import { SessionService } from '@services/session.service';
 
 @Module({
   imports: [
@@ -69,9 +70,6 @@ import { DataSourceGroupPermission } from 'src/entities/data_source_group_permis
       useFactory: (config: ConfigService) => {
         return {
           secret: config.get<string>('SECRET_KEY_BASE'),
-          signOptions: {
-            expiresIn: config.get<string | number>('JWT_EXPIRATION_TIME') || '30d',
-          },
         };
       },
       inject: [ConfigService],
@@ -94,6 +92,7 @@ import { DataSourceGroupPermission } from 'src/entities/data_source_group_permis
     PluginsHelper,
     MetadataService,
     AppEnvironmentService,
+    SessionService,
   ],
   controllers: [OrganizationsController, OrganizationUsersController],
 })

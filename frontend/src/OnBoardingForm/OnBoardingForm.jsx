@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
 import OnBoardingInput from './OnBoardingInput';
 import OnBoardingRadioInput from './OnBoardingRadioInput';
 import ContinueButton from './ContinueButton';
 import OnBoardingBubbles from './OnBoardingBubbles';
 import AppLogo from '../_components/AppLogo';
-import { getuserName, retrieveWhiteLabelText } from '@/_helpers/utils';
+import { getuserName, getSubpath, retrieveWhiteLabelText } from '@/_helpers/utils';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
+import LogoLightMode from '@assets/images/Logomark.svg';
+import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
 import startsWith from 'lodash.startswith';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 
 function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
-  const navigate = useNavigate();
+  const Logo = darkMode ? LogoDarkMode : LogoLightMode;
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,11 +48,12 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           ...(password?.length > 0 && { password }),
           phoneNumber: formData?.phoneNumber,
         })
-        .then((user) => {
-          authenticationService.updateUser(user);
+        .then((data) => {
           authenticationService.deleteLoginOrganizationId();
           setIsLoading(false);
-          navigate('/');
+          window.location = getSubpath()
+            ? `${getSubpath()}/${data.current_organization_id}`
+            : `/${data.current_organization_id}`;
           setCompleted(false);
         })
         .catch((res) => {

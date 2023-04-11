@@ -137,9 +137,7 @@ export class OrganizationsService {
         enabled: true,
       },
       enableSignUp:
-        this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
-        this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true' &&
-        isPersonalWorkspaceAllowed === 'true',
+        this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true' && isPersonalWorkspaceAllowed === 'true',
     };
   }
 
@@ -296,9 +294,7 @@ export class OrganizationsService {
         status: orgUser.status,
         avatarId: orgUser.user.avatarId,
         ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
-        ...(this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
-        this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' &&
-        orgUser.user.invitationToken
+        ...(this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' && orgUser.user.invitationToken
           ? { accountSetupToken: orgUser.user.invitationToken }
           : {}),
       };
@@ -402,11 +398,7 @@ export class OrganizationsService {
 
     if (!result) return;
 
-    if (
-      addInstanceLevelSSO &&
-      this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
-      result.inheritSSO
-    ) {
+    if (addInstanceLevelSSO && result.inheritSSO) {
       if (
         this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID') &&
         !result.ssoConfigs?.some((config) => config.sso === 'google')
@@ -611,8 +603,6 @@ export class OrganizationsService {
     };
     const groups = inviteNewUserDto.groups ?? [];
 
-    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
-
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let user = await this.usersService.findByEmail(userParams.email, undefined, undefined, manager);
 
@@ -635,18 +625,17 @@ export class OrganizationsService {
         );
       }
 
-      if (!isSingleWorkspace) {
-        if (!user) {
-          // User not exist
-          shouldSendWelcomeMail = true;
-          if ((await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true') {
-            // Create default organization if user not exist
-            defaultOrganization = await this.create('Untitled workspace', null, manager);
-          }
-        } else if (user.invitationToken) {
-          // User not setup
-          shouldSendWelcomeMail = true;
+      if (!user) {
+        // User not exist
+        shouldSendWelcomeMail = true;
+        // Create default organization if user not exist
+        if ((await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true') {
+          // Create default organization if user not exist
+          defaultOrganization = await this.create('Untitled workspace', null, manager);
         }
+      } else if (user.invitationToken) {
+        // User not setup
+        shouldSendWelcomeMail = true;
       }
 
       if (user && user.status === USER_STATUS.ARCHIVED) {

@@ -90,9 +90,8 @@ const UsersTable = ({
                       <td className="d-flex align-items-center">
                         <Avatar
                           avatarId={user.avatar_id}
-                          text={`${user.first_name ? user.first_name[0] : ''}${
-                            user.last_name ? user.last_name[0] : ''
-                          }`}
+                          text={`${user.first_name ? user.first_name[0] : ''}${user.last_name ? user.last_name[0] : ''
+                            }`}
                         />
                         <span className="mx-3" data-cy="user-name">
                           {user.name}
@@ -121,17 +120,21 @@ const UsersTable = ({
                           <small className="user-status" data-cy="user-status">
                             {user.status}
                           </small>
-                          {!isLoadingAllUsers && user.status === 'invited' && 'invitation_token' in user ? (
-                            <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
-                              <img
-                                data-tip="Copy invitation link"
-                                className="svg-icon cursor-pointer"
-                                src="assets/images/icons/copy.svg"
-                                width="15"
-                                height="15"
-                                data-cy="copy-invitation-link"
-                              ></img>
-                            </CopyToClipboard>
+                          {user.status === 'invited' && 'invitation_token' in user ? (
+                            <>
+                              <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
+                                <img
+                                  data-tooltip-id="tooltip-for-copy-invitation-link"
+                                  data-tooltip-content="Copy invitation link"
+                                  className="svg-icon cursor-pointer"
+                                  src="assets/images/icons/copy.svg"
+                                  width="15"
+                                  height="15"
+                                  data-cy="copy-invitation-link"
+                                ></img>
+                              </CopyToClipboard>
+                              <Tooltip id="tooltip-for-copy-invitation-link" className="tooltip" />
+                            </>
                           ) : (
                             ''
                           )}

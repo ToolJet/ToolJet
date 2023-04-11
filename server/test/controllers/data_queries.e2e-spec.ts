@@ -1,13 +1,13 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  authHeaderForUser,
   clearDB,
   createUser,
   createNestAppInstance,
   createDataQuery,
   createAppGroupPermission,
   generateAppDefaults,
+  authenticateUser,
 } from '../test.helper';
 import { getManager, getRepository } from 'typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -30,20 +30,28 @@ describe('data queries controller', () => {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
     });
+    let loggedUser = await authenticateUser(app, adminUserData.user.email);
+    adminUserData['tokenCookie'] = loggedUser.tokenCookie;
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
       groups: ['all_users', 'developer'],
       organization: adminUserData.organization,
     });
+    loggedUser = await authenticateUser(app, developerUserData.user.email);
+    developerUserData['tokenCookie'] = loggedUser.tokenCookie;
     const viewerUserData = await createUser(app, {
       email: 'viewer@tooljet.io',
       groups: ['all_users', 'viewer'],
       organization: adminUserData.organization,
     });
+    loggedUser = await authenticateUser(app, viewerUserData.user.email);
+    viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
     });
+    loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
+    anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     const { application, dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
 
@@ -75,7 +83,8 @@ describe('data queries controller', () => {
       const newOptions = { method: userData.user.email };
       const response = await request(app.getHttpServer())
         .patch(`/api/data_queries/${dataQuery.id}`)
-        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie'])
         .send({
           options: newOptions,
         });
@@ -90,7 +99,8 @@ describe('data queries controller', () => {
       const oldOptions = dataQuery.options;
       const response = await request(app.getHttpServer())
         .patch(`/api/data_queries/${dataQuery.id}`)
-        .set('Authorization', authHeaderForUser(userData.user))
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie'])
         .send({
           options: { method: '' },
         });
@@ -111,6 +121,8 @@ describe('data queries controller', () => {
       groups: ['all_users', 'admin'],
       userType: 'instance',
     });
+    let loggedUser = await authenticateUser(app, adminUserData.user.email);
+    adminUserData['tokenCookie'] = loggedUser.tokenCookie;
     const developerUserData = await createUser(app, {
       email: 'developer@tooljet.io',
       groups: ['all_users', 'developer'],
@@ -128,6 +140,13 @@ describe('data queries controller', () => {
     const { application, dataSource, appVersion } = await generateAppDefaults(app, adminUserData.user, {
       isQueryNeeded: false,
     });
+
+    loggedUser = await authenticateUser(app, developerUserData.user.email);
+    developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, viewerUserData.user.email);
+    viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
+    anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -157,7 +176,8 @@ describe('data queries controller', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/data_queries/${dataQuery.id}`)
-        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie'])
         .send({
           options: newOptions,
         });
@@ -182,7 +202,8 @@ describe('data queries controller', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/data_queries/${dataQuery.id}`)
-        .set('Authorization', authHeaderForUser(userData.user))
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie'])
         .send({
           options: { method: '' },
         });
@@ -218,10 +239,19 @@ describe('data queries controller', () => {
       isQueryNeeded: false,
     });
 
+    let loggedUser = await authenticateUser(app, adminUserData.user.email);
+    adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, developerUserData.user.email);
+    developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, viewerUserData.user.email);
+    viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
       groups: ['all_users', 'admin'],
     });
+    loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
+    anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     const allUserGroup = await getManager().findOneOrFail(GroupPermission, {
       where: { group: 'all_users', organization: adminUserData.organization },
@@ -254,7 +284,8 @@ describe('data queries controller', () => {
     for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .get(`/api/data_queries?app_version_id=${appVersion.id}`)
-        .set('Authorization', authHeaderForUser(userData.user));
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie']);
 
       console.log('inside', response.body, userData.user);
 
@@ -264,14 +295,16 @@ describe('data queries controller', () => {
 
     let response = await request(app.getHttpServer())
       .get(`/api/data_queries?app_version_id=${appVersion.id}`)
-      .set('Authorization', authHeaderForUser(viewerUserData.user));
+      .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
+      .set('Cookie', viewerUserData['tokenCookie']);
 
     expect(response.statusCode).toBe(200);
 
     // Forbidden if user of another organization
     response = await request(app.getHttpServer())
       .get(`/api/data_queries?app_version_id=${appVersion.id}`)
-      .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
+      .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+      .set('Cookie', anotherOrgAdminUserData['tokenCookie']);
 
     expect(response.statusCode).toBe(403);
   });
@@ -292,16 +325,21 @@ describe('data queries controller', () => {
       options: { method: 'get' },
     });
 
+    const loggedUser = await authenticateUser(app, adminUserData.user.email);
+    adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
     let response = await request(app.getHttpServer())
       .get(`/api/data_queries?app_version_id=${appVersion.id}`)
-      .set('Authorization', authHeaderForUser(adminUserData.user));
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+      .set('Cookie', adminUserData['tokenCookie']);
 
     expect(response.statusCode).toBe(200);
     expect(response.body.data_queries.length).toBe(1);
 
     response = await request(app.getHttpServer())
       .get(`/api/data_queries?app_version_id=62929ad6-11ae-4655-bb3e-2d2465b58950`)
-      .set('Authorization', authHeaderForUser(adminUserData.user));
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+      .set('Cookie', adminUserData['tokenCookie']);
 
     expect(response.statusCode).toBe(500);
   });
@@ -338,6 +376,15 @@ describe('data queries controller', () => {
       groups: ['all_users', 'admin'],
     });
 
+    let loggedUser = await authenticateUser(app, adminUserData.user.email);
+    adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, developerUserData.user.email);
+    developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, viewerUserData.user.email);
+    viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
+    anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
       where: {
@@ -361,7 +408,8 @@ describe('data queries controller', () => {
     for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries`)
-        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie'])
         .send(requestBody);
 
       expect(response.statusCode).toBe(201);
@@ -376,7 +424,8 @@ describe('data queries controller', () => {
     for (const userData of [anotherOrgAdminUserData, viewerUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries`)
-        .set('Authorization', authHeaderForUser(userData.user))
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie'])
         .send(requestBody);
 
       expect(response.statusCode).toBe(403);
@@ -406,6 +455,9 @@ describe('data queries controller', () => {
     const createdQueries = [];
     const totalQueries = 15;
 
+    const loggedUser = await authenticateUser(app, adminUserData.user.email);
+    adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
     for (let i = 1; i <= totalQueries; i++) {
       const queryParams = {
         name: `restapi${i}`,
@@ -418,7 +470,8 @@ describe('data queries controller', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries`)
-        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', adminUserData['tokenCookie'])
         .send(queryParams);
 
       response.body['plugin'] = null;
@@ -430,7 +483,8 @@ describe('data queries controller', () => {
 
     const response = await request(app.getHttpServer())
       .get(`/api/data_queries?app_version_id=${appVersion.id}`)
-      .set('Authorization', authHeaderForUser(adminUserData.user));
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+      .set('Cookie', adminUserData['tokenCookie']);
 
     expect(response.statusCode).toBe(200);
     expect(response.body.data_queries.length).toBe(totalQueries);
@@ -468,6 +522,13 @@ describe('data queries controller', () => {
 
     const { application, dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
 
+    let loggedUser = await authenticateUser(app, adminUserData.user.email);
+    adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, developerUserData.user.email);
+    developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, viewerUserData.user.email);
+    viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
       where: {
@@ -495,7 +556,8 @@ describe('data queries controller', () => {
     for (const userData of [adminUserData, developerUserData, viewerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries/${dataQuery.id}/run`)
-        .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id));
+        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie']);
 
       expect(response.statusCode).toBe(201);
       expect(response.body.data.length).toBe(30);
@@ -536,10 +598,14 @@ describe('data queries controller', () => {
       groups: ['all_users', 'admin'],
     });
 
+    const loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
+    anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
     const { dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
     const response = await request(app.getHttpServer())
       .post(`/api/data_queries/${dataQuery.id}/run`)
-      .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user));
+      .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+      .set('Cookie', anotherOrgAdminUserData['tokenCookie']);
 
     expect(response.statusCode).toBe(403);
   });

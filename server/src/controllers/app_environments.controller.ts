@@ -1,4 +1,4 @@
-import { Controller, Get, Post, UseGuards, Body, Delete, Param, Put } from '@nestjs/common';
+import { Controller, Get, UseGuards, Post, Put, Delete, Param, Body } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { ForbiddenException } from '@nestjs/common';

@@ -5,7 +5,6 @@ import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
 
 export function GeneralSettings({ settings, updateData, instanceSettings }) {
-  const isSingleOrganization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   const [enableSignUp, setEnableSignUp] = useState(settings?.enable_sign_up || false);
   const [inheritSSO, setInheritSSO] = useState(settings?.inherit_s_s_o || false);
   const [domain, setDomain] = useState(settings?.domain || '');
@@ -121,36 +120,35 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
               </div>
             </div>
           </div>
-          {!isSingleOrganization &&
-            (instanceSettings.google.enabled || instanceSettings.git.enabled || instanceSettings.openid.enabled) && (
-              <div className="form-group mb-3">
-                <label className="form-check form-switch">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    onChange={() => setInheritSSO((inheritSSO) => !inheritSSO)}
-                    checked={inheritSSO}
-                    data-cy="allow-default-sso-toggle"
-                  />
-                  <span className="form-check-label" data-cy="allow-default-sso-label">
-                    {t('header.organization.menus.manageSSO.generalSettings.allowDefaultSso', `Allow default SSO`)}
-                  </span>
-                </label>
-                <div className="d-flex tick-cross-info mb-2" data-cy="default-sso-status-image">
-                  {instanceSettings.google.enabled && ssoButtons('google')}
-                  {instanceSettings.git.enabled && ssoButtons('git')}
-                  {instanceSettings.openid.enabled && ssoButtons('openid')}
-                </div>
-                <div className="help-text mt-1">
-                  <div data-cy="allow-default-sso-helper-text">
-                    {t(
-                      'header.organization.menus.manageSSO.generalSettings.ssoAuth',
-                      `Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO.`
-                    )}
-                  </div>
+          {(instanceSettings.google.enabled || instanceSettings.git.enabled || instanceSettings.openid.enabled) && (
+            <div className="form-group mb-3">
+              <label className="form-check form-switch">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  onChange={() => setInheritSSO((inheritSSO) => !inheritSSO)}
+                  checked={inheritSSO}
+                  data-cy="allow-default-sso-toggle"
+                />
+                <span className="form-check-label" data-cy="allow-default-sso-label">
+                  {t('header.organization.menus.manageSSO.generalSettings.allowDefaultSso', `Allow default SSO`)}
+                </span>
+              </label>
+              <div className="d-flex tick-cross-info mb-2" data-cy="default-sso-status-image">
+                {instanceSettings.google.enabled && ssoButtons('google')}
+                {instanceSettings.git.enabled && ssoButtons('git')}
+                {instanceSettings.openid.enabled && ssoButtons('openid')}
+              </div>
+              <div className="help-text mt-1">
+                <div data-cy="allow-default-sso-helper-text">
+                  {t(
+                    'header.organization.menus.manageSSO.generalSettings.ssoAuth',
+                    `Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO.`
+                  )}
                 </div>
               </div>
-            )}
+            </div>
+          )}
           <div className="form-group mb-3">
             <label className="form-label" data-cy="allowed-domains-label">
               {t('header.organization.menus.manageSSO.generalSettings.allowedDomains', `Allowed domains`)}
@@ -175,35 +173,33 @@ export function GeneralSettings({ settings, updateData, instanceSettings }) {
               </div>
             </div>
           </div>
-          {!isSingleOrganization && (
-            <div className="form-group mb-3">
-              <label className="form-label" data-cy="workspace-login-url-label">
-                {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
-              </label>
+          <div className="form-group mb-3">
+            <label className="form-label" data-cy="workspace-login-url-label">
+              {t('header.organization.menus.manageSSO.generalSettings.loginUrl', `Login URL`)}
+            </label>
 
-              <div className="d-flex justify-content-between form-control">
-                <p id="login-url" data-cy="workspace-login-url">
-                  {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentUserValue?.organization_id}`}
-                </p>
-                <img
-                  onClick={() => copyFunction('login-url')}
-                  src={`assets/images/icons/copy-dark.svg`}
-                  width="22"
-                  height="22"
-                  className="sso-copy"
-                  data-cy="copy-icon"
-                />
-              </div>
-              <div className="help-text mt-1">
-                <div data-cy="workspace-login-help-text">
-                  {t(
-                    'header.organization.menus.manageSSO.generalSettings.workspaceLogin',
-                    `Use this URL to login directly to this workspace`
-                  )}
-                </div>
+            <div className="d-flex justify-content-between form-control">
+              <p id="login-url" data-cy="workspace-login-url">
+                {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentSessionValue?.current_organization_id}`}
+              </p>
+              <img
+                onClick={() => copyFunction('login-url')}
+                src={`assets/images/icons/copy-dark.svg`}
+                width="22"
+                height="22"
+                className="sso-copy"
+                data-cy="copy-icon"
+              />
+            </div>
+            <div className="help-text mt-1">
+              <div data-cy="workspace-login-help-text">
+                {t(
+                  'header.organization.menus.manageSSO.generalSettings.workspaceLogin',
+                  `Use this URL to login directly to this workspace`
+                )}
               </div>
             </div>
-          )}
+          </div>
           <div className="form-footer">
             <button type="button" className="btn btn-light mr-2" onClick={reset} data-cy="cancel-button">
               {t('globals.cancel', 'Cancel')}

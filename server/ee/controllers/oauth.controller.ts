@@ -1,13 +1,15 @@
 import { Body, Controller, Param, Post, Get, UseGuards, Req, Res } from '@nestjs/common';
 import { OauthService } from '../services/oauth/oauth.service';
 import { OidcOAuthService } from '../services/oauth/oidc_auth.service';
-import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
 import { Response, Request } from 'express';
+import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
+import { User } from 'src/decorators/user.decorator';
 
 @Controller('oauth')
 export class OauthController {
   constructor(private oauthService: OauthService, private oidcOAuthService: OidcOAuthService) {}
 
+  @UseGuards(OrganizationAuthGuard)
   @Post('sign-in/:configId')
   async create(@Req() req: Request, @Param('configId') configId, @Body() body) {
     const result = await this.oauthService.signIn(body, configId, null, req.cookies);
@@ -24,10 +26,15 @@ export class OauthController {
     return { authorizationUrl };
   }
 
-  @UseGuards(MultiOrganizationGuard)
+  @UseGuards(OrganizationAuthGuard)
   @Post('sign-in/common/:ssoType')
-  async commonSignIn(@Req() req: Request, @Param('ssoType') ssoType, @Body() body) {
-    const result = await this.oauthService.signIn(body, null, ssoType, req.cookies);
+  async commonSignIn(
+    @Param('ssoType') ssoType,
+    @Body() body,
+    @User() user,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    const result = await this.oauthService.signIn(response, body, null, ssoType, user);
     return result;
   }
 }

@@ -1,21 +1,19 @@
 import React, { createContext, useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
-import { globalDatasourceService, appEnvironmentService } from '@/_services';
+import { globalDatasourceService, appEnvironmentService, authenticationService } from '@/_services';
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
 import { toast } from 'react-hot-toast';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
-  toggleDataSourceManagerModal: () => {},
+  toggleDataSourceManagerModal: () => { },
   selectedDataSource: null,
-  setSelectedDataSource: () => {},
+  setSelectedDataSource: () => { },
 });
 
 export const GlobalDatasources = (props) => {
-  const { organization_id, admin, data_source_group_permissions, group_permissions, super_admin } =
-    JSON.parse(localStorage.getItem('currentUser')) || {};
-  const [organizationId, setOrganizationId] = useState(organization_id);
+  const { admin, data_source_group_permissions, group_permissions, super_admin } = authenticationService.currentSessionValue;
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -58,7 +56,7 @@ export const GlobalDatasources = (props) => {
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     globalDatasourceService
-      .getAll(organizationId)
+      .getAll()
       .then((data) => {
         const orderedDataSources = data.data_sources.sort((a, b) => a.name.localeCompare(b.name));
         setDataSources([...(orderedDataSources ?? [])]);
