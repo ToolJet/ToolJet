@@ -100,7 +100,7 @@ Only **Admins** and **[Super Admins](/docs/Enterprise/superadmin)** of the works
 
 From **Workspace Settings** -> **Groups Settings**, Admins and Super Admins can set the permission for a user group to:
 
-- **Create** and **Delete** datasources onto that workspace. If only **Create** permission is set then the users of the group will only be able to add new datasources on the workspace, and if only **Delete** permission is set then the users of the group will only be able to delete the connected datasources on the workspace.
+- **Create** and **Delete** datasources onto that workspace. If **Create** permission is enabled then the users can add new global datasources and **edit** the datasources as well but cannot **delete** it, and if only **Delete** permission is set then the users of the group will only be able to delete the connected datasources on the workspace.
   <div style={{textAlign: 'center'}}>
 
   <img className="screenshot-full" src="/img/datasource-reference/overview/create.png" alt="Datasources: Overview" />
