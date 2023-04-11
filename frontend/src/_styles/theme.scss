@@ -1331,6 +1331,7 @@ button {
   -moz-appearance: none;
   appearance: none;
   border-radius: $border-radius  !important;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .select-search__input::-webkit-search-decoration,
@@ -8046,6 +8047,43 @@ tbody {
 
   a {
     text-decoration: none;
+  }
+}
+
+.theme-dark {
+  .tj-onboarding-phone-input-wrapper {
+    .flag-dropdown {
+      background-color: #1f2936 !important;
+
+      .country-list {
+        background-color: #1f2936 !important;
+        background: #1f2936;
+
+        li {
+          .country .highlight {
+            background-color: #3a3f42;
+            color: #000 !important;
+
+            div {
+              .country-name {
+                color: #6b6b6b !important;
+              }
+            }
+
+          }
+
+          &:hover {
+            background-color: #2b2f31;
+          }
+
+        }
+      }
+    }
+
+  }
+
+  .react-tel-input .country-list .country.highlight {
+    color: #6b6b6b;
   }
 }
 

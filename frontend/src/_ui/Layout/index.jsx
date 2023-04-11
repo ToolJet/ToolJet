@@ -8,14 +8,13 @@ import Logo from '@assets/images/rocket.svg';
 import Header from '../Header';
 import { authenticationService } from '@/_services';
 import SolidIcon from '../Icon/SolidIcons';
-import config from 'config';
 import { getPrivateRoute } from '@/_helpers/routes';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
-  const marketplaceEnabled = config.ENABLE_MARKETPLACE_FEATURE === 'true';
+  const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
 
   return (
     <div className="row m-auto">

@@ -14,8 +14,6 @@ export default class PlivoService implements QueryService {
 
       if (queryOptions.operation === 'send_sms') {
         result = await client.messages.create(queryOptions.from, queryOptions.to, queryOptions.body);
-        
-        
       }
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});

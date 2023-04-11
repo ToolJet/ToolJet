@@ -8,8 +8,8 @@ import { BreadCrumbContext } from '@/App/App';
 
 function SettingsPage(props) {
   const currentSession = authenticationService.currentSessionValue;
+  const email = currentSession?.current_user.email;
   const [firstName, setFirstName] = React.useState(currentSession?.current_user.first_name);
-  const [email, setEmail] = React.useState(currentSession?.current_user.email);
   const [lastName, setLastName] = React.useState(currentSession?.current_user.last_name);
   const [currentpassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
