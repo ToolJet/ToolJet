@@ -16,7 +16,7 @@ export function AddNewRowComponent({
   addNewRowsDetails,
 }) {
   const getNewRowObject = () => {
-    allColumns.reduce((accumulator, column) => {
+    return allColumns.reduce((accumulator, column) => {
       const key = column.key ?? column.exportValue;
       accumulator[key] = '';
       return accumulator;
