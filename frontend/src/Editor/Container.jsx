@@ -335,7 +335,7 @@ export const Container = ({
     }
   }
 
-  React.useEffect(() => {}, [selectedComponents]);
+  React.useEffect(() => { }, [selectedComponents]);
 
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
@@ -567,7 +567,7 @@ export const Container = ({
             <a href="https://docs.tooljet.com/docs#the-very-quick-quickstart" target="_blank" rel="noreferrer">
               guide
             </a>{' '}
-            on adding widgets.
+            on adding components.
           </center>
         </div>
       )}
