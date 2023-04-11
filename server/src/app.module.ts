@@ -41,9 +41,12 @@ import { PluginsModule } from './modules/plugins/plugins.module';
 import * as path from 'path';
 import * as fs from 'fs';
 import { AppEnvironmentsModule } from './modules/app_environments/app_environments.module';
+import { RequestContextModule } from './modules/request_context/request-context.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ImportExportResourcesModule } from './modules/import_export_resources/import_export_resources.module';
 
 const imports = [
+  ScheduleModule.forRoot(),
   ConfigModule.forRoot({
     isGlobal: true,
     envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
@@ -75,6 +78,7 @@ const imports = [
     },
   }),
   TypeOrmModule.forRoot(ormconfig),
+  RequestContextModule,
   AppConfigModule,
   SeedsModule,
   AuthModule,
@@ -94,7 +98,7 @@ const imports = [
   PluginsModule,
   EventsModule,
   AppEnvironmentsModule,
-  ImportExportResourcesModule
+  ImportExportResourcesModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {

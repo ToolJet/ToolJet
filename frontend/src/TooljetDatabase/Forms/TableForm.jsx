@@ -79,17 +79,28 @@ const TableForm = ({
   return (
     <div className="card">
       <div className="card-header">
-        {!isEditMode && <h3 className="card-title">Create a new table</h3>}
-        {isEditMode && <h3 className="card-title">Edit table</h3>}
+        {!isEditMode && (
+          <h3 className="card-title" data-cy="create-new-table-header">
+            Create a new table
+          </h3>
+        )}
+        {isEditMode && (
+          <h3 className="card-title" data-cy="edit-table-header">
+            Edit table
+          </h3>
+        )}
       </div>
       <div className="card-body">
         <div className="mb-3">
-          <div className="form-label">Table name</div>
+          <div className="form-label" data-cy="table-name-label">
+            Table name
+          </div>
           <input
             type="text"
             placeholder="Enter table name"
             name="table-name"
             className="form-control"
+            data-cy="table-name-input-field"
             autoComplete="off"
             value={tableName}
             onChange={(e) => setTableName(e.target.value)}

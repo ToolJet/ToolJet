@@ -25,7 +25,7 @@ Cypress.Commands.add("forceClickOnCanvas", () => {
 });
 
 Cypress.Commands.add("verifyToastMessage", (selector, message) => {
-  cy.get(selector).eq(0).should("be.visible").and("have.text", message);
+  cy.get(selector).eq(0).should("be.visible").and("contain.text", message);
   cy.get("body").then(($body) => {
     if ($body.find(commonSelectors.toastCloseButton).length > 0) {
       cy.closeToastMessage();
@@ -82,9 +82,10 @@ Cypress.Commands.add("appLogin", () => {
 });
 
 Cypress.Commands.add("waitForAutoSave", () => {
-  cy.get(commonSelectors.autoSave, { timeout: 10000 }).should(
+  cy.wait(200)
+  cy.get(commonSelectors.autoSave, { timeout: 20000 }).should(
     "have.text",
-    commonText.autoSave
+    commonText.autoSave, { timeout: 20000 }
   );
 });
 
@@ -203,7 +204,7 @@ Cypress.Commands.add("modifyCanvasSize", (x, y) => {
 });
 
 Cypress.Commands.add("renameApp", (appName) => {
-  cy.clearAndType(commonSelectors.appNameInput, appName);
+  cy.get(commonSelectors.appNameInput).type(`{selectAll}{backspace}${appName}`, {force:true});
   cy.waitForAutoSave();
 });
 

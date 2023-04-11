@@ -12,13 +12,14 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
 
   const popover = (
     <Popover id="popover-contained" className="table-list-items">
-      <Popover.Content className={`${darkMode && 'theme-dark'}`}>
+      <Popover.Body className={`${darkMode && 'theme-dark'}`}>
         <div className={`row cursor-pointer`}>
-          <div className="col-auto">
+          <div className="col-auto" data-cy="edit-option-icon">
             <EditIcon />
           </div>
           <div
             className="col text-truncate"
+            data-cy="edit-option"
             onClick={() => {
               setOpen(false);
               onEdit();
@@ -34,14 +35,14 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
           <div className="col text-truncate">Duplicate</div>
         </div> */}
         <div className="row mt-3 cursor-pointer">
-          <div className="col-auto">
+          <div className="col-auto" data-cy="delete-option-icon">
             <DeleteIcon />
           </div>
-          <div className="col text-truncate" onClick={onDelete}>
+          <div className="col text-truncate" data-cy="delete-option" onClick={onDelete}>
             Delete
           </div>
         </div>
-      </Popover.Content>
+      </Popover.Body>
     </Popover>
   );
 
@@ -50,6 +51,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
       className={cx(`float-right cursor-pointer table-list-item-popover ${darkMode && 'dark'}`, {
         'd-grid': open,
       })}
+      data-cy="table-kebab-icon"
     >
       <OverlayTrigger
         onToggle={(isOpen) => {
@@ -60,8 +62,11 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
         trigger="click"
         placement="bottom"
         overlay={popover}
+        transition={false}
       >
-        <EllipsisIcon />
+        <span>
+          <EllipsisIcon />
+        </span>
       </OverlayTrigger>
     </div>
   );

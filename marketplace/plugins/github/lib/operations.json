@@ -1,0 +1,161 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "Github datasource",
+  "description": "A schema defining Github datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "get_user_info",
+          "name": "Get user info"
+        },
+        {
+          "value": "get_repo",
+          "name": "Get repository"
+        },
+        {
+          "value": "get_repo_issues",
+          "name": "Get repository issues"
+        },
+        {
+          "value": "get_repo_pull_requests",
+          "name": "Get repository pull requests"
+        }
+      ]
+    },
+    "get_user_info": {
+      "username": {
+        "label": "Username",
+        "key": "username",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter username",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter username"
+      }
+    },
+    "get_repo": {
+      "owner": {
+        "label": "Owner",
+        "key": "owner",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter owner name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "developer"
+      },
+      "repo": {
+        "label": "Repository",
+        "key": "repo",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter repository name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "tooljet"
+      }
+    },
+    "get_repo_issues": {
+      "owner": {
+        "label": "Owner",
+        "key": "owner",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter owner name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "developer"
+      },
+      "repo": {
+        "label": "Repository",
+        "key": "repo",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter repository name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "tooljet"
+      },
+      "state": {
+        "label": "State",
+        "key": "state",
+        "className": "codehinter-plugins col-4",
+        "type": "dropdown",
+        "description": "Single select dropdown for choosing state",
+        "list": [
+          {
+            "value": "open",
+            "name": "Open"
+          },
+          {
+            "value": "closed",
+            "name": "Closed"
+          },
+          {
+            "value": "all",
+            "name": "All"
+          }
+        ]
+      }
+    },
+    "get_repo_pull_requests": {
+      "owner": {
+        "label": "Owner",
+        "key": "owner",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter owner name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "developer"
+      },
+      "repo": {
+        "label": "Repository",
+        "key": "repo",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter repository name",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "tooljet"
+      },
+      "state": {
+        "label": "State",
+        "key": "state",
+        "type": "dropdown",
+        "className": "codehinter-plugins col-4",
+        "description": "Single select dropdown for choosing state",
+        "list": [
+          {
+            "value": "open",
+            "name": "Open"
+          },
+          {
+            "value": "closed",
+            "name": "Closed"
+          },
+          {
+            "value": "all",
+            "name": "All"
+          }
+        ]
+      }
+    }
+  }
+}

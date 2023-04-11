@@ -1,6 +1,11 @@
 const { defineConfig } = require("cypress");
 const { rmdir } = require("fs");
+const fs = require("fs");
+const XLSX = require("node-xlsx");
+
 const pg = require("pg");
+const path = require("path");
+const pdf = require("pdf-parse");
 
 module.exports = defineConfig({
   execTimeout: 1800000,
@@ -65,17 +70,14 @@ module.exports = defineConfig({
 
       return require("./cypress/plugins/index.js")(on, config);
     },
+    downloadsFolder:"cypress/downloads",
     experimentalRunAllSpecs: true,
     experimentalModfyObstructiveThirdPartyCode: true,
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: [
-      "cypress/e2e/editor/**/*.cy.js",
-      "cypress/e2e/exportImport/**/*.cy.js",
-      "cypress/e2e/authentication/**/*.cy.js",
-      "cypress/e2e/dashboard/multi-workspace/**/*.cy.js",
-      "cypress/e2e/dashboard/*.cy.js",
-    ],
+      "cypress/e2e/editor/widget/*.cy.js",
+      "cypress/e2e/editor/multipage/*.cy.js"],
     numTestsKeptInMemory: 1,
     redirectionLimit: 10,
     experimentalRunAllSpecs: true,

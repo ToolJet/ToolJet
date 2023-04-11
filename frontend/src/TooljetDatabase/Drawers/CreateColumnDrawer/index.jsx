@@ -11,7 +11,11 @@ const CreateColumnDrawer = () => {
 
   return (
     <>
-      <button onClick={() => setIsCreateColumnDrawerOpen(!isCreateColumnDrawerOpen)} className="btn border-0">
+      <button
+        onClick={() => setIsCreateColumnDrawerOpen(!isCreateColumnDrawerOpen)}
+        className="btn border-0"
+        data-cy="add-new-column-button"
+      >
         <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"

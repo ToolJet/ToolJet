@@ -127,7 +127,7 @@ describe("Data source Elasticsearch", () => {
     fillDataSourceTextField(
       postgreSqlText.labelPort,
       postgreSqlText.placeholderEnterPort,
-      "443"
+      "9200"
     );
 
     fillDataSourceTextField(
@@ -153,7 +153,7 @@ describe("Data source Elasticsearch", () => {
       "elasticsearch_user"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert("Response Error");
+    verifyCouldnotConnectWithAlert("write EPROTO C062440602000000:error:0A00010B:SSL routines:ssl3_get_record:wrong version number:../deps/openssl/openssl/ssl/record/ssl3_record.c:355:");
 
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
@@ -164,10 +164,11 @@ describe("Data source Elasticsearch", () => {
       .clear()
       .type("elasticsearch_password");
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert("Response Error");
+    verifyCouldnotConnectWithAlert("write EPROTO C062440602000000:error:0A00010B:SSL routines:ssl3_get_record:wrong version number:../deps/openssl/openssl/ssl/record/ssl3_record.c:355:");
     cy.get(postgreSqlSelector.passwordTextField)
       .clear()
       .type(Cypress.env("elasticsearch_password"));
+      cy.get('.form-check-input').click()
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {

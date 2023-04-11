@@ -1,0 +1,91 @@
+@import "./typography.scss";
+@import "./designtheme.scss";
+
+.global-datasources-sidebar {
+    height: calc(100vh - 48px);
+    max-width: 288px;
+    overflow-y: scroll;
+
+    .add-datasource-btn {
+        height: 32px;
+        background: var(--indigo9);
+    }
+
+    .datasources-list {
+        display: flex;
+
+        &:hover {
+            background-color: var(--indigo2);
+
+            .ds-delete-btn {
+                display: block;
+            }
+        }
+
+        .ds-delete-btn {
+            display: none;
+            border: none;
+            background: none;
+        }
+    }
+
+    .datasources-list-item {
+        background-color: var(--indigo3);
+    }
+}
+
+.main-empty-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    width: 300px;
+    height: 100%;
+
+    .icon-container {
+        background-color: var(--indigo3);
+        border-radius: 15px;
+        padding: 12px;
+    }
+
+    .heading {
+        color: var(--slate12);
+        font-weight: 600;
+    }
+
+    .sub-heading {
+        text-align: center;
+    }
+
+    .add-datasource-btn {
+        background-color: var(--indigo3);
+        color: var(--indigo9);
+    }
+}
+
+.datasource-modal-container {
+    position: relative;
+
+    .modal {
+        position: absolute;
+    }
+
+    .modal-content {
+        border: 1px solid var(--slate5);
+        .input-icon {
+            &:hover {
+                input {
+                    padding-right: 2rem !important;
+                }
+                .input-icon-addon {
+                    justify-content: flex-end;
+                }
+            }
+        }
+        .close-btn.dark {
+            filter: none !important;
+            background-color: revert !important;
+        }
+    }
+}

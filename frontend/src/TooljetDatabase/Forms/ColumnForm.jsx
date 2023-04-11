@@ -52,22 +52,29 @@ const ColumnForm = ({ onCreate, onClose }) => {
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title">Create a new column</h3>
+        <h3 className="card-title" data-cy="create-new-column-header">
+          Create a new column
+        </h3>
       </div>
       <div className="card-body">
         <div className="mb-3">
-          <div className="form-label">Column name</div>
+          <div className="form-label" data-cy="column-name-input-field-label">
+            Column name
+          </div>
           <input
             value={columnName}
             type="text"
             placeholder="Enter column name"
             className="form-control"
+            data-cy="column-name-input-field"
             autoComplete="off"
             onChange={(e) => setColumnName(e.target.value)}
           />
         </div>
-        <div className="mb-3">
-          <div className="form-label">Data type</div>
+        <div className="mb-3" data-cy="data-type-dropdown-section">
+          <div className="form-label" data-cy="data-type-input-field-label">
+            Data type
+          </div>
           <Select
             useMenuPortal={false}
             placeholder="Select data type"
@@ -77,12 +84,15 @@ const ColumnForm = ({ onCreate, onClose }) => {
           />
         </div>
         <div className="mb-3">
-          <div className="form-label">Default value</div>
+          <div className="form-label" data-cy="default-value-input-field-label">
+            Default value
+          </div>
           <input
             value={defaultValue}
             type="text"
             placeholder="Enter default value"
             className="form-control"
+            data-cy="default-value-input-field"
             autoComplete="off"
             onChange={(e) => setDefaultValue(e.target.value)}
             disabled={dataType === 'serial'}

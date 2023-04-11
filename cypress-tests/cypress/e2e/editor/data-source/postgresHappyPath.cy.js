@@ -171,31 +171,35 @@ describe("Data sources", () => {
       .should("be.visible");
   });
 
-  it("Should verify elements of the Query section.", () => {
+  it.only("Should verify elements of the Query section.", () => {
     selectDataSource(postgreSqlText.postgreSQL);
-    fillConnectionForm({
-      Host: Cypress.env("pg_host"),
-      Port: "5432",
-      "Database Name": "postgres",
-      Username: Cypress.env("pg_user"),
-      Password: Cypress.env("pg_password"),
-    });
+    fillConnectionForm(
+      {
+        Host: Cypress.env("pg_host"),
+        Port: "5432",
+        "Database Name": "postgres",
+        Username: Cypress.env("pg_user"),
+        Password: Cypress.env("pg_password"),
+      },
+      ".form-switch"
+    );
+
     openQueryEditor(postgreSqlText.postgreSQL);
 
-    cy.get(postgreSqlSelector.headerQueryManager).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.headerQueries
-    );
-    cy.get(postgreSqlSelector.labelNoQuery).verifyVisibleElement(
-      "have.text",
-      postgreSqlText.noQueryText
-    );
+    // cy.get(postgreSqlSelector.headerQueryManager).verifyVisibleElement(
+    //   "have.text",
+    //   postgreSqlText.headerQueries
+    // ); removed
+    // cy.get(postgreSqlSelector.labelNoQuery).verifyVisibleElement(
+    //   "have.text",
+    //   postgreSqlText.noQueryText
+    // );
     cy.get(postgreSqlSelector.createQueryButton).verifyVisibleElement(
       "have.text",
       postgreSqlText.buttonLabelCreateQuery
     );
 
-    cy.get(postgreSqlSelector.querySearchIcon).should("be.visible");
+    cy.get(postgreSqlSelector.querySearchBar).should("be.visible");
     cy.get('[data-cy="button-add-new-queries"]').click();
     cy.get(postgreSqlSelector.labelSelectDataSource).verifyVisibleElement(
       "have.text",

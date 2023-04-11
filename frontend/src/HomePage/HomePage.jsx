@@ -17,6 +17,8 @@ import { withTranslation } from 'react-i18next';
 import { sample, isEmpty } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
+import { getWorkspaceId } from '@/_helpers/utils';
+import { withRouter } from '@/_hoc/withRouter';
 
 const { iconList, defaultIcon } = configs;
 
@@ -25,9 +27,13 @@ class HomePageComponent extends React.Component {
   constructor(props) {
     super(props);
 
+    const currentSession = authenticationService.currentSessionValue;
+
     this.fileInput = React.createRef();
     this.state = {
-      currentUser: authenticationService.currentUserValue,
+      currentUser: {
+        id: currentSession?.current_user.id,
+      },
       users: null,
       isLoading: true,
       creatingApp: false,
@@ -116,7 +122,8 @@ class HomePageComponent extends React.Component {
     appService
       .createApp({ icon: sample(iconList) })
       .then((data) => {
-        _self.props.history.push(`/apps/${data.id}`);
+        const workspaceId = getWorkspaceId();
+        _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
       })
       .catch(({ error }) => {
         toast.error(error);
@@ -135,7 +142,7 @@ class HomePageComponent extends React.Component {
       .then((data) => {
         toast.success('App cloned successfully.');
         this.setState({ isCloningApp: false });
-        this.props.history.push(`/apps/${data.id}`);
+        this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
       })
       .catch(({ _error }) => {
         toast.error('Could not clone the app.');
@@ -172,7 +179,7 @@ class HomePageComponent extends React.Component {
             });
             console.log(data);
             if (!isEmpty(data.imports.app)) {
-              this.props.history.push(`/apps/${data.imports.app[0].id}`);
+              this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`);
             } else if (!isEmpty(data.imports.tooljet_database)) {
               this.props.history.push(`/database`);
             }
@@ -195,22 +202,23 @@ class HomePageComponent extends React.Component {
   };
 
   canUserPerform(user, action, app) {
+    const currentSession = authenticationService.currentSessionValue;
     let permissionGrant;
 
     switch (action) {
       case 'create':
-        permissionGrant = this.canAnyGroupPerformAction('app_create', user.group_permissions);
+        permissionGrant = this.canAnyGroupPerformAction('app_create', currentSession.group_permissions);
         break;
       case 'read':
       case 'update':
         permissionGrant =
-          this.canAnyGroupPerformActionOnApp(action, user.app_group_permissions, app) ||
+          this.canAnyGroupPerformActionOnApp(action, currentSession.app_group_permissions, app) ||
           this.isUserOwnerOfApp(user, app);
         break;
       case 'delete':
         permissionGrant =
-          this.canAnyGroupPerformActionOnApp('delete', user.app_group_permissions, app) ||
-          this.canAnyGroupPerformAction('app_delete', user.group_permissions) ||
+          this.canAnyGroupPerformActionOnApp('delete', currentSession.app_group_permissions, app) ||
+          this.canAnyGroupPerformAction('app_delete', currentSession.group_permissions) ||
           this.isUserOwnerOfApp(user, app);
         break;
       default:
@@ -255,15 +263,15 @@ class HomePageComponent extends React.Component {
   };
 
   canCreateFolder = () => {
-    return this.canAnyGroupPerformAction('folder_create', this.state.currentUser.group_permissions);
+    return this.canAnyGroupPerformAction('folder_create', authenticationService.currentSessionValue?.group_permissions);
   };
 
   canDeleteFolder = () => {
-    return this.canAnyGroupPerformAction('folder_delete', this.state.currentUser.group_permissions);
+    return this.canAnyGroupPerformAction('folder_delete', authenticationService.currentSessionValue?.group_permissions);
   };
 
   canUpdateFolder = () => {
-    return this.canAnyGroupPerformAction('folder_update', this.state.currentUser.group_permissions);
+    return this.canAnyGroupPerformAction('folder_update', authenticationService.currentSessionValue?.group_permissions);
   };
 
   cancelDeleteAppDialog = () => {
@@ -699,4 +707,4 @@ class HomePageComponent extends React.Component {
   }
 }
 
-export const HomePage = withTranslation()(HomePageComponent);
+export const HomePage = withTranslation()(withRouter(HomePageComponent));

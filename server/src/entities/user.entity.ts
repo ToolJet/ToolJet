@@ -44,6 +44,9 @@ export class User extends BaseEntity {
   @Column()
   email: string;
 
+  @Column({ name: 'phone_number' })
+  phoneNumber: string;
+
   @Column({
     type: 'enum',
     enumName: 'status',
@@ -127,6 +130,8 @@ export class User extends BaseEntity {
   apps: App[];
 
   organizationId: string;
+  organizationIds?: Array<string>;
   isPasswordLogin: boolean;
   isSSOLogin: boolean;
+  sessionId: string;
 }

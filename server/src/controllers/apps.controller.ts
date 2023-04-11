@@ -105,7 +105,6 @@ export class AppsController {
   }
 
   @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public
-  @UseInterceptors(ValidAppInterceptor)
   @Get('slugs/:slug')
   async appFromSlug(@User() user, @AppDecorator() app: App) {
     if (user) {
@@ -355,7 +354,6 @@ export class AppsController {
     const appUser = await this.appsService.update(app.id, appUpdateDto);
     return decamelizeKeys(appUser);
   }
-
 
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)

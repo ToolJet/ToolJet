@@ -81,7 +81,7 @@ export class UsersService {
     defaultOrganizationId?: string,
     manager?: EntityManager
   ): Promise<User> {
-    const { email, firstName, lastName, password, source, status } = userParams;
+    const { email, firstName, lastName, password, source, status, phoneNumber } = userParams;
     let user: User;
 
     await dbTransactionWrap(async (manager: EntityManager) => {
@@ -91,6 +91,7 @@ export class UsersService {
           firstName,
           lastName,
           password,
+          phoneNumber,
           source,
           status,
           invitationToken: isInvite ? uuid.v4() : null,
@@ -255,6 +256,7 @@ export class UsersService {
 
       case 'User':
       case 'Plugin':
+      case 'GlobalDataSource':
         return await this.hasGroup(user, 'admin');
 
       case 'Thread':
@@ -358,6 +360,11 @@ export class UsersService {
       },
     });
     return !!app && app.organizationId === user.organizationId;
+  }
+
+  async returnOrgIdOfAnApp(appId: string): Promise<any> {
+    const app = await this.appsRepository.findOne(appId);
+    return app?.organizationId;
   }
 
   async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
