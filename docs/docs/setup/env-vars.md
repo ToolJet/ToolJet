@@ -46,6 +46,11 @@ ToolJet server uses PostgreSQL as the database.
 If you are using docker-compose setup, you can set PG_HOST as `postgres` which will be DNS resolved by docker
 :::
 
+:::info
+If you intent you use the DB connection url and if the connection does not support ssl. Please use the below format using the variable DATABASE_URL.
+`postgres://username:password@hostname:port/database_name?sslmode=disable`
+:::
+
 ### Disable database and extension creation (optional)
 
 ToolJet by default tries to create database based on `PG_DB` variable set and additionally my try to create postgres extensions. This requires the postgres user to have CREATEDB permission. If this cannot be granted you can disable this behaviour by setting `PG_DB_OWNER` as `false` and will have to manually run them.
@@ -91,36 +96,33 @@ Use this environment variable to enable/disable the feature that allows users to
 
 Use this environment variable to enable/disable the feature that allows users to use the [marketplace](/docs/marketplace).
 
-| variable | value            |
-| -------- | ---------------------- |
-| ENABLE_MARKETPLACE_FEATURE  | `true` or `false` |
-
-#### Marketplace feature enable ( optional )
-
-Use this environment variable to enable/disable the feature that allows users to use the [marketplace](/docs/marketplace).
-
-| variable | value            |
-| -------- | ---------------------- |
-| ENABLE_MARKETPLACE_FEATURE  | `true` or `false` |
+| variable                   | value             |
+| -------------------------- | ----------------- |
+| ENABLE_MARKETPLACE_FEATURE | `true` or `false` |
 
 #### Enable ToolJet Database ( optional )
 
-| variable           | description                                  |
-| ------------------ | -------------------------------------------- |
-| ENABLE_TOOLJET_DB  | `true` or `false`                            |
-| TOOLJET_DB         | Default value is `tooljet_db`                |
-| TOOLJET_DB_HOST    | database host                                |
-| TOOLJET_DB_USER    | database username                            |
-| TOOLJET_DB_PASS    | database password                            |
-| TOOLJET_DB_PORT    | database port                                |
-| PGRST_JWT_SECRET   | JWT token client provided for authentication |
-| PGRST_HOST         | postgrest database host                      |
+| variable          | description                                  |
+| ----------------- | -------------------------------------------- |
+| ENABLE_TOOLJET_DB | `true` or `false`                            |
+| TOOLJET_DB        | Default value is `tooljet_db`                |
+| TOOLJET_DB_HOST   | database host                                |
+| TOOLJET_DB_USER   | database username                            |
+| TOOLJET_DB_PASS   | database password                            |
+| TOOLJET_DB_PORT   | database port                                |
+| PGRST_JWT_SECRET  | JWT token client provided for authentication |
+| PGRST_HOST        | postgrest database host                      |
 
 Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. Inorder to set it up, [follow the instructions here](/docs/tooljet-database#enabling-the-tooljet-database-for-your-instance).
 
 :::tip
 When this feature is enabled, the database name provided for `TOOLJET_DB` will be utilized to create a new database during server boot process in all of our production deploy setups.
 Incase you want to trigger it manually, use the command `npm run db:create` on ToolJet server.
+:::
+
+:::info
+If you intent you use the DB connection url and if the connection does not support ssl. Please use the below format using the variable TOOLJET_DB_URL.
+`postgres://username:password@hostname:port/database_name?sslmode=disable`
 :::
 
 #### Server Host ( optional )
@@ -131,17 +133,13 @@ You can specify a different server for backend if it is hosted on another server
 | ----------- | ------------------------------------------------------------------------------------------------- |
 | SERVER_HOST | Configure a hostname for the server as a proxy pass. If no value is set, it defaults to `server`. |
 
-#### Disable Multi-Workspace ( optional )
-
-If you want to disable Multi-Workspace feature, set the environment variable `DISABLE_MULTI_WORKSPACE` to `true`.
-
 ### Hide account setup link
 
-If you want to hide account setup link from admin in manage user page, set the environment variable `HIDE_ACCOUNT_SETUP_LINK` to `true`, please make sure you have configured SMTP to receive welcome mail for users. Valid only if `DISABLE_MULTI_WORKSPACE` is not `true`.
+If you want to hide account setup link from admin in manage user page, set the environment variable `HIDE_ACCOUNT_SETUP_LINK` to `true`, please make sure you have configured SMTP to receive welcome mail for users.
 
 #### Disabling signups ( optional )
 
-Sign up is enabled only if Multi-Workspace is enabled. If you want to restrict the signups and allow new users only by invitations, set the environment variable `DISABLE_SIGNUPS` to `true`.
+If you want to restrict the signups and allow new users only by invitations, set the environment variable `DISABLE_SIGNUPS` to `true`.
 
 :::tip
 You will still be able to see the signup page but won't be able to successfully submit the form.
@@ -233,10 +231,9 @@ Once set any APM provider that supports segregation with releases will track it.
 
 Tooljet needs to be configured for custom CA certificate to be able to trust and establish connection over https. This requires you to configure an additional env var `NODE_EXTRA_CA_CERTS` to have absolute path to your CA certificates. This file named `cert.pem` needs to be in PEM format and can have more than one certificates.
 
-| variable            | description                                                       |
-| ------------------  | ----------------------------------------------------------------- |
+| variable            | description                                                        |
+| ------------------- | ------------------------------------------------------------------ |
 | NODE_EXTRA_CA_CERTS | absolute path to certificate PEM file ( eg: /ToolJet/ca/cert.pem ) |
-
 
 #### Disable telemetry ( optional )
 
@@ -253,7 +250,7 @@ The maximum retry limit of login password for a user is by default set to 5, acc
 
 #### SSO Configurations (Optional)
 
-Configurations for instance level SSO. Valid only if `DISABLE_MULTI_WORKSPACE` is not `true`.
+Configurations for instance level SSO.
 
 | variable                     | description                                                    |
 | ---------------------------- | -------------------------------------------------------------- |
@@ -298,11 +295,11 @@ If you intend to use client separately then can set `SERVE_CLIENT` to `false`.
 
 ## PostgREST server (Optional)
 
-| variable           | description                                     |
-| ------------------ | ----------------------------------------------- |
-| PGRST_JWT_SECRET   | JWT token client provided for authentication    |
-| PGRST_DB_URI       | database connection string for tooljet database |
-| PGRST_LOG_LEVEL    | `info`                                          |
+| variable         | description                                     |
+| ---------------- | ----------------------------------------------- |
+| PGRST_JWT_SECRET | JWT token client provided for authentication    |
+| PGRST_DB_URI     | database connection string for tooljet database |
+| PGRST_LOG_LEVEL  | `info`                                          |
 
 If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
 

@@ -17,12 +17,12 @@ function create(first_name, last_name, email) {
     email,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/organization_users`, requestOptions).then(handleResponse);
 }
 
-function inviteBulkUsers(formData, token) {
-  const requestOptions = { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: formData };
+function inviteBulkUsers(formData) {
+  const requestOptions = { method: 'POST', headers: authHeader(true), body: formData, credentials: 'include' };
   return fetch(`${config.apiUrl}/organization_users/upload_csv`, requestOptions).then(handleResponse);
 }
 
@@ -32,7 +32,7 @@ function changeRole(id, role) {
     role,
   };
 
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/organization_users/${id}/change_role`, requestOptions).then(handleResponse);
 }
 
@@ -54,6 +54,7 @@ function unarchive(id, organizationId) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
+    credentials: 'include',
     body: JSON.stringify({ ...(organizationId && { organizationId }) }),
   };
   return fetch(`${config.apiUrl}/organization_users/${id}/unarchive`, requestOptions).then(handleResponse);

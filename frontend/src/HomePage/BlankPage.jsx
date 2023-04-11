@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import TemplateLibraryModal from './TemplateLibraryModal/';
-import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { libraryAppService } from '@/_services';
 import EmptyIllustration from '@assets/images/no-apps.svg';
+import { getWorkspaceId } from '../_helpers/utils';
+import { useNavigate } from 'react-router-dom';
 
 export const BlankPage = function BlankPage({
   createApp,
@@ -20,7 +21,7 @@ export const BlankPage = function BlankPage({
 }) {
   const { t } = useTranslation();
   const [deploying, setDeploying] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const staticTemplates = [
     { id: 's3-file-explorer', name: 'S3 File Explorer' },
@@ -38,7 +39,7 @@ export const BlankPage = function BlankPage({
           setDeploying(false);
           toast.dismiss(loadingToastId);
           toast.success('App created.');
-          history.push(`/apps/${data.id}`);
+          navigate(`/${getWorkspaceId()}/apps/${data.id}`);
         })
         .catch((e) => {
           toast.dismiss(loadingToastId);

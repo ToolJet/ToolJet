@@ -49,10 +49,13 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
 
   const actionButtonRadius = styles.actionButtonRadius ? parseFloat(styles.actionButtonRadius) : 0;
 
-  const actions = (component.definition.properties.actions?.value ?? []).map((action) => ({
-    ...action,
-    actionButtonRadius,
-  }));
+  const actions = (component.definition.properties.actions?.value ?? []).map((action) => {
+    action.position = action?.position ?? 'right';
+    return {
+      ...action,
+      actionButtonRadius,
+    };
+  });
 
   return {
     color,
