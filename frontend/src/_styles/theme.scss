@@ -2132,6 +2132,10 @@ tr:focus {
   color: var(--slate12);
   border: 1px solid var(--slate3);
 
+  .popover-arrow {
+    display: none;
+  }
+
   .popover-body {
     padding: 16px 12px 0px 12px;
     color: var(--slate12);
@@ -9493,6 +9497,7 @@ tbody {
 .tj-db-table {
   overflow-y: auto;
   height: 110px;
+
   table {
     border-collapse: collapse;
     width: 100%;
@@ -10011,6 +10016,7 @@ tbody {
   border-color: var(--slate4);
   border-radius: 0px !important;
 }
+
 .add-col-btn-database {
   position: absolute;
   top: 28;
@@ -10343,12 +10349,14 @@ tbody {
   overflow-y: auto;
   background: var(--slate2);
 }
-.plugins-card{
+
+.plugins-card {
   background-color: var(--base);
   border: 1px solid var(--slate3);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   border-radius: 6px;
 }
-.template-source-name{
+
+.template-source-name {
   color: var(--slate12) !important;
 }

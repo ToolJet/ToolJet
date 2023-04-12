@@ -44,42 +44,44 @@ export const AppMenu = function AppMenu({
       rootClose
       onToggle={onMenuOpen}
       overlay={
-        <Popover id="popover-app-menu" className={darkMode && 'dark-theme'}>
-          <Popover.Body bsPrefix="popover-body">
-            <div data-cy="card-options">
-              {canUpdateApp && (
-                <Field
-                  text={t('homePage.appCard.changeIcon', 'Change Icon')}
-                  onClick={() => openAppActionModal('change-icon')}
-                />
-              )}
-              {canCreateApp && (
-                <>
+        <div>
+          <Popover id="popover-app-menu" className={darkMode && 'dark-theme'} placement="bottom">
+            <Popover.Body bsPrefix="popover-body">
+              <div data-cy="card-options">
+                {canUpdateApp && (
                   <Field
-                    text={t('homePage.appCard.addToFolder', 'Add to folder')}
-                    onClick={() => openAppActionModal('add-to-folder')}
+                    text={t('homePage.appCard.changeIcon', 'Change Icon')}
+                    onClick={() => openAppActionModal('change-icon')}
                   />
-
-                  {currentFolder.id && (
+                )}
+                {canCreateApp && (
+                  <>
                     <Field
-                      text={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
-                      onClick={() => openAppActionModal('remove-app-from-folder')}
+                      text={t('homePage.appCard.addToFolder', 'Add to folder')}
+                      onClick={() => openAppActionModal('add-to-folder')}
                     />
-                  )}
-                  <Field text={t('homePage.appCard.cloneApp', 'Clone app')} onClick={cloneApp} />
-                  <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
-                </>
-              )}
-              {canDeleteApp && (
-                <Field
-                  text={t('homePage.appCard.deleteApp', 'Delete app')}
-                  customClass="field__danger"
-                  onClick={deleteApp}
-                />
-              )}
-            </div>
-          </Popover.Body>
-        </Popover>
+
+                    {currentFolder.id && (
+                      <Field
+                        text={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
+                        onClick={() => openAppActionModal('remove-app-from-folder')}
+                      />
+                    )}
+                    <Field text={t('homePage.appCard.cloneApp', 'Clone app')} onClick={cloneApp} />
+                    <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
+                  </>
+                )}
+                {canDeleteApp && (
+                  <Field
+                    text={t('homePage.appCard.deleteApp', 'Delete app')}
+                    customClass="field__danger"
+                    onClick={deleteApp}
+                  />
+                )}
+              </div>
+            </Popover.Body>
+          </Popover>
+        </div>
       }
     >
       <div className={`d-grid cursor-pointer menu-ico${isMenuOpen ? '__open' : ''}`} data-cy={`app-card-menu-icon`}>
