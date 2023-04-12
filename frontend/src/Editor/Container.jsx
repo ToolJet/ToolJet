@@ -335,7 +335,7 @@ export const Container = ({
     }
   }
 
-  React.useEffect(() => { }, [selectedComponents]);
+  React.useEffect(() => {}, [selectedComponents]);
 
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
