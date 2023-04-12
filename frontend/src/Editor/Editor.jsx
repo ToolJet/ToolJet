@@ -494,7 +494,6 @@ class EditorComponent extends React.Component {
         }
       );
 
-      this.fetchDataSources();
       this.fetchDataQueries();
       this.fetchGlobalDataSources();
       initEditorWalkThrough();
@@ -1378,9 +1377,14 @@ class EditorComponent extends React.Component {
   };
 
   appEnvironmentChanged = (currentAppEnvironmentId, isVersionChanged) => {
-    this.setState({
-      currentAppEnvironmentId,
-    });
+    this.setState(
+      {
+        currentAppEnvironmentId,
+      },
+      () => {
+        this.fetchDataSources();
+      }
+    );
     const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentAppEnvironmentIds') || JSON.stringify({}));
     if (currentEnvironmentObj[this.state.appId] !== currentAppEnvironmentId) {
       currentEnvironmentObj[this.state.appId] = currentAppEnvironmentId;
