@@ -374,7 +374,7 @@ export function Table({
         const value = isColumnValueHasCurlyBraces
           ? resolveReferences(column.value, currentState, '', { rowData: data, cellValue: data[column.header] })
           : data[column.header];
-        data[column.header] = value.replace('cellValue', `${data[column.header]}`);
+        data[column.header] = value;
       });
       accumulator.push(data);
       return accumulator;
@@ -389,6 +389,7 @@ export function Table({
       JSON.stringify(properties.data),
       JSON.stringify(columnsIncludesDynamicValue),
       JSON.stringify(columns),
+      JSON.stringify(currentState),
     ]
   );
 
@@ -956,6 +957,7 @@ export function Table({
                         cellValue,
                         rowData,
                       });
+
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
