@@ -54,7 +54,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
   return (
     <div className="row gx-0">
       <Sidebar />
-      <div className={cx('col database-page-content-wrap')}>
+      <div className={cx('col animation-fade database-page-content-wrap')}>
         {totalTables === 0 && <EmptyState />}
 
         {selectedTable && (

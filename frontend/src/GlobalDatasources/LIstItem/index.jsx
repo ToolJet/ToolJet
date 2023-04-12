@@ -27,7 +27,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSidebarNAV }
   useEffect(() => {
     if (active) updateSidebarNAV(dataSource?.name);
     else if (dataSource?.length == 0) updateSidebarNAV('');
-  }, [dataSource]);
+  }, [JSON.stringify(dataSource)]);
 
   return (
     <div

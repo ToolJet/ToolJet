@@ -11,6 +11,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App/App';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox } from '@/_components/SearchBox';
+import _ from 'lodash';
 
 export const Folders = function Folders({
   folders,
@@ -79,7 +80,11 @@ export const Folders = function Folders({
   }
 
   function handleFolderChange(folder) {
-    setActiveFolder(folder);
+    if (_.isEmpty(folder)) {
+      setActiveFolder({});
+    } else {
+      setActiveFolder(folder);
+    }
     folderChanged(folder);
     updateSidebarNAV(folder?.name ?? 'All apps');
   }
@@ -104,6 +109,7 @@ export const Folders = function Folders({
         setShowDeleteConfirmation(false);
         setDeletionStatus(false);
         foldersChanged();
+        handleFolderChange({});
       })
       .catch(({ error }) => {
         toast.error(error);
@@ -219,8 +225,8 @@ export const Folders = function Folders({
             className={cx(
               `list-group-item border-0 list-group-item-action d-flex align-items-center all-apps-link tj-text-xsm`,
               {
-                'bg-light-indigo': !activeFolder.id && !darkMode,
-                'bg-dark-indigo': !activeFolder.id && darkMode,
+                'bg-light-indigo': _.isEmpty(activeFolder) && !darkMode,
+                'bg-dark-indigo': _.isEmpty(activeFolder) && darkMode,
               }
             )}
             style={{ height: '32px' }}

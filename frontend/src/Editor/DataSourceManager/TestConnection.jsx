@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { datasourceService } from '@/_services';
 import { useTranslation } from 'react-i18next';
-import { ButtonSolid } from '../../_ui/AppButton/AppButton';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed }) => {
   const [isTesting, setTestingStatus] = useState(false);

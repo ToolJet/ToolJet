@@ -221,9 +221,9 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
       )}
       <div
         style={{
-          height: 'calc(100vh - 196px)', // 48px navbar + 96 for table bar +  52 px in footer
+          height: 'calc(100vh - 164px)', // 48px navbar + 96 for table bar +  52 px in footer
         }}
-        className={cx('table-responsive border-0 tj-db-table ')}
+        className={cx('table-responsive border-0 tj-db-table animation-fade')}
       >
         <table
           {...getTableProps()}

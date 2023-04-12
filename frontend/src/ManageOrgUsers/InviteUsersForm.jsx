@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
-import SolidIcon from '../_ui/Icon/SolidIcons';
+import React, { useState, useCallback, useRef } from 'react';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useTranslation } from 'react-i18next';
-import { ButtonSolid } from '../_ui/AppButton/AppButton';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
 import { useDropzone } from 'react-dropzone';
 import { FileDropzone } from './FileDropzone';
@@ -20,7 +20,7 @@ function InviteUsersForm({
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(1);
 
-  const hiddenFileInput = React.useRef(null);
+  const hiddenFileInput = useRef(null);
   const { acceptedFiles } = useDropzone({
     onDrop,
     accept: 'text/csv',

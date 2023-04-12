@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
 import Layout from '@/_ui/Layout';
-import { ListGroupItem } from './ListGroupItem';
 import { InstalledPlugins } from './InstalledPlugins';
 import { MarketplacePlugins } from './MarketplacePlugins';
 import { marketplaceService, pluginsService, authenticationService } from '@/_services';
@@ -8,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import config from 'config';
 import { BreadCrumbContext } from '@/App/App';
+import FolderList from '@/_ui/FolderList/FolderList';
 
 const MarketplacePage = ({ darkMode, switchDarkMode }) => {
   const [active, setActive] = React.useState('installed');
@@ -59,6 +59,17 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
     setInstalledPlugins(data);
   };
 
+  const itemRender = (key) => {
+    switch (key) {
+      case 'Marketplace':
+        return 'marketplace';
+      case 'Installed':
+        return 'installed';
+      default:
+        break;
+    }
+  };
+
   return (
     <Layout switchDarkMode={switchDarkMode} darkMode={darkMode}>
       <div className="wrapper">
@@ -66,19 +77,19 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
           <div className=" marketplace-body">
             <div className="p-3">
               <div className="row g-4">
-                <div className="col-3">
+                <div style={{ width: '288px' }}>
                   <div className="subheader mb-2">Plugins</div>
                   <div className="list-group mb-3">
-                    <ListGroupItem
-                      active={active === 'installed'}
-                      handleClick={() => setActive('installed')}
-                      text="Installed"
-                    />
-                    <ListGroupItem
-                      active={active === 'marketplace'}
-                      handleClick={() => setActive('marketplace')}
-                      text="Marketplace"
-                    />
+                    {['Installed', 'Marketplace'].map((item, index) => (
+                      <FolderList
+                        key={index}
+                        action
+                        selectedItem={active === itemRender(item)}
+                        onClick={() => setActive(itemRender(item))}
+                      >
+                        {item}
+                      </FolderList>
+                    ))}
                   </div>
                 </div>
                 {active === 'installed' ? (

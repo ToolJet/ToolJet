@@ -68,7 +68,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
       <Sidebar />
       <div
         ref={containerRef}
-        className={cx('col datasource-modal-container', {
+        className={cx('col animation-fade datasource-modal-container', {
           'bg-light-gray': !darkMode,
         })}
       >

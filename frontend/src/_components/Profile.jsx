@@ -74,7 +74,6 @@ export const Profile = function Header({ darkMode }) {
         <ToolTip message="Profile">
           <div className="d-xl-block" data-cy="profile-settings">
             <Avatar
-              //  className="tj-avatar"
               avatarId={currentUser?.avatar_id}
               text={`${currentUser?.first_name ? currentUser?.first_name[0] : ''}${
                 currentUser?.last_name ? currentUser?.last_name[0] : ''

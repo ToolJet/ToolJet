@@ -19,8 +19,8 @@ import { capitalize, isEmpty } from 'lodash';
 import { Card } from '@/_ui/Card';
 import { withTranslation, useTranslation } from 'react-i18next';
 import { camelizeKeys, decamelizeKeys } from 'humps';
-import { ButtonSolid } from '../../_ui/AppButton/AppButton';
-import SolidIcon from '../../_ui/Icon/SolidIcons';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {

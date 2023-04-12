@@ -10,7 +10,7 @@ const userStatusOptions = [
 ];
 
 const UsersFilter = ({ filterList }) => {
-  const [options, setOptions] = React.useState({ searchText: '', status: '' });
+  const [options, setOptions] = useState({ searchText: '', status: '' });
   const [statusVal, setStatusVal] = useState('');
   const [queryVal, setQueryVal] = useState();
 
@@ -42,7 +42,7 @@ const UsersFilter = ({ filterList }) => {
     return debouncedFilter.cancel;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options?.searchText, options?.status]);
+  }, [options.searchText, options.status]);
 
   return (
     <div className="workspace-settings-table-wrap workspace-settings-filter-wrap">
