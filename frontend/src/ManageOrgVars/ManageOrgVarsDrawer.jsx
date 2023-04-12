@@ -16,24 +16,24 @@ const ManageOrgVarsDrawer = ({
   changeNewVariableOption,
 }) => {
   return (
-      <Drawer
-        disableFocus={true}
-        isOpen={isManageVarDrawerOpen}
-        onClose={() => setIsManageVarDrawerOpen(false)}
-        position="right"
-      >
-        <VariableForm
-          fields={fields}
-          errors={errors}
-          selectedVariableId={selectedVariableId}
-          createOrUpdate={createOrUpdate}
-          changeNewVariableOption={changeNewVariableOption}
-          handleEncryptionToggle={handleEncryptionToggle}
-          handleVariableTypeSelect={handleVariableTypeSelect}
-          onCancelBtnClicked={onCancelBtnClicked}
-          addingVar={addingVar}
-        />
-      </Drawer>
+    <Drawer
+      disableFocus={true}
+      isOpen={isManageVarDrawerOpen}
+      onClose={() => setIsManageVarDrawerOpen(false)}
+      position="right"
+    >
+      <VariableForm
+        fields={fields}
+        errors={errors}
+        selectedVariableId={selectedVariableId}
+        createOrUpdate={createOrUpdate}
+        changeNewVariableOption={changeNewVariableOption}
+        handleEncryptionToggle={handleEncryptionToggle}
+        handleVariableTypeSelect={handleVariableTypeSelect}
+        onCancelBtnClicked={onCancelBtnClicked}
+        addingVar={addingVar}
+      />
+    </Drawer>
   );
 };
 

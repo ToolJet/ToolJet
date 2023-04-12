@@ -15,24 +15,24 @@ const ManageOrgUsersDrawer = ({
   inviteBulkUsers,
 }) => {
   return (
-      <Drawer
-        disableFocus={true}
-        isOpen={isInviteUsersDrawerOpen}
+    <Drawer
+      disableFocus={true}
+      isOpen={isInviteUsersDrawerOpen}
+      onClose={() => setIsInviteUsersDrawerOpen(false)}
+      position="right"
+    >
+      <InviteUsersForm
+        createUser={createUser}
+        changeNewUserOption={changeNewUserOption}
+        errors={errors}
+        fields={fields}
+        handleFileChange={handleFileChange}
+        uploadingUsers={uploadingUsers}
+        onCancel={onCancel}
+        inviteBulkUsers={inviteBulkUsers}
         onClose={() => setIsInviteUsersDrawerOpen(false)}
-        position="right"
-      >
-        <InviteUsersForm
-          createUser={createUser}
-          changeNewUserOption={changeNewUserOption}
-          errors={errors}
-          fields={fields}
-          handleFileChange={handleFileChange}
-          uploadingUsers={uploadingUsers}
-          onCancel={onCancel}
-          inviteBulkUsers={inviteBulkUsers}
-          onClose={() => setIsInviteUsersDrawerOpen(false)}
-        />
-      </Drawer>
+      />
+    </Drawer>
   );
 };
 

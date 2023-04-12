@@ -46,7 +46,6 @@ export function OrganizationSettings(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticationService.currentSessionValue?.admin]);
 
-  const selectedClassName = props.darkMode ? 'bg-dark-indigo' : 'bg-light-indigo';
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper organization-settings-page">

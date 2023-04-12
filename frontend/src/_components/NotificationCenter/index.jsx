@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { commentNotificationsService } from '@/_services';
 import { Notification } from './Notification';
 import { toast } from 'react-hot-toast';

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import SolidIcon from '../_ui/Icon/SolidIcons';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '../_ui/AppButton/AppButton';
@@ -45,10 +45,6 @@ function InviteUsersForm({
       {file.path} - {file.size} bytes
     </li>
   ));
-
-  useEffect(() => {
-    console.log('acceptedFiles', acceptedFiles);
-  }, [acceptedFiles]);
 
   return (
     <div>
