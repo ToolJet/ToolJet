@@ -50,7 +50,7 @@ export class DataSourcesController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const dataSources = await this.dataSourcesService.all(query, user.organizationId);
+    const dataSources = await this.dataSourcesService.all(query, user);
     for (const dataSource of dataSources) {
       if (dataSource.pluginId) {
         dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');

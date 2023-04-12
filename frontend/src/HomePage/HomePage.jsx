@@ -13,12 +13,11 @@ import TemplateLibraryModal from './TemplateLibraryModal/';
 import HomeHeader from './Header';
 import Modal from './Modal';
 import configs from './Configs/AppIcon.json';
-import { retrieveWhiteLabelText } from '../_helpers/utils';
+import { retrieveWhiteLabelText, getWorkspaceId } from '../_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { sample } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
-import { getWorkspaceId } from '@/_helpers/utils';
 import { withRouter } from '@/_hoc/withRouter';
 
 const { iconList, defaultIcon } = configs;
@@ -145,7 +144,7 @@ class HomePageComponent extends React.Component {
         .then((data) => {
           toast.success('App cloned successfully.');
           this.setState({ isCloningApp: false });
-          this.props.history.push(`/apps/${data.id}`);
+          this.props.navigate(`/apps/${data.id}`);
         })
         .catch(({ _error }) => {
           toast.error('Could not clone the app.');

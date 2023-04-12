@@ -68,7 +68,7 @@ export class OrganizationsService {
     private instanceSettingsService: InstanceSettingsService,
     private configService: ConfigService,
     private auditLoggerService: AuditLoggerService
-  ) {}
+  ) { }
 
   async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
     let organization: Organization;
@@ -146,6 +146,7 @@ export class OrganizationsService {
   }
 
   async getSingleOrganization(): Promise<Organization> {
+    const resultt = await this.organizationsRepository.findOne({ relations: ['ssoConfigs'] });
     return await this.organizationsRepository.findOne({ relations: ['ssoConfigs'] });
   }
 
@@ -167,6 +168,8 @@ export class OrganizationsService {
           orgEnvironmentVariableDelete: isAdmin,
           folderUpdate: isAdmin,
           folderDelete: isAdmin,
+          dataSourceDelete: isAdmin,
+          dataSourceCreate: isAdmin,
         });
         await manager.save(groupPermission);
         createdGroupPermissions.push(groupPermission);
@@ -705,10 +708,10 @@ export class OrganizationsService {
   decamelizeDefaultGroupNames(groups: string) {
     return groups?.length
       ? groups
-          .split('|')
-          .map((group: string) =>
-            group === 'All Users' || group === 'Admin' ? decamelize(group.replace(' ', '')) : group
-          )
+        .split('|')
+        .map((group: string) =>
+          group === 'All Users' || group === 'Admin' ? decamelize(group.replace(' ', '')) : group
+        )
       : [];
   }
 
@@ -768,7 +771,7 @@ export class OrganizationsService {
           return next(null, data.first_name !== '' && data.last_name !== '' && emailPattern.test(data.email));
         }, manager);
       })
-      .on('data', function () {})
+      .on('data', function () { })
       .on('data-invalid', (row, rowNumber) => {
         invalidRows.push(rowNumber);
       })

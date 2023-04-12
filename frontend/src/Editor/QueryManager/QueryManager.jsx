@@ -19,6 +19,7 @@ import cx from 'classnames';
 import { diff } from 'deep-object-diff';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { ChangeDataSource } from './ChangeDataSource';
+import { canUseDataSourceForQuery } from '../../_helpers/global-datasources';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -543,6 +544,7 @@ class QueryManagerComponent extends React.Component {
     }
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
+    const visibleGlobalDataSource = globalDataSources?.filter((gds) => canUseDataSourceForQuery(gds.id));
 
     return (
       <div
@@ -774,7 +776,7 @@ class QueryManagerComponent extends React.Component {
                   {!this.state.isSourceSelected && <label className="form-label col-md-3">Global Datasources</label>}{' '}
                   {!this.state.isSourceSelected && (
                     <DataSourceLister
-                      dataSources={globalDataSources}
+                      dataSources={visibleGlobalDataSource}
                       staticDataSources={[]}
                       changeDataSource={this.changeDataSource}
                       handleBackButton={this.handleBackButton}

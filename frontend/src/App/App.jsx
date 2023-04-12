@@ -22,7 +22,7 @@ import { Authorize } from '@/Oauth2';
 import { Authorize as Oauth } from '@/Oauth';
 import { Viewer } from '@/Editor';
 import { OrganizationSettings } from '@/OrganizationSettingsPage';
-import { AuditLogs } from '@/AuditLogs';
+import { AuditLogsPage } from '@/AuditLogs';
 import { SettingsPage } from '../SettingsPage/SettingsPage';
 import { ForgotPassword } from '@/ForgotPassword';
 import { ResetPassword } from '@/ResetPassword';
@@ -33,7 +33,6 @@ import { lt } from 'semver';
 import Toast from '@/_ui/Toast';
 import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
-import 'emoji-mart/css/emoji-mart.css';
 import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 import { InstanceSettings } from '@/InstanceSettingsPage';
@@ -354,11 +353,11 @@ class AppComponent extends React.Component {
               path="/:workspaceId/audit-logs"
               element={
                 <PrivateRoute>
-                  <AuditLogs switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  <AuditLogsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                 </PrivateRoute>
               }
             />
-            <PrivateRoute
+            <Route
               exact
               path="/:workspaceId/settings"
               element={

@@ -49,13 +49,12 @@ import RealtimeCursors from '@/Editor/RealtimeCursors';
 import { initEditorWalkThrough } from '@/_helpers/createWalkThrough';
 import { EditorContextWrapper } from './Context/EditorContextWrapper';
 import Selecto from 'react-selecto';
-import { retrieveWhiteLabelText } from '@/_helpers/utils';
+import { retrieveWhiteLabelText, getWorkspaceId } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import EditorHeader from './Header';
-import { getWorkspaceId } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 
@@ -169,7 +168,10 @@ class EditorComponent extends React.Component {
 
   getCurrentOrganizationDetails() {
     const currentSession = authenticationService.currentSessionValue;
-    const currentUser = currentSession?.current_user;
+    const currentUser = {
+      ...currentSession?.current_user,
+      current_organization_id: currentSession?.current_organization_id,
+    };
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
       if (currentUser && currentSession?.group_permissions) {
         const userVars = {
@@ -327,7 +329,7 @@ class EditorComponent extends React.Component {
       },
       () => {
         const { current_organization_id: organizationId } = this.state.currentUser;
-        globalDatasourceService.getAll(organizationId).then((data) =>
+        globalDatasourceService.getAll(organizationId, this.state.editingVersion?.id).then((data) =>
           this.setState({
             globalDataSources: data.data_sources,
             loadingGlobalDataSources: false,
@@ -1388,7 +1390,7 @@ class EditorComponent extends React.Component {
   };
 
   setCurrentAppEnvironmentId = () => {
-    const appId = this.props.match.params.id;
+    const appId = this.props.params.id;
     const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentAppEnvironmentIds') || JSON.stringify({}));
     this.setState({ currentAppEnvironmentId: currentEnvironmentObj[appId] });
   };

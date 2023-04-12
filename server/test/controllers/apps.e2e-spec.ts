@@ -348,8 +348,7 @@ describe('apps controller', () => {
           current_page: 1,
         });
 
-        response = await request(app.getHttpServer())
-          .get(`/api/apps?searchKey=public`)
+        response = await request(app.getHttpServer()).get(`/api/apps?searchKey=public`);
 
         expect(response.statusCode).toBe(200);
         await logoutUser(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
@@ -489,7 +488,7 @@ describe('apps controller', () => {
 
         response = await request(app.getHttpServer())
           .get(`/api/apps?searchKey=public app in`)
-          .query({ folder: folder.id, page: 1 })
+          .query({ folder: folder.id, page: 1 });
 
         expect(response.statusCode).toBe(200);
         await logoutUser(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
@@ -593,8 +592,7 @@ describe('apps controller', () => {
         name: 'App to clone',
       });
 
-      const response = await request(app.getHttpServer())
-        .post(`/api/apps/${application.id}/clone`)
+      const response = await request(app.getHttpServer()).post(`/api/apps/${application.id}/clone`);
 
       expect(response.statusCode).toBe(201);
 
@@ -937,9 +935,8 @@ describe('apps controller', () => {
         name: 'test_name',
       });
 
-      const response = await request(app.getHttpServer())
-        .delete(`/api/apps/${application.id}`)
-        //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+      const response = await request(app.getHttpServer()).delete(`/api/apps/${application.id}`);
+      //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
 
       expect(response.statusCode).toBe(200);
       await expect(App.findOneOrFail({ where: { id: application.id } })).rejects.toThrow(expect.any(Error));
@@ -1129,9 +1126,8 @@ describe('apps controller', () => {
         });
         await createApplicationVersion(app, application);
 
-        const response = await request(app.getHttpServer())
-          .get(`/api/apps/${application.id}/versions`)
-          //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+        const response = await request(app.getHttpServer()).get(`/api/apps/${application.id}/versions`);
+        //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
 
         expect(response.statusCode).toBe(200);
         expect(response.body.versions.length).toBe(1);
@@ -1585,9 +1581,10 @@ describe('apps controller', () => {
         await createApplicationVersion(app, application);
         const duplicateVersion = await createApplicationVersion(app, application, { name: 'v123' });
 
-        const response = await request(app.getHttpServer())
-          .delete(`/api/apps/${application.id}/versions/${duplicateVersion.id}`)
-          //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+        const response = await request(app.getHttpServer()).delete(
+          `/api/apps/${application.id}/versions/${duplicateVersion.id}`
+        );
+        //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
 
         expect(response.statusCode).toBe(200);
       });
@@ -1772,9 +1769,8 @@ describe('apps controller', () => {
         });
         const version = await createApplicationVersion(app, application);
 
-        const response = await request(app.getHttpServer())
-          .get(`/api/apps/${application.id}/versions/${version.id}`)
-          //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+        const response = await request(app.getHttpServer()).get(`/api/apps/${application.id}/versions/${version.id}`);
+        //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
 
         expect(response.statusCode).toBe(200);
       });
@@ -2094,9 +2090,8 @@ describe('apps controller', () => {
       });
       await createApplicationVersion(app, application);
 
-      const response = await request(app.getHttpServer())
-        .get('/api/apps/slugs/foo')
-        //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+      const response = await request(app.getHttpServer()).get('/api/apps/slugs/foo');
+      //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
 
       expect(response.statusCode).toBe(200);
 

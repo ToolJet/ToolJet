@@ -1,7 +1,7 @@
 import React from 'react';
 import { authenticationService, userService, organizationUserService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import ReactTooltip from 'react-tooltip';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { withTranslation } from 'react-i18next';
 import UsersTable from '../../ee/components/UsersPage/UsersTable';
 import UsersFilter from '../../ee/components/UsersPage/UsersFilter';

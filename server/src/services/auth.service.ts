@@ -221,8 +221,10 @@ export class AuthService {
 
       return decamelizeKeys({
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
+        super_admin: user.userType === 'instance',
         groupPermissions: await this.usersService.groupPermissions(user, manager),
         appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+        dataSourceGroupPermissions: await this.usersService.dataSourceGroupPermissions(user, null, manager),
         currentUser: {
           id: user.id,
           email: user.email,
@@ -682,6 +684,14 @@ export class AuthService {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      avatar_id: user.avatarId,
+      organizationId: organization.id,
+      organization: organization.name,
+      superAdmin: isSuperAdmin(user),
+      admin: await this.usersService.hasGroup(user, 'admin', null, manager),
+      groupPermissions: await this.usersService.groupPermissions(user, manager),
+      appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+      dataSourceGroupPermissions: await this.usersService.dataSourceGroupPermissions(user, null, manager),
       currentOrganizationId: organization.id,
     });
   }

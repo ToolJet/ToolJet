@@ -104,7 +104,7 @@ describe('library apps controller', () => {
         userType: 'instance',
       });
 
-      let response = await request(app.getHttpServer())
+      let response = await request(app.getHttpServer());
       const loggedUser = await authenticateUser(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 

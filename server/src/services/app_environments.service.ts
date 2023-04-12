@@ -1,18 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { AppVersion } from 'src/entities/app_version.entity';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, UpdateResult } from 'typeorm';
 import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
 
 @Injectable()
 export class AppEnvironmentService {
-  constructor(
-    @InjectRepository(AppVersion)
-    private appVersionRepository: Repository<AppVersion>
-  ) {}
-
   async get(organizationId: string, id?: string, manager?: EntityManager): Promise<AppEnvironment> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!id) {
@@ -52,14 +46,39 @@ export class AppEnvironmentService {
     }, manager);
   }
 
+  async update(id: string, name: string, organizationId: string, manager?: EntityManager): Promise<UpdateResult> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.update(AppEnvironment, { id, organizationId }, { name });
+    }, manager);
+  }
+
   async getAll(organizationId: string, manager?: EntityManager): Promise<AppEnvironment[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return await manager.find(AppEnvironment, { where: { organizationId } });
     }, manager);
   }
 
+  async delete(id: string, organizationId: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const env = await manager.findOne(AppEnvironment, {
+        where: {
+          id,
+          organizationId,
+        },
+      });
+
+      if (env.isDefault) {
+        throw Error("Can't delete the default environment");
+      }
+
+      return await manager.delete(AppEnvironment, { where: { id, organizationId } });
+    });
+  }
+
   async getVersion(id: string) {
-    return this.appVersionRepository.findOne(id);
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.findOneOrFail(AppVersion, { id });
+    });
   }
 
   async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {

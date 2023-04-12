@@ -41,6 +41,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { MetaModule } from '../meta/meta.module';
 import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
+import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { SessionService } from '@services/session.service';
 import { SessionScheduler } from 'src/schedulers/session.scheduler';
 
@@ -59,6 +60,7 @@ import { SessionScheduler } from 'src/schedulers/session.scheduler';
       SSOConfigs,
       AppGroupPermission,
       UserGroupPermission,
+      DataSourceGroupPermission,
       AuditLog,
       DataSource,
       Credential,

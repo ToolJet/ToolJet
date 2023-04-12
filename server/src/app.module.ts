@@ -37,7 +37,6 @@ import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
 import { AuditLogsModule } from './modules/audit_logs/audit_logs.module';
-import { RequestContextModule } from './modules/request_context/request-context.module';
 import { InstanceSettingsModule } from './modules/instance_settings/instance_settings.module';
 import { TooljetDbModule } from './modules/tooljet_db/tooljet_db.module';
 import { PluginsModule } from './modules/plugins/plugins.module';

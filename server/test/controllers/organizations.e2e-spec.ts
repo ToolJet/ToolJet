@@ -38,9 +38,9 @@ describe('organizations controller', () => {
       for (const userData of [adminUserData, superAdminUserData]) {
         const { user, orgUser } = adminUserData;
         const response = await request(app.getHttpServer())
-        .get('/api/organizations/users?page=1')
-        .set('tj-workspace-id', user.defaultOrganizationId)
-        .set('Cookie', userData['tokenCookie']);
+          .get('/api/organizations/users?page=1')
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', userData['tokenCookie']);
 
         expect(response.statusCode).toBe(200);
         expect(response.body.users.length).toBe(1);
@@ -234,7 +234,7 @@ describe('organizations controller', () => {
           userType: 'instance',
         });
 
-        let response = await request(app.getHttpServer())
+        let response = await request(app.getHttpServer());
         const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
           .patch('/api/organizations/configs')
@@ -297,9 +297,9 @@ describe('organizations controller', () => {
 
         for (const userData of [user, superAdminUserData.user]) {
           const getResponse = await request(app.getHttpServer())
-          .get('/api/organizations/configs')
-          .set('tj-workspace-id', user.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie);
+            .get('/api/organizations/configs')
+            .set('tj-workspace-id', user.defaultOrganizationId)
+            .set('Cookie', loggedUser.tokenCookie);
 
           expect(getResponse.statusCode).toBe(200);
 

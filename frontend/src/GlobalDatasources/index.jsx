@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
 import { globalDatasourceService, appEnvironmentService, authenticationService } from '@/_services';
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
+import { toast } from 'react-hot-toast';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
@@ -12,7 +13,8 @@ export const GlobalDataSourcesContext = createContext({
 });
 
 export const GlobalDatasources = (props) => {
-  const { admin } = authenticationService.currentSessionValue;
+  const { admin, data_source_group_permissions, group_permissions, super_admin, current_organization_id } =
+    authenticationService.currentSessionValue;
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
@@ -22,15 +24,40 @@ export const GlobalDatasources = (props) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!admin) {
-      navigate('/');
+    if (!canCreateDataSource() && !canReadDataSource() && !canUpdateDataSource() && !canDeleteDataSource()) {
+      toast.error("You don't have access to GDS, contact your workspace admin to add datasources");
+      return navigate('/');
     }
     fetchEnvironments();
-  }, [admin]);
+  }, []);
+
+  const canAnyGroupPerformAction = (action, permissions) => {
+    if (!permissions) {
+      return false;
+    }
+
+    return permissions.some((p) => p[action]);
+  };
+
+  const canReadDataSource = () => {
+    return canAnyGroupPerformAction('read', data_source_group_permissions) || super_admin || admin;
+  };
+
+  const canCreateDataSource = () => {
+    return canAnyGroupPerformAction('data_source_create', group_permissions) || super_admin || admin;
+  };
+
+  const canUpdateDataSource = () => {
+    return canAnyGroupPerformAction('update', data_source_group_permissions) || super_admin || admin;
+  };
+
+  const canDeleteDataSource = () => {
+    return canAnyGroupPerformAction('data_source_delete', group_permissions) || super_admin || admin;
+  };
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     globalDatasourceService
-      .getAll()
+      .getAll(current_organization_id)
       .then((data) => {
         const orderedDataSources = data.data_sources.sort((a, b) => a.name.localeCompare(b.name));
         setDataSources([...(orderedDataSources ?? [])]);
@@ -77,6 +104,12 @@ export const GlobalDatasources = (props) => {
     });
   };
 
+  const fetchDataSourceByEnvironment = (dataSourceId, envId) => {
+    globalDatasourceService.getDataSourceByEnvironmentId(dataSourceId, envId).then((data) => {
+      setSelectedDataSource(data);
+    });
+  };
+
   const value = useMemo(
     () => ({
       selectedDataSource,
@@ -93,6 +126,11 @@ export const GlobalDatasources = (props) => {
       currentEnvironment,
       setCurrentEnvironment,
       setDataSources,
+      fetchDataSourceByEnvironment,
+      canReadDataSource,
+      canUpdateDataSource,
+      canDeleteDataSource,
+      canCreateDataSource,
     }),
     [selectedDataSource, dataSources, showDataSourceManagerModal, isEditing, environments, currentEnvironment]
   );

@@ -87,6 +87,8 @@ export class SeedsService {
       orgEnvironmentVariableDelete: group == 'admin',
       folderUpdate: group == 'admin',
       folderDelete: group == 'admin',
+      dataSourceDelete: group == 'admin',
+      dataSourceCreate: group == 'admin',
     });
 
     await manager.save(groupPermission);

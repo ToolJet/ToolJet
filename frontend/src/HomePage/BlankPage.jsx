@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { retrieveWhiteLabelText } from '@/_helpers/utils';
+import { retrieveWhiteLabelText, getWorkspaceId } from '@/_helpers/utils';
 import TemplateLibraryModal from './TemplateLibraryModal/';
 import { useTranslation } from 'react-i18next';
 import { libraryAppService } from '@/_services';
 import EmptyIllustration from '@assets/images/no-apps.svg';
-import { getWorkspaceId } from '../_helpers/utils';
 import { useNavigate } from 'react-router-dom';
 
 export const BlankPage = function BlankPage({

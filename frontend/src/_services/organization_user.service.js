@@ -37,7 +37,7 @@ function changeRole(id, role) {
 }
 
 function archiveAll(userId) {
-  const requestOptions = { method: 'POST', headers: authHeader() };
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/organization_users/${userId}/archive-all`, requestOptions).then(handleResponse);
 }
 
@@ -45,6 +45,7 @@ function archive(id, organizationId) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
+    credentials: 'include',
     body: JSON.stringify({ ...(organizationId && { organizationId }) }),
   };
   return fetch(`${config.apiUrl}/organization_users/${id}/archive`, requestOptions).then(handleResponse);

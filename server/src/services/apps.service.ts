@@ -355,6 +355,7 @@ export class AppsService {
           dataSourceMapping[dataSource.id] = newDataSource.id;
 
           const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
+          const newDataQueries = [];
 
           for (const dataQuery of dataQueries) {
             const dataQueryParams = {
@@ -367,6 +368,15 @@ export class AppsService {
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
             oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
             newDataQueries.push(newQuery);
+          }
+
+          for (const newQuery of newDataQueries) {
+            const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
+              newQuery.options,
+              oldDataQueryToNewMapping
+            );
+            newQuery.options = newOptions;
+            await manager.save(newQuery);
           }
         }
 
