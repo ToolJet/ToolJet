@@ -1211,16 +1211,18 @@ export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, s
 
 export const debuggerActions = {
   error: (_self, errors) => {
-    _self.setState((prevState) => ({
-      ...prevState,
-      currentState: {
-        ...prevState.currentState,
-        errors: {
-          ...prevState.currentState.errors,
-          ...errors,
+    flushSync(() => {
+      _self.setState((prevState) => ({
+        ...prevState,
+        currentState: {
+          ...prevState.currentState,
+          errors: {
+            ...prevState.currentState.errors,
+            ...errors,
+          },
         },
-      },
-    }));
+      }));
+    });
   },
 
   flush: (_self) => {
