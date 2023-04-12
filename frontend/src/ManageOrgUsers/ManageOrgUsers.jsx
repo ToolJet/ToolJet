@@ -65,10 +65,6 @@ class ManageOrgUsersComponent extends React.Component {
     return Object.keys(errors).length === 0;
   }
 
-  componentDidMount() {
-    this.fetchUsers(1);
-  }
-
   fetchUsers = (page = 1, options = {}) => {
     this.setState({
       options,
