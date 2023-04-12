@@ -70,7 +70,8 @@ mkdir -p ~/app
 sudo echo -n $SSH_PRIVATE_KEY | base64 -d  >> ~/.ssh/id_rsa
 sudo chmod 400 ~/.ssh/id_rsa
 ssh-keyscan github.com >> .ssh/known_hosts
-git clone -b develop git@github.com:ToolJet/tj-ee.git ~/app && cd ~/app
+git clone -b release/v2.4.0-ee2.0.8 git@github.com:ToolJet/tj-ee.git ~/app && cd ~/app
+# need to change the above line from release/v2.4.0-ee2.0.8 to develop before merging
 
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
