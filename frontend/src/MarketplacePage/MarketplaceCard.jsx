@@ -63,7 +63,7 @@ export const MarketplaceCard = ({ id, name, repo, description, version, isInstal
                 <sub>v{version}</sub>
               </div>
               <div className={cx('col-auto', { disabled: installing || installed })} onClick={installPlugin}>
-                <div className="link-primary cursor-pointer">Install{installed && 'ed'}</div>
+                <div className="marketplace-install cursor-pointer">Install{installed && 'ed'}</div>
               </div>
             </div>
           </div>

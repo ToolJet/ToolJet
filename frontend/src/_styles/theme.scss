@@ -4914,8 +4914,9 @@ div#driver-page-overlay {
 }
 
 .popover.popover-dark-themed {
-  background-color: var(--base-black);
-  color: var(--slateDark12);
+  background-color: $bg-dark-light;
+  border-color: rgba(101,109,119,0.16);
+
 
   .popover-body {
     color: #d9dcde !important;
@@ -10359,4 +10360,7 @@ tbody {
 
 .template-source-name {
   color: var(--slate12) !important;
+}
+.marketplace-install{
+  color: var(--indigo9);
 }
