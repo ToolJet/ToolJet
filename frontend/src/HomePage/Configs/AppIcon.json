@@ -2,7 +2,6 @@
   "iconList": [
     "apps",
     "archive",
-    "globe",
     "floppydisk",
     "layers",
     "folderupload",
@@ -15,7 +14,8 @@
     "shield",
     "sun",
     "table",
-    "menuhome"
+    "menuhome",
+    "draghandle"
 
   ],
   "defaultIcon": "apps"

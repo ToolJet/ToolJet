@@ -8464,7 +8464,7 @@ tbody {
 
 .tj-database-column-header {
   color: var(--slate12);
-  padding: 4px 4px 4px 8px;
+  padding: 4px 4px 4px 8px !important;
   text-transform: capitalize !important;
   line-height: 0px !important;
   font-weight: 500 !important;
@@ -10010,6 +10010,18 @@ tbody {
   position: absolute;
   top: 0;
   right: -28px;
+  width: 28px;
+  height: 28px;
+  background: var(--slate7);
+  border-width: 0px 1px 1px 1px;
+  border-style: solid;
+  border-color: var(--slate4);
+  border-radius: 0px !important;
+}
+.add-col-btn-database {
+  position: absolute;
+  top: 28;
+  left: 0px;
   width: 28px;
   height: 28px;
   background: var(--slate7);

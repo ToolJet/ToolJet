@@ -8,8 +8,6 @@ function Header() {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const routes = (path) => {
-    console.log('path', path);
-
     switch (path) {
       case 'workspaceId':
         return 'Applications';
@@ -28,11 +26,6 @@ function Header() {
     }
   };
   const location = useLocation();
-  console.log('location', location);
-
-  // checkSubstring=(string,)=>{
-  //   string.includes(substring)
-  // }
 
   return (
     <header className="layout-header">

@@ -60,7 +60,6 @@ export const SelectComponent = ({
     return option.label;
   };
 
-  console.log('custonwrap', customWrap);
   return (
     <div style={{ width: width }} className={className && className}>
       <Select

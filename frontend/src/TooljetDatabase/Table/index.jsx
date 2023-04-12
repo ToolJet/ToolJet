@@ -223,7 +223,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
         style={{
           height: 'calc(100vh - 196px)', // 48px navbar + 96 for table bar +  52 px in footer
         }}
-        className={cx('table-responsive border-0 animation-fade tj-db-table ')}
+        className={cx('table-responsive border-0 tj-db-table ')}
       >
         <table
           {...getTableProps()}
@@ -311,7 +311,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                 );
               })
             )}
-            <button onClick={() => openCreateRowDrawer()} className="add-row-btn-database">
+            <button onClick={() => openCreateRowDrawer()} className="add-col-btn-database">
               +
             </button>
           </tbody>

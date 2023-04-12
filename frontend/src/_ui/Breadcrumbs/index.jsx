@@ -7,7 +7,6 @@ import useBreadcrumbs from 'use-react-router-breadcrumbs';
 export const Breadcrumbs = ({ darkMode }) => {
   const { sidebarNav } = useContext(BreadCrumbContext);
   const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
-  console.log('bread', breadcrumbs, sidebarNav);
   return (
     <ol className="breadcrumb breadcrumb-arrows">
       {breadcrumbs.map(({ breadcrumb, dataCy, beta }, i) => {
