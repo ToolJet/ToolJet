@@ -64,13 +64,19 @@ function exportResource(body) {
     method: 'POST',
     headers: authHeader(),
     body: JSON.stringify(body),
+    credentials: 'include',
   };
 
   return fetch(`${config.apiUrl}/v2/resources/export`, requestOptions).then(handleResponse);
 }
 
 function importResource(body) {
-  const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
   return fetch(`${config.apiUrl}/v2/resources/import`, requestOptions).then(handleResponse);
 }
 
@@ -85,7 +91,7 @@ function importApp(body) {
 }
 
 function getTables(id) {
-  const requestOptions = { method: 'GET', headers: authHeader() };
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/apps/${id}/tables`, requestOptions).then(handleResponse);
 }
 
