@@ -43,31 +43,29 @@ const UsersTable = ({
             </thead>
             {isLoading ? (
               <tbody className="w-100 h-auto">
-                {Array.from(Array(7)).map((_item, index) => (
-                  <>
-                    <tr key={index}>
+                {Array.from(Array(4)).map((_item, index) => (
+                  <tr key={index}>
+                    <td className="col-2 p-3">
+                      <div className="d-flex align-items-center">
+                        <Skeleton circle="15%" className="col-auto" style={{ width: '35px', height: '35px' }} />
+                        <Skeleton className="mx-3" width={100} />
+                      </div>
+                    </td>
+                    <td className="col-4 p-3">
+                      <Skeleton />
+                    </td>
+                    {users && users[0]?.status && (
                       <td className="col-2 p-3">
-                        <div className="d-flex align-items-center">
-                          <Skeleton circle="15%" className="col-auto" style={{ width: '35px', height: '35px' }} />
-                          <Skeleton className="mx-3" width={100} />
-                        </div>
-                      </td>
-                      <td className="col-4 p-3">
                         <Skeleton />
                       </td>
-                      {users && users[0]?.status && (
-                        <td className="col-2 p-3">
-                          <Skeleton />
-                        </td>
-                      )}
-                      <td className="text-muted col-auto col-1 pt-3">
-                        <Skeleton />
-                      </td>
-                      <td className="text-muted col-auto col-1 pt-3">
-                        <Skeleton />
-                      </td>
-                    </tr>
-                  </>
+                    )}
+                    <td className="text-muted col-auto col-1 pt-3">
+                      <Skeleton />
+                    </td>
+                    <td className="text-muted col-auto col-1 pt-3">
+                      <Skeleton />
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             ) : (

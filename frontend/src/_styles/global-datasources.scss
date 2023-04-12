@@ -10,10 +10,17 @@
     .add-datasource-btn {
         height: 32px;
         background: var(--indigo9);
+        width: 248px !important;
+        display: flex;
+        margin: 0 auto;
     }
 
     .datasources-list {
         display: flex;
+        padding: 6px 8px;
+        width: 248px;
+        height: 32px;
+        margin-bottom: 2px;
 
         &:focus-visible {
             box-shadow: 0px 0px 0px 4px #DFE3E6;

@@ -30,7 +30,6 @@ export function OrganizationSettings(props) {
         return 'manageSSO';
       case 'Workspace variables':
         return 'manageEnvVars';
-
       default:
         return groupName;
     }

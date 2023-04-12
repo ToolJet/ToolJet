@@ -32,7 +32,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSidebarNAV }
   return (
     <div
       key={key}
-      className={cx('tj-text-sm mx-3 p-2 rounded-3 mb-2 datasources-list', {
+      className={cx('mx-3 rounded-3 datasources-list', {
         'datasources-list-item': active,
       })}
     >
@@ -48,7 +48,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSidebarNAV }
         className="col d-flex align-items-center"
       >
         {icon}
-        <span className="font-400" style={{ paddingLeft: 5 }}>
+        <span className="font-400 tj-text-xsm" style={{ paddingLeft: '6px' }}>
           {dataSource.name}
         </span>
       </div>

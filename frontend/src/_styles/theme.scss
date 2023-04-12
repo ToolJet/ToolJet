@@ -11,6 +11,8 @@
 @import "./dropdown-custom.scss";
 @import "./ui-operations.scss";
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,400;1,500;1,600;1,700&display=swap');
+@import 'react-loading-skeleton/dist/skeleton.css';
+
 // variables
 $border-radius: 4px;
 
@@ -7624,7 +7626,7 @@ tbody {
   margin: 0 auto;
   display: flex;
   justify-content: center;
-  padding-top: 1px;
+  padding-top: 4px;
 }
 
 .home-page-sidebar {
@@ -9824,7 +9826,11 @@ tbody {
 }
 
 .datasource-inner-sidebar-wrap {
-  min-height: calc(100vh - 182px);
+  min-height: calc(100vh - 177px);
+}
+.add-new-datasource-header-container{
+  margin-bottom: 24px;
+  padding-top: 4px;
 }
 
 .folder-list-group-item {
@@ -10131,6 +10137,7 @@ tbody {
 
 .sso-page-loader-card {
   background-color: var(--slate2) !important;
+  height: 100%;
 
   .card-header {
     background-color: var(--slate2) !important;
@@ -10138,7 +10145,7 @@ tbody {
 }
 
 .workspace-nav-list-wrap {
-  padding: 0px 20px 20px 20px;
+  padding: 4px 20px 20px 20px;
   height: calc(100vh - 116px) !important;
 }
 

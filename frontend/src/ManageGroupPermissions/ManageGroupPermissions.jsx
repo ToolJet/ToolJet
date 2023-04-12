@@ -8,6 +8,7 @@ import ErrorBoundary from '@/Editor/ErrorBoundary';
 import Modal from '../HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import FolderList from '@/_ui/FolderList/FolderList';
+import { Loader } from '../ManageSSO/Loader';
 class ManageGroupPermissionsComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -314,14 +315,19 @@ class ManageGroupPermissionsComponent extends React.Component {
                     );
                   })}
                 </div>
+
                 <div className="org-users-page-card-body">
-                  <ManageGroupPermissionResources
-                    groupPermissionId={this.state.selectedGroupPermissionId}
-                    darkMode={this.props.darkMode}
-                    selectedGroup={this.state.selectedGroup}
-                    updateGroupName={this.updateGroupName}
-                    deleteGroup={this.deleteGroup}
-                  />
+                  {isLoading ? (
+                    <Loader />
+                  ) : (
+                    <ManageGroupPermissionResources
+                      groupPermissionId={this.state.selectedGroupPermissionId}
+                      darkMode={this.props.darkMode}
+                      selectedGroup={this.state.selectedGroup}
+                      updateGroupName={this.updateGroupName}
+                      deleteGroup={this.deleteGroup}
+                    />
+                  )}
                 </div>
               </div>
             )}
