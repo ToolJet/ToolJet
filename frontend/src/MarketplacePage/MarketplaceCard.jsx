@@ -44,11 +44,11 @@ export const MarketplaceCard = ({ id, name, repo, description, version, isInstal
 
   return (
     <div className="col-sm-6 col-lg-4">
-      <div className="card card-sm card-borderless">
+      <div className="plugins-card card-borderless">
         <div className="card-body">
           <div className="row align-items-center">
             <div className="col-auto">
-              <span className="text-white avatar">
+              <span className="text-white app-icon-main">
                 <img height="40" width="40" src={iconSrc} />
               </span>
             </div>
