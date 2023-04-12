@@ -650,7 +650,6 @@ class DataSourceManagerComponent extends React.Component {
       dataSourceSchema,
     } = this.state;
     const isPlugin = dataSourceSchema ? true : false;
-    console.log('darkmode', this.props.darkMode);
     return (
       <div>
         <Modal
