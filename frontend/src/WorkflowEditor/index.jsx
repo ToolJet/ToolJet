@@ -1,10 +1,11 @@
-import React, { useReducer, useEffect, useMemo } from 'react';
+import React, { useReducer, useEffect, useMemo, useCallback } from 'react';
 import {
   appService,
   datasourceService,
   globalDatasourceService,
   appVersionService,
   workflowExecutionsService,
+  dataqueryService,
 } from '@/_services';
 import { reducer, initialState, Modes } from './reducer/reducer';
 import FlowBuilder from './FlowBuilder';
@@ -12,15 +13,13 @@ import { ReactFlowProvider } from 'reactflow';
 import { EditorContextWrapper } from '@/Editor/Context/EditorContextWrapper';
 import generateActions from './actions';
 import WorkflowEditorContext from './context';
-import { debounce, find, merge, every, map } from 'lodash';
+import _, { debounce, find, merge, every, map } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { generateQueryName } from './utils';
-import { Link } from 'react-router-dom';
-import AppLogo from '@/_components/AppLogo';
 import { withRouter } from '@/_hoc/withRouter';
 
 import './style.scss';
-import { dataqueryService } from '../_services/dataquery.service';
+import Header from './Header';
 
 // Wherever this file uses the term 'app', it means 'workflow'
 function WorkflowEditor(props) {
@@ -141,35 +140,21 @@ function WorkflowEditor(props) {
     return idOnDefinition;
   };
 
+  const updateFlow = useCallback((flow) => dispatch({ type: 'UPDATE_FLOW', payload: { flow } }), [dispatch]);
+
   console.log({ editorSession });
 
   return !editorSession.bootupComplete ? (
     <div>loading</div>
   ) : (
     <div className="workflow-editor">
-      <div className="header">
-        <div className="grid">
-          <div className="row" style={{ height: '40px' }}>
-            <div className="col-4 d-flex flex-columns align-items-center">
-              <div className="logo-section">
-                <Link to="/">
-                  <AppLogo isLoadingFromHeader={true} />
-                </Link>
-              </div>
-              <button
-                onClick={executeWorkflow}
-                type="button"
-                className="btn btn-primary"
-                style={{ height: '30px', marginRight: 6 }}
-                disabled={editorSession.mode === Modes.Running}
-              >
-                {editorSession.mode === Modes.Running ? 'Running' : 'Run'}
-              </button>
-              {editorSession.appSavingStatus.status ? 'Saving..' : 'All changes saved'}
-            </div>
-          </div>
-        </div>
-      </div>
+      <Header
+        executeWorkflow={executeWorkflow}
+        editorSession={editorSession}
+        updateFlow={updateFlow}
+        editorSessionActions={editorSessionActions}
+        reloadQueries={() => {}}
+      />
       <div className="body">
         <EditorContextWrapper>
           <div className="flow-editor-column">
@@ -177,7 +162,7 @@ function WorkflowEditor(props) {
               <WorkflowEditorContext.Provider value={{ editorSession, editorSessionActions, addQuery, updateQuery }}>
                 <FlowBuilder
                   flow={editorSession.app.flow}
-                  updateFlow={(flow) => dispatch({ type: 'UPDATE_FLOW', payload: { flow } })}
+                  updateFlow={updateFlow}
                   addNode={(node) => dispatch({ type: 'ADD_NEW_NODE', payload: { node } })}
                   addEdge={(edge) => dispatch({ type: 'ADD_NEW_EDGE', payload: { edge } })}
                   setEditingActivity={(editingActivity) =>

@@ -289,7 +289,8 @@ export class AppsService {
         })
       );
 
-      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom, organizationId);
+      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom, organizationId, app.type);
+
       return appVersion;
     }, manager);
   }
@@ -311,7 +312,8 @@ export class AppsService {
     manager: EntityManager,
     appVersion: AppVersion,
     versionFrom: AppVersion,
-    organizationId: string
+    organizationId: string,
+    appType: string
   ) {
     const oldDataQueryToNewMapping = {};
 
@@ -404,10 +406,10 @@ export class AppsService {
           }
         }
 
-        appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
-          appVersion.definition,
-          oldDataQueryToNewMapping
-        );
+        appVersion.definition =
+          appType === 'workflow'
+            ? this.replaceQueryMappingsInWorkflowDefinition(appVersion.definition, oldDataQueryToNewMapping)
+            : this.replaceDataQueryIdWithinDefinitions(appVersion.definition, oldDataQueryToNewMapping);
         await manager.save(appVersion);
 
         for (const appEnvironment of appEnvironments) {
@@ -432,6 +434,13 @@ export class AppsService {
       }
     }
   }
+
+  async createNewQueriesForWorkflowVersion(
+    manager: EntityManager,
+    appVersion: AppVersion,
+    versionFrom: AppVersion,
+    organizationId: string
+  ) {}
 
   private async createEnvironments(appEnvironments: any[], manager: EntityManager, organizationId: string) {
     for (const appEnvironment of appEnvironments) {
@@ -512,6 +521,20 @@ export class AppsService {
       }
     }
     return definition;
+  }
+
+  replaceQueryMappingsInWorkflowDefinition(definition, dataQueryMapping) {
+    const newQueries = definition.queries.map((query) => ({
+      ...query,
+      id: dataQueryMapping[query.id],
+    }));
+
+    const newDefinition = {
+      ...definition,
+      queries: newQueries,
+    };
+
+    return newDefinition;
   }
 
   async setNewCredentialValueFromOldValue(newOptions: any, oldOptions: any, manager: EntityManager) {
