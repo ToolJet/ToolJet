@@ -10364,3 +10364,8 @@ tbody {
 .marketplace-install{
   color: var(--indigo9);
 }
+.popover {
+  .popover-arrow {
+    display: none;
+  }
+}
