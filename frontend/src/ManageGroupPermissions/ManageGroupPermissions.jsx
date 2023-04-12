@@ -133,6 +133,7 @@ class ManageGroupPermissionsComponent extends React.Component {
       .then(() => {
         toast.success('Group deleted successfully');
         this.fetchGroups();
+        this.setState({ selectedGroup: 'All Users' });
       })
       .catch(({ error }) => {
         toast.error(error);

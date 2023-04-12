@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import Layout from '@/_ui/Layout';
 import { ListGroupItem } from './ListGroupItem';
 import { InstalledPlugins } from './InstalledPlugins';
@@ -7,12 +7,14 @@ import { marketplaceService, pluginsService, authenticationService } from '@/_se
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import config from 'config';
+import { BreadCrumbContext } from '@/App/App';
 
 const MarketplacePage = ({ darkMode, switchDarkMode }) => {
   const [active, setActive] = React.useState('installed');
   const [marketplacePlugins, setMarketplacePlugins] = React.useState([]);
   const [installedPlugins, setInstalledPlugins] = React.useState([]);
   const [fetchingInstalledPlugins, setFetching] = React.useState(false);
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   const { admin } = authenticationService.currentSessionValue;
   const ENABLE_MARKETPLACE_DEV_MODE = config.ENABLE_MARKETPLACE_DEV_MODE == 'true';
@@ -20,6 +22,8 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
   const navigate = useNavigate();
 
   React.useEffect(() => {
+    updateSidebarNAV('');
+
     if (!admin) {
       navigate('/');
     }

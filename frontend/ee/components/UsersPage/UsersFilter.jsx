@@ -33,7 +33,6 @@ const UsersFilter = ({ filterList }) => {
     };
     setOptions(newOptions);
   };
-
   useEffect(() => {
     const debouncedFilter = debounce(() => {
       filterList(options);
@@ -43,7 +42,7 @@ const UsersFilter = ({ filterList }) => {
     return debouncedFilter.cancel;
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options]);
+  }, [options?.searchText ,options?.status]);
 
   return (
     <div className="workspace-settings-table-wrap workspace-settings-filter-wrap">

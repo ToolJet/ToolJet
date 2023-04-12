@@ -8464,7 +8464,7 @@ tbody {
 
 .tj-database-column-header {
   color: var(--slate12);
-  padding: 4px 4px 4px 8px !important;
+  padding: 4px 4px 4px 8px;
   text-transform: capitalize !important;
   line-height: 0px !important;
   font-weight: 500 !important;
@@ -8475,7 +8475,7 @@ tbody {
   &:first-child {
     display: flex !important;
     align-items: center !important;
-
+    padding-left: 1rem !important;
   }
 
 }
