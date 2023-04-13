@@ -23,7 +23,7 @@ export class AppImportExportService {
     private dataSourcesService: DataSourcesService,
     private appEnvironmentService: AppEnvironmentService,
     private readonly entityManager: EntityManager
-  ) { }
+  ) {}
 
   async export(user: User, id: string, searchParams: any = {}): Promise<{ appV2: App }> {
     // https://github.com/typeorm/typeorm/issues/3857
@@ -474,8 +474,9 @@ export class AppImportExportService {
             await manager.save(dsOption);
           }
         }
-
-        for (const query of dataQueries.filter((dq) => dq.dataSourceId === source.id && dq.appVersionId === appVersion.id)) {
+        for (const query of dataQueries.filter(
+          (dq) => dq.dataSourceId === source.id && dq.appVersionId === appVersion.id
+        )) {
           const newQuery = manager.create(DataQuery, {
             name: query.name,
             options: query.options,
