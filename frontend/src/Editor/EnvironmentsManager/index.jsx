@@ -11,7 +11,7 @@ const EnvironmentManager = ({ currentAppEnvironmentId, versionId, appEnvironment
   }, [versionId]);
 
   const fetchEnvironments = () => {
-    appEnvironmentService.getAllEnvironments(versionId).then((data) => {
+    appEnvironmentService.getAllEnvironments().then((data) => {
       const envArray = data?.environments;
       setEnvironments(envArray);
       if (envArray.length > 0) {
