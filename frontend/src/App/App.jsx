@@ -175,8 +175,7 @@ class AppComponent extends React.Component {
 
               organizationService
                 .switchOrganization(workspaceId)
-                .then((data) => {
-                  this.updateCurrentSession(data);
+                .then(() => {
                   if (this.isThisWorkspaceLoginPage())
                     return (window.location = appendWorkspaceId(workspaceId, '/:workspaceId'));
                   this.authorizeUserAndHandleErrors(workspaceId);

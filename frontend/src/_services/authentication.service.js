@@ -248,7 +248,7 @@ function logout() {
       window.location.href =
         loginPath +
         `?redirectTo=${
-          !pathname.includes('integrations')
+          !['integrations', 'instance-settings'].find((subpath) => pathname.includes(subpath))
             ? excludeWorkspaceIdFromURL(pathname)
             : `${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`
         }`;

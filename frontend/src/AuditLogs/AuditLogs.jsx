@@ -48,7 +48,7 @@ class AuditLogs extends React.Component {
     const timeTo = initArraySearchParams('timeTo', searchParams);
 
     this.state = {
-      currentUser: authenticationService.currentUserValue,
+      currentUser: authenticationService.currentSessionValue.current_user,
       isLoadingAuditLogs: true,
       isLoadingApps: true,
       apps: [],
@@ -155,9 +155,9 @@ class AuditLogs extends React.Component {
     };
 
     this.fetchAuditLogs(urlParams);
-
+    const { current_organization_id } = authenticationService.currentSessionValue;
     this.props.navigate({
-      pathname: '/audit-logs',
+      pathname: `/${current_organization_id}/audit-logs`,
       search: new URLSearchParams(urlParams).toString(),
     });
   };

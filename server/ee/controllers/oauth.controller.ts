@@ -11,8 +11,14 @@ export class OauthController {
 
   @UseGuards(OrganizationAuthGuard)
   @Post('sign-in/:configId')
-  async create(@Req() req: Request, @Param('configId') configId, @Body() body) {
-    const result = await this.oauthService.signIn(body, configId, null, req.cookies);
+  async signIn(
+    @Req() req,
+    @Param('configId') configId,
+    @Body() body,
+    @User() user,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    const result = await this.oauthService.signIn(response, body, configId, null, user, req.cookies);
     return result;
   }
 
