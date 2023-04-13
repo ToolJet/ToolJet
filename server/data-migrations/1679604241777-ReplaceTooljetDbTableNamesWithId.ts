@@ -48,8 +48,6 @@ export class ReplaceTooljetDbTableNamesWithId1679604241777 implements MigrationI
           if (isEmpty(internalTable)) continue
 
           dataQuery.options = { ...options, table_id: internalTable.id }
-
-          console.log({ options, replacedOptions: dataQuery.options })
           await dataQuery.save()
         }
       }

@@ -29,7 +29,7 @@ export class AppImportExportService {
     // https://github.com/typeorm/typeorm/issues/3857
     // Making use of query builder
     // filter by search params
-    const { versionId = undefined } = searchParams;
+    const { version_id: versionId } = searchParams;
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const queryForAppToExport = manager
         .createQueryBuilder(App, 'apps')

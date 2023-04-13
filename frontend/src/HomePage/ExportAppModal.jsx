@@ -10,7 +10,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
   const [versions, setVersions] = useState(undefined);
   const [tables, setTables] = useState(undefined);
   const [versionId, setVersionId] = useState(currentVersion?.id);
-  const [exportTjDb, setExportTjDb] = useState(true)
+  const [exportTjDb, setExportTjDb] = useState(true);
 
   useEffect(() => {
     async function fetchAppVersions() {
@@ -18,7 +18,6 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         const fetchVersions = await appService.getVersions(app.id);
         const { versions } = fetchVersions;
         setVersions(versions);
-
       } catch (error) {
         toast.error('Could not fetch the versions.', {
           position: 'top-center',
@@ -31,7 +30,6 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         const fetchTables = await appService.getTables(app.id);
         const { tables } = fetchTables;
         setTables(tables);
-
       } catch (error) {
         toast.error('Could not fetch the tables.', {
           position: 'top-center',
@@ -160,11 +158,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
             </div>
           </BootstrapModal.Body>
           <div className="tj-version-wrap-sub-footer">
-            <input
-              type="checkbox"
-              checked={exportTjDb}
-              onChange={() => setExportTjDb(!exportTjDb)}
-            />
+            <input type="checkbox" checked={exportTjDb} onChange={() => setExportTjDb(!exportTjDb)} />
             <p>Export ToolJet table schema</p>
           </div>
           <BootstrapModal.Footer className="export-app-modal-footer d-flex justify-content-end border-top align-items-center ">
@@ -172,7 +166,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               className="import-export-footer-btns"
               variant="tertiary"
               data-cy="export-all-button"
-              onClick={() => exportApp(app, versionId, exportTjDb, tables)}
+              onClick={() => exportApp(app, null, exportTjDb, tables)}
             >
               Export All
             </ButtonSolid>
