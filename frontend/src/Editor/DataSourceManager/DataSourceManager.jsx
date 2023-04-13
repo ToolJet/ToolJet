@@ -147,9 +147,9 @@ class DataSourceManagerComponent extends React.Component {
     });
   };
 
-  hideModal = () => {
+  hideModal = (ds = null) => {
     this.onExit();
-    this.props.hideModal();
+    this.props.hideModal(ds);
   };
 
   createDataSource = () => {
@@ -194,7 +194,7 @@ class DataSourceManagerComponent extends React.Component {
           })
           .catch(({ error }) => {
             this.setState({ isSaving: false });
-            this.hideModal();
+            this.hideModal(selectedDataSource);
             error && toast.error(error, { position: 'top-center' });
           });
       } else {

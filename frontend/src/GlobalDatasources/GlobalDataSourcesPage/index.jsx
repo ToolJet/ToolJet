@@ -39,15 +39,16 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
     }
   }, [selectedDataSource, isEditing]);
 
-  const handleHideModal = () => {
+  const handleHideModal = (ds) => {
     if (dataSources?.length) {
       if (!isEditing) {
         setEditing(true);
         setSelectedDataSource(dataSources[0]);
       } else {
-        setSelectedDataSource(null);
-        setEditing(true);
         toggleDataSourceManagerModal(false);
+        setEditing(true);
+        setSelectedDataSource(ds);
+        fetchDataSources(false, ds);
       }
     } else {
       handleModalVisibility();
