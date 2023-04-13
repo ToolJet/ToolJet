@@ -72,27 +72,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     </ToolTip>
                   </li>
                 )}
-                <li className="text-center cursor-pointer">
-                  <Link
-                    to={getPrivateRoute('workspace_settings')}
-                    className={`tj-leftsidebar-icon-items  ${
-                      router.pathname === '/workspace-settings' && `current-seleted-route`
-                    }`}
-                  >
-                    <ToolTip message="Workspace settings" placement="right">
-                      <SolidIcon
-                        name="setting"
-                        fill={
-                          router.pathname === getPrivateRoute('workspace_settings')
-                            ? '#3E63DD'
-                            : darkMode
-                            ? '#4C5155'
-                            : '#C1C8CD'
-                        }
-                      />
-                    </ToolTip>
-                  </Link>
-                </li>
+
                 {/* DATASOURCES */}
                 {admin && (
                   <li className="text-center cursor-pointer">
@@ -134,6 +114,27 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     </Link>
                   </li>
                 )}
+                <li className="text-center cursor-pointer">
+                  <Link
+                    to={getPrivateRoute('workspace_settings')}
+                    className={`tj-leftsidebar-icon-items  ${
+                      router.pathname === '/workspace-settings' && `current-seleted-route`
+                    }`}
+                  >
+                    <ToolTip message="Workspace settings" placement="right">
+                      <SolidIcon
+                        name="setting"
+                        fill={
+                          router.pathname === getPrivateRoute('workspace_settings')
+                            ? '#3E63DD'
+                            : darkMode
+                            ? '#4C5155'
+                            : '#C1C8CD'
+                        }
+                      />
+                    </ToolTip>
+                  </Link>
+                </li>
                 <li className="tj-leftsidebar-icon-items-bottom text-center">
                   <NotificationCenter darkMode={darkMode} />
                   <div className="cursor-pointer  tj-leftsidebar-icon-items" onClick={() => switchDarkMode(!darkMode)}>
