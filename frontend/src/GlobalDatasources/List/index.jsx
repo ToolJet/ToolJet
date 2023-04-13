@@ -47,7 +47,6 @@ export const List = () => {
       })
       .catch(({ error }) => {
         setDeletingDatasource(false);
-        setSelectedDataSource(null);
         toast.error(error);
       });
   };
