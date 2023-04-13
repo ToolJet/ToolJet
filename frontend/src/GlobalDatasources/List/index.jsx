@@ -30,7 +30,6 @@ export const List = () => {
   }, []);
 
   const deleteDataSource = (selectedSource) => {
-    toggleDataSourceManagerModal(false);
     setSelectedDataSource(selectedSource);
     setDeleteModalVisibility(true);
   };
@@ -55,7 +54,6 @@ export const List = () => {
 
   const cancelDeleteDataSource = () => {
     setDeleteModalVisibility(false);
-    setSelectedDataSource(null);
   };
 
   const EmptyState = () => {

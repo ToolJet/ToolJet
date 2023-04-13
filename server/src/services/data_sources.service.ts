@@ -49,7 +49,7 @@ export class DataSourcesService {
         .where('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
         .andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC });
 
-      if (!isSuperAdmin(user) || !isAdmin) {
+      if ((!isSuperAdmin(user) || !isAdmin) && scope === DataSourceScopes.GLOBAL) {
         if (!canPerformCreateOrDelete) {
           query
             .innerJoin('data_source.groupPermissions', 'group_permissions')

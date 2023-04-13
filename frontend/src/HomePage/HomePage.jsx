@@ -142,7 +142,8 @@ class HomePageComponent extends React.Component {
         .then((data) => {
           toast.success('App cloned successfully.');
           this.setState({ isCloningApp: false });
-          this.props.navigate(`/apps/${data.id}`);
+          const workspaceId = getWorkspaceId();
+          this.props.navigate(`/${workspaceId}/apps/${data.id}`);
         })
         .catch(({ _error }) => {
           toast.error('Could not clone the app.');

@@ -67,11 +67,14 @@ export const GlobalDatasources = (props) => {
           setEditing(true);
           setSelectedDataSource(ds);
           toggleDataSourceManagerModal(true);
+          return;
         }
         if (orderedDataSources.length && resetSelection) {
           setSelectedDataSource(orderedDataSources[0]);
           toggleDataSourceManagerModal(true);
+          return;
         }
+        toggleDataSourceManagerModal(false);
       })
       .catch(() => {
         setDataSources([]);
@@ -89,7 +92,7 @@ export const GlobalDatasources = (props) => {
     if (selectedDataSource) {
       return setSelectedDataSource(null, () => handleToggleSourceManagerModal());
     }
-
+    setEditing(true);
     handleToggleSourceManagerModal();
   };
 
