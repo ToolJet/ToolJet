@@ -39,6 +39,14 @@ describe('library apps controller', () => {
       loggedUser = await authenticateUser(app, 'developer@tooljet.io');
       nonAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
+      loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       let response = await request(app.getHttpServer())
         .post('/api/library_apps')
         .send({ identifier: 'github-contributors' })
@@ -59,7 +67,8 @@ describe('library apps controller', () => {
       response = await request(app.getHttpServer())
         .post('/api/library_apps')
         .send({ identifier: 'github-contributors' })
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(201);
       expect(response.body.name).toBe('GitHub Contributor Leaderboard');
@@ -104,11 +113,18 @@ describe('library apps controller', () => {
         userType: 'instance',
       });
 
-      let response = await request(app.getHttpServer());
-      const loggedUser = await authenticateUser(app);
+      let loggedUser = await authenticateUser(app);
       adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-      const response = await request(app.getHttpServer())
+      loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      let response = await request(app.getHttpServer())
         .get('/api/library_apps')
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', adminUserData['tokenCookie']);
@@ -122,7 +138,8 @@ describe('library apps controller', () => {
 
       response = await request(app.getHttpServer())
         .get('/api/library_apps')
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(200);
 

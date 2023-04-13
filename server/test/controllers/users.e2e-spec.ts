@@ -26,16 +26,23 @@ describe('users controller', () => {
       const adminUserData = await createUser(app, { email: 'admin@tooljet.io', userType: 'instance' });
       const developerUserData = await createUser(app, { email: 'developer@tooljet.io', userType: 'workspace' });
 
+      let loggedUser = await authenticateUser(app, adminUserData.user.email);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const adminRequestResponse = await request(app.getHttpServer())
         .get('/api/users/all')
-        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', adminUserData['tokenCookie'])
         .send();
 
       expect(adminRequestResponse.statusCode).toBe(200);
 
+      loggedUser = await authenticateUser(app, developerUserData.user.email);
+      developerUserData['tokenCookie'] = loggedUser.tokenCookie;
       const developerRequestResponse = await request(app.getHttpServer())
         .get('/api/users/all')
-        .set('Authorization', authHeaderForUser(developerUserData.user))
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
+        .set('Cookie', developerUserData['tokenCookie'])
         .send();
 
       expect(developerRequestResponse.statusCode).toBe(403);

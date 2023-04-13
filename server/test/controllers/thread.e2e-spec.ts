@@ -83,10 +83,17 @@ describe('thread controller', () => {
       appVersionsId: version.id,
     });
 
+    const loggedUser = await authenticateUser(
+      app,
+      superAdminUserData.user.email,
+      'password',
+      adminUserData.organization.id
+    );
     const response = await request(app.getHttpServer())
       .get(`/api/threads/${application.id}/all`)
       .query({ appVersionsId: version.id })
-      .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+      .set('Cookie', loggedUser.tokenCookie);
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveLength(1);

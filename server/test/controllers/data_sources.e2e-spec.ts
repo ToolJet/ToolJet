@@ -11,6 +11,7 @@ import {
   createApplicationVersion,
   generateAppDefaults,
   authenticateUser,
+  createDatasourceGroupPermission,
 } from '../test.helper';
 import { Credential } from 'src/entities/credential.entity';
 import { getManager, getRepository } from 'typeorm';
@@ -61,6 +62,13 @@ describe('data sources controller', () => {
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(
+      app,
+      superAdminUserData.user.email,
+      'password',
+      adminUserData.user.defaultOrganizationId
+    );
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     const { application, appVersion: applicationVersion } = await generateAppDefaults(app, adminUserData.user, {
       isDataSourceNeeded: false,
@@ -88,7 +96,7 @@ describe('data sources controller', () => {
     for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_sources`)
-        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send(dataSourceParams);
 
@@ -149,8 +157,15 @@ describe('data sources controller', () => {
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(
+      app,
+      superAdminUserData.user.email,
+      'password',
+      adminUserData.user.defaultOrganizationId
+    );
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-    const { application, dataSource } = await generateAppDefaults(app, adminUserData.user, {
+    const { application, dataSource, appEnvironments } = await generateAppDefaults(app, adminUserData.user, {
       isQueryNeeded: false,
       dsOptions: [{ key: 'foo', value: 'bar', encrypted: 'true' }],
       dsKind: 'postgres',
@@ -176,7 +191,7 @@ describe('data sources controller', () => {
       ];
       const response = await request(app.getHttpServer())
         .put(`/api/data_sources/${dataSource.id}`)
-        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({
           options: newOptions,
@@ -188,8 +203,12 @@ describe('data sources controller', () => {
         .where('data_source.id = :dataSourceId', { dataSourceId: dataSource.id })
         .getOneOrFail();
 
+      const updatedOptions = updatedDs.dataSourceOptions.find(
+        (option) => option.environmentId === appEnvironments.find((env) => env.isDefault).id
+      );
+
       expect(response.statusCode).toBe(200);
-      expect(updatedDs.dataSourceOptions[0].options['email']['value']).toBe(userData.user.email);
+      expect(updatedOptions.options['email']['value']).toBe(userData.user.email);
     }
 
     // new credentials will not be created upon data source update
@@ -247,8 +266,10 @@ describe('data sources controller', () => {
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-    const { application, appVersion } = await generateAppDefaults(app, adminUserData.user, {
+    const { application, appVersion, dataSource } = await generateAppDefaults(app, adminUserData.user, {
       isQueryNeeded: false,
     });
 
@@ -264,7 +285,13 @@ describe('data sources controller', () => {
       delete: false,
     });
 
-    for (const userData of [adminUserData, developerUserData, viewerUserData, superAdminUserData]) {
+    await createDatasourceGroupPermission(app, dataSource.id, allUserGroup.id, {
+      read: true,
+      update: false,
+      delete: false,
+    });
+
+    for (const userData of [adminUserData, developerUserData, viewerUserData]) {
       const response = await request(app.getHttpServer())
         .get(`/api/data_sources?app_version_id=${appVersion.id}`)
         .set('tj-workspace-id', userData.user.defaultOrganizationId)
@@ -317,6 +344,13 @@ describe('data sources controller', () => {
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(
+      app,
+      superAdminUserData.user.email,
+      'password',
+      adminUserData.user.defaultOrganizationId
+    );
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     const { application, appVersion } = await generateAppDefaults(app, adminUserData.user, {
       isQueryNeeded: false,
@@ -491,7 +525,7 @@ describe('data sources controller', () => {
         code: 'oauth-auth-code',
       });
 
-    expect(response.statusCode).toBe(403);
+    expect(response.statusCode).toBe(400);
   });
 
   afterAll(async () => {

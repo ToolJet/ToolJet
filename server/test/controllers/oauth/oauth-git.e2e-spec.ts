@@ -15,7 +15,21 @@ describe('oauth controller', () => {
   let ssoConfigsRepository: Repository<SSOConfigs>;
   let orgRepository: Repository<Organization>;
 
-  const authResponseKeys = ['id', 'email', 'first_name', 'last_name', 'current_organization_id'].sort();
+  const authResponseKeys = [
+    'id',
+    'email',
+    'first_name',
+    'last_name',
+    'current_organization_id',
+    'admin',
+    'app_group_permissions',
+    'avatar_id',
+    'data_source_group_permissions',
+    'group_permissions',
+    'organization',
+    'organization_id',
+    'super_admin',
+  ].sort();
 
   beforeEach(async () => {
     await clearDB();

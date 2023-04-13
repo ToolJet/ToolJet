@@ -8,6 +8,7 @@ import {
   createAppGroupPermission,
   generateAppDefaults,
   authenticateUser,
+  createDatasourceGroupPermission,
 } from '../test.helper';
 import { getManager, getRepository } from 'typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -53,7 +54,7 @@ describe('data queries controller', () => {
     loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-    const { application, dataQuery } = await generateAppDefaults(app, adminUserData.user, {});
+    const { application, dataQuery, dataSource } = await generateAppDefaults(app, adminUserData.user, {});
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -62,6 +63,12 @@ describe('data queries controller', () => {
       },
     });
     await createAppGroupPermission(app, application, developerUserGroup.id, {
+      read: true,
+      update: true,
+      delete: false,
+    });
+
+    await createDatasourceGroupPermission(app, dataSource.id, developerUserGroup.id, {
       read: true,
       update: true,
       delete: false,
@@ -147,6 +154,8 @@ describe('data queries controller', () => {
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -157,7 +166,13 @@ describe('data queries controller', () => {
     await createAppGroupPermission(app, application, developerUserGroup.id, {
       read: true,
       update: true,
-      delete: false,
+      delete: true,
+    });
+
+    await createDatasourceGroupPermission(app, dataSource.id, developerUserGroup.id, {
+      read: true,
+      update: true,
+      delete: true,
     });
 
     for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
@@ -176,7 +191,7 @@ describe('data queries controller', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/data_queries/${dataQuery.id}`)
-        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send({
           options: newOptions,
@@ -245,6 +260,8 @@ describe('data queries controller', () => {
     developerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, viewerUserData.user.email);
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     const anotherOrgAdminUserData = await createUser(app, {
       email: 'another@tooljet.io',
@@ -284,10 +301,8 @@ describe('data queries controller', () => {
     for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .get(`/api/data_queries?app_version_id=${appVersion.id}`)
-        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie']);
-
-      console.log('inside', response.body, userData.user);
 
       expect(response.statusCode).toBe(200);
       expect(response.body.data_queries.length).toBe(1);
@@ -384,6 +399,8 @@ describe('data queries controller', () => {
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, anotherOrgAdminUserData.user.email);
     anotherOrgAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -408,7 +425,7 @@ describe('data queries controller', () => {
     for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries`)
-        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie'])
         .send(requestBody);
 
@@ -528,6 +545,8 @@ describe('data queries controller', () => {
     developerUserData['tokenCookie'] = loggedUser.tokenCookie;
     loggedUser = await authenticateUser(app, viewerUserData.user.email);
     viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+    loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', adminUserData.organization.id);
+    superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     // setup app permissions for developer
     const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -556,7 +575,7 @@ describe('data queries controller', () => {
     for (const userData of [adminUserData, developerUserData, viewerUserData, superAdminUserData]) {
       const response = await request(app.getHttpServer())
         .post(`/api/data_queries/${dataQuery.id}/run`)
-        .set('tj-workspace-id', userData.user.defaultOrganizationId)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', userData['tokenCookie']);
 
       expect(response.statusCode).toBe(201);
@@ -564,7 +583,10 @@ describe('data queries controller', () => {
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
-        userId: userData.user.id,
+        where: {
+          userId: userData.user.id,
+          resourceType: 'DATA_QUERY',
+        },
       });
 
       const organizationId =

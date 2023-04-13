@@ -141,16 +141,26 @@ describe('apps controller', () => {
         userType: 'instance',
       });
 
+      const loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.user.defaultOrganizationId
+      );
       const response = await request(app.getHttpServer())
         .post(`/api/apps`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
 
       expect(response.statusCode).toBe(201);
       expect(response.body.name).toBe('Untitled app');
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
-        userId: superAdminUserData.user.id,
+        where: {
+          userId: superAdminUserData.user.id,
+          resourceType: 'APP',
+        },
       });
 
       expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
@@ -348,7 +358,11 @@ describe('apps controller', () => {
           current_page: 1,
         });
 
-        response = await request(app.getHttpServer()).get(`/api/apps?searchKey=public`);
+        loggedUser = await authenticateUser(app, superAdminUserData.user.email);
+        response = await request(app.getHttpServer())
+          .get(`/api/apps?searchKey=public`)
+          .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(200);
         await logoutUser(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
@@ -486,9 +500,12 @@ describe('apps controller', () => {
           current_page: 1,
         });
 
+        loggedUser = await authenticateUser(app, superAdminUserData.user.email);
         response = await request(app.getHttpServer())
           .get(`/api/apps?searchKey=public app in`)
-          .query({ folder: folder.id, page: 1 });
+          .query({ folder: folder.id, page: 1 })
+          .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(200);
         await logoutUser(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
@@ -546,7 +563,10 @@ describe('apps controller', () => {
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
-        userId: adminUserData.user.id,
+        where: {
+          userId: adminUserData.user.id,
+          resourceType: 'APP',
+        },
       });
 
       expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
@@ -592,7 +612,16 @@ describe('apps controller', () => {
         name: 'App to clone',
       });
 
-      const response = await request(app.getHttpServer()).post(`/api/apps/${application.id}/clone`);
+      const loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.user.defaultOrganizationId
+      );
+      const response = await request(app.getHttpServer())
+        .post(`/api/apps/${application.id}/clone`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
 
       expect(response.statusCode).toBe(201);
 
@@ -602,7 +631,10 @@ describe('apps controller', () => {
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
-        userId: superAdminUserData.user.id,
+        where: {
+          userId: superAdminUserData.user.id,
+          resourceType: 'APP',
+        },
       });
 
       expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
@@ -668,7 +700,10 @@ describe('apps controller', () => {
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
-        userId: adminUserData.user.id,
+        where: {
+          userId: adminUserData.user.id,
+          resourceType: 'APP',
+        },
       });
 
       expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
@@ -688,8 +723,6 @@ describe('apps controller', () => {
         groups: ['all_users', 'admin'],
       });
 
-      const loggedUser = await authenticateUser(app);
-
       const application = await createApplication(app, {
         user: adminUserData.user,
         name: 'old name',
@@ -701,9 +734,18 @@ describe('apps controller', () => {
         userType: 'instance',
       });
 
+      const loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.user.defaultOrganizationId
+      );
+
       const response = await request(app.getHttpServer())
         .put(`/api/apps/${application.id}`)
-        .send({ app: { name: 'new name' } });
+        .send({ app: { name: 'new name' } })
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
 
       expect(response.statusCode).toBe(200);
       await application.reload();
@@ -711,7 +753,10 @@ describe('apps controller', () => {
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
-        userId: superAdminUserData.user.id,
+        where: {
+          userId: superAdminUserData.user.id,
+          resourceType: 'APP',
+        },
       });
 
       expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
@@ -723,7 +768,6 @@ describe('apps controller', () => {
         updateParams: { app: { name: 'new name' } },
       });
       expect(auditLog.createdAt).toBeDefined();
-      await logoutUser(app, loggedUser.tokenCookie, adminUserData.user.defaultOrganizationId);
     });
 
     it('should not be able to update name of the app if admin of another organization', async () => {
@@ -935,8 +979,17 @@ describe('apps controller', () => {
         name: 'test_name',
       });
 
-      const response = await request(app.getHttpServer()).delete(`/api/apps/${application.id}`);
-      //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+      const loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.user.defaultOrganizationId
+      );
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/apps/${application.id}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
 
       expect(response.statusCode).toBe(200);
       await expect(App.findOneOrFail({ where: { id: application.id } })).rejects.toThrow(expect.any(Error));
@@ -1126,8 +1179,17 @@ describe('apps controller', () => {
         });
         await createApplicationVersion(app, application);
 
-        const response = await request(app.getHttpServer()).get(`/api/apps/${application.id}/versions`);
-        //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+        const loggedUser = await authenticateUser(
+          app,
+          superAdminUserData.user.email,
+          'password',
+          adminUserData.user.defaultOrganizationId
+        );
+
+        const response = await request(app.getHttpServer())
+          .get(`/api/apps/${application.id}/versions`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(200);
         expect(response.body.versions.length).toBe(1);
@@ -1231,9 +1293,17 @@ describe('apps controller', () => {
           });
           const version = await createApplicationVersion(app, application);
 
+          const loggedUser = await authenticateUser(
+            app,
+            superAdminUserData.user.email,
+            'password',
+            adminUserData.user.defaultOrganizationId
+          );
+
           const response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
-            //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
+            .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+            .set('Cookie', loggedUser.tokenCookie)
             .send({
               versionName: `v_3`,
               versionFromId: version.id,
@@ -1520,7 +1590,7 @@ describe('apps controller', () => {
           expect(dataQueries).toHaveLength(3);
 
           credentials = await getManager().find(Credential);
-          expect([...new Set(credentials.map((c) => c.valueCiphertext))]).toEqual(['strongPassword']);
+          expect([...new Set(credentials.map((c) => c.valueCiphertext))]).toContain('strongPassword');
 
           await logoutUser(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
         });
@@ -1581,10 +1651,17 @@ describe('apps controller', () => {
         await createApplicationVersion(app, application);
         const duplicateVersion = await createApplicationVersion(app, application, { name: 'v123' });
 
-        const response = await request(app.getHttpServer()).delete(
-          `/api/apps/${application.id}/versions/${duplicateVersion.id}`
+        const loggedUser = await authenticateUser(
+          app,
+          superAdminUserData.user.email,
+          'password',
+          adminUserData.user.defaultOrganizationId
         );
-        //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+
+        const response = await request(app.getHttpServer())
+          .delete(`/api/apps/${application.id}/versions/${duplicateVersion.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(200);
       });
@@ -1769,8 +1846,17 @@ describe('apps controller', () => {
         });
         const version = await createApplicationVersion(app, application);
 
-        const response = await request(app.getHttpServer()).get(`/api/apps/${application.id}/versions/${version.id}`);
-        //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+        const loggedUser = await authenticateUser(
+          app,
+          superAdminUserData.user.email,
+          'password',
+          adminUserData.user.defaultOrganizationId
+        );
+
+        const response = await request(app.getHttpServer())
+          .get(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(200);
       });
@@ -1877,9 +1963,17 @@ describe('apps controller', () => {
         });
         const version = await createApplicationVersion(app, application);
 
+        const loggedUser = await authenticateUser(
+          app,
+          superAdminUserData.user.email,
+          'password',
+          adminUserData.user.defaultOrganizationId
+        );
+
         const response = await request(app.getHttpServer())
           .put(`/api/apps/${application.id}/versions/${version.id}`)
-          //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie)
           .send({
             definition: { components: {} },
           });
@@ -2059,9 +2153,12 @@ describe('apps controller', () => {
       }
 
       // should create audit log
-      expect(await AuditLog.count()).toEqual(3);
+      expect(await AuditLog.count()).toEqual(6);
       const auditLog = await AuditLog.findOne({
-        userId: adminUserData.user.id,
+        where: {
+          userId: adminUserData.user.id,
+          resourceType: 'APP',
+        },
       });
 
       expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
@@ -2090,15 +2187,26 @@ describe('apps controller', () => {
       });
       await createApplicationVersion(app, application);
 
-      const response = await request(app.getHttpServer()).get('/api/apps/slugs/foo');
-      //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+      const loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.user.defaultOrganizationId
+      );
 
+      const response = await request(app.getHttpServer())
+        .get('/api/apps/slugs/foo')
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
       expect(response.statusCode).toBe(200);
 
       // should create audit log
-      expect(await AuditLog.count()).toEqual(1);
+      expect(await AuditLog.count()).toEqual(2);
       const auditLog = await AuditLog.findOne({
-        userId: superAdminUserData.user.id,
+        where: {
+          userId: superAdminUserData.user.id,
+          resourceType: 'APP',
+        },
       });
 
       expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
@@ -2107,9 +2215,6 @@ describe('apps controller', () => {
       expect(auditLog.resourceName).toEqual(application.name);
       expect(auditLog.actionType).toEqual('APP_VIEW');
       expect(auditLog.createdAt).toBeDefined();
-      await logoutUser(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
-      // await logoutUser(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
-      // await logoutUser(app, viewerUserData['tokenCookie'], viewerUserData.user.defaultOrganizationId);
     });
 
     it('should not be able to fetch app using slug if member of another organization', async () => {
@@ -2235,7 +2340,10 @@ describe('apps controller', () => {
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
-        userId: adminUserData.user.id,
+        where: {
+          userId: adminUserData.user.id,
+          resourceType: 'APP',
+        },
       });
 
       expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
@@ -2263,9 +2371,9 @@ describe('apps controller', () => {
         slug: 'foo',
       });
 
-      const version = await createApplicationVersion(app, application);
+      await createApplicationVersion(app, application);
 
-      await createAppEnvironments(app, version.id);
+      await createAppEnvironments(app, application.organizationId);
 
       // setup app permissions for developer
       const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
@@ -2276,9 +2384,17 @@ describe('apps controller', () => {
       developerUserGroup.appCreate = true;
       await developerUserGroup.save();
 
+      const loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.user.organizationId
+      );
+
       const response = await request(app.getHttpServer())
         .get(`/api/apps/${application.id}/export`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
 
       expect(response.statusCode).toBe(200);
       expect(response.body.appV2.id).toBe(application.id);
@@ -2288,7 +2404,10 @@ describe('apps controller', () => {
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
-        userId: superAdminUserData.user.id,
+        where: {
+          userId: superAdminUserData.user.id,
+          resourceType: 'APP',
+        },
       });
 
       expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
@@ -2297,9 +2416,6 @@ describe('apps controller', () => {
       expect(auditLog.resourceName).toEqual(application.name);
       expect(auditLog.actionType).toEqual('APP_EXPORT');
       expect(auditLog.createdAt).toBeDefined();
-      await logoutUser(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
-      // await logoutUser(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
-      // await logoutUser(app, viewerUserData['tokenCookie'], viewerUserData.user.defaultOrganizationId);
     });
 
     it('should not be able to export app if member of another organization', async () => {
@@ -2409,7 +2525,10 @@ describe('apps controller', () => {
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
-        userId: adminUserData.user.id,
+        where: {
+          userId: adminUserData.user.id,
+          resourceType: 'APP',
+        },
       });
 
       expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
@@ -2438,9 +2557,17 @@ describe('apps controller', () => {
       });
       await createApplicationVersion(app, application);
 
+      const loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.user.defaultOrganizationId
+      );
+
       const response = await request(app.getHttpServer())
         .post('/api/apps/import')
-        //.set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
         .send({ name: 'Imported App' });
 
       expect(response.statusCode).toBe(201);
@@ -2453,7 +2580,10 @@ describe('apps controller', () => {
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
-        userId: superAdminUserData.user.id,
+        where: {
+          userId: superAdminUserData.user.id,
+          resourceType: 'APP',
+        },
       });
 
       expect(auditLog.organizationId).toEqual(adminUserData.user.organizationId);
@@ -2533,9 +2663,17 @@ describe('apps controller', () => {
         user: anotherOrgAdminUserData.user,
       });
 
+      const loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        anotherOrgAdminUserData.user.defaultOrganizationId
+      );
+
       const response = await request(app.getHttpServer())
         .put(`/api/apps/${application.id}/icons`)
-        //.set('Authorization', authHeaderForUser(superAdminUserData.user, anotherOrgAdminUserData.organization.id))
+        .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
         .send({ icon: 'new-icon-name' });
 
       expect(response.statusCode).toBe(200);

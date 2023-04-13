@@ -1,7 +1,7 @@
 import { Body, Controller, Param, Post, Get, UseGuards, Req, Res } from '@nestjs/common';
 import { OauthService } from '../services/oauth/oauth.service';
 import { OidcOAuthService } from '../services/oauth/oidc_auth.service';
-import { Response, Request } from 'express';
+import { Response } from 'express';
 import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
 import { User } from 'src/decorators/user.decorator';
 

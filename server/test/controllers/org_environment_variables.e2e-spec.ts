@@ -5,6 +5,7 @@ import { clearDB, createUser, createNestAppInstance, createGroupPermission, auth
 import { getManager } from 'typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
+import { randomInt } from 'crypto';
 
 const createVariable = async (app: INestApplication, adminUserData: any, body: any) => {
   return await request(app.getHttpServer())
@@ -80,6 +81,9 @@ describe('organization environment variables controller', () => {
       loggedUser = await authenticateUser(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
+      loggedUser = await authenticateUser(app, superAdminUserData.user.email);
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const variableArray = [];
       for (const body in bodyArray) {
         const result = await createVariable(app, adminUserData, body);
@@ -102,7 +106,8 @@ describe('organization environment variables controller', () => {
 
       await request(app.getHttpServer())
         .get(`/api/organization-variables/`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
+        .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie'])
         .send()
         .expect(200);
 
@@ -164,6 +169,9 @@ describe('organization environment variables controller', () => {
       loggedUser = await authenticateUser(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
+      loggedUser = await authenticateUser(app, superAdminUserData.user.email);
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       await request(app.getHttpServer())
         .post(`/api/organization-variables/`)
         .set('Cookie', adminUserData['tokenCookie'])
@@ -184,6 +192,13 @@ describe('organization environment variables controller', () => {
         .set('Cookie', viewerUserData['tokenCookie'])
         .send({ variable_name: 'pi', variable_type: 'server', value: '3.14', encrypted: true })
         .expect(403);
+
+      await request(app.getHttpServer())
+        .post(`/api/organization-variables/`)
+        .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie'])
+        .send({ variable_name: 'pi', variable_type: 'server', value: '3.14', encrypted: true })
+        .expect(201);
     });
   });
 
@@ -218,6 +233,14 @@ describe('organization environment variables controller', () => {
       loggedUser = await authenticateUser(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
+      loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const developerGroup = await getManager().findOneOrFail(GroupPermission, {
         where: { group: 'developer' },
       });
@@ -236,7 +259,7 @@ describe('organization environment variables controller', () => {
       for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
         await request(app.getHttpServer())
           .patch(`/api/organization-variables/${response.body.variable.id}`)
-          .set('tj-workspace-id', userData.user.defaultOrganizationId)
+          .set('tj-workspace-id', adminUserData.organization.id)
           .set('Cookie', userData['tokenCookie'])
           .send({ variable_name: 'secret_email' })
           .expect(200);
@@ -286,6 +309,14 @@ describe('organization environment variables controller', () => {
       loggedUser = await authenticateUser(app, 'viewer@tooljet.io');
       viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
 
+      loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const developerGroup = await getManager().findOneOrFail(GroupPermission, {
         where: { group: 'developer' },
       });
@@ -306,7 +337,7 @@ describe('organization environment variables controller', () => {
 
         await request(app.getHttpServer())
           .delete(`/api/organization-variables/${response.body.variable.id}`)
-          .set('tj-workspace-id', userData.user.defaultOrganizationId)
+          .set('tj-workspace-id', adminUserData.organization.id)
           .set('Cookie', userData['tokenCookie'])
           .send()
           .expect(200);

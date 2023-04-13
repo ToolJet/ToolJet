@@ -1,13 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import {
-  clearDB,
-  createUser,
-  createNestAppInstance,
-  createApplication,
-  authenticateUser,
-  authHeaderForUser,
-} from '../test.helper';
+import { clearDB, createUser, createNestAppInstance, createApplication, authenticateUser } from '../test.helper';
 import { getManager } from 'typeorm';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
@@ -53,9 +46,15 @@ describe('group permissions controller', () => {
         userType: 'instance',
       });
 
+      let loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+      loggedUser = await authenticateUser(nestApp, superAdminUserData.user.email, 'password', organization.id);
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUser.organizationId))
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie'])
         .send({ group: 'avengers' });
 
       expect(response.statusCode).toBe(201);
@@ -74,7 +73,10 @@ describe('group permissions controller', () => {
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
-        userId: superAdminUserData.user.id,
+        where: {
+          userId: superAdminUserData.user.id,
+          resourceType: 'GROUP_PERMISSION',
+        },
       });
 
       expect(auditLog.organizationId).toEqual(adminUser.organizationId);
@@ -114,7 +116,10 @@ describe('group permissions controller', () => {
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
-        userId: adminUser.id,
+        where: {
+          userId: adminUser.id,
+          resourceType: 'GROUP_PERMISSION',
+        },
       });
 
       expect(auditLog.organizationId).toEqual(adminUser.organizationId);
@@ -226,12 +231,16 @@ describe('group permissions controller', () => {
         groups: ['all_users', 'admin'],
         userType: 'instance',
       });
-      const loggedUser = await authenticateUser(nestApp);
+
+      let loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+      loggedUser = await authenticateUser(nestApp, superAdminUserData.user.email, 'password', organization.id);
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       let response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie)
+        .set('Cookie', adminUser['tokenCookie'])
         .send({ group: 'avengers' });
 
       expect(response.statusCode).toBe(201);
@@ -246,7 +255,7 @@ describe('group permissions controller', () => {
       response = await request(nestApp.getHttpServer())
         .get(`/api/group_permissions/${updatedGroup.id}`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie);
+        .set('Cookie', adminUser['tokenCookie']);
 
       expect(response.statusCode).toBe(200);
       expect(response.body.group).toBe('avengers');
@@ -257,7 +266,8 @@ describe('group permissions controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .get(`/api/group_permissions/${updatedGroup.id}`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUser.organizationId));
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(200);
       expect(response.body.group).toBe('avengers');
@@ -354,9 +364,21 @@ describe('group permissions controller', () => {
         organization: { adminUser, organization },
       } = await setupOrganizations(nestApp);
 
+      const superAdminUserData = await createUser(nestApp, {
+        email: 'superadmin@tooljet.io',
+        groups: ['all_users', 'admin'],
+        userType: 'instance',
+      });
+
+      let loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+      loggedUser = await authenticateUser(nestApp, superAdminUserData.user.email, 'password', organization.id);
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const createResponse = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
-        .set('Authorization', authHeaderForUser(adminUser))
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', adminUser['tokenCookie'])
         .send({ group: 'avengers' });
 
       expect(createResponse.statusCode).toBe(201);
@@ -368,16 +390,11 @@ describe('group permissions controller', () => {
         },
       });
 
-      const superAdminUserData = await createUser(nestApp, {
-        email: 'superadmin@tooljet.io',
-        groups: ['all_users', 'admin'],
-        userType: 'instance',
-      });
-
       //update a group name
       const updateResponse = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${updatedGroup.id}`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUser.organizationId))
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie'])
         .send({ name: 'titans' });
 
       expect(updateResponse.statusCode).toBe(200);
@@ -391,12 +408,13 @@ describe('group permissions controller', () => {
         organization: { adminUser, organization },
       } = await setupOrganizations(nestApp);
 
-      const loggedUser = await authenticateUser(nestApp);
+      const loggedUser = authenticateUser(nestApp);
+      adminUser['tokenCookie'] = (await loggedUser).tokenCookie;
 
       const createResponse = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie)
+        .set('Cookie', adminUser['tokenCookie'])
         .send({ group: 'avengers' });
 
       expect(createResponse.statusCode).toBe(201);
@@ -412,7 +430,7 @@ describe('group permissions controller', () => {
       const updateResponse = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${updatedGroup.id}`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie)
+        .set('Cookie', adminUser['tokenCookie'])
         .send({ name: 'All users' });
 
       expect(updateResponse.statusCode).toBe(400);
@@ -444,19 +462,22 @@ describe('group permissions controller', () => {
         organization: { adminUser, app, organization },
       } = await setupOrganizations(nestApp);
 
-      const loggedUser = await authenticateUser(nestApp);
-
-      let response = await request(nestApp.getHttpServer())
-        .post('/api/group_permissions')
-        .set('tj-workspace-id', adminUser.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie)
-        .send({ group: 'avengers' });
-
       const superAdminUserData = await createUser(nestApp, {
         email: 'superadmin@tooljet.io',
         groups: ['all_users', 'admin'],
         userType: 'instance',
       });
+
+      let loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+      loggedUser = await authenticateUser(nestApp, superAdminUserData.user.email, 'password', organization.id);
+      superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
+
+      let response = await request(nestApp.getHttpServer())
+        .post('/api/group_permissions')
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', adminUser['tokenCookie'])
+        .send({ group: 'avengers' });
 
       expect(response.statusCode).toBe(201);
 
@@ -473,7 +494,7 @@ describe('group permissions controller', () => {
         response = await request(nestApp.getHttpServer())
           .put(`/api/group_permissions/${groupPermissionId}`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie)
+          .set('Cookie', user['tokenCookie'])
           .send({ add_apps: [app.id] });
 
         expect(response.statusCode).toBe(200);
@@ -496,6 +517,7 @@ describe('group permissions controller', () => {
         let auditLog = await AuditLog.findOne({
           where: {
             userId: user.id,
+            resourceType: 'GROUP_PERMISSION',
           },
           order: { createdAt: 'DESC' },
         });
@@ -510,15 +532,11 @@ describe('group permissions controller', () => {
             add_apps: [app.id],
           },
         });
-        response = await request(nestApp.getHttpServer())
-          .put(`/api/group_permissions/${groupPermissionId}`)
-          .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie)
-          .send({ remove_apps: [app.id] });
 
         response = await request(nestApp.getHttpServer())
           .put(`/api/group_permissions/${groupPermissionId}`)
-          .set('Authorization', authHeaderForUser(user, adminUser.organizationId))
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', user['tokenCookie'])
           .send({ remove_apps: [app.id] });
 
         expect(response.statusCode).toBe(200);
@@ -533,6 +551,7 @@ describe('group permissions controller', () => {
         auditLog = await AuditLog.findOne({
           where: {
             userId: user.id,
+            resourceType: 'GROUP_PERMISSION',
           },
           order: { createdAt: 'DESC' },
         });
@@ -555,12 +574,13 @@ describe('group permissions controller', () => {
         organization: { adminUser, defaultUser, organization },
       } = await setupOrganizations(nestApp);
 
-      const loggedUser = await authenticateUser(nestApp);
+      let loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
 
       let response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie)
+        .set('Cookie', adminUser['tokenCookie'])
         .send({ group: 'avengers' });
 
       const superAdminUserData = await createUser(nestApp, {
@@ -568,6 +588,9 @@ describe('group permissions controller', () => {
         groups: ['all_users', 'admin'],
         userType: 'instance',
       });
+
+      loggedUser = await authenticateUser(nestApp, superAdminUserData.user.email, 'password', organization.id);
+      superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
 
       const updatedGroup: GroupPermission = await getManager().findOneOrFail(GroupPermission, {
         where: {
@@ -581,7 +604,7 @@ describe('group permissions controller', () => {
         response = await request(nestApp.getHttpServer())
           .put(`/api/group_permissions/${groupPermissionId}`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie)
+          .set('Cookie', user['tokenCookie'])
           .send({ add_users: [defaultUser.id] });
 
         expect(response.statusCode).toBe(200);
@@ -600,7 +623,7 @@ describe('group permissions controller', () => {
         response = await request(nestApp.getHttpServer())
           .put(`/api/group_permissions/${groupPermissionId}`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie)
+          .set('Cookie', adminUser['tokenCookie'])
           .send({ remove_users: [defaultUser.id] });
 
         expect(response.statusCode).toBe(200);
@@ -691,13 +714,17 @@ describe('group permissions controller', () => {
         groups: ['all_users', 'admin'],
         userType: 'instance',
       });
-      const loggedUser = await authenticateUser(nestApp);
+      let loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      loggedUser = await authenticateUser(nestApp, superAdminUserData.user.email, 'password', organization.id);
+      superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
 
       // create group permission
       let response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie)
+        .set('Cookie', adminUser['tokenCookie'])
         .send({ group: 'avengers' });
 
       expect(response.statusCode).toBe(201);
@@ -715,7 +742,7 @@ describe('group permissions controller', () => {
       response = await request(nestApp.getHttpServer())
         .put(`/api/group_permissions/${groupPermissionId}`)
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie)
+        .set('Cookie', adminUser['tokenCookie'])
         .send({ add_apps: [app.id], add_users: [defaultUser.id] });
 
       expect(response.statusCode).toBe(200);
@@ -725,7 +752,7 @@ describe('group permissions controller', () => {
         response = await request(nestApp.getHttpServer())
           .get('/api/group_permissions')
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie);
+          .set('Cookie', user['tokenCookie']);
         expect(response.statusCode).toBe(200);
 
         const groupPermissions = response.body.group_permissions;
@@ -764,7 +791,11 @@ describe('group permissions controller', () => {
         groups: ['all_users', 'admin'],
         userType: 'instance',
       });
-      const loggedUser = await authenticateUser(nestApp);
+      let loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      loggedUser = await authenticateUser(nestApp, superAdminUserData.user.email, 'password', organization.id);
+      superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
 
       const manager = getManager();
       const adminGroupPermission = await manager.findOneOrFail(GroupPermission, {
@@ -778,7 +809,7 @@ describe('group permissions controller', () => {
         const response = await request(nestApp.getHttpServer())
           .get(`/api/group_permissions/${adminGroupPermission.id}/apps`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie);
+          .set('Cookie', user['tokenCookie']);
 
         expect(response.statusCode).toBe(200);
 
@@ -827,13 +858,17 @@ describe('group permissions controller', () => {
         groups: ['all_users', 'admin'],
         userType: 'instance',
       });
-      const loggedUser = await authenticateUser(nestApp);
 
+      let loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      loggedUser = await authenticateUser(nestApp, superAdminUserData.user.email, 'password', organization.id);
+      superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
       // create group permission
       let response = await request(nestApp.getHttpServer())
         .post('/api/group_permissions')
         .set('tj-workspace-id', adminUser.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie)
+        .set('Cookie', adminUser['tokenCookie'])
         .send({ group: 'avengers' });
 
       expect(response.statusCode).toBe(201);
@@ -852,7 +887,7 @@ describe('group permissions controller', () => {
         response = await request(nestApp.getHttpServer())
           .get(`/api/group_permissions/${groupPermissionId}/addable_apps`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie);
+          .set('Cookie', user['tokenCookie']);
 
         expect(response.statusCode).toBe(200);
 
@@ -909,7 +944,11 @@ describe('group permissions controller', () => {
         groups: ['all_users', 'admin'],
         userType: 'instance',
       });
-      const loggedUser = await authenticateUser(nestApp);
+      let loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      loggedUser = await authenticateUser(nestApp, superAdminUserData.user.email, 'password', organization.id);
+      superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
 
       const manager = getManager();
       const adminGroupPermission = await manager.findOneOrFail(GroupPermission, {
@@ -923,7 +962,7 @@ describe('group permissions controller', () => {
         const response = await request(nestApp.getHttpServer())
           .get(`/api/group_permissions/${adminGroupPermission.id}/users`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie);
+          .set('Cookie', userData['tokenCookie']);
 
         expect(response.statusCode).toBe(200);
 
@@ -969,7 +1008,17 @@ describe('group permissions controller', () => {
         groups: ['all_users', 'admin'],
         userType: 'instance',
       });
-      const loggedUser = await authenticateUser(nestApp);
+
+      let loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      loggedUser = await authenticateUser(
+        nestApp,
+        superAdminUserData.user.email,
+        'password',
+        adminUser.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
       const manager = getManager();
       const adminGroupPermission = await manager.findOneOrFail(GroupPermission, {
@@ -984,7 +1033,7 @@ describe('group permissions controller', () => {
         const response = await request(nestApp.getHttpServer())
           .get(`/api/group_permissions/${groupPermissionId}/addable_users?input=userone@tooljet.io`)
           .set('tj-workspace-id', adminUser.user.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie);
+          .set('Cookie', userData['tokenCookie']);
 
         expect(response.statusCode).toBe(200);
 
@@ -1027,7 +1076,12 @@ describe('group permissions controller', () => {
         groups: ['all_users', 'admin'],
         userType: 'instance',
       });
-      const loggedUser = await authenticateUser(nestApp);
+
+      let loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      loggedUser = await authenticateUser(nestApp, superAdminUserData.user.email, 'password', organization.id);
+      superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
 
       const manager = getManager();
       const groupPermission = await manager.findOneOrFail(GroupPermission, {
@@ -1051,7 +1105,7 @@ describe('group permissions controller', () => {
         const response = await request(nestApp.getHttpServer())
           .put(`/api/group_permissions/${groupPermissionId}/app_group_permissions/${appGroupPermissionId}`)
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie)
+          .set('Cookie', user['tokenCookie'])
           .send({ actions: { read: false, update: true } });
 
         expect(response.statusCode).toBe(200);
@@ -1063,7 +1117,7 @@ describe('group permissions controller', () => {
 
         // should create audit log
         const auditLog = await AuditLog.findOne({
-          where: { userId: user.id, actionType: 'APP_GROUP_PERMISSION_UPDATE' },
+          where: { userId: user.id, actionType: 'APP_GROUP_PERMISSION_UPDATE', resourceType: 'APP_GROUP_PERMISSION' },
         });
 
         expect(auditLog.organizationId).toEqual(adminUser.organizationId);
@@ -1139,56 +1193,47 @@ describe('group permissions controller', () => {
         userType: 'instance',
       });
 
-      const loggedUser = await authenticateUser(nestApp);
+      let loggedUser = await authenticateUser(nestApp);
+      adminUser['tokenCookie'] = loggedUser.tokenCookie;
+
+      loggedUser = await authenticateUser(nestApp, superAdminUserData.user.email, 'password', organization.id);
+      superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
 
       for (const user of [adminUser, superAdminUserData.user]) {
         await request(nestApp.getHttpServer())
           .post('/api/group_permissions')
           .set('tj-workspace-id', adminUser.defaultOrganizationId)
-          .set('Cookie', loggedUser.tokenCookie)
+          .set('Cookie', user['tokenCookie'])
           .send({ group: 'avengers' });
+
+        const manager = getManager();
+        const groupPermission: GroupPermission = await manager.findOneOrFail(GroupPermission, {
+          where: {
+            organizationId: organization.id,
+            group: 'avengers',
+          },
+        });
+
+        const response = await request(nestApp.getHttpServer())
+          .del(`/api/group_permissions/${groupPermission.id}`)
+          .set('tj-workspace-id', adminUser.defaultOrganizationId)
+          .set('Cookie', user['tokenCookie'])
+          .send({ group: 'avengers' });
+
+        expect(response.statusCode).toBe(200);
+
+        // should create audit log
+        const auditLog = await AuditLog.findOne({
+          where: { userId: user.id, actionType: 'GROUP_PERMISSION_DELETE', resourceType: 'GROUP_PERMISSION' },
+        });
+
+        expect(auditLog.organizationId).toEqual(adminUser.organizationId);
+        expect(auditLog.resourceId).toEqual(groupPermission.id);
+        expect(auditLog.resourceType).toEqual('GROUP_PERMISSION');
+        expect(auditLog.resourceName).toEqual('avengers');
+        expect(auditLog.actionType).toEqual('GROUP_PERMISSION_DELETE');
+        expect(auditLog.createdAt).toBeDefined();
       }
-
-      const manager = getManager();
-      const groupPermission: GroupPermission = await manager.findOneOrFail(GroupPermission, {
-        where: {
-          organizationId: organization.id,
-          group: 'avengers',
-        },
-      });
-
-      const response = await request(nestApp.getHttpServer())
-        .del(`/api/group_permissions/${groupPermission.id}`)
-        .set('tj-workspace-id', adminUser.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie)
-        .send({ group: 'avengers' });
-
-      const manager = getManager();
-      const groupPermission: GroupPermission = await manager.findOneOrFail(GroupPermission, {
-        where: {
-          organizationId: organization.id,
-          group: 'avengers',
-        },
-      });
-
-      const response = await request(nestApp.getHttpServer())
-        .del(`/api/group_permissions/${groupPermission.id}`)
-        .set('Authorization', authHeaderForUser(user, adminUser.organizationId))
-        .send({ group: 'avengers' });
-
-      expect(response.statusCode).toBe(200);
-
-      // should create audit log
-      const auditLog = await AuditLog.findOne({
-        where: { userId: user.id, actionType: 'GROUP_PERMISSION_DELETE' },
-      });
-
-      expect(auditLog.organizationId).toEqual(adminUser.organizationId);
-      expect(auditLog.resourceId).toEqual(groupPermission.id);
-      expect(auditLog.resourceType).toEqual('GROUP_PERMISSION');
-      expect(auditLog.resourceName).toEqual('avengers');
-      expect(auditLog.actionType).toEqual('GROUP_PERMISSION_DELETE');
-      expect(auditLog.createdAt).toBeDefined();
     });
   });
 

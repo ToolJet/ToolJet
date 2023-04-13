@@ -83,9 +83,12 @@ describe('comment controller', () => {
       appVersionsId: version.id,
     });
 
+    const loggedUser = await authenticateUser(app, superAdminUserData.user.email);
+
     const response = await request(app.getHttpServer())
       .get(`/api/comments/${thread.id}/all`)
-      .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+      .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
+      .set('Cookie', loggedUser.tokenCookie);
 
     expect(response.statusCode).toBe(200);
   });

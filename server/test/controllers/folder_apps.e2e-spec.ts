@@ -1,12 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import {
-  authenticateUser,
-  authHeaderForUser,
-  clearDB,
-  createNestAppInstance,
-  createUser,
-  setupOrganization,
-} from '../test.helper';
+import { authenticateUser, clearDB, createNestAppInstance, createUser, setupOrganization } from '../test.helper';
 import * as request from 'supertest';
 import { getManager } from 'typeorm';
 import { Folder } from '../../src/entities/folder.entity';
@@ -65,9 +58,18 @@ describe('folder apps controller', () => {
         userType: 'instance',
       });
 
+      const loggedUser = await authenticateUser(
+        nestApp,
+        superAdminUserData.user.email,
+        'password',
+        adminUser.defaultOrganizationId
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const response = await request(nestApp.getHttpServer())
         .post(`/api/folder_apps`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUser.organizationId))
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie'])
         .send({ folder_id: folder.id, app_id: app.id });
 
       expect(response.statusCode).toBe(201);
@@ -142,9 +144,18 @@ describe('folder apps controller', () => {
         userType: 'instance',
       });
 
+      const loggedUser = await authenticateUser(
+        nestApp,
+        superAdminUserData.user.email,
+        'password',
+        adminUser.defaultOrganizationId
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const response = await request(nestApp.getHttpServer())
         .put(`/api/folder_apps/${folderApp.folderId}`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUser.organizationId))
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie'])
         .send({ app_id: folderApp.appId });
 
       expect(response.statusCode).toBe(200);

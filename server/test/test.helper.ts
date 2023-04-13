@@ -36,6 +36,7 @@ import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import * as cookieParser from 'cookie-parser';
+import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 
 export async function createNestAppInstance(): Promise<INestApplication> {
   let app: INestApplication;
@@ -329,6 +330,21 @@ export async function createAppGroupPermission(nestApp, app, groupId, permission
   return appGroupPermission;
 }
 
+export async function createDatasourceGroupPermission(nestApp, dataSourceId, groupId, permissions) {
+  const dsGroupPermissionRepository: Repository<DataSourceGroupPermission> = nestApp.get(
+    'DataSourceGroupPermissionRepository'
+  );
+
+  const dsGroupPermission = dsGroupPermissionRepository.create({
+    groupPermissionId: groupId,
+    dataSourceId: dataSourceId,
+    ...permissions,
+  });
+  await dsGroupPermissionRepository.save(dsGroupPermission);
+
+  return dsGroupPermission;
+}
+
 export async function createGroupPermission(nestApp, params) {
   const groupPermissionRepository: Repository<GroupPermission> = nestApp.get('GroupPermissionRepository');
   let groupPermission = groupPermissionRepository.create({
@@ -362,6 +378,8 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
         orgEnvironmentVariableCreate: group == 'admin',
         orgEnvironmentVariableUpdate: group == 'admin',
         orgEnvironmentVariableDelete: group == 'admin',
+        dataSourceCreate: group === 'admin',
+        dataSourceDelete: group === 'admin',
         folderUpdate: group == 'admin',
         folderDelete: group == 'admin',
       });
@@ -720,7 +738,7 @@ export const generateAppDefaults = async (
     }
   }
 
-  return { application, appVersion, dataSource, dataQuery };
+  return { application, appVersion, dataSource, dataQuery, appEnvironments };
 };
 
 export const getAppWithAllDetails = async (id: string) => {
@@ -747,10 +765,15 @@ export const getAppWithAllDetails = async (id: string) => {
   return app;
 };
 
-export const authenticateUser = async (app: INestApplication, email = 'admin@tooljet.io', password = 'password') => {
+export const authenticateUser = async (
+  app: INestApplication,
+  email = 'admin@tooljet.io',
+  password = 'password',
+  organization_id = null
+) => {
   const sessionResponse = await request
     .agent(app.getHttpServer())
-    .post('/api/authenticate')
+    .post(`/api/authenticate${organization_id ? `/${organization_id}` : ''}`)
     .send({ email, password })
     .expect(201);
 
