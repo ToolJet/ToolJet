@@ -183,12 +183,7 @@ class EditorComponent extends React.Component {
             ...this.state.currentState,
             globals: {
               ...this.state.currentState.globals,
-              userVars: {
-                email: currentUser.email,
-                firstName: currentUser.first_name,
-                lastName: currentUser.last_name,
-                groups: currentSession.group_permissions?.map((group) => group.group) || [],
-              },
+              currentUser: userVars,
             },
           },
           userVars,
