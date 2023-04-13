@@ -291,7 +291,7 @@ export default function generateColumnsData({
                   fuzzySearch
                   placeholder={t('globals.select', 'Select') + '...'}
                   disabled={!isEditable}
-                  className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                  className="select-search"
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>
