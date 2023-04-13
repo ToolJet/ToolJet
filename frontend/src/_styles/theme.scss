@@ -4335,6 +4335,8 @@ input[type="text"] {
   input {
     width: 200px;
     border-radius: 5px !important;
+    color: var(--slate12) !important;
+    background-color: var(--base);
   }
 
   .input-icon-addon {
@@ -4348,6 +4350,7 @@ input[type="text"] {
 
   input:focus {
     width: 300px;
+    background-color: var(--base);
   }
 
   .input-icon .input-icon-addon {
