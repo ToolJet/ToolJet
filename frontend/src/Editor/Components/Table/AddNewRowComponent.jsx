@@ -47,7 +47,7 @@ export function AddNewRowComponent({
         accumulator[index] = newRowsState[index];
         return accumulator;
       }, {});
-      setExposedVariable('newRowsAdded', newRowsState).then(() => {
+      setExposedVariable('newRows', newRowsState).then(() => {
         mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
       });
     }
@@ -116,7 +116,7 @@ export function AddNewRowComponent({
           </tbody>
         </table>
         <button
-          className="btn btn-primary btn-sm m-2"
+          className="btn btn-light btn-sm m-2"
           onClick={() => {
             const rowData = _.cloneDeep(newRowsState);
             const index = rowData.length;
@@ -128,13 +128,13 @@ export function AddNewRowComponent({
               accumulator.push(newRowDataUpdates[row]);
               return accumulator;
             }, []);
-            setExposedVariable('newRowsAdded', newRowAddedExposedVar).then(() => {
+            setExposedVariable('newRows', newRowAddedExposedVar).then(() => {
               mergeToAddNewRowsDetails({ newRowsDataUpdates: newRowDataUpdates });
               setNewRowsState(rowData);
             });
           }}
         >
-          + add another row
+          +
         </button>
       </div>
       <div className="card-footer">
@@ -142,18 +142,18 @@ export function AddNewRowComponent({
           className="btn btn-primary btn-sm mx-2"
           onClick={() => {
             onEvent('onNewRowsAdded', { component }).then(() => {
-              setExposedVariable('newRowsAdded', []).then(() => {
+              setExposedVariable('newRows', []).then(() => {
                 mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
                 setNewRowsState([]);
               });
             });
           }}
         >
-          Finish adding rows
+          Save
         </button>
         <button
           onClick={() => {
-            setExposedVariable('newRowsAdded', []).then(() => {
+            setExposedVariable('newRows', []).then(() => {
               mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
               setNewRowsState([]);
             });

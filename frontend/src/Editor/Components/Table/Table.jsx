@@ -236,7 +236,7 @@ export function Table({
       return accumulator;
     }, []);
     mergeToAddNewRowsDetails(changesToBeSaved);
-    return setExposedVariables({ newRowsAdded: changesToBeExposed });
+    return setExposedVariables({ newRows: changesToBeExposed });
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
@@ -612,7 +612,7 @@ export function Table({
           Object.keys(tableDetails.addNewRowsDetails.newRowsDataUpdates || {}).length > 0)
       ) {
         setExposedVariables({
-          newRowsAdded: [],
+          newRows: [],
         }).then(() => {
           mergeToAddNewRowsDetails({ newRowsChangeSet: {}, newRowsDataUpdates: {}, addingNewRows: false });
         });
