@@ -12,7 +12,7 @@ export const tableSelector = {
 
   labelNumberOfRecords: '[data-cy="footer-number-of-records"]',
 
-  buttonDownloadDropdown: '[data-tip="Download"]',
+  buttonDownloadDropdown: '[data-tooltip-id="tooltip-for-download"]',
   optionDownloadCSV: '[data-cy="option-download-CSV"]',
   optionDownloadExcel: '[data-cy="option-download-execel"]',
   optionDownloadPdf: '[data-cy="option-download-pdf"]',
@@ -31,7 +31,7 @@ export const tableSelector = {
     return `[data-cy="column-header-${column}"]`;
   },
 
-  filterButton: '[data-tip="Filter data"]',
+  filterButton: '[data-tooltip-id="tooltip-for-filter-data"]',
   headerFilters: '[data-cy="header-filters"]',
   labelNoFilters: '[data-cy="label-no-filters"]',
   buttonAddFilter: '[data-cy="button-add-filter"]',

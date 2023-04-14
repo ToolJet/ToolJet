@@ -210,7 +210,7 @@ class AppComponent extends React.Component {
   };
 
   render() {
-    const { updateAvailable, darkMode, currentUser } = this.state;
+    const { updateAvailable, darkMode } = this.state;
     let toastOptions = {
       style: {
         wordBreak: 'break-all',

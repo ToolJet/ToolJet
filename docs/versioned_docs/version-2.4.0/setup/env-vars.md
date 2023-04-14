@@ -295,3 +295,9 @@ If this parameter is not specified then PostgREST refuses authentication request
 :::info
 Please make sure that DB_URI is given in the format `postgrest://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
 :::
+
+## User Session Expiry Time (Optional)
+
+| variable         | description                                     |
+| ---------------- | ----------------------------------------------- |
+| USER_SESSION_EXPIRY | This variable controls the user session expiry time. By default, the session expires after 2 days. The variable expects the value in minutes. ex: USER_SESSION_EXPIRY = 120 which is 2 hours |

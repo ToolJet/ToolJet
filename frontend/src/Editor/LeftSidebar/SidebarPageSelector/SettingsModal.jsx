@@ -65,7 +65,7 @@ export const SettingsModal = ({
                 },
               },
             }}
-            componentMeta={{ events: { onPageLoad: { displayName: 'On page load' } } }}
+            componentMeta={{ events: { onPageLoad: { displayName: 'On page load' } }, name: 'page' }}
             currentState={currentState}
             dataQueries={dataQueries}
             components={components}
