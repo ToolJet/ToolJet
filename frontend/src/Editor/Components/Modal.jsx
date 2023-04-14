@@ -20,7 +20,15 @@ export const Modal = function Modal({
   dataCy,
 }) {
   const [showModal, setShowModal] = useState(false);
-  const { hideOnEsc, hideCloseButton, hideTitleBar, loadingState, useDefaultButton, triggerButtonLabel } = properties;
+  const {
+    closeOnClickingOutside = false,
+    hideOnEsc,
+    hideCloseButton,
+    hideTitleBar,
+    loadingState,
+    useDefaultButton,
+    triggerButtonLabel,
+  } = properties;
   const {
     headerBackgroundColor,
     headerTextColor,
@@ -87,7 +95,7 @@ export const Modal = function Modal({
   };
 
   useEffect(() => {
-    if (containerProps.mode === 'view') {
+    if (closeOnClickingOutside) {
       const handleClickOutside = (event) => {
         const modalRef = parentRef.current.parentElement.parentElement.parentElement;
 
@@ -102,7 +110,7 @@ export const Modal = function Modal({
       };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [containerProps.mode, parentRef]);
+  }, [closeOnClickingOutside, parentRef]);
 
   return (
     <div className="container" data-disabled={disabledState} data-cy={dataCy}>
