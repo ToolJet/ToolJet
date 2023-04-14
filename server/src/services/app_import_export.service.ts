@@ -100,6 +100,10 @@ export class AppImportExportService {
           })
           .orderBy('data_source_options.createdAt', 'ASC')
           .getMany();
+
+        dataSourceOptions?.forEach((dso) => {
+          delete dso?.options?.tokenData;
+        });
       }
 
       appToExport['dataQueries'] = dataQueries;
