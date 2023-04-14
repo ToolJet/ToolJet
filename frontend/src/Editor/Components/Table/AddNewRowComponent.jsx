@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTable, useBlockLayout } from 'react-table';
 import _ from 'lodash';
+import { Tooltip } from 'react-tooltip';
 
 export function AddNewRowComponent({
   hideAddNewRowPopup,
@@ -133,9 +134,12 @@ export function AddNewRowComponent({
               setNewRowsState(rowData);
             });
           }}
+          data-tooltip-id="tooltip-for-add-new-row"
+          data-tooltip-content="Add another row"
         >
           +
         </button>
+        <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
       </div>
       <div className="card-footer">
         <button

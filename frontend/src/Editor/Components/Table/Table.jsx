@@ -766,7 +766,8 @@ export function Table({
                 onClick={(e) => {
                   showAddNewRowPopup();
                 }}
-                data-tip="Add new row"
+                data-tooltip-id="tooltip-for-add-new-row"
+                data-tooltip-content="Add new row"
                 disabled={tableDetails.addNewRowsDetails.addingNewRows}
               >
                 <img src="assets/images/icons/plus.svg" width="15" height="15" />
@@ -775,6 +776,7 @@ export function Table({
                     <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
                   )}
               </button>
+              <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
               {showFilterButton && (
                 <>
                   <span
