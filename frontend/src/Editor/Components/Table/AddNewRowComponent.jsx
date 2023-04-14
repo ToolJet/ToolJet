@@ -146,10 +146,8 @@ export function AddNewRowComponent({
           className="btn btn-primary btn-sm mx-2"
           onClick={() => {
             onEvent('onNewRowsAdded', { component }).then(() => {
-              setExposedVariable('newRows', []).then(() => {
-                mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
-                setNewRowsState([]);
-              });
+              mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
+              setNewRowsState([]);
             });
           }}
         >
