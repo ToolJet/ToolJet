@@ -302,33 +302,35 @@ class ViewerComponent extends React.Component {
     const versionId = this.props.params.versionId;
 
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
-      if (currentSession?.group_permissions) {
-        const currentUser = currentSession.current_user;
-        const userVars = {
-          email: currentUser.email,
-          firstName: currentUser.first_name,
-          lastName: currentUser.last_name,
-          groups: currentSession?.group_permissions?.map((group) => group.group),
-        };
+      if (currentSession?.load_app) {
+        if (currentSession?.group_permissions) {
+          const currentUser = currentSession.current_user;
+          const userVars = {
+            email: currentUser.email,
+            firstName: currentUser.first_name,
+            lastName: currentUser.last_name,
+            groups: currentSession?.group_permissions?.map((group) => group.group),
+          };
 
-        this.setState({
-          currentUser,
-          currentState: {
-            ...this.state.currentState,
-            globals: {
-              ...this.state.currentState.globals,
-              currentUser: userVars,
+          this.setState({
+            currentUser,
+            currentState: {
+              ...this.state.currentState,
+              globals: {
+                ...this.state.currentState.globals,
+                currentUser: userVars,
+              },
             },
-          },
-          userVars,
-        });
-        slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
-      } else if (currentSession?.authentication_failed && !slug) {
-        const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
-        const pathname = getSubpath() ? window.location.pathname.replace(getSubpath(), '') : window.location.pathname;
-        window.location.href = loginPath + `?redirectTo=${excludeWorkspaceIdFromURL(pathname)}`;
-      } else {
-        slug && this.loadApplicationBySlug(slug);
+            userVars,
+          });
+          slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
+        } else if (currentSession?.authentication_failed && !slug) {
+          const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
+          const pathname = getSubpath() ? window.location.pathname.replace(getSubpath(), '') : window.location.pathname;
+          window.location.href = loginPath + `?redirectTo=${excludeWorkspaceIdFromURL(pathname)}`;
+        } else {
+          slug && this.loadApplicationBySlug(slug);
+        }
       }
       this.setState({ isLoading: false });
     });

@@ -95,6 +95,7 @@ class AppComponent extends React.Component {
             } else {
               this.updateCurrentSession({
                 current_organization_id,
+                load_app: true,
               });
             }
           })
@@ -102,10 +103,12 @@ class AppComponent extends React.Component {
             if (!this.isThisWorkspaceLoginPage(true) && !isApplicationsPath) {
               this.updateCurrentSession({
                 authentication_status: false,
+                load_app: true,
               });
             } else if (isApplicationsPath) {
               this.updateCurrentSession({
                 authentication_failed: true,
+                load_app: true,
               });
             }
           });
@@ -138,6 +141,7 @@ class AppComponent extends React.Component {
             ...data,
             current_organization_name,
             organizations: response.organizations,
+            load_app: true,
           });
 
           // if user is trying to load the workspace login page, then redirect to the dashboard
@@ -173,6 +177,7 @@ class AppComponent extends React.Component {
 
                     this.updateCurrentSession({
                       current_organization_name,
+                      load_app: true,
                     });
 
                     if (!this.isThisWorkspaceLoginPage())

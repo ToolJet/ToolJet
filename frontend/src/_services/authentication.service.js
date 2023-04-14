@@ -21,6 +21,7 @@ const currentSessionSubject = new BehaviorSubject({
   authentication_status: null,
   authentication_failed: null,
   isUserUpdated: false,
+  load_app: false,
 });
 
 export const authenticationService = {
