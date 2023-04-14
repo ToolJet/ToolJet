@@ -35,12 +35,13 @@ export class OauthController {
   @UseGuards(OrganizationAuthGuard)
   @Post('sign-in/common/:ssoType')
   async commonSignIn(
+    @Req() req,
     @Param('ssoType') ssoType,
     @Body() body,
     @User() user,
     @Res({ passthrough: true }) response: Response
   ) {
-    const result = await this.oauthService.signIn(response, body, null, ssoType, user);
+    const result = await this.oauthService.signIn(response, body, null, ssoType, user, req.cookies);
     return result;
   }
 }
