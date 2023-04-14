@@ -95,7 +95,6 @@ class AppComponent extends React.Component {
             } else {
               this.updateCurrentSession({
                 current_organization_id,
-                load_app: true,
               });
             }
           })
@@ -103,7 +102,6 @@ class AppComponent extends React.Component {
             if (!this.isThisWorkspaceLoginPage(true) && !isApplicationsPath) {
               this.updateCurrentSession({
                 authentication_status: false,
-                load_app: true,
               });
             } else if (isApplicationsPath) {
               this.updateCurrentSession({

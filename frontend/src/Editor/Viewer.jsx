@@ -157,7 +157,7 @@ class ViewerComponent extends React.Component {
           queries: queryState,
           components: {},
           globals: {
-            currentUser: userVars,
+            currentUser: userVars, // currentUser is updated in setupViewer function as well
             theme: { name: this.props.darkMode ? 'dark' : 'light' },
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
           },
@@ -318,7 +318,7 @@ class ViewerComponent extends React.Component {
               ...this.state.currentState,
               globals: {
                 ...this.state.currentState.globals,
-                currentUser: userVars,
+                currentUser: userVars, // currentUser is updated in setStateForContainer function as well
               },
             },
             userVars,
