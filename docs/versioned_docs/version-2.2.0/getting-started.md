@@ -143,7 +143,7 @@ Learn more about the **[ToolJet Database here](/docs/tooljet-database)**
     </div>
 
 :::info
-ToolJet application's User interface is constructed using Components like Tables, Forms, Charts, or Buttons etc. Check **Components Catalog** to learn more.
+ToolJet application's User interface is constructed using Components like Tables, Forms, Charts, or Buttons etc. Check **[Components Catalog](/docs/widgets/overview)** to learn more.
 :::
 
 ### Build queries and bind data to UI
@@ -156,7 +156,7 @@ ToolJet application's User interface is constructed using Components like Tables
     </div>
 
     :::info
-    ToolJet can connect to several databases, APIs and external services to fetch and modify data. Check **Datasource Catalog** to learn more.
+    ToolJet can connect to several databases, APIs and external services to fetch and modify data. Check **[Datasource Catalog](/docs/data-sources/overview)** to learn more.
     :::
 
 2. Choose a **Table** from the dropdown, Select the **List rows** option from the **Operation** dropdown, You can leave other query parameters. Scroll down and enable **Run this query on application load** - this will trigger the query when the app is loaded. 
@@ -199,8 +199,8 @@ ToolJet application's User interface is constructed using Components like Tables
     </div>
 
 :::info
-- You can manipulate the data returned by the queries using **Transformations**
-- You can also **Run JS query** or **Python query** to perform custom behavior inside ToolJet
+- You can manipulate the data returned by the queries using **[Transformations](/docs/tutorial/transformations)**
+- You can also **[Run JavaScript code](/docs/data-sources/run-js)** or **[Run Python code](/docs/data-sources/run-py)** to perform custom behavior inside ToolJet
 :::
 
 ### Preview, Release and Share app
@@ -210,7 +210,7 @@ ToolJet application's User interface is constructed using Components like Tables
 3. **Share** option allows you to share the **released version** of the application with other users or you can also make the app **public** and anyone with the URL will be able to use the app.
 
 :::tip
-You can control how much access to users have to your ToolJet apps and resources using **Org Management**.
+You can control how much access to users have to your ToolJet apps and resources using **[Org Management](/docs/tutorial/manage-users-groups)**.
 :::
 
 ## What Can I Do With ToolJet
