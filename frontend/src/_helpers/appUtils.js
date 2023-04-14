@@ -152,7 +152,7 @@ async function executeRunPycode(_ref, code, query, editorState, isPreview, mode)
       };
     }
 
-    return pyodide.isPyProxy(result) ? result.toJs() : result;
+    return pyodide.isPyProxy(result) ? convertMapSet(result.toJs()) : result;
   };
 
   return { data: await evaluatePythonCode(pyodide, code) };
@@ -1592,3 +1592,17 @@ const getSelectedText = () => {
     navigator.clipboard.writeText(window.document.selection.createRange().text);
   }
 };
+
+function convertMapSet(obj) {
+  if (obj instanceof Map) {
+    return Object.fromEntries(Array.from(obj, ([key, value]) => [key, convertMapSet(value)]));
+  } else if (obj instanceof Set) {
+    return Array.from(obj).map(convertMapSet);
+  } else if (Array.isArray(obj)) {
+    return obj.map(convertMapSet);
+  } else if (obj !== null && typeof obj === 'object') {
+    return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, convertMapSet(value)]));
+  } else {
+    return obj;
+  }
+}

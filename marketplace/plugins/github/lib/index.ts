@@ -1,14 +1,12 @@
 import { QueryError, QueryResult, QueryService, ConnectionTestResult } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
-import { Octokit } from 'octokit'
-import { getUserInfo, getRepo, getRepoIssues, getRepoPullRequests} from './query_operations'
+import { Octokit } from 'octokit';
+import { getUserInfo, getRepo, getRepoIssues, getRepoPullRequests } from './query_operations';
 
 export default class Github implements QueryService {
-
-
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const operation: Operation = queryOptions.operation;
-    const octokit:Octokit = await this.getConnection(sourceOptions);
+    const octokit: Octokit = await this.getConnection(sourceOptions);
     let result = {};
 
     try {
@@ -16,11 +14,11 @@ export default class Github implements QueryService {
         case Operation.GetUserInfo:
           result = await getUserInfo(octokit, queryOptions);
           break;
-        
+
         case Operation.GetRepo:
           result = await getRepo(octokit, queryOptions);
           break;
-        
+
         case Operation.GetRepoIssues:
           result = await getRepoIssues(octokit, queryOptions);
           break;
@@ -29,14 +27,13 @@ export default class Github implements QueryService {
           result = await getRepoPullRequests(octokit, queryOptions);
           break;
 
-        default: 
+        default:
           throw new QueryError('Query could not be completed', 'Invalid operation', {});
       }
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});
     }
-    
-    
+
     return {
       status: 'ok',
       data: result,
@@ -47,18 +44,16 @@ export default class Github implements QueryService {
     const octokit = await this.getConnection(sourceOptions);
 
     try {
-      const { status } = await octokit.rest.users.getAuthenticated();      
-      if(status) {
+      const { status } = await octokit.rest.users.getAuthenticated();
+      if (status) {
         return {
           status: 'ok',
-        }
+        };
       }
-      
-
     } catch (error) {
       return {
         status: 'failed',
-        message: 'Invalid credentials'
+        message: 'Invalid credentials',
       };
     }
   }

@@ -16,7 +16,7 @@ export const multipageText={
     eventModalTitle: "Page Events",
     labelEvents: "Events",
     addEventHandlerLink: "+ Add event handler",
-    noEventHandlerInfo: "This query doesn't have any event handlers",
+    noEventHandlerInfo: "This page doesn't have any event handlers",
 
     optionDeletePage:  "Delete Page",
     deleteModalMessage: "Do you really want to delete this page?",

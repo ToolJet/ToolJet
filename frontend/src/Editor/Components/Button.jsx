@@ -87,7 +87,7 @@ export const Button = function Button(props) {
     computedStyles['--tblr-btn-color-darker'] = tinycolor(backgroundColor).darken(8).toString();
   }
 
-  const handleClick = (event) => {
+  const handleClick = () => {
     const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id } });
     document.dispatchEvent(event1);
     fireEvent('onClick');

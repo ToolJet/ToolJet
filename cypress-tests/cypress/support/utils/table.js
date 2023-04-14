@@ -43,7 +43,7 @@ export const selectDropdownOption = (inputSelector, option) => {
   };
 
   const click = () => {
-    cy.get(inputSelector).click();
+    cy.get(inputSelector).realClick();
     cy.wait(500);
     cy.get("body").then(($body) => {
       if ($body.find('[data-index="0"]').length == 0) {
@@ -55,17 +55,17 @@ export const selectDropdownOption = (inputSelector, option) => {
   click();
   cy.get(
     isNaN(option)
-      ? `[data-index="${data[option]}"]`
-      : `[data-index="${option}"]`
-  ).click();
+      ? `[data-index="${data[option]}"]>.select-search-option:eq(0)`
+      : `[data-index="${option}"]>.select-search-option:eq(0)`
+  ).click({force:true});
 };
 
 export const verifyAndEnterColumnOptionInput = (label, value) => {
   cy.get(`[data-cy="input-and-label-${cyParamName(label)}"]`)
     .find("label")
     .should("have.text", label);
-  cy.get(`[data-cy="input-and-label-${cyParamName(label)}"]`).type(
-    `{selectAll}{backspace}${value}`
+  cy.get(`[data-cy="input-and-label-${cyParamName(label)}"]`).realClick().realPress(["Meta", "A"]).realType(
+    `${value}`
   );
 };
 
@@ -73,11 +73,11 @@ export const addAndOpenColumnOption = (name, type) => {
   cy.get('[data-cy="button-add-column"]').click();
   cy.get('[data-cy="button-add-column"]')
     .parents(".accordion-body")
-    .find('[data-cy*="column-"]')
+    .find('[data-cy*="column-new_column"]')
     .last()
     .click();
   selectDropdownOption(
-    '[data-cy="dropdown-column-type"] > .select-search',
+    '[data-cy="dropdown-column-type"]>>:eq(0)',
     type
   );
   verifyAndEnterColumnOptionInput("Column name", name);
@@ -86,16 +86,15 @@ export const addAndOpenColumnOption = (name, type) => {
 export const deleteAndVerifyColumn = (columnName) => {
   cy.get(`[data-cy="button-delete-${columnName}"]`).click();
   cy.notVisible(`[data-cy="column-${columnName}"]`);
-  cy.forceClickOnCanvas();
   cy.notVisible(tableSelector.columnHeader(columnName));
 };
 
 export const verifyInvalidFeedback = (columnIndex = 0, rowIndex = 0, text) => {
   cy.get(tableSelector.column(columnIndex))
     .eq(rowIndex)
-    .find('[class="invalid-feedback"]')
+    .find('>>>>:eq(1)')
     .should("have.text", text);
-  cy.forceClickOnCanvas();
+  // cy.forceClickOnCanvas();
 };
 
 export const addInputOnTable = (
@@ -107,6 +106,7 @@ export const addInputOnTable = (
   cy.forceClickOnCanvas();
   cy.get(tableSelector.column(columnIndex))
     .eq(rowIndex)
+    .click()
     .find(type)
     .click()
     .type(`{selectAll}{backspace}${value}`);
