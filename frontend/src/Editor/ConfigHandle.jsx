@@ -57,6 +57,7 @@ export const ConfigHandle = function ConfigHandle({
               draggable="false"
               onClick={() => removeComponent({ id })}
               data-cy={`${component.name.toLowerCase()}-delete-button`}
+              className="delete-icon"
             />
           </div>
         )}

@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
+import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
 import { getManager } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 const path = require('path');
@@ -26,16 +26,23 @@ describe('users controller', () => {
       const adminUserData = await createUser(app, { email: 'admin@tooljet.io', userType: 'instance' });
       const developerUserData = await createUser(app, { email: 'developer@tooljet.io', userType: 'workspace' });
 
+      let loggedUser = await authenticateUser(app, adminUserData.user.email);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const adminRequestResponse = await request(app.getHttpServer())
         .get('/api/users/all')
-        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', adminUserData['tokenCookie'])
         .send();
 
       expect(adminRequestResponse.statusCode).toBe(200);
 
+      loggedUser = await authenticateUser(app, developerUserData.user.email);
+      developerUserData['tokenCookie'] = loggedUser.tokenCookie;
       const developerRequestResponse = await request(app.getHttpServer())
         .get('/api/users/all')
-        .set('Authorization', authHeaderForUser(developerUserData.user))
+        .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
+        .set('Cookie', developerUserData['tokenCookie'])
         .send();
 
       expect(developerRequestResponse.statusCode).toBe(403);
@@ -49,9 +56,13 @@ describe('users controller', () => {
 
       const oldPassword = user.password;
 
+      const loggedUser = await authenticateUser(app);
+      userData['tokenCookie'] = loggedUser.tokenCookie;
+
       const response = await request(app.getHttpServer())
         .patch('/api/users/change_password')
-        .set('Authorization', authHeaderForUser(user))
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie'])
         .send({ currentPassword: 'password', newPassword: 'new password' });
 
       expect(response.statusCode).toBe(200);
@@ -65,9 +76,13 @@ describe('users controller', () => {
 
       const oldPassword = user.password;
 
+      const loggedUser = await authenticateUser(app);
+      userData['tokenCookie'] = loggedUser.tokenCookie;
+
       const response = await request(app.getHttpServer())
         .patch('/api/users/change_password')
-        .set('Authorization', authHeaderForUser(user))
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie'])
         .send({
           currentPassword: 'wrong password',
           newPassword: 'new password',
@@ -87,9 +102,13 @@ describe('users controller', () => {
 
       const [firstName, lastName] = ['Daenerys', 'Targaryen'];
 
+      const loggedUser = await authenticateUser(app);
+      userData['tokenCookie'] = loggedUser.tokenCookie;
+
       const response = await request(app.getHttpServer())
         .patch('/api/users/update')
-        .set('Authorization', authHeaderForUser(user))
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie'])
         .send({ first_name: firstName, last_name: lastName });
 
       expect(response.statusCode).toBe(200);
@@ -107,9 +126,13 @@ describe('users controller', () => {
       const { user } = userData;
       const filePath = path.join(__dirname, '../__mocks__/avatar.png');
 
+      const loggedUser = await authenticateUser(app);
+      userData['tokenCookie'] = loggedUser.tokenCookie;
+
       const response = await request(app.getHttpServer())
         .post('/api/users/avatar')
-        .set('Authorization', authHeaderForUser(user))
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie'])
         .attach('file', filePath);
 
       expect(response.statusCode).toBe(201);

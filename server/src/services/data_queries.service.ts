@@ -17,6 +17,7 @@ import { App } from 'src/entities/app.entity';
 import { AppEnvironmentService } from './app_environments.service';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import allPlugins from '@tooljet/plugins/dist/server';
+import { DataSourceScopes } from 'src/helpers/data_source.constants';
 
 @Injectable()
 export class DataQueriesService {
@@ -36,7 +37,7 @@ export class DataQueriesService {
   async findOne(dataQueryId: string): Promise<DataQuery> {
     return await this.dataQueriesRepository.findOne({
       where: { id: dataQueryId },
-      relations: ['dataSource', 'dataSource.apps', 'plugins'],
+      relations: ['dataSource', 'apps', 'dataSource.apps', 'plugins'],
     });
   }
 
@@ -51,16 +52,24 @@ export class DataQueriesService {
         .leftJoinAndSelect('plugins.iconFile', 'iconFile')
         .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
         .where('data_source.appVersionId = :appVersionId', { appVersionId })
+        .where('data_query.app_version_id = :appVersionId', { appVersionId })
         .orderBy('data_query.createdAt', 'DESC')
         .getMany();
     });
   }
 
-  async create(name: string, options: object, dataSourceId: string, manager: EntityManager): Promise<DataQuery> {
+  async create(
+    name: string,
+    options: object,
+    dataSourceId: string,
+    appVersionId: string,
+    manager: EntityManager
+  ): Promise<DataQuery> {
     const newDataQuery = manager.create(DataQuery, {
       name,
       options,
       dataSourceId,
+      appVersionId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -106,18 +115,15 @@ export class DataQueriesService {
 
   async runQuery(user: User, dataQuery: any, queryOptions: object, environmentId?: string): Promise<object> {
     const dataSource: DataSource = dataQuery?.dataSource;
-    const app: App = dataSource?.app;
+    const app: App = dataQuery?.app;
     if (!(dataSource && app)) {
       throw new UnauthorizedException();
     }
-    const dataSourceOptions = await this.appEnvironmentService.getOptions(
-      dataSource.id,
-      dataSource.appVersionId,
-      environmentId
-    );
+    const organizationId = user ? user.organizationId : app.organizationId;
+
+    const dataSourceOptions = await this.appEnvironmentService.getOptions(dataSource.id, organizationId, environmentId);
     dataSource.options = dataSourceOptions.options;
 
-    const organizationId = user ? user.organizationId : app.organizationId;
     let { sourceOptions, parsedQueryOptions, service } = await this.fetchServiceAndParsedParams(
       dataSource,
       dataQuery,
@@ -195,11 +201,12 @@ export class DataQueriesService {
             dataSource.options,
             dataSource.id,
             user?.id,
+            user?.organizationId,
             environmentId
           );
           const dataSourceOptions = await this.appEnvironmentService.getOptions(
             dataSource.id,
-            dataSource.appVersionId,
+            user.organizationId,
             environmentId
           );
           dataSource.options = dataSourceOptions.options;
@@ -366,7 +373,13 @@ export class DataQueriesService {
   }
 
   /* This function fetches access token from authorization code */
-  async authorizeOauth2(dataSource: DataSource, code: string, userId: string, environmentId?: string): Promise<void> {
+  async authorizeOauth2(
+    dataSource: DataSource,
+    code: string,
+    userId: string,
+    environmentId?: string,
+    organizationId?: string
+  ): Promise<void> {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     let tokenOptions: any;
     if (['googlesheets', 'slack', 'zendesk'].includes(dataSource.kind)) {
@@ -389,7 +402,7 @@ export class DataQueriesService {
         },
       ];
     }
-    await this.dataSourcesService.updateOptions(dataSource.id, tokenOptions, environmentId);
+    await this.dataSourcesService.updateOptions(dataSource.id, tokenOptions, organizationId, environmentId);
     return;
   }
 
@@ -489,5 +502,26 @@ export class DataQueriesService {
       return object;
     }
     return object;
+  }
+
+  async changeQueryDataSource(queryId: string, dataSourceId: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.save(DataQuery, {
+        id: queryId,
+        dataSourceId: dataSourceId,
+        updatedAt: new Date(),
+      });
+    });
+  }
+
+  async getGlobalQueriesByAppVersion(appVersionId: string, manager: EntityManager) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager
+        .createQueryBuilder(DataQuery, 'data_query')
+        .leftJoinAndSelect('data_query.dataSource', 'dataSource')
+        .where('data_query.appVersionId = :appVersionId', { appVersionId })
+        .andWhere('dataSource.scope = :scope', { scope: DataSourceScopes.GLOBAL })
+        .getMany();
+    }, manager);
   }
 }

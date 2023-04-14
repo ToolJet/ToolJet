@@ -2,14 +2,13 @@ import React from 'react';
 import { authenticationService, orgEnvironmentVariableService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
-import ReactTooltip from 'react-tooltip';
 import VariableForm from './VariableForm';
 import VariablesTable from './VariablesTable';
+// eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 class ManageOrgVarsComponent extends React.Component {
   constructor(props) {
     super(props);
-    this.currentUser = authenticationService.currentUserValue;
 
     this.state = {
       isLoading: true,
@@ -221,23 +220,23 @@ class ManageOrgVarsComponent extends React.Component {
   }
 
   canCreateVariable = () => {
-    return (
-      this.canAnyGroupPerformAction('org_environment_variable_create', this.currentUser.group_permissions) ||
-      this.currentUser.super_admin
+    return this.canAnyGroupPerformAction(
+      'org_environment_variable_create',
+      authenticationService.currentSessionValue.group_permissions
     );
   };
 
   canUpdateVariable = () => {
-    return (
-      this.canAnyGroupPerformAction('org_environment_variable_update', this.currentUser.group_permissions) ||
-      this.currentUser.super_admin
+    return this.canAnyGroupPerformAction(
+      'org_environment_variable_update',
+      authenticationService.currentSessionValue.group_permissions
     );
   };
 
   canDeleteVariable = () => {
-    return (
-      this.canAnyGroupPerformAction('org_environment_variable_delete', this.currentUser.group_permissions) ||
-      this.currentUser.super_admin
+    return this.canAnyGroupPerformAction(
+      'org_environment_variable_delete',
+      authenticationService.currentSessionValue.group_permissions
     );
   };
 
@@ -245,8 +244,6 @@ class ManageOrgVarsComponent extends React.Component {
     const { isLoading, showVariableForm, addingVar, variables } = this.state;
     return (
       <div className="wrapper org-variables-page animation-fade">
-        <ReactTooltip type="dark" effect="solid" delayShow={250} />
-
         <ConfirmDialog
           show={this.state.showVariableDeleteConfirmation}
           message={this.props.t(
@@ -314,7 +311,6 @@ class ManageOrgVarsComponent extends React.Component {
                     variables={variables}
                     canUpdateVariable={this.canUpdateVariable()}
                     canDeleteVariable={this.canDeleteVariable()}
-                    admin={this.currentUser.admin}
                     onEditBtnClicked={this.onEditBtnClicked}
                     onDeleteBtnClicked={this.onDeleteBtnClicked}
                   />
