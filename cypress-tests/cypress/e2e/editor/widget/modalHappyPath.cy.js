@@ -1,24 +1,38 @@
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { buttonText } from "Texts/button";
 import { fake } from "Fixtures/fake";
 import { commonWidgetText } from "Texts/common";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { numberInputText } from "Texts/numberInput";
+
+import { verifyControlComponentAction } from "Support/utils/button";
+import { selectEvent } from "Support/utils/events";
+import {
+  launchModal,
+  closeModal,
+  launchButton,
+  verifySize,
+  addAndVerifyColor,
+  typeOnFx,
+} from "Support/utils/modal";
 
 import {
   openAccordion,
   verifyAndModifyParameter,
   openEditorSidebar,
   verifyAndModifyToggleFx,
-  verifyComponentValueFromInspector,
+  addDefaultEventHandler,
+  addAndVerifyTooltip,
+  verifyComponentFromInspector,
+  verifyAndModifyStylePickerFx,
+  verifyWidgetColorCss,
+  selectColourFromColourPicker,
+  verifyLoaderColor,
+  fillBoxShadowParams,
   verifyBoxShadowCss,
   verifyLayout,
   verifyTooltip,
   editAndVerifyWidgetName,
-  addTextWidgetToVerifyValue,
   verifyPropertiesGeneralAccordion,
   verifyStylesGeneralAccordion,
-  randomNumber,
-  fillBoxShadowParams,
-  selectColourFromColourPicker,
 } from "Support/utils/commonWidget";
 
 describe("Modal", () => {
@@ -28,222 +42,202 @@ describe("Modal", () => {
     cy.dragAndDropWidget("Modal");
   });
 
-  it.only("should verify the properties of the number input widget", () => {
+  it("should verify the properties of the modal component", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
+    data.alertMessage = fake.randomSentence;
     data.widgetName = fake.widgetName;
+    data.customTitle = fake.randomSentence;
     data.tooltipText = fake.randomSentence;
-    data.randomNumber = randomNumber(10, 99);
-    data.minimumvalue = randomNumber(5, 10);
-    data.maximumValue = randomNumber(90, 99);
+    data.buttonText = fake.companyName;
 
     cy.renameApp(data.appName);
-
-    openEditorSidebar('modal1');
-    editAndVerifyWidgetName(data.widgetName, ["Options", "Properties", "Layout"]);
-    cy.get(`${
-      commonWidgetSelector.draggableWidget(data.widgetName)}>button`
-    ).verifyVisibleElement("have.text", "Launch Modal");
-
-    openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionProperties, [
-      "Events",
-      "Properties",
-      "Layout",
-    ]);
-    verifyAndModifyParameter(
-      'Title',
-      "fakeName"
+    launchModal("modal1");
+    cy.get('[data-cy="modal-title"]').verifyVisibleElement(
+      "have.text",
+      "This title can be changed"
     );
-    cy.forceClickOnCanvas();
-    cy.get(`${
-        commonWidgetSelector.draggableWidget(data.widgetName)}>button`
-      ).click();
+    cy.get('[data-cy="modal-body"]').should("be.visible");
+    cy.get('[data-cy="modal-close-button"]').click();
+    cy.notVisible('[data-cy="modal-title"]');
 
-      cy.get('.modal-header').verifyVisibleElement('have.text', "fakeName")
-
-    cy.get('.modal-header> [class="cursor-pointer"]').click();
-
-    openEditorSidebar(data.widgetName);
-    openAccordion(commonWidgetText.accordionProperties, [
-      "Events",
+    openEditorSidebar("modal1", ["Options", "Properties", "Layout"]);
+    editAndVerifyWidgetName(data.widgetName, [
+      "Options",
       "Properties",
       "Layout",
     ]);
+    verifyComponentFromInspector(data.widgetName);
+
+    openAccordion(commonWidgetText.accordionProperties);
+    verifyAndModifyParameter("Title", data.customTitle);
+    launchModal(data.widgetName);
+    cy.get('[data-cy="modal-title"]').verifyVisibleElement(
+      "have.text",
+      data.customTitle
+    );
+    cy.get('[data-cy="modal-close-button"]').click();
 
     verifyAndModifyToggleFx(
-        'Loading State',
-        commonWidgetText.codeMirrorLabelFalse
-      );
+      buttonText.loadingState,
+      commonWidgetText.codeMirrorLabelFalse
+    );
+    launchModal(data.widgetName);
+    cy.get(".spinner-border").should("be.visible");
 
-      cy.get(`${
-        commonWidgetSelector.draggableWidget(data.widgetName)}>button`
-      ).click();
+    cy.get(
+      commonWidgetSelector.parameterTogglebutton(buttonText.loadingState)
+    ).click();
+    cy.notVisible(".spinner-border");
 
-      cy.get('[class="spinner-border mt-5"]').should('be.visible');
+    verifyAndModifyToggleFx(
+      "Hide title bar",
+      commonWidgetText.codeMirrorLabelFalse
+    );
+    cy.notVisible('[data-cy="modal-title"]');
+    cy.get('[data-cy="hide-title-bar-toggle-button"]').click();
+    cy.get('[data-cy="modal-title"]').verifyVisibleElement(
+      "have.text",
+      data.customTitle
+    );
 
-      verifyAndModifyToggleFx(
-        'Hide title bar',
-        commonWidgetText.codeMirrorLabelFalse
-      );
-      cy.notVisible('.modal-header')
-      cy.get('[data-cy="hide-title-bar-toggle-button"]').click()
-      cy.get('.modal-header').should('be.visible');
-      
-      verifyAndModifyToggleFx(
-        'Hide close button',
-        commonWidgetText.codeMirrorLabelFalse
-      );
-      cy.notVisible('.modal-header> [class="cursor-pointer"]')
-      cy.get('[data-cy="hide-close-button-toggle-button"]').click()
-      cy.get('.modal-header> [class="cursor-pointer"]').should('be.visible');
+    cy.realPress("Escape");
+    cy.notVisible('[data-cy="modal-title"]');
 
-      cy.realPress("Escape")
-      cy.notVisible('.modal-header')
+    verifyAndModifyToggleFx(
+      "Hide on escape",
+      commonWidgetText.codeMirrorLabelTrue
+    );
+    launchModal(data.widgetName);
 
-      cy.get(`${
-        commonWidgetSelector.draggableWidget(data.widgetName)}>button`
-      ).click();
-        verifyAndModifyToggleFx(
-                'Hide on escape',
-                commonWidgetText.codeMirrorLabelTrue
-            );
-      cy.get('.modal-header> [class="cursor-pointer"]').should('be.visible');
+    cy.realPress("Escape");
+    cy.get('[data-cy="modal-title"]')
+      .verifyVisibleElement("have.text", data.customTitle)
+      .click();
 
+    verifySize("Medium");
+    verifySize("Large");
+    verifySize("Small");
 
+    verifyAndModifyToggleFx(
+      "Use default trigger button",
+      commonWidgetText.codeMirrorLabelTrue
+    );
+    cy.get('[data-cy="modal-close-button"]').click();
+    cy.notVisible(launchButton(data.widgetName));
 
+    cy.get('[data-cy="use-default-trigger-button-toggle-button"]').click();
 
-    // verifyComponentValueFromInspector(data.widgetName, data.randomNumber);
-    // cy.forceClickOnCanvas();
+    cy.get(
+      '[data-cy="trigger-button-label-input-field"]'
+    ).clearAndTypeOnCodeMirror(data.buttonText);
+    cy.forceClickOnCanvas();
+    cy.get(launchButton(data.widgetName))
+      .verifyVisibleElement("have.text", data.buttonText)
+      .click();
 
-    // openEditorSidebar(data.widgetName);
-    // openAccordion(commonWidgetText.accordionProperties, [
-    //   "Events",
-    //   "Properties",
-    //   "Layout",
-    // ]);
-    // verifyAndModifyParameter(
-    //   commonWidgetText.labelMinimumValue,
-    //   data.minimumvalue
-    // );
-    // cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
-    // cy.clearAndType(
-    //   commonWidgetSelector.draggableWidget(data.widgetName),
-    //   randomNumber(1, 4)
-    // );
-    // cy.get(
-    //   commonWidgetSelector.draggableWidget(data.widgetName)
-    // ).verifyVisibleElement("have.value", data.minimumvalue);
+    openAccordion(commonWidgetText.accordionEvents);
+    selectEvent("On open", "Show Alert");
+    cy.get('[data-cy="modal-close-button"]').click();
+    launchModal(data.widgetName);
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Hello world!");
+    cy.get('[data-cy="modal-close-button"]').click();
 
-    // openEditorSidebar(data.widgetName);
-    // openAccordion(commonWidgetText.accordionProperties, [
-    //   "Events",
-    //   "Properties",
-    //   "Layout",
-    // ]);
-    // verifyAndModifyParameter(
-    //   commonWidgetText.labelMaximumValue,
-    //   data.maximumValue
-    // );
-    // cy.clearAndType(
-    //   commonWidgetSelector.draggableWidget(data.widgetName),
-    //   randomNumber(100, 110)
-    // );
-    // cy.get(
-    //   commonWidgetSelector.draggableWidget(data.widgetName)
-    // ).verifyVisibleElement("have.value", data.maximumValue);
+    verifyLayout(data.widgetName);
 
-    // openEditorSidebar(data.widgetName);
-    // openAccordion(commonWidgetText.accordionProperties, [
-    //   "Events",
-    //   "Properties",
-    //   "Layout",
-    // ]);
-    // verifyAndModifyParameter(
-    //   commonWidgetText.labelPlaceHolder,
-    //   data.randomNumber
-    // );
-    // cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
-    // cy.get(commonWidgetSelector.draggableWidget(data.widgetName))
-    //   .invoke("attr", "placeholder")
-    //   .should("contain", data.randomNumber);
+    cy.get(commonWidgetSelector.changeLayoutToDesktopButton).click();
+    cy.get(
+      commonWidgetSelector.parameterTogglebutton(
+        commonWidgetText.parameterShowOnDesktop
+      )
+    ).click();
 
-    // verifyPropertiesGeneralAccordion(data.widgetName, data.tooltipText);
-
-    // // verifyLayout(data.widgetName);
-
-    // // cy.get(commonWidgetSelector.changeLayoutButton).click();
-    // // cy.get(
-    // //   commonWidgetSelector.parameterTogglebutton(
-    // //     commonWidgetText.parameterShowOnDesktop
-    // //   )
-    // // ).click();
-
-    // cy.get(commonWidgetSelector.widgetDocumentationLink).should(
-    //   "have.text",
-    //   numberInputText.numberInputDocumentationLink
-    // );
+    cy.get(commonWidgetSelector.widgetDocumentationLink).should(
+      "have.text",
+      "Modal documentation"
+    );
 
     cy.get(commonSelectors.editorPageLogo).click();
     cy.deleteApp(data.appName);
   });
-  it("should verify the styles of the number Modal component", () => {
+
+  it("should verify the styles of the modal widget", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
-    data.colourHex = fake.randomRgbaHex;
     data.boxShadowColor = fake.randomRgba;
+    data.colourHex = fake.randomRgbaHex;
     data.boxShadowParam = fake.boxShadowParam;
+    data.backgroundColor = fake.randomRgba;
 
     cy.renameApp(data.appName);
-
-    openEditorSidebar(numberInputText.defaultWidgetName);
+    launchModal("modal1");
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+
+    addAndVerifyColor(
+      "Header background color",
+      "#ffffffff",
+      data.backgroundColor,
+      "[data-cy='modal-header']"
+    );
+
+    data.backgroundColor = fake.randomRgba;
+    addAndVerifyColor(
+      "Header title color",
+      "#000000",
+      data.backgroundColor,
+      "[data-cy='modal-header']",
+      "color"
+    );
+
+    data.backgroundColor = fake.randomRgba;
+    addAndVerifyColor(
+      "Body background color",
+      "#ffffffff",
+      data.backgroundColor,
+      "[data-cy='modal-body']"
+    );
+
+    data.backgroundColor = fake.randomRgba;
+    addAndVerifyColor(
+      "Trigger button background color",
+      "#4D72FA",
+      data.backgroundColor,
+      launchButton("modal1"),
+      "background-color"
+    );
+
+    data.backgroundColor = fake.randomRgba;
+    addAndVerifyColor(
+      "Trigger button text color",
+      "#ffffffff",
+      data.backgroundColor,
+      launchButton("modal1"),
+      "color"
+    );
+    cy.get("[data-cy='modal-header']").realClick();
 
     verifyAndModifyToggleFx(
       commonWidgetText.parameterVisibility,
       commonWidgetText.codeMirrorLabelTrue
     );
-    cy.get(
-      commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
-    ).should("not.be.visible");
-
-    cy.get(
-      commonWidgetSelector.parameterTogglebutton(
-        commonWidgetText.parameterVisibility
-      )
-    ).click();
+    cy.get('[data-cy="modal-close-button"]').click();
+    cy.get(commonWidgetSelector.draggableWidget("modal1")).should(
+      "not.be.visible"
+    );
+    cy.get(commonWidgetSelector.parameterTogglebutton("Visibility")).click();
 
     verifyAndModifyToggleFx(
       commonWidgetText.parameterDisable,
       commonWidgetText.codeMirrorLabelFalse
     );
     cy.waitForAutoSave();
-    cy.get(
-      commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
-    ).should("have.attr", "disabled");
+    cy.get(launchButton("modal1")).should("have.attr", "disabled");
 
-    cy.get(
-      commonWidgetSelector.parameterTogglebutton(
-        commonWidgetText.parameterDisable
-      )
-    ).click();
-
-    verifyAndModifyParameter(
-      commonWidgetText.parameterBorderRadius,
-      commonWidgetText.borderRadiusInput
-    );
-
-    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
-    cy.get(
-      commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
-    ).should("have.css", "border-radius", "20px");
-
-    verifyStylesGeneralAccordion(
-      numberInputText.defaultWidgetName,
-      data.boxShadowParam,
-      data.colourHex,
-      data.boxShadowColor,
-      3
+    cy.get(commonWidgetSelector.parameterTogglebutton("Disable")).click();
+    launchModal("modal1");
+    cy.get('[data-cy="modal-title"]').verifyVisibleElement(
+      "have.text",
+      "This title can be changed"
     );
 
     cy.get(commonSelectors.editorPageLogo).click();
@@ -253,111 +247,171 @@ describe("Modal", () => {
   it("should verify the app preview", () => {
     const data = {};
     data.appName = `${fake.companyName}-App`;
-    data.tooltipText = fake.randomSentence;
-    data.colourHex = fake.randomRgbaHex;
-    data.boxShadowColor = fake.randomRgba;
-    data.boxShadowParam = fake.boxShadowParam;
-    data.randomNumber = randomNumber(10, 99);
-    data.minimumvalue = randomNumber(5, 10);
-    data.maximumValue = randomNumber(90, 99);
+    data.bgColor = fake.randomRgba;
+    data.titleColor = fake.randomRgba;
+    data.bodyColor = fake.randomRgba;
+    data.buttonColor = fake.randomRgba;
+    data.buttonTextColor = fake.randomRgba;
+    data.customTitle = fake.randomSentence;
+
+    cy.get(".close-svg > path").click();
+    cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 50);
+    cy.get(".close-svg > path").click();
+    cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 100);
+    cy.get(".close-svg > path").click();
+    cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 150);
+    cy.get(".close-svg > path").click();
+    cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 200);
+    cy.get(".close-svg > path").click();
+    cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 250);
+    cy.get(".close-svg > path").click();
 
     cy.renameApp(data.appName);
-
-    openEditorSidebar(numberInputText.defaultWidgetName);
-    verifyAndModifyParameter(
-      commonWidgetText.labelDefaultValue,
-      data.randomNumber
-    );
-    verifyAndModifyParameter(
-      commonWidgetText.labelMinimumValue,
-      data.minimumvalue
-    );
-    verifyAndModifyParameter(
-      commonWidgetText.labelMaximumValue,
-      data.maximumValue
-    );
-    verifyAndModifyParameter(
-      commonWidgetText.labelPlaceHolder,
-      data.randomNumber
-    );
-
-    verifyPropertiesGeneralAccordion(
-      numberInputText.defaultWidgetName,
-      data.tooltipText
-    );
-
-    openEditorSidebar(numberInputText.defaultWidgetName);
+    launchModal("modal1");
+    verifyAndModifyParameter("Title", data.customTitle);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    verifyAndModifyParameter(
-      commonWidgetText.parameterBorderRadius,
-      commonWidgetText.borderRadiusInput
+
+    addAndVerifyColor(
+      "Header background color",
+      "#ffffffff",
+      data.bgColor,
+      "[data-cy='modal-header']"
     );
 
-    cy.forceClickOnCanvas();
-    cy.waitForAutoSave();
-    cy.reload();
-
-    openEditorSidebar(numberInputText.defaultWidgetName);
-    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, []);
-    cy.get(commonWidgetSelector.boxShadowColorPicker).click();
-
-    fillBoxShadowParams(
-      commonWidgetSelector.boxShadowDefaultParam,
-      data.boxShadowParam
+    addAndVerifyColor(
+      "Header title color",
+      "#000000",
+      data.titleColor,
+      "[data-cy='modal-header']",
+      "color"
     );
-    selectColourFromColourPicker(
-      commonWidgetText.boxShadowColor,
-      data.boxShadowColor,
-      3
-    );
-    addTextWidgetToVerifyValue("components.numberinput1.value");
 
+    addAndVerifyColor(
+      "Body background color",
+      "#ffffffff",
+      data.bodyColor,
+      "[data-cy='modal-body']"
+    );
+
+    addAndVerifyColor(
+      "Trigger button background color",
+      "#4D72FA",
+      data.buttonColor,
+      launchButton("modal1"),
+      "background-color"
+    );
+
+    addAndVerifyColor(
+      "Trigger button text color",
+      "#ffffffff",
+      data.buttonTextColor,
+      launchButton("modal1"),
+      "color"
+    );
+    cy.get("[data-cy='modal-header']").realClick();
+
+    typeOnFx(
+      commonWidgetText.parameterVisibility,
+      "{{components.toggleswitch1.value"
+    );
+    cy.get("[data-cy='modal-header']").realClick();
+    typeOnFx(
+      commonWidgetText.parameterDisable,
+      "{{components.toggleswitch2.value"
+    );
+    cy.get(".close-svg > path").click();
+    cy.get("[data-cy='modal-header']").realClick();
+
+    typeOnFx("Loading State", "{{components.toggleswitch3.value");
+    cy.get("[data-cy='modal-header']").realClick();
+
+    typeOnFx("Hide title bar", "{{components.toggleswitch4.value");
+    cy.get("[data-cy='modal-header']").realClick();
+
+    typeOnFx("Hide close button", "{{components.toggleswitch5.value");
+    cy.get("[data-cy='modal-header']").realClick();
     cy.waitForAutoSave();
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.wait(2000);
 
-    cy.get(
-      commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
-    ).verifyVisibleElement("have.value", data.randomNumber);
+    cy.notVisible(launchButton("modal1"));
+    cy.get(commonWidgetSelector.draggableWidget("toggleswitch1"))
+      .find(".form-check-input")
+      .click();
+    cy.get(launchButton("modal1")).should("be.visible");
 
-    cy.clearAndType(
-      commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName),
-      randomNumber(1, 4)
+    cy.get(commonWidgetSelector.draggableWidget("toggleswitch2"))
+      .find(".form-check-input")
+      .click();
+    cy.get(launchButton("modal1")).should("have.attr", "disabled");
+    cy.get(commonWidgetSelector.draggableWidget("toggleswitch2"))
+      .find(".form-check-input")
+      .click();
+    cy.get(commonWidgetSelector.draggableWidget("toggleswitch3"))
+      .find(".form-check-input")
+      .click();
+    launchModal("modal1");
+    cy.get(".spinner-border").should("be.visible");
+    cy.realPress("Escape");
+
+    cy.get(commonWidgetSelector.draggableWidget("toggleswitch3"))
+      .find(".form-check-input")
+      .click();
+
+    cy.get(commonWidgetSelector.draggableWidget("toggleswitch4"))
+      .find(".form-check-input")
+      .click();
+    launchModal("modal1");
+    cy.notVisible('[data-cy="modal-title"]');
+    cy.realPress("Escape");
+
+    cy.get(commonWidgetSelector.draggableWidget("toggleswitch4"))
+      .find(".form-check-input")
+      .click();
+    launchModal("modal1");
+    verifyWidgetColorCss(
+      "[data-cy='modal-header']",
+      "background-color",
+      data.bgColor,
+      true
     );
-    cy.get(
-      commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
-    ).verifyVisibleElement("have.value", data.minimumvalue);
-    cy.clearAndType(
-      commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName),
-      randomNumber(100, 110)
+    verifyWidgetColorCss(
+      "[data-cy='modal-header']",
+      "color",
+      data.titleColor,
+      true
     );
-    cy.get(
-      commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
-    ).verifyVisibleElement("have.value", data.maximumValue);
-    cy.get(
-      commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
-    )
-      .invoke("attr", "placeholder")
-      .should("contain", data.randomNumber);
-
-    verifyTooltip(
-      commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName),
-      data.tooltipText
-    );
-    cy.get(
-      commonWidgetSelector.draggableWidget(commonWidgetText.text1)
-    ).verifyVisibleElement("have.text", data.maximumValue);
-
-    cy.get(
-      commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
-    ).should("have.css", "border-radius", "20px");
-    verifyBoxShadowCss(
-      numberInputText.defaultWidgetName,
-      data.boxShadowColor,
-      data.boxShadowParam
+    verifyWidgetColorCss(
+      "[data-cy='modal-body']",
+      "background-color",
+      data.bodyColor,
+      true
     );
 
-    cy.get(commonSelectors.viewerPageLogo).click();
-    cy.deleteApp(data.appName);
+    cy.realPress("Escape");
+    verifyWidgetColorCss(
+      launchButton("modal1"),
+      "color",
+      data.buttonTextColor,
+      true
+    );
+    verifyWidgetColorCss(
+      launchButton("modal1"),
+      "background-color",
+      data.buttonColor,
+      true
+    );
+    launchModal("modal1");
+
+    cy.get('[data-cy="modal-title"]').verifyVisibleElement(
+      "have.text",
+      data.customTitle
+    );
+    cy.realPress("Escape");
+    cy.get(commonWidgetSelector.draggableWidget("toggleswitch5"))
+      .find(".form-check-input")
+      .click();
+    launchModal("modal1");
+    cy.notVisible('[data-cy="modal-close-button"]');
   });
 });
