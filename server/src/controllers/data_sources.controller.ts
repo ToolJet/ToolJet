@@ -10,6 +10,7 @@ import {
   Query,
   UseGuards,
   BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { decamelizeKeys } from 'humps';
@@ -27,8 +28,6 @@ import {
 } from '@dto/data-source.dto';
 import { decode } from 'js-base64';
 import { User } from 'src/decorators/user.decorator';
-import { DataSourceScopes } from 'src/helpers/data_source.constants';
-import { DataSource } from 'src/entities/data_source.entity';
 
 @Controller('data_sources')
 export class DataSourcesController {
@@ -160,20 +159,10 @@ export class DataSourcesController {
 
     const dataSource = await this.dataSourcesService.findOneByEnvironment(dataSourceId, environmentId);
 
-    if (dataSource.scope === DataSourceScopes.GLOBAL) {
-      const ability = await this.globalDataSourceAbilityFactory.globalDataSourceActions(user);
-
-      if (!ability.can('authorizeOauthForSource', DataSource)) {
-        throw new ForbiddenException('You do not have permissions to perform this actio');
-      }
-    } else {
-      const { app } = dataSource;
-      const ability = await this.appsAbilityFactory.appsActions(user, app.id);
-
-      if (!ability.can('authorizeOauthForSource', app)) {
-        throw new ForbiddenException('You do not have permissions to perform this actions');
-      }
+    if (!dataSource) {
+      throw new UnauthorizedException();
     }
+    // TODO: add privilege if user has data source privilege or user should have app read privilege of the apps using the data source
 
     await this.dataQueriesService.authorizeOauth2(dataSource, code, user.id, environmentId, user.organizationId);
     return;

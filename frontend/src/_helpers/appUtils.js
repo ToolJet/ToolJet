@@ -1011,97 +1011,97 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                 }
               );
             });
-          }
+          } else {
+            let rawData = data.data;
+            let finalData = data.data;
 
-          let rawData = data.data;
-          let finalData = data.data;
-
-          if (dataQuery.options.enableTransformation) {
-            finalData = await runTransformation(
-              _ref,
-              finalData,
-              query.options.transformation,
-              query.options.transformationLanguage,
-              query,
-              'edit'
-            );
-            if (finalData.status === 'failed') {
-              flushSync(() => {
-                return _self.setState(
-                  {
-                    currentState: {
-                      ..._self.state.currentState,
-                      queries: {
-                        ..._self.state.currentState.queries,
-                        [queryName]: {
-                          ..._self.state.currentState.queries[queryName],
-                          isLoading: false,
+            if (dataQuery.options.enableTransformation) {
+              finalData = await runTransformation(
+                _ref,
+                finalData,
+                query.options.transformation,
+                query.options.transformationLanguage,
+                query,
+                'edit'
+              );
+              if (finalData.status === 'failed') {
+                flushSync(() => {
+                  return _self.setState(
+                    {
+                      currentState: {
+                        ..._self.state.currentState,
+                        queries: {
+                          ..._self.state.currentState.queries,
+                          [queryName]: {
+                            ..._self.state.currentState.queries[queryName],
+                            isLoading: false,
+                          },
                         },
-                      },
-                      errors: {
-                        ..._self.state.currentState.errors,
-                        [queryName]: {
-                          type: 'transformations',
-                          data: finalData,
-                          options: options,
+                        errors: {
+                          ..._self.state.currentState.errors,
+                          [queryName]: {
+                            type: 'transformations',
+                            data: finalData,
+                            options: options,
+                          },
                         },
                       },
                     },
-                  },
-                  () => {
-                    resolve(finalData);
-                    onEvent(_self, 'onDataQueryFailure', {
-                      definition: { events: dataQuery.options.events },
-                    });
-                  }
-                );
+                    () => {
+                      resolve(finalData);
+                      onEvent(_self, 'onDataQueryFailure', {
+                        definition: { events: dataQuery.options.events },
+                      });
+                    }
+                  );
+                });
+              }
+            }
+
+            if (dataQuery.options.showSuccessNotification) {
+              const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
+              toast.success(dataQuery.options.successMessage, {
+                duration: notificationDuration,
               });
             }
-          }
-
-          if (dataQuery.options.showSuccessNotification) {
-            const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
-            toast.success(dataQuery.options.successMessage, {
-              duration: notificationDuration,
-            });
-          }
-          flushSync(() => {
-            _self.setState(
-              {
-                currentState: {
-                  ..._self.state.currentState,
-                  queries: {
-                    ..._self.state.currentState.queries,
-                    [queryName]: _.assign(
-                      {
-                        ..._self.state.currentState.queries[queryName],
-                        isLoading: false,
-                        data: finalData,
-                        rawData,
-                      },
-                      query.kind === 'restapi'
-                        ? {
-                            request: data.request,
-                            response: data.response,
-                            responseHeaders: data.responseHeaders,
-                          }
-                        : {}
-                    ),
+            flushSync(() => {
+              _self.setState(
+                {
+                  currentState: {
+                    ..._self.state.currentState,
+                    queries: {
+                      ..._self.state.currentState.queries,
+                      [queryName]: _.assign(
+                        {
+                          ..._self.state.currentState.queries[queryName],
+                          isLoading: false,
+                          data: finalData,
+                          rawData,
+                        },
+                        query.kind === 'restapi'
+                          ? {
+                              request: data.request,
+                              response: data.response,
+                              responseHeaders: data.responseHeaders,
+                            }
+                          : {}
+                      ),
+                    },
                   },
                 },
-              },
-              () => {
-                resolve({ status: 'ok', data: finalData });
-                onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
+                () => {
+                  resolve({ status: 'ok', data: finalData });
+                  onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
 
-                if (mode !== 'view') {
-                  toast(`Query (${queryName}) completed.`, {
-                    icon: '🚀',
-                  });
+                  if (mode !== 'view') {
+                    toast(`Query (${queryName}) completed.`, {
+                      icon: '🚀',
+                    });
+                  }
                 }
-              }
-            );
-          });
+              );
+            });
+          }
         })
         .catch(({ error }) => {
           if (mode !== 'view') toast.error(error ?? 'Unknown error');

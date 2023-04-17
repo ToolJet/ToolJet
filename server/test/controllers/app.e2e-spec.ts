@@ -122,7 +122,7 @@ describe('Authentication', () => {
           .send({ email: 'admin@tooljet.io', password: 'password' });
 
         expect(response.statusCode).toBe(201);
-        expect(response.headers['set-cookie'][0]).toMatch(/^auth_token=/);
+        expect(response.headers['set-cookie'][0]).toMatch(/^tj_auth_token=/);
       });
       it('authenticate to organization if valid credentials', async () => {
         const response = await request(app.getHttpServer())
@@ -130,7 +130,7 @@ describe('Authentication', () => {
           .send({ email: 'admin@tooljet.io', password: 'password' });
 
         expect(response.statusCode).toBe(201);
-        expect(response.headers['set-cookie'][0]).toMatch(/^auth_token=/);
+        expect(response.headers['set-cookie'][0]).toMatch(/^tj_auth_token=/);
       });
       it('throw unauthorized error if user does not exist in given organization if valid credentials', async () => {
         await request(app.getHttpServer())
