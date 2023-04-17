@@ -208,11 +208,13 @@
       },
       "items": [
         "how-to/run-actions-from-runjs",
+        "how-to/intentionally-fail-js-query",
         "how-to/run-query-at-specified-intervals",
         "how-to/bulk-update-multiple-rows",
         "how-to/access-cellvalue-rowdata",
         "how-to/access-currentuser",
         "how-to/oauth2-authorization",
+        "how-to/use-s3-presigned-url-to-upload-docs",
         "how-to/upload-files-aws",
         "how-to/upload-files-gcs",
         "how-to/access-users-location"
