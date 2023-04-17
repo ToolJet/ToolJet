@@ -214,7 +214,7 @@
         "how-to/access-cellvalue-rowdata",
         "how-to/access-currentuser",
         "how-to/oauth2-authorization",
-        "how-to/use-s3-presigned-url-to-upload-docs",
+        "how-to/use-s3-signed-url-to-upload-docs",
         "how-to/upload-files-aws",
         "how-to/upload-files-gcs",
         "how-to/access-users-location"

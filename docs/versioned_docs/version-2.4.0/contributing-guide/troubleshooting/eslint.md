@@ -41,3 +41,6 @@ For VSCode users, you can set the formatter to `ESLint` in the [**settings.json*
 1. **Node version 18.3.0**
 2. **npm version 8.11.0**
 
+:::tip
+It is recommended to check the VSCode **Setting.json**(Press `ctrl/cmnd + P` and search `>Settings (JSON)`) file to ensure there are no overrides to the eslint config rules. Comment the following rules for eslint: **eslint.options: {...}**.
+:::
