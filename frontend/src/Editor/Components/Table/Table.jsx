@@ -129,6 +129,11 @@ export function Table({
   const mergeToAddNewRowsDetails = (payload) => dispatch(reducerActions.mergeToAddNewRowsDetails(payload));
   const mounted = useMounted();
 
+  const prevDataFromProps = useRef();
+  useEffect(() => {
+    if (mounted) prevDataFromProps.current = properties.data;
+  }, [JSON.stringify(properties.data)]);
+
   useEffect(() => {
     setExposedVariable(
       'filters',
@@ -420,15 +425,25 @@ export function Table({
     ] // Hack: need to fix
   );
 
-  const data = useMemo(
-    () => tableData,
-    [
-      tableData.length,
-      tableDetails.changeSet,
-      component.definition.properties.data.value,
-      JSON.stringify(properties.data),
-    ]
-  );
+  const data = useMemo(() => {
+    if (!_.isEqual(properties.data, prevDataFromProps.current)) {
+      if (
+        !_.isEmpty(exposedVariables.newRows) ||
+        !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) ||
+        tableDetails.addNewRowsDetails.addingNewRows
+      ) {
+        setExposedVariable('newRows', []).then(() => {
+          mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
+        });
+      }
+    }
+    return tableData;
+  }, [
+    tableData.length,
+    tableDetails.changeSet,
+    component.definition.properties.data.value,
+    JSON.stringify(properties.data),
+  ]);
 
   useEffect(() => {
     if (
