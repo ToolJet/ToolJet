@@ -70,7 +70,7 @@ export const createNewVersion = (newVersion = [], version) => {
 
 export const clickOnExportButtonAndVerify = (buttonText, appName) => {
   cy.get(commonSelectors.buttonSelector(buttonText)).click();
-
+cy.wait(1000);
   cy.exec("ls ./cypress/downloads/").then((result) => {
     const downloadedAppExportFileName = result.stdout.split("\n")[0];
     expect(downloadedAppExportFileName).to.have.string(appName.toLowerCase());
