@@ -138,6 +138,7 @@ export const CreateVersion = ({
               className="btn mx-2"
               data-cy="cancel-button"
               onClick={() => {
+                setVersionName('');
                 closeCreateVersionModalPrompt();
                 setShowCreateAppVersion(false);
               }}

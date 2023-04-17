@@ -39,7 +39,7 @@ export const AppVersionsManager = function ({
     appVersionService
       .getOne(appId, id)
       .then((data) => {
-        setAppDefinitionFromVersion(data);
+        setAppDefinitionFromVersion(data, true);
       })
       .catch((error) => {
         toast.error(error);

@@ -521,7 +521,7 @@ class EditorComponent extends React.Component {
           isSaving: false,
         },
         () => {
-          shouldWeEditVersion && this.saveEditingVersion();
+          shouldWeEditVersion && this.saveEditingVersion(true);
           this.fetchDataSources();
           this.fetchDataQueries();
           this.initComponentVersioning();
@@ -1256,12 +1256,17 @@ class EditorComponent extends React.Component {
     return canvasBackgroundColor;
   };
 
-  saveEditingVersion = () => {
-    if (this.isVersionReleased()) {
+  saveEditingVersion = (isUserSwitchedVersion = false) => {
+    if (this.isVersionReleased() && !isUserSwitchedVersion) {
       this.setState({ isSaving: false });
     } else if (!isEmpty(this.state.editingVersion)) {
       appVersionService
-        .save(this.state.appId, this.state.editingVersion.id, { definition: this.state.appDefinition })
+        .save(
+          this.state.appId,
+          this.state.editingVersion.id,
+          { definition: this.state.appDefinition },
+          isUserSwitchedVersion
+        )
         .then(() => {
           this.setState(
             {
