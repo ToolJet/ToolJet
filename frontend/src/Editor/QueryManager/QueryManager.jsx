@@ -19,6 +19,7 @@ import cx from 'classnames';
 import { diff } from 'deep-object-diff';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { ChangeDataSource } from './ChangeDataSource';
+import EmptyGlobalDataSources from './EmptyGlobalDataSources';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -769,10 +770,10 @@ class QueryManagerComponent extends React.Component {
                 </div>
               )}
 
-              {dataSources && mode === 'create' && !this.state.isSourceSelected && (
+              {globalDataSources && mode === 'create' && !this.state.isSourceSelected && (
                 <div className="datasource-picker">
                   {!this.state.isSourceSelected && <label className="form-label col-md-3">Global Datasources</label>}{' '}
-                  {!this.state.isSourceSelected && (
+                  {!this.state.isSourceSelected && globalDataSources?.length ? (
                     <DataSourceLister
                       dataSources={globalDataSources}
                       staticDataSources={[]}
@@ -782,6 +783,8 @@ class QueryManagerComponent extends React.Component {
                       dataSourceModalHandler={this.props.dataSourceModalHandler}
                       showAddDatasourceBtn={false}
                     />
+                  ) : (
+                    <EmptyGlobalDataSources darkMode={this.props.darkMode} />
                   )}
                 </div>
               )}

@@ -1,4 +1,6 @@
 @import "./colors.scss";
+@import "./designtheme.scss";
+
 $border-radius: 4px;
 .query-manager {
   user-select: none;
@@ -1533,4 +1535,38 @@ $border-radius: 4px;
 
 .fit-content {
   max-width: fit-content;
+}
+
+.empty-gds-container {
+  .info-container {
+    display: flex;
+    align-items: center;
+    background-color: var(--slate3);
+    border-radius: $border-radius;
+    padding: 16px 32px;
+    font-size: 12px;
+    color: var(--slate11);
+    .info {
+      margin-left: 10px;
+    }
+  }
+  .add-gds-secondary-button {
+    background-color: var(--indigo3);
+    color: var(--indigo9);
+    max-height: 30px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 16px;
+    gap: 6px;
+    font-weight: 500;
+    border: 0 !important;
+    transition: .4s;
+
+    &:hover {
+      background-color: var(--slate7);
+      color: var(--slate11);
+    }
+  }
 }
