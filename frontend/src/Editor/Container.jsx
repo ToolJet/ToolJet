@@ -570,6 +570,7 @@ export const Container = ({
                 currentPageId,
                 childComponents,
               }}
+              isVersionReleased={isVersionReleased}
             />
           );
         }

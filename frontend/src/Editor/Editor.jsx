@@ -58,6 +58,7 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
+import cx from 'classnames';
 
 setAutoFreeze(false);
 enablePatches();
@@ -610,10 +611,6 @@ class EditorComponent extends React.Component {
   };
 
   handleUndo = () => {
-    if (this.isVersionReleased()) {
-      this.setReleasedVersionPopupState();
-      return;
-    }
     if (this.canUndo) {
       let currentVersion = this.currentVersion[this.state.currentPageId];
 
@@ -645,10 +642,6 @@ class EditorComponent extends React.Component {
   };
 
   handleRedo = () => {
-    if (this.isVersionReleased()) {
-      this.setReleasedVersionPopupState();
-      return;
-    }
     if (this.canRedo) {
       let currentVersion = this.currentVersion[this.state.currentPageId];
 
@@ -1107,7 +1100,7 @@ class EditorComponent extends React.Component {
             </OverlayTrigger>
           )}
         </div>
-        {!this.isVersionReleased && (
+        {!this.isVersionReleased() && (
           <div className="col-auto query-rename-delete-btn">
             <div
               className={`col-auto ${this.state.renameQueryName && 'display-none'} rename-query`}
@@ -2136,9 +2129,14 @@ class EditorComponent extends React.Component {
                               </div>
                               <button
                                 data-cy={`button-add-new-queries`}
-                                className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button  ${
-                                  this.props.darkMode && 'theme-dark'
-                                }`}
+                                className={cx(
+                                  `col-auto d-flex align-items-center py-1 rounded default-secondary-button ${
+                                    this.isVersionReleased() && 'disabled'
+                                  }`,
+                                  {
+                                    'theme-dark': this.props.darkMode,
+                                  }
+                                )}
                                 onClick={() => {
                                   this.handleAddNewQuery(setSaveConfirmation, setCancelData);
                                 }}
@@ -2232,7 +2230,6 @@ class EditorComponent extends React.Component {
                                 setCancelData={setCancelData}
                                 updateDraftQueryName={this.updateDraftQueryName}
                                 isVersionReleased={this.isVersionReleased()}
-                                setReleasedVersionPopupState={this.setReleasedVersionPopupState}
                               />
                             </div>
                           </div>
@@ -2273,7 +2270,6 @@ class EditorComponent extends React.Component {
                         appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
                         pages={this.getPagesWithIds()}
                         isVersionReleased={this.isVersionReleased()}
-                        setReleasedVersionPopupState={this.setReleasedVersionPopupState}
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">
@@ -2289,6 +2285,7 @@ class EditorComponent extends React.Component {
                     zoomLevel={zoomLevel}
                     currentLayout={currentLayout}
                     darkMode={this.props.darkMode}
+                    isVersionReleased={this.isVersionReleased()}
                   ></WidgetManager>
                 )}
               </div>

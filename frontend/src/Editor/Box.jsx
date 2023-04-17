@@ -148,6 +148,7 @@ export const Box = function Box({
   dataQueries,
   readOnly,
   childComponents,
+  isVersionReleased,
 }) {
   const { t } = useTranslation();
   const backgroundColor = yellow ? 'yellow' : '';
@@ -282,7 +283,12 @@ export const Box = function Box({
       }
     >
       <div
-        style={{ ...styles, backgroundColor, boxShadow: validatedGeneralStyles?.boxShadow }}
+        style={{
+          ...styles,
+          backgroundColor,
+          boxShadow: validatedGeneralStyles?.boxShadow,
+          pointerEvents: isVersionReleased ? 'none' : 'auto',
+        }}
         role={preview ? 'BoxPreview' : 'Box'}
       >
         {inCanvas ? (

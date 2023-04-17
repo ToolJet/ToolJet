@@ -326,11 +326,6 @@ class QueryManagerComponent extends React.Component {
     const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
     const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
 
-    if (this.props.isVersionReleased) {
-      this.props.setReleasedVersionPopupState();
-      return;
-    }
-
     const isQueryNameValid = this.validateQueryName();
     if (!isQueryNameValid) {
       toast.error('Invalid query name. Should be unique and only include letters, numbers and underscore.');
@@ -680,7 +675,9 @@ class QueryManagerComponent extends React.Component {
               <button
                 className={`default-tertiary-button ${
                   isUpdating || isCreating ? (this.props.darkMode ? 'btn-loading' : 'button-loading') : ''
-                } ${this.props.darkMode ? 'theme-dark' : ''} ${this.state.selectedDataSource ? '' : 'disabled'} `}
+                } ${this.props.darkMode ? 'theme-dark' : ''} ${
+                  this.state.selectedDataSource && !this.props.isVersionReleased ? '' : 'disabled'
+                } `}
                 onClick={this.createOrUpdateDataQuery}
                 disabled={buttonDisabled}
                 data-cy={`query-${this.state.buttonText.toLowerCase()}-button`}
@@ -755,7 +752,11 @@ class QueryManagerComponent extends React.Component {
         </div>
 
         {(addingQuery || editingQuery) && (
-          <div>
+          <div
+            className={cx(``, {
+              'disabled ': this.props.isVersionReleased,
+            })}
+          >
             <div
               className={`row row-deck px-2 mt-0 query-details ${
                 selectedDataSource?.kind === 'tooljetdb' && 'tooljetdb-query-details'
@@ -777,8 +778,6 @@ class QueryManagerComponent extends React.Component {
                       darkMode={this.props.darkMode}
                       showAddDatasourceBtn={false}
                       dataSourceModalHandler={this.props.dataSourceModalHandler}
-                      isVersionReleased={this.props.isVersionReleased}
-                      setReleasedVersionPopupState={this.props.setReleasedVersionPopupState}
                     />
                   )}
                 </div>
@@ -796,8 +795,6 @@ class QueryManagerComponent extends React.Component {
                       darkMode={this.props.darkMode}
                       dataSourceModalHandler={this.props.dataSourceModalHandler}
                       showAddDatasourceBtn={false}
-                      isVersionReleased={this.props.isVersionReleased}
-                      setReleasedVersionPopupState={this.props.setReleasedVersionPopupState}
                     />
                   )}
                 </div>

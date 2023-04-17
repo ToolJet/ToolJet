@@ -14,8 +14,6 @@ function DataSourceLister({
   darkMode,
   dataSourceModalHandler,
   showAddDatasourceBtn = true,
-  isVersionReleased,
-  setReleasedVersionPopupState,
 }) {
   const [allSources, setAllSources] = useState([...dataSources, ...staticDataSources]);
   const { t } = useTranslation();
@@ -59,10 +57,6 @@ function DataSourceLister({
             style={computedStyles}
             key={`${source.id}-${source.kind}`}
             onClick={() => {
-              if (isVersionReleased) {
-                setReleasedVersionPopupState();
-                return;
-              }
               handleChangeDataSource(source);
             }}
           >

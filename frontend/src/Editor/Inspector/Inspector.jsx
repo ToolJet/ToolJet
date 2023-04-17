@@ -32,7 +32,6 @@ export const Inspector = ({
   removeComponent,
   pages,
   isVersionReleased,
-  setReleasedVersionPopupState,
 }) => {
   const component = {
     id: selectedComponentId,
@@ -79,10 +78,6 @@ export const Inspector = ({
   };
 
   function handleComponentNameChange(newName) {
-    if (isVersionReleased) {
-      setReleasedVersionPopupState();
-      return;
-    }
     if (component.component.name === newName) return;
     if (newName.length === 0) {
       toast.error(t('widget.common.widgetNameEmptyError', 'Widget name cannot be empty'));
@@ -115,10 +110,6 @@ export const Inspector = ({
   };
 
   function paramUpdated(param, attr, value, paramType) {
-    if (isVersionReleased) {
-      setReleasedVersionPopupState();
-      return;
-    }
     console.log({ param, attr, value, paramType });
     let newDefinition = _.cloneDeep(component.component.definition);
     let allParams = newDefinition[paramType] || {};
@@ -152,10 +143,6 @@ export const Inspector = ({
   }
 
   function layoutPropertyChanged(param, attr, value, paramType) {
-    if (isVersionReleased) {
-      setReleasedVersionPopupState();
-      return;
-    }
     paramUpdated(param, attr, value, paramType);
 
     // User wants to show the widget on mobile devices
@@ -205,10 +192,6 @@ export const Inspector = ({
   }
 
   function eventUpdated(event, actionId) {
-    if (isVersionReleased) {
-      setReleasedVersionPopupState();
-      return;
-    }
     let newDefinition = { ...component.component.definition };
     newDefinition.events[event.name] = { actionId };
 
@@ -220,10 +203,6 @@ export const Inspector = ({
   }
 
   function eventsChanged(newEvents, isReordered = false) {
-    if (isVersionReleased) {
-      setReleasedVersionPopupState();
-      return;
-    }
     let newDefinition;
     if (isReordered) {
       newDefinition = { ...component.component };
@@ -241,10 +220,6 @@ export const Inspector = ({
   }
 
   function eventOptionUpdated(event, option, value) {
-    if (isVersionReleased) {
-      setReleasedVersionPopupState();
-      return;
-    }
     console.log('eventOptionUpdated', event, option, value);
 
     let newDefinition = { ...component.component.definition };
@@ -334,7 +309,7 @@ export const Inspector = ({
       />
       <div>
         <div className="row inspector-component-title-input-holder">
-          <div className="col-11 p-0">
+          <div className={`col-11 p-0 ${isVersionReleased && 'disabled'}`}>
             <div className="input-icon">
               <input
                 onChange={(e) => setNewComponentName(e.target.value)}
@@ -417,8 +392,10 @@ export const Inspector = ({
           </div>
         </div>
         <hr className="m-0" />
-        {selectedTab === 'properties' && propertiesTab}
-        {selectedTab === 'styles' && stylesTab}
+        <div className={`${isVersionReleased && 'disabled'}`}>
+          {selectedTab === 'properties' && propertiesTab}
+          {selectedTab === 'styles' && stylesTab}
+        </div>
       </div>
 
       <div className="widget-documentation-link p-2">
