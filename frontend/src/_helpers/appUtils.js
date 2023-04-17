@@ -303,8 +303,10 @@ export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = 
     (query) => query.queryId !== queryConfirmationData.queryId
   );
 
-  _ref.setState({
-    queryConfirmationList: filtertedQueryConfirmation,
+  flushSync(() => {
+    _ref.setState({
+      queryConfirmationList: filtertedQueryConfirmation,
+    });
   });
   isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
@@ -491,11 +493,13 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const customAppVariables = { ..._ref.state.currentState.variables };
         customAppVariables[key] = value;
 
-        return _ref.setState({
-          currentState: {
-            ..._ref.state.currentState,
-            variables: customAppVariables,
-          },
+        return flushSync(() => {
+          _ref.setState({
+            currentState: {
+              ..._ref.state.currentState,
+              variables: customAppVariables,
+            },
+          });
         });
       }
 
@@ -504,11 +508,13 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const customAppVariables = { ..._ref.state.currentState.variables };
         delete customAppVariables[key];
 
-        return _ref.setState({
-          currentState: {
-            ..._ref.state.currentState,
-            variables: customAppVariables,
-          },
+        return flushSync(() => {
+          _ref.setState({
+            currentState: {
+              ..._ref.state.currentState,
+              variables: customAppVariables,
+            },
+          });
         });
       }
 
@@ -520,14 +526,16 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           [key]: value,
         };
 
-        return _ref.setState({
-          currentState: {
-            ..._ref.state.currentState,
-            page: {
-              ..._ref.state.currentState.page,
-              variables: customPageVariables,
+        return flushSync(() => {
+          _ref.setState({
+            currentState: {
+              ..._ref.state.currentState,
+              page: {
+                ..._ref.state.currentState.page,
+                variables: customPageVariables,
+              },
             },
-          },
+          });
         });
       }
 
@@ -535,14 +543,16 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
         const customPageVariables = _.omit(_ref.state.currentState.page.variables, key);
 
-        return _ref.setState({
-          currentState: {
-            ..._ref.state.currentState,
-            page: {
-              ..._ref.state.currentState.page,
-              variables: customPageVariables,
+        return flushSync(() => {
+          _ref.setState({
+            currentState: {
+              ..._ref.state.currentState,
+              page: {
+                ..._ref.state.currentState.page,
+                variables: customPageVariables,
+              },
             },
-          },
+          });
         });
       }
 
@@ -909,8 +919,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     }
 
     if (confirmed === undefined) {
-      _ref.setState({
-        queryConfirmationList,
+      flushSync(() => {
+        _ref.setState({
+          queryConfirmationList,
+        });
       });
       return;
     }
