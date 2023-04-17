@@ -24,16 +24,14 @@ export function AddNewRowComponent({
     }, {});
   };
   const newRow = getNewRowObject();
-  const existingAddedNewRows = _.isEmpty(addNewRowsDetails.newRowsDataUpdates)
-    ? { status: false, data: null }
-    : {
-        status: true,
-        data: Object.keys(addNewRowsDetails.newRowsDataUpdates).reduce((accumulator, row) => {
-          accumulator[row] = addNewRowsDetails.newRowsDataUpdates[row];
-          return accumulator;
-        }, []),
-      };
-  const [newRowsState, setNewRowsState] = useState(existingAddedNewRows.status ? existingAddedNewRows.data : [newRow]);
+  const rowsFromPrevOperationPresent = _.isEmpty(addNewRowsDetails.newRowsDataUpdates) ? false : true;
+  const previousRowsData = rowsFromPrevOperationPresent
+    ? Object.keys(addNewRowsDetails.newRowsDataUpdates).reduce((accumulator, row) => {
+        accumulator[row] = addNewRowsDetails.newRowsDataUpdates[row];
+        return accumulator;
+      }, [])
+    : null;
+  const [newRowsState, setNewRowsState] = useState(rowsFromPrevOperationPresent ? previousRowsData : [newRow]);
   const newRowData = useTable(
     {
       columns,
@@ -43,7 +41,7 @@ export function AddNewRowComponent({
     useBlockLayout
   );
   useEffect(() => {
-    if (!existingAddedNewRows.status) {
+    if (!rowsFromPrevOperationPresent) {
       const newRowDataUpdates = newRowsState.reduce((accumulator, row, index) => {
         accumulator[index] = newRowsState[index];
         return accumulator;
