@@ -162,7 +162,7 @@ class HomePageComponent extends React.Component {
       const fileContent = event.target.result;
       this.setState({ isImportingApp: true });
       try {
-        const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
+        const organization_id = getWorkspaceId();
         let importJSON = JSON.parse(fileContent);
         // For backward compatibility with legacy app import
         const isLegacyImport = isEmpty(importJSON.tooljet_version);
@@ -177,11 +177,10 @@ class HomePageComponent extends React.Component {
             this.setState({
               isImportingApp: false,
             });
-            console.log(data);
             if (!isEmpty(data.imports.app)) {
               this.props.navigate(`/${getWorkspaceId()}/apps/${data.imports.app[0].id}`);
             } else if (!isEmpty(data.imports.tooljet_database)) {
-              this.props.history.push(`/database`);
+              this.props.navigate(`/${getWorkspaceId()}/database`);
             }
           })
           .catch(({ error }) => {
