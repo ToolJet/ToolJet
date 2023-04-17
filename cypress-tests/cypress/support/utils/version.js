@@ -49,6 +49,7 @@ export const editVersionAndVerify = (currentVersion, newVersion = [], toastMessa
 		newVersion[0]
 	);
 	cy.get(editVersionSelectors.saveButton).click();
+	closeModal(commonText.closeButton);
 	cy.verifyToastMessage(
 		commonSelectors.toastMessage,
 		toastMessageText
@@ -100,6 +101,7 @@ export const releasedVersionAndVerify = (currentVersion) => {
 		appVersionSelectors.versionNameInputField
 	);
 	cy.contains(releasedVersionText.releasedModalText).should("be.visible");
+	cy.wait(500);
 	closeModal(commonText.closeButton);
 	cy.get(appVersionSelectors.currentVersionField(currentVersion)).should("have.class", "color-light-green");
 };

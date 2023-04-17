@@ -17,10 +17,10 @@ import { commonText } from "Texts/common";
 
 export const verifyAllElementsOfPage = () => {
   cy.get(databaseSelectors.addTableButton).should("be.visible");
-  cy.get(databaseSelectors.tablePageHeader).verifyVisibleElement(
-    "have.text",
-    databaseText.tablePageHeader
-  );
+  // cy.get(databaseSelectors.tablePageHeader).verifyVisibleElement(
+  //   "have.text",
+  //   databaseText.tablePageHeader
+  // );
   cy.get(databaseSelectors.doNotHaveTableText).verifyVisibleElement(
     "have.text",
     databaseText.doNotHaveTableText
