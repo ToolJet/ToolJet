@@ -1,4 +1,4 @@
-import { Controller, Get, Post, UseGuards, Body, Delete, Param, Put } from '@nestjs/common';
+import { Controller, Get, UseGuards, Post, Put, Delete, Param, Body } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { ForbiddenException } from '@nestjs/common';
@@ -13,16 +13,11 @@ export class AppEnvironmentsController {
   constructor(private appEnvironmentServices: AppEnvironmentService, private appsAbilityFactory: AppsAbilityFactory) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get(':versionId')
-  async index(@User() user, @Param('versionId') versionId: string) {
-    const version = await this.appEnvironmentServices.getVersion(versionId);
-    const ability = await this.appsAbilityFactory.appsActions(user, version.appId);
-
-    if (!ability.can('fetchEnvironments', App)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
-    }
-
-    const environments = await this.appEnvironmentServices.getAll(versionId);
+  @Get()
+  async index(@User() user) {
+    const { organizationId } = user;
+    // TODO: add fetchEnvironments privilege
+    const environments = await this.appEnvironmentServices.getAll(organizationId);
     return decamelizeKeys({ environments });
   }
 
@@ -35,11 +30,12 @@ export class AppEnvironmentsController {
   ) {
     const version = await this.appEnvironmentServices.getVersion(versionId);
     const ability = await this.appsAbilityFactory.appsActions(user, version.appId);
+    const { organizationId } = user;
 
     if (!ability.can('createEnvironments', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const env = await this.appEnvironmentServices.create(versionId, createAppEnvironmentDto.name);
+    const env = await this.appEnvironmentServices.create(organizationId, createAppEnvironmentDto.name);
     return decamelizeKeys(env);
   }
 
@@ -51,27 +47,29 @@ export class AppEnvironmentsController {
     @Param('versionId') versionId: string,
     @Body() updateAppEnvironmentDto: UpdateAppEnvironmentDto
   ) {
-    const version = await (await this.appEnvironmentServices.get(versionId, id)).appVersion;
+    const version = await await this.appEnvironmentServices.getVersion(versionId);
     const ability = await this.appsAbilityFactory.appsActions(user, version.appId);
+    const { organizationId } = user;
 
     if (!ability.can('updateEnvironments', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appEnvironmentServices.update(id, updateAppEnvironmentDto.name, versionId);
+    const result = await this.appEnvironmentServices.update(id, updateAppEnvironmentDto.name, organizationId);
     return decamelizeKeys(result);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':versionId/:id')
   async delete(@User() user, @Param('id') id: string, @Param('versionId') versionId: string) {
-    const version = await (await this.appEnvironmentServices.get(versionId, id)).appVersion;
+    const version = await await this.appEnvironmentServices.getVersion(versionId);
     const ability = await this.appsAbilityFactory.appsActions(user, version.appId);
+    const { organizationId } = user;
 
     if (!ability.can('deleteEnvironments', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    return await this.appEnvironmentServices.delete(id, versionId);
+    return await this.appEnvironmentServices.delete(id, organizationId);
   }
 }

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FilterPreview } from '@/_components';
 import PropTypes from 'prop-types';
-import Select, { fuzzySearch } from 'react-select-search';
+import Select from 'react-select-search';
 import '@/_styles/widgets/multi-select.scss';
 
 function MultiSelect({
@@ -10,18 +10,18 @@ function MultiSelect({
   selectedValues = [],
   onReset,
   placeholder = 'Select',
-  options,
   isLoading,
   className,
   searchLabel,
 }) {
   const [searchText, setSearchText] = useState('');
   const [filteredOptions, setOptions] = useState([]);
+  const listOfOptions = useRef([]);
 
   useEffect(() => {
-    options && setOptions(filterOptions(options));
+    setOptions(filterOptions(listOfOptions.current));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options, selectedValues]);
+  }, [selectedValues, listOfOptions.current]);
 
   const searchFunction = useCallback(
     async (query) => {
@@ -30,7 +30,8 @@ function MultiSelect({
         return [];
       }
       const options = await onSearch(query);
-      return filterOptions(options);
+      listOfOptions.current = filterOptions(options);
+      return listOfOptions.current;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setSearchText, onSearch, selectedValues]
@@ -49,7 +50,7 @@ function MultiSelect({
       <Select
         className={className}
         getOptions={onSearch ? searchFunction : undefined}
-        options={onSearch ? [] : filteredOptions}
+        options={filteredOptions}
         closeOnSelect={false}
         search={true}
         multiple
@@ -59,7 +60,7 @@ function MultiSelect({
         debounce={onSearch ? 300 : undefined}
         printOptions="on-focus"
         emptyMessage={
-          options?.length > 0
+          filteredOptions?.length > 0
             ? 'Not Found'
             : searchText
             ? 'Not found'
@@ -68,7 +69,7 @@ function MultiSelect({
             : 'Please enter some text'
         }
         disabled={isLoading}
-        filterOptions={fuzzySearch}
+        fuzzySearch
       />
     </div>
   );

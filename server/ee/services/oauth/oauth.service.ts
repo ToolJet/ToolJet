@@ -25,6 +25,7 @@ import { GoogleOAuthService } from './google_oauth.service';
 import UserResponse from './models/user_response';
 import License from '@ee/licensing/configs/License';
 import { InstanceSettingsService } from '@services/instance_settings.service';
+import { Response } from 'express';
 
 @Injectable()
 export class OauthService {
@@ -84,7 +85,8 @@ export class OauthService {
     if (organizationUser?.status === WORKSPACE_USER_STATUS.ARCHIVED) {
       throw new UnauthorizedException('User does not exist in the workspace');
     }
-    if (!user && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && allowPersonalWorkspace) {
+
+    if (!user && allowPersonalWorkspace) {
       defaultOrganization = await this.organizationService.create('Untitled workspace', null, manager);
     }
 
@@ -151,30 +153,37 @@ export class OauthService {
   }
 
   async signIn(
+    response: Response,
     ssoResponse: SSOResponse,
     configId?: string,
-    ssoType?: 'google' | 'git' | 'openid',
+    ssoType?: 'google' | 'git',
+    user?: User,
     cookies?: object
   ): Promise<any> {
     const { organizationId } = ssoResponse;
     let ssoConfigs: DeepPartial<SSOConfigs>;
     let organization: DeepPartial<Organization>;
-    const isSingleOrganization: boolean = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
     const isInstanceSSOLogin = !!(!configId && ssoType && !organizationId);
+    const isInstanceSSOOrganizationLogin = !!(!configId && ssoType && organizationId);
 
     if (configId) {
       // SSO under an organization
       ssoConfigs = await this.organizationService.getConfigs(configId);
       organization = ssoConfigs?.organization;
-    } else if (!isSingleOrganization && ssoType && organizationId) {
+    } else if (isInstanceSSOOrganizationLogin) {
       // Instance SSO login from organization login page
       organization = await this.organizationService.fetchOrganizationDetails(organizationId, [true], false, true);
       ssoConfigs = organization?.ssoConfigs?.find((conf) => conf.sso === ssoType);
-    } else if (!isSingleOrganization && isInstanceSSOLogin) {
+    } else if (isInstanceSSOLogin) {
       // Instance SSO login from common login page
       ssoConfigs = this.#getInstanceSSOConfigs(ssoType);
       organization = ssoConfigs?.organization;
     } else {
+      throw new UnauthorizedException();
+    }
+
+    if ((isInstanceSSOLogin || isInstanceSSOOrganizationLogin) && ssoConfigs?.id) {
+      // if instance sso login and sso configs returned stored in db, id will be present -> throwing error
       throw new UnauthorizedException();
     }
 
@@ -238,7 +247,7 @@ export class OauthService {
         isSuperAdmin(userDetails) ||
         (await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true';
 
-      if (!isSingleOrganization && isInstanceSSOLogin && !organizationId) {
+      if (isInstanceSSOLogin) {
         // Login from main login page - Multi-Workspace enabled
 
         if (userDetails?.status === USER_STATUS.ARCHIVED) {
@@ -302,7 +311,7 @@ export class OauthService {
           throw new UnauthorizedException('User does not exist, please sign up');
         }
       } else {
-        // single workspace or workspace login
+        // workspace login
         userDetails = await this.usersService.findByEmail(userResponse.email, organization.id, [
           WORKSPACE_USER_STATUS.ACTIVE,
           WORKSPACE_USER_STATUS.INVITED,
@@ -347,25 +356,14 @@ export class OauthService {
             (ou) => ou.organizationId === organization.id
           )?.invitationToken;
 
-          if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true') {
-            return await this.validateLicense(
-              decamelizeKeys({
-                redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
-                  userDetails.invitationToken
-                }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
-              }),
-              manager
-            );
-          } else {
-            return await this.validateLicense(
-              decamelizeKeys({
-                redirectUrl: `${this.configService.get<string>(
-                  'TOOLJET_HOST'
-                )}/organization-invitations/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
-              }),
-              manager
-            );
-          }
+          return await this.validateLicense(
+            decamelizeKeys({
+              redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
+                userDetails.invitationToken
+              }/workspaces/${organizationToken}?oid=${organization.id}&source=${URL_SSO_SOURCE}`,
+            }),
+            manager
+          );
         }
       }
 
@@ -385,14 +383,14 @@ export class OauthService {
           manager
         );
       }
-
       return await this.validateLicense(
         await this.authService.generateLoginResultPayload(
+          response,
           userDetails,
           organizationDetails,
-          isInstanceSSOLogin,
+          isInstanceSSOLogin || isInstanceSSOOrganizationLogin,
           false,
-          manager
+          user
         ),
         manager
       );

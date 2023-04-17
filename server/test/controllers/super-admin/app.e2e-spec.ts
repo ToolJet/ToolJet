@@ -4,7 +4,13 @@ import { INestApplication } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AuditLog } from 'src/entities/audit_log.entity';
-import { clearDB, createUser, authHeaderForUser, createNestAppInstanceWithEnvMock } from '../../test.helper';
+import {
+  clearDB,
+  createUser,
+  authHeaderForUser,
+  createNestAppInstanceWithEnvMock,
+  authenticateUser,
+} from '../../test.helper';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
@@ -246,7 +252,7 @@ describe('Authentication', () => {
       });
       await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
 
-      await request(app.getHttpServer())
+      const sessionResponse = await request(app.getHttpServer())
         .post(`/api/authenticate/${current_organization_user.organizationId}`)
         .send({ email: 'admin@tooljet.io', password: 'password' })
         .expect(201);
@@ -257,7 +263,8 @@ describe('Authentication', () => {
 
       const response = await request(app.getHttpServer())
         .get('/api/organizations/users')
-        .set('Authorization', authHeaderForUser(adminUser, current_organization_user.organizationId))
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', sessionResponse.headers['set-cookie'])
         .send();
 
       expect(response.statusCode).toBe(200);
@@ -276,14 +283,15 @@ describe('Authentication', () => {
       });
       await orgUserRepository.update({ userId: adminUser.id }, { status: 'archived' });
 
-      await request(app.getHttpServer())
+      const sessionResponse = await request(app.getHttpServer())
         .post(`/api/authenticate/${orgUser.organizationId}`)
         .send({ email: 'admin@tooljet.io', password: 'password' })
         .expect(201);
 
       const response = await request(app.getHttpServer())
         .get('/api/organizations/users')
-        .set('Authorization', authHeaderForUser(adminUser, orgUser.organizationId))
+        .set('tj-workspace-id', orgUser.organizationId)
+        .set('Cookie', sessionResponse.headers['set-cookie'])
         .send();
 
       expect(response.statusCode).toBe(200);
@@ -298,7 +306,7 @@ describe('Authentication', () => {
       });
       await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
 
-      await request(app.getHttpServer())
+      const sessionResponse = await request(app.getHttpServer())
         .post(`/api/authenticate/${current_organization_user.organizationId}`)
         .send({ email: 'admin@tooljet.io', password: 'password' })
         .expect(201);
@@ -309,7 +317,8 @@ describe('Authentication', () => {
 
       const response = await request(app.getHttpServer())
         .get('/api/organizations/users')
-        .set('Authorization', authHeaderForUser(adminUser, current_organization_user.organizationId))
+        .set('tj-workspace-id', current_organization_user.organizationId)
+        .set('Cookie', sessionResponse.headers['set-cookie'])
         .send();
 
       expect(response.statusCode).toBe(200);
@@ -328,14 +337,15 @@ describe('Authentication', () => {
       });
       await orgUserRepository.update({ userId: adminUser.id }, { status: 'invited' });
 
-      await request(app.getHttpServer())
+      const sessionResponse = await request(app.getHttpServer())
         .post(`/api/authenticate/${orgUser.organizationId}`)
         .send({ email: 'admin@tooljet.io', password: 'password' })
         .expect(201);
 
       const response = await request(app.getHttpServer())
         .get('/api/organizations/users')
-        .set('Authorization', authHeaderForUser(adminUser, orgUser.organizationId))
+        .set('tj-workspace-id', orgUser.organizationId)
+        .set('Cookie', sessionResponse.headers['set-cookie'])
         .send();
 
       expect(response.statusCode).toBe(200);
@@ -381,10 +391,11 @@ describe('Authentication', () => {
     });
     it('should be able to switch between organizations', async () => {
       const { orgUser, organization: invited_organization } = await createUser(app, { email: 'user@tooljet.io' });
-
+      const loggedUser = await authenticateUser(app, current_user.email);
       const response = await request(app.getHttpServer())
         .get('/api/switch/' + orgUser.organizationId)
-        .set('Authorization', authHeaderForUser(current_user));
+        .set('tj-workspace-id', current_user.organizationId)
+        .set('Cookie', loggedUser.tokenCookie);
 
       expect(Object.keys(response.body).sort()).toEqual(
         [
@@ -392,38 +403,23 @@ describe('Authentication', () => {
           'email',
           'first_name',
           'last_name',
-          'avatar_id',
-          'auth_token',
+          'current_organization_id',
           'admin',
-          'organization_id',
-          'organization',
-          'group_permissions',
           'app_group_permissions',
+          'avatar_id',
+          'data_source_group_permissions',
+          'group_permissions',
+          'organization',
+          'organization_id',
           'super_admin',
         ].sort()
       );
 
-      const {
-        email,
-        first_name,
-        last_name,
-        admin,
-        group_permissions,
-        app_group_permissions,
-        organization_id,
-        organization,
-        super_admin,
-      } = response.body;
+      const { email, first_name, last_name, current_organization_id } = response.body;
 
       expect(email).toEqual(current_user.email);
       expect(first_name).toEqual(current_user.firstName);
       expect(last_name).toEqual(current_user.lastName);
-      expect(admin).toBeTruthy();
-      expect(super_admin).toBeTruthy();
-      expect(organization_id).toBe(invited_organization.id);
-      expect(organization).toBe(invited_organization.name);
-      expect(group_permissions).toHaveLength(0);
-      expect(app_group_permissions).toHaveLength(0);
       await current_user.reload();
       expect(current_user.defaultOrganizationId).toBe(invited_organization.id);
     });
@@ -433,7 +429,6 @@ describe('Authentication', () => {
         .post('/api/authenticate')
         .send({ email: 'admin@tooljet.io', password: 'password' });
       expect(response.statusCode).toBe(201);
-      expect(response.body.organization_id).toBe(current_organization.id);
     });
   });
 

@@ -21,7 +21,9 @@ export const LeftSidebar = forwardRef((props, ref) => {
     components,
     toggleComments,
     dataSources = [],
+    globalDataSources = [],
     dataSourcesChanged,
+    globalDataSourcesChanged,
     dataQueriesChanged,
     errorLogs,
     appVersionsId,
@@ -111,20 +113,24 @@ export const LeftSidebar = forwardRef((props, ref) => {
         dataSources={dataSources}
         popoverContentHeight={popoverContentHeight}
       />
-      <LeftSidebarDataSources
-        darkMode={darkMode}
-        currentAppEnvironmentId={currentAppEnvironmentId}
-        selectedSidebarItem={selectedSidebarItem}
-        setSelectedSidebarItem={handleSelectedSidebarItem}
-        appId={appId}
-        editingVersionId={appVersionsId}
-        dataSources={dataSources}
-        dataSourcesChanged={dataSourcesChanged}
-        dataQueriesChanged={dataQueriesChanged}
-        toggleDataSourceManagerModal={toggleDataSourceManagerModal}
-        showDataSourceManagerModal={showDataSourceManagerModal}
-        popoverContentHeight={popoverContentHeight}
-      />
+      {dataSources?.length > 0 && (
+        <LeftSidebarDataSources
+          darkMode={darkMode}
+          currentAppEnvironmentId={currentAppEnvironmentId}
+          selectedSidebarItem={selectedSidebarItem}
+          setSelectedSidebarItem={handleSelectedSidebarItem}
+          appId={appId}
+          editingVersionId={appVersionsId}
+          dataSources={dataSources}
+          globalDataSources={globalDataSources}
+          dataSourcesChanged={dataSourcesChanged}
+          globalDataSourcesChanged={globalDataSourcesChanged}
+          dataQueriesChanged={dataQueriesChanged}
+          toggleDataSourceManagerModal={toggleDataSourceManagerModal}
+          showDataSourceManagerModal={showDataSourceManagerModal}
+          popoverContentHeight={popoverContentHeight}
+        />
+      )}
       {config.COMMENT_FEATURE_ENABLE && (
         <LeftSidebarComment
           appVersionsId={appVersionsId}

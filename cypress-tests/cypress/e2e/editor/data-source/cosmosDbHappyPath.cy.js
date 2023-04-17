@@ -47,27 +47,20 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      'CosmosDB'
-    );
-    cy.get("[data-cy*='data-source-']")
-      .eq(0)
-      .should("contain", 'CosmosDB');
+    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("CosmosDB");
+    cy.get("[data-cy*='data-source-']").eq(0).should("contain", "CosmosDB");
     cy.get('[data-cy="data-source-cosmosdb"]').click();
 
     cy.get(postgreSqlSelector.dataSourceNameInputField).should(
       "have.value",
-      'CosmosDB'
+      "CosmosDB"
     );
     cy.get('[data-cy="label-end-point"]').verifyVisibleElement(
       "have.text",
-      'End point'
+      "End point"
     );
-    cy.get('[data-cy="label-key"]').verifyVisibleElement(
-      "have.text",
-      'Key'
-    );
-    
+    cy.get('[data-cy="label-key"]').verifyVisibleElement("have.text", "Key");
+
     cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
       "have.text",
       postgreSqlText.whiteListIpText
@@ -97,41 +90,27 @@ describe("Data sources", () => {
     );
     cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
       "have.text",
-      'Invalid URL: '
+      "Invalid URL"
     );
   });
 
-  it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectDataSource('CosmosDB');
+  it("Should verify the functionality of CosmosDB connection form.", () => {
+    selectDataSource("CosmosDB");
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      'cypress-cosmosdb'
+      "cypress-cosmosdb"
     );
 
     fillDataSourceTextField(
-      postgreSqlText.labelHost,
-      postgreSqlText.placeholderEnterHost,
-      Cypress.env("pg_host")
+      "End point",
+      'https://your-account.documents.azure.com',
+      Cypress.env("cosmosdb_end_point")
     );
     fillDataSourceTextField(
-      postgreSqlText.labelPort,
-      postgreSqlText.placeholderEnterPort,
-      "5432"
-    );
-    fillDataSourceTextField(
-      postgreSqlText.labelDbName,
-      postgreSqlText.placeholderNameOfDB,
-      "postgres"
-    );
-    fillDataSourceTextField(
-      postgreSqlText.labelUserName,
-      postgreSqlText.placeholderEnterUserName,
-      "postgres"
-    );
-
-    cy.get(postgreSqlSelector.passwordTextField).type(
-      Cypress.env("pg_password")
+      'Key',
+      'Enter your key',
+      Cypress.env("cosmosdb_key")
     );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
@@ -147,8 +126,9 @@ describe("Data sources", () => {
 
     cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
     cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", 'cypress-cosmosdb')
+      .should("have.text", "cypress-cosmosdb")
       .find("button")
+      .invoke('show')
       .should("be.visible");
   });
 });

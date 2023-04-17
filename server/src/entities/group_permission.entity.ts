@@ -13,6 +13,8 @@ import {
 } from 'typeorm';
 import { App } from './app.entity';
 import { AppGroupPermission } from './app_group_permission.entity';
+import { DataSource } from './data_source.entity';
+import { DataSourceGroupPermission } from './data_source_group_permission.entity';
 import { Organization } from './organization.entity';
 import { User } from './user.entity';
 import { UserGroupPermission } from './user_group_permission.entity';
@@ -51,6 +53,12 @@ export class GroupPermission extends BaseEntity {
   @Column({ name: 'folder_update', default: false })
   folderUpdate: boolean;
 
+  @Column({ name: 'data_source_create', default: false })
+  dataSourceCreate: boolean;
+
+  @Column({ name: 'data_source_delete', default: false })
+  dataSourceDelete: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
@@ -66,6 +74,9 @@ export class GroupPermission extends BaseEntity {
 
   @OneToMany(() => AppGroupPermission, (appGroupPermission) => appGroupPermission.groupPermission)
   appGroupPermission: AppGroupPermission[];
+
+  @OneToMany(() => DataSourceGroupPermission, (dataSourceGroupPermission) => dataSourceGroupPermission.groupPermission)
+  dataSourceGroupPermission: AppGroupPermission[];
 
   @ManyToMany(() => User)
   @JoinTable({
@@ -90,4 +101,16 @@ export class GroupPermission extends BaseEntity {
     },
   })
   apps: Promise<App[]>;
+
+  @ManyToMany(() => DataSource)
+  @JoinTable({
+    name: 'data_source_group_permissions',
+    joinColumn: {
+      name: 'group_permission_id',
+    },
+    inverseJoinColumn: {
+      name: 'data_source_id',
+    },
+  })
+  dataSources: Promise<DataSource[]>;
 }

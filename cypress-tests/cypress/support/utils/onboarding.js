@@ -105,6 +105,18 @@ export const verifyOnboardingQuestions = (fullName, workspaceName) => {
     commonText.sizeOftheCompanyHeader
   );
   verifyandModifySizeOftheCompany();
+
+  cy.get(commonSelectors.backArrow).should("be.visible");
+  cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
+    "have.text",
+    "Enter your phone number"
+  );
+
+  cy.get(".form-control").should("be.visible");
+  cy.get(".tj-onboarding-phone-input-wrapper")
+    .find("input")
+    .type("919876543210");
+  cy.get(commonSelectors.continueButton).click();
 };
 
 export const verifyInvalidInvitationLink = () => {

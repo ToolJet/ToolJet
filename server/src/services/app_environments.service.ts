@@ -1,46 +1,33 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
-import { AppVersion } from 'src/entities/app_version.entity';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
-import { EntityManager, Repository, UpdateResult } from 'typeorm';
+import { EntityManager, UpdateResult } from 'typeorm';
+import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
-
-// async create(versionId: string, name: string, isDefault = false, manager?: EntityManager): Promise<AppEnvironment> {
+import { AppVersion } from 'src/entities/app_version.entity';
 
 @Injectable()
 export class AppEnvironmentService {
-  constructor(
-    @InjectRepository(AppEnvironment)
-    private appEnvRepository: Repository<AppEnvironment>,
-    @InjectRepository(AppVersion)
-    private appVersionRepository: Repository<AppVersion>
-  ) {}
-
-  async get(appVersionId: string, id?: string, manager?: EntityManager): Promise<AppEnvironment> {
+  async get(organizationId: string, id?: string, manager?: EntityManager): Promise<AppEnvironment> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!id) {
-        return await manager.findOneOrFail(AppEnvironment, {
-          where: { appVersionId, isDefault: true },
-          relations: ['appVersion'],
-        });
+        return await manager.findOneOrFail(AppEnvironment, { where: { organizationId, isDefault: true } });
       }
-      return await manager.findOneOrFail(AppEnvironment, { where: { id, appVersionId }, relations: ['appVersion'] });
+      return await manager.findOneOrFail(AppEnvironment, { where: { id, organizationId } });
     }, manager);
   }
 
-  async getOptions(dataSourceId: string, versionId?: string, environmentId?: string): Promise<DataSourceOptions> {
+  async getOptions(dataSourceId: string, organizationId: string, environmentId?: string): Promise<DataSourceOptions> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
       if (!environmentId) {
-        envId = (await this.get(versionId, null, manager)).id;
+        envId = (await this.get(organizationId, null, manager)).id;
       }
       return await manager.findOneOrFail(DataSourceOptions, { where: { environmentId: envId, dataSourceId } });
     });
   }
 
   async create(
-    appVersionId: string,
+    organizationId: string,
     name: string,
     isDefault = false,
     manager?: EntityManager
@@ -50,7 +37,7 @@ export class AppEnvironmentService {
         AppEnvironment,
         manager.create(AppEnvironment, {
           name,
-          appVersionId,
+          organizationId,
           isDefault,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -59,31 +46,39 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  async update(id: string, name: string, appVersionId: string): Promise<UpdateResult> {
-    return this.appEnvRepository.update({ id, appVersionId }, { name });
-  }
-
-  async getAll(appVersionId: string, manager?: EntityManager): Promise<AppEnvironment[]> {
+  async update(id: string, name: string, organizationId: string, manager?: EntityManager): Promise<UpdateResult> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.find(AppEnvironment, { where: { appVersionId } });
+      return await manager.update(AppEnvironment, { id, organizationId }, { name });
     }, manager);
   }
 
-  async delete(id: string, appVersionId: string) {
-    const env = await this.appEnvRepository.findOne({
-      id,
-      appVersionId,
+  async getAll(organizationId: string, manager?: EntityManager): Promise<AppEnvironment[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.find(AppEnvironment, { where: { organizationId } });
+    }, manager);
+  }
+
+  async delete(id: string, organizationId: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const env = await manager.findOne(AppEnvironment, {
+        where: {
+          id,
+          organizationId,
+        },
+      });
+
+      if (env.isDefault) {
+        throw Error("Can't delete the default environment");
+      }
+
+      return await manager.delete(AppEnvironment, { where: { id, organizationId } });
     });
-
-    if (env.isDefault) {
-      throw Error("Can't delete the default environment");
-    }
-
-    return await this.appEnvRepository.delete({ id, appVersionId });
   }
 
   async getVersion(id: string) {
-    return this.appVersionRepository.findOne(id);
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return await manager.findOneOrFail(AppVersion, { id });
+    });
   }
 
   async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {
@@ -99,9 +94,26 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  async createDataSourceInAllEnvironments(appVersionId: string, dataSourceId: string, manager?: EntityManager) {
+  async createDefaultEnvironments(organizationId: string, manager?: EntityManager) {
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const allEnvs = await this.getAll(appVersionId, manager);
+      await Promise.all(
+        defaultAppEnvironments.map(async (en) => {
+          const env = manager.create(AppEnvironment, {
+            organizationId: organizationId,
+            name: en.name,
+            isDefault: en.isDefault,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+          await manager.save(env);
+        })
+      );
+    }, manager);
+  }
+
+  async createDataSourceInAllEnvironments(organizationId: string, dataSourceId: string, manager?: EntityManager) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const allEnvs = await this.getAll(organizationId, manager);
       const allEnvOptions = allEnvs.map((env) =>
         manager.create(DataSourceOptions, {
           environmentId: env.id,

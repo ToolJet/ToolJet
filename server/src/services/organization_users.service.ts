@@ -10,7 +10,7 @@ import { Organization } from 'src/entities/organization.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { ConfigService } from '@nestjs/config';
 import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
-import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { USER_STATUS, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 const uuid = require('uuid');
 
 @Injectable()
@@ -95,11 +95,7 @@ export class OrganizationUsersService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(OrganizationUser, id, { status: WORKSPACE_USER_STATUS.INVITED, invitationToken });
 
-      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
-        // Resetting password if single organization
-        await this.usersService.updateUser(id, { password: uuid.v4() }, manager);
-      }
-      await this.usersService.updateUser(organizationUser.userId, { status: 'active' }, manager);
+      await this.usersService.updateUser(organizationUser.userId, { status: USER_STATUS.ACTIVE }, manager);
       await this.usersService.validateLicense(manager);
     }, manager);
 
