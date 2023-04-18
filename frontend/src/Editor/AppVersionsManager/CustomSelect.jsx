@@ -16,7 +16,7 @@ const Menu = (props) => {
           onClick={() => props.selectProps.setShowEditAppVersion(true)}
         >
           <div className="row">
-            <div className="col-10">{props?.selectProps?.value?.appVersionName}</div>
+            <div className="col-10 text-truncate">{props?.selectProps?.value?.appVersionName}</div>
             <div className="col-1">
               <svg
                 className="icon"
@@ -83,7 +83,7 @@ const SingleValue = ({ selectProps }) => {
         />
       </svg>
       <div
-        className={cx('app-version-name', { 'color-light-green': selectProps.value.isReleasedVersion })}
+        className={cx('app-version-name text-truncate', { 'color-light-green': selectProps.value.isReleasedVersion })}
         data-cy={`${selectProps.value?.appVersionName}-current-version-text`}
       >
         {selectProps.value?.appVersionName}

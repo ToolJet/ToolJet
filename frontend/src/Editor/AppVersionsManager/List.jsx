@@ -80,7 +80,12 @@ export const AppVersionsManager = function ({
     label: (
       <div className="row align-items-center app-version-list-item">
         <div className="col-10">
-          <div className={cx('app-version-name', { 'color-light-green': appVersion.id === releasedVersionId })}>
+          <div
+            className={cx('app-version-name text-truncate', {
+              'color-light-green': appVersion.id === releasedVersionId,
+            })}
+            style={{ maxWidth: '100%' }}
+          >
             {appVersion.name}
           </div>
         </div>
