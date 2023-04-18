@@ -1,12 +1,13 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  authHeaderForUser,
   clearDB,
   createApplication,
   createUser,
   createNestAppInstance,
   generateAppDefaults,
+  authenticateUser,
+  logoutUser,
 } from '../test.helper';
 
 describe('app_users controller', () => {
@@ -29,6 +30,9 @@ describe('app_users controller', () => {
       email: 'admin@tooljet.io',
       groups: ['all_users', 'admin'],
     });
+
+    const loggedUser = await authenticateUser(app);
+
     const developerUserData = await createUser(app, {
       email: 'dev@tooljet.io',
       groups: ['all_users', 'developer'],
@@ -38,7 +42,8 @@ describe('app_users controller', () => {
 
     const response = await request(app.getHttpServer())
       .post(`/api/app_users`)
-      .set('Authorization', authHeaderForUser(adminUserData.user))
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+      .set('Cookie', loggedUser.tokenCookie)
       .send({
         app_id: application.id,
         org_user_id: developerUserData.orgUser.id,
@@ -47,6 +52,8 @@ describe('app_users controller', () => {
       });
 
     expect(response.statusCode).toBe(201);
+
+    await logoutUser(app, loggedUser.tokenCookie, adminUserData.user.defaultOrganizationId);
   });
 
   it('should not be able to create new app user if admin of another organization', async () => {
@@ -69,9 +76,12 @@ describe('app_users controller', () => {
       user: adminUserData.user,
     });
 
+    const loggedUser = await authenticateUser(app, 'another@tooljet.io');
+
     const response = await request(app.getHttpServer())
       .post(`/api/app_users`)
-      .set('Authorization', authHeaderForUser(anotherOrgAdminUserData.user))
+      .set('tj-workspace-id', anotherOrgAdminUserData.user.defaultOrganizationId)
+      .set('Cookie', loggedUser.tokenCookie)
       .send({
         app_id: application.id,
         org_user_id: adminUserData.orgUser.id,
@@ -79,6 +89,8 @@ describe('app_users controller', () => {
       });
 
     expect(response.statusCode).toBe(403);
+
+    await logoutUser(app, loggedUser.tokenCookie, anotherOrgAdminUserData.user.defaultOrganizationId);
   });
 
   it('should not allow developers and viewers to create app users', async () => {
@@ -102,9 +114,12 @@ describe('app_users controller', () => {
       organization: adminUserData.organization,
     });
 
+    const loggedUser = await authenticateUser(app, 'dev@tooljet.io');
+
     let response = await request(app.getHttpServer())
       .post(`/api/app_users/`)
-      .set('Authorization', authHeaderForUser(developerUserData.user))
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+      .set('Cookie', loggedUser.tokenCookie)
       .send({
         app_id: application.id,
         org_user_id: viewerUserData.orgUser.id,
@@ -112,15 +127,19 @@ describe('app_users controller', () => {
       });
     expect(response.statusCode).toBe(403);
 
+    await logoutUser(app, loggedUser.tokenCookie, developerUserData.user.defaultOrganizationId);
+    const loggedDeveloperUser = await authenticateUser(app, 'viewer@tooljet.io');
+
     response = response = await request(app.getHttpServer())
       .post(`/api/app_users/`)
-      .set('Authorization', authHeaderForUser(viewerUserData.user))
+      .set('Cookie', loggedDeveloperUser.tokenCookie)
       .send({
         app_id: application.id,
         org_user_id: developerUserData.orgUser.id,
         groups: ['all_users', 'admin'],
       });
 
+    await logoutUser(app, loggedDeveloperUser.tokenCookie, viewerUserData.user.defaultOrganizationId);
     await application.reload();
   });
 

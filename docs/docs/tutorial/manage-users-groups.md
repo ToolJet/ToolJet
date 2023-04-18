@@ -77,7 +77,7 @@ Similar to archiving a user's access, you can enable it again by clicking on **U
 
 ## Managing Groups
 
-On ToolJet, Admins can create groups for users added in a workspace and grant them access to particular app(s) with specific permissions. To manage groups, just go to the **Workspace Settings** from the left-sidebar of the dashboard and click on the **Groups**.
+On ToolJet, Admins and Super Admins can create groups for users added in a workspace and grant them access to particular app(s) with specific permissions. To manage groups, just go to the **Workspace Settings** from the left-sidebar of the dashboard and click on the **Groups**.
 
 <div style={{textAlign: 'center'}}>
     
@@ -87,11 +87,16 @@ On ToolJet, Admins can create groups for users added in a workspace and grant th
 
 ### Group properties
 
-Every group on ToolJet has three sections:
+Every group on ToolJet has **four** sections:
+
+- [Apps](#apps)
+- [Users](#users)
+- [Permissions](#permissions)
+- [Datasources](#datasources)
 
 #### Apps: 
 
-Admins can add or remove any number of apps for a group of users. To add an app to a group, select an app from the dropdown and click on `Add` button next to it. You can also set app permissions such as `View` or `Edit` for the group. You can set different permissions for different apps in a group.
+Admins and Super Admins can add or remove any number of apps for a group of users. To add an app to a group, select an app from the dropdown and click on `Add` button next to it. You can also set app permissions such as `View` or `Edit` for the group. You can set different permissions for different apps in a group.
 
 <div style={{textAlign: 'center'}}>
     
@@ -101,7 +106,7 @@ Admins can add or remove any number of apps for a group of users. To add an app 
 
 #### Users: 
 
-Admins can add or remove any numbers of users in a group. Just select a user from the dropdown and click on `Add` button to add it to a group. To delete a user from a group, click on `Delete` button next to it.
+Admins and Super Admins can add or remove any numbers of users in a group. Just select a user from the dropdown and click on `Add` button to add it to a group. To delete a user from a group, click on `Delete` button next to it.
 
 <div style={{textAlign: 'center'}}>
     
@@ -111,16 +116,30 @@ Admins can add or remove any numbers of users in a group. Just select a user fro
 
 #### Permissions: 
 
-Admins can set granular permission like creating/deleting apps or creating folder for a group of users.
+Admins and Super Admins can set granular permission for the users added in that particular group, such as:
+- **Create** and **Delete** Apps
+- **Create**, **Update**, and **Delete** Folders
+- **Create**, **Update**, and **Delete** [Workspace Variables](/docs/tutorial/workspace-variables)
+- **Create** and **Delete** [Global Datasources](/docs/widgets/overview)
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/permissionsv2.png" alt="permissions" />
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/dspermission.png" alt="permissions" />
+    
+</div>
+
+#### Datasources: 
+
+Only Admins and Super Admins can define what datasources can be **viewed** or **edited** by the users of that group.
+
+<div style={{textAlign: 'center'}}>
+    
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/gdspermission.png" alt="permissions" />
     
 </div>
 
 :::tip
-All the activities performed by any Admin or any user in a workspace is logged in `Audit logs` - including any activity related with managing users and groups.
+All the activities performed by any Admin, Super Admin or any user in a workspace is logged in [Audit logs](/docs/Enterprise/audit_logs) - including any activity related with managing users and groups.
 :::
 
 ### Predefined Groups

@@ -409,8 +409,7 @@ describe("List view widget", () => {
 
     cy.get(`[data-cy=${data.widgetName.toLowerCase()}-row-1]`)
       .invoke("height")
-      .should("be.gte", 98)
-      .and("be.lte", 99);
+      .should('equal', 99)
     cy.get(`[data-cy=${data.widgetName.toLowerCase()}-row-1]`)
       .invoke("attr", "class")
       .and("not.contain", "border-bottom");
