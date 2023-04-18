@@ -16,8 +16,10 @@ const CreateColumnDrawer = ({ setIsCreateColumnDrawerOpen, isCreateColumnDrawerO
         className={`add-new-column-btn ghost-black-operation ${isCreateColumnDrawerOpen && 'open'}`}
         data-cy="add-new-column-button"
       >
-        <SolidIcon name="column" width="14" fill={isCreateColumnDrawerOpen && '#3E63DD'} />
-        <span className=" tj-text-xsm font-weight-500">&nbsp;&nbsp;Add new column</span>
+        <SolidIcon name="column" width="14" fill={isCreateColumnDrawerOpen ? '#3E63DD' : '#889096'} />
+        <span className=" tj-text-xsm font-weight-500" style={{ marginLeft: '6px' }}>
+          Add new column
+        </span>
       </button>
 
       <Drawer isOpen={isCreateColumnDrawerOpen} onClose={() => setIsCreateColumnDrawerOpen(false)} position="right">

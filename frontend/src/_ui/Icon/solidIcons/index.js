@@ -349,7 +349,7 @@ const Icon = (props) => {
     case 'marketplace':
       return <Marketplace {...props} />;
     default:
-      return <div />;
+      return <Apps {...props} />;
   }
 };
 export default Icon;

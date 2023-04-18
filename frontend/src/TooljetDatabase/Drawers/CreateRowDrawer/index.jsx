@@ -16,7 +16,7 @@ const CreateRowDrawer = ({ isCreateRowDrawerOpen, setIsCreateRowDrawerOpen }) =>
         className="tj-db-header-add-new-row-btn tj-text-xsm font-weight-500"
       >
         <SolidIcon name="row" width="14" />
-        &nbsp;&nbsp;<span data-cy="add-new-row-button-text">Add new row</span>
+        <span data-cy="add-new-row-button-text">Add new row</span>
       </button>
       <Drawer isOpen={isCreateRowDrawerOpen} onClose={() => setIsCreateRowDrawerOpen(false)} position="right">
         <CreateRowForm

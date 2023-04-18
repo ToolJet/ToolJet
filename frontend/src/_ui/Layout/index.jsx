@@ -76,13 +76,13 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 {/* DATASOURCES */}
                 {admin && (
                   <li className="text-center cursor-pointer">
-                    <Link
-                      to={getPrivateRoute('global_datasources')}
-                      className={`tj-leftsidebar-icon-items  ${
-                        router.pathname === '/global_datasources' && `current-seleted-route`
-                      }`}
-                    >
-                      <ToolTip message="Global Datasources" placement="right">
+                    <ToolTip message="Global Datasources" placement="right">
+                      <Link
+                        to={getPrivateRoute('global_datasources')}
+                        className={`tj-leftsidebar-icon-items  ${
+                          router.pathname === '/global_datasources' && `current-seleted-route`
+                        }`}
+                      >
                         <SolidIcon
                           name="datasource"
                           fill={
@@ -93,35 +93,35 @@ function Layout({ children, switchDarkMode, darkMode }) {
                               : '#C1C8CD'
                           }
                         />
-                      </ToolTip>
-                    </Link>
+                      </Link>
+                    </ToolTip>
                   </li>
                 )}
                 {marketplaceEnabled && (
                   <li className="text-center d-flex flex-column">
-                    <Link
-                      to="/integrations"
-                      className={`tj-leftsidebar-icon-items  ${
-                        router.pathname === '/integrations' && `current-seleted-route`
-                      }`}
-                    >
-                      <ToolTip message="Marketplace (Beta)" placement="right">
+                    <ToolTip message="Marketplace (Beta)" placement="right">
+                      <Link
+                        to="/integrations"
+                        className={`tj-leftsidebar-icon-items  ${
+                          router.pathname === '/integrations' && `current-seleted-route`
+                        }`}
+                      >
                         <SolidIcon
                           name="marketplace"
                           fill={router.pathname === '/integrations' ? '#3E63DD' : darkMode ? '#4C5155' : '#C1C8CD'}
                         />
-                      </ToolTip>
-                    </Link>
+                      </Link>
+                    </ToolTip>
                   </li>
                 )}
                 <li className="text-center cursor-pointer">
-                  <Link
-                    to={getPrivateRoute('workspace_settings')}
-                    className={`tj-leftsidebar-icon-items  ${
-                      router.pathname === '/workspace-settings' && `current-seleted-route`
-                    }`}
-                  >
-                    <ToolTip message="Workspace settings" placement="right">
+                  <ToolTip message="Workspace settings" placement="right">
+                    <Link
+                      to={getPrivateRoute('workspace_settings')}
+                      className={`tj-leftsidebar-icon-items  ${
+                        router.pathname === '/workspace-settings' && `current-seleted-route`
+                      }`}
+                    >
                       <SolidIcon
                         name="setting"
                         fill={
@@ -132,15 +132,24 @@ function Layout({ children, switchDarkMode, darkMode }) {
                             : '#C1C8CD'
                         }
                       />
-                    </ToolTip>
-                  </Link>
+                    </Link>
+                  </ToolTip>
                 </li>
+
                 <li className="tj-leftsidebar-icon-items-bottom text-center">
                   <NotificationCenter darkMode={darkMode} />
-                  <div className="cursor-pointer  tj-leftsidebar-icon-items" onClick={() => switchDarkMode(!darkMode)}>
-                    <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill={darkMode ? '#4C5155' : '#C1C8CD'} />
-                  </div>
-                  <Profile switchDarkMode={switchDarkMode} darkMode={darkMode} />
+                  <ToolTip message="Mode" placement="right">
+                    <div
+                      className="cursor-pointer  tj-leftsidebar-icon-items"
+                      onClick={() => switchDarkMode(!darkMode)}
+                    >
+                      <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill={darkMode ? '#4C5155' : '#C1C8CD'} />
+                    </div>
+                  </ToolTip>
+
+                  <ToolTip message="Profile" placement="right">
+                    <Profile switchDarkMode={switchDarkMode} darkMode={darkMode} />
+                  </ToolTip>
                 </li>
               </ul>
             </div>

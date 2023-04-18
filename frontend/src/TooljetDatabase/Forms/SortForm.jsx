@@ -59,7 +59,7 @@ export const SortForm = ({ filters, setFilters, index, column = '', order = '' }
         />
       </div>
       <div className="col-1 py-3 cursor-pointer">
-        <SolidIcon onClick={handleDelete} name="sort" width="14" />
+        <SolidIcon onClick={handleDelete} name="trash" fill="#E54D2E" width="14" />
       </div>
     </div>
   );

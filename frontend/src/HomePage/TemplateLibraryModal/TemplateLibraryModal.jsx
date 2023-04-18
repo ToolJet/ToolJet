@@ -114,8 +114,8 @@ export default function TemplateLibraryModal(props) {
                         {t('globals.cancel', 'Cancel')}
                       </ButtonSolid>
                       <ButtonSolid
-                        onClick={() => {
-                          deployApp();
+                        onClick={(e) => {
+                          deployApp(e);
                         }}
                         isLoading={deploying}
                         className=" ms-2 "

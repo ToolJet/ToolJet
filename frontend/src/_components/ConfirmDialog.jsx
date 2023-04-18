@@ -28,7 +28,7 @@ export function ConfirmDialog({ show, title, message, onConfirm, onCancel, confi
       size="sm"
       animation={false}
       centered={true}
-      contentClassName={` confirm-dialogue-modal ${darkMode ? 'dark-theme' : ''}`}
+      contentClassName={`confirm-dialogue-modal ${darkMode ? 'dark-theme' : ''}`}
       data-cy="modal-component"
     >
       {title && (

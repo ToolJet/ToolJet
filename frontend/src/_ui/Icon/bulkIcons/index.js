@@ -352,7 +352,7 @@ const Icon = (props) => {
       return <CheckCircle {...props} />;
 
     default:
-      return <div />;
+      return <Apps {...props} />;
   }
 };
 export default Icon;
