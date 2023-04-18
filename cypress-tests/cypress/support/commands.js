@@ -237,6 +237,12 @@ Cypress.Commands.add("notVisible", (dataCy) => {
       cy.get(dataCy).should("not.be.visible");
     }
   });
+  const log = Cypress.log({
+    name: 'notVisible',
+    displayName: 'Not Visible',
+    message: dataCy
+  })
+
 });
 
 Cypress.Commands.add("resizeWidget", (widgetName, x, y) => {
