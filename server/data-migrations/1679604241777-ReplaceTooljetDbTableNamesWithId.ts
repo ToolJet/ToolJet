@@ -65,5 +65,5 @@ export class ReplaceTooljetDbTableNamesWithId1679604241777 implements MigrationI
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> { }
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }
