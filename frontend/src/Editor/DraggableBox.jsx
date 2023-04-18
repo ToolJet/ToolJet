@@ -99,7 +99,6 @@ export const DraggableBox = function DraggableBox({
   isMultipleComponentsSelected,
   dataQueries,
   childComponents = null,
-  isVersionReleased,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -295,7 +294,6 @@ export const DraggableBox = function DraggableBox({
                   sideBarDebugger={sideBarDebugger}
                   dataQueries={dataQueries}
                   childComponents={childComponents}
-                  isVersionReleased={isVersionReleased}
                 />
               </ErrorBoundary>
             </div>
@@ -320,7 +318,6 @@ export const DraggableBox = function DraggableBox({
               sideBarDebugger={sideBarDebugger}
               customResolvables={customResolvables}
               containerProps={containerProps}
-              isVersionReleased={isVersionReleased}
             />
           </ErrorBoundary>
         </div>

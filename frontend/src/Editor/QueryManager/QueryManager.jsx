@@ -752,18 +752,18 @@ class QueryManagerComponent extends React.Component {
         </div>
 
         {(addingQuery || editingQuery) && (
-          <div
-            className={cx(``, {
-              'disabled ': this.props.isVersionReleased,
-            })}
-          >
+          <div>
             <div
               className={`row row-deck px-2 mt-0 query-details ${
                 selectedDataSource?.kind === 'tooljetdb' && 'tooljetdb-query-details'
               }`}
             >
               {dataSources && mode === 'create' && !this.state.isSourceSelected && (
-                <div className="datasource-picker">
+                <div
+                  className={cx(`datasource-picker`, {
+                    'disabled ': this.props.isVersionReleased,
+                  })}
+                >
                   {!this.state.isSourceSelected && (
                     <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
                       {this.props.t('editor.queryManager.selectDatasource', 'Select Datasource')}
@@ -784,7 +784,11 @@ class QueryManagerComponent extends React.Component {
               )}
 
               {dataSources && mode === 'create' && !this.state.isSourceSelected && (
-                <div className="datasource-picker">
+                <div
+                  className={cx(`datasource-picker`, {
+                    'disabled ': this.props.isVersionReleased,
+                  })}
+                >
                   {!this.state.isSourceSelected && <label className="form-label col-md-3">Global Datasources</label>}{' '}
                   {!this.state.isSourceSelected && (
                     <DataSourceLister
@@ -803,21 +807,31 @@ class QueryManagerComponent extends React.Component {
               {selectedDataSource && (
                 <div style={{ padding: '0 32px' }}>
                   <div>
-                    <ElementToRender
-                      pluginSchema={this.state.selectedDataSource?.plugin?.operationsFile?.data}
-                      selectedDataSource={selectedDataSource}
-                      options={this.state.options}
-                      optionsChanged={this.optionsChanged}
-                      optionchanged={this.optionchanged}
-                      currentState={this.props.currentState}
-                      darkMode={this.props.darkMode}
-                      isEditMode={true} // Made TRUE always to avoid setting default options again
-                      queryName={this.state.queryName}
-                    />
+                    <div
+                      className={cx(``, {
+                        'disabled ': this.props.isVersionReleased,
+                      })}
+                    >
+                      <ElementToRender
+                        pluginSchema={this.state.selectedDataSource?.plugin?.operationsFile?.data}
+                        selectedDataSource={selectedDataSource}
+                        options={this.state.options}
+                        optionsChanged={this.optionsChanged}
+                        optionchanged={this.optionchanged}
+                        currentState={this.props.currentState}
+                        darkMode={this.props.darkMode}
+                        isEditMode={true} // Made TRUE always to avoid setting default options again
+                        queryName={this.state.queryName}
+                      />
+                    </div>
 
                     {!dataSourceMeta?.disableTransformations &&
                       (selectedDataSource?.kind != 'runjs' || selectedDataSource?.kind != 'runpy') && (
-                        <div>
+                        <div
+                          className={cx(``, {
+                            'disabled ': this.props.isVersionReleased,
+                          })}
+                        >
                           <Transformation
                             changeOption={this.optionchanged}
                             options={options ?? {}}
@@ -827,20 +841,26 @@ class QueryManagerComponent extends React.Component {
                           />
                         </div>
                       )}
-                    <Preview
-                      previewPanelRef={this.previewPanelRef}
-                      previewLoading={previewLoading}
-                      queryPreviewData={queryPreviewData}
-                      theme={this.state.theme}
-                      darkMode={this.props.darkMode}
-                    />
+                    <div>
+                      <Preview
+                        previewPanelRef={this.previewPanelRef}
+                        previewLoading={previewLoading}
+                        queryPreviewData={queryPreviewData}
+                        theme={this.state.theme}
+                        darkMode={this.props.darkMode}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
             </div>
 
             {selectedDataSource && (addingQuery || editingQuery) && (
-              <div className="advanced-options-container font-weight-400 border-top query-manager-border-color">
+              <div
+                className={cx(`advanced-options-container font-weight-400 border-top query-manager-border-color`, {
+                  'disabled ': this.props.isVersionReleased,
+                })}
+              >
                 <div className="advance-options-input-form-container">
                   <div className="mx-4">
                     <CustomToggleSwitch
