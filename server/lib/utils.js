@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import { clone, isEmpty } from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
+import { VM } from 'vm2';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -49,23 +50,16 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
     error = `Cannot resolve function call ${code}`;
   } else {
     try {
-      const evalFunction = Function(
-        [
-          'moment',
-          '_',
-          ...Object.keys(state),
-          ...Object.keys(customObjects),
-          reservedKeyword,
-        ],
-        `return ${code}`
-      );
-      result = evalFunction(
-        moment,
-        _,
-        ...Object.values(state),
-        ...Object.values(customObjects),
-        null
-      );
+      const vm = new VM({
+        sandbox: {
+          _,
+          moment,
+          ...state,
+          ...customObjects,
+          ...Object.fromEntries(reservedKeyword.map((keyWord) => [keyWord, null])),
+        },
+      });
+      result = vm.run(code);
     } catch (err) {
       error = err;
       console.log('eval_error', err);
