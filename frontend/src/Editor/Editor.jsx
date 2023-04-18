@@ -164,12 +164,7 @@ class EditorComponent extends React.Component {
             ...this.state.currentState,
             globals: {
               ...this.state.currentState.globals,
-              userVars: {
-                email: currentUser.email,
-                firstName: currentUser.first_name,
-                lastName: currentUser.last_name,
-                groups: currentSession.group_permissions?.map((group) => group.group) || [],
-              },
+              currentUser: userVars,
             },
           },
           userVars,
@@ -370,7 +365,7 @@ class EditorComponent extends React.Component {
       );
 
       this.fetchDataSources(data.editing_version?.id);
-      this.fetchDataQueries(data.editing_version?.id, true);
+      this.fetchDataQueries(data.editing_version?.id, true, true);
       this.fetchGlobalDataSources();
       initEditorWalkThrough();
     };

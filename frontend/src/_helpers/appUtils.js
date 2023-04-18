@@ -306,8 +306,10 @@ export function onQueryConfirmOrCancel(_ref, queryConfirmationData, isConfirm = 
     (query) => query.queryId !== queryConfirmationData.queryId
   );
 
-  _ref.setState({
-    queryConfirmationList: filtertedQueryConfirmation,
+  flushSync(() => {
+    _ref.setState({
+      queryConfirmationList: filtertedQueryConfirmation,
+    });
   });
   isConfirm && runQuery(_ref, queryConfirmationData.queryId, queryConfirmationData.queryName, true, mode);
 }
@@ -494,11 +496,13 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const customAppVariables = { ..._ref.state.currentState.variables };
         customAppVariables[key] = value;
 
-        return _ref.setState({
-          currentState: {
-            ..._ref.state.currentState,
-            variables: customAppVariables,
-          },
+        return flushSync(() => {
+          _ref.setState({
+            currentState: {
+              ..._ref.state.currentState,
+              variables: customAppVariables,
+            },
+          });
         });
       }
 
@@ -507,11 +511,13 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const customAppVariables = { ..._ref.state.currentState.variables };
         delete customAppVariables[key];
 
-        return _ref.setState({
-          currentState: {
-            ..._ref.state.currentState,
-            variables: customAppVariables,
-          },
+        return flushSync(() => {
+          _ref.setState({
+            currentState: {
+              ..._ref.state.currentState,
+              variables: customAppVariables,
+            },
+          });
         });
       }
 
@@ -523,14 +529,16 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           [key]: value,
         };
 
-        return _ref.setState({
-          currentState: {
-            ..._ref.state.currentState,
-            page: {
-              ..._ref.state.currentState.page,
-              variables: customPageVariables,
+        return flushSync(() => {
+          _ref.setState({
+            currentState: {
+              ..._ref.state.currentState,
+              page: {
+                ..._ref.state.currentState.page,
+                variables: customPageVariables,
+              },
             },
-          },
+          });
         });
       }
 
@@ -538,14 +546,16 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const key = resolveReferences(event.key, _ref.state.currentState, undefined, customVariables);
         const customPageVariables = _.omit(_ref.state.currentState.page.variables, key);
 
-        return _ref.setState({
-          currentState: {
-            ..._ref.state.currentState,
-            page: {
-              ..._ref.state.currentState.page,
-              variables: customPageVariables,
+        return flushSync(() => {
+          _ref.setState({
+            currentState: {
+              ..._ref.state.currentState,
+              page: {
+                ..._ref.state.currentState.page,
+                variables: customPageVariables,
+              },
             },
-          },
+          });
         });
       }
 
@@ -901,24 +911,24 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
   if (dataQuery.options.requestConfirmation) {
-    flushSync(() => {
-      // eslint-disable-next-line no-unsafe-optional-chaining
-      const queryConfirmationList = _ref.state?.queryConfirmationList ? [..._ref.state?.queryConfirmationList] : [];
-      const queryConfirmation = {
-        queryId,
-        queryName,
-      };
-      if (!queryConfirmationList.some((query) => queryId === query.queryId)) {
-        queryConfirmationList.push(queryConfirmation);
-      }
+    // eslint-disable-next-line no-unsafe-optional-chaining
+    const queryConfirmationList = _ref.state?.queryConfirmationList ? [..._ref.state?.queryConfirmationList] : [];
+    const queryConfirmation = {
+      queryId,
+      queryName,
+    };
+    if (!queryConfirmationList.some((query) => queryId === query.queryId)) {
+      queryConfirmationList.push(queryConfirmation);
+    }
 
-      if (confirmed === undefined) {
+    if (confirmed === undefined) {
+      flushSync(() => {
         _ref.setState({
           queryConfirmationList,
         });
-        return;
-      }
-    });
+      });
+      return;
+    }
   }
   const newState = {
     ..._ref.state.currentState,

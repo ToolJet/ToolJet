@@ -70,7 +70,8 @@ export const SubContainer = ({
   const allComponents = appDefinition ? appDefinition.pages[currentPageId].components : {};
   const isParentModal =
     (allComponents[parent]?.component?.component === 'Modal' ||
-      allComponents[parent]?.component?.component === 'Form') ??
+      allComponents[parent]?.component?.component === 'Form' ||
+      allComponents[parent]?.component?.component === 'Container') ??
     false;
 
   const getChildWidgets = (components) => {
@@ -461,7 +462,7 @@ export const SubContainer = ({
       ref={drop}
       style={styles}
       id={`canvas-${parent}`}
-      className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}
+      className={`real-canvas ${(isDragging || isResizing) && !readOnly ? 'show-grid' : ''}`}
     >
       {checkParentVisibility() &&
         Object.keys(childWidgets).map((key) => {

@@ -20,7 +20,7 @@ import { diff } from 'deep-object-diff';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { ChangeDataSource } from './ChangeDataSource';
 
-import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
+import { useDataSourcesStore, useLoadingDataSources } from '@/_stores/dataSourcesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
@@ -547,7 +547,7 @@ class QueryManagerComponent extends React.Component {
     }
     const buttonDisabled = isUpdating || isCreating;
     const mockDataQueryComponent = this.mockDataQueryAsComponent();
-    const { loadingDataSources } = useDataSourcesStore.getState();
+    const { loadingDataSources } = this.props;
 
     return (
       <div
@@ -967,4 +967,9 @@ class QueryManagerComponent extends React.Component {
   }
 }
 
-export const QueryManager = withTranslation()(React.memo(QueryManagerComponent));
+const withStore = (Component) => (props) => {
+  const loadingDataSources = useLoadingDataSources();
+  return <Component {...props} loadingDataSources={loadingDataSources} />;
+};
+
+export const QueryManager = withTranslation()(React.memo(withStore(QueryManagerComponent)));
