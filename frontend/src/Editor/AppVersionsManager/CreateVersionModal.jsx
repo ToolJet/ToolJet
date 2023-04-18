@@ -59,6 +59,7 @@ export const CreateVersion = ({
     <AlertDialog
       show={showCreateAppVersion || showCreateVersionModalPrompt}
       closeModal={() => {
+        setVersionName('');
         closeCreateVersionModalPrompt();
         setShowCreateAppVersion(false);
       }}

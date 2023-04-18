@@ -43,7 +43,10 @@ export const EditVersion = ({
   return (
     <AlertDialog
       show={showEditAppVersion}
-      closeModal={() => setShowEditAppVersion(false)}
+      closeModal={() => {
+        setVersionName(editingVersion?.name || '');
+        setShowEditAppVersion(false);
+      }}
       title={t('editor.appVersionManager.editVersion', 'Edit Version')}
     >
       <form
@@ -71,7 +74,10 @@ export const EditVersion = ({
             <button
               className="btn mx-2"
               data-cy="cancel-button"
-              onClick={() => setShowEditAppVersion(false)}
+              onClick={() => {
+                setVersionName(editingVersion?.name || '');
+                setShowEditAppVersion(false);
+              }}
               type="button"
             >
               {t('globals.cancel', 'Cancel')}
