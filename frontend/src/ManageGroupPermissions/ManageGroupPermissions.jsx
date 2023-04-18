@@ -1,5 +1,5 @@
 import React from 'react';
-import { authenticationService, groupPermissionService } from '@/_services';
+import { groupPermissionService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
@@ -12,7 +12,6 @@ class ManageGroupPermissionsComponent extends React.Component {
     super(props);
 
     this.state = {
-      currentUser: authenticationService.currentUserValue,
       isLoading: true,
       groups: [],
       creatingGroup: false,

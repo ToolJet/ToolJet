@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { authenticationService, organizationService } from '@/_services';
+import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +18,6 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
     setIsCreating(true);
     organizationService.editOrganization({ name: newOrgName }).then(
       () => {
-        authenticationService.updateCurrentUserDetails({ organization: newOrgName });
         toast.success('Workspace updated');
         window.location.reload();
       },

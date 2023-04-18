@@ -41,8 +41,11 @@ import { PluginsModule } from './modules/plugins/plugins.module';
 import * as path from 'path';
 import * as fs from 'fs';
 import { AppEnvironmentsModule } from './modules/app_environments/app_environments.module';
+import { RequestContextModule } from './modules/request_context/request-context.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 const imports = [
+  ScheduleModule.forRoot(),
   ConfigModule.forRoot({
     isGlobal: true,
     envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
@@ -74,6 +77,7 @@ const imports = [
     },
   }),
   TypeOrmModule.forRoot(ormconfig),
+  RequestContextModule,
   AppConfigModule,
   SeedsModule,
   AuthModule,
