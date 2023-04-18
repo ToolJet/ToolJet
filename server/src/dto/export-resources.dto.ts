@@ -1,4 +1,4 @@
-import { IsUUID, IsOptional, ValidateNested, IsString } from 'class-validator';
+import { IsUUID, IsOptional } from 'class-validator';
 
 export class ExportResourcesDto {
   @IsOptional()
@@ -8,7 +8,7 @@ export class ExportResourcesDto {
   tooljet_database: ExportTooljetDatabaseDto[];
 
   @IsUUID()
-  organization_id: string
+  organization_id: string;
 }
 
 export class ExportAppDto {
