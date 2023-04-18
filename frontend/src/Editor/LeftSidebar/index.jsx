@@ -136,12 +136,14 @@ export const LeftSidebar = forwardRef((props, ref) => {
         />
       )}
       {config.COMMENT_FEATURE_ENABLE && (
-        <LeftSidebarComment
-          appVersionsId={appVersionsId}
-          selectedSidebarItem={showComments ? 'comments' : ''}
-          toggleComments={toggleComments}
-          currentPageId={currentPageId}
-        />
+        <div className={`${isVersionReleased && 'disabled'}`}>
+          <LeftSidebarComment
+            appVersionsId={appVersionsId}
+            selectedSidebarItem={showComments ? 'comments' : ''}
+            toggleComments={toggleComments}
+            currentPageId={currentPageId}
+          />
+        </div>
       )}
       <ConfirmDialog
         show={showLeaveDialog}

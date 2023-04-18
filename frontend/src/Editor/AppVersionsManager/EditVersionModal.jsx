@@ -16,6 +16,10 @@ export const EditVersion = ({
   const [versionName, setVersionName] = useState(editingVersion?.name || '');
   const { t } = useTranslation();
 
+  React.useEffect(() => {
+    setVersionName(editingVersion?.name);
+  }, [editingVersion?.name]);
+
   const editVersion = () => {
     if (versionName.trim() === '') {
       toast.error('Version name should not be empty');
