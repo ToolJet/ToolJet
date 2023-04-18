@@ -90,6 +90,9 @@ export class AppImportExportService {
           .where('data_queries.dataSourceId IN(:...dataSourceId)', {
             dataSourceId: dataSources?.map((v) => v.id),
           })
+          .andWhere('data_queries.appVersionId IN(:...versionId)', {
+            versionId: appVersions.map((v) => v.id),
+          })
           .orderBy('data_queries.created_at', 'ASC')
           .getMany();
 

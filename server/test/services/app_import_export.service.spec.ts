@@ -98,6 +98,8 @@ describe('AppImportExportService', () => {
       });
       const dataQuery1 = await createDataQuery(nestApp, {
         dataSource: dataSource1,
+        appVersion: appVersion1,
+        name: 'test_query_1',
         kind: 'test_kind',
       });
 
@@ -111,6 +113,7 @@ describe('AppImportExportService', () => {
         name: 'test_name_2',
       });
       const dataQuery2 = await createDataQuery(nestApp, {
+        appVersion: appVersion2,
         dataSource: dataSource2,
         name: 'test_query_2',
       });
@@ -119,7 +122,7 @@ describe('AppImportExportService', () => {
         where: { id: application.id },
       });
 
-      let { appV2: result } = await service.export(adminUser, exportedApp.id, { versionId: appVersion1.id });
+      let { appV2: result } = await service.export(adminUser, exportedApp.id, { version_id: appVersion1.id });
 
       expect(result.id).toBe(exportedApp.id);
       expect(result.name).toBe(exportedApp.name);
@@ -133,7 +136,7 @@ describe('AppImportExportService', () => {
       expect(result.appVersions.length).toBe(1);
       expect(result.appVersions[0].name).toEqual(appVersion1.name);
 
-      const res = await service.export(adminUser, exportedApp.id, { versionId: appVersion2.id });
+      const res = await service.export(adminUser, exportedApp.id, { version_id: appVersion2.id });
       result = res.appV2;
 
       expect(result.id).toBe(exportedApp.id);
@@ -242,6 +245,7 @@ describe('AppImportExportService', () => {
       //create default dataQuery
       await createDataQuery(nestApp, {
         dataSource: firstDs,
+        appVersion: applicationVersion,
         options: {},
       });
 
