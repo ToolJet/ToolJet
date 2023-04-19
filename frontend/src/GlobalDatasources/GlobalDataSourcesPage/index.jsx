@@ -29,7 +29,6 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
   } = useContext(GlobalDataSourcesContext);
 
   useEffect(() => {
-    console.log('checker', isEditing, selectedDataSource);
     if (selectedDataSource) {
       setModalProps({ ...modalProps, backdrop: false });
     }

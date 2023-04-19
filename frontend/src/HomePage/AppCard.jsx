@@ -57,7 +57,6 @@ export default function AppCard({
 
   let AppIcon;
   try {
-    console.log('xhekc', app);
     AppIcon = <BulkIcon fill={'#3E63DD'} name={app?.icon || defaultIcon} />;
   } catch (e) {
     console.error('App icon not found', app.icon);
