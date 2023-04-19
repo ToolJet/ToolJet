@@ -308,7 +308,6 @@ class HomePageComponent extends React.Component {
       return;
     }
     this.fetchApps(1, this.state.currentFolder.id, key || '');
-    this.fetchFolders(key || '');
   };
 
   addAppToFolder = () => {
