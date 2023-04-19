@@ -74,7 +74,6 @@ export const CopilotSetting = () => {
   useEffect(() => {
     orgEnvironmentVariableService.getVariables().then((data) => {
       const isCopilotApiKeyPresent = data.variables.some((variable) => variable.variable_name === 'copilot_api_key');
-      //   console.log('---GPT KEY isCopilotApiKeyPresent', isCopilotApiKeyPresent);
 
       const copilotVariableId = data.variables.find((variable) => variable.variable_name === 'copilot_api_key')?.id;
 
@@ -82,10 +81,8 @@ export const CopilotSetting = () => {
         ? fetchCopilotApiKey(isCopilotApiKeyPresent) && set(copilotVariableId)
         : false;
       if (shouldUpdate) {
-        //place holder for api key whihc of 32 length, as we wont be sharing the actual key with the user
-
+        //place holder for api key of 32 length
         const key = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
-
         setCopilotApiKey(key);
       }
     });

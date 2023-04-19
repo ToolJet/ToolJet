@@ -22,7 +22,6 @@ export function OrganizationSettings(props) {
 
     () => subscription.unsubsciption();
 
-    console.log('-----OrganizationSettings-----');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticationService.currentSessionValue?.admin]);
 
