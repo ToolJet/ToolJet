@@ -253,7 +253,6 @@ The operations.json file specifies the available operations that can be executed
 - Change directory to the plugin directory where the npm package needs to be installed and then install the package
   ```bash
   # change directory to the plugin directory and install the npm package
-  cd plugins/github
   npm i octokit --workspace=@tooljet-marketplace/github 
   ```
 
