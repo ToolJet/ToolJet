@@ -131,7 +131,6 @@ export const DropDown = function DropDown({
       ...provided,
       color: darkMode ? 'white' : 'black',
       margin: '0px',
-      padding: '0px',
     }),
     indicatorSeparator: (_state) => ({
       display: 'none',
