@@ -1,5 +1,6 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { render } from 'react-dom';
+// import { createRoot } from 'react-dom/client';
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
 import { BrowserTracing } from '@sentry/tracing';
@@ -61,4 +62,5 @@ appService
       });
     }
   })
-  .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));
+  .then(() => render(<AppWithProfiler />, document.getElementById('app')));
+// .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));
