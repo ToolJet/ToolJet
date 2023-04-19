@@ -7,7 +7,7 @@ title: 'Marketplace: Creating plugins'
 
 ## What are plugins
 
-ToolJet has been developed with a focus on extensibility. Developers can expand the capabilities of ToolJet using JavaScript through plugins. Currently, plugins are limited to connectors, such as data source connectors like PostgreSQL, MySQL, Twilio, Stripe, and more. These plugins will be available on the Marketplace.
+ToolJet’s development has centered on extensibility, allowing developers to utilize plugins that expand their capabilities. Currently, these plugins are limited to connectors, including data source connectors like PostgreSQL, MySQL, Twilio, Stripe, and more. Using JavaScript/TypeScript, developers can develop plugins to enhance ToolJet's functionality and publish these plugins on the ToolJet Marketplace.
 
 This guide will provide step-by-step instructions for creating ToolJet plugins using the `tooljet` CLI. 
 
