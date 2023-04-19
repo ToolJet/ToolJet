@@ -1,4 +1,3 @@
-/* eslint-disable no-case-declarations */
 import { QueryError, QueryResult, QueryService } from '@tooljet-marketplace/common';
 import { SourceOptions, QueryOptions, Operation } from './types';
 import { TextractClient } from '@aws-sdk/client-textract';
@@ -13,7 +12,6 @@ export default class Textract implements QueryService {
     try {
       switch (operation) {
         case Operation.AnalyzeDocument:
-          console.log('queryOptions  ====>', queryOptions);
           result = await analyzeDocument(queryOptions?.document, client);
           break;
 
