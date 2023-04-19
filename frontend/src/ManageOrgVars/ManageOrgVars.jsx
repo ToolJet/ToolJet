@@ -9,7 +9,6 @@ import { withTranslation } from 'react-i18next';
 class ManageOrgVarsComponent extends React.Component {
   constructor(props) {
     super(props);
-    this.currentUser = authenticationService.currentUserValue;
 
     this.state = {
       isLoading: true,
@@ -221,15 +220,24 @@ class ManageOrgVarsComponent extends React.Component {
   }
 
   canCreateVariable = () => {
-    return this.canAnyGroupPerformAction('org_environment_variable_create', this.currentUser.group_permissions);
+    return this.canAnyGroupPerformAction(
+      'org_environment_variable_create',
+      authenticationService.currentSessionValue.group_permissions
+    );
   };
 
   canUpdateVariable = () => {
-    return this.canAnyGroupPerformAction('org_environment_variable_update', this.currentUser.group_permissions);
+    return this.canAnyGroupPerformAction(
+      'org_environment_variable_update',
+      authenticationService.currentSessionValue.group_permissions
+    );
   };
 
   canDeleteVariable = () => {
-    return this.canAnyGroupPerformAction('org_environment_variable_delete', this.currentUser.group_permissions);
+    return this.canAnyGroupPerformAction(
+      'org_environment_variable_delete',
+      authenticationService.currentSessionValue.group_permissions
+    );
   };
 
   render() {
@@ -303,7 +311,6 @@ class ManageOrgVarsComponent extends React.Component {
                     variables={variables}
                     canUpdateVariable={this.canUpdateVariable()}
                     canDeleteVariable={this.canDeleteVariable()}
-                    admin={this.currentUser.admin}
                     onEditBtnClicked={this.onEditBtnClicked}
                     onDeleteBtnClicked={this.onDeleteBtnClicked}
                   />

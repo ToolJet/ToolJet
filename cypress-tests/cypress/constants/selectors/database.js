@@ -91,3 +91,13 @@ export const sortSelectors = {
   deleteIcon: '[data-cy="delete-icon"]',
   addConditionLink: '[data-cy="add-another-condition-link"]',
 };
+
+export const editRowSelectors = {
+  editRowbutton: '[data-cy="edit-row-button-text"]',
+  editRowHeader: '[data-cy="edit-row-header"]',
+  idColumnNameLabel: '[data-cy="id-column-name-label"]',
+  selectRowDropdown: '[data-cy="select-row-dropdown"]',
+  getRowData: (rowNumber, columnName) => {
+    return `[data-cy="id-${String(rowNumber).toLowerCase().replace(/\s+/g, "-")}-column-${String(columnName).toLowerCase().replace(/\s+/g, "-")}-table-cell"]`
+  }
+};

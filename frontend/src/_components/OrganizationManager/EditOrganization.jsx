@@ -18,7 +18,6 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
     setIsCreating(true);
     organizationService.editOrganization({ name: newOrgName }).then(
       () => {
-        authenticationService.updateCurrentUserDetails({ organization: newOrgName });
         toast.success('Workspace updated');
         window.location.reload();
       },
