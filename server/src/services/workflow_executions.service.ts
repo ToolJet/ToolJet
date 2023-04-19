@@ -134,12 +134,14 @@ export class WorkflowExecutionsService {
       const { state, previousNodesExecutionCompletionStatus } =
         await this.getStateAndPreviousNodesExecutionCompletionStatus(currentNode);
 
-      if (!previousNodesExecutionCompletionStatus) {
+      // eslint-disable-next-line no-empty
+      if (currentNode.executed) {
+      } else if (!previousNodesExecutionCompletionStatus) {
         queue.push(currentNode);
       } else {
         switch (currentNode.type) {
           case 'input': {
-            void this.completeNodeExecution(currentNode, '', {});
+            await this.completeNodeExecution(currentNode, '', {});
             void queue.push(...(await this.forwardNodes(currentNode)));
             break;
           }
@@ -169,7 +171,7 @@ export class WorkflowExecutionsService {
                 [query.name]: result,
               };
 
-              void this.completeNodeExecution(currentNode, JSON.stringify(result), newState);
+              await this.completeNodeExecution(currentNode, JSON.stringify(result), newState);
               void queue.push(...(await this.forwardNodes(currentNode)));
             } catch (exception) {
               const result = { status: 'failed', exception };
@@ -179,7 +181,7 @@ export class WorkflowExecutionsService {
                 [query.name]: result,
               };
 
-              void this.completeNodeExecution(currentNode, JSON.stringify(result), newState);
+              await this.completeNodeExecution(currentNode, JSON.stringify(result), newState);
               queue.push(...(await this.forwardNodes(currentNode)));
               console.log({ exception });
             }
@@ -189,6 +191,7 @@ export class WorkflowExecutionsService {
         }
       }
     }
+
     return true;
   }
 
