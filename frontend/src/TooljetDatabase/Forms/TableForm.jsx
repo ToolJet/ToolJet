@@ -90,22 +90,24 @@ const TableForm = ({
           </h3>
         )}
       </div>
-      <div className="card-body tj-app-input">
+      <div className="card-body">
         <div className="mb-3">
           <div className="form-label" data-cy="table-name-label">
             Table name
           </div>
-          <input
-            type="text"
-            placeholder="Enter table name"
-            name="table-name"
-            className="form-control"
-            data-cy="table-name-input-field"
-            autoComplete="off"
-            value={tableName}
-            onChange={(e) => setTableName(e.target.value)}
-            autoFocus
-          />
+          <div className="tj-app-input">
+            <input
+              type="text"
+              placeholder="Enter table name"
+              name="table-name"
+              className="form-control"
+              data-cy="table-name-input-field"
+              autoComplete="off"
+              value={tableName}
+              onChange={(e) => setTableName(e.target.value)}
+              autoFocus
+            />
+          </div>
         </div>
         {!isEditMode && <CreateColumnsForm columns={columns} setColumns={setColumns} />}
       </div>

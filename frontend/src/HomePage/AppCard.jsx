@@ -144,7 +144,7 @@ export default function AppCard({
                 type="button"
                 className={cx(
                   ` launch-button tj-text-xsm ${
-                    app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn' : 'tj-tertiary-btn'
+                    app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
                   }`
                 )}
                 onClick={() => {
