@@ -128,7 +128,7 @@ jobs:
               {
                 "key": "SMTP_PASSWORD",
                 "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"
-              }
+              },
               {
                 "key": "REDIS_HOST",
                 "value": "${{ secrets.RENDER_REDIS_HOST }}"
