@@ -276,7 +276,7 @@ class ManageOrgUsersComponent extends React.Component {
                       leftIcon="usergroup"
                       fill={'#FDFDFE'}
                     >
-                      {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Invite users')}
+                      {this.props.t('header.organization.menus.manageUsers.addNewUser', 'Add users')}
                     </ButtonSolid>
                   </div>
                 </div>

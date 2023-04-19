@@ -12,11 +12,11 @@ import { OrganizationList } from '../_components/OrganizationManager/List';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
-  const [selectedTab, setSelectedTab] = useState(admin ? 'users' : 'manageEnvVars');
+  const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
-    updateSidebarNAV('users');
+    updateSidebarNAV('Users & permissions');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables'];
@@ -38,7 +38,7 @@ export function OrganizationSettings(props) {
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
-      admin ? setSelectedTab('users') : setSelectedTab('manageEnvVars');
+      admin ? setSelectedTab('Users & permissions') : setSelectedTab('manageEnvVars');
     });
 
     () => subscription.unsubsciption();
@@ -74,7 +74,7 @@ export function OrganizationSettings(props) {
 
           <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
             <div className="w-100">
-              {selectedTab === 'users' && <ManageOrgUsers darkMode={props.darkMode} />}
+              {selectedTab === 'Users & permissions' && <ManageOrgUsers darkMode={props.darkMode} />}
               {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
               {selectedTab === 'manageSSO' && <ManageSSO />}
               {selectedTab === 'manageEnvVars' && <ManageOrgVars darkMode={props.darkMode} />}

@@ -53,7 +53,7 @@ function InviteUsersForm({
           <div className="card-header">
             <div className="card-header-inner-wrap">
               <h3 className="tj-text-lg tj-text font-weight-500" data-cy="add-new-user">
-                {t('header.organization.menus.manageUsers.inviteUsers', 'Invite new users')}
+                {t('header.organization.menus.manageUsers.inviteNewUsers', 'Invite new users')}
               </h3>
               <div onClick={() => onClose()} style={{ cursor: 'pointer' }}>
                 <SolidIcon name="remove" width="16" />
