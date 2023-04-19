@@ -104,7 +104,6 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
             <div className="col mx-2" data-cy="records-dropdown-field">
               <Select
                 isLoading={dataLoading}
-                // className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
                 customWrap={true}
                 options={selectOptions}
                 value={selectOptions.find((option) => option.value === pageSize)}

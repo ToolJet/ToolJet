@@ -90,34 +90,36 @@ const TableForm = ({
           </h3>
         )}
       </div>
-      <div className="card-body">
-        <div className="mb-3">
-          <div className="form-label" data-cy="table-name-label">
-            Table name
-          </div>
-          <div className="tj-app-input">
-            <input
-              type="text"
-              placeholder="Enter table name"
-              name="table-name"
-              className="form-control"
-              data-cy="table-name-input-field"
-              autoComplete="off"
-              value={tableName}
-              onChange={(e) => setTableName(e.target.value)}
-              autoFocus
-            />
+      <div>
+        <div className="card-body">
+          <div className="mb-3">
+            <div className="form-label" data-cy="table-name-label">
+              Table name
+            </div>
+            <div className="tj-app-input">
+              <input
+                type="text"
+                placeholder="Enter table name"
+                name="table-name"
+                className="form-control"
+                data-cy="table-name-input-field"
+                autoComplete="off"
+                value={tableName}
+                onChange={(e) => setTableName(e.target.value)}
+                autoFocus
+              />
+            </div>
           </div>
         </div>
         {!isEditMode && <CreateColumnsForm columns={columns} setColumns={setColumns} />}
+        <DrawerFooter
+          fetching={fetching}
+          isEditMode={isEditMode}
+          onClose={onClose}
+          onEdit={handleEdit}
+          onCreate={handleCreate}
+        />
       </div>
-      <DrawerFooter
-        fetching={fetching}
-        isEditMode={isEditMode}
-        onClose={onClose}
-        onEdit={handleEdit}
-        onCreate={handleCreate}
-      />
     </div>
   );
 };

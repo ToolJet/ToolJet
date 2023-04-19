@@ -8,7 +8,6 @@ export const SelectComponent = ({
   value,
   onChange,
   closeMenuOnSelect,
-  className,
   customWrap, //used so that editor selects remains with old theme , remove when whole theme is same !
   ...restProps
 }) => {
@@ -61,26 +60,23 @@ export const SelectComponent = ({
   };
 
   return (
-    <div style={{ width: width }} className={className && className}>
-      <Select
-        className={` ${darkMode && ' dark-theme'}`}
-        {...restProps}
-        defaultValue={defaultValue}
-        isLoading={isLoading}
-        isDisabled={isDisabled || isLoading}
-        options={selectOptions}
-        value={currentValue}
-        isSearchable={hasSearch}
-        onChange={handleOnChange}
-        placeholder={placeholder}
-        styles={customStyles}
-        formatOptionLabel={(option) => renderCustomOption(option)}
-        menuPlacement={menuPlacement}
-        maxMenuHeight={maxMenuHeight}
-        menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
-        closeMenuOnSelect={closeMenuOnSelect ?? true}
-        classNamePrefix={`${darkMode && 'dark-theme'} ${customWrap && 'react-select'}`}
-      />
-    </div>
+    <Select
+      {...restProps}
+      defaultValue={defaultValue}
+      isLoading={isLoading}
+      isDisabled={isDisabled || isLoading}
+      options={selectOptions}
+      value={currentValue}
+      isSearchable={hasSearch}
+      onChange={handleOnChange}
+      placeholder={placeholder}
+      styles={customStyles}
+      formatOptionLabel={(option) => renderCustomOption(option)}
+      menuPlacement={menuPlacement}
+      maxMenuHeight={maxMenuHeight}
+      menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
+      closeMenuOnSelect={closeMenuOnSelect ?? true}
+      classNamePrefix={`${darkMode && 'dark-theme'} ${customWrap && 'react-select'}`}
+    />
   );
 };
