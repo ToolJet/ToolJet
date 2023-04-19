@@ -7,6 +7,7 @@ import { Tags } from '../Tags';
 import { Radio } from '../Radio';
 import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
+import moment from 'moment';
 
 export default function generateColumnsData({
   columnProperties,
@@ -28,6 +29,7 @@ export default function generateColumnsData({
   return columnProperties.map((column) => {
     const columnSize = columnSizes[column.id] || columnSizes[column.name];
     const columnType = column.columnType;
+    let sortType = 'alphanumeric';
 
     const columnOptions = {};
     if (
@@ -52,6 +54,21 @@ export default function generateColumnsData({
       column.isTimeChecked = column.isTimeChecked ? column.isTimeChecked : false;
       column.dateFormat = column.dateFormat ? column.dateFormat : 'DD/MM/YYYY';
       column.parseDateFormat = column.parseDateFormat ?? column.dateFormat; //backwards compatibility
+      sortType = (firstDate, secondDate) => {
+        // Return -1 if second date is higher, 1 if first date is higher
+        if (secondDate?.original[column.name] === '') {
+          return 1;
+        } else if (firstDate?.original[column.name] === '') return -1;
+
+        const parsedFirstDate = moment(firstDate?.original[column.name], column.parseDateFormat);
+        const parsedSecondDate = moment(secondDate?.original[column.name], column.parseDateFormat);
+
+        if (moment(parsedSecondDate).isSameOrAfter(parsedFirstDate)) {
+          return -1;
+        } else {
+          return 1;
+        }
+      };
     }
 
     const width = columnSize || defaultColumn.width;
@@ -73,6 +90,7 @@ export default function generateColumnsData({
       maxLength: column.maxLength,
       regex: column.regex,
       customRule: column?.customRule,
+      sortType,
       Cell: function ({ cell, isEditable }) {
         const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
