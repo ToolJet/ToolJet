@@ -56,12 +56,12 @@ export default function generateColumnsData({
       column.parseDateFormat = column.parseDateFormat ?? column.dateFormat; //backwards compatibility
       sortType = (firstDate, secondDate) => {
         // Return -1 if second date is higher, 1 if first date is higher
-        if (secondDate?.cells[0]?.value === '') {
+        if (secondDate?.original[column.name] === '') {
           return 1;
-        } else if (firstDate?.cells[0]?.value === '') return -1;
+        } else if (firstDate?.original[column.name] === '') return -1;
 
-        const parsedFirstDate = moment(firstDate?.cells[0]?.value, column.parseDateFormat);
-        const parsedSecondDate = moment(secondDate?.cells[0]?.value, column.parseDateFormat);
+        const parsedFirstDate = moment(firstDate?.original[column.name], column.parseDateFormat);
+        const parsedSecondDate = moment(secondDate?.original[column.name], column.parseDateFormat);
 
         if (moment(parsedSecondDate).isSameOrAfter(parsedFirstDate)) {
           return -1;
