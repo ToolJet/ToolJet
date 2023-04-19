@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import useBreadcrumbs from 'use-react-router-breadcrumbs';
 
 export const Breadcrumbs = () => {
-  const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
-
+  const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/', '/:workspace'] });
   return (
     <ol className="breadcrumb breadcrumb-arrows">
       {breadcrumbs.length === 0 && (
