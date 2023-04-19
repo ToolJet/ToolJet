@@ -118,8 +118,7 @@ $btn-dark-color: #FFFFFF;
 }
 
 .leftsidebar-panel-header.dark {
-  // background-color: #202425;
-  background-color: #1F2936;
+  background-color: #1F2936 !important;
 
   .panel-header-container,
   .panel-search-container {
@@ -168,7 +167,7 @@ $btn-dark-color: #FFFFFF;
 }
 
 .page-selector-panel-body.dark {
-  background: #1F2936;
+  background: #1F2936 !important;
 
   .page-handler {
     .card {
