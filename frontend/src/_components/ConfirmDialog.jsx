@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export function ConfirmDialog({ show, title, message, onConfirm, onCancel, confirmButtonLoading, darkMode }) {
-  darkMode = darkMode ?? (localStorage.getItem('darkMode') || false);
+  darkMode = darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const [showModal, setShow] = useState(show);
   const { t } = useTranslation();
 
