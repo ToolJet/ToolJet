@@ -130,6 +130,8 @@ export const DropDown = function DropDown({
     input: (provided, _state) => ({
       ...provided,
       color: darkMode ? 'white' : 'black',
+      margin: '0px',
+      padding: '0px',
     }),
     indicatorSeparator: (_state) => ({
       display: 'none',
