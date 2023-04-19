@@ -114,12 +114,14 @@ export const NotificationCenter = ({ darkMode }) => {
 
   return (
     <OverlayTrigger rootClose trigger="click" placement="right" overlay={overlay}>
-      <ToolTip message="Comment notifications" placement="right">
-        <div className="notification-center-nav-item cursor-pointer tj-leftsidebar-icon-items">
-          <SolidIcon data-cy="notifications-icon" name="notification" fill={darkMode ? '#4C5155' : '#C1C8CD'} />
-          {commentNotifications?.length !== 0 && <span className="notification-center-badge badge bg-red" />}
-        </div>
-      </ToolTip>
+      <div>
+        <ToolTip message="Comment notifications" placement="right">
+          <div className="notification-center-nav-item cursor-pointer tj-leftsidebar-icon-items">
+            <SolidIcon data-cy="notifications-icon" name="notification" fill={darkMode ? '#4C5155' : '#C1C8CD'} />
+            {commentNotifications?.length !== 0 && <span className="notification-center-badge badge bg-red" />}
+          </div>
+        </ToolTip>
+      </div>
     </OverlayTrigger>
   );
 };

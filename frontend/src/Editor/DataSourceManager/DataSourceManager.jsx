@@ -77,13 +77,13 @@ class DataSourceManagerComponent extends React.Component {
   componentDidUpdate(prevProps) {
     if (prevProps.selectedDataSource !== this.props.selectedDataSource) {
       let dataSourceMeta = this.getDataSourceMeta(this.props.selectedDataSource);
-
       this.setState({
         selectedDataSource: this.props.selectedDataSource,
         options: this.props.selectedDataSource?.options,
         dataSourceMeta,
         dataSourceSchema: this.props.selectedDataSource?.plugin?.manifestFile?.data,
         selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.iconFile?.data,
+        connectionTestError: null,
       });
     }
   }

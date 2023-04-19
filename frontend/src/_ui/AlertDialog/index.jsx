@@ -16,9 +16,15 @@ export default function AlertDialog({
   return (
     <Modal
       onHide={() => closeModal(false)}
-      contentClassName={cx(`animation-fade home-modal-component ${darkMode && 'dark-theme'}`, customClassName, {
-        dark: checkForBackground && darkMode,
-      })}
+      contentClassName={cx(
+        `animation-fade ${!checkForBackground ? 'home-modal-component' : 'home-modal-component-editor'} ${
+          darkMode && 'dark-theme'
+        }`,
+        customClassName,
+        {
+          dark: checkForBackground && darkMode,
+        }
+      )}
       show={show}
       size={size}
       backdrop={'static'}

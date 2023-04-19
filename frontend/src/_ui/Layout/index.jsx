@@ -32,7 +32,10 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   <ToolTip message="Dashboard" placement="right">
                     <Link
                       to="/"
-                      className={`tj-leftsidebar-icon-items ${router.pathname === '/' && `current-seleted-route`}`}
+                      className={`tj-leftsidebar-icon-items  ${
+                        (router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')) &&
+                        `current-seleted-route`
+                      }`}
                     >
                       <SolidIcon
                         name="apps"
@@ -53,9 +56,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       <Link
                         to={getPrivateRoute('database')}
                         className={`tj-leftsidebar-icon-items  ${
-                          router.pathname === getPrivateRoute('database') &&
-                          `current-seleted-route` &&
-                          `current-seleted-route`
+                          router.pathname === getPrivateRoute('database') && `current-seleted-route`
                         }`}
                       >
                         <SolidIcon
@@ -80,7 +81,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       <Link
                         to={getPrivateRoute('global_datasources')}
                         className={`tj-leftsidebar-icon-items  ${
-                          router.pathname === '/global_datasources' && `current-seleted-route`
+                          router.pathname === getPrivateRoute('global_datasources') && `current-seleted-route`
                         }`}
                       >
                         <SolidIcon
@@ -119,7 +120,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     <Link
                       to={getPrivateRoute('workspace_settings')}
                       className={`tj-leftsidebar-icon-items  ${
-                        router.pathname === '/workspace-settings' && `current-seleted-route`
+                        router.pathname === getPrivateRoute('workspace_settings') && `current-seleted-route`
                       }`}
                     >
                       <SolidIcon

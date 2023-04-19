@@ -23,7 +23,7 @@ export function OrganizationSettings(props) {
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'Users':
-        return 'users';
+        return 'Users & permissions';
       case 'Groups':
         return 'manageGroups';
       case 'SSO':
@@ -72,12 +72,7 @@ export function OrganizationSettings(props) {
             <OrganizationList />
           </div>
 
-          <div
-            className={cx('col workspace-content-wrapper', {
-              'bg-light-gray': !props.darkMode,
-            })}
-            style={{ paddingTop: '40px' }}
-          >
+          <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
             <div className="w-100">
               {selectedTab === 'users' && <ManageOrgUsers darkMode={props.darkMode} />}
               {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}

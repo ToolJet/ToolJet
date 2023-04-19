@@ -77,9 +77,8 @@ const UsersTable = ({
                       <td>
                         <Avatar
                           avatarId={user.avatar_id}
-                          text={`${user.first_name ? user.first_name[0] : ''}${
-                            user.last_name ? user.last_name[0] : ''
-                          }`}
+                          text={`${user.first_name ? user.first_name[0] : ''}${user.last_name ? user.last_name[0] : ''
+                            }`}
                         />
                         <span className="mx-3 tj-text-sm" data-cy="user-name">
                           {user.name}
@@ -131,6 +130,9 @@ const UsersTable = ({
                           style={{ minWidth: '100px' }}
                           className="workspace-user-archive-btn tj-text-xsm"
                           disabled={unarchivingUser === user.id || archivingUser === user.id}
+                          leftIcon="archive"
+                          fill="#E54D2E"
+                          iconWidth="12"
                           onClick={() => {
                             user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
                           }}

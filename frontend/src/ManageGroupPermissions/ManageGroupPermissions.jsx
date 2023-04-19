@@ -57,9 +57,12 @@ class ManageGroupPermissionsComponent extends React.Component {
   };
 
   changeNewGroupName = (value) => {
+    // this.setState({ selectedGroup: 'All Users' });
+
     this.setState({
       newGroupName: value,
       isSaveBtnDisabled: false,
+      selectedGroup: value,
     });
     if ((this.state.groupToBeUpdated && this.state.groupToBeUpdated.group === value) || !value) {
       this.setState({
@@ -215,7 +218,6 @@ class ManageGroupPermissionsComponent extends React.Component {
             <Modal
               show={showNewGroupForm || showGroupNameUpdateForm}
               closeModal={() =>
-                showNewGroupForm &&
                 this.setState({
                   showNewGroupForm: false,
                   showGroupNameUpdateForm: false,

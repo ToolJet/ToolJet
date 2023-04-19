@@ -3191,11 +3191,6 @@ input:focus-visible {
     filter: brightness(0) invert(1);
   }
 
-  .launch-btn {
-    filter: brightness(0.4) !important;
-    background: #8d9095;
-  }
-
   .badge {
     .svg-icon {
       filter: brightness(1) invert(0);
@@ -4534,6 +4529,7 @@ input[type="text"] {
   }
 }
 
+
 .onboarding-modal.dark .modal-content {
   @extend .modal-content.home-modal-component.dark;
 }
@@ -5223,7 +5219,6 @@ div#driver-page-overlay {
   }
 
   ul {
-    overflow: auto;
     margin: 0px;
     padding: 0px;
 
@@ -9704,7 +9699,7 @@ tbody {
   border-radius: 4px;
 }
 
-.confirm-dialogue-modal {
+.confirm-dialogue-body  {
   background: var(--base);
 }
 
@@ -9825,9 +9820,6 @@ tbody {
   grid-template-rows: auto 1fr auto;
 }
 
-.datasource-inner-sidebar-wrap {
-  min-height: calc(100vh - 177px);
-}
 .add-new-datasource-header-container{
   margin-bottom: 24px;
   padding-top: 4px;
@@ -9884,7 +9876,7 @@ tbody {
 }
 
 .confirm-dialogue-body {
-  color: var(--slate12);
+  // color: var(--slate12);
 }
 
 .user-filter-search {

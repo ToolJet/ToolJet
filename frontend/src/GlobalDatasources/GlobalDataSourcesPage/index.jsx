@@ -29,6 +29,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
   } = useContext(GlobalDataSourcesContext);
 
   useEffect(() => {
+    console.log('checker', isEditing, selectedDataSource);
     if (selectedDataSource) {
       setModalProps({ ...modalProps, backdrop: false });
     }
@@ -51,6 +52,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
       }
     } else {
       handleModalVisibility();
+      setEditing(true);
     }
   };
 
@@ -66,12 +68,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
   return (
     <div className="row gx-0">
       <Sidebar />
-      <div
-        ref={containerRef}
-        className={cx('col animation-fade datasource-modal-container', {
-          'bg-light-gray': !darkMode,
-        })}
-      >
+      <div ref={containerRef} className={cx('col animation-fade datasource-modal-container', {})}>
         {containerRef && containerRef?.current && (
           <DataSourceManager
             showBackButton={selectedDataSource ? false : true}

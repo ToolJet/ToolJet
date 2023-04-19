@@ -107,8 +107,8 @@ const TableForm = ({
             autoFocus
           />
         </div>
+        {!isEditMode && <CreateColumnsForm columns={columns} setColumns={setColumns} />}
       </div>
-      {!isEditMode && <CreateColumnsForm columns={columns} setColumns={setColumns} />}
       <DrawerFooter
         fetching={fetching}
         isEditMode={isEditMode}

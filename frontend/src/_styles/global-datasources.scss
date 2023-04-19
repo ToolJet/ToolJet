@@ -8,11 +8,12 @@
     background: var(--base);
 
     .add-datasource-btn {
-        height: 32px;
+        height: 40px;
         background: var(--indigo9);
         width: 248px !important;
         display: flex;
         margin: 0 auto;
+        border-radius: 6px;
     }
 
     .datasources-list {
@@ -95,6 +96,7 @@
 
     .modal {
         position: absolute;
+        background: var(--slate2);
     }
 
     .modal-content {
@@ -119,3 +121,7 @@
         }
     }
 }
+
+.datasource-inner-sidebar-wrap {
+    min-height: calc(100vh - 185px);
+  }

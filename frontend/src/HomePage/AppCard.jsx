@@ -140,41 +140,38 @@ export default function AppCard({
                   : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
               }
             >
-              <div>
-                <button
-                  type="button"
-                  className={cx(
-                    ` launch-button tj-text-xsm ${
-                      app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn' : 'tj-tertiary-btn'
-                    }`
-                  )}
-                  disabled={app?.current_version_id === null || app?.is_maintenance_on}
-                  onClick={() => {
-                    if (app?.current_version_id) {
-                      window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
-                    } else {
-                      navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
-                    }
-                  }}
-                  data-cy="launch-button"
-                >
-                  <SolidIcon
-                    name="rightarrrow"
-                    width="14"
-                    fill={
-                      app?.current_version_id === null || app?.is_maintenance_on
-                        ? '#4C5155'
-                        : darkMode
-                        ? '#FDFDFE'
-                        : '#11181C'
-                    }
-                  />
+              <button
+                type="button"
+                className={cx(
+                  ` launch-button tj-text-xsm ${
+                    app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn' : 'tj-tertiary-btn'
+                  }`
+                )}
+                onClick={() => {
+                  if (app?.current_version_id) {
+                    window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
+                  } else {
+                    navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
+                  }
+                }}
+                data-cy="launch-button"
+              >
+                <SolidIcon
+                  name="rightarrrow"
+                  width="14"
+                  fill={
+                    app?.current_version_id === null || app?.is_maintenance_on
+                      ? '#4C5155'
+                      : darkMode
+                      ? '#FDFDFE'
+                      : '#11181C'
+                  }
+                />
 
-                  {app?.is_maintenance_on
-                    ? t('homePage.appCard.maintenance', 'Maintenance')
-                    : t('homePage.appCard.launch', 'Launch')}
-                </button>
-              </div>
+                {app?.is_maintenance_on
+                  ? t('homePage.appCard.maintenance', 'Maintenance')
+                  : t('homePage.appCard.launch', 'Launch')}
+              </button>
             </ToolTip>
           </div>
         </div>
