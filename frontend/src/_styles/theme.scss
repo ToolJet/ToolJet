@@ -10368,3 +10368,13 @@ tbody {
     display: none;
   }
 }
+
+.shareable-link{
+  .input-group{
+    .tj-app-input textarea{
+      width: 600px;
+      border-radius: 0px !important;
+      margin-bottom: 0px !important;
+    }
+  }
+}
