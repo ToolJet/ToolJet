@@ -258,7 +258,8 @@
                     "enterFirstName": "Enter First Name",
                     "enterLastName": "Enter Last Name",
                     "enterEmail": "Enter email id",
-                    "enterFulltName": "Enter full name"
+                    "enterFulltName": "Enter full name",
+                    "inviteNewUsers":"Invite new users"
                 },
                 "manageGroups": {
                     "permissions": {

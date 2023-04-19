@@ -52,20 +52,21 @@ const UsersFilter = ({ filterList }) => {
           data-cy="user-status-select-continer"
         >
           <div className="tj-text-xsm mx-3">Showing</div>
-          <Select
-            options={userStatusOptions}
-            value={options.status}
-            onChange={(value) => {
-              statusValuesChanged(value);
-              setStatusVal(value);
-            }}
-            width={'161.25px'}
-            height="32px"
-            useMenuPortal={true}
-            className="users-filter-dropdown"
-            closeMenuOnSelect={true}
-            customWrap={true}
-          />
+          <div className="users-filter-dropdown">
+            <Select
+              options={userStatusOptions}
+              value={options.status}
+              onChange={(value) => {
+                statusValuesChanged(value);
+                setStatusVal(value);
+              }}
+              height="32px"
+              useMenuPortal={true}
+              closeMenuOnSelect={true}
+              customWrap={true}
+              width="161.25px"
+            />
+          </div>
         </div>
         <div className="workspace-settings-filter-items workspace-clear-filter-wrap">
           <div className="d-flex align-items-center cursor-pointer tj-app-input">

@@ -4534,14 +4534,24 @@ input[type="text"] {
     background-color: #232e3c;
     color: #fff;
   }
-  input{
-    color: #121212
+  .form-control{
+    color: #fff;
+    background-color: #232e3c !important;
   }
 }
 .onboarding-modal.dark .modal-content {
   @extend .modal-content.home-modal-component.dark;
 }
-
+.modal-content.home-modal-component.dark-theme {
+  .btn-close {
+    filter: brightness(0) invert(1);
+  }
+}
+.home-modal-component{
+  .btn-close {
+    opacity: 1 !important;
+  }
+}
 .modal-content.home-modal-component.dark {
   background-color: $bg-dark-light  !important;
   color: $white  !important;
@@ -8421,7 +8431,6 @@ tbody {
 }
 
 .table-list-item {
-  text-transform: capitalize;
   width: 248px;
 }
 
@@ -9134,7 +9143,7 @@ tbody {
 
 .delete-group {
   text-decoration: none !important;
-  color: var(--tomato9);
+  color: var(--tomato9) !important;
 }
 
 .delete-link,
@@ -9144,7 +9153,7 @@ tbody {
 
 .edit-group {
   text-decoration: none !important;
-  color: var(--slate12);
+  color: var(--slate12) !important;
 }
 
 .removed-decoration {
@@ -10383,6 +10392,10 @@ tbody {
       width: 600px;
       border-radius: 0px !important;
       margin-bottom: 0px !important;
+      background-color: #5e656e !important;
+      color: #f4f6fa !important;
+      border: none !important;
+
     }
   }
 }
