@@ -13,7 +13,7 @@ import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/theme/base16-light.css';
 import 'codemirror/theme/duotone-light.css';
 import 'codemirror/theme/monokai.css';
-import { onBeforeChange, handleChange } from './utils';
+import { onBeforeChange, handleChange, getRecommendation } from './utils';
 import { resolveReferences, hasCircularDependency, handleCircularStructureToJSON } from '@/_helpers/utils';
 import useHeight from '@/_hooks/use-height-transition';
 import usePortal from '@/_hooks/use-portal';
@@ -31,6 +31,7 @@ import { toast } from 'react-hot-toast';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/_ui/LeftSidebar';
 
 const AllElements = {
   Color,
@@ -68,6 +69,7 @@ export function CodeHinter({
   component,
   popOverCallback,
   cyLabel = '',
+  callgpt = () => null,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -270,6 +272,11 @@ export function CodeHinter({
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
+  // const handleCallbacktoGpt = async (context, query) => {
+  //   const gptcode = await getRecommendation(context, query);
+  //   onChange(query + gptcode);
+  // };
+
   return (
     <div ref={wrapperRef}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -318,6 +325,7 @@ export function CodeHinter({
                   callback={handleToggle}
                   icon="portal-open"
                   tip="Pop out code editor into a new window"
+                  transformation={componentName === 'transformation'}
                 />
               )}
               <CodeHinter.Portal
@@ -331,6 +339,7 @@ export function CodeHinter({
                 darkMode={darkMode}
                 selectors={{ className: 'preview-block-portal' }}
                 dragResizePortal={true}
+                callgpt={callgpt}
               >
                 <CodeMirror
                   value={typeof initialValue === 'string' ? initialValue : ''}
@@ -382,7 +391,9 @@ export function CodeHinter({
   );
 }
 
-const PopupIcon = ({ callback, icon, tip }) => {
+const PopupIcon = ({ callback, icon, tip, transformation = false }) => {
+  const size = transformation ? 20 : 12;
+
   return (
     <div className="d-flex justify-content-end" style={{ position: 'relative' }}>
       <OverlayTrigger
@@ -394,8 +405,8 @@ const PopupIcon = ({ callback, icon, tip }) => {
         <img
           className="svg-icon m-2 popup-btn"
           src={`assets/images/icons/${icon}.svg`}
-          width="12"
-          height="12"
+          width={size}
+          height={size}
           onClick={(e) => {
             e.stopPropagation();
             callback();

@@ -7,6 +7,7 @@ import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { authenticationService } from '@/_services';
+import { CopilotSetting } from '@/CopilotSettings';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
@@ -20,6 +21,8 @@ export function OrganizationSettings(props) {
     });
 
     () => subscription.unsubsciption();
+
+    console.log('-----OrganizationSettings-----');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticationService.currentSessionValue?.admin]);
 
@@ -124,6 +127,20 @@ export function OrganizationSettings(props) {
                 </svg>
                 &nbsp;{t('header.organization.menus.menusList.manageEnv', 'Manage Environment Variables')}
               </div>
+              <div
+                className={cx(
+                  'list-group-item h-4 cursor-pointer list-group-item-action d-flex align-items-center mb-1 border-0',
+                  {
+                    [selectedClassName]: selectedTab === 'manageCopilot',
+                    'text-white': props.darkMode,
+                  }
+                )}
+                onClick={() => setSelectedTab('manageCopilot')}
+                data-cy="manage-sso-option"
+              >
+                <img src="/assets/images/icons/flash.svg" alt="copilot" height={16} width={16} />
+                &nbsp;{t('header.organization.menus.menusList.manageCopilot', 'Copilot')}
+              </div>
             </div>
           </div>
           <div
@@ -136,6 +153,7 @@ export function OrganizationSettings(props) {
               {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
               {selectedTab === 'manageSSO' && <ManageSSO />}
               {selectedTab === 'manageEnvVars' && <ManageOrgVars darkMode={props.darkMode} />}
+              {selectedTab === 'manageCopilot' && <CopilotSetting />}
             </div>
           </div>
         </div>

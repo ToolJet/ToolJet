@@ -1,4 +1,37 @@
 import _ from 'lodash';
+import { copilotService } from '@/_services/copilot.service';
+
+export async function getRecommendation(currentContext, query, lang = 'javascript') {
+  const words = query.split(' ');
+  let results = [];
+
+  function arrayToObject(arr) {
+    return _.reduce(
+      arr,
+      (result, { key, value }) => {
+        if (!result.hasOwnProperty(key)) {
+          result[key] = value;
+        }
+        return result;
+      },
+      {}
+    );
+  }
+
+  try {
+    words.forEach((word) => {
+      results = results.concat(searchQuery(word, currentContext));
+    });
+
+    const context = JSON.stringify(arrayToObject(results));
+
+    const { data } = await copilotService.getCopilotRecommendations({ context, query, lang });
+
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 function getResult(suggestionList, query) {
   const result = suggestionList.filter((key) => key.includes(query));
@@ -248,4 +281,22 @@ export function handleChange(editor, onChange, ignoreBraces = false, currentStat
     };
     keystrokeCaller();
   }
+}
+
+function searchQuery(query, obj) {
+  const lcQuery = query.toLowerCase();
+  let results = [];
+
+  for (const key in obj) {
+    const value = obj[key];
+    if (value !== null && typeof value === 'object') {
+      results = results?.concat(searchQuery(lcQuery, value));
+    } else {
+      if (key?.toLowerCase()?.includes(lcQuery) || value?.toString()?.toLowerCase()?.includes(lcQuery)) {
+        results.push({ key, value });
+      }
+    }
+  }
+
+  return results;
 }
