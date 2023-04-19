@@ -33,5 +33,14 @@
     "id": "openai",
     "author": "Tooljet",
     "timestamp": "Mon, 10 Apr 2023 06:33:21 GMT"
+  },
+  {
+    "name": "textract",
+    "repo": "",
+    "description": "api plugin from textract",
+    "version": "1.0.0",
+    "id": "textract",
+    "author": "Tooljet",
+    "timestamp": "Wed, 19 Apr 2023 11:36:56 GMT"
   }
 ]
