@@ -131,15 +131,15 @@ jobs:
               }
               {
                 "key": "REDIS_HOST"
-                "value": "${{ secret.RENDER_REDIS_HOST }}"
+                "value": "${{ secrets.RENDER_REDIS_HOST }}"
               },
               {
                 "key": "REDIS_PORT"
-                "value": "${{ secret.RENDER_REDIS_PORT }}"
+                "value": "${{ secrets.RENDER_REDIS_PORT }}"
               },
               {
                 "key": "LICENSE_KEY"
-                "value": "${{ secret.RENDER_LICENSE_KEY }}"
+                "value": "${{ secrets.RENDER_LICENSE_KEY }}"
               }
             ],
             "serviceDetails": {
