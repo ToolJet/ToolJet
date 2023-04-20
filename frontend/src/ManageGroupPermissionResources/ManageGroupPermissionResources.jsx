@@ -333,7 +333,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
           ) : (
             <div>
               <div className="justify-content-between d-flex groups-main-header-wrap">
-                <p className="font-weight-500 tj-text-md text-capitalize">{this?.props?.selectedGroup}</p>
+                <p className="font-weight-500 tj-text-md">{this?.props?.selectedGroup}</p>
                 {(groupPermission.group == 'admin' || groupPermission.group == 'all_users') && (
                   <div className="default-group-wrap">
                     <SolidIcon name="information" fill="#46A758" width="13" />

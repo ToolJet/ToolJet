@@ -34,7 +34,15 @@ class ManageGroupPermissionsComponent extends React.Component {
     this.fetchGroups();
   }
 
-  fetchGroups = () => {
+  findCurrentGroupDetails = (data) => {
+    let currentUpdatedGroup = data.group_permissions.find((item) => {
+      return item.group == this.state.newGroupName;
+    });
+    this.setState({ selectedGroup: currentUpdatedGroup.group });
+    return currentUpdatedGroup.id;
+  };
+
+  fetchGroups = (type = 'admin') => {
     this.setState({
       isLoading: true,
     });
@@ -45,7 +53,12 @@ class ManageGroupPermissionsComponent extends React.Component {
         this.setState({
           groups: data.group_permissions,
           isLoading: false,
-          selectedGroupPermissionId: data.group_permissions[0].id,
+          selectedGroupPermissionId:
+            type == 'admin'
+              ? data.group_permissions[0].id
+              : type == 'current'
+              ? this.findCurrentGroupDetails(data)
+              : data.group_permissions.at(-1).id,
         });
       })
       .catch(({ error }) => {
@@ -57,7 +70,6 @@ class ManageGroupPermissionsComponent extends React.Component {
   };
 
   changeNewGroupName = (value) => {
-    this.setState({ selectedGroup: 'All Users' });
     this.setState({
       newGroupName: value,
       isSaveBtnDisabled: false,
@@ -91,9 +103,10 @@ class ManageGroupPermissionsComponent extends React.Component {
           creatingGroup: false,
           showNewGroupForm: false,
           newGroupName: null,
+          selectedGroup: this.state.newGroupName,
         });
         toast.success('Group has been created');
-        this.fetchGroups();
+        this.fetchGroups('new');
       })
       .catch(({ error }) => {
         toast.error(error);
@@ -135,7 +148,7 @@ class ManageGroupPermissionsComponent extends React.Component {
       .then(() => {
         toast.success('Group deleted successfully');
         this.fetchGroups();
-        this.setState({ selectedGroup: 'All Users' });
+        this.setState({ selectedGroup: 'All Users', isDeletingGroup: false });
       })
       .catch(({ error }) => {
         toast.error(error);
@@ -146,17 +159,16 @@ class ManageGroupPermissionsComponent extends React.Component {
   };
 
   executeGroupUpdation = () => {
-    this.setState({ isUpdatingGroupName: true });
+    this.setState({ isUpdatingGroupName: true, selectedGroup: this.state.newGroupName });
     groupPermissionService
       .update(this.state.groupToBeUpdated?.id, { name: this.state.newGroupName })
       .then(() => {
         toast.success('Group name updated successfully');
-        this.fetchGroups();
+        this.fetchGroups('current');
         this.setState({
           isUpdatingGroupName: false,
           groupToBeUpdated: null,
           showGroupNameUpdateForm: false,
-          newGroupName: null,
         });
       })
       .catch(({ error }) => {
@@ -197,7 +209,7 @@ class ManageGroupPermissionsComponent extends React.Component {
                   className="btn btn-primary create-new-group-button"
                   onClick={(e) => {
                     e.preventDefault();
-                    this.setState({ showNewGroupForm: true, isSaveBtnDisabled: true });
+                    this.setState({ newGroupName: null, showNewGroupForm: true, isSaveBtnDisabled: true });
                   }}
                   data-cy="create-new-group-button"
                   leftIcon="plus"
