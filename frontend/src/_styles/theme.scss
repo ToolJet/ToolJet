@@ -8166,10 +8166,6 @@ tbody {
   align-items: center;
 }
 
-.workspace-user-archive-btn {
-  visibility: hidden;
-}
-
 .workspace-drawer-wrap {
   background: var(--base);
 }
@@ -8224,14 +8220,6 @@ tbody {
     border-bottom: 1px solid var(--slate7);
     display: flex;
     justify-content: space-between;
-
-    &:hover {
-      .workspace-user-archive-btn {
-        visibility: visible;
-        transition: visibility 1s, opacity 0.5s ease-out;
-      }
-    }
-
   }
 
   tr>td {

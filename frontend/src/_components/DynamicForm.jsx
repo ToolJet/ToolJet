@@ -339,6 +339,7 @@ const DynamicForm = ({
                 {...getElementProps(obj[key])}
                 {...computedProps[key]}
                 data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
+                customWrap={true} //to be removed after whole ui is same
               />
             </div>
           );
@@ -378,7 +379,6 @@ const DynamicForm = ({
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
                   useCustomStyles={computeSelectStyles ? true : false}
-                  customWrap={true}
                 />
               </div>
               {flipComponentDropdown.helpText && (

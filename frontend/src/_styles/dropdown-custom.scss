@@ -1,6 +1,8 @@
 // for selects and dropdowns across app dashboard
 .react-select__control {
     background-color: var(--base) !important;
+    border: 1px solid var(--slate3) !important;
+
 }
 
 .react-select__menu {
