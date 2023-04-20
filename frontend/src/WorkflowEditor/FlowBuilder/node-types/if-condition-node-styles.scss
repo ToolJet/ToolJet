@@ -1,0 +1,16 @@
+
+div.if-condition-node {
+  width: 300px;
+  background-color: white;
+  border-radius: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+
+  div.grid.main-grid {
+    height: 100%;
+
+    div.row {
+      height: 100%;
+    }
+  }
+}
