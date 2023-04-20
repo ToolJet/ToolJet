@@ -38,7 +38,7 @@ For information on running ToolJet on your local machine, please refer to the in
 
 ### Step 2: Installation of tooljet-cli
 
-To create and publish plugins for the ToolJet marketplace, you will need to utilize **[tooljet-cli](https://www.npmjs.com/package/@tooljet/cli)**. This can be installed via npm by entering the following command:
+In order to manage plugins for the ToolJet marketplace, including creating, updating, and deleting, you will need to utilize **[tooljet-cli](https://www.npmjs.com/package/@tooljet/cli)**. This can be installed via npm by entering the following command:
 ```bash
 npm install -g tooljet-cli
 
