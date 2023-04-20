@@ -74,6 +74,8 @@ export default function TemplateLibraryModal(props) {
         authenticationService?.currentSessionValue?.current_organization_id,
       template_category_id: selectedCategory?.id,
       template_name: selectedApp?.name,
+      button_name: 'create_application_from_template',
+      previous_action_button_name: props.fromButton,
     });
     libraryAppService
       .deploy(id)

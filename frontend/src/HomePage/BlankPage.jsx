@@ -80,15 +80,7 @@ export const BlankPage = function BlankPage({
                     <div className="col">
                       <a
                         onClick={() => {
-                          posthog.capture('click_new_app_from_scratch', {
-                            user_id:
-                              authenticationService?.currentUserValue?.id ||
-                              authenticationService?.currentSessionValue?.current_user?.id,
-                            workspace_id:
-                              authenticationService?.currentUserValue?.organization_id ||
-                              authenticationService?.currentSessionValue?.current_organization_id,
-                          });
-                          createApp();
+                          createApp('blank_page');
                         }}
                         className={`btn btn-primary ${creatingApp ? 'btn-loading' : ''}`}
                         data-cy="create-new-application"
@@ -143,13 +135,15 @@ export const BlankPage = function BlankPage({
                             style={{ display: 'none' }}
                             data-cy="import-option-input"
                             onClick={() => {
-                              posthog.capture('click_import_an_application_button', {
+                              /* Posthog Event */
+                              posthog.capture('click_import_button', {
                                 user_id:
                                   authenticationService?.currentUserValue?.id ||
                                   authenticationService?.currentSessionValue?.current_user?.id,
                                 workspace_id:
                                   authenticationService?.currentUserValue?.organization_id ||
                                   authenticationService?.currentSessionValue?.current_organization_id,
+                                button_name: 'click_import_an_application_button',
                               });
                             }}
                           />
@@ -172,7 +166,8 @@ export const BlankPage = function BlankPage({
                       key={id}
                       className="col-4"
                       onClick={() => {
-                        posthog.capture('create_application_from_template_card', {
+                        /* Posthog Event */
+                        posthog.capture('create_application_from_template', {
                           user_id:
                             authenticationService?.currentUserValue?.id ||
                             authenticationService?.currentSessionValue?.current_user?.id,
@@ -180,6 +175,7 @@ export const BlankPage = function BlankPage({
                             authenticationService?.currentUserValue?.organization_id ||
                             authenticationService?.currentSessionValue?.current_organization_id,
                           template_name: name,
+                          button_name: 'create_application_from_template_card',
                         });
                         deployApp(id);
                       }}
@@ -210,13 +206,14 @@ export const BlankPage = function BlankPage({
                 <span
                   className="btn btn-link text-decoration-none"
                   onClick={() => {
-                    posthog.capture('click_see_all_templates_button', {
+                    posthog.capture('click_import_from_template', {
                       user_id:
                         authenticationService?.currentUserValue?.id ||
                         authenticationService?.currentSessionValue?.current_user?.id,
                       workspace_id:
                         authenticationService?.currentUserValue?.organization_id ||
                         authenticationService?.currentSessionValue?.current_organization_id,
+                      button_name: 'click_see_all_templates_button',
                     });
                     viewTemplateLibraryModal();
                   }}

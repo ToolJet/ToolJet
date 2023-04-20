@@ -113,19 +113,21 @@ class HomePageComponent extends React.Component {
     this.fetchFolders();
   };
 
-  createApp = () => {
+  createApp = (posthog_from) => {
     let _self = this;
     _self.setState({ creatingApp: true });
     appService
       .createApp({ icon: sample(iconList) })
       .then((data) => {
-        posthog.capture('click_new_app_button', {
+        /* Posthog Event */
+        posthog.capture('click_new_app', {
           user_id:
             authenticationService?.currentUserValue?.id || authenticationService?.currentSessionValue?.current_user?.id,
           workspace_id:
             authenticationService?.currentUserValue?.organization_id ||
             authenticationService?.currentSessionValue?.current_organization_id,
           app_id: data?.id,
+          button_name: posthog_from === 'blank_page' ? 'click_new_app_from_scratch' : 'click_new_app_button',
         });
         _self.props.history.push(`/apps/${data.id}`);
       })
@@ -450,8 +452,8 @@ class HomePageComponent extends React.Component {
       });
   };
 
-  showTemplateLibraryModal = () => {
-    appService.getLicenseTerms().then(() => this.setState({ showTemplateLibraryModal: true }));
+  showTemplateLibraryModal = (posthog_from) => {
+    appService.getLicenseTerms().then(() => this.setState({ showTemplateLibraryModal: true, posthog_from }));
   };
   hideTemplateLibraryModal = () => {
     this.setState({ showTemplateLibraryModal: false });
@@ -622,8 +624,9 @@ class HomePageComponent extends React.Component {
                             workspace_id:
                               authenticationService?.currentUserValue?.organization_id ||
                               authenticationService?.currentSessionValue?.current_organization_id,
+                            button_name: 'click_import_from_template',
                           });
-                          this.showTemplateLibraryModal();
+                          this.showTemplateLibraryModal('click_import_from_template');
                         }}
                         data-cy="choose-from-template-button"
                       >
@@ -642,13 +645,15 @@ class HomePageComponent extends React.Component {
                           style={{ display: 'none' }}
                           data-cy="import-option-input"
                           onClick={() => {
-                            posthog.capture('click_import_dropdown_button', {
+                            /* Posthog Events */
+                            posthog.capture('click_import_button', {
                               user_id:
                                 authenticationService?.currentUserValue?.id ||
                                 authenticationService?.currentSessionValue?.current_user?.id,
                               workspace_id:
                                 authenticationService?.currentUserValue?.organization_id ||
                                 authenticationService?.currentSessionValue?.current_organization_id,
+                              button_name: 'click_import_dropdown_button',
                             });
                           }}
                         />
@@ -738,6 +743,7 @@ class HomePageComponent extends React.Component {
               onHide={() => this.setState({ showTemplateLibraryModal: false })}
               onCloseButtonClick={() => this.setState({ showTemplateLibraryModal: false })}
               darkMode={this.props.darkMode}
+              fromButton={this.state.posthog_from || 'click_see_all_templates_button'}
             />
           </div>
         </div>
