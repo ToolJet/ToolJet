@@ -14,7 +14,7 @@ jobs:
   Run-Cypress:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress' }}
 
-    runs-on: self-hosted
+    runs-on: git-action
     steps:
       - name: Checkout
         uses: actions/checkout@v3
