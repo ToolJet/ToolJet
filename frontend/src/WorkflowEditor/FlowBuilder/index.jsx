@@ -10,6 +10,7 @@ import {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import QueryNode from './node-types/QueryNode';
+import ifCondition from './node-types/IfConditionNode';
 import WorkflowEditorContext from '../context';
 import { query } from '../reducer/defaults';
 
@@ -19,9 +20,8 @@ function FlowBuilder(_props) {
 
   const { editingActivity } = editorSession;
   const { nodes, edges } = editorSession.app.flow;
-  console.log('yepski', nodes);
 
-  const { updateFlow, updateNodes, updateEdges, addNode, addEdge, setEditingActivity, removeEdge } =
+  const { updateFlow, updateNodes, updateEdges, addNode, addIfConditionNode, addEdge, setEditingActivity, removeEdge } =
     editorSessionActions;
 
   const flowElement = useRef(null);
@@ -36,10 +36,11 @@ function FlowBuilder(_props) {
   );
 
   const onConnectStart = useCallback(
-    (_, { nodeId }) => {
+    (_, { nodeId, handleId }) => {
       setEditingActivity({
         type: 'DRAWING_LINE_FROM_NODE',
         nodeId,
+        handleId,
       });
     },
     [setEditingActivity]
@@ -49,6 +50,8 @@ function FlowBuilder(_props) {
   const onConnectEnd = useCallback(
     (event) => {
       const startingNodeId = editingActivity.nodeId;
+      const startingNodeHandleId = editingActivity.handleId;
+
       setEditingActivity({ type: 'IDLE' });
 
       if (event.target.className === 'react-flow__pane') {
@@ -56,24 +59,44 @@ function FlowBuilder(_props) {
         const x = event.clientX - left - 75;
         const y = event.clientY - top;
 
-        const queryId = addQuery();
+        const nodeType = prompt('Node type (Query/If):', 'Query');
 
-        const newNode = {
-          id: uuidv4(),
-          position: project({ x, y }),
-          data: {
-            ...query(queryId),
-          },
-        };
+        if (nodeType === 'Query') {
+          const queryId = addQuery();
 
-        const newEdge = {
-          id: uuidv4(),
-          source: startingNodeId,
-          target: newNode.id,
-        };
+          const newNode = {
+            id: uuidv4(),
+            position: project({ x, y }),
+            data: {
+              ...query(queryId),
+            },
+          };
 
-        addNode(newNode);
-        addEdge(newEdge);
+          const newEdge = {
+            id: uuidv4(),
+            source: startingNodeId,
+            target: newNode.id,
+            sourceHandle: startingNodeHandleId,
+          };
+
+          addNode(newNode);
+          addEdge(newEdge);
+        } else if (nodeType === 'If') {
+          const newNode = {
+            id: uuidv4(),
+            position: project({ x, y }),
+          };
+
+          const newEdge = {
+            id: uuidv4(),
+            source: startingNodeId,
+            target: newNode.id,
+            sourceHandle: startingNodeHandleId,
+          };
+
+          addIfConditionNode(newNode);
+          addEdge(newEdge);
+        }
       }
     },
     [editingActivity.nodeId, setEditingActivity, project, addNode, addEdge]
@@ -108,7 +131,7 @@ function FlowBuilder(_props) {
     [removeEdge]
   );
 
-  const nodeTypes = useMemo(() => ({ query: QueryNode }), []);
+  const nodeTypes = useMemo(() => ({ query: QueryNode, ifCondition }), []);
 
   return (
     <div style={{ height: '100%' }}>

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { defaultNode } from './defaults';
+import { defaultQueryNode, defaultIfConditionNode } from './defaults';
 import { find } from 'lodash';
 
 export const Modes = {
@@ -93,9 +93,9 @@ export const reducer = (state = initialState(), { payload, type }) => {
     }
 
     case 'ADD_NEW_NODE': {
-      const { node } = payload;
+      const { node, type } = payload;
       const newNode = {
-        ...defaultNode,
+        ...(type === 'query' ? defaultQueryNode : defaultIfConditionNode),
         ...node,
       };
 
