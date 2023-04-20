@@ -13,7 +13,7 @@ The Marketplace offers custom plugins that can be installed in your ToolJet inst
 
 ### Step 1. Enabling the marketplace for your instance
 
-In order to **activate** the marketplace for your ToolJet instance, you must set the following evironment variables in your **`.env`** file:
+To enable the marketplace for your ToolJet instance, you need to specify the following environment variables in your **`.env`** file:
 
 #### Marketplace feature enable
 
