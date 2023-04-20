@@ -8143,13 +8143,10 @@ tbody {
 
   &:focus {
     box-shadow: 0px 0px 0px 4px var(--indigo6);
-    background: var(--slate4);
     outline: 0;
   }
 
-
   &:active {
-    background: var(--orange1);
     box-shadow: none;
   }
 }
