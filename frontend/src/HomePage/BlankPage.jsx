@@ -92,7 +92,7 @@ export const BlankPage = function BlankPage({
                             fill="#FDFDFE"
                           />
                         </svg>
-                        New app from scratch
+                        Create new application
                       </a>
                     </div>
                     <div className="col">
