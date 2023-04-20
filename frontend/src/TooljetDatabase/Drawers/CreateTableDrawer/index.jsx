@@ -5,10 +5,12 @@ import CreateTableForm from '../../Forms/TableForm';
 import { TooljetDatabaseContext } from '../../index';
 import { tooljetDatabaseService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { BreadCrumbContext } from '@/App/App';
 
 export default function CreateTableDrawer() {
   const { organizationId, setSelectedTable, setTables } = useContext(TooljetDatabaseContext);
   const [isCreateTableDrawerOpen, setIsCreateTableDrawerOpen] = useState(false);
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   return (
     <>
@@ -35,6 +37,7 @@ export default function CreateTableDrawer() {
               if (Array.isArray(data?.result) && data.result.length > 0) {
                 setTables(data.result || []);
                 setSelectedTable(tableName);
+                updateSidebarNAV(tableName);
               }
             });
             setIsCreateTableDrawerOpen(false);
