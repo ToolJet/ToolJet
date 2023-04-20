@@ -6,6 +6,7 @@ import { MarketplacePlugins } from './MarketplacePlugins';
 import { marketplaceService, pluginsService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import config from 'config';
 
 const MarketplacePage = ({ darkMode, switchDarkMode }) => {
   const [active, setActive] = React.useState('installed');
@@ -14,7 +15,7 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
   const [fetchingInstalledPlugins, setFetching] = React.useState(false);
 
   const { admin } = authenticationService.currentSessionValue;
-  const ENABLE_MARKETPLACE_DEV_MODE = window.public_config?.ENABLE_MARKETPLACE_DEV_MODE == 'true';
+  const ENABLE_MARKETPLACE_DEV_MODE = config.ENABLE_MARKETPLACE_DEV_MODE == 'true';
 
   const navigate = useNavigate();
 

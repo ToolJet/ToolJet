@@ -22,6 +22,8 @@ export const Container = function Container({
     border: `1px solid ${borderColor}`,
     height,
     display: visibility ? 'flex' : 'none',
+    overflow: 'hidden auto',
+    position: 'relative',
   };
 
   const parentRef = useRef(null);

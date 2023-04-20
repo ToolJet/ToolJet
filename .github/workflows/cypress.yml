@@ -14,10 +14,10 @@ jobs:
   Run-Cypress:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress' }}
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
@@ -33,6 +33,12 @@ jobs:
           sleep 1
           done
 
+      - name: Getting cypress secrets
+        # use quotes around the secret, as its value
+        # is simply inserted as a string into the command
+        run: |
+          echo '${{ secrets.CYPRESS_SECRETS }}' > cypress.env.json
+
       - name: Cypress integration test
         uses: cypress-io/github-action@v5
         with:
@@ -41,7 +47,7 @@ jobs:
           config-file: cypress-run.config.js
 
       - name: Capturing screenshots
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: always()
         with:
           name: screenshots

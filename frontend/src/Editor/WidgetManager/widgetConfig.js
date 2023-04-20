@@ -838,7 +838,8 @@ export const widgets = [
       },
       hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
       hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
-      hideOnEsc: { type: 'toggle', displayName: 'Hide on escape' },
+      hideOnEsc: { type: 'toggle', displayName: 'Close on escape key' },
+      closeOnClickingOutside: { type: 'toggle', displayName: 'Close on clicking outside' },
 
       size: {
         type: 'select',
@@ -938,6 +939,7 @@ export const widgets = [
         hideTitleBar: { value: '{{false}}' },
         hideCloseButton: { value: '{{false}}' },
         hideOnEsc: { value: '{{true}}' },
+        closeOnClickingOutside: { value: '{{false}}' },
       },
       events: [],
       styles: {

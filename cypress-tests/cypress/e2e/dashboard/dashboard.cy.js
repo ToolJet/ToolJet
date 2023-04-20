@@ -27,7 +27,7 @@ describe("dashboard", () => {
   const data = {};
   data.appName = `${fake.companyName}-App`;
   data.folderName = `${fake.companyName}-Folder`;
-  data.cloneAppName = `${data.appName}-Clone`;
+  data.cloneAppName = `cloned-${data.appName}`;
   data.updatedFolderName = `New-${data.folderName}`;
 
   beforeEach(() => {
@@ -40,8 +40,11 @@ describe("dashboard", () => {
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
       fixture: "intercept/emptyDashboard.json",
     }).as("emptyDashboard");
+    cy.intercept("GET", "/api/folders?searchKey=",{"folders":[]}).as("folders");
     login();
     cy.wait("@emptyDashboard");
+    cy.wait("@folders");
+
 
     deleteDownloadsFolder();
   });
@@ -51,6 +54,7 @@ describe("dashboard", () => {
     cy.get(
       commonSelectors.workspaceName
     ).verifyVisibleElement("have.text", "My workspace");
+    cy.get(commonSelectors.workspaceName).click();
     cy.get(commonSelectors.workspaceEditButton).should("be.visible");
     cy.get(commonSelectors.appCreateButton).verifyVisibleElement(
       "have.text",
@@ -304,6 +308,7 @@ describe("dashboard", () => {
   });
 
   it("Should verify the app CRUD operation", () => {
+    data.appName = `${fake.companyName}-App`;
     cy.appUILogin();
     cy.createApp();
     cy.renameApp(data.appName);
@@ -328,6 +333,7 @@ describe("dashboard", () => {
   });
 
   it("Should verify the folder CRUD operation", () => {
+    data.appName = `${fake.companyName}-App`;
     cy.appUILogin();
     cy.createApp();
     cy.renameApp(data.appName);

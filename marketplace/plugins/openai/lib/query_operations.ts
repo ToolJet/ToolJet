@@ -9,7 +9,7 @@ export async function getCompletion(
 
   try {
     const { data } = await openai.createCompletion({
-      model: 'me',
+      model: 'text-davinci-003',
       prompt: prompt,
       temperature: typeof temperature === 'string' ? parseFloat(temperature) : temperature || 0,
       max_tokens: typeof max_tokens === 'string' ? parseInt(max_tokens) : max_tokens || 67,
@@ -19,6 +19,8 @@ export async function getCompletion(
 
     return data.choices[0]['text'];
   } catch (error) {
+    console.log('error openapi ===============', error);
+
     return {
       error: error?.message,
       statusCode: error?.response?.status,
