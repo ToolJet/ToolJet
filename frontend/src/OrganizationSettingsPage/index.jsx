@@ -59,7 +59,8 @@ export function OrganizationSettings(props) {
                       key={index}
                       onClick={() => {
                         setSelectedTab(defaultOrgName(item));
-                        updateSidebarNAV(item);
+                        if (item == 'Users') updateSidebarNAV('Users & permissions');
+                        else updateSidebarNAV(item);
                       }}
                       selectedItem={selectedTab == defaultOrgName(item)}
                     >
