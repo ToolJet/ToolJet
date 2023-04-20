@@ -11,7 +11,21 @@ The Marketplace offers custom plugins that can be installed in your ToolJet inst
 
 ## Getting started
 
-### Step 1. Enabling the marketplace for your instance
+### Step 1. Setup ToolJet locally
+
+To obtain the ToolJet repository via git, use the command:
+
+```bash
+git clone https://github.com/ToolJet/ToolJet.git
+```
+
+Next, refer to the appropriate guide for your development environment to follow the Setup instructions:
+
+- **[MacOS](/docs/contributing-guide/setup/macos)**
+- **[Docker](/docs/contributing-guide/setup/docker)**
+- **[Ubuntu](/docs/contributing-guide/setup/ubuntu)**
+
+### Step 2. Enabling the marketplace for your instance
 
 To enable the marketplace for your ToolJet instance, you need to specify the following environment variables in your **`.env`** file:
 
@@ -36,7 +50,7 @@ Please note that the marketplace is not enabled by default. After updating the v
 
 For information on running ToolJet on your local machine, please refer to the instructions provided **[here](/docs/category/contributing-guide)**. You can access the marketplace by navigating to the **'/integrations'** route.
 
-### Step 2: Installation of tooljet-cli
+### Step 3: Installation of tooljet-cli
 
 In order to manage plugins for the ToolJet marketplace, including creating, updating, and deleting, you will need to utilize **[tooljet-cli](https://www.npmjs.com/package/@tooljet/cli)**. This can be installed via npm by entering the following command:
 ```bash

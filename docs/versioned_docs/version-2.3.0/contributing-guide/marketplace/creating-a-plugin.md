@@ -90,6 +90,37 @@ To construct the connection form, it's important to include the necessary option
 ```
 This manifest.json file includes information about authentication options, specifically a dropdown to choose a type of credentials and a field to enter a personal access token. The label, key, type, description, and hint properties are used to define the specific fields and their types required for connecting to the API or data source.
 
+In this particular code, there are two main properties defined: **`credentials`** and **`personal_access_token`**.
+
+The **`credentials`** property specifies the authentication method to be used. It contains several keys:
+- **`label`**: a user-friendly label for the authentication method, set to "Authentication"
+- **`key`**: a unique identifier for the authentication method, set to "auth_type"
+- **`type`**: the type of the authentication method, set to "dropdown-component-flip"
+- **`description`**: a description of the authentication method, set to "A single select dropdown to choose credentials"
+- **`list`**: an array of objects representing the different authentication methods available. In this case, there is only one method available: a personal access token. The `value` key in the object is set to "personal_access_token" and the `name` key is set to "Use Personal Access Token".
+
+The **`personal_access_token`** property specifies the details of the personal access token authentication method. It contains a `token` key, which specifies the actual personal access token to be used. The `token` key contains several keys:
+- **`label`**: a user-friendly label for the personal access token, set to "Token"
+- **`key`**: a unique identifier for the personal access token, set to "personal_token"
+- **`type`**: the type of the personal access token, set to "password"
+- **`description`**: a description of the personal access token, set to "Enter your personal access token"
+- **`hint`**: a hint for the personal access token, set to "You can generate a personal access token from your Github account settings."
+
+The available `type` options are:
+
+However, based on the code you provided, the available **`type`** options are:
+- **`password`**: used to input a secret value, such as a password or an access token.
+- **`dropdown-component-flip`**: used to create a dropdown menu that flips its position relative to the component that triggers it.
+- **`text`**: used to input a single line of text.
+- **`textarea`**: used to input multiple lines of text.
+- **`toggle`**: used to create a simple on/off switch.
+- **`react-component-headers`**: used to display headers for React components.
+- **`codehinter`**: is a specialized input field used for entering code and has additional functionality, such as resolving JavaScript code within double curly braces`{{}}`.
+
+:::tip
+The **manifest.json** file is utilized by the connection modal component, which appears to prompt users to enter their datasource credentials. Meanwhile, the **operations.json** file is used by the query manager when users generate a specific query for a connected datasource. **Both files utilize a similar schema**.
+:::
+
 ## Step 3: Defining the operations.json file
 ```json
   "properties": {
