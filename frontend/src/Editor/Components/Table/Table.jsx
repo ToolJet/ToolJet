@@ -346,7 +346,7 @@ export function Table({
 
   const tableRef = useRef();
 
-  const columnDataForExistingTableData = generateColumnsData({
+  const columnData = generateColumnsData({
     columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
     columnSizes,
     currentState,
@@ -401,9 +401,6 @@ export function Table({
     return wrapOption?.textWrap;
   };
 
-  const columnData = tableDetails.addNewRowsDetails.addingNewRows
-    ? columnDataForAddNewRows
-    : columnDataForExistingTableData;
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
   const columns = useMemo(
     () => {
@@ -421,9 +418,12 @@ export function Table({
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
       darkMode,
-      tableDetails.addNewRowsDetails.addingNewRows,
     ] // Hack: need to fix
   );
+
+  const columnsForAddNewRow = useMemo(() => {
+    return [...columnDataForAddNewRows];
+  }, [JSON.stringify(columnDataForAddNewRows), darkMode, tableDetails.addNewRowsDetails.addingNewRows]);
 
   const data = useMemo(() => {
     if (!_.isEqual(properties.data, prevDataFromProps.current)) {
@@ -1178,7 +1178,7 @@ export function Table({
           setExposedVariable={setExposedVariable}
           allColumns={allColumns}
           defaultColumn={defaultColumn}
-          columns={columns}
+          columns={columnsForAddNewRow}
           addNewRowsDetails={tableDetails.addNewRowsDetails}
         />
       )}

@@ -73,8 +73,9 @@ export default function generateColumnsData({
       maxLength: column.maxLength,
       regex: column.regex,
       customRule: column?.customRule,
-      Cell: function ({ cell, isEditable }) {
-        const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
+      Cell: function ({ cell, isEditable, newRowsChangeSet = null }) {
+        const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
+        const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
 
         const rowData = tableData[cell.row.index];

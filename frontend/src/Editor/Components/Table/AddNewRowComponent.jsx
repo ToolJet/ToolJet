@@ -24,6 +24,7 @@ export function AddNewRowComponent({
     }, {});
   };
   const newRow = getNewRowObject();
+  const { newRowsChangeSet } = addNewRowsDetails;
   const rowsFromPrevOperationPresent = _.isEmpty(addNewRowsDetails.newRowsDataUpdates) ? false : true;
   const previousRowsData = rowsFromPrevOperationPresent
     ? Object.keys(addNewRowsDetails.newRowsDataUpdates).reduce((accumulator, row) => {
@@ -104,7 +105,7 @@ export function AddNewRowComponent({
                             cell.column.columnType !== 'image' && 'w-100 h-100'
                           }`}
                         >
-                          {cell.render('Cell', { cell, isEditable })}
+                          {cell.render('Cell', { cell, isEditable, newRowsChangeSet })}
                         </div>
                       </td>
                     );
