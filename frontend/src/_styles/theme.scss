@@ -8132,13 +8132,13 @@ tbody {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: var(--slate3);
-  color: var(--slate11);
+  background-color: var(--slate3) !important;
+  color: var(--slate11) !important;
   text-transform: uppercase;
   font-weight: 500;
 
   &:hover {
-    background: var(--slate4);
+    background-color: var(--slate4);
   }
 
   &:focus {
