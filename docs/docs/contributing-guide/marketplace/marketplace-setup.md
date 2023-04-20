@@ -46,6 +46,6 @@ npm install -g tooljet-cli
 tooljet --version
 ```
 
-**Now that we have finished setting up the environment for Marketplace Developer mode, we can move on to the next section and begin [developing the first plugin](/docs/contributing-guide/marketplace/creating-a-plugin).**
+Having completed the environment setup for Marketplace Developer mode, we can proceed to the next section and commence with [developing the first plugin](https://chat.openai.com/docs/contributing-guide/marketplace/creating-a-plugin).
 
 
