@@ -41,7 +41,7 @@ export function resolve(data, state) {
   }
 }
 
-function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword, isJsCode) {
+export function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword = [], isJsCode = true) {
   let result = '';
   let error;
 

@@ -29,6 +29,11 @@ export class CreateWorkflowExecutionEdgeEntity1677077719475 implements Migration
             isNullable: false,
           },
           {
+            name: 'source_handle',
+            type: 'varchar',
+            isNullable: true,
+          },
+          {
             name: 'workflow_execution_id',
             type: 'uuid',
             isNullable: false,

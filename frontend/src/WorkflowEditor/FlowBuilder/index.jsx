@@ -131,7 +131,7 @@ function FlowBuilder(_props) {
     [removeEdge]
   );
 
-  const nodeTypes = useMemo(() => ({ query: QueryNode, ifCondition }), []);
+  const nodeTypes = useMemo(() => ({ query: QueryNode, 'if-condition': ifCondition }), []);
 
   return (
     <div style={{ height: '100%' }}>

@@ -24,6 +24,9 @@ export class WorkflowExecution {
   @Column({ name: 'start_node_id' })
   startNodeId: string;
 
+  @Column({ name: 'executed' })
+  executed: boolean;
+
   @Column({ name: 'executing_user_id' })
   executingUserId: string;
 

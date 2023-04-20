@@ -28,6 +28,9 @@ export class WorkflowExecutionEdge {
   @Column({ name: 'target_workflow_execution_node_id' })
   targetWorkflowExecutionNodeId: string;
 
+  @Column({ name: 'source_handle' })
+  sourceHandle: string;
+
   @ManyToOne(() => WorkflowExecutionNode, (workflowExecutionNode) => workflowExecutionNode.forwardEdges)
   @JoinColumn({ name: 'source_workflow_execution_node_id' })
   sourceWorkflowExecutionNode: WorkflowExecutionNode;

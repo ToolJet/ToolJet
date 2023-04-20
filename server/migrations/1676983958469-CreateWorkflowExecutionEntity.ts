@@ -24,6 +24,12 @@ export class CreateWorkflowExecutionEntity1676983958469 implements MigrationInte
             isNullable: false,
           },
           {
+            name: 'executed',
+            type: 'boolean',
+            isNullable: false,
+            default: false,
+          },
+          {
             name: 'created_at',
             type: 'timestamp',
             isNullable: true,

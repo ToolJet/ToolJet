@@ -15,10 +15,13 @@ export const defaultQueryNode = {
 
 export const defaultIfConditionNode = {
   id: uuidv4(),
-  type: 'ifCondition',
+  type: 'if-condition',
   sourcePosition: 'right',
   targetPosition: 'left',
   draggable: true,
+  data: {
+    code: '2 > 1',
+  },
 };
 
 export const query = (idOnDefinition = uuidv4(), kind = 'runjs', options = {}) => ({

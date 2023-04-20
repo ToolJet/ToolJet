@@ -10,7 +10,7 @@ import { EntityManager, Repository } from 'typeorm';
 import { find } from 'lodash';
 import { DataQueriesService } from './data_queries.service';
 import { User } from 'src/entities/user.entity';
-import { getQueryVariables } from 'lib/utils';
+import { getQueryVariables, resolveCode } from 'lib/utils';
 
 @Injectable()
 export class WorkflowExecutionsService {
@@ -82,6 +82,7 @@ export class WorkflowExecutionsService {
             idOnWorkflowDefinition: edgeData.id,
             sourceWorkflowExecutionNodeId: find(nodes, (node) => node.idOnWorkflowDefinition === edgeData.source).id,
             targetWorkflowExecutionNodeId: find(nodes, (node) => node.idOnWorkflowDefinition === edgeData.target).id,
+            sourceHandle: edgeData.sourceHandle,
             createdAt: new Date(),
             updatedAt: new Date(),
           })
@@ -104,12 +105,17 @@ export class WorkflowExecutionsService {
       },
     });
 
-    return workflowExecutionNodes.map((node) => ({
+    const nodes = workflowExecutionNodes.map((node) => ({
       id: node.id,
       idOnDefinition: node.idOnWorkflowDefinition,
       executed: node.executed,
       result: node.result,
     }));
+
+    return {
+      status: workflowExecution.executed,
+      nodes,
+    };
   }
 
   async execute(workflowExecution: WorkflowExecution): Promise<boolean> {
@@ -188,9 +194,23 @@ export class WorkflowExecutionsService {
 
             break;
           }
+
+          case 'if-condition': {
+            const code = currentNode.definition?.code ?? '';
+
+            const result = resolveCode(code, state);
+
+            const sourceHandle = result ? 'true' : 'false';
+
+            await this.completeNodeExecution(currentNode, JSON.stringify(result), {});
+
+            void queue.push(...(await this.forwardNodes(currentNode, sourceHandle)));
+          }
         }
       }
     }
+
+    await this.markWorkflowAsExecuted(workflowExecution);
 
     return true;
   }
@@ -198,6 +218,12 @@ export class WorkflowExecutionsService {
   async completeNodeExecution(node: WorkflowExecutionNode, result: any, state: object) {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(WorkflowExecutionNode, node.id, { executed: true, result, state });
+    });
+  }
+
+  async markWorkflowAsExecuted(workflow: WorkflowExecution) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(WorkflowExecution, workflow.id, { executed: true });
     });
   }
 
@@ -221,10 +247,14 @@ export class WorkflowExecutionsService {
     return { state, previousNodesExecutionCompletionStatus };
   }
 
-  async forwardNodes(startNode: WorkflowExecutionNode): Promise<WorkflowExecutionNode[]> {
+  async forwardNodes(
+    startNode: WorkflowExecutionNode,
+    sourceHandle: string = undefined
+  ): Promise<WorkflowExecutionNode[]> {
     const forwardEdges = await this.workflowExecutionEdgeRepository.find({
       where: {
         sourceWorkflowExecutionNode: startNode,
+        ...(sourceHandle ? { sourceHandle } : {}),
       },
     });
 
