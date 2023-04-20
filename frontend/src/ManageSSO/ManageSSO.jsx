@@ -100,11 +100,11 @@ export function ManageSSO({ darkMode }) {
               <div className="d-flex manage-sso-wrapper-card">
                 <div className="left-menu">
                   <ul data-cy="left-menu-items tj-text-xsm">
-                    {menuItems.map((item) => {
+                    {menuItems.map((item, index) => {
                       return (
                         <FolderList
                           onClick={() => changePage(item.id)}
-                          key={item}
+                          key={index}
                           selectedItem={currentPage == item.id}
                           items={menuItems}
                           onChange={changePage}
