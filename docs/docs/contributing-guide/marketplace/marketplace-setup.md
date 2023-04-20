@@ -3,7 +3,7 @@ id: marketplace-setup
 title:  'Marketplace: Setup'
 ---
 
-The Marketplace offers custom plugins that can be installed in your ToolJet workspace. This guide aims to assist you in creating a new plugin for the ToolJet marketplace.
+The Marketplace offers custom plugins that can be installed in your ToolJet instance. This guide aims to assist you in creating a new plugin for the ToolJet marketplace.
 
 ## Requirements
 - [Node.js](https://nodejs.org/en/download/) **(v18.3.0)**
