@@ -4410,8 +4410,6 @@ input[type="text"] {
  */
 .folder-list {
   overflow-y: auto;
-  text-transform: capitalize;
-
 
   .list-group-transparent .list-group-item.active {
     color: $primary;
@@ -8411,7 +8409,6 @@ tbody {
   a {
     text-decoration: none !important;
     color: var(--slate12);
-    text-transform: capitalize;
   }
 }
 

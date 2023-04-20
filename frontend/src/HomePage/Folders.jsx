@@ -177,7 +177,7 @@ export const Folders = function Folders({
       <div className="d-flex justify-content-between" data-cy="folder-info" style={{ marginBottom: '8px' }}>
         {!showInput ? (
           <>
-            <div className="folder-info text-uppercase tj-text-xsm">
+            <div className="folder-info tj-text-xsm">
               {t('homePage.foldersSection.filteredData', 'Folders')}
               {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
             </div>
