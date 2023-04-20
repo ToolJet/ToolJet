@@ -27,6 +27,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSidebarNAV }
   useEffect(() => {
     if (active) updateSidebarNAV(dataSource?.name);
     else if (dataSource?.length == 0) updateSidebarNAV('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(dataSource)]);
 
   return (

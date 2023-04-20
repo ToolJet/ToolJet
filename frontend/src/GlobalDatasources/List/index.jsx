@@ -35,6 +35,7 @@ export const List = () => {
 
   useEffect(() => {
     if (dataSources?.length == 0) updateSidebarNAV('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const deleteDataSource = (selectedSource) => {

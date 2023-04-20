@@ -11,7 +11,6 @@ export const AppMenu = function AppMenu({
   canDeleteApp,
   canUpdateApp,
   onMenuOpen,
-  isMenuOpen,
   openAppActionModal,
   darkMode,
   currentFolder,
