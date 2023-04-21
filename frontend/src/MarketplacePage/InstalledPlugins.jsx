@@ -120,7 +120,7 @@ const InstalledPluginCard = ({ plugin, marketplacePlugin, fetchPlugins, isDevMod
         darkMode={darkMode}
       />
       <div key={plugin.id} className="col-sm-6 col-lg-4">
-        <div className="card card-sm card-borderless">
+        <div className="plugins-card">
           <div className="card-body">
             <div className="row align-items-center">
               <div className="col-auto">
