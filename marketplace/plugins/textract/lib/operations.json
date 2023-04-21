@@ -18,7 +18,7 @@
         },
         {
           "value": "analyze_document_s3",
-          "name": "Analyze Document S3"
+          "name": "Analyze document stored in AWS S3"
         }
       ]
     },
@@ -81,6 +81,30 @@
         "height": "36px",
         "className": "codehinter-plugins",
         "placeholder": "Enter key"
+      },
+      "featureTypes": {
+        "label": "Data output",
+        "key": "feature_types",
+        "type": "checkbox-group",
+        "description": "Enter access key",
+        "list": [
+          {
+            "label": "Forms",
+            "value": "FORMS"
+          },
+          {
+            "label": "Tables",
+            "value": "TABLES"
+          },
+          {
+            "label": "Queries",
+            "value": "QUERIES"
+          },
+          {
+            "label": "Signature detection",
+            "value": "SIGNATURES"
+          }
+        ]
       }
     }
   }
