@@ -7,7 +7,7 @@ export const CreateDataSourceModal = () => {
 
   return (
     <div className="col border-end">
-      <div className="p-3">
+      <div className="add-new-datasource-header-container">
         <button
           className="add-datasource-btn btn btn-primary active w-100"
           type="button"
