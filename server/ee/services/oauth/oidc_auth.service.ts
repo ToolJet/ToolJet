@@ -66,9 +66,13 @@ export class OidcOAuthService {
   async #getUserDetails({ access_token, id_token }: TokenSet): Promise<UserResponse> {
     let email, name;
     if (id_token) {
-      const data = this.#parseJwt(id_token);
-      email = data?.email;
-      name = data?.name;
+      try {
+        const data = this.#parseJwt(id_token);
+        email = data?.email;
+        name = data?.name;
+      } catch (error) {
+        console.error('Error while parsing JWT', error);
+      }
     }
 
     if (!(email || name)) {
