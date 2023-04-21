@@ -18,11 +18,11 @@ export const TablePopover = ({ disabled, children, onEdit, onDelete }) => {
             Edit
           </div>
         </div> */}
-        <div className="w-min-100 row list-group-item-action cursor-pointer mt-3">
+        <div className="w-min-100 row list-group-item-action cursor-pointer" onClick={onDelete}>
           <div className="col-auto">
             <DeleteIcon />
           </div>
-          <div className="col text-truncate" data-cy="column-delete-option" onClick={onDelete}>
+          <div className="col text-truncate" data-cy="column-delete-option">
             Delete
           </div>
         </div>

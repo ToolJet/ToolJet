@@ -15,7 +15,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
-    <div className="card">
+    <div className="">
       <div className="card-header">
         <h3 className="card-title" data-cy="add-columns-header">
           Add columns
@@ -66,9 +66,9 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   disabled={columns[index].constraint === 'PRIMARY KEY'}
                 />
               </div>
-              <div className="col-3 m-0" data-cy="type-dropdown-field">
+              <div className="col-3" data-cy="type-dropdown-field" style={{ marginRight: '16px' }}>
                 <Select
-                  width={'100%'}
+                  width="120px"
                   isDisabled={columns[index].constraint === 'PRIMARY KEY'}
                   useMenuPortal={false}
                   options={columns[index].constraint === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
