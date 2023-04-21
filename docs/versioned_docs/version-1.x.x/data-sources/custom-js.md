@@ -48,6 +48,6 @@ ToolJet allows you to internally utilize these libraries:
 
 :::danger
 
-Issues with writing custom JavaScript code? Ask in our [Slack community](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg).
+Issues with writing custom JavaScript code? Ask in our [Slack Community](https://tooljet.com/slack).
 
 :::

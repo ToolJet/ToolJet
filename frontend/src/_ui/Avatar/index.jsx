@@ -1,10 +1,10 @@
 import React from 'react';
-import { userService } from '@/_services';
+import { userService } from '../../_services';
 import cx from 'classnames';
 import { Tooltip } from 'react-tooltip';
 
 // eslint-disable-next-line no-unused-vars
-const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderShape, indexId = 0 }) => {
+const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderShape, indexId = 0, className }) => {
   const formattedTitle = String(title).toLowerCase().replace(/\s+/g, '-');
   const [avatar, setAvatar] = React.useState();
 
@@ -24,11 +24,9 @@ const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderSha
       data-tooltip-id={`tooltip-for-avatar-${formattedTitle}-${indexId}`}
       data-tooltip-content={title}
       style={{
-        // border: borderColor ? `1.5px solid ${borderColor}` : 'none',
         ...(image || avatar ? { backgroundImage: `url(${avatar ?? image})` } : {}),
       }}
-      // className={`avatar avatar-sm ${borderShape === 'rounded' ? 'avatar-rounded' : ''} animation-fade`}
-      className={cx('avatar avatar-sm animation-fade', {
+      className={cx(`animation-fade avatar tj-avatar ${className}`, {
         'avatar-rounded': borderShape === 'rounded',
       })}
       data-cy="avatar-image"
