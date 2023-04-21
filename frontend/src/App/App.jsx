@@ -404,15 +404,6 @@ class AppComponent extends React.Component {
                 }
               />
               <Route
-                exact
-                path="/workflows/:id/"
-                element={
-                  <PrivateRoute>
-                    <WorkflowEditor switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </PrivateRoute>
-                }
-              />
-              <Route
                 path="*"
                 render={() => {
                   if (authenticationService?.currentSessionValue?.current_organization_id) {
