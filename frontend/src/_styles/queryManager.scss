@@ -1190,6 +1190,9 @@ $border-radius: 4px;
         height: 16px !important;
       }
     }
+    .add-gds-secondary-button {
+      margin: 0 !important;
+    }
   }
  
 }
@@ -1550,23 +1553,25 @@ $border-radius: 4px;
       margin-left: 10px;
     }
   }
-  .add-gds-secondary-button {
-    background-color: var(--indigo3);
-    color: var(--indigo9);
-    max-height: 30px;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    padding: 4px 16px;
-    gap: 6px;
-    font-weight: 500;
-    border: 0 !important;
-    transition: .4s;
+}
 
-    &:hover {
-      background-color: var(--slate7);
-      color: var(--slate11);
-    }
+.add-gds-secondary-button {
+  background-color: var(--indigo3);
+  color: var(--indigo9);
+  max-height: 34px;
+  height: 34px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 16px;
+  gap: 6px;
+  font-weight: 500;
+  border: 0 !important;
+  transition: .4s;
+
+  &:hover {
+    background-color: var(--slate7);
+    color: var(--slate11);
   }
 }

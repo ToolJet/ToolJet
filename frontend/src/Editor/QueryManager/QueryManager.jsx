@@ -20,6 +20,7 @@ import { diff } from 'deep-object-diff';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { ChangeDataSource } from './ChangeDataSource';
 import EmptyGlobalDataSources from './EmptyGlobalDataSources';
+import AddGlobalDataSourceButton from './AddGlobalDataSourceButton';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -781,7 +782,8 @@ class QueryManagerComponent extends React.Component {
                       handleBackButton={this.handleBackButton}
                       darkMode={this.props.darkMode}
                       dataSourceModalHandler={this.props.dataSourceModalHandler}
-                      showAddDatasourceBtn={false}
+                      showAddDatasourceBtn={true}
+                      dataSourceBtnComponent={<AddGlobalDataSourceButton />}
                     />
                   ) : (
                     <EmptyGlobalDataSources darkMode={this.props.darkMode} />

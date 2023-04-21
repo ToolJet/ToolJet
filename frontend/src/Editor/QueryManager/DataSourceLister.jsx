@@ -14,6 +14,7 @@ function DataSourceLister({
   darkMode,
   dataSourceModalHandler,
   showAddDatasourceBtn = true,
+  dataSourceBtnComponent = null,
 }) {
   const [allSources, setAllSources] = useState([...dataSources, ...staticDataSources]);
   const { t } = useTranslation();
@@ -50,6 +51,7 @@ function DataSourceLister({
 
   return (
     <div className="query-datasource-card-container">
+      {showAddDatasourceBtn && dataSourceBtnComponent && dataSourceBtnComponent}
       {allSources.map((source) => {
         return (
           <div
@@ -66,7 +68,7 @@ function DataSourceLister({
           </div>
         );
       })}
-      {showAddDatasourceBtn && (
+      {showAddDatasourceBtn && !dataSourceBtnComponent && (
         <div className="query-datasource-card" style={computedStyles} onClick={dataSourceModalHandler}>
           <AddIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
           <p>{t('editor.queryManager.addDatasource', 'Add datasource')}</p>
