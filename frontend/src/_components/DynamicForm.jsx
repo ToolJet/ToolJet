@@ -7,7 +7,7 @@ import Headers from '@/_ui/HttpHeaders';
 import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
 import OpenApi from '@/_ui/OpenAPI';
-import { Checkbox, CheckboxGroup } from '@/_ui/Checkbox';
+import { Checkbox, CheckboxGroup } from '@/_ui/Checkbox/index.js';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
