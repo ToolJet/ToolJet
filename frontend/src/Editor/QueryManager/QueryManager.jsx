@@ -167,6 +167,14 @@ class QueryManagerComponent extends React.Component {
     );
   };
 
+  componentDidUpdate(prevState) {
+    if (prevState?.selectedQuery?.name !== this.state?.selectedQuery?.name) {
+      this.setState({
+        queryName: this.state.selectedQuery?.name,
+      });
+    }
+  }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.loadingDataSources) return;
     if (this.props.showQueryConfirmation && !nextProps.showQueryConfirmation) {
@@ -934,7 +942,7 @@ class QueryManagerComponent extends React.Component {
                     }
                   />
                 </div>
-                {mode === 'edit' && (
+                {mode === 'edit' && selectedQuery.data_source_id && (
                   <div className="mt-2 pb-4">
                     <div
                       className={`border-top query-manager-border-color px-4 hr-text-left py-2 ${

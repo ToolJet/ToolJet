@@ -344,6 +344,8 @@ export class AppsService {
         .getMany();
       const dataSources = versionFrom?.dataSources;
       const dataSourceMapping = {};
+      const newDataQueries = [];
+
       if (dataSources?.length) {
         for (const dataSource of dataSources) {
           const dataSourceParams: Partial<DataSource> = {
@@ -356,7 +358,6 @@ export class AppsService {
           dataSourceMapping[dataSource.id] = newDataSource.id;
 
           const dataQueries = versionFrom?.dataSources?.find((ds) => ds.id === dataSource.id).dataQueries;
-          const newDataQueries = [];
 
           for (const dataQuery of dataQueries) {
             const dataQueryParams = {
@@ -370,15 +371,6 @@ export class AppsService {
             oldDataQueryToNewMapping[dataQuery.id] = newQuery.id;
             newDataQueries.push(newQuery);
           }
-
-          for (const newQuery of newDataQueries) {
-            const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
-              newQuery.options,
-              oldDataQueryToNewMapping
-            );
-            newQuery.options = newOptions;
-            await manager.save(newQuery);
-          }
         }
 
         if (globalQueries?.length) {
@@ -390,26 +382,25 @@ export class AppsService {
               appVersionId: appVersion.id,
             };
 
-            const newDataQueries = [];
             const newQuery = await manager.save(manager.create(DataQuery, dataQueryParams));
             oldDataQueryToNewMapping[globalQuery.id] = newQuery.id;
             newDataQueries.push(newQuery);
-
-            for (const newQuery of newDataQueries) {
-              const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
-                newQuery.options,
-                oldDataQueryToNewMapping
-              );
-              newQuery.options = newOptions;
-              await manager.save(newQuery);
-            }
           }
         }
 
-        appVersion.definition =
-          appType === 'workflow'
-            ? this.replaceQueryMappingsInWorkflowDefinition(appVersion.definition, oldDataQueryToNewMapping)
-            : this.replaceDataQueryIdWithinDefinitions(appVersion.definition, oldDataQueryToNewMapping);
+        for (const newQuery of newDataQueries) {
+          const newOptions = this.replaceDataQueryOptionsWithNewDataQueryIds(
+            newQuery.options,
+            oldDataQueryToNewMapping
+          );
+          newQuery.options = newOptions;
+          await manager.save(newQuery);
+        }
+
+        appVersion.definition = this.replaceDataQueryIdWithinDefinitions(
+          appVersion.definition,
+          oldDataQueryToNewMapping
+        );
         await manager.save(appVersion);
 
         for (const appEnvironment of appEnvironments) {

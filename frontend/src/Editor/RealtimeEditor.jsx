@@ -34,11 +34,8 @@ export const RealtimeEditor = (props) => {
   const router = useRouter();
 
   React.useEffect(() => {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     const domain = psl.parse(window.location.host).domain;
-    document.cookie = domain
-      ? `auth_token=${currentUser?.auth_token}; domain=.${domain}; path=/`
-      : `auth_token=${currentUser?.auth_token}; path=/`;
+    document.cookie = domain ? `domain=.${domain}; path=/` : `path=/`;
     document.cookie = domain
       ? `app_id=${router.query.id}; domain=.${domain}; path=/`
       : `app_id=${router.query.id}; path=/`;
@@ -60,12 +57,10 @@ export const RealtimeEditor = (props) => {
 
   if (!provider) return <Spinner />;
 
-  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-
   const initialPresence = {
-    firstName: currentUser?.first_name ?? '',
-    lastName: currentUser?.last_name ?? '',
-    email: currentUser?.email ?? '',
+    firstName: '',
+    lastName: '',
+    email: '',
     image: '',
     editingVersionId: '',
     x: 0,

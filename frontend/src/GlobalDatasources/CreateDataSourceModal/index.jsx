@@ -3,15 +3,18 @@ import { GlobalDataSourcesContext } from '../index';
 import { List } from '../List';
 
 export const CreateDataSourceModal = () => {
-  const { handleModalVisibility } = useContext(GlobalDataSourcesContext);
+  const { handleModalVisibility, setEditing } = useContext(GlobalDataSourcesContext);
 
   return (
     <div className="col border-end">
-      <div className="p-3">
+      <div className="add-new-datasource-header-container">
         <button
           className="add-datasource-btn btn btn-primary active w-100"
           type="button"
-          onClick={handleModalVisibility}
+          onClick={() => {
+            handleModalVisibility();
+            setEditing(false);
+          }}
         >
           Add new datasource
         </button>
