@@ -8,11 +8,64 @@ Tables can be used for both displaying and editing data.
 
 <iframe height="500" src="https://www.youtube.com/embed/hTrdkUtz3aA" title="ToolJet Table Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
+## Table UI
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/UI.png" alt="ToolJet - Widget Reference - Table" width="900" />
+
+</div>
+
+### Search
+
+At the top-left corner of the table component, there is a search box that allows users to input keywords and search for rows within the table data. You can also **[show/hide the search box](/docs/widgets/table#show-search-box)** from the table from the table properties.
+
+### Add new row
+
+When users click on this button, a popup modal appears which enables them to insert new rows. The modal will have a single row initially, and the columns will have the same column type as those on the table. If the user inputs data into the row, it will be stored on the **[`newRows` variable](/docs/widgets/table#exposed-variables)** of the table. If the user selects the **Discard** button, the data in the variable will be cleared. However, if the user closes the popup without taking any action (neither Save nor Discard), the data will still be retained, and a green indicator will appear on the **Add new row** button. The table has an **[Add new rows event handler](/docs//widgets/table#add-new-rows)** that can be utilized to execute queries that store the data into the datasource whenever the **Save** button is clicked.
+
+:::info
+At present, it is not possible to include columns of type Image when adding a new row to the table.
+:::
+
+### Filters
+
+The table data can be filtered by clicking on this button. You have the option to choose from various filters, such as:
+
+- **contains**
+- **does not contain**
+- **matches**
+- **does not match**
+- **equals**
+- **does not equal**
+- **is empty**
+- **is not empty**
+- **greater than**
+- **greater than or equal to**
+- **less than**
+- **less than or equal to**
+
+You have the option to **[hide the filter button](/docs/widgets/table#show-filter-button)** in the table properties.
+
+### Download
+
+The table data can be downloaded in various file formats, including:
+
+- **CSV**
+- **Excel**
+- **PDF**
+
+You have the option to **[hide the download button](/docs/widgets/table#show-download-button)** in the table properties.
+
+### Column selector button
+
+You can choose which columns to display or hide in the table by clicking on this button. You also have the option to **[hide the column selector button](/docs/widgets/table#show-column-selector-button)** in the table properties.
+
 ## Table data
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/data.png" alt="ToolJet - Widget Reference - Table" width="400" />
+<img className="screenshot-full" src="/img/widgets/table/data.png" alt="ToolJet - Widget Reference - Table" width="350" />
 
 </div>
 
@@ -197,28 +250,15 @@ If server-side search is enabled, `on search` event is fired after the content o
 
 ### Show download button
 
-Show or hide download button at the Table footer.
+The download button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the download button by clicking on the **Fx** button.
 
-### Hide/Show columns
+### Show column selector button
 
-Table header has an option(Eye icon) to show/hide one or many columns on the table. 
+The column selector button on the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the column selector button by clicking on the **Fx** button.
 
 ### Show filter button
 
-Show or hide filter button at the Table header. The following filters are available:
-- **contains**
-- **does not contain**
-- **matches**
-- **does not match**
-- **equals**
-- **does not equal to**
-- **is empty**
-- **is not empty**
-- **greater than**
-- **greater than or equal to**
-- **less than**
-- **less than or equal to**
-
+The filter button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the filter button by clicking on the **Fx** button.
 
 ### Show update buttons
 
@@ -263,6 +303,7 @@ Loading state shows a loading skeleton for the table. This property can be used 
 - **[Sort applied](#sort-applied)**
 - **[Cell value changed](#cell-value-changed)**
 - **[Filter changed](#filter-changed)**
+- **[Add new rows](#add-new-rows)**
 
 ### Row hovered
 
@@ -300,6 +341,10 @@ If any cell of the table is edited, the `cell value changed` event is triggered.
 
 This event is triggered when filter is added, removed, or updated from the filter section of the table. `filters` property of the table is updated to reflect the status of filters applied. The objects will have properties: `condition`, `value`, and `column`. 
 
+### Add new rows
+
+This event is triggered when the **Save** button is clicked from the **Add new row** modal on the table. 
+
 ## Exposed variables
 
 | variable      | description |
@@ -311,6 +356,7 @@ This event is triggered when filter is added, removed, or updated from the filte
 | dataUpdates | Just like changeSet but includes the data of the entire row |
 | selectedRow | The data of the row that was last clicked. `selectedRow` also changes when an action button is clicked |
 | searchText | The value of the search field if server-side pagination is enabled |
+| newRows| The newRows variable stores an array of objects, each containing data for a row that was added to the table using the "Add new row" button. When the user clicks either the "Save" or "Discard" button in the modal, this data is cleared.|
 
 ## Styles
 
