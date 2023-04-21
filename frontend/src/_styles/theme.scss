@@ -4345,7 +4345,6 @@ input[type="text"] {
 
   input:focus {
     width: 300px;
-    background-color: var(--base);
   }
 
   .input-icon .input-icon-addon {
@@ -7685,7 +7684,7 @@ tbody {
 
   .home-app-card-header {
     .menu-ico {
-      display: none !important;
+      visibility: hidden !important;
     }
   }
 
@@ -7696,7 +7695,7 @@ tbody {
       margin-bottom: 12px;
 
       .menu-ico {
-        display: block !important;
+        visibility: visible !important;
       }
     }
 
@@ -10383,4 +10382,14 @@ tbody {
 }
 .confirm-dialogue-modal{
   background: var(--base);
+}
+.theme-dark{
+.icon-widget-popover{
+  .search-box-wrapper input{
+    color:#f4f6fa !important  ;
+  }
+  .search-box-wrapper input:focus{
+    background-color: #1c252f !important;
+  }
+}
 }
