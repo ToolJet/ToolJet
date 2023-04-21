@@ -259,7 +259,7 @@
                     "enterLastName": "Enter Last Name",
                     "enterEmail": "Enter email id",
                     "enterFulltName": "Enter full name",
-                    "inviteNewUsers":"Invite new users"
+                    "inviteNewUsers": "Invite new users"
                 },
                 "manageGroups": {
                     "permissions": {
@@ -449,7 +449,7 @@
             "wishToDeleteFolder": "Are you sure you want to delete the folder? Apps within the folder will not be deleted."
         },
         "header": {
-            "createNewApplication": "New app",
+            "createNewApplication": "Create new app",
             "import": "Import",
             "chooseFromTemplate": "Choose from template"
         },
