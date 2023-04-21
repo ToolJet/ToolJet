@@ -17,13 +17,14 @@ The user details entered while setting up ToolJet will have Super Admin privileg
 | Manage Groups in their workspace (Create Group/Add or Delete Users from groups/ Modify Group Permissions) | ✅ | ✅ |
 | Manage SSO in their workspace | ✅ | ✅ |
 | Manage Workspace Variables in their workspace | ✅ | ✅ |
+| [Manage Global datasources for the user group in their workspace](/docs/next/data-sources/overview#permissions) | ✅ | ✅ |
 | [Access any user's personal workspace (create, edit or delete apps)](#access-any-workspace) | ❌ | ✅ |
 | [Archive Admin or any user of any workspace](#archiveunarchive-users) | ❌ | ✅ |
 | [Access any user's ToolJet database (create, edit or delete database)](#access-tooljet-db-in-any-workspace) | ❌ | ✅ |
 | [Manage any workspace's setting (Groups/SSO/Workspace Variables)](#manage-workspace-setting-groupsssoworkspace-variables) | ❌ | ✅ |
 | [Manage all users from all the workspaces in the instance](#checking-all-the-users-in-the-instance) | ❌ | ✅ |
 | [Make any user Super Admin](#make-the-user-super-admin) | ❌ | ✅ |
-| [Restrict personal workspace of invited users](#allow-users-to-create-personal-workspace) | ❌ | ✅ |
+| [Restrict creation of personal workspace of users](#restrict-creation-of-personal-workspace-of-users) | ❌ | ✅ |
 
 <div style={{textAlign: 'center'}}>
 
@@ -117,11 +118,11 @@ The user will become Super Admin and the Type column will update from **`workspa
 
 </div>
 
-### Allow users to create personal workspace
+### Restrict creation of personal workspace of users
 
 When a user joins a workspace, they are provided with their own personal workspace and option to create new workspaces.
 
-Super Admins can control this behavior from the Manage Instance Settings page, they can **toggle off** the option to **Allow personal workspace**. Now whenever a user joins a workspace they won't be provided a personal workspace nor they will be able to create a new workspace in the instance.
+Super Admins can **control** this behavior from the Manage Instance Settings page, they can **toggle off** the option to **Allow personal workspace**. Now whenever a user joins a workspace they won't be provided a personal workspace nor they will be able to create a new workspace in the instance.
 
 <div style={{textAlign: 'center'}}>
 

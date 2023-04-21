@@ -51,7 +51,7 @@ describe("App Import Functionality", () => {
       force: true,
     });
     cy.verifyToastMessage(
-      commonSelectors.oldToastMessage,
+      commonSelectors.toastMessage,
       importText.couldNotImportAppToastMessage
     );
 
@@ -60,7 +60,7 @@ describe("App Import Functionality", () => {
     });
     cy.get(".driver-close-btn").click();
     cy.verifyToastMessage(
-      commonSelectors.oldToastMessage,
+      commonSelectors.toastMessage,
       importText.appImportedToastMessage
     );
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
@@ -104,7 +104,7 @@ describe("App Import Functionality", () => {
         force: true,
       });
       cy.verifyToastMessage(
-        commonSelectors.oldToastMessage,
+        commonSelectors.toastMessage,
         importText.appImportedToastMessage
       );
       cy.get(
@@ -135,7 +135,7 @@ describe("App Import Functionality", () => {
     cy.get(appVersionSelectors.appVersionMenuField)
       .should("be.visible")
       .click();
-    createNewVersion((otherVersions = ["v2"]));
+    createNewVersion(otherVersions = ["v2"], currentVersion = "v1");
     cy.get(appVersionSelectors.currentVersionField((otherVersions = "v2")))
       .should("be.visible")
       .click()
@@ -174,7 +174,7 @@ describe("App Import Functionality", () => {
                 }
               );
               cy.verifyToastMessage(
-                commonSelectors.oldToastMessage,
+                commonSelectors.toastMessage,
                 importText.appImportedToastMessage
               );
               cy.get(appVersionSelectors.appVersionMenuField).click();

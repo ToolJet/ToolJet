@@ -68,6 +68,7 @@ export default class MssqlQueryService implements QueryService {
           encrypt: sourceOptions.azure ?? false,
           instanceName: sourceOptions.instanceName,
         },
+        pool: { min: 0 },
       },
     };
 

@@ -9,7 +9,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
   const containerRef = useRef(null);
   const [modalProps, setModalProps] = useState({
     backdrop: false,
-    dialogClassName: 'datasource-edit-modal',
+    dialogClassName: `datasource-edit-modal ${darkMode && 'dark-theme'}`,
     enforceFocus: false,
   });
 
@@ -23,6 +23,9 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
     handleModalVisibility,
     isEditing,
     setEditing,
+    currentEnvironment,
+    environments,
+    setCurrentEnvironment,
   } = useContext(GlobalDataSourcesContext);
 
   useEffect(() => {
@@ -33,6 +36,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
     if (!isEditing) {
       setModalProps({ ...modalProps, backdrop: true });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDataSource, isEditing]);
 
   const handleHideModal = () => {
@@ -47,18 +51,23 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
       }
     } else {
       handleModalVisibility();
+      setEditing(true);
     }
+  };
+
+  const environmentChanged = (env) => {
+    setCurrentEnvironment(env);
+  };
+
+  const dataSourcesChanged = (resetSelection, dataSource) => {
+    setCurrentEnvironment(environments[0]);
+    fetchDataSources(resetSelection, dataSource);
   };
 
   return (
     <div className="row gx-0">
       <Sidebar />
-      <div
-        ref={containerRef}
-        className={cx('col animation-fade datasource-modal-container', {
-          'bg-light-gray': !darkMode,
-        })}
-      >
+      <div ref={containerRef} className={cx('col animation-fade datasource-modal-container', {})}>
         {containerRef && containerRef?.current && (
           <DataSourceManager
             showBackButton={selectedDataSource ? false : true}
@@ -66,10 +75,14 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
             darkMode={darkMode}
             hideModal={handleHideModal}
             scope="global"
-            dataSourcesChanged={fetchDataSources}
+            dataSourcesChanged={dataSourcesChanged}
             selectedDataSource={selectedDataSource}
             modalProps={modalProps}
+            currentEnvironment={currentEnvironment}
+            environments={environments}
+            environmentChanged={environmentChanged}
             container={selectedDataSource ? containerRef?.current : null}
+            isEditing={isEditing}
           />
         )}
         {!selectedDataSource && isEditing && (

@@ -116,17 +116,13 @@ You can specify a different server for backend if it is hosted on another server
 | ----------- | ------------------------------------------------------------------------------------------------- |
 | SERVER_HOST | Configure a hostname for the server as a proxy pass. If no value is set, it defaults to `server`. |
 
-#### Disable Multi-Workspace ( optional )
-
-If you want to disable Multi-Workspace feature, set the environment variable `DISABLE_MULTI_WORKSPACE` to `true`.
-
 ### Hide account setup link
 
-If you want to hide account setup link from admin in manage user page, set the environment variable `HIDE_ACCOUNT_SETUP_LINK` to `true`, please make sure you have configured SMTP to receive welcome mail for users. Valid only if `DISABLE_MULTI_WORKSPACE` is not `true`.
+If you want to hide account setup link from admin in manage user page, set the environment variable `HIDE_ACCOUNT_SETUP_LINK` to `true`, please make sure you have configured SMTP to receive welcome mail for users.
 
 #### Disabling signups ( optional )
 
-Sign up is enabled only if Multi-Workspace is enabled. If you want to restrict the signups and allow new users only by invitations, set the environment variable `DISABLE_SIGNUPS` to `true`.
+If you want to restrict the signups and allow new users only by invitations, set the environment variable `DISABLE_SIGNUPS` to `true`.
 
 :::tip
 You will still be able to see the signup page but won't be able to successfully submit the form.
@@ -237,7 +233,7 @@ The maximum retry limit of login password for a user is by default set to 5, acc
 
 #### SSO Configurations (Optional)
 
-Configurations for instance level SSO. Valid only if `DISABLE_MULTI_WORKSPACE` is not `true`.
+Configurations for instance level SSO.
 
 | variable                     | description                                                    |
 | ---------------------------- | -------------------------------------------------------------- |
@@ -299,3 +295,9 @@ If this parameter is not specified then PostgREST refuses authentication request
 :::info
 Please make sure that DB_URI is given in the format `postgrest://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
 :::
+
+## User Session Expiry Time (Optional)
+
+| variable         | description                                     |
+| ---------------- | ----------------------------------------------- |
+| USER_SESSION_EXPIRY | This variable controls the user session expiry time. By default, the session expires after 2 days. The variable expects the value in minutes. ex: USER_SESSION_EXPIRY = 120 which is 2 hours |

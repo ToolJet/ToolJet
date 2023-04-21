@@ -63,6 +63,7 @@ export const CreateVersion = ({
         setShowCreateAppVersion(false);
       }}
       title={t('editor.appVersionManager.createVersion', 'Create new version')}
+      checkForBackground={true}
     >
       <form
         onSubmit={(e) => {
@@ -99,7 +100,7 @@ export const CreateVersion = ({
               options={options}
               defaultValue={options[options.length - 1]}
               onChange={(version) => {
-                setAppDefinitionFromVersion(version);
+                setAppDefinitionFromVersion(version, false);
               }}
               useMenuPortal={false}
               width="100%"

@@ -3,6 +3,7 @@
         "readDocumentation": "Read documentation",
         "cancel": "Cancel",
         "save": "Save",
+        "savechanges": "Save changes",
         "back": "Back",
         "edit": "Edit",
         "search": "Search",
@@ -36,7 +37,8 @@
         "path": "Path",
         "query": "Query",
         "requestBody": "Request Body",
-        "page": "Page"
+        "page": "Page",
+        "searchItem": "Search item"
     },
     "errorBoundary": "Something went wrong.",
     "viewer": "Sorry!. This app is under maintenance",
@@ -228,7 +230,7 @@
             "view": "View"
         },
         "organization": {
-            "addNewWorkSpace":"Add new workspace",
+            "addNewWorkSpace": "Add new workspace",
             "loadOrganizations": "Load Organizations",
             "createWorkspace": "Create workspace",
             "workspaceName": "workspace name",
@@ -243,18 +245,21 @@
                 },
                 "manageUsers": {
                     "usersAndPermission": "Users & Permissions",
-                    "inviteNewUser": "Invite new user",
+                    "inviteNewUser": "Invite one user",
+                    "inviteUsers": "Invite users",
                     "name": "NAME",
                     "email": "EMAIL",
                     "status": "STATUS",
                     "archive": "Archive",
                     "unarchive": "Unarchive",
-                    "addNewUser": "Add new user",
+                    "addNewUser": "Add users",
                     "emailAddress": "Email address",
                     "createUser": "Create User",
                     "enterFirstName": "Enter First Name",
                     "enterLastName": "Enter Last Name",
-                    "enterEmail": "Enter Email"
+                    "enterEmail": "Enter email id",
+                    "enterFulltName": "Enter full name",
+                    "inviteNewUsers":"Invite new users"
                 },
                 "manageGroups": {
                     "permissions": {
@@ -275,7 +280,7 @@
                         "name": "name",
                         "addUsersToGroup": "Select users to add to the group",
                         "email": "email",
-                        "resource": "resource",
+                        "resource": "Resource",
                         "createUpdateDelete": "Create/Update/Delete",
                         "folder": "Folder"
                     }
@@ -292,7 +297,7 @@
                         "loginUrl": "Login URL",
                         "workspaceLogin": "Use this URL to login directly to this workspace",
                         "allowDefaultSso": "Allow default SSO",
-                        "ssoAuth": "Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO."
+                        "ssoAuth": "Allow users to authenticate via default SSO. Default SSO configurations can be overridden by \n workspace level SSO."
                     },
                     "google": {
                         "title": "Google",
@@ -355,7 +360,8 @@
             "newPassword": "New password",
             "confirmNewPassword": "Confirm new password",
             "enterCurrentPassword": "Enter current password",
-            "enterNewPassword": "Enter new password"
+            "enterNewPassword": "Enter new password",
+            "inviteUsers": "Invite users"
         },
         "profile": "Profile",
         "logout": "Logout"
@@ -379,7 +385,7 @@
         "blankPage": {
             "welcomeToToolJet": "Welcome to your new ToolJet workspace",
             "getStartedCreateNewApp": "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
-            "importApplication": "Import an application"
+            "importApplication": "Import an app"
         },
         "foldersSection": {
             "allApplications": "All apps",
@@ -394,7 +400,7 @@
             "wishToDeleteFolder": "Are you sure you want to delete the folder? Apps within the folder will not be deleted."
         },
         "header": {
-            "createNewApplication": "New app",
+            "createNewApplication": "Create new app",
             "import": "Import",
             "chooseFromTemplate": "Choose from template"
         },
