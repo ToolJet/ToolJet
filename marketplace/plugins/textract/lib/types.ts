@@ -9,6 +9,7 @@ export type QueryOptions = {
   key?: string;
   document?: string;
   encoding?: BufferEncoding;
+  feature_types?: string[];
 };
 
 export enum Operation {

@@ -12,11 +12,16 @@ export default class Textract implements QueryService {
     try {
       switch (operation) {
         case Operation.AnalyzeDocument:
-          result = await analyzeDocument(queryOptions?.document, client);
+          result = await analyzeDocument(queryOptions?.document, queryOptions?.feature_types, client);
           break;
 
         case Operation.AnalyzeS3Document:
-          result = await analyzeS3Document(queryOptions?.bucket, queryOptions?.key, client);
+          result = await analyzeS3Document(
+            queryOptions?.bucket,
+            queryOptions?.key,
+            queryOptions?.feature_types,
+            client
+          );
           break;
         default:
           result = { error: 'Invalid operation' };
