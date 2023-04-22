@@ -1,4 +1,5 @@
 import React from 'react';
+import IconEl from '@/_ui/Icon/Icon';
 
 export const ButtonBase = function ButtonBase(props) {
   const mapBaseSize = {
@@ -12,6 +13,9 @@ export const ButtonBase = function ButtonBase(props) {
     as = 'button', // render it as a button or an anchor.
     children,
     disabled,
+    rightIcon,
+    leftIcon,
+    Icon,
     ...restProps
   } = props;
 
@@ -19,7 +23,9 @@ export const ButtonBase = function ButtonBase(props) {
 
   return (
     <Element {...restProps} className={`tj-btn ${mapBaseSize[size]}  ${className}`} disabled={disabled}>
+      {leftIcon && leftIcon}
       {children}
+      {rightIcon && rightIcon}
     </Element>
   );
 };
@@ -44,7 +50,7 @@ export const IconButton = function IconButton(props) {
 
   return (
     <Element {...restProps} className={`generated-icon-classnames ${className}`}>
-      {Icon}
+      <IconEl name={Icon} />
     </Element>
   );
 };

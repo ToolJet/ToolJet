@@ -15,7 +15,7 @@ export const getPrivateRoute = (page, params = {}) => {
   };
 
   let url = routes[page];
-  const urlParams = url.split('/').map((path) => {
+  const urlParams = url?.split('/').map((path) => {
     if (path.startsWith(':')) {
       return params[path.substring(1)];
     }
