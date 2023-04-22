@@ -42,7 +42,7 @@ export const commonSelectors = {
   createNewFolderButton: "[data-cy=create-new-folder-button]",
   folderNameInput: "[data-cy=folder-name-input]",
   createFolderButton: "[data-cy=create-folder-button]",
-  folderList: ".css-2kg7t4-MenuList",
+  folderList: ".css-169zxdi-MenuList",
   empytyFolderImage: "[data-cy=empty-folder-image]",
   emptyFolderText: "[data-cy=empty-folder-text]",
   allApplicationsLink: "[data-cy=all-applications-link]",

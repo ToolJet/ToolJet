@@ -978,6 +978,7 @@ class EditorComponent extends React.Component {
         return this.setState({
           draftQuery: { ...this.state.draftQuery, name: newName },
           renameQueryName: false,
+          selectedQuery: { ...this.state.selectedQuery, name: newName },
         });
       }
       dataqueryService

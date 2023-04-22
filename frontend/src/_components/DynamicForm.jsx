@@ -15,6 +15,7 @@ import Zendesk from '@/_components/Zendesk';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 
 import { find, isEmpty } from 'lodash';
+import { ButtonSolid } from './AppButton';
 
 const DynamicForm = ({
   schema,
@@ -320,14 +321,16 @@ const DynamicForm = ({
                 )}
                 {(type === 'password' || encrypted) && selectedDataSource?.id && (
                   <div className="mx-1 col">
-                    <button
-                      className="btn btn-sm font-500 color-primary border-1 mb-2 mx-2"
+                    <ButtonSolid
+                      className="datasource-edit-btn mb-2"
+                      type="a"
+                      variant="tertiary"
                       target="_blank"
                       rel="noreferrer"
                       onClick={(event) => handleEncryptedFieldsToggle(event, key)}
                     >
                       {computedProps?.[key]?.['disabled'] ? 'Edit' : 'Cancel'}
-                    </button>
+                    </ButtonSolid>
                   </div>
                 )}
                 {(type === 'password' || encrypted) && (
@@ -348,6 +351,7 @@ const DynamicForm = ({
                 {...getElementProps(obj[key])}
                 {...computedProps[key]}
                 data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
+                customWrap={true} //to be removed after whole ui is same
               />
             </div>
           );

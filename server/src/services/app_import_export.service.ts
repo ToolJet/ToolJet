@@ -329,16 +329,6 @@ export class AppImportExportService {
           const appEnvironment = appVersionedEnvironments.filter((appEnv) => appEnv.name === currentOrgEnv.name)[0];
           if (appEnvironment) {
             appEnvironmentMapping[appEnvironment.id] = currentOrgEnv.id;
-          } else {
-            const env = manager.create(AppEnvironment, {
-              organizationId: user.organizationId,
-              name: currentOrgEnv.name,
-              isDefault: currentOrgEnv.isDefault,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            });
-            await manager.save(env);
-            appEnvironmentMapping[env.id] = env.id;
           }
         }
       } else {
@@ -347,16 +337,6 @@ export class AppImportExportService {
           const appEnvironment = appEnvironments.filter((appEnv) => appEnv.name === currentOrgEnv.name)[0];
           if (appEnvironment) {
             appEnvironmentMapping[appEnvironment.id] = currentOrgEnv.id;
-          } else {
-            const env = manager.create(AppEnvironment, {
-              organizationId: user.organizationId,
-              name: currentOrgEnv.name,
-              isDefault: currentOrgEnv.isDefault,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            });
-            await manager.save(env);
-            appEnvironmentMapping[env.id] = env.id;
           }
         }
       }
