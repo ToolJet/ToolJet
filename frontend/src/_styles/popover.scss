@@ -11,6 +11,10 @@
   overflow: auto;
 }
 
+.PopoverContent.global-settings-popover-content{
+  will-change: initial;
+}
+
 .PopoverContent-dark {
   background-color: #1f2936;
 }
@@ -34,7 +38,7 @@
 }
 
 .PopoverContent.dark{
-  background-color: #1F2936 !important;
+  background-color: #1F2936;
   .dark.leftsidebar-panel-header{
     .text-muted{
       color: #C0C8CC !important;

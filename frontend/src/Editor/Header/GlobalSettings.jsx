@@ -228,7 +228,7 @@ export const GlobalSettings = ({
           if (show) setShow('settings');
           else setShow('');
         }}
-        popoverContentClassName="p-0 sidebar-h-100-popover"
+        popoverContentClassName="p-0 sidebar-h-100-popover global-settings-popover-content"
         side="bottom"
         popoverContent={popoverContent}
         popoverContentHeight="auto"
