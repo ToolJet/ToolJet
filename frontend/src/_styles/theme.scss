@@ -7043,6 +7043,14 @@ tbody {
   display: grid !important;
   grid-template-rows: auto 1fr auto !important;
 }
+.marketplace-page-sidebar {
+  height: calc(100vh - 64px);
+  max-width: 288px;
+  background-color: var(--base);
+  border-right: 1px solid var(--slate5) !important;
+  display: grid !important;
+  grid-template-rows: auto 1fr auto !important;
+}
 
 .home-page-sidebar {
   max-width: 288px;

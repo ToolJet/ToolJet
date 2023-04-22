@@ -54,15 +54,16 @@ const DynamicForm = ({
         fields = { ...properties };
       }
 
-      Object.keys(fields).map((key) => {
-        const { type, encrypted } = fields[key];
-        if ((type === 'password' || encrypted) && !(key in computedProps)) {
-          //Editable encrypted fields only if datasource doesn't exists
-          encrpytedFieldsProps[key] = {
-            disabled: !!selectedDataSource?.id,
-          };
-        }
-      });
+      Object.keys(fields).length > 0 &&
+        Object.keys(fields).map((key) => {
+          const { type, encrypted } = fields[key];
+          if ((type === 'password' || encrypted) && !(key in computedProps)) {
+            //Editable encrypted fields only if datasource doesn't exists
+            encrpytedFieldsProps[key] = {
+              disabled: !!selectedDataSource?.id,
+            };
+          }
+        });
       setComputedProps({ ...computedProps, ...encrpytedFieldsProps });
     }
 
