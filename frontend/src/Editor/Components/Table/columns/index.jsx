@@ -90,9 +90,9 @@ export default function generateColumnsData({
       maxLength: column.maxLength,
       regex: column.regex,
       customRule: column?.customRule,
-      sortType,
-      Cell: function ({ cell, isEditable }) {
-        const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
+      Cell: function ({ cell, isEditable, newRowsChangeSet = null }) {
+        const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
+        const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
 
         const rowData = tableData[cell.row.index];
@@ -147,7 +147,7 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="text"
-                    style={{ ...cellStyles, maxWidth: width, minWidth: width - 10 }}
+                    style={{ ...cellStyles, maxWidth: width }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
@@ -214,7 +214,7 @@ export default function generateColumnsData({
                 <div className="h-100 d-flex flex-column justify-content-center">
                   <input
                     type="number"
-                    style={{ ...cellStyles, maxWidth: width, minWidth: width - 10 }}
+                    style={{ ...cellStyles, maxWidth: width }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         if (e.target.defaultValue !== e.target.value) {
@@ -258,7 +258,7 @@ export default function generateColumnsData({
                   darkMode ? 'text-light textarea-dark-theme' : 'text-muted'
                 }`}
                 readOnly={!isEditable}
-                style={{ maxWidth: width, minWidth: width - 10 }}
+                style={{ maxWidth: width }}
                 onBlur={(e) => {
                   if (isEditable) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);

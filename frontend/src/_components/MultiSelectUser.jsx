@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import Select from 'react-select-search';
 import '@/_styles/widgets/multi-select.scss';
 
-function MultiSelect({
+function MultiSelectUser({
   onSelect,
   onSearch,
   selectedValues = [],
@@ -37,13 +37,37 @@ function MultiSelect({
     [setSearchText, onSearch, selectedValues]
   );
 
+  function renderCustom(props, option) {
+    return (
+      <div className={`item-renderer`}>
+        <div>
+          <input
+            type="checkbox"
+            onClick={(e) => {
+              onSelect([...selectedValues, option]);
+            }}
+          />
+          <div className="d-flex flex-column" style={{ marginLeft: '12px' }}>
+            <p style={{ marginBottom: '0px' }}>
+              {option?.first_name} {option?.last_name}
+            </p>
+            <span>{option?.email}</span>
+          </div>
+        </div>
+        <div className="avatar">
+          {option?.first_name?.[0]}
+          {option?.last_name?.[0]}
+        </div>
+      </div>
+    );
+  }
+
   const filterOptions = useCallback(
     (options) => {
       return options?.filter((data) => !selectedValues.some((selected) => selected.value === data.value));
     },
     [selectedValues]
   );
-
   return (
     <div className="tj-ms tj-ms-count">
       <FilterPreview text={`${selectedValues.length} selected`} onClose={selectedValues.length ? onReset : undefined} />
@@ -70,12 +94,14 @@ function MultiSelect({
         }
         disabled={isLoading}
         fuzzySearch
+        renderOption={renderCustom}
+        customWrap={true}
       />
     </div>
   );
 }
 
-MultiSelect.propTypes = {
+MultiSelectUser.propTypes = {
   onSelect: PropTypes.func.isRequired,
   onReset: PropTypes.func,
   onSearch: PropTypes.func,
@@ -86,4 +112,4 @@ MultiSelect.propTypes = {
   searchLabel: PropTypes.string,
 };
 
-export { MultiSelect };
+export { MultiSelectUser };
