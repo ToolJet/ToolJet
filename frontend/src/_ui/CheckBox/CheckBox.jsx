@@ -7,7 +7,14 @@ export const Checkbox = ({ label, onChange, key = '', value }) => {
 
   return (
     <div key={key} className="form-check mx-1">
-      <input className="form-check-input" type="checkbox" onChange={handleOnchange} />
+      <input
+        style={{
+          backgroundColor: '#D7DBDF',
+        }}
+        className="form-check-input"
+        type="checkbox"
+        onChange={handleOnchange}
+      />
       <label className="form-check-label">{label}</label>
     </div>
   );
