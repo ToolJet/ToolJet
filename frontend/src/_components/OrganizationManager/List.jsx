@@ -7,6 +7,7 @@ export const OrganizationList = function () {
   const { current_organization_id } = authenticationService.currentSessionValue;
   const [organizationList, setOrganizationList] = useState([]);
   const [getOrgStatus, setGetOrgStatus] = useState('');
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
     setGetOrgStatus('loading');
@@ -30,25 +31,24 @@ export const OrganizationList = function () {
     value: org.id,
     name: org.name,
     label: (
-      <div className="row align-items-center">
-        <div className="col organization-avatar">
-          <span className="avatar avatar-sm bg-secondary-lt" data-cy={`${org.name}-avatar`}>
-            {getAvatar(org.name)}
-          </span>
+      <div className={`align-items-center d-flex tj-org-dropdown  ${darkMode && 'dark-theme'}`}>
+        <div className="dashboard-org-avatar " data-cy={`${org.name}-avatar`}>
+          {getAvatar(org.name)}
         </div>
-        <div className="col">
-          <div className="org-name">{org.name}</div>
-        </div>
+        <div className="org-name">{org.name}</div>
       </div>
     ),
   }));
 
   return (
-    <CustomSelect
-      isLoading={getOrgStatus === 'loading'}
-      options={options}
-      value={current_organization_id}
-      onChange={(id) => switchOrganization(id)}
-    />
+    <div className="org-select-container">
+      <CustomSelect
+        isLoading={getOrgStatus === 'loading'}
+        options={options}
+        value={current_organization_id}
+        onChange={(id) => switchOrganization(id)}
+        className={`tj-org-select  ${darkMode && 'dark-theme'}`}
+      />
+    </div>
   );
 };

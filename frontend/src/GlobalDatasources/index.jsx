@@ -1,8 +1,9 @@
-import React, { createContext, useMemo, useState, useEffect } from 'react';
+import React, { createContext, useMemo, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
 import { globalDatasourceService, appEnvironmentService, authenticationService } from '@/_services';
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
+import { BreadCrumbContext } from '@/App/App';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
@@ -20,8 +21,11 @@ export const GlobalDatasources = (props) => {
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
   const navigate = useNavigate();
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
+    updateSidebarNAV('');
+
     if (!admin) {
       navigate('/');
     }

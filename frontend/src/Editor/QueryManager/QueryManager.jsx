@@ -167,6 +167,14 @@ class QueryManagerComponent extends React.Component {
     );
   };
 
+  componentDidUpdate(prevState) {
+    if (prevState?.selectedQuery?.name !== this.state?.selectedQuery?.name) {
+      this.setState({
+        queryName: this.state.selectedQuery?.name,
+      });
+    }
+  }
+
   componentWillReceiveProps(nextProps) {
     if (nextProps.loadingDataSources) return;
     if (this.props.showQueryConfirmation && !nextProps.showQueryConfirmation) {
