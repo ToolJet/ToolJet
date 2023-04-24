@@ -326,7 +326,7 @@ export class AppsService {
 
     if (!versionFrom) {
       //create default data sources
-      for (const defaultSource of ['restapi', 'runjs', 'tooljetdb']) {
+      for (const defaultSource of ['restapi', 'runjs', 'tooljetdb', 'workflows']) {
         const dataSource = await this.dataSourcesService.createDefaultDataSource(
           defaultSource,
           appVersion.id,

@@ -27,6 +27,7 @@ const staticDataSources = [
   { kind: 'restapi', id: 'null', name: 'REST API' },
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
   { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
+  { kind: 'workflows', id: 'null', name: 'Run Workflow' },
 ];
 
 class QueryManagerComponent extends React.Component {
@@ -135,6 +136,12 @@ class QueryManagerComponent extends React.Component {
           }
         }
 
+        if (selectedQuery?.kind === 'workflows') {
+          if (!selectedQuery.data_source_id) {
+            source = { kind: 'workflows', id: 'null', name: 'Run Workflow' };
+          }
+        }
+
         if (selectedQuery?.kind === 'tooljetdb') {
           if (!selectedQuery.data_source_id) {
             source = { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' };
@@ -238,7 +245,7 @@ class QueryManagerComponent extends React.Component {
   };
 
   changeDataSource = (source) => {
-    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'runpy', 'tooljetdb'].includes(source.kind);
+    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'runpy', 'tooljetdb', 'workflows'].includes(source.kind);
     const schemaUnavailableOptions = {
       restapi: {
         method: 'get',
@@ -257,6 +264,7 @@ class QueryManagerComponent extends React.Component {
         code: '',
       },
       runpy: {},
+      workflows: {},
     };
 
     let newOptions = {};

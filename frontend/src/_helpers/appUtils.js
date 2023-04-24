@@ -8,6 +8,7 @@ import {
   computeComponentName,
   generateAppActions,
   loadPyodide,
+  executeWorkflow,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
@@ -946,6 +947,8 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           currentSessionValue?.current_organization_id,
           _self.state.currentState
         );
+      } else if (query.kind === 'workflows') {
+        queryExecutionPromise = executeWorkflow(_self, query.options.workflowId, query.options.blocking, mode);
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }

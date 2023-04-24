@@ -130,7 +130,7 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ creatingApp: true });
     appService
-      .createApp({ icon: sample(iconList), type: 'front-end' })
+      .createApp({ icon: sample(iconList), type: this.props.appType })
       .then((data) => {
         const workspaceId = getWorkspaceId();
         _self.props.navigate(`/${workspaceId}/apps/${data.id}`);

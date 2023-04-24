@@ -8,6 +8,7 @@ import { Runjs } from './Runjs';
 import { Runpy } from './Runpy';
 import { Stripe } from './Stripe';
 import { Openapi } from './Openapi';
+import { Workflows } from './Workflows';
 import tooljetDbOperations from './TooljetDatabase/operations.json';
 
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
@@ -32,6 +33,7 @@ export const allSources = {
   Runpy,
   Stripe,
   Openapi,
+  Workflows,
 };
 
 export const source = (props) => (

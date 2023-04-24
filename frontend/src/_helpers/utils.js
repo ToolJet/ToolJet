@@ -6,6 +6,7 @@ import JSON5 from 'json5';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
+import { workflowExecutionsService } from '@/_services';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -783,3 +784,8 @@ export function isExpectedDataType(data, expectedDataType) {
 
   return data;
 }
+
+export const executeWorkflow = async (self, workflowId, _blocking = false, _mode) => {
+  const executionResponse = await workflowExecutionsService.execute(workflowId);
+  return executionResponse;
+};

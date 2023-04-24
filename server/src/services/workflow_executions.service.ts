@@ -2,6 +2,7 @@ import { CreateWorkflowExecutionDto } from '@dto/create-workflow-execution.dto';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AppVersion } from 'src/entities/app_version.entity';
+import { App } from 'src/entities/app.entity';
 import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
 import { WorkflowExecutionNode } from 'src/entities/workflow_execution_node.entity';
 import { WorkflowExecutionEdge } from 'src/entities/workflow_execution_edge.entity';
@@ -35,10 +36,14 @@ export class WorkflowExecutionsService {
 
   async create(createWorkflowExecutionDto: CreateWorkflowExecutionDto): Promise<WorkflowExecution> {
     const workflowExecution = await dbTransactionWrap(async (manager: EntityManager) => {
+      const appVersionId =
+        createWorkflowExecutionDto?.appVersionId ??
+        (await manager.findOne(App, createWorkflowExecutionDto.appId)).editingVersion.id;
+
       const workflowExecution = await manager.save(
         WorkflowExecution,
         manager.create(WorkflowExecution, {
-          appVersionId: createWorkflowExecutionDto.appVersionId,
+          appVersionId: appVersionId,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
