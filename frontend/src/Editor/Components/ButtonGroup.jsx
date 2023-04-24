@@ -42,8 +42,7 @@ export const ButtonGroup = function Button({
   }, [JSON.stringify(defaultSelected)]);
 
   useEffect(() => {
-    setData(values);
-    const dataset = values;
+    let dataset = values;
     if (labels?.length < values?.length) {
       labels.map((item, index) => {
         dataset[index] = item;
