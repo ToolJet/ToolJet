@@ -54,6 +54,7 @@ import GenerateEachCellValue from './GenerateEachCellValue';
 // eslint-disable-next-line import/no-unresolved
 import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
+import { AddNewRowComponent } from './AddNewRowComponent';
 
 export function Table({
   id,
@@ -112,7 +113,7 @@ export function Table({
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
-  const deferredDataFromProps = useDeferredValue(properties.data);
+  // const deferredDataFromProps = useDeferredValue(properties.data);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
@@ -134,16 +135,23 @@ export function Table({
 
   const [tableDetails, dispatch] = useReducer(reducer, initialState());
   const [hoverAdded, setHoverAdded] = useState(false);
+  const [generatedColumn, setGeneratedColumn] = useState([]);
   const mergeToTableDetails = (payload) => dispatch(reducerActions.mergeToTableDetails(payload));
   const mergeToFilterDetails = (payload) => dispatch(reducerActions.mergeToFilterDetails(payload));
+  const mergeToAddNewRowsDetails = (payload) => dispatch(reducerActions.mergeToAddNewRowsDetails(payload));
   const mounted = useMounted();
+
+  const prevDataFromProps = useRef();
+  useEffect(() => {
+    if (mounted) prevDataFromProps.current = properties.data;
+  }, [JSON.stringify(properties.data)]);
 
   useEffect(() => {
     setExposedVariable(
       'filters',
       tableDetails.filterDetails.filters.map((filter) => filter.value)
     );
-  }, [JSON.stringify(tableDetails.filterDetails.filters)]);
+  }, [JSON.stringify(tableDetails?.filterDetails?.filters)]);
 
   useEffect(
     () => mergeToTableDetails({ columnProperties: component?.definition?.properties?.columns?.value }),
@@ -167,6 +175,14 @@ export function Table({
     mergeToFilterDetails({ filtersVisible: false });
   }
 
+  function showAddNewRowPopup() {
+    mergeToAddNewRowsDetails({ addingNewRows: true });
+  }
+
+  function hideAddNewRowPopup() {
+    mergeToAddNewRowsDetails({ addingNewRows: false });
+  }
+
   const defaultColumn = React.useMemo(
     () => ({
       minWidth: 60,
@@ -175,7 +191,7 @@ export function Table({
     []
   );
 
-  function handleCellValueChange(index, key, value, rowData) {
+  function handleExistingRowCellValueChange(index, key, value, rowData) {
     const changeSet = tableDetails.changeSet;
     const dataUpdates = tableDetails.dataUpdates || [];
     const clonedTableData = _.cloneDeep(tableData);
@@ -206,8 +222,38 @@ export function Table({
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
 
-    fireEvent('onCellValueChanged');
     return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
+  }
+
+  const copyOfTableDetails = useRef(tableDetails);
+  useEffect(() => {
+    copyOfTableDetails.current = _.cloneDeep(tableDetails);
+  }, [JSON.stringify(tableDetails)]);
+
+  function handleNewRowCellValueChange(index, key, value, rowData) {
+    const changeSet = copyOfTableDetails.current.addNewRowsDetails.newRowsChangeSet || {};
+    const dataUpdates = copyOfTableDetails.current.addNewRowsDetails.newRowsDataUpdates || {};
+    let obj = changeSet ? changeSet[index] || {} : {};
+    obj = _.set(obj, key, value);
+    let newChangeset = {
+      ...changeSet,
+      [index]: {
+        ...obj,
+      },
+    };
+    obj = _.set({ ...rowData, ...obj }, key, value);
+
+    let newDataUpdates = {
+      ...dataUpdates,
+      [index]: { ...obj },
+    };
+    const changesToBeSaved = { newRowsDataUpdates: newDataUpdates, newRowsChangeSet: newChangeset };
+    const changesToBeExposed = Object.keys(newDataUpdates).reduce((accumulator, row) => {
+      accumulator.push({ ...newDataUpdates[row] });
+      return accumulator;
+    }, []);
+    mergeToAddNewRowsDetails(changesToBeSaved);
+    return setExposedVariables({ newRows: changesToBeExposed });
   }
 
   function getExportFileBlob({ columns, fileType, fileName }) {
@@ -298,14 +344,15 @@ export function Table({
     }
   }, [color, darkMode]);
 
-  useEffect(() => {
-    updatedDataReference.current = [];
-  }, [JSON.stringify(properties.data)]);
+  let tableData = [],
+    dynamicColumn = [];
 
-  let tableData = [];
+  const useDynamicColumn = resolveReferences(component.definition.properties?.useDynamicColumn?.value, currentState);
   if (currentState) {
     tableData = resolveReferences(component.definition.properties.data.value, currentState, []);
-
+    dynamicColumn = useDynamicColumn
+      ? resolveReferences(component.definition.properties?.columnData?.value, currentState, []) ?? []
+      : [];
     if (!Array.isArray(tableData)) tableData = [];
   }
 
@@ -314,13 +361,31 @@ export function Table({
   const tableRef = useRef();
 
   const columnData = generateColumnsData({
-    columnProperties: component.definition.properties.columns.value,
+    columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
     columnSizes,
     currentState,
-    handleCellValueChange,
+    handleCellValueChange: handleExistingRowCellValueChange,
     customFilter,
     defaultColumn,
     changeSet: tableDetails.changeSet,
+    tableData,
+    variablesExposedForPreview,
+    exposeToCodeHinter,
+    id,
+    fireEvent,
+    tableRef,
+    t,
+    darkMode,
+  });
+
+  const columnDataForAddNewRows = generateColumnsData({
+    columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
+    columnSizes,
+    currentState,
+    handleCellValueChange: handleNewRowCellValueChange,
+    customFilter,
+    defaultColumn,
+    changeSet: tableDetails.addNewRowsDetails.newRowsChangeSet,
     tableData,
     variablesExposedForPreview,
     exposeToCodeHinter,
@@ -352,7 +417,9 @@ export function Table({
 
   const optionsData = columnData.map((column) => column.columnOptions?.selectOptions);
   const columns = useMemo(
-    () => [...leftActionsCellData, ...columnData, ...rightActionsCellData],
+    () => {
+      return [...leftActionsCellData, ...columnData, ...rightActionsCellData];
+    },
     [
       JSON.stringify(columnData),
       JSON.stringify(tableData),
@@ -368,11 +435,22 @@ export function Table({
     ] // Hack: need to fix
   );
 
-  console.log('columns--- ', columns);
+  const columnsForAddNewRow = useMemo(() => {
+    return [...columnDataForAddNewRows];
+  }, [JSON.stringify(columnDataForAddNewRows), darkMode, tableDetails.addNewRowsDetails.addingNewRows]);
 
   const data = useMemo(() => {
-    if (!_.isEmpty(updatedDataReference.current) && !_.isEqual(properties.data, deferredDataFromProps)) {
-      updatedDataReference.current = [];
+    if (!_.isEqual(properties.data, prevDataFromProps.current)) {
+      if (!_.isEmpty(updatedDataReference.current)) updatedDataReference.current = [];
+      if (
+        !_.isEmpty(exposedVariables.newRows) ||
+        !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) ||
+        tableDetails.addNewRowsDetails.addingNewRows
+      ) {
+        setExposedVariable('newRows', []).then(() => {
+          mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
+        });
+      }
     }
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
   }, [
@@ -383,15 +461,23 @@ export function Table({
   ]);
 
   useEffect(() => {
-    if (tableData?.length != 0 && component.definition.properties.autogenerateColumns?.value && mode === 'edit') {
-      autogenerateColumns(
+    if (
+      tableData.length != 0 &&
+      component.definition.properties.autogenerateColumns?.value &&
+      (useDynamicColumn || mode === 'edit')
+    ) {
+      const generatedColumnFromData = autogenerateColumns(
         tableData,
         component.definition.properties.columns.value,
         component.definition.properties?.columnDeletionHistory?.value ?? [],
+        useDynamicColumn,
+        dynamicColumn,
         setProperty
       );
+
+      useDynamicColumn && setGeneratedColumn(generatedColumnFromData);
     }
-  }, [JSON.stringify(tableData)]);
+  }, [JSON.stringify(tableData), JSON.stringify(dynamicColumn)]);
 
   const computedStyles = {
     // width: `${width}px`,
@@ -472,6 +558,7 @@ export function Table({
         ]);
     }
   );
+
   const currentColOrder = React.useRef();
 
   const sortOptions = useMemo(() => {
@@ -545,6 +632,27 @@ export function Table({
       }
     },
     [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]
+  );
+  registerAction(
+    'discardNewlyAddedRows',
+    async function () {
+      if (
+        tableDetails.addNewRowsDetails.addingNewRows &&
+        (Object.keys(tableDetails.addNewRowsDetails.newRowsChangeSet || {}).length > 0 ||
+          Object.keys(tableDetails.addNewRowsDetails.newRowsDataUpdates || {}).length > 0)
+      ) {
+        setExposedVariables({
+          newRows: [],
+        }).then(() => {
+          mergeToAddNewRowsDetails({ newRowsChangeSet: {}, newRowsDataUpdates: {}, addingNewRows: false });
+        });
+      }
+    },
+    [
+      JSON.stringify(tableDetails.addNewRowsDetails.newRowsChangeSet),
+      tableDetails.addNewRowsDetails.addingNewRows,
+      JSON.stringify(tableDetails.addNewRowsDetails.newRowsDataUpdates),
+    ]
   );
 
   useEffect(() => {
@@ -665,7 +773,7 @@ export function Table({
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
       {(displaySearchBox || showDownloadButton || showFilterButton) && (
-        <div className="card-body border-bottom py-3 ">
+        <div className={`card-body border-bottom py-3 ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'}`}>
           <div
             className={`d-flex align-items-center ms-auto text-muted ${
               displaySearchBox ? 'justify-content-between' : 'justify-content-end'
@@ -683,6 +791,22 @@ export function Table({
               />
             )}
             <div>
+              <button
+                className="btn btn-light btn-sm p-1 mx-1"
+                onClick={(e) => {
+                  showAddNewRowPopup();
+                }}
+                data-tooltip-id="tooltip-for-add-new-row"
+                data-tooltip-content="Add new row"
+                disabled={tableDetails.addNewRowsDetails.addingNewRows}
+              >
+                <img src="assets/images/icons/plus.svg" width="15" height="15" />
+                {!tableDetails.addNewRowsDetails.addingNewRows &&
+                  !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
+                    <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                  )}
+              </button>
+              <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
               {showFilterButton && (
                 <>
                   <span
@@ -775,7 +899,9 @@ export function Table({
       <div className="table-responsive jet-data-table">
         <table
           {...getTableProps()}
-          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'}`}
+          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'} ${
+            tableDetails.addNewRowsDetails.addingNewRows && 'disabled'
+          }`}
           style={computedStyles}
         >
           <thead>
@@ -1054,6 +1180,21 @@ export function Table({
           darkMode={darkMode}
           setAllFilters={setAllFilters}
           fireEvent={fireEvent}
+        />
+      )}
+      {tableDetails.addNewRowsDetails.addingNewRows && (
+        <AddNewRowComponent
+          hideAddNewRowPopup={hideAddNewRowPopup}
+          tableType={tableType}
+          darkMode={darkMode}
+          mergeToAddNewRowsDetails={mergeToAddNewRowsDetails}
+          onEvent={onEvent}
+          component={component}
+          setExposedVariable={setExposedVariable}
+          allColumns={allColumns}
+          defaultColumn={defaultColumn}
+          columns={columnsForAddNewRow}
+          addNewRowsDetails={tableDetails.addNewRowsDetails}
         />
       )}
     </div>

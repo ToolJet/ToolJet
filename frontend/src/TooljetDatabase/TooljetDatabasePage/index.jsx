@@ -24,9 +24,9 @@ const TooljetDatabasePage = ({ totalTables }) => {
     setSortFilters,
   } = useContext(TooljetDatabaseContext);
 
-  const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
   const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
+  const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
 
   const EmptyState = () => {
     return (
@@ -54,29 +54,20 @@ const TooljetDatabasePage = ({ totalTables }) => {
   return (
     <div className="row gx-0">
       <Sidebar />
-      <div
-        className={cx('col animation-fade', {
-          'bg-light-gray': !darkMode,
-        })}
-      >
+      <div className={cx('col animation-fade database-page-content-wrap')}>
         {totalTables === 0 && <EmptyState />}
 
         {selectedTable && (
           <>
             <div className="database-table-header-wrapper">
-              <div className="card border-0 px-3 py-2">
-                <span
-                  className="text-h3 font-weight-500"
-                  data-cy={`${String(selectedTable).toLowerCase().replace(/\s+/g, '-')}-table-name-header`}
-                >
-                  {selectedTable}
-                </span>
-              </div>
               <div className="card border-0">
-                <div className="card-body p-0 py-2">
-                  <div className="row g-2 align-items-center">
+                <div className="card-body  tj-db-operaions-header">
+                  <div className="row align-items-center">
                     <div className="col">
-                      <CreateColumnDrawer />
+                      <CreateColumnDrawer
+                        isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
+                        setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
+                      />
                       {columns?.length > 0 && (
                         <>
                           <Filter
@@ -107,7 +98,10 @@ const TooljetDatabasePage = ({ totalTables }) => {
               </div>
             </div>
             <div className={cx('col')}>
-              <Table openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)} />
+              <Table
+                openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)}
+                openCreateColumnDrawer={() => setIsCreateColumnDrawerOpen(true)}
+              />
             </div>
           </>
         )}
