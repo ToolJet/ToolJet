@@ -469,7 +469,7 @@ describe('data sources controller', () => {
         code: 'oauth-auth-code',
       });
 
-    expect(response.statusCode).toBe(403);
+    expect(response.statusCode).toBe(400);
   });
 
   afterAll(async () => {
