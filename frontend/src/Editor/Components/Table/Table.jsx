@@ -451,6 +451,9 @@ export function Table({
     return [...columnDataForAddNewRows];
   }, [JSON.stringify(columnDataForAddNewRows), darkMode, tableDetails.addNewRowsDetails.addingNewRows]);
 
+  const clonedCurrentState = _.cloneDeep(currentState);
+  delete clonedCurrentState.components[component.name];
+
   const data = useMemo(() => {
     if (!_.isEqual(properties.data, prevDataFromProps.current)) {
       if (
@@ -471,7 +474,7 @@ export function Table({
     JSON.stringify(properties.data),
     JSON.stringify(columnsIncludesDynamicValue),
     JSON.stringify(columns),
-    JSON.stringify(currentState),
+    JSON.stringify(clonedCurrentState),
   ]);
 
   useEffect(() => {
