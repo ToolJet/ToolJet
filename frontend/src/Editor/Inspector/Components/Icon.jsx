@@ -45,7 +45,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
       <Popover
         id="popover-basic"
         style={{ width: '460px', maxWidth: '460px' }}
-        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow icon-widget-popover`}
+        className={`${darkMode && 'dark-theme'} shadow icon-widget-popover`}
       >
         <Popover.Header>
           <SearchBox onSubmit={searchIcon} width="100%" />

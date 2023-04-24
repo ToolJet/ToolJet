@@ -1,11 +1,11 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import cx from 'classnames';
 import { GlobalDataSourcesContext } from '..';
 import { DataSourceTypes } from '../../Editor/DataSourceManager/SourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 
-export const ListItem = ({ dataSource, key, active, onDelete }) => {
+export const ListItem = ({ dataSource, key, active, onDelete, updateSidebarNAV }) => {
   const { setSelectedDataSource, toggleDataSourceManagerModal, environments, setCurrentEnvironment } =
     useContext(GlobalDataSourcesContext);
 
@@ -24,11 +24,16 @@ export const ListItem = ({ dataSource, key, active, onDelete }) => {
     const element = document.getElementsByClassName('form-control-plaintext form-control-plaintext-sm')[0];
     element.focus();
   };
+  useEffect(() => {
+    if (active) updateSidebarNAV(dataSource?.name);
+    else if (dataSource?.length == 0) updateSidebarNAV('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(dataSource)]);
 
   return (
     <div
       key={key}
-      className={cx('tj-text-sm mx-3 p-2 rounded-3 mb-2 datasources-list', {
+      className={cx('mx-3 rounded-3 datasources-list', {
         'datasources-list-item': active,
       })}
     >
@@ -39,16 +44,17 @@ export const ListItem = ({ dataSource, key, active, onDelete }) => {
           setCurrentEnvironment(environments[0]);
           toggleDataSourceManagerModal(true);
           focusModal();
+          updateSidebarNAV(dataSource?.name);
         }}
         className="col d-flex align-items-center"
       >
         {icon}
-        <span className="font-400" style={{ paddingLeft: 5 }}>
+        <span className="font-400 tj-text-xsm" style={{ paddingLeft: '6px' }}>
           {dataSource.name}
         </span>
       </div>
       <div className="col-auto">
-        <button className="btn btn-sm ds-delete-btn" onClick={() => onDelete(dataSource)}>
+        <button className="ds-delete-btn" onClick={() => onDelete(dataSource)}>
           <div>
             <DeleteIcon width="14" height="14" />
           </div>
