@@ -1,15 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {
-  useMemo,
-  useState,
-  useEffect,
-  useCallback,
-  useContext,
-  useReducer,
-  useRef,
-  useDeferredValue,
-} from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useContext, useReducer, useRef } from 'react';
 import {
   useTable,
   useFilters,
