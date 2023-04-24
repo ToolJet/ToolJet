@@ -86,11 +86,6 @@ export class OrganizationUsersService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(OrganizationUser, id, { status: WORKSPACE_USER_STATUS.INVITED, invitationToken });
-
-      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
-        // Resetting password if single organization
-        await this.usersService.updateUser(id, { password: uuid.v4() }, manager);
-      }
     }, manager);
 
     this.emailService

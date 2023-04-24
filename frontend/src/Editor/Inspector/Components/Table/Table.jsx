@@ -1008,7 +1008,7 @@ class TableComponent extends React.Component {
                                       <div className="col-auto">
                                         <img
                                           data-cy={`draggable-handle-column-${resolvedItemName}`}
-                                          src="../../assets/images/icons/dragicon.svg"
+                                          src="assets/images/icons/dragicon.svg"
                                         />
                                       </div>
                                       <div className="col">

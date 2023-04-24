@@ -8,7 +8,6 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
   const [resendBtn, setResetBtn] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
-  const single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   useEffect(() => {
     let timeLeft = 30;
     let elem = document.getElementById('resend');
@@ -97,17 +96,15 @@ export const SignupInfoScreen = function SignupInfoScreen({ email, backtoSignup,
               Resend verification mail in 30s
             </ButtonSolid>
           )}
-          {!single_organization && (
-            <ButtonSolid
-              variant="tertiary"
-              type
-              onClick={() => backtoSignup(email, name)}
-              className="signup-info-edit-btn signup-info-btn"
-              data-cy="edit-email-button"
-            >
-              Edit email address
-            </ButtonSolid>
-          )}
+          <ButtonSolid
+            variant="tertiary"
+            type
+            onClick={() => backtoSignup(email, name)}
+            className="signup-info-edit-btn signup-info-btn"
+            data-cy="edit-email-button"
+          >
+            Edit email address
+          </ButtonSolid>
         </>
       </div>
     </div>

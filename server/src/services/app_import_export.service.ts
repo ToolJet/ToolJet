@@ -50,7 +50,7 @@ export class AppImportExportService {
       }
       const appVersions = await queryAppVersions.orderBy('app_versions.created_at', 'ASC').getMany();
 
-      const dataSources =
+      let dataSources =
         appVersions?.length &&
         (await manager
           .createQueryBuilder(DataSource, 'data_sources')
@@ -73,12 +73,16 @@ export class AppImportExportService {
 
       const globalQueries: DataQuery[] = await manager
         .createQueryBuilder(DataQuery, 'data_query')
-        .leftJoinAndSelect('data_query.dataSource', 'dataSource')
+        .innerJoinAndSelect('data_query.dataSource', 'dataSource')
         .where('data_query.appVersionId IN(:...versionId)', {
           versionId: appVersions.map((v) => v.id),
         })
         .andWhere('dataSource.scope = :scope', { scope: DataSourceScopes.GLOBAL })
         .getMany();
+
+      const globalDataSources = [...new Map(globalQueries.map((gq) => [gq.dataSource.id, gq.dataSource])).values()];
+
+      dataSources = [...dataSources, ...globalDataSources];
 
       if (dataSources?.length) {
         dataQueries = await manager
@@ -96,10 +100,10 @@ export class AppImportExportService {
           })
           .orderBy('data_source_options.createdAt', 'ASC')
           .getMany();
-      }
 
-      if (globalQueries?.length) {
-        dataQueries = [...dataQueries, ...globalQueries];
+        dataSourceOptions?.forEach((dso) => {
+          delete dso?.options?.tokenData;
+        });
       }
 
       appToExport['dataQueries'] = dataQueries;
@@ -110,6 +114,7 @@ export class AppImportExportService {
       appToExport['schemaDetails'] = {
         multiPages: true,
         multiEnv: true,
+        globalDataSources: true,
       };
 
       return { appV2: appToExport };
@@ -318,22 +323,20 @@ export class AppImportExportService {
 
       if (!appEnvironments?.length) {
         currentOrgEnvironments.map((env) => (appEnvironmentMapping[env.id] = env.id));
+      } else if (appEnvironments?.length && appEnvironments[0]?.appVersionId) {
+        const appVersionedEnvironments = appEnvironments.filter((appEnv) => appEnv.appVersionId === appVersion.id);
+        for (const currentOrgEnv of currentOrgEnvironments) {
+          const appEnvironment = appVersionedEnvironments.filter((appEnv) => appEnv.name === currentOrgEnv.name)[0];
+          if (appEnvironment) {
+            appEnvironmentMapping[appEnvironment.id] = currentOrgEnv.id;
+          }
+        }
       } else {
         //For apps imported on v2 where organizationId not available
         for (const currentOrgEnv of currentOrgEnvironments) {
           const appEnvironment = appEnvironments.filter((appEnv) => appEnv.name === currentOrgEnv.name)[0];
           if (appEnvironment) {
             appEnvironmentMapping[appEnvironment.id] = currentOrgEnv.id;
-          } else {
-            const env = manager.create(AppEnvironment, {
-              organizationId: user.organizationId,
-              name: currentOrgEnv.name,
-              isDefault: currentOrgEnv.isDefault,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            });
-            await manager.save(env);
-            appEnvironmentMapping[env.id] = env.id;
           }
         }
       }
@@ -366,11 +369,8 @@ export class AppImportExportService {
         );
       }
 
-      let dataSourcesToIterate = dataSources; // 0.9.0 -> add all data sources & queries to all versions
+      let dataSourcesToIterate = dataSources.map((ds) => ds.appVersionId); // 0.9.0 -> add all data sources & queries to all versions
       let dataQueriesToIterate = dataQueries;
-      const globalQueriesToIterate = dataQueries?.filter(
-        (dq) => dq.dataSource?.scope === DataSourceScopes.GLOBAL && dq.appVersionId === appVersion.id
-      );
 
       if (dataSources[0]?.appVersionId || dataQueries[0]?.appVersionId) {
         // v1 - Data queries without dataSourceId present
@@ -447,17 +447,48 @@ export class AppImportExportService {
         dataQueryMapping[query.id] = newQuery.id;
         newDataQueries.push(newQuery);
       }
+    }
 
-      for (const query of globalQueriesToIterate) {
-        const newQuery = manager.create(DataQuery, {
-          name: query.name,
-          options: query.options,
-          dataSourceId: query.dataSourceId,
+    //Convert Global DataSources to Local
+    const globalDataSourcesToIterate = dataSources?.filter((ds) => ds.scope === DataSourceScopes.GLOBAL);
+
+    for (const appVersion of appVersions) {
+      for (const source of globalDataSourcesToIterate) {
+        const newSource = manager.create(DataSource, {
+          name: source.name,
+          kind: source.kind,
+          type: source.type || DataSourceTypes.DEFAULT,
           appVersionId: appVersionMapping[appVersion.id],
         });
-        await manager.save(newQuery);
-        dataQueryMapping[query.id] = newQuery.id;
-        newDataQueries.push(newQuery);
+        await manager.save(newSource);
+
+        for (const dataSourceOption of dataSourceOptions.filter((dso) => dso.dataSourceId === source.id)) {
+          if (dataSourceOption?.environmentId in appEnvironmentMapping) {
+            const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
+            const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
+            const dsOption = manager.create(DataSourceOptions, {
+              options: newOptions,
+              environmentId: appEnvironmentMapping[dataSourceOption.environmentId],
+              dataSourceId: newSource.id,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            await manager.save(dsOption);
+          }
+        }
+        for (const query of dataQueries.filter(
+          (dq) => dq.dataSourceId === source.id && dq.appVersionId === appVersion.id
+        )) {
+          const newQuery = manager.create(DataQuery, {
+            name: query.name,
+            options: query.options,
+            dataSourceId: newSource.id,
+            appVersionId: appVersionMapping[appVersion.id],
+          });
+          await manager.save(newQuery);
+          dataQueryMapping[query.id] = newQuery.id;
+          newDataQueries.push(newQuery);
+        }
       }
     }
 
