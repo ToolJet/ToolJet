@@ -445,6 +445,8 @@ class ViewerComponent extends React.Component {
   };
 
   switchPage = (id, queryParams = []) => {
+    document.getElementById('real-canvas').scrollIntoView();
+
     if (this.state.currentPageId === id) return;
 
     const { handle } = this.state.appDefinition.pages[id];
