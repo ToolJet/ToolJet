@@ -240,6 +240,7 @@ class ManageOrgUsersComponent extends React.Component {
     this.setState({
       errors: {},
       file: null,
+      fields: {},
     });
   };
 
