@@ -4342,10 +4342,6 @@ input[type="text"] {
     background-color: var(--base);
   }
 
-  .input-icon-addon {
-    // min-width: 0rem !important;
-  }
-
   .input-icon .form-control:not(:first-child),
   .input-icon .form-select:not(:last-child) {
     padding-left: 28px !important;
