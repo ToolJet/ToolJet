@@ -2069,7 +2069,8 @@ tr:focus {
   padding: 5px;
 }
 
-.table-filters,.table-add-new-row {
+.table-filters,
+.table-add-new-row {
   position: absolute;
   top: 2.85rem;
   width: 80%;
@@ -4526,30 +4527,37 @@ input[type="text"] {
     }
   }
 }
-.home-modal-component-editor.dark
-{
-  .modal-header,.modal-body{
+
+.home-modal-component-editor.dark {
+
+  .modal-header,
+  .modal-body {
     background-color: #232e3c;
     color: #fff;
   }
-  .form-control{
+
+  .form-control {
     color: #fff;
     background-color: #232e3c !important;
   }
 }
+
 .onboarding-modal.dark .modal-content {
   @extend .modal-content.home-modal-component.dark;
 }
+
 .modal-content.home-modal-component.dark-theme {
   .btn-close {
     filter: brightness(0) invert(1);
   }
 }
-.home-modal-component{
+
+.home-modal-component {
   .btn-close {
     opacity: 1 !important;
   }
 }
+
 .modal-content.home-modal-component.dark {
   background-color: $bg-dark-light  !important;
   color: $white  !important;
@@ -4932,7 +4940,7 @@ div#driver-page-overlay {
 
 .popover.popover-dark-themed {
   background-color: $bg-dark-light;
-  border-color: rgba(101,109,119,0.16);
+  border-color: rgba(101, 109, 119, 0.16);
 
 
   .popover-body {
@@ -8401,7 +8409,8 @@ tbody {
   color: var(--slate12);
   justify-content: center;
 }
-.launch-button.tj-disabled-btn{
+
+.launch-button.tj-disabled-btn {
   cursor: not-allowed;
 }
 
@@ -9701,7 +9710,7 @@ tbody {
   border-radius: 4px;
 }
 
-.confirm-dialogue-body  {
+.confirm-dialogue-body {
   background: var(--base);
   color: var(--slate12);
 }
@@ -9823,7 +9832,7 @@ tbody {
   grid-template-rows: auto 1fr auto;
 }
 
-.add-new-datasource-header-container{
+.add-new-datasource-header-container {
   margin-bottom: 24px;
   padding-top: 4px;
 }
@@ -9920,7 +9929,7 @@ tbody {
     margin-bottom: 4px;
   }
 
-  input,
+  input.form-control,
   textarea,
   .form-control {
     gap: 16px !important;
@@ -10359,18 +10368,20 @@ tbody {
 .template-source-name {
   color: var(--slate12) !important;
 }
-.marketplace-install{
+
+.marketplace-install {
   color: var(--indigo9);
 }
+
 .popover {
   .popover-arrow {
     display: none;
   }
 }
 
-.shareable-link{
-  .input-group{
-    .tj-app-input textarea{
+.shareable-link {
+  .input-group {
+    .tj-app-input textarea {
       width: 600px;
       border-radius: 0px !important;
       margin-bottom: 0px !important;
@@ -10381,6 +10392,7 @@ tbody {
     }
   }
 }
-.confirm-dialogue-modal{
+
+.confirm-dialogue-modal {
   background: var(--base);
 }
