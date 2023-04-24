@@ -128,6 +128,18 @@ jobs:
               {
                 "key": "SMTP_PASSWORD",
                 "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"
+              },
+              {
+                "key": "REDIS_HOST",
+                "value": "${{ secrets.RENDER_REDIS_HOST }}"
+              },
+              {
+                "key": "REDIS_PORT",
+                "value": "${{ secrets.RENDER_REDIS_PORT }}"
+              },
+              {
+                "key": "LICENSE_KEY",
+                "value": "${{ secrets.RENDER_LICENSE_KEY }}"
               }
             ],
             "serviceDetails": {
