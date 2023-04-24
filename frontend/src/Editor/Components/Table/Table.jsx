@@ -113,7 +113,6 @@ export function Table({
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
-  // const deferredDataFromProps = useDeferredValue(properties.data);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
