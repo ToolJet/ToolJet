@@ -78,7 +78,7 @@ export const navigateToAppEditor = (appName) => {
     .trigger("mousehover")
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
-    .click();
+    .click({force:true});
   //cy.wait("@appEditor");
 };
 
