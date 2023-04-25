@@ -639,6 +639,13 @@ export function Table({
       JSON.stringify(tableDetails.addNewRowsDetails.newRowsDataUpdates),
     ]
   );
+  registerAction(
+    'downloadTableData',
+    async function (format) {
+      await exportData(`${format}`, true);
+    },
+    [_.toString(globalFilteredRows)]
+  );
 
   useEffect(() => {
     const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);

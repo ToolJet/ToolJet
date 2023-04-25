@@ -1162,6 +1162,34 @@ button {
   width: 184px !important;
 }
 
+.component-action-select {
+  .css-zz6spl-container{
+    width: inherit;
+  }
+  &.fx-container-eventmanager{
+    height: 32px !important;
+    .fx-common {
+      right: 0 !important;
+    }
+    .custom-row{
+      width:100%
+    }
+  }
+  .component-action-select-codeShow{
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    justify-content: space-between;
+    .custom-row{
+      width: 75%;
+    }
+  }
+  .row.fx-container{
+    .col{
+      display: flex !important;
+    }
+  }  
+}
+
 .fx-container-eventmanager *.fx-common {
   top: 6px !important;
   right: -34px;
