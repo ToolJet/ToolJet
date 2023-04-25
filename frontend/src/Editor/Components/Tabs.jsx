@@ -197,6 +197,7 @@ export const Tabs = function Tabs({
           )}
         </div>
       ))}
+      {parsedTabs?.length == 0 && <p className="tabs-widget-blank">No tabs</p>}
     </div>
   );
 };
