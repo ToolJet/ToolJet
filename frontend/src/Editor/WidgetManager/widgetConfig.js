@@ -1170,7 +1170,7 @@ export const widgets = [
       },
     },
     exposedVariables: {
-      value: 0,
+      value: 99,
     },
     definition: {
       others: {
