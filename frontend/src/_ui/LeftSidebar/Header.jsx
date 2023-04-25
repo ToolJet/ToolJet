@@ -10,7 +10,7 @@ const PanelHeader = ({ children, settings, title }) => {
     <div className="panel-header-container row">
       {settings && <div className="col-auto d-flex px-1">{settings}</div>}
       <div className={`col ${settings && 'px-0'}`}>
-        <p className="text-muted m-0 fw-500" data-cy={`label-${String(title).toLowerCase()}`}>
+        <p className="pointer-cursor text-muted m-0 fw-500" data-cy={`label-${String(title).toLowerCase()}`}>
           {title}
         </p>
       </div>

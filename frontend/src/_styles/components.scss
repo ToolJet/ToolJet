@@ -105,6 +105,10 @@ $btn-dark-color: #FFFFFF;
     height: 52px;
     border-bottom: 1px solid #E6E8EB;
 
+    .pointer-cursor {
+      cursor: pointer;
+    }
+
     .add-new-page {
       margin-left: 4px;
     }
@@ -120,7 +124,14 @@ $btn-dark-color: #FFFFFF;
 .leftsidebar-panel-header.dark {
   background-color: #1F2936 !important;
 
-  .panel-header-container,
+  .panel-header-container {
+    border-color: #697177;
+
+    .pointer-cursor {
+      cursor: pointer;
+    }
+  }
+
   .panel-search-container {
     border-color: #697177;
   }
