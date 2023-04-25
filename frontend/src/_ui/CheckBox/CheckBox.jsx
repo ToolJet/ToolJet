@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const Checkbox = ({ label, onChange, key = '', value }) => {
+export const Checkbox = ({ label, isChecked, onChange, key = '', value }) => {
   const handleOnchange = (event) => {
     onChange(event, value);
   };
@@ -14,14 +14,15 @@ export const Checkbox = ({ label, onChange, key = '', value }) => {
         className="form-check-input"
         type="checkbox"
         onChange={handleOnchange}
+        checked={isChecked}
       />
       <label className="form-check-label">{label}</label>
     </div>
   );
 };
 
-export const CheckboxGroup = ({ label, options = [], onChange }) => {
-  const [checkedItems, setCheckedItems] = React.useState([]);
+export const CheckboxGroup = ({ label, options = [], values, onChange }) => {
+  const [checkedItems, setCheckedItems] = React.useState(values);
 
   React.useEffect(() => {
     onChange(checkedItems);
@@ -33,6 +34,8 @@ export const CheckboxGroup = ({ label, options = [], onChange }) => {
 
     if (checked) {
       setCheckedItems([...checkedItems, value]);
+    } else {
+      setCheckedItems(checkedItems.filter((item) => item !== value));
     }
   };
 
@@ -40,7 +43,16 @@ export const CheckboxGroup = ({ label, options = [], onChange }) => {
     <div className="form-group d-flex">
       <label>{label}</label>
       {options.map((option, index) => {
-        return <Checkbox key={index} label={option.label} value={option.value} onChange={handleCheckboxChange} />;
+        const isChecked = checkedItems.includes(option.value);
+        return (
+          <Checkbox
+            key={index}
+            label={option.label}
+            value={option.value}
+            isChecked={isChecked}
+            onChange={handleCheckboxChange}
+          />
+        );
       })}
     </div>
   );

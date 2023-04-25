@@ -169,7 +169,10 @@ const DynamicForm = ({
       case 'checkbox-group':
         return {
           options: list,
-          onChange: (value) => optionchanged(key, value),
+          values: options?.[key] ?? [],
+          onChange: (value) => {
+            optionchanged(key, [...value]);
+          },
         };
 
       case 'react-component-headers': {
