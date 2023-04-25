@@ -60,6 +60,13 @@ export const Modal = function Modal({
     [setShowModal]
   );
 
+  useEffect(() => {
+    const canShowModal = exposedVariables.show ?? false;
+    setShowModal(exposedVariables.show ?? false);
+    fireEvent(canShowModal ? 'onOpen' : 'onClose');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exposedVariables.show]);
+
   function hideModal() {
     setShowModal(false);
     setExposedVariable('show', false).then(() => fireEvent('onClose'));
@@ -115,7 +122,7 @@ export const Modal = function Modal({
           onClick={(event) => {
             event.stopPropagation();
             setShowModal(true);
-            setExposedVariable('show', true).then(() => fireEvent('onOpen'));
+            setExposedVariable('show', true);
           }}
           data-cy={`${dataCy}-launch-button`}
         >
