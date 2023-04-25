@@ -93,68 +93,67 @@ class AppComponent extends React.Component {
     document.title = `${retrieveWhiteLabelText()} - Dashboard`;
   }
 
-  componentDidMount() {
-    authenticationService.currentUser.subscribe((x) => {
-      this.setState({ currentUser: x }, this.fetchMetadata);
-
-      function initFreshChat() {
-        window.fcWidget.init({
-          token: '0ef214a3-8ae1-41fb-b0d0-57764bf8f64b',
-          host: 'https://wchat.freshchat.com',
-          config: {
-            cssNames: {
-              widget: 'custom_fc_frame',
-            },
-            content: {
-              actions: {
-                push_notify_yes: 'Yes',
-              },
-            },
-            headerProperty: {
-              hideChatButton: true,
-              direction: 'rtl',
+  initTelemetryAndSupport(currentUser) {
+    function initFreshChat() {
+      window.fcWidget.init({
+        token: '0ef214a3-8ae1-41fb-b0d0-57764bf8f64b',
+        host: 'https://wchat.freshchat.com',
+        config: {
+          cssNames: {
+            widget: 'custom_fc_frame',
+          },
+          content: {
+            actions: {
+              push_notify_yes: 'Yes',
             },
           },
-        });
+          headerProperty: {
+            hideChatButton: true,
+            direction: 'rtl',
+          },
+        },
+      });
 
-        window.fcWidget.user.setFirstName(`${x.first_name} ${x.last_name}`);
+      window.fcWidget.user.setFirstName(`${currentUser.first_name} ${currentUser.last_name}`);
 
-        window.fcWidget.user.setEmail(x.email);
-      }
-      function initialize(i, t) {
-        var e;
-        i.getElementById(t)
-          ? initFreshChat()
-          : (((e = i.createElement('script')).id = t),
-            (e.async = !0),
-            (e.src = 'https://wchat.freshchat.com/js/widget.js'),
-            (e.onload = initFreshChat),
-            i.head.appendChild(e));
-      }
-      function initiateCall() {
-        initialize(document, 'Freshdesk Messaging-js-sdk');
-      }
-      window.addEventListener
-        ? window.addEventListener('load', initiateCall, !1)
-        : window.attachEvent('load', initiateCall, !1);
+      window.fcWidget.user.setEmail(currentUser.email);
+    }
+    function initialize(i, t) {
+      var e;
+      i.getElementById(t)
+        ? initFreshChat()
+        : (((e = i.createElement('script')).id = t),
+          (e.async = !0),
+          (e.src = 'https://wchat.freshchat.com/js/widget.js'),
+          (e.onload = initFreshChat),
+          i.head.appendChild(e));
+    }
+    function initiateCall() {
+      initialize(document, 'Freshdesk Messaging-js-sdk');
+    }
+    window.addEventListener
+      ? window.addEventListener('load', initiateCall, !1)
+      : window.attachEvent('load', initiateCall, !1);
 
-      try {
-        initiateCall();
-      } catch (e) {
-        console.log(e);
-      }
+    try {
+      initiateCall();
+    } catch (e) {
+      console.log(e);
+    }
 
-      if (x) {
-        posthog.init('1OhSAF2367nMhuGI3cLvE6m5D0PJPBEA5zR5JFTM-yw', {
-          api_host: 'https://app.posthog.com',
-          autocapture: false,
-        });
-        posthog.identify(
-          x.email, // distinct_id, required
-          { name: `${x.first_name} ${x.last_name}` }
-        );
-      }
-    });
+    if (currentUser) {
+      posthog.init('1OhSAF2367nMhuGI3cLvE6m5D0PJPBEA5zR5JFTM-yw', {
+        api_host: 'https://app.posthog.com',
+        autocapture: false,
+      });
+      posthog.identify(
+        currentUser.email, // distinct_id, required
+        { name: `${currentUser.first_name} ${currentUser.last_name}` }
+      );
+    }
+  }
+
+  componentDidMount() {
     this.setFaviconAndTitle();
     if (!this.isThisExistedRoute()) {
       const workspaceId = getWorkspaceIdFromURL();
@@ -165,11 +164,12 @@ class AppComponent extends React.Component {
         const appId = isApplicationsPath ? pathnameWithoutSubpath(window.location.pathname).split('/')[2] : null;
         authenticationService
           .validateSession(appId)
-          .then(({ current_organization_id }) => {
+          .then(({ current_organization_id, ...currentUser }) => {
             //check if the page is not switch-workspace, if then redirect to the page
             if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
               this.authorizeUserAndHandleErrors(current_organization_id);
             } else {
+              this.initTelemetryAndSupport(currentUser);
               this.updateCurrentSession({
                 current_organization_id,
               });
@@ -209,6 +209,7 @@ class AppComponent extends React.Component {
     authenticationService
       .authorize()
       .then((data) => {
+        this.initTelemetryAndSupport(data.current_user);
         organizationService.getOrganizations().then((response) => {
           const current_organization_name = response.organizations.find((org) => org.id === workspaceId)?.name;
           // this will add the other details like permission and user previlliage details to the subject
@@ -230,7 +231,7 @@ class AppComponent extends React.Component {
           //get current session workspace id
           authenticationService
             .validateSession()
-            .then(({ current_organization_id }) => {
+            .then(({ current_organization_id, ...currentUser }) => {
               // change invalid or not authorized org id to previous one
               this.updateCurrentSession({
                 current_organization_id,
@@ -256,6 +257,8 @@ class AppComponent extends React.Component {
 
                     if (!this.isThisWorkspaceLoginPage())
                       return (window.location = `${subpath ?? ''}/login/${workspaceId}`);
+
+                    this.initTelemetryAndSupport(currentUser);
                   });
                 });
             })
