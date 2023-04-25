@@ -28,7 +28,8 @@ const RowForm = ({ onCreate, onClose }) => {
     setData({ ...data, [columnName]: e.target.checked });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setFetching(true);
     const { error } = await tooljetDatabaseService.createRow(organizationId, selectedTable, data);
     setFetching(false);
