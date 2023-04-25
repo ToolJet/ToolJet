@@ -34,7 +34,7 @@
         "className": "codehinter-plugins",
         "placeholder": "Enter document"
       },
-      "featureTypes": {
+      "feature_types": {
         "label": "Data output",
         "key": "feature_types",
         "type": "checkbox-group",
