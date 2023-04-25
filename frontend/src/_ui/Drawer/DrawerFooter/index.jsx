@@ -24,8 +24,7 @@ function DrawerFooter({ fetching, onClose, isEditMode, onCreate, onEdit }) {
             disabled={fetching}
             data-cy={`create-button`}
             onClick={(e) => {
-              e.preventDefault();
-              onCreate();
+              onCreate(e);
             }}
           >
             Create
