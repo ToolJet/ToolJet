@@ -13,7 +13,7 @@ module.exports = defineConfig({
   requestTimeout: 10000,
   pageLoadTimeout: 20000,
   responseTimeout: 10000,
-  viewportWidth: 1200,
+  viewportWidth: 1440,
   viewportHeight: 960,
   chromeWebSecurity: false,
   trashAssetsBeforeRuns: true,
