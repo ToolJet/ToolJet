@@ -123,6 +123,14 @@ export const commonText = {
   backToLoginButton: "Back to log in",
   resetPasswordPageDescription:
     "Your password has been reset successfully, log into ToolJet to continue your session",
+  labelFullNameInput: "Enter full name",
+  labelEmailInput: "Email address",
+  breadcrumbworkspaceSettingTitle:"Workspace settings",
+  breadcrumbGlobalDatasourceTitle: "Global datasources",
+  breadcrumbDatabaseTitle: "Databse",
+  breadcrumbApplications: "Applications",
+  breadcrumbSettings: "Settings",
+
   emailPageDescription: (email) => {
     return `We’ve sent an email to ${email} with a verification link. Please use that to verify your email address.`;
   },

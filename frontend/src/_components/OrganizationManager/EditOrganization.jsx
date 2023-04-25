@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { authenticationService, organizationService } from '@/_services';
+import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -18,7 +19,6 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
     setIsCreating(true);
     organizationService.editOrganization({ name: newOrgName }).then(
       () => {
-        authenticationService.updateCurrentUserDetails({ organization: newOrgName });
         toast.success('Workspace updated');
         window.location.reload();
       },
@@ -35,9 +35,10 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
       show={showEditOrg}
       closeModal={() => setShowEditOrg(false)}
       title={t('header.organization.editWorkspace', 'Edit workspace')}
+      checkForBackground={false}
     >
       <div className="row mb-3">
-        <div className="col modal-main">
+        <div className="col modal-main tj-app-input">
           <input
             type="text"
             onChange={(e) => setNewOrgName(e.target.value)}
@@ -46,17 +47,18 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
             disabled={isCreating}
             value={newOrgName}
             maxLength={25}
+            autoFocus
           />
         </div>
       </div>
       <div className="row">
-        <div className="col d-flex justify-content-end">
-          <button className="btn mx-1" onClick={() => setShowEditOrg(false)}>
+        <div className="col d-flex justify-content-end gap-2">
+          <ButtonSolid variant="tertiary" onClick={() => setShowEditOrg(false)}>
             {t('globals.cancel', 'Cancel')}
-          </button>
-          <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={editOrganization}>
+          </ButtonSolid>
+          <ButtonSolid isLoading={isCreating} onClick={editOrganization}>
             {t('globals.save', 'Save')}
-          </button>
+          </ButtonSolid>
         </div>
       </div>
     </AlertDialog>

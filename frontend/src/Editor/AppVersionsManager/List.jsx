@@ -20,6 +20,7 @@ export const AppVersionsManager = function ({
     versionName: '',
     showModal: false,
   });
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
     setGetAppVersionStatus('loading');
@@ -132,6 +133,7 @@ export const AppVersionsManager = function ({
         value={editingVersion.id}
         onChange={(id) => selectVersion(id)}
         {...customSelectProps}
+        className={` ${darkMode && 'dark-theme'}`}
       />
     </div>
   );

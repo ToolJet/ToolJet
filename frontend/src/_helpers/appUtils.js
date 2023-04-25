@@ -24,7 +24,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
 import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
-import { flushSync } from 'react-dom'; // TODO: It can be removed once we've a proper state update flow
+import { authenticationService } from '@/_services/authentication.service';
+import { setCookie } from '@/_helpers/cookie';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -81,6 +82,9 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
 
 export function fetchOAuthToken(authUrl, dataSourceId) {
   localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
+  const currentSessionValue = authenticationService.currentSessionValue;
+  currentSessionValue?.current_organization_id &&
+    setCookie('orgIdForOauth', currentSessionValue?.current_organization_id);
   window.open(authUrl);
 }
 
@@ -147,7 +151,7 @@ async function executeRunPycode(_ref, code, query, editorState, isPreview, mode)
       };
     }
 
-    return pyodide.isPyProxy(result) ? result.toJs() : result;
+    return pyodide.isPyProxy(result) ? convertMapSet(result.toJs()) : result;
   };
 
   return { data: await evaluatePythonCode(pyodide, code) };
@@ -340,8 +344,7 @@ function showModal(_ref, modal, show) {
 
 function logoutAction(_ref) {
   localStorage.clear();
-  _ref.props.navigate('/login');
-  window.location.href = '/login';
+  authenticationService.logout(true);
 
   return Promise.resolve();
 }
@@ -747,6 +750,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onRowHovered',
       'onSubmit',
       'onInvalid',
+      'onNewRowsAdded',
     ].includes(eventName)
   ) {
     const { component } = options;
@@ -806,8 +810,12 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query?.id, true);
     } else if (query.kind === 'tooljetdb') {
-      const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
-      queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _ref.state.currentState);
+      const currentSessionValue = authenticationService.currentSessionValue;
+      queryExecutionPromise = tooljetDbOperations.perform(
+        query.options,
+        currentSessionValue?.current_organization_id,
+        _ref.state.currentState
+      );
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, editorState, true, 'edit');
     } else {
@@ -931,8 +939,12 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       } else if (query.kind === 'runpy') {
         queryExecutionPromise = executeRunPycode(_self, query.options.code, query, _ref, false, mode);
       } else if (query.kind === 'tooljetdb') {
-        const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
-        queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _self.state.currentState);
+        const currentSessionValue = authenticationService.currentSessionValue;
+        queryExecutionPromise = tooljetDbOperations.perform(
+          query.options,
+          currentSessionValue?.current_organization_id,
+          _self.state.currentState
+        );
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }
@@ -953,67 +965,62 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
 
           if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
             const errorData = query.kind === 'runpy' ? data.data : data;
-            flushSync(() => {
-              return _self.setState(
-                {
-                  currentState: {
-                    ..._self.state.currentState,
-                    queries: {
-                      ..._self.state.currentState.queries,
-                      [queryName]: _.assign(
-                        {
-                          ..._self.state.currentState.queries[queryName],
-                          isLoading: false,
-                        },
-                        query.kind === 'restapi'
-                          ? {
-                              request: data.data.requestObject,
-                              response: data.data.responseObject,
-                              responseHeaders: data.data.responseHeaders,
-                            }
-                          : {}
-                      ),
-                    },
-                    errors: {
-                      ..._self.state.currentState.errors,
-                      [queryName]: {
-                        type: 'query',
-                        kind: query.kind,
-                        data: errorData,
-                        options: options,
+            return _self.setState(
+              {
+                currentState: {
+                  ..._self.state.currentState,
+                  queries: {
+                    ..._self.state.currentState.queries,
+                    [queryName]: _.assign(
+                      {
+                        ..._self.state.currentState.queries[queryName],
+                        isLoading: false,
                       },
+                      query.kind === 'restapi'
+                        ? {
+                            request: data.data.requestObject,
+                            response: data.data.responseObject,
+                            responseHeaders: data.data.responseHeaders,
+                          }
+                        : {}
+                    ),
+                  },
+                  errors: {
+                    ..._self.state.currentState.errors,
+                    [queryName]: {
+                      type: 'query',
+                      kind: query.kind,
+                      data: errorData,
+                      options: options,
                     },
                   },
                 },
-                () => {
-                  resolve(data);
-                  onEvent(_self, 'onDataQueryFailure', {
-                    definition: { events: dataQuery.options.events },
-                  });
-                  if (mode !== 'view') {
-                    const err =
-                      query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
-                    toast.error(err?.message);
-                  }
+              },
+              () => {
+                resolve(data);
+                onEvent(_self, 'onDataQueryFailure', {
+                  definition: { events: dataQuery.options.events },
+                });
+                if (mode !== 'view') {
+                  const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
+                  toast.error(err?.message);
                 }
-              );
-            });
-          }
-
-          let rawData = data.data;
-          let finalData = data.data;
-
-          if (dataQuery.options.enableTransformation) {
-            finalData = await runTransformation(
-              _ref,
-              finalData,
-              query.options.transformation,
-              query.options.transformationLanguage,
-              query,
-              'edit'
+              }
             );
-            if (finalData.status === 'failed') {
-              flushSync(() => {
+          } else {
+            let rawData = data.data;
+            let finalData = data.data;
+
+            if (dataQuery.options.enableTransformation) {
+              finalData = await runTransformation(
+                _ref,
+                finalData,
+                query.options.transformation,
+                query.options.transformationLanguage,
+                query,
+                'edit'
+              );
+              if (finalData.status === 'failed') {
                 return _self.setState(
                   {
                     currentState: {
@@ -1042,17 +1049,15 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                     });
                   }
                 );
+              }
+            }
+
+            if (dataQuery.options.showSuccessNotification) {
+              const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
+              toast.success(dataQuery.options.successMessage, {
+                duration: notificationDuration,
               });
             }
-          }
-
-          if (dataQuery.options.showSuccessNotification) {
-            const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
-            toast.success(dataQuery.options.successMessage, {
-              duration: notificationDuration,
-            });
-          }
-          flushSync(() => {
             _self.setState(
               {
                 currentState: {
@@ -1088,28 +1093,26 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                 }
               }
             );
-          });
+          }
         })
         .catch(({ error }) => {
           if (mode !== 'view') toast.error(error ?? 'Unknown error');
-          flushSync(() => {
-            _self.setState(
-              {
-                currentState: {
-                  ..._self.state.currentState,
-                  queries: {
-                    ..._self.state.currentState.queries,
-                    [queryName]: {
-                      isLoading: false,
-                    },
+          _self.setState(
+            {
+              currentState: {
+                ..._self.state.currentState,
+                queries: {
+                  ..._self.state.currentState.queries,
+                  [queryName]: {
+                    isLoading: false,
                   },
                 },
               },
-              () => {
-                resolve({ status: 'failed', message: error });
-              }
-            );
-          });
+            },
+            () => {
+              resolve({ status: 'failed', message: error });
+            }
+          );
         });
     });
   });
@@ -1579,3 +1582,17 @@ const getSelectedText = () => {
     navigator.clipboard.writeText(window.document.selection.createRange().text);
   }
 };
+
+function convertMapSet(obj) {
+  if (obj instanceof Map) {
+    return Object.fromEntries(Array.from(obj, ([key, value]) => [key, convertMapSet(value)]));
+  } else if (obj instanceof Set) {
+    return Array.from(obj).map(convertMapSet);
+  } else if (Array.isArray(obj)) {
+    return obj.map(convertMapSet);
+  } else if (obj !== null && typeof obj === 'object') {
+    return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, convertMapSet(value)]));
+  } else {
+    return obj;
+  }
+}

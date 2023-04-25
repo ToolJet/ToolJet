@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService, authenticationService } from '@/_services';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { ListRows } from './ListRows';
 import { CreateRow } from './CreateRow';
@@ -14,8 +14,9 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
   };
+
+  const { current_organization_id: organizationId } = authenticationService.currentSessionValue;
   const mounted = useMounted();
-  const { organization_id: organizationId } = JSON.parse(localStorage.getItem('currentUser')) || {};
   const [operation, setOperation] = useState(options['operation'] || '');
   const [columns, setColumns] = useState([]);
   const [tables, setTables] = useState([]);
