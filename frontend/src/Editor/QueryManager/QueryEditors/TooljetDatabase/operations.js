@@ -2,12 +2,25 @@ import { tooljetDatabaseService } from '@/_services';
 import { isEmpty } from 'lodash';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { resolveReferences } from '@/_helpers/utils';
+import { hasEqualWithNull } from './util';
 
 export const tooljetDbOperations = {
   perform,
 };
 
 async function perform(queryOptions, organizationId, currentState) {
+  const hasNullWithEqual = hasEqualWithNull(queryOptions);
+  // SQL does not support equal operation with null value, so let's handle it here.
+  if (hasNullWithEqual) {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: 'Query can not run, because app can not perform equal operation with null value',
+      description: 'Please use IS operator with the null value comparision.',
+      data: {},
+    };
+  }
+
   switch (queryOptions.operation) {
     case 'list_rows':
       return listRows(queryOptions, organizationId, currentState);
