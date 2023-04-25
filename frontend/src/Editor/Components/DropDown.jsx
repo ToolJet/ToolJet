@@ -38,12 +38,17 @@ export const DropDown = function DropDown({
   }
 
   function selectOption(value) {
+    let index = null;
+    index = values.indexOf(value);
+
     if (values.includes(value)) {
       setCurrentValue(value);
       setExposedVariable('value', value).then(fireEvent('onSelect'));
+      setExposedVariable('selectedOptionLabel', display_values[index]);
     } else {
       setCurrentValue(undefined);
       setExposedVariable('value', undefined).then(fireEvent('onSelect'));
+      setExposedVariable('selectedOptionLabel', undefined);
     }
   }
 
@@ -65,26 +70,44 @@ export const DropDown = function DropDown({
 
   useEffect(() => {
     let newValue = undefined;
+    let index = null;
     if (values?.includes(value)) {
       newValue = value;
+      index = values.indexOf(value);
     }
     setExposedVariable('value', newValue);
+    setExposedVariable('selectedOptionLabel', display_values?.[index]);
+
     setCurrentValue(newValue);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   useEffect(() => {
-    if (exposedValue !== currentValue) setExposedVariable('value', currentValue);
+    let index = null;
+
+    if (exposedValue !== currentValue) {
+      setExposedVariable('value', currentValue);
+      index = values.indexOf(currentValue);
+      setExposedVariable('selectedOptionLabel', display_values?.[index]);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentValue]);
 
   useEffect(() => {
     let newValue = undefined;
+    let index = null;
+
     if (values?.includes(currentValue)) newValue = currentValue;
     else if (values?.includes(value)) newValue = value;
 
     setCurrentValue(newValue);
     setExposedVariable('value', newValue);
+    index = values.indexOf(newValue);
+    setExposedVariable('selectedOptionLabel', display_values?.[index]);
+
+    // setExposedVariable('selectedOptionLabel', ;
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(values)]);
 
@@ -200,6 +223,7 @@ export const DropDown = function DropDown({
               if (actionProps.action === 'select-option') {
                 setCurrentValue(selectedOption.value);
                 setExposedVariable('value', selectedOption.value).then(() => fireEvent('onSelect'));
+                setExposedVariable('selectedOptionLabel', selectedOption.label);
               }
             }}
             options={selectOptions}

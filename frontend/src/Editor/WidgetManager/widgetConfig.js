@@ -2358,6 +2358,7 @@ export const widgets = [
       searchText: '',
       label: 'Select',
       optionLabels: ['one', 'two', 'three'],
+      selectedOptionLabel: 'two',
     },
     actions: [
       {
