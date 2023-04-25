@@ -147,7 +147,7 @@ export const Tabs = function Tabs({
           margin: '-1px',
         }}
       >
-        {parsedTabs.map((tab) => (
+        {parsedTabs?.map((tab) => (
           <li
             className="nav-item"
             style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && '33.3%' }}
@@ -175,7 +175,7 @@ export const Tabs = function Tabs({
           </li>
         ))}
       </ul>
-      {parsedTabs.map((tab) => (
+      {parsedTabs?.map((tab) => (
         <div
           className="tab-content"
           ref={(newCurrent) => {
