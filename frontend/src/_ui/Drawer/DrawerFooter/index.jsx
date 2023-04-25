@@ -20,7 +20,14 @@ function DrawerFooter({ fetching, onClose, isEditMode, onCreate, onEdit }) {
           </ButtonSolid>
         )}
         {!isEditMode && (
-          <ButtonSolid disabled={fetching} data-cy={`create-button`} onClick={onCreate}>
+          <ButtonSolid
+            disabled={fetching}
+            data-cy={`create-button`}
+            onClick={(e) => {
+              e.preventDefault();
+              onCreate();
+            }}
+          >
             Create
           </ButtonSolid>
         )}
