@@ -60,13 +60,6 @@ export const Modal = function Modal({
     [setShowModal]
   );
 
-  useEffect(() => {
-    const canShowModal = exposedVariables.show ?? false;
-    setShowModal(exposedVariables.show ?? false);
-    fireEvent(canShowModal ? 'onOpen' : 'onClose');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [exposedVariables.show]);
-
   function hideModal() {
     setShowModal(false);
     setExposedVariable('show', false).then(() => fireEvent('onClose'));
