@@ -31,7 +31,7 @@ export const Breadcrumbs = ({ darkMode }) => {
 };
 // define some custom breadcrumbs for certain routes (optional)
 const routes = [
-  { path: '/:worspace_id', breadcrumb: 'Apps' },
+  { path: '/:worspace_id', breadcrumb: 'Applications' },
   { path: '/:worspace_id/database', breadcrumb: 'Tables', props: { dataCy: 'tables-page-header' } },
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/global-datasources', breadcrumb: 'Global Datasources' },
