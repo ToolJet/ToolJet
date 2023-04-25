@@ -105,7 +105,7 @@ describe("Modal", () => {
     cy.notVisible('[data-cy="modal-title"]');
 
     verifyAndModifyToggleFx(
-      "Hide on escape",
+      "Close on escape key",
       commonWidgetText.codeMirrorLabelTrue
     );
     launchModal(data.widgetName);
@@ -114,6 +114,8 @@ describe("Modal", () => {
     cy.get('[data-cy="modal-title"]')
       .verifyVisibleElement("have.text", data.customTitle)
       .click();
+    closeModal(data.widgetName);
+    launchModal(data.widgetName);
 
     verifySize("Medium");
     verifySize("Large");

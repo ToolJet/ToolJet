@@ -175,7 +175,6 @@ export const DraggableBox = function DraggableBox({
   };
 
   const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
-
   const gridWidth = canvasWidth / 43;
   const width = (canvasWidth * layoutData.width) / 43;
 

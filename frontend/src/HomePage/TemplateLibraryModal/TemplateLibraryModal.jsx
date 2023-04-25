@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, Container, Row, Col } from 'react-bootstrap';
+import { Modal, Container, Row, Col } from 'react-bootstrap';
 import Categories from './Categories';
 import AppList from './AppList';
 import { libraryAppService } from '@/_services';
@@ -8,6 +8,7 @@ import _ from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { getWorkspaceId } from '../../_helpers/utils';
 
 const identifyUniqueCategories = (templates) =>
@@ -75,7 +76,7 @@ export default function TemplateLibraryModal(props) {
   return (
     <Modal
       {...props}
-      className={`template-library-modal ${props.darkMode ? 'dark-mode' : ''}`}
+      className={`template-library-modal ${props.darkMode ? 'dark-mode dark-theme' : ''}`}
       aria-labelledby="contained-modal-title-vcenter"
       centered
     >
@@ -95,7 +96,7 @@ export default function TemplateLibraryModal(props) {
             <Col xs={9} style={{ height: '100%' }}>
               <Container fluid>
                 <Row style={{ height: '90%' }}>
-                  <Col className="template-list-column" xs={3} style={{ borderRight: '1px solid #D2DDEC' }}>
+                  <Col className="template-list-column" xs={3} style={{ height: '100%', overflowY: 'auto' }}>
                     <AppList apps={filteredApps} selectApp={selectApp} selectedApp={selectedApp} />
                   </Col>
                   <Col xs={9} style={{}}>
@@ -109,16 +110,18 @@ export default function TemplateLibraryModal(props) {
                     style={{ borderTop: '1px solid #D2DDEC', zIndex: 1 }}
                   >
                     <div className="d-flex flex-row align-items-center" style={{ height: '100%' }}>
-                      <Button variant="outline-primary" onClick={props.onCloseButtonClick}>
+                      <ButtonSolid variant="tertiary" onClick={props.onCloseButtonClick}>
                         {t('globals.cancel', 'Cancel')}
-                      </Button>
-                      <a
-                        href="#"
-                        className={`btn btn-primary ms-2 ${deploying ? 'btn-loading' : ''}`}
-                        onClick={deployApp}
+                      </ButtonSolid>
+                      <ButtonSolid
+                        onClick={(e) => {
+                          deployApp(e);
+                        }}
+                        isLoading={deploying}
+                        className=" ms-2 "
                       >
                         {t('homePage.templateLibraryModal.createAppfromTemplate', 'Create application from template')}
-                      </a>
+                      </ButtonSolid>
                     </div>
                   </Col>
                 </Row>

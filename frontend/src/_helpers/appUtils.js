@@ -347,8 +347,7 @@ function showModal(_ref, modal, show) {
 
 function logoutAction(_ref) {
   localStorage.clear();
-  _ref.props.navigate('/login');
-  window.location.href = '/login';
+  authenticationService.logout(true);
 
   return Promise.resolve();
 }
@@ -754,6 +753,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onRowHovered',
       'onSubmit',
       'onInvalid',
+      'onNewRowsAdded',
     ].includes(eventName)
   ) {
     const { component } = options;

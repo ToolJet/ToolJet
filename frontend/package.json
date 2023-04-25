@@ -182,10 +182,6 @@
   "eslintConfig": {
     "extends": "react-app"
   },
-  "browserslist": {
-    "production": [],
-    "development": []
-  },
   "jest": {
     "transform": {
       "^.+\\.js?$": "babel-jest",
