@@ -65,7 +65,8 @@ sudo cp /tmp/postgrest.service /lib/systemd/system/postgrest.service
 
 # Setup app directory
 mkdir -p ~/app
-git clone -b main https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
+git clone -b plugin/textract https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
+#need to change it main before merging the PR
 
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
