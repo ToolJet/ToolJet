@@ -741,7 +741,7 @@ export const EventManager = ({
                 const actionMeta = ActionTypes.find((action) => action.id === event.actionId);
                 const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
                 return (
-                  <Draggable key={`${event.eventId}-${index}`} draggableId={`${event.eventId}-${index}`} index={index}>
+                  <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
                     {renderDraggable((provided, snapshot) => {
                       if (snapshot.isDragging && focusedEventIndex !== null) {
                         setFocusedEventIndex(null);
