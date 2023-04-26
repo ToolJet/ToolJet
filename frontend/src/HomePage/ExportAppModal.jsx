@@ -87,7 +87,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
       onHide={() => closeModal(false)}
       contentClassName={`home-modal-component home-version-modal-component ${
         customClassName ? ` ${customClassName}` : ''
-      } ${darkMode && 'dark'}`}
+      } ${darkMode && 'dark-theme'}`}
       show={show}
       backdrop={true}
       keyboard={true}

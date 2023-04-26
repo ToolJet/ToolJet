@@ -67,8 +67,8 @@ const EditRowForm = ({ onEdit, onClose }) => {
   });
 
   return (
-    <div className="card">
-      <div className="card-header">
+    <div className="">
+      <div className="drawer-card-title">
         <h3 className="card-title" data-cy="edit-row-header">
           Edit a row
         </h3>
@@ -76,17 +76,18 @@ const EditRowForm = ({ onEdit, onClose }) => {
       <div className="card-body">
         <div>
           <div className="mb-3 row g-2 align-items-center">
-            <div className="col-2 form-label" data-cy={`${primaryColumn}-column-name-label`}>
+            <div className="col-2" data-cy={`${primaryColumn}-column-name-label`}>
               {primaryColumn}&nbsp;
               <span className="badge badge-outline text-blue"> SERIAL</span>
             </div>
-            <div className="col-auto" data-cy="select-row-dropdown">
+            <div className="col-auto row-edit-select-container" data-cy="select-row-dropdown">
               <Select
                 useMenuPortal={false}
                 placeholder="Select a row to edit"
                 value={selectedRow}
                 options={options}
                 onChange={handleOnSelect}
+                customWrap={true}
               />
             </div>
           </div>

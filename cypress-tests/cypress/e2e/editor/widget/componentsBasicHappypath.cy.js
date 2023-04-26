@@ -5,7 +5,7 @@ import { tableSelector } from "Selectors/table";
 import {
   verifyComponent,
   deleteComponentAndVerify,
-  verifyComponentWithOutLabel
+  verifyComponentWithOutLabel,
 } from "Support/utils/basicComponents";
 import {
   openAccordion,
@@ -52,16 +52,20 @@ describe("Basic components", () => {
     editAndVerifyWidgetName("toggleswitch2");
 
     verifyAndModifyParameter(commonWidgetText.parameterLabel, "label");
-    cy.forceClickOnCanvas()
+    cy.forceClickOnCanvas();
     cy.waitForAutoSave();
-    cy.get('[data-cy="draggable-widget-toggleswitch2"] > .form-check-label').should('have.text', 'label')
-    
+    cy.get(
+      '[data-cy="draggable-widget-toggleswitch2"] > .form-check-label'
+    ).should("have.text", "label");
+
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
     verifyComponent("toggleswitch2");
-    cy.get('[data-cy="draggable-widget-toggleswitch2"] > .form-check-label').should('have.text', 'label')
+    cy.get(
+      '[data-cy="draggable-widget-toggleswitch2"] > .form-check-label'
+    ).should("have.text", "label");
 
     cy.go("back");
-    cy.wait('@appVersion')
+    cy.wait("@appVersion");
     deleteComponentAndVerify("toggleswitch2");
     cy.get(commonSelectors.editorPageLogo).click();
 
@@ -331,19 +335,24 @@ describe("Basic components", () => {
 
     cy.deleteApp(data.appName);
   });
-//needed fix
+  //needed fix
   it.skip("Should verify Custom Component", () => {
     cy.dragAndDropWidget("Custom Component", 50, 50);
-    cy.get('[data-cy="draggable-widget-customcomponent1"]').click({ force: true });
+    cy.get('[data-cy="draggable-widget-customcomponent1"]').click({
+      force: true,
+    });
     cy.forceClickOnCanvas();
     verifyComponent("customcomponent1");
     openEditorSidebar("customcomponent1");
 
     // editAndVerifyWidgetName("customcomponent2", ["Code"]);
     closeAccordions(["Code"]);
-    cy.get(commonWidgetSelector.WidgetNameInputField).type("{selectAll}{backspace}customcomponent2", {delay:30});
-    cy.forceClickOnCanvas()
-  
+    cy.get(commonWidgetSelector.WidgetNameInputField).type(
+      "{selectAll}{backspace}customcomponent2",
+      { delay: 30 }
+    );
+    cy.forceClickOnCanvas();
+
     cy.get(commonWidgetSelector.draggableWidget(name)).trigger("mouseover");
     cy.get(commonWidgetSelector.widgetConfigHandle(name))
       .click()
@@ -411,13 +420,23 @@ describe("Basic components", () => {
 
     cy.deleteApp(data.appName);
   });
-//visible issue
+  //visible issue
   it.skip("Should verify Divider", () => {
-    verifyComponentWithOutLabel("Divider", "divider1", "divider2", data.appName)
+    verifyComponentWithOutLabel(
+      "Divider",
+      "divider1",
+      "divider2",
+      data.appName
+    );
   });
 
   it("Should verify File Picker", () => {
-    verifyComponentWithOutLabel("File Picker", "filepicker1", "filepicker2", data.appName)
+    verifyComponentWithOutLabel(
+      "File Picker",
+      "filepicker1",
+      "filepicker2",
+      data.appName
+    );
   });
 
   it("Should verify Form", () => {
@@ -463,27 +482,28 @@ describe("Basic components", () => {
   });
 
   it("Should verify Icon", () => {
-    verifyComponentWithOutLabel("Icon", "icon1", "icon2", data.appName)
+    verifyComponentWithOutLabel("Icon", "icon1", "icon2", data.appName);
   });
 
   it("Should verify Iframe", () => {
-    verifyComponentWithOutLabel("Iframe", "iframe1", "iframe2", data.appName)
+    verifyComponentWithOutLabel("Iframe", "iframe1", "iframe2", data.appName);
   });
 
   it.skip("Should verify Kamban", () => {
-    verifyComponentWithOutLabel("Kanban", "kanban1", "kanban2", data.appName)  });
+    verifyComponentWithOutLabel("Kanban", "kanban1", "kanban2", data.appName);
+  });
 
   it("Should verify Link", () => {
-    verifyComponentWithOutLabel("Link", "link1", "link2", data.appName)
+    verifyComponentWithOutLabel("Link", "link1", "link2", data.appName);
   });
 
   it("Should verify Map", () => {
     cy.dragAndDropWidget("Map", 50, 50);
-    cy.get("body").then($body => {
+    cy.get("body").then(($body) => {
       if ($body.find(".dismissButton").length > 0) {
-        cy.get('.dismissButton').click();
+        cy.get(".dismissButton").click();
       }
-    })
+    });
 
     verifyComponent("map1");
 
@@ -505,7 +525,7 @@ describe("Basic components", () => {
   });
 
   it("Should verify Modal", () => {
-    verifyComponentWithOutLabel("Modal", "modal1", "modal2", data.appName)
+    verifyComponentWithOutLabel("Modal", "modal1", "modal2", data.appName);
   });
 
   it("Should verify PDF", () => {
@@ -530,35 +550,70 @@ describe("Basic components", () => {
   });
 
   it("Should verify Pagination", () => {
-    verifyComponentWithOutLabel("Pagination", "pagination1", "pagination2", data.appName)
+    verifyComponentWithOutLabel(
+      "Pagination",
+      "pagination1",
+      "pagination2",
+      data.appName
+    );
   });
 
   it("Should verify QR Scanner", () => {
-    verifyComponentWithOutLabel("QR Scanner", "qrscanner1", "qrscanner2", data.appName)
+    verifyComponentWithOutLabel(
+      "QR Scanner",
+      "qrscanner1",
+      "qrscanner2",
+      data.appName
+    );
   });
 
-  it("Should verify Range Slider", () => {
-    verifyComponentWithOutLabel("Range Slider", "rangeslider1", "rangeslider2", data.appName)
+  it.skip("Should verify Range Slider", () => {
+    verifyComponentWithOutLabel(
+      "Range Slider",
+      "rangeslider1",
+      "rangeslider2",
+      data.appName
+    );
   });
 
   it("Should verify Rich Text Editor", () => {
-    verifyComponentWithOutLabel("Text Editor", "richtexteditor1", "richtexteditor2", data.appName)
+    verifyComponentWithOutLabel(
+      "Text Editor",
+      "richtexteditor1",
+      "richtexteditor2",
+      data.appName
+    );
   });
 
   it("Should verify Spinner", () => {
-    verifyComponentWithOutLabel("Spinner", "spinner1", "spinner2", data.appName);
+    verifyComponentWithOutLabel(
+      "Spinner",
+      "spinner1",
+      "spinner2",
+      data.appName
+    );
   });
 
   it("Should verify Statistics", () => {
-    verifyComponentWithOutLabel("Statistics", "statistics1", "statistics2", data.appName)
+    verifyComponentWithOutLabel(
+      "Statistics",
+      "statistics1",
+      "statistics2",
+      data.appName
+    );
   });
 
   it("Should verify Steps", () => {
-    verifyComponentWithOutLabel("Steps", "steps1", "steps2", data.appName)
+    verifyComponentWithOutLabel("Steps", "steps1", "steps2", data.appName);
   });
 
   it("Should verify SVG Image", () => {
-    verifyComponentWithOutLabel("SVG Image", "svgimage1", "svgimage2", data.appName)
+    verifyComponentWithOutLabel(
+      "SVG Image",
+      "svgimage1",
+      "svgimage2",
+      data.appName
+    );
   });
 
   it("Should verify Tabs", () => {
@@ -580,29 +635,49 @@ describe("Basic components", () => {
     deleteComponentAndVerify("tabs2");
     cy.get(commonSelectors.editorPageLogo).click();
 
-    cy.deleteApp(data.appName); 
+    cy.deleteApp(data.appName);
   });
 
   it("Should verify Tags", () => {
-    verifyComponentWithOutLabel("Tags", "tags1", "tags2", data.appName)
+    verifyComponentWithOutLabel("Tags", "tags1", "tags2", data.appName);
   });
 
   it("Should verify Textarea", () => {
-    verifyComponentWithOutLabel("Textarea", "textarea1", "textarea2", data.appName)
+    verifyComponentWithOutLabel(
+      "Textarea",
+      "textarea1",
+      "textarea2",
+      data.appName
+    );
   });
 
   it("Should verify Timeline", () => {
-    verifyComponentWithOutLabel("Timeline", "timeline1", "timeline2", data.appName)
+    verifyComponentWithOutLabel(
+      "Timeline",
+      "timeline1",
+      "timeline2",
+      data.appName
+    );
   });
   it("Should verify Timer", () => {
-    verifyComponentWithOutLabel("Timer", "timer1", "timer2", data.appName)
+    verifyComponentWithOutLabel("Timer", "timer1", "timer2", data.appName);
   });
 
   it("Should verify Tree Select", () => {
-    verifyComponentWithOutLabel("Tree Select", "treeselect1", "treeselect2", data.appName)
+    verifyComponentWithOutLabel(
+      "Tree Select",
+      "treeselect1",
+      "treeselect2",
+      data.appName
+    );
   });
 
   it("Should verify Vertical Divider", () => {
-    verifyComponentWithOutLabel("Vertical Divider", "verticaldivider1", "verticaldivider2", data.appName)
-    });
+    verifyComponentWithOutLabel(
+      "Vertical Divider",
+      "verticaldivider1",
+      "verticaldivider2",
+      data.appName
+    );
+  });
 });

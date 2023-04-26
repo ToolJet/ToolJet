@@ -48,7 +48,10 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
       onClick={onClick}
     >
       <ToolTip message={text}>
-        <span className="table-name" data-cy={`${String(text).toLowerCase().replace(/\s+/g, '-')}-table-name`}>
+        <span
+          className="table-name tj-text-xsm"
+          data-cy={`${String(text).toLowerCase().replace(/\s+/g, '-')}-table-name`}
+        >
           {text}
         </span>
       </ToolTip>

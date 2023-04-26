@@ -81,13 +81,13 @@ const RowForm = ({ onCreate, onClose }) => {
   };
 
   return (
-    <div className="card">
+    <div className="drawer-card-wrapper ">
       <div className="card-header">
         <h3 className="card-title" data-cy="create-new-row-header">
           Create a new row
         </h3>
       </div>
-      <div className="card-body">
+      <div className="card-body tj-app-input">
         {Array.isArray(columns) &&
           columns?.map(({ Header, accessor, dataType, isPrimaryKey, column_default }, index) => {
             return (

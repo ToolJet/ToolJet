@@ -9,7 +9,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
   const containerRef = useRef(null);
   const [modalProps, setModalProps] = useState({
     backdrop: false,
-    dialogClassName: 'datasource-edit-modal',
+    dialogClassName: `datasource-edit-modal ${darkMode && 'dark-theme'}`,
     enforceFocus: false,
   });
 
@@ -51,6 +51,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
       }
     } else {
       handleModalVisibility();
+      setEditing(true);
     }
   };
 
@@ -66,12 +67,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
   return (
     <div className="row gx-0">
       <Sidebar />
-      <div
-        ref={containerRef}
-        className={cx('col animation-fade datasource-modal-container', {
-          'bg-light-gray': !darkMode,
-        })}
-      >
+      <div ref={containerRef} className={cx('col animation-fade datasource-modal-container', {})}>
         {containerRef && containerRef?.current && (
           <DataSourceManager
             showBackButton={selectedDataSource ? false : true}
@@ -86,6 +82,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
             environments={environments}
             environmentChanged={environmentChanged}
             container={selectedDataSource ? containerRef?.current : null}
+            isEditing={isEditing}
           />
         )}
         {!selectedDataSource && isEditing && (
