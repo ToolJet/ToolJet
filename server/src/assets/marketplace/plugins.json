@@ -9,7 +9,6 @@
   },
   {
     "name": "plivo",
-    "repo": "",
     "description": "Datasource plugin for Plivo",
     "version": "1.0.0",
     "id": "plivo",
@@ -18,7 +17,6 @@
   },
   {
     "name": "github",
-    "repo": "",
     "description": "Datasource plugin for GitHub",
     "version": "1.0.0",
     "id": "github",
@@ -27,7 +25,6 @@
   },
   {
     "name": "openai",
-    "repo": "",
     "description": "api plugin from openai",
     "version": "1.0.0",
     "id": "openai",
