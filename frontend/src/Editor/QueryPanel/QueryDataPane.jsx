@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SearchBox } from '@/_components/SearchBox';
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
 import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import { QueryCard } from './QueryCard';
@@ -11,7 +9,6 @@ import Fuse from 'fuse.js';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 
 export const QueryDataPane = ({
-  showSaveConfirmation,
   setSaveConfirmation,
   setCancelData,
   draftQuery,
@@ -19,6 +16,7 @@ export const QueryDataPane = ({
   setDraftQuery,
   setSelectedDataSource,
   darkMode,
+  fetchDataQueries,
 }) => {
   const { t } = useTranslation();
   const { loadingDataQueries } = useDataQueriesStore();
@@ -27,6 +25,7 @@ export const QueryDataPane = ({
 
   useEffect(() => {
     setFilteredQueries(dataQueries);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(dataQueries)]);
 
   const filterQueries = useCallback(
@@ -49,6 +48,7 @@ export const QueryDataPane = ({
         setFilteredQueries(dataQueries);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [JSON.stringify(dataQueries)]
   );
 
@@ -104,6 +104,8 @@ export const QueryDataPane = ({
                   setCancelData={setCancelData}
                   setDraftQuery={setDraftQuery}
                   setSelectedDataSource={setSelectedDataSource}
+                  fetchDataQueries={fetchDataQueries}
+                  darkMode={darkMode}
                 />
               ) : (
                 ''
@@ -116,6 +118,8 @@ export const QueryDataPane = ({
                   setCancelData={setCancelData}
                   setDraftQuery={setDraftQuery}
                   setSelectedDataSource={setSelectedDataSource}
+                  fetchDataQueries={fetchDataQueries}
+                  darkMode={darkMode}
                 />
               ))}
             </div>

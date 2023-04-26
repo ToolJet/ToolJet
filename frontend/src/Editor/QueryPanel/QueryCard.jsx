@@ -18,6 +18,7 @@ export const QueryCard = ({
   setDraftQuery,
   setSelectedDataSource,
   darkMode = false,
+  fetchDataQueries,
 }) => {
   const selectedQuery = useSelectedQuery();
   const isUnsavedChangesAvailable = useUnsavedChanges();
@@ -64,7 +65,7 @@ export const QueryCard = ({
         toast.success('Query Name Updated');
         setDraftQuery((query) => ({ ...query, name: newName }));
       } else {
-        renameQuery(dataQuery?.id, newName);
+        renameQuery(dataQuery?.id, newName, fetchDataQueries);
       }
       setRenamingQuery(false);
     } else {
