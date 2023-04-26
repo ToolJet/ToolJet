@@ -35,9 +35,9 @@ export default function CreateTableDrawer() {
               }
 
               if (Array.isArray(data?.result) && data.result.length > 0) {
-                setTables(data.result || []);
                 setSelectedTable({ table_name: tableInfo.table_name, id: tableInfo.id });
                 updateSidebarNAV(tableInfo.table_name);
+                setTables(data.result || []);
               }
             });
             setIsCreateTableDrawerOpen(false);
