@@ -708,7 +708,10 @@ export function Table({
   };
   useEffect(() => {
     if (_.isEmpty(changeSet)) {
-      setExposedVariable('updatedData', tableData);
+      setExposedVariable(
+        'updatedData',
+        _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current
+      );
     }
   }, [JSON.stringify(changeSet)]);
 
