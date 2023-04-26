@@ -13,10 +13,8 @@ export const SettingsModal = ({
   apps,
   pages,
   components,
-  dataQueries,
 }) => {
   const [isSaving, _setIsSaving] = useState(false);
-  console.log({ dataQueries });
 
   const allpages = pages.filter((p) => p.id !== page.id);
 
@@ -67,7 +65,6 @@ export const SettingsModal = ({
             }}
             componentMeta={{ events: { onPageLoad: { displayName: 'On page load' } }, name: 'page' }}
             currentState={currentState}
-            dataQueries={dataQueries}
             components={components}
             apps={apps}
             pages={allpages}

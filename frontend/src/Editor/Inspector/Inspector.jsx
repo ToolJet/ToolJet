@@ -20,10 +20,11 @@ import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 
+import { useDataQueries } from '@/_stores/dataQueriesStore';
+
 export const Inspector = ({
   selectedComponentId,
   componentDefinitionChanged,
-  dataQueries,
   allComponents,
   currentState,
   apps,
@@ -32,6 +33,7 @@ export const Inspector = ({
   removeComponent,
   pages,
 }) => {
+  const dataQueries = useDataQueries();
   const component = {
     id: selectedComponentId,
     component: allComponents[selectedComponentId].component,
