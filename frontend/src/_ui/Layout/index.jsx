@@ -36,6 +36,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         (router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')) &&
                         `current-seleted-route`
                       }`}
+                      data-cy="icon-dashboard"
                     >
                       <SolidIcon
                         name="apps"
@@ -58,6 +59,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === getPrivateRoute('database') && `current-seleted-route`
                         }`}
+                        data-cy="icon-database"
                       >
                         <SolidIcon
                           name="table"
@@ -83,6 +85,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === getPrivateRoute('global_datasources') && `current-seleted-route`
                         }`}
+                        data-cy="icon-global-datasources"
                       >
                         <SolidIcon
                           name="datasource"
@@ -106,6 +109,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === '/integrations' && `current-seleted-route`
                         }`}
+                        data-cy="icon-marketplace"
                       >
                         <SolidIcon
                           name="marketplace"
@@ -122,6 +126,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       className={`tj-leftsidebar-icon-items  ${
                         router.pathname === getPrivateRoute('workspace_settings') && `current-seleted-route`
                       }`}
+                      data-cy="icon-workspace-settings"
                     >
                       <SolidIcon
                         name="setting"

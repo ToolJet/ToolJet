@@ -267,10 +267,12 @@ class ManageOrgUsersComponent extends React.Component {
             <div>
               <div className="page-header workspace-page-header">
                 <div className="align-items-center d-flex">
-                  <div className="tj-text-sm font-weight-500">{meta?.total_count} users</div>
+                  <div className="tj-text-sm font-weight-500" data-cy="title-users-page">
+                    {meta?.total_count} users
+                  </div>
                   <div className=" workspace-setting-buttons-wrap">
                     <ButtonSolid
-                      data-cy="invite-new-user"
+                      data-cy="button-invite-new-user"
                       className="singleuser-btn"
                       onClick={() => this.setState({ isInviteUsersDrawerOpen: true })}
                       leftIcon="usergroup"
@@ -292,8 +294,12 @@ class ManageOrgUsersComponent extends React.Component {
                 {users?.length === 0 && (
                   <div className="workspace-settings-table-wrap">
                     <div className="d-flex justify-content-center flex-column tj-user-table-wrapper">
-                      <span className="text-center font-weight-bold">No result found</span>
-                      <small className="text-center text-muted">Try changing the filters</small>
+                      <span className="text-center font-weight-bold" data-cy="text-no-result-found">
+                        No result found
+                      </span>
+                      <small className="text-center text-muted" data-cy="text-try-changing-filters">
+                        Try changing the filters
+                      </small>
                     </div>
                   </div>
                 )}
