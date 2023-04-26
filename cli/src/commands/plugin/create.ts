@@ -72,8 +72,6 @@ export default class Create extends Command {
       process.exit(1);
     }
 
-    let repoUrl;
-
     const commonHygenArgs = [
       'plugin',
       'new',
@@ -98,10 +96,6 @@ export default class Create extends Command {
           process.exit(1);
         }
       });
-
-      repoUrl = await CliUx.ux.prompt('Please enter the repository URL if hosted on GitHub', {
-        required: false,
-      });
     }
 
     CliUx.ux.action.start('creating plugin');
@@ -125,7 +119,6 @@ export default class Create extends Command {
       const pluginsJson = JSON.parse(buffer);
       const plugin = {
         name: args.plugin_name,
-        repo: repoUrl || '',
         description: `${type} plugin from ${args.plugin_name}`,
         version: '1.0.0',
         id: `${args.plugin_name.toLowerCase()}`,
