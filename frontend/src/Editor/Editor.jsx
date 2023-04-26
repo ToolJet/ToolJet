@@ -1586,7 +1586,7 @@ class EditorComponent extends React.Component {
                     )}
                   </div>
                 </div>
-                <QueryPanel dataQueriesChanged={this.dataQueriesChanged}>
+                <QueryPanel dataQueriesChanged={this.dataQueriesChanged} fetchDataQueries={this.fetchDataQueries}>
                   {({
                     toggleQueryEditor,
                     selectedDataSource,

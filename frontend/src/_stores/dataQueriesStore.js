@@ -57,12 +57,12 @@ export const useDataQueriesStore = create(
             toast.error(error);
           });
       },
-      renameQuery: (id, newName) => {
+      renameQuery: (id, newName, fetchDataQueries) => {
         dataqueryService
           .update(id, newName)
           .then(() => {
             toast.success('Query Name Updated');
-            get().actions.fetchDataQueries(useAppDataStore.getState().editingVersion?.id);
+            fetchDataQueries(useAppDataStore.getState().editingVersion?.id); // Should be replaced with - get().actions.fetchDataQueries(useAppDataStore.getState().editingVersion?.id);
           })
           .catch(({ error }) => {
             toast.error(error);

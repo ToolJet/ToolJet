@@ -7,7 +7,7 @@ import { Confirm } from '../Viewer/Confirm';
 import { useQueryPanelActions, useUnsavedChanges, useSelectedQuery } from '@/_stores/queryPanelStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 
-export const QueryPanel = ({ dataQueriesChanged, children }) => {
+export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, children }) => {
   const { setSelectedQuery, updateQueryPanelHeight, setUnSavedChanges } = useQueryPanelActions();
   const isUnsavedQueriesAvailable = useUnsavedChanges();
   const selectedQuery = useSelectedQuery();
@@ -32,6 +32,7 @@ export const QueryPanel = ({ dataQueriesChanged, children }) => {
     if (!editingQuery && selectedQuery !== null && selectedQuery?.id !== 'draftQuery') {
       setEditingQuery(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedQuery?.id, editingQuery]);
 
   useEffect(() => {
@@ -98,10 +99,6 @@ export const QueryPanel = ({ dataQueriesChanged, children }) => {
       isSourceSelected: false,
       draftQuery: null,
     };
-    // if (isUnsavedQueriesAvailable) {
-    // setSaveConfirmation(true);
-    // setCancelData(stateToBeUpdated);
-    // } else this.setState({ ...stateToBeUpdated });
 
     if (isUnsavedQueriesAvailable) {
       setSaveConfirmation(true);
@@ -112,6 +109,7 @@ export const QueryPanel = ({ dataQueriesChanged, children }) => {
       setDraftQuery(null);
       setEditingQuery(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isUnsavedQueriesAvailable]);
 
   const toggleQueryEditor = useCallback(() => {
@@ -130,6 +128,7 @@ export const QueryPanel = ({ dataQueriesChanged, children }) => {
     setEditingQuery(true);
     setDraftQuery(null);
     dataQueriesChanged();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateDraftQueryName = useCallback((newName) => setDraftQuery((query) => ({ ...query, name: newName })), []);
@@ -211,6 +210,7 @@ export const QueryPanel = ({ dataQueriesChanged, children }) => {
             handleAddNewQuery={handleAddNewQuery}
             setDraftQuery={setDraftQuery}
             setSelectedDataSource={setSelectedDataSource}
+            fetchDataQueries={fetchDataQueries}
           />
           {children({
             toggleQueryEditor,
