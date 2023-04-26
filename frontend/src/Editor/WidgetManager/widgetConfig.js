@@ -285,7 +285,7 @@ export const widgets = [
     },
     defaultSize: {
       width: 20,
-      height: 300,
+      height: 358,
     },
     events: {
       onRowHovered: { displayName: 'Row hovered' },
@@ -297,6 +297,7 @@ export const widgets = [
       onSort: { displayName: 'Sort applied' },
       onCellValueChanged: { displayName: 'Cell value changed' },
       onFilterChanged: { displayName: 'Filter changed' },
+      onNewRowsAdded: { displayName: 'Add new rows' },
     },
     styles: {
       textColor: {
@@ -396,6 +397,10 @@ export const widgets = [
       {
         handle: 'discardChanges',
         displayName: 'Discard Changes',
+      },
+      {
+        handle: 'discardNewlyAddedRows',
+        displayName: 'Discard newly added rows',
       },
     ],
     definition: {
@@ -833,7 +838,8 @@ export const widgets = [
       },
       hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
       hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
-      hideOnEsc: { type: 'toggle', displayName: 'Hide on escape' },
+      hideOnEsc: { type: 'toggle', displayName: 'Close on escape key' },
+      closeOnClickingOutside: { type: 'toggle', displayName: 'Close on clicking outside' },
 
       size: {
         type: 'select',
@@ -933,6 +939,7 @@ export const widgets = [
         hideTitleBar: { value: '{{false}}' },
         hideCloseButton: { value: '{{false}}' },
         hideOnEsc: { value: '{{true}}' },
+        closeOnClickingOutside: { value: '{{false}}' },
       },
       events: [],
       styles: {

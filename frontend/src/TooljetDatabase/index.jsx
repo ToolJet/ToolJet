@@ -1,8 +1,9 @@
-import React, { createContext, useState, useMemo } from 'react';
+import React, { createContext, useState, useMemo, useEffect, useContext } from 'react';
 import Layout from '@/_ui/Layout';
 import TooljetDatabasePage from './TooljetDatabasePage';
 import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
 import { authenticationService } from '../_services/authentication.service';
+import { BreadCrumbContext } from '@/App/App';
 
 export const TooljetDatabaseContext = createContext({
   organizationId: null,
@@ -99,6 +100,13 @@ export const TooljetDatabase = (props) => {
       sortFilters,
     ]
   );
+
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  useEffect(() => {
+    updateSidebarNAV('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
