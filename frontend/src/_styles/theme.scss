@@ -1167,17 +1167,16 @@ button {
     width: inherit;
   }
   &.fx-container-eventmanager{
-    height: 32px !important;
     .fx-common {
-      right: 0 !important;
+      right: 0;
     }
     .custom-row{
       width:100%
     }
   }
-  .component-action-select-codeShow{
-    display: flex !important;
-    flex-direction: row-reverse !important;
+  .codeShow-active{
+    display: flex;
+    flex-direction: row-reverse;
     justify-content: space-between;
     .custom-row{
       width: 75%;
@@ -1185,7 +1184,7 @@ button {
   }
   .row.fx-container{
     .col{
-      display: flex !important;
+      display: flex;
     }
   }  
 }
