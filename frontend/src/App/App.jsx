@@ -33,6 +33,7 @@ import { VerificationSuccessInfoScreen } from '@/SuccessInfoScreen';
 import '@/_styles/theme.scss';
 import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
+export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 
 const AppWrapper = (props) => {
@@ -55,7 +56,9 @@ class AppComponent extends React.Component {
       darkMode: localStorage.getItem('darkMode') === 'true',
     };
   }
-
+  updateSidebarNAV = (val) => {
+    this.setState({ sidebarNav: val });
+  };
   fetchMetadata = () => {
     tooljetService.fetchMetaData().then((data) => {
       localStorage.setItem('currentVersion', data.installed_version);
@@ -106,6 +109,7 @@ class AppComponent extends React.Component {
             } else if (isApplicationsPath) {
               this.updateCurrentSession({
                 authentication_failed: true,
+                load_app: true,
               });
             }
           });
@@ -138,6 +142,7 @@ class AppComponent extends React.Component {
             ...data,
             current_organization_name,
             organizations: response.organizations,
+            load_app: true,
           });
 
           // if user is trying to load the workspace login page, then redirect to the dashboard
@@ -173,6 +178,7 @@ class AppComponent extends React.Component {
 
                     this.updateCurrentSession({
                       current_organization_name,
+                      load_app: true,
                     });
 
                     if (!this.isThisWorkspaceLoginPage())
@@ -225,7 +231,8 @@ class AppComponent extends React.Component {
         },
       };
     }
-
+    const { sidebarNav } = this.state;
+    const { updateSidebarNAV } = this;
     return (
       <>
         <div className={`main-wrapper ${darkMode ? 'theme-dark dark-theme' : ''}`} data-cy="main-wrapper">
@@ -314,85 +321,91 @@ class AppComponent extends React.Component {
                 </PrivateRoute>
               }
             />
-            <Route
-              exact
-              path="/:workspaceId/workspace-settings"
-              element={
-                <PrivateRoute>
-                  <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/:workspaceId/settings"
-              element={
-                <PrivateRoute>
-                  <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/:workspaceId/global-datasources"
-              element={
-                <PrivateRoute>
-                  <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
+          </Routes>
+          <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
+            <Routes>
               <Route
                 exact
-                path="/:workspaceId/database"
+                path="/:workspaceId/workspace-settings"
                 element={
                   <PrivateRoute>
-                    <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </PrivateRoute>
                 }
               />
-            )}
-            {window.public_config?.ENABLE_MARKETPLACE_FEATURE === 'true' && (
               <Route
                 exact
-                path="/integrations"
+                path="/:workspaceId/settings"
                 element={
-                  <AdminRoute>
-                    <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </AdminRoute>
+                  <PrivateRoute>
+                    <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
                 }
               />
-            )}
-            <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
-            <Route
-              exact
-              path="/switch-workspace"
-              element={
-                <PrivateRoute>
-                  <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/:workspaceId"
-              element={
-                <PrivateRoute>
-                  <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="*"
-              render={() => {
-                if (authenticationService?.currentSessionValue?.current_organization_id) {
-                  return <Navigate to="/:workspaceId" />;
+              <Route
+                exact
+                path="/:workspaceId/global-datasources"
+                element={
+                  <PrivateRoute>
+                    <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
                 }
-                return <Navigate to="/login" />;
-              }}
-            />
-          </Routes>
+              />
+              {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
+                <Route
+                  exact
+                  path="/:workspaceId/database"
+                  element={
+                    <PrivateRoute>
+                      <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </PrivateRoute>
+                  }
+                />
+              )}
+
+              {window.public_config?.ENABLE_MARKETPLACE_FEATURE === 'true' && (
+                <Route
+                  exact
+                  path="/integrations"
+                  element={
+                    <AdminRoute>
+                      <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+              )}
+              <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
+              <Route
+                exact
+                path="/switch-workspace"
+                element={
+                  <PrivateRoute>
+                    <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/:workspaceId"
+                element={
+                  <PrivateRoute>
+                    <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="*"
+                render={() => {
+                  if (authenticationService?.currentSessionValue?.current_organization_id) {
+                    return <Navigate to="/:workspaceId" />;
+                  }
+                  return <Navigate to="/login" />;
+                }}
+              />
+            </Routes>
+          </BreadCrumbContext.Provider>
         </div>
+
         <Toast toastOptions={toastOptions} />
       </>
     );

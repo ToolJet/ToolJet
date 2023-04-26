@@ -8,7 +8,7 @@ Permissions allow you to create and share resources to easily ensure what level 
 Admins can invite **Users** to their workspaces and assign them to the **Groups** that have Permissions to access Apps, folders, or workspace variables. 
 
 :::info
-See **[Manage Users and Groups](/docs/tutorial/manage-users-groups)** to learn how to invite users to ToolJet.
+See **[Manage Users and Groups](/docs/tutorial/manage-users-groups)** to know more about managing users and groups on your workspace.
 :::
 
 ## Role-Based Access Control (RBAC) Glossary
