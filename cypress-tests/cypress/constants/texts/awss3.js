@@ -1,7 +1,7 @@
 export const s3Text = {
   awsS3: "AWS S3",
   accessKey: "Access key",
-  secretKey: "Secret keyEncrypted",
+  secretKey: "Secret key",
   region: "Region",
   customEndpoint: "Custom Endpoint",
   alertRegionIsMissing: "Region is missing",
@@ -10,7 +10,7 @@ export const s3Text = {
   placeholderEnterSecretKey: "Enter secret key",
   labelRegion: "Region",
   region: "N. california",
-  alertInvalidUrl: "Invalid URL:",
+  alertInvalidUrl: "Invalid URL",
   accessKeyError:
     "The AWS Access Key Id you provided does not exist in our records.",
   sinatureError:

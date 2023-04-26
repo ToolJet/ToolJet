@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import { getManager, Repository, Not } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { clearDB, createUser, authHeaderForUser, createNestAppInstanceWithEnvMock } from '../../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, authenticateUser } from '../../test.helper';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
@@ -184,9 +184,11 @@ describe('Authentication', () => {
         email: 'admin@tooljet.io',
       });
 
+      const loggedUser = await authenticateUser(app, adminUser.email);
       await request(app.getHttpServer())
         .post(`/api/organization_users/`)
-        .set('Authorization', authHeaderForUser(adminUser))
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
         .send({ email: 'invited@tooljet.io', first_name: 'signupuser', last_name: 'user' })
         .expect(201);
 

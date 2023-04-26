@@ -288,5 +288,5 @@ This operation deletes a record from the table
 - **Filter**: Add a condition by choosing a column, an operation, and the value for deleting a particular record.
 
 :::info
-If you have any other questions or feedback about **ToolJet Database**, please reach us out at hello@tooljet.com or join our **[Slack Community](https://www.tooljet.com)**
+If you have any other questions or feedback about **ToolJet Database**, please reach us out at hello@tooljet.com or join our **[Slack Community](https://www.tooljet.com/slack)**
 :::

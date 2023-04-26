@@ -7,7 +7,7 @@ export const instanceSettingsService = {
 };
 
 function fetchSettings() {
-  const requestOptions = { method: 'GET', headers: authHeader() };
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/instance-settings`, requestOptions).then(handleResponse);
 }
 
@@ -16,6 +16,6 @@ function update(settings) {
     ...settings,
   };
 
-  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body) };
+  const requestOptions = { method: 'PATCH', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };
   return fetch(`${config.apiUrl}/instance-settings`, requestOptions).then(handleResponse);
 }

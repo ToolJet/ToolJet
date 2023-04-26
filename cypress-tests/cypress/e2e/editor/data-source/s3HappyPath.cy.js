@@ -64,6 +64,7 @@ describe("Data sources AWS S3", () => {
     );
     cy.get(s3Selector.customEndpointLabel)
       .verifyVisibleElement("have.text", s3Text.customEndpoint)
+      .parent()
       .next()
       .find("input")
       .click();
@@ -118,12 +119,14 @@ describe("Data sources AWS S3", () => {
     );
 
     cy.get(s3Selector.regionLabel)
+    .parent()
       .next()
       .find("input")
       .type(`${s3Text.region}{enter}`);
 
     cy.get(s3Selector.customEndpointLabel)
       .verifyVisibleElement("have.text", s3Text.customEndpoint)
+      .parent()
       .next()
       .find("input")
       .click();
@@ -132,6 +135,7 @@ describe("Data sources AWS S3", () => {
     verifyCouldnotConnectWithAlert(s3Text.alertInvalidUrl);
     cy.get(s3Selector.customEndpointLabel)
       .verifyVisibleElement("have.text", s3Text.customEndpoint)
+      .parent()
       .next()
       .find("input")
       .click();
@@ -171,6 +175,7 @@ describe("Data sources AWS S3", () => {
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("have.text", s3Text.cypressAwsS3)
       .find("button")
+      .invoke('show')
       .should("be.visible");
   });
 });

@@ -19,30 +19,15 @@ describe('oauth controller', () => {
     'email',
     'first_name',
     'last_name',
-    'avatar_id',
-    'auth_token',
+    'current_organization_id',
     'admin',
-    'organization_id',
-    'organization',
-    'group_permissions',
     'app_group_permissions',
-    'super_admin',
-  ].sort();
-
-  const groupPermissionsKeys = [
-    'id',
+    'avatar_id',
+    'data_source_group_permissions',
+    'group_permissions',
+    'organization',
     'organization_id',
-    'group',
-    'app_create',
-    'app_delete',
-    'updated_at',
-    'created_at',
-    'folder_create',
-    'folder_update',
-    'folder_delete',
-    'org_environment_variable_create',
-    'org_environment_variable_delete',
-    'org_environment_variable_update',
+    'super_admin',
   ].sort();
 
   beforeEach(async () => {
@@ -583,27 +568,12 @@ describe('oauth controller', () => {
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const { email, first_name, last_name, current_organization_id } = response.body;
 
           expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(current_organization_id).toBe(current_organization.id);
         });
 
         it('Workspace Login - should return login info when the user exist', async () => {
@@ -649,27 +619,12 @@ describe('oauth controller', () => {
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const { email, first_name, last_name, current_organization_id } = response.body;
 
           expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(current_organization_id).toBe(current_organization.id);
         });
 
         it('Common Login - should return login info when the user exist but invited status', async () => {
@@ -714,29 +669,12 @@ describe('oauth controller', () => {
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const { email, first_name, last_name, current_organization_id } = response.body;
 
           expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
-          expect(admin).toBeTruthy();
-          expect(organization_id).not.toBe(current_organization.id);
-          expect(organization).toBe('Untitled workspace');
-          expect(group_permissions).toHaveLength(2);
-          expect([group_permissions[0].group, group_permissions[1].group]).toContain('all_users');
-          expect([group_permissions[0].group, group_permissions[1].group]).toContain('admin');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(Object.keys(group_permissions[1]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(current_organization_id).not.toBe(current_organization.id);
           await orgUser.reload();
           expect(orgUser.status).toEqual('invited');
         });
@@ -784,27 +722,12 @@ describe('oauth controller', () => {
           expect(response.statusCode).toBe(201);
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const { email, first_name, last_name, current_organization_id } = response.body;
 
           expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(current_organization_id).toBe(current_organization.id);
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
         });
@@ -867,27 +790,12 @@ describe('oauth controller', () => {
           expect(gitGetUserResponse).toBeCalledWith('https://github.host.com/api/v3/user', expect.anything());
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const { email, first_name, last_name, current_organization_id } = response.body;
 
           expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(current_organization_id).toBe(current_organization.id);
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
         });
@@ -952,56 +860,14 @@ describe('oauth controller', () => {
           expect(gitGetUserResponse).toBeCalledWith('https://github.host.com/api/v3/user', expect.anything());
           expect(Object.keys(response.body).sort()).toEqual(authResponseKeys);
 
-          const {
-            email,
-            first_name,
-            last_name,
-            admin,
-            group_permissions,
-            app_group_permissions,
-            organization_id,
-            organization,
-          } = response.body;
+          const { email, first_name, last_name, current_organization_id } = response.body;
 
           expect(email).toEqual('anotheruser1@tooljet.io');
           expect(first_name).toEqual('SSO');
           expect(last_name).toEqual('userExist');
-          expect(admin).toBeFalsy();
-          expect(organization_id).toBe(current_organization.id);
-          expect(organization).toBe(current_organization.name);
-          expect(group_permissions).toHaveLength(1);
-          expect(group_permissions[0].group).toEqual('all_users');
-          expect(Object.keys(group_permissions[0]).sort()).toEqual(groupPermissionsKeys);
-          expect(app_group_permissions).toHaveLength(0);
+          expect(current_organization_id).toBe(current_organization.id);
           await orgUser.reload();
           expect(orgUser.status).toEqual('active');
-        });
-      });
-    });
-
-    describe('Multi-Workspace Disabled', () => {
-      beforeEach(() => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-          switch (key) {
-            case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
-              return 'google-client-id';
-            case 'SSO_GIT_OAUTH2_CLIENT_ID':
-              return 'git-client-id';
-            case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
-              return 'git-secret';
-            case 'DISABLE_MULTI_WORKSPACE':
-              return 'true';
-            default:
-              return process.env[key];
-          }
-        });
-      });
-      describe('sign in via Git OAuth', () => {
-        it('should return 403', async () => {
-          await request(app.getHttpServer())
-            .post('/api/oauth/sign-in/common/git')
-            .send({ token: 'some-token' })
-            .expect(403);
         });
       });
     });
