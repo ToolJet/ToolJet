@@ -105,6 +105,7 @@ export const QueryDataPane = ({
                   setDraftQuery={setDraftQuery}
                   setSelectedDataSource={setSelectedDataSource}
                   fetchDataQueries={fetchDataQueries}
+                  darkMode={darkMode}
                 />
               ) : (
                 ''
@@ -118,6 +119,7 @@ export const QueryDataPane = ({
                   setDraftQuery={setDraftQuery}
                   setSelectedDataSource={setSelectedDataSource}
                   fetchDataQueries={fetchDataQueries}
+                  darkMode={darkMode}
                 />
               ))}
             </div>

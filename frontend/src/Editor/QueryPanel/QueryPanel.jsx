@@ -7,7 +7,7 @@ import { Confirm } from '../Viewer/Confirm';
 import { useQueryPanelActions, useUnsavedChanges, useSelectedQuery } from '@/_stores/queryPanelStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 
-export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, children }) => {
+export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, darkMode, children }) => {
   const { setSelectedQuery, updateQueryPanelHeight, setUnSavedChanges } = useQueryPanelActions();
   const isUnsavedQueriesAvailable = useUnsavedChanges();
   const selectedQuery = useSelectedQuery();
@@ -154,6 +154,7 @@ export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, children }) =
         cancelButtonText="Discard changes"
         callCancelFnOnConfirm={false}
         queryCancelData={queryCancelData}
+        darkMode={darkMode}
       />
       <div
         className="query-pane"
@@ -211,6 +212,7 @@ export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, children }) =
             setDraftQuery={setDraftQuery}
             setSelectedDataSource={setSelectedDataSource}
             fetchDataQueries={fetchDataQueries}
+            darkMode={darkMode}
           />
           {children({
             toggleQueryEditor,

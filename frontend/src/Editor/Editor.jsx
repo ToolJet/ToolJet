@@ -1586,7 +1586,11 @@ class EditorComponent extends React.Component {
                     )}
                   </div>
                 </div>
-                <QueryPanel dataQueriesChanged={this.dataQueriesChanged} fetchDataQueries={this.fetchDataQueries}>
+                <QueryPanel
+                  dataQueriesChanged={this.dataQueriesChanged}
+                  fetchDataQueries={this.fetchDataQueries}
+                  darkMode={this.props.darkMode}
+                >
                   {({
                     toggleQueryEditor,
                     selectedDataSource,
