@@ -10,7 +10,7 @@ import Sidebar from '../Sidebar';
 import { TooljetDatabaseContext } from '../index';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import ExportSchema from '../ExportSchema/ExportSchema';
-import { appService } from '../../_services/app.service';
+import { appService } from '@/_services/app.service';
 import { toast } from 'react-hot-toast';
 
 const TooljetDatabasePage = ({ totalTables }) => {
@@ -91,16 +91,8 @@ const TooljetDatabasePage = ({ totalTables }) => {
         {selectedTable && (
           <>
             <div className="database-table-header-wrapper">
-              <div className="card border-0 px-3 py-2">
-                <span
-                  className="text-h3 font-weight-500"
-                  data-cy={`${String(selectedTable).toLowerCase().replace(/\s+/g, '-')}-table-name-header`}
-                >
-                  {selectedTable.table_name}
-                </span>
-              </div>
               <div className="card border-0">
-                <div className="card-body  tj-db-operations-header">
+                <div className="card-body  tj-db-operaions-header">
                   <div className="row align-items-center">
                     <div className="col d-flex">
                       <CreateColumnDrawer

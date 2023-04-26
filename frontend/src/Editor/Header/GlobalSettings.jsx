@@ -160,7 +160,7 @@ export const GlobalSettings = ({
                 )}
                 {forceCodeBox && (
                   <div
-                    className="row mx-0 form-control form-control-sm canvas-background-holder"
+                    className="form-control form-control-sm canvas-background-holder"
                     onClick={() => setShowPicker(true)}
                   >
                     <div

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import moment from 'moment';
-import { appService } from '../_services/app.service';
+import { appService } from '@/_services/app.service';
 import { toast } from 'react-hot-toast';
-import { ButtonSolid } from '../_components/AppButton';
+import { ButtonSolid } from '@/_components/AppButton';
 
 export default function ExportAppModal({ title, show, closeModal, customClassName, app, darkMode }) {
   const currentVersion = app?.editing_version;
@@ -97,7 +97,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
       centered
       data-cy={'modal-component'}
     >
-      <BootstrapModal.Header className="border-bottom">
+      <BootstrapModal.Header>
         <BootstrapModal.Title data-cy={`${title.toLowerCase().replace(/\s+/g, '-')}-title`}>
           {title}
         </BootstrapModal.Title>
@@ -111,9 +111,9 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
       {Array.isArray(versions) ? (
         <>
           <BootstrapModal.Body>
-            <div className="">
+            <div>
               <div className="current-version " data-cy="current-version-section">
-                <span className="text-muted" data-cy="current-version-label">
+                <span data-cy="current-version-label" className="current-version-label">
                   Current Version
                 </span>
                 <InputRadioField
@@ -128,7 +128,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
               </div>
               {versions.length >= 2 ? (
                 <div className="other-versions" data-cy="other-version-section">
-                  <span className="text-muted" data-cy="other-version-label">
+                  <span data-cy="other-version-label" className="other-version-label">
                     Other Versions
                   </span>
                   {versions.map((version) => {
@@ -150,9 +150,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
                 </div>
               ) : (
                 <div className="other-versions" data-cy="other-version-section">
-                  <span className="text-muted" data-cy="no-other-versions-found-text">
-                    No other versions found
-                  </span>
+                  <span data-cy="no-other-versions-found-text">No other versions found</span>
                 </div>
               )}
             </div>
@@ -161,7 +159,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
             <input type="checkbox" checked={exportTjDb} onChange={() => setExportTjDb(!exportTjDb)} />
             <p>Export ToolJet table schema</p>
           </div>
-          <BootstrapModal.Footer className="export-app-modal-footer d-flex justify-content-end border-top align-items-center ">
+          <BootstrapModal.Footer className="export-app-modal-footer d-flex justify-content-end align-items-center ">
             <ButtonSolid
               className="import-export-footer-btns"
               variant="tertiary"
@@ -218,9 +216,9 @@ function InputRadioField({
         style={{ paddingLeft: '0.75rem' }}
       >
         <span data-cy={`${String(versionName).toLowerCase().replace(/\s+/g, '-')}-text`}>{versionName}</span>
-        <span className="text-secondary" data-cy="created-date-label">{`Created on ${moment(versionCreatedAt).format(
-          'Do MMM YYYY'
-        )}`}</span>
+        <span className="export-creation-date tj-text-sm" data-cy="created-date-label">{`Created on ${moment(
+          versionCreatedAt
+        ).format('Do MMM YYYY')}`}</span>
       </label>
     </span>
   );

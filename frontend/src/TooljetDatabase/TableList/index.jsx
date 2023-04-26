@@ -29,7 +29,7 @@ const List = () => {
 
     if (Array.isArray(data?.result)) {
       setTables(data.result || []);
-      setSelectedTable(data?.result[0]);
+      setSelectedTable({ table_name: data?.result[0]?.table_name, id: data?.result[0]?.id });
       updateSidebarNAV(data?.result[0]?.table_name);
     }
   }

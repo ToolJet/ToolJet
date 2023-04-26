@@ -2,7 +2,7 @@ import React, { createContext, useState, useMemo } from 'react';
 import Layout from '@/_ui/Layout';
 import TooljetDatabasePage from './TooljetDatabasePage';
 import { usePostgrestQueryBuilder } from './usePostgrestQueryBuilder';
-import { authenticationService } from '../_services/authentication.service';
+import { authenticationService } from '@/_services/authentication.service';
 
 export const TooljetDatabaseContext = createContext({
   organizationId: null,
