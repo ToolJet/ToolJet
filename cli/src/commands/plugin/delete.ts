@@ -57,7 +57,7 @@ export default class Delete extends Command {
       .prompt({
         name: 'confirm',
         type: 'confirm',
-        message: 'Are you sure?',
+        message: `Please confirm: Do you want to proceed with deleting the plugin [${args.plugin_name}] from your local machine?`,
         default: 'yes',
       })
       .then(async (answers: any) => {
