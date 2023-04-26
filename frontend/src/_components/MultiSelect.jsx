@@ -13,15 +13,17 @@ function MultiSelect({
   isLoading,
   className,
   searchLabel,
+  //for wildcard search, don't pass options
+  options,
 }) {
   const [searchText, setSearchText] = useState('');
-  const [filteredOptions, setOptions] = useState([]);
+  const [filteredOptions, setOptions] = useState();
   const listOfOptions = useRef([]);
 
   useEffect(() => {
-    setOptions(filterOptions(listOfOptions.current));
+    options ? setOptions(filterOptions(options)) : setOptions(filterOptions(listOfOptions.current));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedValues, listOfOptions.current]);
+  }, [selectedValues, listOfOptions.current, options]);
 
   const searchFunction = useCallback(
     async (query) => {
