@@ -3,7 +3,6 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
-import { useDropzone } from 'react-dropzone';
 import { FileDropzone } from './FileDropzone';
 
 function InviteUsersForm({
@@ -21,10 +20,6 @@ function InviteUsersForm({
   const [activeTab, setActiveTab] = useState(1);
 
   const hiddenFileInput = useRef(null);
-  const { acceptedFiles } = useDropzone({
-    onDrop,
-    accept: 'text/csv',
-  });
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -39,12 +34,6 @@ function InviteUsersForm({
   const handleClick = () => {
     hiddenFileInput.current.click();
   };
-
-  const files = acceptedFiles.map((file) => (
-    <li key={file.path}>
-      {file.path} - {file.size} bytes
-    </li>
-  ));
 
   return (
     <div>

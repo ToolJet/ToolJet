@@ -51,7 +51,9 @@ const UsersFilter = ({ filterList }) => {
           className="workspace-settings-filter-items d-flex align-items-center "
           data-cy="user-status-select-continer"
         >
-          <div className="tj-text-xsm mx-3" data-cy="users-filter-label">Showing</div>
+          <div className="tj-text-xsm mx-3" data-cy="users-filter-label">
+            Showing
+          </div>
           <div className="users-filter-dropdown" data-cy="users-filter-input">
             <Select
               options={userStatusOptions}
