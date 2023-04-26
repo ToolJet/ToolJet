@@ -74,8 +74,8 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
         document.body.removeChild(link);
         closeModal();
       })
-      .catch(() => {
-        toast.error('Could not export the app.', {
+      .catch((error) => {
+        toast.error(`Could not export app: ${error.data.message}`, {
           position: 'top-center',
         });
         closeModal();

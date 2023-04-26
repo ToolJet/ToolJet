@@ -14,7 +14,7 @@ export class TooljetDbImportExportService {
       where: { organizationId, id: tjDbDto.table_id },
     });
 
-    if (!internalTable) throw new NotFoundException('Internal table not found');
+    if (!internalTable) throw new NotFoundException('Tooljet database table not found');
 
     const columnSchema = await this.tooljetDbService.perform(organizationId, 'view_table', {
       id: tjDbDto.table_id,
