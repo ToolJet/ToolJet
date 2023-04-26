@@ -132,6 +132,7 @@ describe("App Import Functionality", () => {
     cy.reload();
     navigateToAppEditor(data.appReName);
 
+    cy.wait(500);
     cy.get(appVersionSelectors.appVersionMenuField)
       .should("be.visible")
       .click();

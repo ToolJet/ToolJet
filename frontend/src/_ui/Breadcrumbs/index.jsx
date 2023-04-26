@@ -12,11 +12,14 @@ export const Breadcrumbs = ({ darkMode }) => {
       {breadcrumbs.map(({ breadcrumb, dataCy, beta }, i) => {
         if (i == 1 || breadcrumbs?.length == 1) {
           return (
-            <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>
+            <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy="breadcrumb-title">
               <p className=" tj-text-xsm ">{breadcrumb}</p>
               {sidebarNav?.length > 0 && <SolidIcon name="cheveronright" fill={darkMode ? '#FDFDFE' : '#131620'} />}
               <li className="breadcrumb-item font-weight-500">
-                <Link to={breadcrumb.key}> {sidebarNav}</Link>
+                <Link to={breadcrumb.key} data-cy="breadcrumb-page-title">
+                  {' '}
+                  {sidebarNav}
+                </Link>
               </li>
               {beta && <span className="badge bg-color-primary mx-3">beta</span>}
             </div>
