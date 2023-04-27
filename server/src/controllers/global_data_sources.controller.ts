@@ -44,10 +44,22 @@ export class GlobalDataSourcesController {
         );
       }
     }
-    return decamelizeKeys({ data_sources: dataSources }, function (key, convert, options) {
-      const checkForKeysAsPath = key.startsWith('/');
-      return checkForKeysAsPath ? key : convert(key, options);
+
+    const decamelizedDatasources = [];
+    dataSources.forEach((dataSource) => {
+      if (dataSource.kind === 'openapi') {
+        const { options, ...objExceptOptions } = dataSource;
+        const tempDs = decamelizeKeys(objExceptOptions);
+        const { spec, ...objExceptSpec } = options;
+        const decamelizedOptions = decamelizeKeys(objExceptSpec);
+        decamelizedOptions['spec'] = spec;
+        tempDs['options'] = decamelizedOptions;
+        return decamelizedDatasources.push(tempDs);
+      }
+      decamelizedDatasources.push(dataSource);
     });
+
+    return { data_sources: decamelizedDatasources };
   }
 
   @UseGuards(JwtAuthGuard)
