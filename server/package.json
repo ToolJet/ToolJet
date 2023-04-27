@@ -84,7 +84,8 @@
     "tsconfig-paths": "^3.10.1",
     "typeorm": "^0.2.38",
     "ws": "^7.5.5",
-    "y-websocket": "^1.4.0"
+    "y-websocket": "^1.4.0",
+    "yjs": "^13.6.0"
   },
   "peerDependencies": {
     "@nestjs/cli": "^8.0.0"
