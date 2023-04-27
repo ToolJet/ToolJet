@@ -636,6 +636,8 @@ export class AuthService {
         : user?.organizationIds?.includes(user?.defaultOrganizationId)
         ? user.defaultOrganizationId
         : user?.organizationIds?.[0],
+      //for knowing the user is new or old one [posthog telemetry]
+      registeredAt: user.createdAt,
     });
   }
 
