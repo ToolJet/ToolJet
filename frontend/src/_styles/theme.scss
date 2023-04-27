@@ -639,9 +639,17 @@ button {
   width: 100%;
   margin-top: 32px;
 
+  .search-box-wrapper {
+    .input-icon {
+      .input-icon-addon {
+        padding-right: 6px;
+      }
+    }
+  }
+
   .homepage-search {
     background: transparent;
-    color: var(--slate9);
+    color: var(--slate12);
     height: 20px;
 
     &:focus {
@@ -4330,12 +4338,8 @@ input[type="text"] {
   input {
     width: 200px;
     border-radius: 5px !important;
-    color: var(--slate12) !important;
+    color: var(--slate12);
     background-color: var(--base);
-  }
-
-  .input-icon-addon {
-    min-width: 0rem !important;
   }
 
   .input-icon .form-control:not(:first-child),
@@ -4345,7 +4349,6 @@ input[type="text"] {
 
   input:focus {
     width: 300px;
-    background-color: var(--base);
   }
 
   .input-icon .input-icon-addon {
@@ -4361,7 +4364,6 @@ input[type="text"] {
       justify-content: center;
       align-items: center;
       padding: 4px;
-      // gap: 8px;
       width: 20px;
       height: 20px;
       background: var(--indigo3) !important;
@@ -4526,30 +4528,37 @@ input[type="text"] {
     }
   }
 }
-.home-modal-component-editor.dark
-{
-  .modal-header,.modal-body{
+
+.home-modal-component-editor.dark {
+
+  .modal-header,
+  .modal-body {
     background-color: #232e3c;
     color: #fff;
   }
-  .form-control{
+
+  .form-control {
     color: #fff;
     background-color: #232e3c !important;
   }
 }
+
 .onboarding-modal.dark .modal-content {
   @extend .modal-content.home-modal-component.dark;
 }
+
 .modal-content.home-modal-component.dark-theme {
   .btn-close {
     filter: brightness(0) invert(1);
   }
 }
-.home-modal-component{
+
+.home-modal-component {
   .btn-close {
     opacity: 1 !important;
   }
 }
+
 .modal-content.home-modal-component.dark {
   background-color: $bg-dark-light  !important;
   color: $white  !important;
@@ -4932,7 +4941,7 @@ div#driver-page-overlay {
 
 .popover.popover-dark-themed {
   background-color: $bg-dark-light;
-  border-color: rgba(101,109,119,0.16);
+  border-color: rgba(101, 109, 119, 0.16);
 
 
   .popover-body {
@@ -7685,7 +7694,7 @@ tbody {
 
   .home-app-card-header {
     .menu-ico {
-      display: none !important;
+      visibility: hidden !important;
     }
   }
 
@@ -7696,7 +7705,7 @@ tbody {
       margin-bottom: 12px;
 
       .menu-ico {
-        display: block !important;
+        visibility: visible !important;
       }
     }
 
@@ -8401,7 +8410,8 @@ tbody {
   color: var(--slate12);
   justify-content: center;
 }
-.launch-button.tj-disabled-btn{
+
+.launch-button.tj-disabled-btn {
   cursor: not-allowed;
 }
 
@@ -9701,7 +9711,7 @@ tbody {
   border-radius: 4px;
 }
 
-.confirm-dialogue-body  {
+.confirm-dialogue-body {
   background: var(--base);
   color: var(--slate12);
 }
@@ -9823,7 +9833,7 @@ tbody {
   grid-template-rows: auto 1fr auto;
 }
 
-.add-new-datasource-header-container{
+.add-new-datasource-header-container {
   margin-bottom: 24px;
   padding-top: 4px;
 }
@@ -10359,28 +10369,59 @@ tbody {
 .template-source-name {
   color: var(--slate12) !important;
 }
-.marketplace-install{
+
+.marketplace-install {
   color: var(--indigo9);
 }
+
 .popover {
   .popover-arrow {
     display: none;
   }
 }
 
-.shareable-link{
-  .input-group{
-    .tj-app-input textarea{
+.shareable-link {
+  .input-group {
+    .tj-app-input textarea {
       width: 600px;
       border-radius: 0px !important;
       margin-bottom: 0px !important;
-      background-color: #5e656e !important;
-      color: #f4f6fa !important;
-      border: none !important;
-
+      background-color: #efefef4d;
+      color: #545454;
     }
   }
 }
-.confirm-dialogue-modal{
+
+.confirm-dialogue-modal {
   background: var(--base);
+}
+
+.theme-dark {
+  .icon-widget-popover {
+    .search-box-wrapper input {
+      color: #f4f6fa !important;
+    }
+
+    .search-box-wrapper input:focus {
+      background-color: #1c252f !important;
+    }
+  }
+
+  .shareable-link {
+    .tj-app-input textarea {
+      background-color: #5e656e !important;
+      color: #f4f6fa !important;
+      border: none !important;
+    }
+  }
+
+  .icon-widget-popover {
+    .search-box-wrapper .input-icon-addon {
+      min-width: 2.5rem !important;
+    }
+
+    .search-box-wrapper input {
+      color: var(--base) !important;
+    }
+  }
 }
