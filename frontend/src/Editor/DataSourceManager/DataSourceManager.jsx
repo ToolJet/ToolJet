@@ -401,7 +401,12 @@ class DataSourceManagerComponent extends React.Component {
       {
         type: 'All Datasources',
         key: '#alldatasources',
-        list: [...allDataSourcesList.databases, ...allDataSourcesList.apis, ...allDataSourcesList.cloudStorages],
+        list: [
+          ...allDataSourcesList.databases,
+          ...allDataSourcesList.apis,
+          ...allDataSourcesList.cloudStorages,
+          ...allDataSourcesList.plugins,
+        ],
         renderDatasources: () => this.renderCardGroup(allDataSourcesList, 'All Datasources'),
       },
       {
