@@ -5,6 +5,7 @@ import CreateColumnsForm from './ColumnsForm';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { isEmpty } from 'lodash';
+import { BreadCrumbContext } from '@/App/App';
 
 const TableForm = ({
   selectedTable = '',
@@ -12,12 +13,14 @@ const TableForm = ({
   onCreate,
   onEdit,
   onClose,
+  updateSelectedTable,
 }) => {
   const [fetching, setFetching] = useState(false);
   const [tableName, setTableName] = useState(selectedTable);
   const [columns, setColumns] = useState(selectedColumns);
   const { organizationId } = useContext(TooljetDatabaseContext);
   const isEditMode = !isEmpty(selectedTable);
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   const validateTableName = () => {
     if (isEmpty(tableName)) {
@@ -73,6 +76,9 @@ const TableForm = ({
     }
 
     toast.success(`${tableName} edited successfully`);
+    updateSidebarNAV(tableName);
+    updateSelectedTable(tableName);
+
     onEdit && onEdit();
   };
 
@@ -105,7 +111,9 @@ const TableForm = ({
                 data-cy="table-name-input-field"
                 autoComplete="off"
                 value={tableName}
-                onChange={(e) => setTableName(e.target.value)}
+                onChange={(e) => {
+                  setTableName(e.target.value);
+                }}
                 autoFocus
               />
             </div>
