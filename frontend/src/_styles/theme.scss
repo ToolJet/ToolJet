@@ -10229,6 +10229,10 @@ tbody {
   border-radius: 6px !important;
 }
 
+.workspace-variable-table-card {
+  height: calc(100vh - 208px);
+}
+
 .variables-table-wrapper {
   tr {
     border-width: 0px !important;
