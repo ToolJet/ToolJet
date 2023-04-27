@@ -80,3 +80,14 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+
+## Exposed variables
+
+| Variables    | Description |
+| ----------- | ----------- |
+| value | This variable holds the value entered by the user onto the password input component. You can access the value dynamically using JS: `{{components.passwordinput1.value}}`|
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.

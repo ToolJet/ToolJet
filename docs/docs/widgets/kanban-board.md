@@ -135,3 +135,14 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 | lastSelectedCard | The variable `lastSelectedCard` holds the `id`, `title`, `columnId`, and `description` of the last selected(clicked to view) card on the kanban. You can get the values using `{{components.kanban1.lastSelectedCard.columnId}}` |
 | lastUpdatedCard | The variable `lastUpdatedCard` holds the `id`, `title`, `description`, and `columnId` of the last updated card(using componenet specific action). You can get the values using `{{components.kanban1.lastUpdatedCard.columnId}}` |
 | lastCardUpdate | The variable `lastCardUpdate` holds the old an new values of the property that has been changed in the card(using componenet specific action). You can get the values using `{{components.kanban1.lastCardUpdate[0].title.oldValue}}` |
+
+## Component specific actions (CSA)
+
+Following actions of kanban component can be controlled using the component specific actions(CSA):
+
+| Actions     | Description |
+| ----------- | ----------- |
+| updateCardData | Update the card data of kanban component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.kanban1.updateCardData()` ex: `await components.kanban1.updateCardData()` |
+| moveCard | Move a card from one column to other column on the kanban via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.kanban1.moveCard('card id,'column id')` ex: `await components.kanban1.moveCard('c1','r2')` |
+| addCard | Add a card onto the kanban via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.kanban1.addCard()` |
+| deleteCard | Delete a card from the kanban via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.kanban1.deleteCard('card id')` ex: `await components.kanban1.deleteCard('c2')` |
