@@ -64,6 +64,7 @@ export function OrganizationSettings(props) {
                           else updateSidebarNAV(item);
                         }}
                         selectedItem={selectedTab == defaultOrgName(item)}
+                        dataCy={item.toLowerCase().replace(/\s+/g, '-')}
                       >
                         {item}
                       </FolderList>
