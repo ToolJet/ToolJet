@@ -21,13 +21,13 @@ import { get } from 'lodash';
  *
  * const result = hasEqualWithNull(queryOptions); // true
  */
-export const hasEqualWithNull = (queryOptions) => {
-  const filters = get(queryOptions, 'list_rows.where_filters');
+export const hasEqualWithNull = (queryOptions, operation) => {
+  const filters = get(queryOptions, `${operation}.where_filters`);
   if (filters) {
     const filterKeys = Object.keys(filters);
     for (let i = 0; i < filterKeys.length; i++) {
       const filter = filters[filterKeys[i]];
-      if (filter.operator === 'eq' && filter.value === '{{null}}') {
+      if ((filter.operator === 'eq' || filter.operator === 'neq') && filter.value === null) {
         return true;
       }
     }
