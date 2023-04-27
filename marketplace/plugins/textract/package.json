@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@aws-sdk/client-textract": "^3.315.0",
+    "@aws-sdk/client-textract": "^3.321.1",
     "@tooljet-marketplace/common": "^1.0.0"
   },
   "devDependencies": {
