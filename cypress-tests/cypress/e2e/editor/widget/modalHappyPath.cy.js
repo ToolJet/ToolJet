@@ -115,6 +115,7 @@ describe("Modal", () => {
       "have.text",
       data.customTitle
     );
+
     closeModal(data.widgetName);
     launchModal(data.widgetName);
 

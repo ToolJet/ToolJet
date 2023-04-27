@@ -59,11 +59,12 @@ export const Pagination = function Pagination({ currentPage, count, pageChanged,
     <div
       className={`card-footer d-flex align-items-center ${darkMode ? ' bg-transparent' : ''}`}
       style={{ padding: '16px' }}
+      data-cy="container-pagination"
     >
       <p className={`m-0 ${darkMode ? 'text-light' : 'text-muted'}`}>
         {t('homePage.pagination.showing', 'Showing')} <span>{startingAppCount()}</span>{' '}
         {t('homePage.pagination.to', 'to')} <span>{endingAppCount()}</span> {t('homePage.pagination.of', 'of')}{' '}
-        <span>{count}</span>
+        <span data-cy="total-count">{count}</span>
       </p>
       <ul className="pagination m-0 ms-auto">
         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
