@@ -4,6 +4,8 @@ import * as common from "Support/utils/common";
 import { ssoText } from "Texts/manageSSO";
 import * as SSO from "Support/utils/manageSSO";
 import { commonSelectors } from "Selectors/common";
+import { commonText } from "Texts/common";
+
 
 describe("Manage SSO for multi workspace", () => {
   const data = {};
@@ -12,10 +14,14 @@ describe("Manage SSO for multi workspace", () => {
   });
   it("Should verify General settings page elements", () => {
     common.navigateToManageSSO();
-    cy.get(ssoSelector.pagetitle).verifyVisibleElement(
-      "have.text",
-      "SSO"
-    );
+
+    cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
+      expect($el.contents().first().text().trim()).to.eq(
+        commonText.breadcrumbworkspaceSettingTitle
+      );
+    });
+    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement( "have.text",ssoText.pagetitle);
+
     cy.get(ssoSelector.cardTitle).verifyVisibleElement(
       "have.text",
       ssoText.generalSettingsElements.generalSettings
@@ -43,16 +49,20 @@ describe("Manage SSO for multi workspace", () => {
     );
 
     SSO.generalSettings();
+
+    cy.get(ssoSelector.alertText).verifyVisibleElement( "have.text",ssoText.alertText);
+    cy.get(ssoSelector.passwordEnableToggle).should("be.visible");
+    cy.get(ssoSelector.passwordLoginToggleLbale).verifyVisibleElement( "have.text",ssoText.passwordLoginToggleLbale);
+    cy.get(ssoSelector.disablePasswordHelperText).verifyVisibleElement( "have.text",ssoText.disablePasswordHelperText);
+
+    SSO.passwordPageElements();
   });
 
   it("Should verify Google SSO page elements", () => {
     common.navigateToManageSSO();
     cy.get(ssoSelector.google).should("be.visible").click();
-    cy.get(ssoSelector.cardTitle)
-      .should(($el) => {
-        expect($el.contents().first().text().trim()).to.eq(ssoText.googleTitle);
-      })
-      .and("be.visible");
+    cy.get(ssoSelector.cardTitle).verifyVisibleElement(
+      "have.text",ssoText.googleTitle)
     cy.get(ssoSelector.googleEnableToggle).should("be.visible");
     cy.get(ssoSelector.clientIdLabel).verifyVisibleElement(
       "have.text",
@@ -84,12 +94,10 @@ describe("Manage SSO for multi workspace", () => {
     common.navigateToManageSSO();
 
     cy.get(ssoSelector.git).should("be.visible").click();
-    cy.get(ssoSelector.cardTitle)
-      .should(($el) => {
-        expect($el.contents().first().text().trim()).to.eq(ssoText.gitTitle);
-      })
-      .and("be.visible");
-    cy.get(ssoSelector.hostNameLabel).verifyVisibleElement(
+    cy.get(ssoSelector.githubLabel).verifyVisibleElement(
+      "have.text",ssoText.gitTitle);
+
+      cy.get(ssoSelector.hostNameLabel).verifyVisibleElement(
       "have.text",
       ssoText.hostNameLabel
     );
@@ -133,23 +141,6 @@ describe("Manage SSO for multi workspace", () => {
       "have.text",
       ssoText.googleSSOText
     );
-  });
-
-  it("Should verify Password login page elements", () => {
-    
-    common.navigateToManageSSO();
-
-    cy.get(ssoSelector.password).should("be.visible").click();
-    cy.get(ssoSelector.cardTitle)
-      .should(($el) => {
-        expect($el.contents().first().text().trim()).to.eq(
-          ssoText.passwordTitle
-        );
-      })
-      .and("be.visible");
-    cy.get(ssoSelector.passwordEnableToggle).should("be.visible");
-
-    SSO.passwordPageElements();
   });
 
   it("Should verify the workspace login page", () => {
@@ -220,13 +211,9 @@ describe("Manage SSO for multi workspace", () => {
 
     SSO.workspaceLogin(data.workspaceName);
     common.navigateToManageSSO();
-    cy.get(ssoSelector.password).should("be.visible").click();
     cy.get(ssoSelector.passwordEnableToggle).uncheck();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
-    cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-      "have.text",
-      ssoText.disabledLabel
-    );
+
     SSO.visitWorkspaceLoginPage();
     cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
       "have.text",
@@ -245,7 +232,6 @@ describe("Manage SSO for multi workspace", () => {
     common.createWorkspace(data.workspaceName);
     cy.wait(300);
     SSO.disableDefaultSSO();
-    cy.get(ssoSelector.password).should("be.visible").click();
     cy.get(ssoSelector.passwordEnableToggle).uncheck();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
     SSO.visitWorkspaceLoginPage();
