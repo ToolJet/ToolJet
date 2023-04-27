@@ -20,9 +20,14 @@ function getStatus(workflowExecutionId) {
   return fetch(`${config.apiUrl}/workflow_executions/${workflowExecutionId}`, requestOptions).then(handleResponse);
 }
 
-function execute(appId) {
+function execute(appId, params) {
   const currentSession = authenticationService.currentSessionValue;
-  const body = { appId, userId: currentSession.current_user?.id, executeUsing: 'app' };
+  const body = {
+    appId,
+    userId: currentSession.current_user?.id,
+    executeUsing: 'app',
+    params: Object.fromEntries(params.map((param) => [param.key, param.value])),
+  };
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/workflow_executions`, requestOptions).then(handleResponse);
 }

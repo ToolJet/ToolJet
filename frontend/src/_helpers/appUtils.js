@@ -820,6 +820,13 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
       );
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, editorState, true, 'edit');
+    } else if (query.kind === 'workflows') {
+      queryExecutionPromise = executeWorkflow(
+        _ref,
+        query.options.workflowId,
+        query.options.blocking,
+        query.options?.params
+      );
     } else {
       queryExecutionPromise = dataqueryService.preview(query, options, editorState?.state?.editingVersion?.id);
     }
@@ -948,7 +955,12 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           _self.state.currentState
         );
       } else if (query.kind === 'workflows') {
-        queryExecutionPromise = executeWorkflow(_self, query.options.workflowId, query.options.blocking, mode);
+        queryExecutionPromise = executeWorkflow(
+          _self,
+          query.options.workflowId,
+          query.options.blocking,
+          query.options?.params
+        );
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options);
       }

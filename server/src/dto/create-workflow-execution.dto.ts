@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, ValidateIf } from 'class-validator';
+import { IsString, IsNotEmpty, ValidateIf, IsObject, IsOptional } from 'class-validator';
 import { isUndefined } from 'lodash';
 
 export class CreateWorkflowExecutionDto {
@@ -15,6 +15,10 @@ export class CreateWorkflowExecutionDto {
   @IsString()
   @IsNotEmpty()
   appId: string;
+
+  @IsOptional()
+  @IsObject()
+  params: object;
 
   @IsString()
   @IsNotEmpty()

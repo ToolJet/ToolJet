@@ -818,7 +818,9 @@ class QueryManagerComponent extends React.Component {
                     />
 
                     {!dataSourceMeta?.disableTransformations &&
-                      (selectedDataSource?.kind != 'runjs' || selectedDataSource?.kind != 'runpy') && (
+                      (selectedDataSource?.kind != 'runjs' ||
+                        selectedDataSource?.kind != 'runpy' ||
+                        selectedDataSource?.kind != 'workflows') && (
                         <div>
                           <Transformation
                             changeOption={this.optionchanged}

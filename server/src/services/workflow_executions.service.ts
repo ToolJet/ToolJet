@@ -123,7 +123,7 @@ export class WorkflowExecutionsService {
     };
   }
 
-  async execute(workflowExecution: WorkflowExecution): Promise<boolean> {
+  async execute(workflowExecution: WorkflowExecution, params: object = {}): Promise<boolean> {
     const appVersion = await this.appVersionsRepository.findOne(workflowExecution.appVersionId);
 
     workflowExecution = await this.workflowExecutionRepository.findOne({
@@ -152,7 +152,7 @@ export class WorkflowExecutionsService {
       } else {
         switch (currentNode.type) {
           case 'input': {
-            await this.completeNodeExecution(currentNode, '', {});
+            await this.completeNodeExecution(currentNode, '', { startTrigger: { params } });
             void queue.push(...(await this.forwardNodes(currentNode)));
             break;
           }
