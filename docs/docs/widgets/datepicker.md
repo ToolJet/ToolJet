@@ -106,3 +106,13 @@ Use this property to modify the border radius of the date-picker. The field expe
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Exposed variables
+
+| Variables   | Description |
+| ----------- | ----------- |
+| value | This variable will hold the date selected on the component, the date value will be returned according to the format set in the datepicker properties. You can access the value dynamically using JS: `{{components.datepicker1.value}}`|
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
