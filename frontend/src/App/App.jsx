@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import config from 'config';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+
 import {
   getWorkspaceIdFromURL,
   appendWorkspaceId,
@@ -261,69 +262,67 @@ class AppComponent extends React.Component {
               </div>
             </div>
           )}
-          <Routes>
-            <Route path="/login/:organizationId" exact element={<LoginPage />} />
-            <Route path="/login" exact element={<LoginPage />} />
-            <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
-            <Route path="/sso/:origin/:configId" exact element={<Oauth />} />
-            <Route path="/sso/:origin" exact element={<Oauth />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
-            <Route
-              path="/invitations/:token/workspaces/:organizationToken"
-              element={<VerificationSuccessInfoScreen />}
-            />
-            <Route path="/confirm" element={<VerificationSuccessInfoScreen />} />
-            <Route
-              path="/organization-invitations/:token"
-              element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
-            />
-            <Route
-              path="/confirm-invite"
-              element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
-            />
-            <Route
-              exact
-              path="/:workspaceId/apps/:id/:pageHandle?/*"
-              element={
-                <PrivateRoute>
-                  <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/applications/:id/versions/:versionId/:pageHandle?"
-              element={
-                <PrivateRoute>
-                  <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/applications/:slug/:pageHandle?"
-              element={
-                <PrivateRoute>
-                  <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/oauth2/authorize"
-              element={
-                <PrivateRoute>
-                  <Authorize switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-          </Routes>
           <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
             <Routes>
+              <Route path="/login/:organizationId" exact element={<LoginPage />} />
+              <Route path="/login" exact element={<LoginPage />} />
+              <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
+              <Route path="/sso/:origin/:configId" exact element={<Oauth />} />
+              <Route path="/sso/:origin" exact element={<Oauth />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
+              <Route
+                path="/invitations/:token/workspaces/:organizationToken"
+                element={<VerificationSuccessInfoScreen />}
+              />
+              <Route path="/confirm" element={<VerificationSuccessInfoScreen />} />
+              <Route
+                path="/organization-invitations/:token"
+                element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
+              />
+              <Route
+                path="/confirm-invite"
+                element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
+              />
+              <Route
+                exact
+                path="/:workspaceId/apps/:id/:pageHandle?/*"
+                element={
+                  <PrivateRoute>
+                    <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/applications/:id/versions/:versionId/:pageHandle?"
+                element={
+                  <PrivateRoute>
+                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/applications/:slug/:pageHandle?"
+                element={
+                  <PrivateRoute>
+                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/oauth2/authorize"
+                element={
+                  <PrivateRoute>
+                    <Authorize switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
               <Route
                 exact
                 path="/:workspaceId/workspace-settings"
