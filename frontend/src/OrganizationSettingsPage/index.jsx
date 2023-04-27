@@ -54,19 +54,21 @@ export function OrganizationSettings(props) {
               {sideBarNavs.map((item, index) => {
                 return (
                   <>
-                    <FolderList
-                      className="workspace-settings-nav-items"
-                      key={index}
-                      onClick={() => {
-                        setSelectedTab(defaultOrgName(item));
-                        if (item == 'Users') updateSidebarNAV('Users & permissions');
-                        else updateSidebarNAV(item);
-                      }}
-                      selectedItem={selectedTab == defaultOrgName(item)}
-                      dataCy={item.toLowerCase().replace(/\s+/g, '-')}
-                    >
-                      {item}
-                    </FolderList>
+                    {(admin || item == 'Workspace variables') && (
+                      <FolderList
+                        className="workspace-settings-nav-items"
+                        key={index}
+                        onClick={() => {
+                          setSelectedTab(defaultOrgName(item));
+                          if (item == 'Users') updateSidebarNAV('Users & permissions');
+                          else updateSidebarNAV(item);
+                        }}
+                        selectedItem={selectedTab == defaultOrgName(item)}
+                        dataCy={item.toLowerCase().replace(/\s+/g, '-')}
+                      >
+                        {item}
+                      </FolderList>
+                    )}
                   </>
                 );
               })}

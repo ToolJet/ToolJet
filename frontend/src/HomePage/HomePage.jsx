@@ -626,6 +626,7 @@ class HomePageComponent extends React.Component {
                 canDeleteFolder={this.canDeleteFolder()}
                 canUpdateFolder={this.canUpdateFolder()}
                 darkMode={this.props.darkMode}
+                canCreateApp={this.canCreateApp()}
               />
               <OrganizationList />
             </div>
