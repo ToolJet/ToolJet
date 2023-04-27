@@ -5,6 +5,11 @@ import { uniqueId } from 'lodash';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
 
+const isOperatorOptions = [
+  { value: 'null', label: 'null' },
+  { value: 'notNull', label: 'not null' },
+];
+
 export const ListRows = React.memo(({ currentState, darkMode }) => {
   const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange } = useContext(TooljetDatabaseContext);
 
@@ -94,6 +99,9 @@ export const ListRows = React.memo(({ currentState, darkMode }) => {
       updateFilterOptionsChanged({ ...listRowsOptions?.where_filters[id], ...{ value: newValue } });
     };
 
+    console.log('value', value);
+    console.log('operator', operator);
+
     return (
       <div className="mt-1 row-container">
         <div className="d-flex fields-container">
@@ -116,15 +124,25 @@ export const ListRows = React.memo(({ currentState, darkMode }) => {
             />
           </div>
           <div className="field col-4">
-            <CodeHinter
-              currentState={currentState}
-              initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
-              className="codehinter-plugins"
-              theme={darkMode ? 'monokai' : 'default'}
-              height={'32px'}
-              placeholder="key"
-              onChange={(newValue) => handleValueChange(newValue)}
-            />
+            {operator === 'is' ? (
+              <Select
+                useMenuPortal={true}
+                placeholder="Select operation"
+                value={value}
+                options={isOperatorOptions}
+                onChange={handleValueChange}
+              />
+            ) : (
+              <CodeHinter
+                currentState={currentState}
+                initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
+                className="codehinter-plugins"
+                theme={darkMode ? 'monokai' : 'default'}
+                height={'32px'}
+                placeholder="key"
+                onChange={(newValue) => handleValueChange(newValue)}
+              />
+            )}
           </div>
           <div className="col-1 cursor-pointer m-1 mr-2">
             <svg
