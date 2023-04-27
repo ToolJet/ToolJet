@@ -24,6 +24,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { allSvgs } from '@tooljet/plugins/client';
 import urlJoin from 'url-join';
 import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
+import { authenticationService } from '@/_services/authentication.service';
+import { setCookie } from '@/_helpers/cookie';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -80,6 +82,9 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
 
 export function fetchOAuthToken(authUrl, dataSourceId) {
   localStorage.setItem('sourceWaitingForOAuth', dataSourceId);
+  const currentSessionValue = authenticationService.currentSessionValue;
+  currentSessionValue?.current_organization_id &&
+    setCookie('orgIdForOauth', currentSessionValue?.current_organization_id);
   window.open(authUrl);
 }
 
@@ -339,12 +344,29 @@ function showModal(_ref, modal, show) {
 
 function logoutAction(_ref) {
   localStorage.clear();
-  _ref.props.history.push('/login');
+  _ref.props.navigate('/login');
   window.location.href = '/login';
 
   return Promise.resolve();
 }
-export const executeAction = (_ref, event, mode, customVariables) => {
+
+function debounce(func) {
+  let timer;
+  return (...args) => {
+    const event = args[1] || {};
+    if (event.debounce === undefined) {
+      return func.apply(this, args);
+    }
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      func.apply(this, args);
+    }, Number(event.debounce));
+  };
+}
+
+export const executeAction = debounce(executeActionWithDebounce);
+
+function executeActionWithDebounce(_ref, event, mode, customVariables) {
   console.log('nopski', customVariables);
   if (event) {
     switch (event.actionId) {
@@ -407,8 +429,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
         }
 
         if (mode === 'view') {
-          _ref.props.history.push(url);
-          _ref.props.history.go();
+          _ref.props.navigate(url);
         } else {
           if (confirm('The app will be opened in a new tab as the action is triggered from the editor.')) {
             window.open(urlJoin(window.public_config?.TOOLJET_HOST, url));
@@ -546,7 +567,7 @@ export const executeAction = (_ref, event, mode, customVariables) => {
       }
     }
   }
-};
+}
 
 export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
@@ -710,11 +731,13 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onCalendarViewChange',
       'onSearchTextChanged',
       'onPageChange',
+      'onAddCardClick',
       'onCardAdded',
       'onCardRemoved',
       'onCardMoved',
       'onCardSelected',
       'onCardUpdated',
+      'onUpdate',
       'onTabSwitch',
       'onFocus',
       'onBlur',
@@ -790,8 +813,12 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query?.id, true);
     } else if (query.kind === 'tooljetdb') {
-      const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
-      queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _ref.state.currentState);
+      const currentSessionValue = authenticationService.currentSessionValue;
+      queryExecutionPromise = tooljetDbOperations.perform(
+        query.options,
+        currentSessionValue?.current_organization_id,
+        _ref.state.currentState
+      );
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, editorState, true, 'edit');
     } else {
@@ -887,6 +914,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   const options = getQueryVariables(dataQuery.options, _ref.state.currentState);
 
   if (dataQuery.options.requestConfirmation) {
+    // eslint-disable-next-line no-unsafe-optional-chaining
     const queryConfirmationList = _ref.state?.queryConfirmationList ? [..._ref.state?.queryConfirmationList] : [];
     const queryConfirmation = {
       queryId,
@@ -928,8 +956,12 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       } else if (query.kind === 'runpy') {
         queryExecutionPromise = executeRunPycode(_self, query.options.code, query, _ref, false, mode);
       } else if (query.kind === 'tooljetdb') {
-        const { organization_id } = JSON.parse(localStorage.getItem('currentUser'));
-        queryExecutionPromise = tooljetDbOperations.perform(query.options, organization_id, _self.state.currentState);
+        const currentSessionValue = authenticationService.currentSessionValue;
+        queryExecutionPromise = tooljetDbOperations.perform(
+          query.options,
+          currentSessionValue?.current_organization_id,
+          _self.state.currentState
+        );
       } else {
         queryExecutionPromise = dataqueryService.run(queryId, options, currentAppEnvironmentId ?? environmentId);
       }
@@ -953,7 +985,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               : query.kind === 'runpy'
               ? data?.data?.status ?? 'ok'
               : data.status;
-
           if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
             const errorData = query.kind === 'runpy' ? data.data : data;
             return _self.setState(
@@ -998,95 +1029,93 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                 }
               }
             );
-          }
+          } else {
+            let rawData = data.data;
+            let finalData = data.data;
 
-          let rawData = data.data;
-          let finalData = data.data;
-
-          if (dataQuery.options.enableTransformation) {
-            finalData = await runTransformation(
-              _ref,
-              finalData,
-              query.options.transformation,
-              query.options.transformationLanguage,
-              query,
-              'edit'
-            );
-            if (finalData.status === 'failed') {
-              console.log('runPythonTransformation', finalData);
-              return _self.setState(
-                {
-                  currentState: {
-                    ..._self.state.currentState,
-                    queries: {
-                      ..._self.state.currentState.queries,
-                      [queryName]: {
-                        ..._self.state.currentState.queries[queryName],
-                        isLoading: false,
+            if (dataQuery.options.enableTransformation) {
+              finalData = await runTransformation(
+                _ref,
+                finalData,
+                query.options.transformation,
+                query.options.transformationLanguage,
+                query,
+                'edit'
+              );
+              if (finalData.status === 'failed') {
+                return _self.setState(
+                  {
+                    currentState: {
+                      ..._self.state.currentState,
+                      queries: {
+                        ..._self.state.currentState.queries,
+                        [queryName]: {
+                          ..._self.state.currentState.queries[queryName],
+                          isLoading: false,
+                        },
                       },
-                    },
-                    errors: {
-                      ..._self.state.currentState.errors,
-                      [queryName]: {
-                        type: 'transformations',
-                        data: finalData,
-                        options: options,
+                      errors: {
+                        ..._self.state.currentState.errors,
+                        [queryName]: {
+                          type: 'transformations',
+                          data: finalData,
+                          options: options,
+                        },
                       },
                     },
                   },
-                },
-                () => {
-                  resolve(finalData);
-                  onEvent(_self, 'onDataQueryFailure', {
-                    definition: { events: dataQuery.options.events },
-                  });
-                }
-              );
-            }
-          }
-
-          if (dataQuery.options.showSuccessNotification) {
-            const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
-            toast.success(dataQuery.options.successMessage, {
-              duration: notificationDuration,
-            });
-          }
-
-          _self.setState(
-            {
-              currentState: {
-                ..._self.state.currentState,
-                queries: {
-                  ..._self.state.currentState.queries,
-                  [queryName]: _.assign(
-                    {
-                      ..._self.state.currentState.queries[queryName],
-                      isLoading: false,
-                      data: finalData,
-                      rawData,
-                    },
-                    query.kind === 'restapi'
-                      ? {
-                          request: data.request,
-                          response: data.response,
-                          responseHeaders: data.responseHeaders,
-                        }
-                      : {}
-                  ),
-                },
-              },
-            },
-            () => {
-              resolve({ status: 'ok', data: finalData });
-              onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
-
-              if (mode !== 'view') {
-                toast(`Query (${queryName}) completed.`, {
-                  icon: '🚀',
-                });
+                  () => {
+                    resolve(finalData);
+                    onEvent(_self, 'onDataQueryFailure', {
+                      definition: { events: dataQuery.options.events },
+                    });
+                  }
+                );
               }
             }
-          );
+
+            if (dataQuery.options.showSuccessNotification) {
+              const notificationDuration = dataQuery.options.notificationDuration * 1000 || 5000;
+              toast.success(dataQuery.options.successMessage, {
+                duration: notificationDuration,
+              });
+            }
+            _self.setState(
+              {
+                currentState: {
+                  ..._self.state.currentState,
+                  queries: {
+                    ..._self.state.currentState.queries,
+                    [queryName]: _.assign(
+                      {
+                        ..._self.state.currentState.queries[queryName],
+                        isLoading: false,
+                        data: finalData,
+                        rawData,
+                      },
+                      query.kind === 'restapi'
+                        ? {
+                            request: data.request,
+                            response: data.response,
+                            responseHeaders: data.responseHeaders,
+                          }
+                        : {}
+                    ),
+                  },
+                },
+              },
+              () => {
+                resolve({ status: 'ok', data: finalData });
+                onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
+
+                if (mode !== 'view') {
+                  toast(`Query (${queryName}) completed.`, {
+                    icon: '🚀',
+                  });
+                }
+              }
+            );
+          }
         })
         .catch(({ error }) => {
           if (mode !== 'view') toast.error(error ?? 'Unknown error');
@@ -1515,7 +1544,7 @@ export const addNewWidgetToTheEditor = (
     componentData.definition.others.showOnMobile.value = true;
   }
 
-  const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form'];
+  const widgetsWithDefaultComponents = ['Listview', 'Tabs', 'Form', 'Kanban'];
 
   const newComponent = {
     id: uuidv4(),

@@ -13,7 +13,6 @@ class ManageGroupPermissionsComponent extends React.Component {
     super(props);
 
     this.state = {
-      currentUser: authenticationService.currentUserValue,
       isLoading: true,
       groups: [],
       creatingGroup: false,

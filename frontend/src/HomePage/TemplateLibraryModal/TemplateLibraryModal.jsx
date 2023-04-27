@@ -6,9 +6,10 @@ import { libraryAppService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import posthog from 'posthog-js';
+import { getWorkspaceId } from '../../_helpers/utils';
 
 const identifyUniqueCategories = (templates) =>
   ['all', ...new Set(_.map(templates, 'category'))].map((categoryId) => ({
@@ -17,7 +18,7 @@ const identifyUniqueCategories = (templates) =>
   }));
 
 export default function TemplateLibraryModal(props) {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [libraryApps, setLibraryApps] = useState([]);
   const [selectedCategory, selectCategory] = useState({ id: 'all', count: 0 });
   const filteredApps = libraryApps.filter(
@@ -63,7 +64,8 @@ export default function TemplateLibraryModal(props) {
 
   const [deploying, setDeploying] = useState(false);
 
-  function deployApp() {
+  function deployApp(event) {
+    event.preventDefault();
     const id = selectedApp.id;
     setDeploying(true);
     posthog.capture('create_application_from_template', {
@@ -85,7 +87,7 @@ export default function TemplateLibraryModal(props) {
         toast.success('App created.', {
           position: 'top-center',
         });
-        history.push(`/apps/${data.id}`);
+        navigate(`/${getWorkspaceId()}/apps/${data.id}`);
       })
       .catch((e) => {
         toast.error(e.error, {
@@ -138,9 +140,7 @@ export default function TemplateLibraryModal(props) {
                       <a
                         href="#"
                         className={`btn btn-primary ms-2 ${deploying ? 'btn-loading' : ''}`}
-                        onClick={() => {
-                          deployApp();
-                        }}
+                        onClick={deployApp}
                       >
                         {t('homePage.templateLibraryModal.createAppfromTemplate', 'Create application from template')}
                       </a>

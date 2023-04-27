@@ -72,7 +72,9 @@ export const CreateVersion = ({
       >
         <div className="mb-3 pb-2">
           <div className="col">
-            <label className="form-label">{t('editor.appVersionManager.versionName', 'Version Name')}</label>
+            <label className="form-label" data-cy="version-name-label">
+              {t('editor.appVersionManager.versionName', 'Version Name')}
+            </label>
             <input
               type="text"
               onChange={(e) => setVersionName(e.target.value)}
@@ -97,7 +99,7 @@ export const CreateVersion = ({
               options={options}
               defaultValue={options[options.length - 1]}
               onChange={(version) => {
-                setAppDefinitionFromVersion(version);
+                setAppDefinitionFromVersion(version, false);
               }}
               useMenuPortal={false}
               width="100%"

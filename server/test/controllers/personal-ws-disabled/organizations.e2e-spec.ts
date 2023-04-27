@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../../test.helper';
+import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../../test.helper';
 import { Repository } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 
@@ -29,9 +29,11 @@ describe('organizations controller', () => {
         const { user: userData } = await createUser(app, {
           email: 'admin@tooljet.io',
         });
+        const loggedUser = await authenticateUser(app, userData.email);
         await request(app.getHttpServer())
           .post('/api/organizations')
-          .set('Authorization', authHeaderForUser(userData))
+          .set('tj-workspace-id', userData.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie)
           .send({ name: 'My workspace' })
           .expect(403);
       });
@@ -40,9 +42,11 @@ describe('organizations controller', () => {
           email: 'superadmin@tooljet.io',
           userType: 'instance',
         });
+        const loggedUser = await authenticateUser(app, superAdminUserData.user.email);
         await request(app.getHttpServer())
           .post('/api/organizations')
-          .set('Authorization', authHeaderForUser(superAdminUserData.user))
+          .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie)
           .send({ name: 'My workspace' })
           .expect(201);
       });
@@ -53,27 +57,29 @@ describe('organizations controller', () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
         });
-
+        const loggedUser = await authenticateUser(app, user.email);
         const response = await request(app.getHttpServer())
           .patch('/api/organizations/name')
           .send({ name: 'new name' })
-          .set('Authorization', authHeaderForUser(user, organization.id));
-
+          .set('tj-workspace-id', organization.id)
+          .set('Cookie', loggedUser.tokenCookie);
         expect(response.statusCode).toBe(403);
       });
 
       it('should change organization name if changes are done by super admin', async () => {
-        const { organization } = await createUser(app, {
+        await createUser(app, {
           email: 'admin@tooljet.io',
         });
         const superAdminUserData = await createUser(app, {
           email: 'superadmin@tooljet.io',
           userType: 'instance',
         });
+        const loggedUser = await authenticateUser(app, superAdminUserData.user.email);
         const response = await request(app.getHttpServer())
           .patch('/api/organizations/name')
           .send({ name: 'new name' })
-          .set('Authorization', authHeaderForUser(superAdminUserData.user, organization.id));
+          .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(200);
       });

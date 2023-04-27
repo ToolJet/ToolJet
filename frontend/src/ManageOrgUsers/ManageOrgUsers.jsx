@@ -1,7 +1,7 @@
 import React from 'react';
 import { authenticationService, organizationService, organizationUserService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import ReactTooltip from 'react-tooltip';
+// eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
 import urlJoin from 'url-join';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
@@ -14,7 +14,6 @@ class ManageOrgUsersComponent extends React.Component {
     super(props);
 
     this.state = {
-      currentUser: authenticationService.currentUserValue,
       isLoading: true,
       showNewUserForm: false,
       showUploadUserForm: false,
@@ -133,7 +132,6 @@ class ManageOrgUsersComponent extends React.Component {
   inviteBulkUsers = (event) => {
     event.preventDefault();
     if (this.handleFileValidation()) {
-      const token = this.state.currentUser.auth_token;
       const formData = new FormData();
       this.setState({
         uploadingUsers: true,
@@ -141,7 +139,7 @@ class ManageOrgUsersComponent extends React.Component {
 
       formData.append('file', this.state.file);
       organizationUserService
-        .inviteBulkUsers(formData, token)
+        .inviteBulkUsers(formData)
         .then((res) => {
           toast.success(res.message, {
             position: 'top-center',
@@ -227,12 +225,12 @@ class ManageOrgUsersComponent extends React.Component {
     if (user.account_setup_token) {
       return urlJoin(
         window.public_config?.TOOLJET_HOST,
-        `/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}?oid=${this.state.currentUser.organization_id}`
+        `/invitations/${user.account_setup_token}/workspaces/${user.invitation_token}?oid=${authenticationService?.currentSessionValue.current_organization_id}`
       );
     }
     return urlJoin(
       window.public_config?.TOOLJET_HOST,
-      `/organization-invitations/${user.invitation_token}?oid=${this.state.currentUser.organization_id}`
+      `/organization-invitations/${user.invitation_token}?oid=${authenticationService?.currentSessionValue.current_organization_id}`
     );
   };
 
@@ -263,8 +261,6 @@ class ManageOrgUsersComponent extends React.Component {
     return (
       <ErrorBoundary showFallback={true}>
         <div className="wrapper org-users-page animation-fade">
-          <ReactTooltip type="dark" effect="solid" delayShow={250} />
-
           <div className="page-wrapper">
             <div className="container-xl">
               <div className="page-header d-print-none">

@@ -8,7 +8,7 @@ import { appService } from '../_services/app.service';
 import { Pagination, MultiSelect, FilterPreview, ToolTip } from '@/_components';
 import Layout from '@/_ui/Layout';
 import moment from 'moment';
-
+import { withRouter } from '@/_hoc/withRouter';
 class AuditLogs extends React.Component {
   constructor(props) {
     super(props);
@@ -48,7 +48,7 @@ class AuditLogs extends React.Component {
     const timeTo = initArraySearchParams('timeTo', searchParams);
 
     this.state = {
-      currentUser: authenticationService.currentUserValue,
+      currentUser: authenticationService.currentSessionValue.current_user,
       isLoadingAuditLogs: true,
       isLoadingApps: true,
       apps: [],
@@ -155,9 +155,9 @@ class AuditLogs extends React.Component {
     };
 
     this.fetchAuditLogs(urlParams);
-
-    this.props.history.push({
-      pathname: '/audit-logs',
+    const { current_organization_id } = authenticationService.currentSessionValue;
+    this.props.navigate({
+      pathname: `/${current_organization_id}/audit-logs`,
       search: new URLSearchParams(urlParams).toString(),
     });
   };
@@ -361,6 +361,8 @@ class AuditLogs extends React.Component {
       currentPage,
       perPage,
     } = this.state;
+    const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
+
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className={`wrapper audit-log ${this.props.darkMode || 'bg-light-gray'}`}>
@@ -377,16 +379,50 @@ class AuditLogs extends React.Component {
                     <div className="row">
                       <div className="col-3" data-cy="select-users-dropdown">
                         <MultiSelect
+                          className={{
+                            container: searchSelectClass,
+                            value: `${searchSelectClass}__value`,
+                            input: `${searchSelectClass}__input`,
+                            select: `${searchSelectClass}__select`,
+                            options: `${searchSelectClass}__options`,
+                            row: `${searchSelectClass}__row`,
+                            option: `${searchSelectClass}__option`,
+                            group: `${searchSelectClass}__group`,
+                            'group-header': `${searchSelectClass}__group-header`,
+                            'is-selected': 'is-selected',
+                            'is-highlighted': 'is-highlighted',
+                            'is-loading': 'is-loading',
+                            'is-multiple': 'is-multiple',
+                            'has-focus': 'has-focus',
+                            'not-found': `${searchSelectClass}__not-found`,
+                          }}
                           onSelect={(value) => this.setSelectedSearchOptions({ users: value })}
                           onSearch={this.searchUser}
                           selectedValues={selectedSearchOptions.users}
                           onReset={() => this.setSelectedSearchOptions({ users: [] })}
                           placeholder="Select Users"
-                          className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                          searchLabel="Enter name or email"
                         />
                       </div>
                       <div className="col-3" data-cy="select-apps-dropdown">
                         <MultiSelect
+                          className={{
+                            container: searchSelectClass,
+                            value: `${searchSelectClass}__value`,
+                            input: `${searchSelectClass}__input`,
+                            select: `${searchSelectClass}__select`,
+                            options: `${searchSelectClass}__options`,
+                            row: `${searchSelectClass}__row`,
+                            option: `${searchSelectClass}__option`,
+                            group: `${searchSelectClass}__group`,
+                            'group-header': `${searchSelectClass}__group-header`,
+                            'is-selected': 'is-selected',
+                            'is-highlighted': 'is-highlighted',
+                            'is-loading': 'is-loading',
+                            'is-multiple': 'is-multiple',
+                            'has-focus': 'has-focus',
+                            'not-found': `${searchSelectClass}__not-found`,
+                          }}
                           onSelect={(value) =>
                             this.setSelectedSearchOptions({
                               apps: value,
@@ -399,11 +435,27 @@ class AuditLogs extends React.Component {
                           onReset={() => this.setSelectedSearchOptions({ apps: [], resources: [], actions: [] })}
                           placeholder="Select Apps"
                           disabled={isLoadingApps}
-                          className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                         />
                       </div>
                       <div className="col" data-cy="select-resources-dropdown">
                         <MultiSelect
+                          className={{
+                            container: searchSelectClass,
+                            value: `${searchSelectClass}__value`,
+                            input: `${searchSelectClass}__input`,
+                            select: `${searchSelectClass}__select`,
+                            options: `${searchSelectClass}__options`,
+                            row: `${searchSelectClass}__row`,
+                            option: `${searchSelectClass}__option`,
+                            group: `${searchSelectClass}__group`,
+                            'group-header': `${searchSelectClass}__group-header`,
+                            'is-selected': 'is-selected',
+                            'is-highlighted': 'is-highlighted',
+                            'is-loading': 'is-loading',
+                            'is-multiple': 'is-multiple',
+                            'has-focus': 'has-focus',
+                            'not-found': `${searchSelectClass}__not-found`,
+                          }}
                           onSelect={(value) =>
                             this.setSelectedSearchOptions({
                               resources: value,
@@ -415,18 +467,33 @@ class AuditLogs extends React.Component {
                           onReset={() => this.setSelectedSearchOptions({ actions: [], resources: [] })}
                           placeholder="Select Resources"
                           disabled={this.isLoading()}
-                          className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                         />
                       </div>
                       <div className="col" data-cy="select-actions-dropdown">
                         <MultiSelect
+                          className={{
+                            container: searchSelectClass,
+                            value: `${searchSelectClass}__value`,
+                            input: `${searchSelectClass}__input`,
+                            select: `${searchSelectClass}__select`,
+                            options: `${searchSelectClass}__options`,
+                            row: `${searchSelectClass}__row`,
+                            option: `${searchSelectClass}__option`,
+                            group: `${searchSelectClass}__group`,
+                            'group-header': `${searchSelectClass}__group-header`,
+                            'is-selected': 'is-selected',
+                            'is-highlighted': 'is-highlighted',
+                            'is-loading': 'is-loading',
+                            'is-multiple': 'is-multiple',
+                            'has-focus': 'has-focus',
+                            'not-found': `${searchSelectClass}__not-found`,
+                          }}
                           onSelect={(value) => this.setSelectedSearchOptions({ actions: value })}
                           selectedValues={selectedSearchOptions.actions}
                           options={this.fetchActionTypesOptionsForResource(selectedSearchOptions.resources)}
                           onReset={() => this.setSelectedSearchOptions({ actions: [], resources: [] })}
                           placeholder="Select Actions"
                           disabled={this.isLoading()}
-                          className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
                         />
                       </div>
 
@@ -588,4 +655,4 @@ class AuditLogs extends React.Component {
   }
 }
 
-export { AuditLogs };
+export const AuditLogsPage = withRouter(AuditLogs);

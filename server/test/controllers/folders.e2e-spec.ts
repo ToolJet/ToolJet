@@ -1,7 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  authHeaderForUser,
   clearDB,
   createApplication,
   createUser,
@@ -9,6 +8,7 @@ import {
   createGroupPermission,
   createUserGroupPermissions,
   createAppGroupPermission,
+  authenticateUser,
 } from '../test.helper';
 import { getManager } from 'typeorm';
 import { Folder } from 'src/entities/folder.entity';
@@ -37,6 +37,8 @@ describe('folders controller', () => {
       });
       const { user } = adminUserData;
 
+      const loggedUser = await authenticateUser(nestApp);
+
       const folder = await getManager().save(Folder, {
         name: 'Folder1',
         organizationId: adminUserData.organization.id,
@@ -73,7 +75,8 @@ describe('folders controller', () => {
 
       let response = await request(nestApp.getHttpServer())
         .get(`/api/folders`)
-        .set('Authorization', authHeaderForUser(user));
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
 
       expect(response.statusCode).toBe(200);
       expect(new Set(Object.keys(response.body))).toEqual(new Set(['folders']));
@@ -92,7 +95,8 @@ describe('folders controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .get(`/api/folders?searchKey=app in`)
-        .set('Authorization', authHeaderForUser(user));
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
 
       expect(response.statusCode).toBe(200);
       expect(new Set(Object.keys(response.body))).toEqual(new Set(['folders']));
@@ -111,7 +115,8 @@ describe('folders controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .get(`/api/folders?searchKey=some text`)
-        .set('Authorization', authHeaderForUser(user));
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie);
 
       expect(response.statusCode).toBe(200);
       expect(new Set(Object.keys(response.body))).toEqual(new Set(['folders']));
@@ -139,6 +144,16 @@ describe('folders controller', () => {
       });
       const { user } = adminUserData;
 
+      let loggedUser = await authenticateUser(nestApp);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+      loggedUser = await authenticateUser(
+        nestApp,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const folder = await getManager().save(Folder, {
         name: 'Folder1',
         organizationId: adminUserData.organization.id,
@@ -175,7 +190,8 @@ describe('folders controller', () => {
 
       let response = await request(nestApp.getHttpServer())
         .get(`/api/folders`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(200);
       expect(new Set(Object.keys(response.body))).toEqual(new Set(['folders']));
@@ -194,7 +210,8 @@ describe('folders controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .get(`/api/folders?searchKey=app in`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(200);
       expect(new Set(Object.keys(response.body))).toEqual(new Set(['folders']));
@@ -213,7 +230,8 @@ describe('folders controller', () => {
 
       response = await request(nestApp.getHttpServer())
         .get(`/api/folders?searchKey=some text`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id));
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(200);
       expect(new Set(Object.keys(response.body))).toEqual(new Set(['folders']));
@@ -242,6 +260,12 @@ describe('folders controller', () => {
       groups: ['all_users'],
       organization: adminUserData.organization,
     });
+
+    let loggedUser = await authenticateUser(nestApp);
+    adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+    loggedUser = await authenticateUser(nestApp, newUserData.user.email);
+    newUserData['tokenCookie'] = loggedUser.tokenCookie;
 
     const folder = await getManager().save(Folder, {
       name: 'Folder1',
@@ -297,7 +321,8 @@ describe('folders controller', () => {
     // admin can see all folders
     let response = await request(nestApp.getHttpServer())
       .get(`/api/folders`)
-      .set('Authorization', authHeaderForUser(adminUserData.user));
+      .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+      .set('Cookie', adminUserData['tokenCookie']);
 
     expect(response.statusCode).toBe(200);
     expect(new Set(Object.keys(response.body))).toEqual(new Set(['folders']));
@@ -314,7 +339,8 @@ describe('folders controller', () => {
     // new user cannot see any folders without having apps with access
     response = await request(nestApp.getHttpServer())
       .get(`/api/folders`)
-      .set('Authorization', authHeaderForUser(newUserData.user));
+      .set('tj-workspace-id', newUserData.user.defaultOrganizationId)
+      .set('Cookie', newUserData['tokenCookie']);
 
     expect(response.statusCode).toBe(200);
     expect(new Set(Object.keys(response.body))).toEqual(new Set(['folders']));
@@ -338,7 +364,8 @@ describe('folders controller', () => {
 
     response = await request(nestApp.getHttpServer())
       .get(`/api/folders`)
-      .set('Authorization', authHeaderForUser(newUserData.user));
+      .set('tj-workspace-id', newUserData.user.defaultOrganizationId)
+      .set('Cookie', newUserData['tokenCookie']);
 
     expect(response.statusCode).toBe(200);
 
@@ -355,7 +382,8 @@ describe('folders controller', () => {
 
     response = await request(nestApp.getHttpServer())
       .get(`/api/folders`)
-      .set('Authorization', authHeaderForUser(newUserData.user));
+      .set('tj-workspace-id', newUserData.user.defaultOrganizationId)
+      .set('Cookie', newUserData['tokenCookie']);
 
     expect(response.statusCode).toBe(200);
     folders = response.body.folders;
@@ -380,9 +408,12 @@ describe('folders controller', () => {
       });
       const { user } = adminUserData;
 
+      const loggedUser = await authenticateUser(nestApp);
+
       const response = await request(nestApp.getHttpServer())
         .post(`/api/folders`)
-        .set('Authorization', authHeaderForUser(user))
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
         .send({ name: 'My folder' });
 
       expect(response.statusCode).toBe(201);
@@ -405,9 +436,20 @@ describe('folders controller', () => {
         userType: 'instance',
       });
 
+      let loggedUser = await authenticateUser(nestApp);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+      loggedUser = await authenticateUser(
+        nestApp,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const response = await request(nestApp.getHttpServer())
         .post(`/api/folders`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user, adminUserData.organization.id))
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie'])
         .send({ name: 'My folder' });
 
       expect(response.statusCode).toBe(201);
@@ -444,6 +486,23 @@ describe('folders controller', () => {
         organization: adminUserData.organization,
       });
 
+      let loggedUser = await authenticateUser(nestApp);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      loggedUser = await authenticateUser(nestApp, viewerUserData.user.email);
+      viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      loggedUser = await authenticateUser(nestApp, developerUserData.user.email);
+      developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      loggedUser = await authenticateUser(
+        nestApp,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const developerGroup = await getManager().findOneOrFail(GroupPermission, {
         where: { group: 'developer' },
       });
@@ -460,7 +519,8 @@ describe('folders controller', () => {
       for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
         await request(nestApp.getHttpServer())
           .put(`/api/folders/${folder.id}`)
-          .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', userData['tokenCookie'])
           .send({ name: 'My folder' })
           .expect(200);
 
@@ -471,7 +531,8 @@ describe('folders controller', () => {
 
       await request(nestApp.getHttpServer())
         .put(`/api/folders/${folder.id}`)
-        .set('Authorization', authHeaderForUser(viewerUserData.user))
+        .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
+        .set('Cookie', viewerUserData['tokenCookie'])
         .send({ name: 'My folder' })
         .expect(403);
     });
@@ -508,6 +569,23 @@ describe('folders controller', () => {
         folderDelete: true,
       });
 
+      let loggedUser = await authenticateUser(nestApp);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      loggedUser = await authenticateUser(nestApp, viewerUserData.user.email);
+      viewerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      loggedUser = await authenticateUser(nestApp, developerUserData.user.email);
+      developerUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+      loggedUser = await authenticateUser(
+        nestApp,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
         const folder = await getManager().save(Folder, {
           name: 'Folder1',
@@ -518,7 +596,8 @@ describe('folders controller', () => {
 
         await request(nestApp.getHttpServer())
           .delete(`/api/folders/${folder.id}`)
-          .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id))
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', userData['tokenCookie'])
           .send()
           .expect(200);
 
@@ -533,7 +612,8 @@ describe('folders controller', () => {
 
       await request(nestApp.getHttpServer())
         .delete(`/api/folders/${folder.id}`)
-        .set('Authorization', authHeaderForUser(viewerUserData.user))
+        .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
+        .set('Cookie', viewerUserData['tokenCookie'])
         .send()
         .expect(403);
     });

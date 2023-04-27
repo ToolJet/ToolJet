@@ -10,11 +10,12 @@ import posthog from 'posthog-js';
 import { retrieveWhiteLabelText } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { getPrivateRoute } from '@/_helpers/routes';
 
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
     super(props);
-    this.currentUser = authenticationService.currentUserValue;
+    this.isUserAdmin = authenticationService.currentSessionValue?.admin;
 
     this.state = {
       showModal: false,
@@ -265,8 +266,8 @@ class ManageAppUsersComponent extends React.Component {
           </Modal.Body>
 
           <Modal.Footer>
-            {this.currentUser?.admin && (
-              <Link to="/workspace-settings" target="_blank" className="btn color-primary mt-3">
+            {this.isUserAdmin && (
+              <Link to={getPrivateRoute('workspace_settings')} target="_blank" className="btn color-primary mt-3">
                 Manage users
               </Link>
             )}

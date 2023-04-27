@@ -1,7 +1,7 @@
 import React from 'react';
 import { instanceSettingsService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import ReactTooltip from 'react-tooltip';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { withTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import Skeleton from 'react-loading-skeleton';

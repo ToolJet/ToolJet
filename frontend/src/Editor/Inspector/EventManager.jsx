@@ -60,7 +60,7 @@ export const EventManager = ({
       id: 'warning',
     },
     {
-      name: 'Danger',
+      name: 'Error',
       id: 'error',
     },
   ];
@@ -210,14 +210,14 @@ export const EventManager = ({
         className={`${darkMode && 'popover-dark-themed theme-dark'} shadow`}
         data-cy="popover-card"
       >
-        <Popover.Content>
+        <Popover.Body>
           <div className="row">
             <div className="col-3 p-2">
               <span data-cy="event-label">{t('editor.inspector.eventManager.event', 'Event')}</span>
             </div>
             <div className="col-9" data-cy="event-selection">
               <Select
-                className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                 options={possibleEvents}
                 value={event.eventId}
                 search={false}
@@ -235,7 +235,7 @@ export const EventManager = ({
             </div>
             <div className="col-9 popover-action-select-search" data-cy="action-selection">
               <Select
-                className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                 options={actionOptions}
                 value={event.actionId}
                 search={false}
@@ -276,7 +276,7 @@ export const EventManager = ({
                   </div>
                   <div className="col-9" data-cy="alert-message-type">
                     <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100 w-100`}
                       options={alertOptions}
                       value={event.alertType}
                       search={false}
@@ -320,7 +320,7 @@ export const EventManager = ({
                 <div className="col-3 p-2">{t('editor.inspector.eventManager.modal', 'Modal')}</div>
                 <div className="col-9">
                   <Select
-                    className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                    className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                     options={getComponentOptions('Modal')}
                     value={event.modal?.id ?? event.modal}
                     search={true}
@@ -341,7 +341,7 @@ export const EventManager = ({
                 <div className="col-3 p-2">{t('editor.inspector.eventManager.modal', 'Modal')}</div>
                 <div className="col-9">
                   <Select
-                    className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                    className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                     options={getComponentOptions('Modal')}
                     value={event.modal?.id ?? event.modal}
                     search={true}
@@ -375,7 +375,7 @@ export const EventManager = ({
                 <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
                 <div className="col-9" data-cy="query-selection-field">
                   <Select
-                    className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                    className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                     options={dataQueries.map((query) => {
                       return { name: query.name, value: query.id };
                     })}
@@ -431,7 +431,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.type', 'Type')}</div>
                   <div className="col-9">
                     <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                       options={[
                         { name: 'CSV', value: 'csv' },
                         { name: 'Text', value: 'plaintext' },
@@ -480,7 +480,7 @@ export const EventManager = ({
                   <div className="col-3 p-2">{t('editor.inspector.eventManager.table', 'Table')}</div>
                   <div className="col-9">
                     <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                       options={getComponentOptions('Table')}
                       value={event.table}
                       search={true}
@@ -615,7 +615,7 @@ export const EventManager = ({
                   </div>
                   <div className="col-9" data-cy="action-options-component-selection-field">
                     <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                       options={getComponentOptionsOfComponentsWithActions()}
                       value={event?.componentId}
                       search={true}
@@ -636,7 +636,7 @@ export const EventManager = ({
                   </div>
                   <div className="col-9" data-cy="action-options-action-selection-field">
                     <Select
-                      className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                       options={getComponentActionOptions(event?.componentId)}
                       value={event?.componentSpecificActionHandle}
                       search={true}
@@ -693,8 +693,20 @@ export const EventManager = ({
                   ))}
               </>
             )}
+            <div className="row mt-3">
+              <div className="col-3 p-2">{t('editor.inspector.eventManager.debounce', 'Debounce')}</div>
+              <div className="col-9" data-cy="alert-message-input-field">
+                <CodeHinter
+                  theme={darkMode ? 'monokai' : 'default'}
+                  currentState={currentState}
+                  initialValue={event.debounce}
+                  onChange={(value) => handlerChanged(index, 'debounce', value)}
+                  usePortalEditor={false}
+                />
+              </div>
+            </div>
           </div>
-        </Popover.Content>
+        </Popover.Body>
       </Popover>
     );
   }

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { authenticationService, organizationService } from '@/_services';
+import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import posthog from 'posthog-js';
+import { appendWorkspaceId } from '../../_helpers/utils';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -26,8 +27,9 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
           workspace_id: data.organization_id || data.current_organization_id,
         });
         setIsCreating(false);
-        authenticationService.updateCurrentUserDetails(data);
-        window.location.href = '';
+        const newPath = appendWorkspaceId(data.current_organization_id, location.pathname, true);
+        window.history.replaceState(null, null, newPath);
+        window.location.reload();
       },
       () => {
         setIsCreating(false);

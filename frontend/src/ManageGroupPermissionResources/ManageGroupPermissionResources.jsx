@@ -17,16 +17,22 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     this.state = {
       isLoadingGroup: true,
       isLoadingApps: true,
+      isLoadingDataSources: true,
       isAddingApps: false,
       isLoadingUsers: true,
       isAddingUsers: false,
+      isAddingDataSources: false,
       groupPermission: null,
       usersInGroup: [],
       appsInGroup: [],
+      dataSourcesInGroup: [],
       usersNotInGroup: [],
       appsNotInGroup: [],
+      dataSourcesNotInGroup: [],
       selectedAppIds: [],
+      selectedDataSourceIds: [],
       removeAppIds: [],
+      removeDataSourceIds: [],
       currentTab: 'apps',
       selectedUsers: [],
     };
@@ -61,6 +67,8 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     this.fetchUsersInGroup(groupPermissionId);
     this.fetchAppsNotInGroup(groupPermissionId);
     this.fetchAppsInGroup(groupPermissionId);
+    this.fetchDataSourcesInGroup(groupPermissionId);
+    this.fetchDataSourcesNotInGroup(groupPermissionId);
   };
 
   userFullName = (user) => {
@@ -110,6 +118,23 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       this.setState({
         appsInGroup: data.apps,
         isLoadingApps: false,
+      });
+    });
+  };
+
+  fetchDataSourcesInGroup = (groupPermissionId) => {
+    groupPermissionService.getDataSourcesInGroup(groupPermissionId).then((data) => {
+      this.setState({
+        dataSourcesInGroup: data.data_sources,
+        isLoadingDataSources: false,
+      });
+    });
+  };
+
+  fetchDataSourcesNotInGroup = (groupPermissionId) => {
+    groupPermissionService.getDataSourcesNotInGroup(groupPermissionId).then((data) => {
+      this.setState({
+        dataSourcesNotInGroup: data.data_sources,
       });
     });
   };
@@ -169,8 +194,54 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     }
   };
 
+  updateDataSourceGroupPermission = (dataSource, groupPermissionId, action) => {
+    const dataSourceGroupPermission = dataSource.data_source_group_permissions.find(
+      (permission) => permission.group_permission_id === groupPermissionId
+    );
+
+    let actionParams = {
+      read: true,
+      update: action === 'edit',
+    };
+
+    // if (action === 'hideFromDashboard') {
+    //   actionParams['hideFromDashboard'] = !this.canAppGroupPermission(app, groupPermissionId, 'hideFromDashboard');
+    // }
+
+    // if (action === 'edit') actionParams['hideFromDashboard'] = false;
+
+    groupPermissionService
+      .updateDataSourceGroupPermission(groupPermissionId, dataSourceGroupPermission.id, actionParams)
+      .then(() => {
+        toast.success('Datasource permissions updated');
+
+        this.fetchDataSourcesInGroup(groupPermissionId);
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+      });
+  };
+
+  canDataSourceGroupPermission = (dataSource, groupPermissionId, action) => {
+    let dataSourceGroupPermission = this.findDataSourceGroupPermission(dataSource, groupPermissionId);
+    switch (action) {
+      case 'edit':
+        return dataSourceGroupPermission?.read && dataSourceGroupPermission?.update;
+      case 'view':
+        return dataSourceGroupPermission?.read && !dataSourceGroupPermission?.update;
+      default:
+        return false;
+    }
+  };
+
   findAppGroupPermission = (app, groupPermissionId) => {
     return app.app_group_permissions.find((permission) => permission.group_permission_id === groupPermissionId);
+  };
+
+  findDataSourceGroupPermission = (dataSource, groupPermissionId) => {
+    return dataSource.data_source_group_permissions.find(
+      (permission) => permission.group_permission_id === groupPermissionId
+    );
   };
 
   setSelectedUsers = (value) => {
@@ -182,6 +253,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
   setSelectedApps = (value) => {
     this.setState({
       selectedAppIds: value,
+    });
+  };
+
+  setSelectedDataSources = (value) => {
+    this.setState({
+      selectedDataSourceIds: value,
     });
   };
 
@@ -220,6 +297,33 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       });
   };
 
+  addSelectedDataSourcesToGroup = (groupPermissionId) => {
+    this.setState({ isAddingDataSources: true });
+    const updateParams = {
+      add_data_sources: this.state.selectedDataSourceIds.map((dataSource) => dataSource.value),
+    };
+    groupPermissionService
+      .update(groupPermissionId, updateParams)
+      .then(() => {
+        this.setState({
+          selectedDataSourceIds: [],
+          isLoadingDataSources: true,
+          isAddingDataSources: false,
+        });
+        this.fetchDataSourcesNotInGroup(groupPermissionId);
+        this.fetchDataSourcesInGroup(groupPermissionId);
+      })
+      .then(() => {
+        toast.success('Datasources added to the group');
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+        this.setState({
+          isAddingDataSources: false,
+        });
+      });
+  };
+
   removeAppFromGroup = (groupPermissionId, appId, appName) => {
     if (window.confirm(`Are you sure you want to delete this app - ${appName}?`) === false) return;
     const updateParams = {
@@ -234,6 +338,26 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       })
       .then(() => {
         toast.success('App removed from the group');
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+      });
+  };
+
+  removeDataSourcesFromGroup = (groupPermissionId, dataSourceId, dataSourceName) => {
+    if (window.confirm(`Are you sure you want to delete this datasource - ${dataSourceName}?`) === false) return;
+    const updateParams = {
+      remove_data_sources: [dataSourceId],
+    };
+    groupPermissionService
+      .update(groupPermissionId, updateParams)
+      .then(() => {
+        this.setState({ removeDataSourceIds: [], isLoadingDataSources: true });
+        this.fetchDataSourcesNotInGroup(groupPermissionId);
+        this.fetchDataSourcesInGroup(groupPermissionId);
+      })
+      .then(() => {
+        toast.success('DataSource removed from the group');
       })
       .catch(({ error }) => {
         toast.error(error);
@@ -316,17 +440,24 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     const {
       isLoadingGroup,
       isLoadingApps,
+      isLoadingDataSources,
       isAddingApps,
       isLoadingUsers,
       isAddingUsers,
+      isAddingDataSources,
       appsInGroup,
       appsNotInGroup,
+      dataSourcesInGroup,
+      dataSourcesNotInGroup,
       usersInGroup,
       groupPermission,
       currentTab,
       selectedAppIds,
+      selectedDataSourceIds,
       selectedUsers,
     } = this.state;
+
+    const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
 
     const folder_permission = groupPermission
       ? groupPermission.folder_create && groupPermission.folder_delete && groupPermission.folder_update
@@ -334,6 +465,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
 
     const appSelectOptions = appsNotInGroup.map((app) => {
       return { name: app.name, value: app.id };
+    });
+
+    const dataSourceSelectOptions = dataSourcesNotInGroup.map((dataSource) => {
+      return { name: dataSource.name, value: dataSource.id };
     });
 
     const orgEnvironmentPermission = groupPermission
@@ -376,6 +511,14 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     'Permissions'
                   )}
                 </a>
+                {groupPermission?.group !== 'admin' && (
+                  <a
+                    onClick={() => this.setState({ currentTab: 'datasources' })}
+                    className={cx('nav-item nav-link', { active: currentTab === 'datasources' })}
+                  >
+                    Datasources
+                  </a>
+                )}
               </nav>
               <div className="card-body">
                 <div className="tab-content">
@@ -533,7 +676,23 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       <div className="row">
                         <div className="col-6" data-cy="multi-select-search">
                           <MultiSelect
-                            className={`${this.props.darkMode ? 'select-search-dark' : 'select-search'}`}
+                            className={{
+                              container: searchSelectClass,
+                              value: `${searchSelectClass}__value`,
+                              input: `${searchSelectClass}__input`,
+                              select: `${searchSelectClass}__select`,
+                              options: `${searchSelectClass}__options`,
+                              row: `${searchSelectClass}__row`,
+                              option: `${searchSelectClass}__option`,
+                              group: `${searchSelectClass}__group`,
+                              'group-header': `${searchSelectClass}__group-header`,
+                              'is-selected': 'is-selected',
+                              'is-highlighted': 'is-highlighted',
+                              'is-loading': 'is-loading',
+                              'is-multiple': 'is-multiple',
+                              'has-focus': 'has-focus',
+                              'not-found': `${searchSelectClass}__not-found`,
+                            }}
                             onSelect={this.setSelectedUsers}
                             onSearch={(query) => this.searchUsersNotInGroup(query, groupPermission.id)}
                             selectedValues={selectedUsers}
@@ -781,7 +940,184 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                   </td>
                                   <td></td>
                                 </tr>
+
+                                <tr>
+                                  <td>Datasources</td>
+                                  <td className="text-muted">
+                                    <div>
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          onChange={() => {
+                                            this.updateGroupPermission(groupPermission.id, {
+                                              data_source_create: !groupPermission.data_source_create,
+                                            });
+                                          }}
+                                          checked={groupPermission.data_source_create}
+                                          disabled={groupPermission.group === 'admin'}
+                                        />
+                                        <span className="form-check-label">
+                                          {this.props.t('globals.create', 'Create')}
+                                        </span>
+                                      </label>
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          onChange={() => {
+                                            this.updateGroupPermission(groupPermission.id, {
+                                              data_source_delete: !groupPermission.data_source_delete,
+                                            });
+                                          }}
+                                          checked={groupPermission.data_source_delete}
+                                          disabled={groupPermission.group === 'admin'}
+                                        />
+                                        <span className="form-check-label">
+                                          {this.props.t('globals.delete', 'Delete')}
+                                        </span>
+                                      </label>
+                                    </div>
+                                  </td>
+                                  <td></td>
+                                </tr>
                               </>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Global Datasources Tab */}
+                  <div className={`tab-pane ${currentTab === 'datasources' ? 'active show' : ''}`}>
+                    {groupPermission?.group !== 'admin' && (
+                      <div className="row">
+                        <div className="col-11">
+                          <Select
+                            isMulti
+                            closeMenuOnSelect={false}
+                            width={'100%'}
+                            options={dataSourceSelectOptions}
+                            value={selectedDataSourceIds}
+                            onChange={this.setSelectedDataSources}
+                            placeholder={'Select Datasources to add to the group'}
+                          />
+                        </div>
+                        <div className="col-1">
+                          <div
+                            className={`btn btn-primary w-100 ${isAddingDataSources ? 'btn-loading' : ''} ${
+                              selectedDataSourceIds.length === 0 ? 'disabled' : ''
+                            }`}
+                            onClick={() => this.addSelectedDataSourcesToGroup(groupPermission.id)}
+                          >
+                            {this.props.t('globals.add', 'Add')}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <br />
+                    <div>
+                      <div className="table-responsive">
+                        <table className="table table-vcenter">
+                          <thead>
+                            <tr>
+                              <th data-cy="name-header">
+                                {this.props.t(
+                                  'header.organization.menus.manageGroups.permissionResources.name',
+                                  'Name'
+                                )}
+                              </th>
+                              <th data-cy="permissions-header">
+                                {this.props.t(
+                                  'header.organization.menus.manageGroups.permissionResources.permissions',
+                                  'Permissions'
+                                )}
+                              </th>
+                              <th></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {isLoadingGroup || isLoadingDataSources ? (
+                              <tr>
+                                <td className="col-auto">
+                                  <div className="row">
+                                    <div className="skeleton-line w-10 col mx-3"></div>
+                                  </div>
+                                </td>
+                                <td className="col-auto">
+                                  <div className="skeleton-line w-10"></div>
+                                </td>
+                                <td className="col-auto">
+                                  <div className="skeleton-line w-10"></div>
+                                </td>
+                              </tr>
+                            ) : (
+                              dataSourcesInGroup.map((dataSource) => (
+                                <tr key={dataSource.id}>
+                                  <td>{dataSource.name}</td>
+                                  <td className="text-secondary">
+                                    <div>
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="radio"
+                                          onChange={() => {
+                                            this.updateDataSourceGroupPermission(
+                                              dataSource,
+                                              groupPermission.id,
+                                              'view'
+                                            );
+                                          }}
+                                          disabled={groupPermission.group === 'admin'}
+                                          checked={this.canDataSourceGroupPermission(
+                                            dataSource,
+                                            groupPermission.id,
+                                            'view'
+                                          )}
+                                        />
+                                        <span className="form-check-label">{this.props.t('globals.view', 'view')}</span>
+                                      </label>
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="radio"
+                                          onChange={() => {
+                                            this.updateDataSourceGroupPermission(
+                                              dataSource,
+                                              groupPermission.id,
+                                              'edit'
+                                            );
+                                          }}
+                                          disabled={groupPermission.group === 'admin'}
+                                          checked={this.canDataSourceGroupPermission(
+                                            dataSource,
+                                            groupPermission.id,
+                                            'edit'
+                                          )}
+                                        />
+                                        <span className="form-check-label">{this.props.t('globals.edit', 'Edit')}</span>
+                                      </label>
+                                    </div>
+                                  </td>
+                                  <td>
+                                    {groupPermission.group !== 'admin' && (
+                                      <Link
+                                        to="#"
+                                        onClick={() => {
+                                          this.removeDataSourcesFromGroup(
+                                            groupPermission.id,
+                                            dataSource.id,
+                                            dataSource.name
+                                          );
+                                        }}
+                                        className="text-danger"
+                                      >
+                                        {this.props.t('globals.delete', 'Delete')}
+                                      </Link>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))
                             )}
                           </tbody>
                         </table>

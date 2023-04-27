@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createUser, createNestAppInstanceWithEnvMock } from '../test.helper';
+import { clearDB, createUser, createNestAppInstanceWithEnvMock, authenticateUser } from '../test.helper';
 import { Repository } from 'typeorm';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
@@ -35,11 +35,22 @@ describe('organizations controller', () => {
       const adminUserData = await createUser(app, { email: 'admin@tooljet.io' });
       const superAdminUserData = await createUser(app, { email: 'superadmin@tooljet.io', userType: 'instance' });
 
+      let loggedUser = await authenticateUser(app);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+      loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       for (const userData of [adminUserData, superAdminUserData]) {
         const { user, orgUser } = adminUserData;
         const response = await request(app.getHttpServer())
           .get('/api/organizations/users?page=1')
-          .set('Authorization', authHeaderForUser(userData.user, adminUserData.organization.id));
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', userData['tokenCookie']);
 
         expect(response.statusCode).toBe(200);
         expect(response.body.users.length).toBe(1);
@@ -73,11 +84,17 @@ describe('organizations controller', () => {
           userType: 'instance',
         });
 
+        let loggedUser = await authenticateUser(app);
+        user['tokenCookie'] = loggedUser.tokenCookie;
+        loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', organization.id);
+        superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
+
         for (const [index, userData] of [user, superAdminUserData.user].entries()) {
           const response = await request(app.getHttpServer())
             .post('/api/organizations')
             .send({ name: `My workspace ${index}` })
-            .set('Authorization', authHeaderForUser(userData));
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', userData['tokenCookie']);
 
           expect(response.statusCode).toBe(201);
           expect(response.body.organization_id).not.toBe(organization.id);
@@ -87,58 +104,57 @@ describe('organizations controller', () => {
           const newUser = await userRepository.findOneOrFail({ where: { id: userData.id } });
           expect(newUser.defaultOrganizationId).toBe(response.body.organization_id);
         }
+
+        const response = await request(app.getHttpServer())
+          .post('/api/organizations')
+          .send({ name: 'My workspace' })
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', user['tokenCookie']);
+
+        expect(response.statusCode).toBe(201);
+        expect(response.body.current_organization_id).not.toBe(organization.id);
+
+        const newUser = await userRepository.findOneOrFail({ where: { id: user.id } });
+        expect(newUser.defaultOrganizationId).toBe(response.body.current_organization_id);
       });
 
       it('should throw error if name is empty', async () => {
         const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+        const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
           .send({ name: '' })
-          .set('Authorization', authHeaderForUser(user));
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(400);
       });
 
       it('should throw error if name is longer than 25 characters', async () => {
         const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+        const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
           .send({ name: 'xxxxxxxxxxxxxxxxxxxxxxxxxx' })
-          .set('Authorization', authHeaderForUser(user));
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(400);
-      });
-
-      it('should not create new organization if Multi-Workspace not supported', async () => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-          switch (key) {
-            case 'DISABLE_MULTI_WORKSPACE':
-              return 'true';
-            default:
-              return process.env[key];
-          }
-        });
-        const { user } = await createUser(app, { email: 'admin@tooljet.io' });
-        await request(app.getHttpServer())
-          .post('/api/organizations')
-          .send({ name: 'My workspace' })
-          .set('Authorization', authHeaderForUser(user))
-          .expect(403);
       });
 
       it('should create new organization if Multi-Workspace supported and user logged in via SSO', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
         });
+        const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
           .send({ name: 'My workspace' })
-          .set('Authorization', authHeaderForUser(user, null, false));
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(201);
-        expect(response.body.organization_id).not.toBe(organization.id);
-        expect(response.body.organization).toBe('My workspace');
-        expect(response.body.admin).toBeTruthy();
+        expect(response.body.current_organization_id).not.toBe(organization.id);
       });
     });
 
@@ -152,11 +168,23 @@ describe('organizations controller', () => {
           userType: 'instance',
         });
 
+        let loggedUser = await authenticateUser(app);
+        user['tokenCookie'] = loggedUser.tokenCookie;
+        loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', organization.id);
+        superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
+
+        await request(app.getHttpServer())
+          .patch('/api/organizations')
+          .send({ name: 'new name', domain: 'tooljet.io', enableSignUp: true })
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', user['tokenCookie']);
+
         for (const userData of [user, superAdminUserData.user]) {
           const response = await request(app.getHttpServer())
             .patch('/api/organizations')
             .send({ name: 'new name', domain: 'tooljet.io', enableSignUp: true })
-            .set('Authorization', authHeaderForUser(userData, organization.id));
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', userData['tokenCookie']);
 
           expect(response.statusCode).toBe(200);
           await organization.reload();
@@ -168,10 +196,13 @@ describe('organizations controller', () => {
 
       it('should throw error if name is longer than 25 characters', async () => {
         const { user } = await createUser(app, { email: 'admin@tooljet.io' });
+        const loggedUser = await authenticateUser(app);
+
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
           .send({ name: 'xxxxxxxxxxxxxxxxxxxxxxxxxx' })
-          .set('Authorization', authHeaderForUser(user));
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(400);
       });
@@ -183,10 +214,12 @@ describe('organizations controller', () => {
           groups: ['all_users'],
           organization,
         });
+        const loggedUser = await authenticateUser(app, 'developer@tooljet.io');
         const response = await request(app.getHttpServer())
           .patch('/api/organizations')
           .send({ name: 'new name', domain: 'tooljet.io', enableSignUp: true })
-          .set('Authorization', authHeaderForUser(developerUserData.user));
+          .set('tj-workspace-id', developerUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(403);
       });
@@ -199,11 +232,18 @@ describe('organizations controller', () => {
           email: 'superadmin@tooljet.io',
           userType: 'instance',
         });
+
+        let loggedUser = await authenticateUser(app);
+        user['tokenCookie'] = loggedUser.tokenCookie;
+        loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', organization.id);
+        superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
+
         for (const userData of [user, superAdminUserData.user]) {
           const response = await request(app.getHttpServer())
             .patch('/api/organizations/name')
             .send({ name: 'new name' })
-            .set('Authorization', authHeaderForUser(userData, organization.id));
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', userData['tokenCookie']);
 
           expect(response.statusCode).toBe(200);
           await organization.reload();
@@ -221,10 +261,12 @@ describe('organizations controller', () => {
           userType: 'instance',
         });
 
+        const loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', organization.id);
         let response = await request(app.getHttpServer())
           .patch('/api/organizations/configs')
           .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
-          .set('Authorization', authHeaderForUser(user));
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(200);
         let ssoConfigs = await ssoConfigsRepository.findOneOrFail({ where: { id: response.body.id } });
@@ -233,10 +275,17 @@ describe('organizations controller', () => {
         expect(ssoConfigs.configs.clientId).toBe('client-id');
         expect(ssoConfigs.configs['clientSecret']).not.toBe('client-secret');
 
+        const loggedSuperAdminUser = await authenticateUser(
+          app,
+          superAdminUserData.user.email,
+          'password',
+          organization.id
+        );
         response = await request(app.getHttpServer())
           .patch('/api/organizations/configs')
           .send({ type: 'google', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
-          .set('Authorization', authHeaderForUser(superAdminUserData.user, organization.id));
+          .set('tj-workspace-id', organization.id)
+          .set('Cookie', loggedSuperAdminUser.tokenCookie);
 
         expect(response.statusCode).toBe(200);
         ssoConfigs = await ssoConfigsRepository.findOneOrFail({ where: { id: response.body.id } });
@@ -251,10 +300,12 @@ describe('organizations controller', () => {
           email: 'admin@tooljet.io',
           groups: ['all_users'],
         });
+        const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
           .patch('/api/organizations/configs')
           .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
-          .set('Authorization', authHeaderForUser(user));
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(403);
       });
@@ -268,17 +319,25 @@ describe('organizations controller', () => {
           email: 'superadmin@tooljet.io',
           userType: 'instance',
         });
+
+        let loggedUser = await authenticateUser(app);
+        user['tokenCookie'] = loggedUser.tokenCookie;
+        loggedUser = await authenticateUser(app, superAdminUserData.user.email, 'password', organization.id);
+        superAdminUserData.user['tokenCookie'] = loggedUser.tokenCookie;
+
         const response = await request(app.getHttpServer())
           .patch('/api/organizations/configs')
           .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
-          .set('Authorization', authHeaderForUser(user));
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', user['tokenCookie']);
 
         expect(response.statusCode).toBe(200);
 
         for (const userData of [user, superAdminUserData.user]) {
           const getResponse = await request(app.getHttpServer())
             .get('/api/organizations/configs')
-            .set('Authorization', authHeaderForUser(userData, organization.id));
+            .set('tj-workspace-id', organization.id)
+            .set('Cookie', userData['tokenCookie']);
 
           expect(getResponse.statusCode).toBe(200);
 
@@ -301,113 +360,27 @@ describe('organizations controller', () => {
           email: 'admin@tooljet.io',
           groups: ['all_users'],
         });
+        const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
           .get('/api/organizations/configs')
-          .set('Authorization', authHeaderForUser(user));
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(403);
       });
     });
 
     describe('get public organization configs', () => {
-      it('should get organization details for all users for single organization', async () => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-          switch (key) {
-            case 'DISABLE_MULTI_WORKSPACE':
-              return 'true';
-            default:
-              return process.env[key];
-          }
-        });
-        const { user } = await createUser(app, {
-          email: 'admin@tooljet.io',
-        });
-        const response = await request(app.getHttpServer())
-          .patch('/api/organizations/configs')
-          .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
-          .set('Authorization', authHeaderForUser(user));
-
-        expect(response.statusCode).toBe(200);
-
-        const authGetResponse = await request(app.getHttpServer())
-          .get('/api/organizations/configs')
-          .set('Authorization', authHeaderForUser(user));
-
-        expect(authGetResponse.statusCode).toBe(200);
-
-        const getResponse = await request(app.getHttpServer()).get('/api/organizations/public-configs');
-
-        expect(getResponse.statusCode).toBe(200);
-        expect(getResponse.body).toEqual({
-          sso_configs: {
-            name: 'Test Organization',
-            enable_sign_up: false,
-            form: {
-              config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
-              sso: 'form',
-              configs: {},
-              enabled: true,
-            },
-            git: {
-              config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'git').id,
-              sso: 'git',
-              configs: { client_id: 'client-id', client_secret: '' },
-              enabled: true,
-            },
-          },
-        });
-      });
-
-      it('should get organization details and should not consider instance level SSO for all users for single organization', async () => {
-        jest.spyOn(mockConfig, 'get').mockImplementation((key: string) => {
-          switch (key) {
-            case 'DISABLE_MULTI_WORKSPACE':
-              return 'true';
-            case 'SSO_GOOGLE_OAUTH2_CLIENT_ID':
-              return 'google-client-id';
-            case 'SSO_GIT_OAUTH2_CLIENT_ID':
-              return 'git-client-id';
-            case 'SSO_GIT_OAUTH2_CLIENT_SECRET':
-              return 'git-secret';
-            default:
-              return process.env[key];
-          }
-        });
-        const { user } = await createUser(app, {
-          email: 'admin@tooljet.io',
-        });
-
-        const authGetResponse = await request(app.getHttpServer())
-          .get('/api/organizations/configs')
-          .set('Authorization', authHeaderForUser(user));
-
-        expect(authGetResponse.statusCode).toBe(200);
-
-        const getResponse = await request(app.getHttpServer()).get('/api/organizations/public-configs');
-
-        expect(getResponse.statusCode).toBe(200);
-        expect(getResponse.body).toEqual({
-          sso_configs: {
-            name: 'Test Organization',
-            enable_sign_up: false,
-            form: {
-              config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
-              sso: 'form',
-              configs: {},
-              enabled: true,
-            },
-          },
-        });
-      });
-
       it('should get organization specific details for all users for multiple organization deployment', async () => {
         const { user, organization } = await createUser(app, {
           email: 'admin@tooljet.io',
         });
+        const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
           .patch('/api/organizations/configs')
           .send({ type: 'git', configs: { clientId: 'client-id', clientSecret: 'client-secret' }, enabled: true })
-          .set('Authorization', authHeaderForUser(user));
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(200);
 
@@ -419,7 +392,8 @@ describe('organizations controller', () => {
 
         const authGetResponse = await request(app.getHttpServer())
           .get('/api/organizations/configs')
-          .set('Authorization', authHeaderForUser(user));
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(authGetResponse.statusCode).toBe(200);
 
@@ -461,10 +435,13 @@ describe('organizations controller', () => {
           email: 'admin@tooljet.io',
         });
 
+        const loggedUser = await authenticateUser(app);
+
         const response = await request(app.getHttpServer())
           .patch('/api/organizations/configs')
           .send({ type: 'git', configs: { clientId: 'org-client-id', clientSecret: 'client-secret' }, enabled: true })
-          .set('Authorization', authHeaderForUser(user));
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(response.statusCode).toBe(200);
 
@@ -476,7 +453,8 @@ describe('organizations controller', () => {
 
         const authGetResponse = await request(app.getHttpServer())
           .get('/api/organizations/configs')
-          .set('Authorization', authHeaderForUser(user));
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(authGetResponse.statusCode).toBe(200);
 
@@ -523,6 +501,8 @@ describe('organizations controller', () => {
           email: 'admin@tooljet.io',
         });
 
+        const loggedUser = await authenticateUser(app);
+
         const getResponse = await request(app.getHttpServer()).get(
           `/api/organizations/${organization.id}/public-configs`
         );
@@ -531,7 +511,8 @@ describe('organizations controller', () => {
 
         const authGetResponse = await request(app.getHttpServer())
           .get('/api/organizations/configs')
-          .set('Authorization', authHeaderForUser(user));
+          .set('tj-workspace-id', user.defaultOrganizationId)
+          .set('Cookie', loggedUser.tokenCookie);
 
         expect(authGetResponse.statusCode).toBe(200);
 

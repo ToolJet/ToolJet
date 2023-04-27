@@ -3,6 +3,11 @@
   margin-top: 2px;
   margin-right: 5px;
 
+  input.form-control:disabled{
+    background-color: #ff000000;
+    border: 0px;
+  }
+
   .rdtPicker {
     position: fixed;
 

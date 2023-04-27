@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useEventListener } from '@/_hooks/use-event-listener';
+import { Tooltip } from 'react-tooltip';
 
 const QueryPanel = ({ children, computeCurrentQueryPanelHeight }) => {
   const queryManagerPreferences = useRef(JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {});
@@ -93,7 +94,12 @@ const QueryPanel = ({ children, computeCurrentQueryPanelHeight }) => {
         <h5 className="mb-0 font-weight-500 cursor-pointer" onClick={toggleQueryEditor}>
           QUERIES
         </h5>
-        <span onClick={toggleQueryEditor} className="cursor-pointer m-1  d-flex" data-tip="Show query editor">
+        <span
+          onClick={toggleQueryEditor}
+          className="cursor-pointer m-1  d-flex"
+          data-tooltip-id="tooltip-for-show-query-editor"
+          data-tooltip-content="Show query editor"
+        >
           {isExpanded ? (
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -128,6 +134,7 @@ const QueryPanel = ({ children, computeCurrentQueryPanelHeight }) => {
           setCancelData,
         })}
       </div>
+      <Tooltip id="tooltip-for-show-query-editor" className="tooltip" />
     </>
   );
 };

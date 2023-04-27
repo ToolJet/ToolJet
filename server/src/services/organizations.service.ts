@@ -29,6 +29,7 @@ import {
 import { InstanceSettingsService } from './instance_settings.service';
 import { decamelize } from 'humps';
 import { Response } from 'express';
+import { AppEnvironmentService } from './app_environments.service';
 
 const MAX_ROW_COUNT = 500;
 
@@ -61,6 +62,7 @@ export class OrganizationsService {
     private usersService: UsersService,
     private organizationUserService: OrganizationUsersService,
     private groupPermissionService: GroupPermissionsService,
+    private appEnvironmentService: AppEnvironmentService,
     private encryptionService: EncryptionService,
     private emailService: EmailService,
     private instanceSettingsService: InstanceSettingsService,
@@ -84,6 +86,8 @@ export class OrganizationsService {
           updatedAt: new Date(),
         })
       );
+
+      await this.appEnvironmentService.createDefaultEnvironments(organization.id, manager);
 
       const createdGroupPermissions: GroupPermission[] = await this.createDefaultGroupPermissionsForOrganization(
         organization,
@@ -133,9 +137,7 @@ export class OrganizationsService {
         enabled: true,
       },
       enableSignUp:
-        this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
-        this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true' &&
-        isPersonalWorkspaceAllowed === 'true',
+        this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true' && isPersonalWorkspaceAllowed === 'true',
     };
   }
 
@@ -165,6 +167,8 @@ export class OrganizationsService {
           orgEnvironmentVariableDelete: isAdmin,
           folderUpdate: isAdmin,
           folderDelete: isAdmin,
+          dataSourceDelete: isAdmin,
+          dataSourceCreate: isAdmin,
         });
         await manager.save(groupPermission);
         createdGroupPermissions.push(groupPermission);
@@ -290,9 +294,7 @@ export class OrganizationsService {
         status: orgUser.status,
         avatarId: orgUser.user.avatarId,
         ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
-        ...(this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
-        this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' &&
-        orgUser.user.invitationToken
+        ...(this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' && orgUser.user.invitationToken
           ? { accountSetupToken: orgUser.user.invitationToken }
           : {}),
       };
@@ -396,11 +398,7 @@ export class OrganizationsService {
 
     if (!result) return;
 
-    if (
-      addInstanceLevelSSO &&
-      this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
-      result.inheritSSO
-    ) {
+    if (addInstanceLevelSSO && result.inheritSSO) {
       if (
         this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID') &&
         !result.ssoConfigs?.some((config) => config.sso === 'google')
@@ -605,8 +603,6 @@ export class OrganizationsService {
     };
     const groups = inviteNewUserDto.groups ?? [];
 
-    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
-
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let user = await this.usersService.findByEmail(userParams.email, undefined, undefined, manager);
 
@@ -629,18 +625,17 @@ export class OrganizationsService {
         );
       }
 
-      if (!isSingleWorkspace) {
-        if (!user) {
-          // User not exist
-          shouldSendWelcomeMail = true;
-          if ((await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true') {
-            // Create default organization if user not exist
-            defaultOrganization = await this.create('Untitled workspace', null, manager);
-          }
-        } else if (user.invitationToken) {
-          // User not setup
-          shouldSendWelcomeMail = true;
+      if (!user) {
+        // User not exist
+        shouldSendWelcomeMail = true;
+        // Create default organization if user not exist
+        if ((await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE')) === 'true') {
+          // Create default organization if user not exist
+          defaultOrganization = await this.create('Untitled workspace', null, manager);
         }
+      } else if (user.invitationToken) {
+        // User not setup
+        shouldSendWelcomeMail = true;
       }
 
       if (user && user.status === USER_STATUS.ARCHIVED) {

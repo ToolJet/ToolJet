@@ -31,7 +31,7 @@ ENV NODE_ENV=production
 COPY ./server/package.json ./server/package-lock.json ./server/
 RUN npm --prefix server install
 COPY ./server/ ./server/
-RUN npm install -g @nestjs/cli
+RUN npm install -g @nestjs/cli 
 RUN npm --prefix server run build
 
 FROM debian:11
@@ -40,6 +40,7 @@ RUN apt-get update -yq \
     && apt-get install curl gnupg zip -yq \
     && apt-get install -yq build-essential \
     && apt-get clean -y
+
 
 RUN curl -O https://nodejs.org/dist/v18.3.0/node-v18.3.0-linux-x64.tar.xz \
     && tar -xf node-v18.3.0-linux-x64.tar.xz \

@@ -1,15 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
+import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
 import { getManager, Like } from 'typeorm';
 import { InstanceSettings } from 'src/entities/instance_settings.entity';
 
 const createSettings = async (app: INestApplication, userData: any, body: any) => {
-  return await request(app.getHttpServer())
+  const response = await request(app.getHttpServer())
     .post(`/api/instance-settings`)
-    .set('Authorization', authHeaderForUser(userData.user))
+    .set('tj-workspace-id', userData.user.defaultOrganizationId)
+    .set('Cookie', userData['tokenCookie'])
     .send(body);
+
+  expect(response.statusCode).toEqual(201);
+  return response;
 };
 
 describe('instance settings controller', () => {
@@ -51,6 +55,16 @@ describe('instance settings controller', () => {
         },
       ];
 
+      let loggedUser = await authenticateUser(app);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+      loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        superAdminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const settingsArray = [];
 
       await Promise.all(
@@ -60,15 +74,19 @@ describe('instance settings controller', () => {
         })
       );
 
+      console.log('inside', bodyArray, settingsArray);
+
       let listResponse = await request(app.getHttpServer())
         .get(`/api/instance-settings`)
-        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', adminUserData['tokenCookie'])
         .send()
         .expect(403);
 
       listResponse = await request(app.getHttpServer())
         .get(`/api/instance-settings`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user))
+        .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie'])
         .send()
         .expect(200);
 
@@ -89,9 +107,20 @@ describe('instance settings controller', () => {
         groups: ['admin', 'all_users'],
       });
 
+      let loggedUser = await authenticateUser(app);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+      loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        adminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       await request(app.getHttpServer())
         .post(`/api/instance-settings`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user))
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie'])
         .send({
           key: 'SOME_SETTINGS_3',
           value: 'false',
@@ -100,7 +129,8 @@ describe('instance settings controller', () => {
 
       await request(app.getHttpServer())
         .post(`/api/instance-settings`)
-        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', adminUserData['tokenCookie'])
         .send({
           key: 'SOME_SETTINGS_3',
           value: 'false',
@@ -122,6 +152,16 @@ describe('instance settings controller', () => {
         groups: ['admin', 'all_users'],
       });
 
+      let loggedUser = await authenticateUser(app);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+      loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        superAdminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const response = await createSettings(app, superAdminUserData, {
         key: 'SOME_SETTINGS_4',
         value: 'false',
@@ -129,7 +169,8 @@ describe('instance settings controller', () => {
 
       await request(app.getHttpServer())
         .patch(`/api/instance-settings`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user))
+        .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie'])
         .send({ allow_personal_workspace: { value: 'true', id: response.body.setting.id } })
         .expect(200);
 
@@ -139,7 +180,8 @@ describe('instance settings controller', () => {
 
       await request(app.getHttpServer())
         .patch(`/api/instance-settings`)
-        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', adminUserData['tokenCookie'])
         .send({ allow_personal_workspace: { value: 'true', id: response.body.setting.id } })
         .expect(403);
     });
@@ -158,6 +200,16 @@ describe('instance settings controller', () => {
         groups: ['admin', 'all_users'],
       });
 
+      let loggedUser = await authenticateUser(app);
+      adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+      loggedUser = await authenticateUser(
+        app,
+        superAdminUserData.user.email,
+        'password',
+        superAdminUserData.organization.id
+      );
+      superAdminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
       const response = await createSettings(app, superAdminUserData, {
         key: 'SOME_SETTINGS_5',
         value: 'false',
@@ -167,13 +219,15 @@ describe('instance settings controller', () => {
 
       await request(app.getHttpServer())
         .delete(`/api/instance-settings/${response.body.setting.id}`)
-        .set('Authorization', authHeaderForUser(adminUserData.user))
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+        .set('Cookie', adminUserData['tokenCookie'])
         .send()
         .expect(403);
 
       await request(app.getHttpServer())
         .delete(`/api/instance-settings/${response.body.setting.id}`)
-        .set('Authorization', authHeaderForUser(superAdminUserData.user))
+        .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
+        .set('Cookie', superAdminUserData['tokenCookie'])
         .send()
         .expect(200);
 
