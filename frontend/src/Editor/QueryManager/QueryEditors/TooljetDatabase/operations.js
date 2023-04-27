@@ -9,18 +9,6 @@ export const tooljetDbOperations = {
 };
 
 async function perform(queryOptions, organizationId, currentState) {
-  const hasNullWithEqual = hasEqualWithNull(queryOptions);
-  // SQL does not support equal operation with null value, so let's handle it here.
-  if (hasNullWithEqual) {
-    return {
-      status: 'failed',
-      statusText: 'failed',
-      message: 'Query can not run, because app can not perform equal operation with null value',
-      description: 'Please use IS operator with the null value comparision.',
-      data: {},
-    };
-  }
-
   switch (queryOptions.operation) {
     case 'list_rows':
       return listRows(queryOptions, organizationId, currentState);
@@ -68,6 +56,16 @@ function buildPostgrestQuery(filters) {
 async function listRows(queryOptions, organizationId, currentState) {
   let query = [];
   const resolvedOptions = resolveReferences(queryOptions, currentState);
+  console.log('resolvedOptions', resolvedOptions);
+  if (hasEqualWithNull(resolvedOptions, 'list_rows')) {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: 'Null value comparison not allowed with equal/not equal operator, Please use IS operator instead.',
+      description: 'Is operator should be used with null value comparision.',
+      data: {},
+    };
+  }
   const { table_name: tableName, list_rows: listRows } = resolvedOptions;
 
   if (!isEmpty(listRows)) {
@@ -104,6 +102,15 @@ async function createRow(queryOptions, organizationId, currentState) {
 
 async function updateRows(queryOptions, organizationId, currentState) {
   const resolvedOptions = resolveReferences(queryOptions, currentState);
+  if (hasEqualWithNull(resolvedOptions, 'update_rows')) {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: 'Null value comparison not allowed with equal/not equal operator, Please use IS operator instead.',
+      description: 'Is operator should be used with null value comparision.',
+      data: {},
+    };
+  }
   const { table_name: tableName, update_rows: updateRows } = resolvedOptions;
   const { where_filters: whereFilters, columns } = updateRows;
 
@@ -121,6 +128,15 @@ async function updateRows(queryOptions, organizationId, currentState) {
 
 async function deleteRows(queryOptions, organizationId, currentState) {
   const resolvedOptions = resolveReferences(queryOptions, currentState);
+  if (hasEqualWithNull(resolvedOptions, 'delete_rows')) {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: 'Null value comparison not allowed with equal/not equal operator, Please use IS operator instead.',
+      description: 'Is operator should be used with null value comparision.',
+      data: {},
+    };
+  }
   const { table_name: tableName, delete_rows: deleteRows = { whereFilters: {} } } = resolvedOptions;
   const { where_filters: whereFilters, limit = 1 } = deleteRows;
 
