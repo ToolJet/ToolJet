@@ -56,7 +56,6 @@ function buildPostgrestQuery(filters) {
 async function listRows(queryOptions, organizationId, currentState) {
   let query = [];
   const resolvedOptions = resolveReferences(queryOptions, currentState);
-  console.log('resolvedOptions', resolvedOptions);
   if (hasEqualWithNull(resolvedOptions, 'list_rows')) {
     return {
       status: 'failed',
