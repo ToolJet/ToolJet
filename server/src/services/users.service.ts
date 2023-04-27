@@ -365,7 +365,7 @@ export class UsersService {
   async returnOrgIdOfAnApp(slug: string): Promise<any> {
     let app: App;
     try {
-      app = await this.appsRepository.findOne(slug);
+      app = await this.appsRepository.findOneOrFail(slug);
     } catch (error) {
       app = await this.appsRepository.findOne({
         slug,
