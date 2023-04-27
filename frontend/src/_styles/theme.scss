@@ -2077,7 +2077,8 @@ tr:focus {
   padding: 5px;
 }
 
-.table-filters,.table-add-new-row {
+.table-filters,
+.table-add-new-row {
   position: absolute;
   top: 2.85rem;
   width: 80%;
@@ -7651,6 +7652,10 @@ tbody {
 
 .home-page-sidebar {
   height: calc(100vh - 64px) !important; //64 is navbar height
+
+  .folder-list-user {
+    height: calc(100vh - 116px) !important; //64 is navbar height + 52 px footer
+  }
 }
 
 .home-page-content {
@@ -9930,7 +9935,7 @@ tbody {
     margin-bottom: 4px;
   }
 
-  input,
+  input.form-control,
   textarea,
   .form-control {
     gap: 16px !important;
