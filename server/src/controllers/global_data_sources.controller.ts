@@ -55,8 +55,9 @@ export class GlobalDataSourcesController {
         decamelizedOptions['spec'] = spec;
         tempDs['options'] = decamelizedOptions;
         return decamelizedDatasources.push(tempDs);
+      } else {
+        decamelizedDatasources.push(decamelizeKeys(dataSource));
       }
-      decamelizedDatasources.push(dataSource);
     });
 
     return { data_sources: decamelizedDatasources };
