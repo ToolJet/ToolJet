@@ -8,7 +8,7 @@ import { globalDatasourceService } from '@/_services';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 
-export const List = ({ updateSelecteDatasource }) => {
+export const List = ({ updateSelectedDatasource }) => {
   const { dataSources, fetchDataSources, selectedDataSource, setSelectedDataSource, toggleDataSourceManagerModal } =
     useContext(GlobalDataSourcesContext);
 
@@ -90,7 +90,7 @@ export const List = ({ updateSelecteDatasource }) => {
                     key={idx}
                     active={selectedDataSource?.id === source?.id}
                     onDelete={deleteDataSource}
-                    updateSelecteDatasource={updateSelecteDatasource}
+                    updateSelectedDatasource={updateSelectedDatasource}
                   />
                 );
               })

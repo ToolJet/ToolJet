@@ -24,11 +24,10 @@ export const GlobalDatasources = (props) => {
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
-    console.log(selectedDataSource, 'selectedDataSource');
     if (dataSources?.length == 0) updateSidebarNAV('');
     else selectedDataSource ? updateSidebarNAV(selectedDataSource.name) : updateSidebarNAV(dataSources?.[0].name);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(dataSources), selectedDataSource]);
+  }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource)]);
 
   useEffect(() => {
     if (!admin) {
@@ -38,7 +37,7 @@ export const GlobalDatasources = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [admin]);
 
-  function updateSelecteDatasource(source) {
+  function updateSelectedDatasource(source) {
     updateSidebarNAV(source);
   }
 
@@ -116,7 +115,7 @@ export const GlobalDatasources = (props) => {
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <GlobalDataSourcesContext.Provider value={value}>
         <div className="page-wrapper">
-          <GlobalDataSourcesPage darkMode={props.darkMode} updateSelecteDatasource={updateSelecteDatasource} />
+          <GlobalDataSourcesPage darkMode={props.darkMode} updateSelectedDatasource={updateSelectedDatasource} />
         </div>
       </GlobalDataSourcesContext.Provider>
     </Layout>

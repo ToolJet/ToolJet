@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { GlobalDataSourcesContext } from '../index';
 import { List } from '../List';
 
-export const CreateDataSourceModal = ({ updateSelecteDatasource }) => {
+export const CreateDataSourceModal = ({ updateSelectedDatasource }) => {
   const { handleModalVisibility, setEditing } = useContext(GlobalDataSourcesContext);
 
   return (
@@ -19,7 +19,7 @@ export const CreateDataSourceModal = ({ updateSelecteDatasource }) => {
           Add new datasource
         </button>
       </div>
-      <List updateSelecteDatasource={updateSelecteDatasource} />
+      <List updateSelectedDatasource={updateSelectedDatasource} />
     </div>
   );
 };

@@ -185,7 +185,7 @@ class DataSourceManagerComponent extends React.Component {
             environment_id: currentEnvironment,
           })
           .then(() => {
-            this.props.updateSelecteDatasource(selectedDataSource.name);
+            this.props.updateSelectedDatasource(selectedDataSource.name);
             this.setState({ isSaving: false });
             this.hideModal();
             toast.success(
@@ -193,7 +193,7 @@ class DataSourceManagerComponent extends React.Component {
               { position: 'top-center' }
             );
             this.props.dataSourcesChanged(false, selectedDataSource);
-            this.props.globalDataSourcesChange && this.props.globalDataSourcesChanged();
+            this.props.globalDataSourcesChanged();
           })
           .catch(({ error }) => {
             this.setState({ isSaving: false });
@@ -214,7 +214,7 @@ class DataSourceManagerComponent extends React.Component {
           })
           .then((data) => {
             this.setState({ isSaving: false });
-            this.props.updateSelecteDatasource(name);
+            this.props.updateSelectedDatasource(name);
 
             this.hideModal();
             toast.success(
@@ -223,7 +223,7 @@ class DataSourceManagerComponent extends React.Component {
             );
 
             this.props.dataSourcesChanged(false, data);
-            this.props.globalDataSourcesChange && this.props.globalDataSourcesChanged();
+            this.props.globalDataSourcesChanged();
           })
           .catch(({ error }) => {
             this.setState({ isSaving: false });

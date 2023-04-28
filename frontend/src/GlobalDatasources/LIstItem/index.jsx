@@ -5,7 +5,7 @@ import { DataSourceTypes } from '../../Editor/DataSourceManager/SourceComponents
 import { getSvgIcon } from '@/_helpers/appUtils';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 
-export const ListItem = ({ dataSource, key, active, onDelete, updateSelecteDatasource }) => {
+export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedDatasource }) => {
   const { setSelectedDataSource, toggleDataSourceManagerModal, environments, setCurrentEnvironment } =
     useContext(GlobalDataSourcesContext);
 
@@ -39,7 +39,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelecteDatas
           setCurrentEnvironment(environments[0]);
           toggleDataSourceManagerModal(true);
           focusModal();
-          updateSelecteDatasource(dataSource?.name);
+          updateSelectedDatasource(dataSource?.name);
         }}
         className="col d-flex align-items-center"
       >
