@@ -5,7 +5,7 @@ import { GlobalDataSourcesContext } from '..';
 import { DataSourceManager } from '../../Editor/DataSourceManager';
 import DataSourceFolder from '@assets/images/icons/datasource-folder.svg';
 
-export const GlobalDataSourcesPage = ({ darkMode }) => {
+export const GlobalDataSourcesPage = ({ darkMode = false, updateSelecteDatasource }) => {
   const containerRef = useRef(null);
   const [modalProps, setModalProps] = useState({
     backdrop: false,
@@ -44,6 +44,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
       if (!isEditing) {
         setEditing(true);
         setSelectedDataSource(dataSources[0]);
+        updateSelecteDatasource(dataSources[0]?.name);
       } else {
         setSelectedDataSource(null);
         setEditing(true);
@@ -66,7 +67,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
 
   return (
     <div className="row gx-0">
-      <Sidebar />
+      <Sidebar updateSelecteDatasource={updateSelecteDatasource} />
       <div ref={containerRef} className={cx('col animation-fade datasource-modal-container', {})}>
         {containerRef && containerRef?.current && (
           <DataSourceManager
@@ -83,6 +84,7 @@ export const GlobalDataSourcesPage = ({ darkMode }) => {
             environmentChanged={environmentChanged}
             container={selectedDataSource ? containerRef?.current : null}
             isEditing={isEditing}
+            updateSelecteDatasource={updateSelecteDatasource}
           />
         )}
         {!selectedDataSource && isEditing && (
