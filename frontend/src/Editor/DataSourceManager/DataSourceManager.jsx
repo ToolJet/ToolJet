@@ -190,7 +190,7 @@ class DataSourceManagerComponent extends React.Component {
               { position: 'top-center' }
             );
             this.props.dataSourcesChanged(false, selectedDataSource);
-            this.props.globalDataSourcesChanged();
+            this.props.globalDataSourcesChanged && this.props.globalDataSourcesChanged();
           })
           .catch(({ error }) => {
             this.setState({ isSaving: false });
@@ -217,7 +217,7 @@ class DataSourceManagerComponent extends React.Component {
               { position: 'top-center' }
             );
             this.props.dataSourcesChanged(false, data);
-            this.props.globalDataSourcesChanged();
+            this.props.globalDataSourcesChanged && this.props.globalDataSourcesChanged();
           })
           .catch(({ error }) => {
             this.setState({ isSaving: false });
