@@ -6,6 +6,7 @@ import LogoIcon from '@assets/images/rocket.svg';
 import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
+import FolderList from '@/_ui/FolderList/FolderList';
 
 export const ViewerNavigation = ({ isMobileDevice, pages, currentPageId, switchPage, darkMode }) => {
   if (isMobileDevice) {
@@ -24,17 +25,11 @@ export const ViewerNavigation = ({ isMobileDevice, pages, currentPageId, switchP
         {pages.map(
           ([id, page]) =>
             !page.hidden && (
-              <div
-                key={page.handle}
-                onClick={() => switchPage(id)}
-                className={`viewer-page-handler cursor-pointer ${darkMode && 'dark'}`}
-              >
-                <div className={`card mb-1  ${id === currentPageId ? 'active' : ''}`}>
-                  <div className="card-body">
-                    <span className="mx-3 text-wrap">{_.truncate(page.name, { length: 18 })}</span>
-                  </div>
-                </div>
-              </div>
+              <FolderList key={page.handle} onClick={() => switchPage(id)} selectedItem={id === currentPageId}>
+                <span data-cy={`pages-name-${String(page.name).toLowerCase()}`} className="mx-3 text-wrap">
+                  {_.truncate(page.name, { length: 18 })}
+                </span>
+              </FolderList>
             )
         )}
       </div>

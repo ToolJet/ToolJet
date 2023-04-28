@@ -3,8 +3,9 @@ export const cyParamName = (paramName = "") => {
 };
 
 export const commonSelectors = {
-  toastMessage: ".go3958317564",
+  toastMessage: ".go3958317564", 
   oldToastMessage: ".go318386747",
+  newToastMessage:'.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551',
   toastCloseButton: '[data-cy="toast-close-button"]',
   editButton: "[data-cy=edit-button]",
   searchField: "[data-cy=widget-search-box]",
@@ -27,7 +28,7 @@ export const commonSelectors = {
   loginButton: '[data-cy="login-button"]',
   dropdown: "[data-cy=workspace-dropdown]",
   backButton: "[data-cy=left-sidebar-back-button]",
-  emptyAppCreateButton: "[data-cy=create-new-application]",
+  dashboardAppCreateButton: '[data-cy="button-new-app-from-scratch"]',
   appCreateButton: "[data-cy=create-new-app-button]",
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",
@@ -42,7 +43,7 @@ export const commonSelectors = {
   createNewFolderButton: "[data-cy=create-new-folder-button]",
   folderNameInput: "[data-cy=folder-name-input]",
   createFolderButton: "[data-cy=create-folder-button]",
-  folderList: ".css-2kg7t4-MenuList",
+  folderList: ".css-169zxdi-MenuList",
   empytyFolderImage: "[data-cy=empty-folder-image]",
   emptyFolderText: "[data-cy=empty-folder-text]",
   allApplicationsLink: "[data-cy=all-applications-link]",
@@ -56,9 +57,7 @@ export const commonSelectors = {
   viewerPageLogo: '[data-cy="viewer-page-logo"]',
   lastPageArrow: '[data-cy="last-page-link"]',
   nextPageArrow: '[data-cy="next-page-link"]',
-  emailFilterInput: '[data-cy="email-filter-input-field"]',
-  firstNameFilterInput: '[data-cy="first-name-filter-input-field"]',
-  lastNameFilterInput: '[data-cy="last-name-filter-input-field"]',
+  inputUserSearch: '[data-cy="input-field-user-filter-search"]',
   filterButton: '[data-cy="filter-button"]',
   copyIcon: '[data-cy="copy-icon"]',
   addWorkspaceButton: '[data-cy="add-new-workspace-link"]',
@@ -84,11 +83,11 @@ export const commonSelectors = {
   acceptInviteButton: '[data-cy="accept-invite-button"]',
   databaseIcon: `[data-cy="database-icon"]`,
   profileSettings: '[data-cy="profile-settings"]',
-  workspaceSettingsIcon: '[data-cy="workspace-settings-icon"]',
-  manageUsersOption: '[data-cy="manage-users-option"]',
-  manageGroupsOption: '[data-cy="manage-groups-option"]',
-  manageSSOOption: '[data-cy="manage-sso-option"]',
-  workspaceVariableOption: '[data-cy="workspace-variable-option"]',
+  workspaceSettingsIcon: '[data-cy="icon-workspace-settings"]',
+  manageUsersOption: '[data-cy="users-list-item"]',
+  manageGroupsOption: '[data-cy="groups-list-item"]',
+  manageSSOOption: '[data-cy="sso-list-item"]',
+  workspaceVariableOption: '[data-cy="workspace-variables-list-item"]',
   clearFilterButton: '[data-cy="clear-filter-button"]',
   userStatusSelect: '[data-cy="user-status-select-continer"]',
   emailInputLabel: '[data-cy="email-input-label"]',
@@ -159,6 +158,15 @@ export const commonSelectors = {
   resetPasswordButton: '[data-cy="reset-password-button"]',
   resetPasswordPageDescription: '[data-cy="reset-password-page-description"]',
   backToLoginButton: '[data-cy="back-to-login-button"]',
+  breadcrumbTitle:'[data-cy="breadcrumb-title"]',
+  breadcrumbPageTitle:'[data-cy="breadcrumb-page-title"]',
+  labelFullNameInput: '[data-cy="label-full-name-input-field"]',
+  inputFieldFullName: '[data-cy="input-field-full-name"]',
+  labelEmailInput: '[data-cy="label-email-input-field"]',
+  inputFieldEmailAddress: '[data-cy="input-field-email"]',
+  closeButton: '[data-cy="close-button"]',
+
+  
 
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;

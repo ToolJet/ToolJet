@@ -6,6 +6,6 @@ export const appEnvironmentService = {
 };
 
 function getAllEnvironments() {
-  const requestOptions = { method: 'GET', headers: authHeader() };
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/app-environments`, requestOptions).then(handleResponse);
 }

@@ -78,7 +78,7 @@ export const navigateToAppEditor = (appName) => {
     .trigger("mousehover")
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
-    .click();
+    .click({force:true});
   //cy.wait("@appEditor");
 };
 
@@ -152,8 +152,7 @@ export const manageUsersPagination = (email) => {
 };
 
 export const searchUser = (email) => {
-  cy.clearAndType(commonSelectors.emailFilterInput, email);
-  cy.get(commonSelectors.filterButton).click();
+  cy.clearAndType(commonSelectors.inputUserSearch, email);
 };
 
 export const createWorkspace = (workspaceName) => {

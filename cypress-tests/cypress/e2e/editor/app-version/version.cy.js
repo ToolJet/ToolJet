@@ -11,7 +11,7 @@ import { buttonText } from "Texts/button";
 
 import { verifyComponent, deleteComponentAndVerify } from "Support/utils/basicComponents";
 
-describe("App Export Functionality", () => {
+describe("App Version Functionality", () => {
 	var data = {};
 	data.appName = `${fake.companyName}-App`;
 	let currentVersion = "";
@@ -73,12 +73,10 @@ describe("App Export Functionality", () => {
 		deleteVersionAndVerify(currentVersion = "v5", deleteVersionText.deleteToastMessage(currentVersion = "v5"));
 
 		cy.reload();
-		releasedVersionAndVerify(currentVersion = "v3")
+		releasedVersionAndVerify(currentVersion = "v3");
 		editVersionAndVerify(currentVersion = "v3", newVersion = ["v5"], releasedVersionText.cannotUpdateReleasedVersionToastMessage);
 		closeModal(commonText.closeButton);
 
-		cy.reload();
-		closeModal(commonText.closeButton);
 		deleteVersionAndVerify(currentVersion = "v3", releasedVersionText.cannotDeleteReleasedVersionToastMessage)
 
 		navigateToCreateNewVersionModal(currentVersion = "v3");

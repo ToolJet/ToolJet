@@ -21,6 +21,7 @@ const currentSessionSubject = new BehaviorSubject({
   authentication_status: null,
   authentication_failed: null,
   isUserUpdated: false,
+  load_app: false, //key is used only in the viewer mode
 });
 
 export const authenticationService = {
@@ -230,7 +231,7 @@ function resetPassword(params) {
   return fetch(`${config.apiUrl}/reset-password`, requestOptions).then(handleResponse);
 }
 
-function logout() {
+function logout(avoidRedirection = false) {
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
@@ -241,16 +242,20 @@ function logout() {
     .then(handleResponseWithoutValidation)
     .then(() => {
       const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
-      const pathname = window.public_config?.SUB_PATH
-        ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
-        : window.location.pathname;
-      window.location.href =
-        loginPath +
-        `?redirectTo=${
-          !pathname.includes('integrations')
-            ? excludeWorkspaceIdFromURL(pathname)
-            : `${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`
-        }`;
+      if (avoidRedirection) {
+        window.location.href = loginPath;
+      } else {
+        const pathname = window.public_config?.SUB_PATH
+          ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
+          : window.location.pathname;
+        window.location.href =
+          loginPath +
+          `?redirectTo=${
+            !pathname.includes('integrations')
+              ? excludeWorkspaceIdFromURL(pathname)
+              : `${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`
+          }`;
+      }
     })
     .catch(() => {
       authenticationService.updateCurrentSession({

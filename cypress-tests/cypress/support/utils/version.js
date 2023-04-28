@@ -9,7 +9,8 @@ import { verifyComponent } from "Support/utils/basicComponents";
 
 export const navigateToCreateNewVersionModal = (value) => {
 	cy.get(appVersionSelectors.currentVersionField(value)).should("be.visible").click();
-	cy.contains(appVersionText.createNewVersion).should("be.visible").click();
+	cy.contains(appVersionText.createNewVersion).should("be.visible");
+	cy.contains(appVersionText.createNewVersion).click();
 }
 
 export const navigateToEditVersionModal = (value) => {
@@ -41,6 +42,12 @@ export const verifyElementsOfCreateNewVersionModal = (version = []) => {
 
 export const editVersionAndVerify = (currentVersion, newVersion = [], toastMessageText) => {
 	cy.reload();
+	cy.get(appVersionSelectors.currentVersionField(currentVersion)).then(($ele) => {
+	if ($ele.hasClass("color-light-green")) {
+		cy.contains(releasedVersionText.releasedModalText).should("be.visible");
+		closeModal(commonText.closeButton);
+	}
+	})
 	navigateToEditVersionModal(currentVersion)
 	cy.get(editVersionSelectors.versionNameInputField).verifyVisibleElement("have.value", currentVersion);
 
@@ -49,6 +56,7 @@ export const editVersionAndVerify = (currentVersion, newVersion = [], toastMessa
 		newVersion[0]
 	);
 	cy.get(editVersionSelectors.saveButton).click();
+	cy.wait(500);
 	cy.verifyToastMessage(
 		commonSelectors.toastMessage,
 		toastMessageText
@@ -100,6 +108,7 @@ export const releasedVersionAndVerify = (currentVersion) => {
 		appVersionSelectors.versionNameInputField
 	);
 	cy.contains(releasedVersionText.releasedModalText).should("be.visible");
+	cy.wait(500);
 	closeModal(commonText.closeButton);
 	cy.get(appVersionSelectors.currentVersionField(currentVersion)).should("have.class", "color-light-green");
 };

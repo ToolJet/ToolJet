@@ -17,6 +17,9 @@ import { withTranslation } from 'react-i18next';
 import { sample } from 'lodash';
 import ExportAppModal from './ExportAppModal';
 import Footer from './Footer';
+import { OrganizationList } from '@/_components/OrganizationManager/List';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { withRouter } from '@/_hoc/withRouter';
 
@@ -305,7 +308,6 @@ class HomePageComponent extends React.Component {
       return;
     }
     this.fetchApps(1, this.state.currentFolder.id, key || '');
-    this.fetchFolders(key || '');
   };
 
   addAppToFolder = () => {
@@ -386,7 +388,7 @@ class HomePageComponent extends React.Component {
         onClick={() => this.setState({ appOperations: { ...appOperations, selectedIcon: icon } })}
         key={index}
       >
-        <img src={`assets/images/icons/app-icons/${icon}.svg`} data-cy={`${icon}-icon`} />
+        <BulkIcon name={icon} data-cy={`${icon}-icon`} />
       </li>
     ));
   };
@@ -488,12 +490,15 @@ class HomePageComponent extends React.Component {
           >
             <div className="row">
               <div className="col modal-main">
-                <div className="mb-3" data-cy="move-selected-app-to-text">
-                  <span>{this.props.t('homePage.appCard.move', 'Move')}</span>
-                  <strong>{` "${appOperations?.selectedApp?.name}" `}</strong>
+                <div className="mb-3 move-selected-app-to-text " data-cy="move-selected-app-to-text">
+                  <p>
+                    {this.props.t('homePage.appCard.move', 'Move')}
+                    <span>{` "${appOperations?.selectedApp?.name}" `}</span>
+                  </p>
+
                   <span>{this.props.t('homePage.appCard.to', 'to')}</span>
                 </div>
-                <div data-cy="select-folder">
+                <div data-cy="select-folder" className="select-folder-container">
                   <Select
                     options={this.state.folders.map((folder) => {
                       return { name: folder.name, value: folder.id };
@@ -505,26 +510,28 @@ class HomePageComponent extends React.Component {
                     width={'100%'}
                     value={appOperations?.selectedFolder}
                     placeholder={this.props.t('homePage.appCard.selectFolder', 'Select folder')}
+                    closeMenuOnSelect={true}
+                    customWrap={true}
                   />
                 </div>
               </div>
             </div>
             <div className="row">
               <div className="col d-flex modal-footer-btn">
-                <button
-                  className="btn btn-light"
+                <ButtonSolid
+                  variant="tertiary"
                   onClick={() => this.setState({ showAddToFolderModal: false, appOperations: {} })}
                   data-cy="cancel-button"
                 >
                   {this.props.t('globals.cancel', 'Cancel')}
-                </button>
-                <button
-                  className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
+                </ButtonSolid>
+                <ButtonSolid
                   onClick={this.addAppToFolder}
                   data-cy="add-to-folder-button"
+                  isLoading={appOperations?.isAdding}
                 >
                   {this.props.t('homePage.appCard.addToFolder', 'Add to folder')}
-                </button>
+                </ButtonSolid>
               </div>
             </div>
           </Modal>
@@ -541,20 +548,19 @@ class HomePageComponent extends React.Component {
             </div>
             <div className="row">
               <div className="col d-flex modal-footer-btn">
-                <button
-                  className="btn btn-light"
+                <ButtonSolid
                   onClick={() => this.setState({ showChangeIconModal: false, appOperations: {} })}
                   data-cy="cancel-button"
+                  variant="tertiary"
                 >
                   {this.props.t('globals.cancel', 'Cancel')}
-                </button>
-                <button
+                </ButtonSolid>
+                <ButtonSolid
                   className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
                   onClick={this.changeIcon}
-                  data-cy="change-button"
                 >
                   {this.props.t('homePage.change', 'Change')}
-                </button>
+                </ButtonSolid>
               </div>
             </div>
           </Modal>
@@ -571,10 +577,10 @@ class HomePageComponent extends React.Component {
             />
           )}
           <div className="row gx-0">
-            <div className="home-page-sidebar col p-0 border-end">
+            <div className="home-page-sidebar col p-0">
               {this.canCreateApp() && (
-                <div className="p-3 create-new-app-wrapper">
-                  <Dropdown as={ButtonGroup} className="w-100 d-inline-flex">
+                <div className="create-new-app-wrapper">
+                  <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
                     <Button
                       className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
                       onClick={this.createApp}
@@ -584,12 +590,16 @@ class HomePageComponent extends React.Component {
                       {this.props.t('homePage.header.createNewApplication', 'Create new app')}
                     </Button>
                     <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
-                    <Dropdown.Menu className="import-lg-position">
-                      <Dropdown.Item onClick={this.showTemplateLibraryModal} data-cy="choose-from-template-button">
+                    <Dropdown.Menu className="import-lg-position new-app-dropdown">
+                      <Dropdown.Item
+                        className="homepage-dropdown-style tj-text tj-text-xsm"
+                        onClick={this.showTemplateLibraryModal}
+                        data-cy="choose-from-template-button"
+                      >
                         {this.props.t('homePage.header.chooseFromTemplate', 'Choose from template')}
                       </Dropdown.Item>
                       <label
-                        className="homepage-dropdown-style"
+                        className="homepage-dropdown-style tj-text tj-text-xsm"
                         data-cy="import-option-label"
                         onChange={this.handleImportApp}
                       >
@@ -616,7 +626,9 @@ class HomePageComponent extends React.Component {
                 canDeleteFolder={this.canDeleteFolder()}
                 canUpdateFolder={this.canUpdateFolder()}
                 darkMode={this.props.darkMode}
+                canCreateApp={this.canCreateApp()}
               />
+              <OrganizationList />
             </div>
 
             <div
@@ -625,11 +637,11 @@ class HomePageComponent extends React.Component {
               })}
               data-cy="home-page-content"
             >
-              <div className="w-100 mb-5 container" style={{ maxWidth: 850 }}>
+              <div className="w-100 mb-5 container home-page-content-container">
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
-                    <hr />
+                    <div className="liner"></div>
                   </>
                 )}
                 {!isLoading && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (

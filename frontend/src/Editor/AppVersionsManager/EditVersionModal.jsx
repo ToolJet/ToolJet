@@ -45,6 +45,7 @@ export const EditVersion = ({
       show={showEditAppVersion}
       closeModal={() => setShowEditAppVersion(false)}
       title={t('editor.appVersionManager.editVersion', 'Edit Version')}
+      checkForBackground={true}
     >
       <form
         onSubmit={(e) => {
