@@ -45,8 +45,7 @@ export class GlobalDataSourcesController {
       }
     }
 
-    const decamelizedDatasources = [];
-    dataSources.forEach((dataSource) => {
+    const decamelizedDatasources = dataSources.map((dataSource) => {
       if (dataSource.kind === 'openapi') {
         const { options, ...objExceptOptions } = dataSource;
         const tempDs = decamelizeKeys(objExceptOptions);
@@ -54,10 +53,9 @@ export class GlobalDataSourcesController {
         const decamelizedOptions = decamelizeKeys(objExceptSpec);
         decamelizedOptions['spec'] = spec;
         tempDs['options'] = decamelizedOptions;
-        return decamelizedDatasources.push(tempDs);
-      } else {
-        decamelizedDatasources.push(decamelizeKeys(dataSource));
+        return tempDs;
       }
+      return decamelizeKeys(dataSource);
     });
 
     return { data_sources: decamelizedDatasources };
