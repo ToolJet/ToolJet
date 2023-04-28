@@ -1,12 +1,12 @@
 export const ssoText = {
-  pagetitle: "Manage SSO",
+  pagetitle: " SSO",
   generalSettingsElements: {
     generalSettings: "General Settings",
     enableSignupLabel: "Enable Signup",
     helperText: "New account will be created for user's first time SSO sign in",
     allowDefaultSSOLabel: "Allow default SSO",
     allowDefaultSSOHelperText:
-      "Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO.",
+      "Allow users to authenticate via default SSO. Default SSO configurations can be overridden by \n workspace level SSO.",
     allowedDomainLabel: "Allowed domains",
     allowedDomainHelperText:
       "Support multiple domains. Enter domain names separated by comma. example: tooljet.com,tooljet.io,yourorganization.com",
@@ -14,7 +14,7 @@ export const ssoText = {
     workspaceLoginHelpText: "Use this URL to login directly to this workspace",
   },
   cancelButton: "Cancel",
-  saveButton: "Save",
+  saveButton: "Save changes",
   allowedDomain: "tooljet.io,gmail.com",
   ssoToast: "updated sso configurations",
   ssoToast2: "updated SSO configurations",
@@ -50,4 +50,7 @@ export const ssoText = {
   googleSignUpText: "Sign up with Google",
   gitSignUpText: "Sign up with GitHub",
   gitUserStatusToast:"GitHub login failed - User does not exist in the workspace",
+  passwordLoginToggleLbale: 'Password login ',
+  alertText: 'Danger zone',
+  disablePasswordHelperText: 'Disable password login only if your SSO is configured otherwise you will get logged out.',
 };
