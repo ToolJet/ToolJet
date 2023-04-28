@@ -12,6 +12,7 @@ import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg'
 import ExportSchema from '../ExportSchema/ExportSchema';
 import { appService } from '@/_services/app.service';
 import { toast } from 'react-hot-toast';
+import { isEmpty } from 'lodash';
 
 const TooljetDatabasePage = ({ totalTables }) => {
   const {
@@ -87,8 +88,7 @@ const TooljetDatabasePage = ({ totalTables }) => {
       <Sidebar />
       <div className={cx('col animation-fade database-page-content-wrap')}>
         {totalTables === 0 && <EmptyState />}
-
-        {selectedTable && (
+        {!isEmpty(selectedTable) && (
           <>
             <div className="database-table-header-wrapper">
               <div className="card border-0">

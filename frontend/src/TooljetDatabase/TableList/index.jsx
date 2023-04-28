@@ -27,10 +27,14 @@ const List = () => {
       return;
     }
 
-    if (Array.isArray(data?.result)) {
+    if (!isEmpty(data?.result)) {
       setTables(data.result || []);
-      setSelectedTable({ table_name: data?.result[0]?.table_name, id: data?.result[0]?.id });
-      updateSidebarNAV(data?.result[0]?.table_name);
+      setSelectedTable({ table_name: data.result[0].table_name, id: data.result[0].id });
+      updateSidebarNAV(data.result[0].table_name);
+    } else {
+      setTables([]);
+      setSelectedTable({});
+      updateSidebarNAV(null);
     }
   }
 

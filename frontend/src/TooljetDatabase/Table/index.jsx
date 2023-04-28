@@ -29,27 +29,31 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   const [isEditColumnDrawerOpen, setIsEditColumnDrawerOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState();
   const [loading, setLoading] = useState(false);
-  const prevSelectedTableRef = useRef(selectedTable);
+  const prevSelectedTableRef = useRef({});
 
   const fetchTableMetadata = () => {
-    tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
-      if (error) {
-        toast.error(error?.message ?? `Error fetching metadata for table "${selectedTable.table_name}"`);
-        return;
-      }
+    if (!isEmpty(selectedTable)) {
+      tooljetDatabaseService.viewTable(organizationId, selectedTable.table_name).then(({ data = [], error }) => {
+        if (error) {
+          toast.error(error?.message ?? `Error fetching metadata for table "${selectedTable.table_name}"`);
+          return;
+        }
 
-      if (data?.result?.length > 0) {
-        setColumns(
-          data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
-            Header: column_name,
-            accessor: column_name,
-            dataType: data_type,
-            isPrimaryKey: keytype?.toLowerCase() === 'primary key',
-            ...rest,
-          }))
-        );
-      }
-    });
+        if (data?.result?.length > 0) {
+          setColumns(
+            data?.result.map(({ column_name, data_type, keytype, ...rest }) => ({
+              Header: column_name,
+              accessor: column_name,
+              dataType: data_type,
+              isPrimaryKey: keytype?.toLowerCase() === 'primary key',
+              ...rest,
+            }))
+          );
+        }
+      });
+    } else {
+      setColumns([]);
+    }
   };
 
   const fetchTableData = (queryParams = '', pagesize = 50, pagecount = 1) => {
