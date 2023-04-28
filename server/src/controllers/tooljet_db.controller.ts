@@ -9,63 +9,64 @@ import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { Action, TooljetDbAbility } from 'src/modules/casl/abilities/tooljet-db-ability.factory';
 import { TooljetDbGuard } from 'src/modules/casl/tooljet-db.guard';
 import { CreatePostgrestTableDto, RenamePostgrestTableDto, PostgrestTableColumnDto } from '@dto/tooljet-db.dto';
+import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
 
-@Controller('tooljet_db/organizations')
-@UseGuards(JwtAuthGuard, ActiveWorkspaceGuard)
+@Controller('tooljet_db')
 export class TooljetDbController {
   constructor(
     private readonly tooljetDbService: TooljetDbService,
     private readonly postgrestProxyService: PostgrestProxyService
   ) {}
 
-  @All('/:organizationId/proxy/*')
+  @All('/proxy/*')
+  @UseGuards(OrganizationAuthGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ProxyPostgrest, 'all'))
-  async proxy(@Req() req, @Res() res, @Next() next, @Param('organizationId') organizationId) {
-    return this.postgrestProxyService.perform(req, res, next, organizationId);
+  async proxy(@Req() req, @Res() res, @Next() next) {
+    return this.postgrestProxyService.perform(req, res, next);
   }
 
-  @Get('/:organizationId/tables')
-  @UseGuards(TooljetDbGuard)
+  @Get('/organizations/:organizationId/tables')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ViewTables, 'all'))
   async tables(@Param('organizationId') organizationId) {
     const result = await this.tooljetDbService.perform(organizationId, 'view_tables');
     return decamelizeKeys({ result });
   }
 
-  @Get('/:organizationId/table/:tableName')
-  @UseGuards(TooljetDbGuard)
+  @Get('/organizations/:organizationId/table/:tableName')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.ViewTable, 'all'))
   async table(@Body() body, @Param('organizationId') organizationId, @Param('tableName') tableName) {
     const result = await this.tooljetDbService.perform(organizationId, 'view_table', { table_name: tableName });
     return decamelizeKeys({ result });
   }
 
-  @Post('/:organizationId/table')
-  @UseGuards(TooljetDbGuard)
+  @Post('/organizations/:organizationId/table')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.CreateTable, 'all'))
   async createTable(@Body() createTableDto: CreatePostgrestTableDto, @Param('organizationId') organizationId) {
     const result = await this.tooljetDbService.perform(organizationId, 'create_table', createTableDto);
     return decamelizeKeys({ result });
   }
 
-  @Patch('/:organizationId/table/:tableName')
-  @UseGuards(TooljetDbGuard)
+  @Patch('/organizations/:organizationId/table/:tableName')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.RenameTable, 'all'))
   async renameTable(@Body() renameTableDto: RenamePostgrestTableDto, @Param('organizationId') organizationId) {
     const result = await this.tooljetDbService.perform(organizationId, 'rename_table', renameTableDto);
     return decamelizeKeys({ result });
   }
 
-  @Delete('/:organizationId/table/:tableName')
-  @UseGuards(TooljetDbGuard)
+  @Delete('/organizations/:organizationId/table/:tableName')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.DropTable, 'all'))
   async dropTable(@Param('organizationId') organizationId, @Param('tableName') tableName) {
     const result = await this.tooljetDbService.perform(organizationId, 'drop_table', { table_name: tableName });
     return decamelizeKeys({ result });
   }
 
-  @Post('/:organizationId/table/:tableName/column')
-  @UseGuards(TooljetDbGuard)
+  @Post('/organizations/:organizationId/table/:tableName/column')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.AddColumn, 'all'))
   async addColumn(
     @Body('column') columnDto: PostgrestTableColumnDto,
@@ -80,8 +81,8 @@ export class TooljetDbController {
     return decamelizeKeys({ result });
   }
 
-  @Delete('/:organizationId/table/:tableName/column/:columnName')
-  @UseGuards(TooljetDbGuard)
+  @Delete('/organizations/:organizationId/table/:tableName/column/:columnName')
+  @UseGuards(JwtAuthGuard, ActiveWorkspaceGuard, TooljetDbGuard)
   @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.DropColumn, 'all'))
   async dropColumn(
     @Param('organizationId') organizationId,
