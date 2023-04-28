@@ -109,6 +109,7 @@ export function ManageSSO({ darkMode }) {
                           items={menuItems}
                           onChange={changePage}
                           isLoading={isLoading}
+                          dataCy={`${String(item.label).toLowerCase().replace(/\s+/g, '-')}`}
                         >
                           {item.label}
                         </FolderList>
