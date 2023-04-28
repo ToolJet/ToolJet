@@ -37,6 +37,7 @@ import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 import { InstanceSettings } from '@/InstanceSettingsPage';
 import posthog from 'posthog-js';
+import moment from 'moment';
 
 const AppWrapper = (props) => {
   return (
@@ -146,9 +147,10 @@ class AppComponent extends React.Component {
         api_host: 'https://app.posthog.com',
         autocapture: false,
       });
+      const createdAt = moment(currentUser.created_at).valueOf();
       posthog.identify(
         currentUser.email, // distinct_id, required
-        { name: `${currentUser.first_name} ${currentUser.last_name}` }
+        { name: `${currentUser.first_name} ${currentUser.last_name}`, createdAt }
       );
     }
   }
