@@ -143,7 +143,7 @@ Following actions of kanban component can be controlled using the component spec
 
 | Actions     | Description |
 | ----------- | ----------- |
-| updateCardData | Update the card data of kanban component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.kanban1.updateCardData()` ex: `await components.kanban1.updateCardData()` |
+| updateCardData | Update the card data of kanban component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `components.kanban1.updateCardData('c1', {title: 'New Title'})` |
 | moveCard | Move a card from one column to other column on the kanban via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.kanban1.moveCard('card id,'column id')` ex: `await components.kanban1.moveCard('c1','r2')` |
-| addCard | Add a card onto the kanban via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.kanban1.addCard()` |
+| addCard | Add a card onto the kanban via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.kanban1.addCard('c1', {title: 'New Title'})` |
 | deleteCard | Delete a card from the kanban via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.kanban1.deleteCard('card id')` ex: `await components.kanban1.deleteCard('c2')` |
