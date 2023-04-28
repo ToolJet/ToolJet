@@ -231,6 +231,8 @@ export class AuthService {
           firstName: user.firstName,
           lastName: user.lastName,
           avatarId: user.avatarId,
+          //for knowing the user is new or old one [posthog telemetry]
+          createdAt: user.createdAt,
         },
       });
     });
@@ -637,7 +639,7 @@ export class AuthService {
         ? user.defaultOrganizationId
         : user?.organizationIds?.[0],
       //for knowing the user is new or old one [posthog telemetry]
-      registeredAt: user.createdAt,
+      createdAt: user.createdAt,
     });
   }
 

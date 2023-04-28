@@ -147,10 +147,9 @@ class AppComponent extends React.Component {
         api_host: 'https://app.posthog.com',
         autocapture: false,
       });
-      const createdAt = moment(currentUser.created_at).valueOf();
       posthog.identify(
         currentUser.email, // distinct_id, required
-        { name: `${currentUser.first_name} ${currentUser.last_name}`, createdAt }
+        { name: `${currentUser.first_name} ${currentUser.last_name}`, time: currentUser.created_at }
       );
     }
   }
