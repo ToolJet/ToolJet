@@ -44,7 +44,6 @@ export const Folders = function Folders({
 
   useEffect(() => {
     setLoadingStatus(foldersLoading);
-    updateSidebarNAV('All apps');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [foldersLoading]);
 
@@ -52,6 +51,10 @@ export const Folders = function Folders({
     setFilteredData(folders);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [folders]);
+
+  useEffect(() => {
+    updateSidebarNAV('All apps');
+  }, []);
 
   const handleSearch = (e) => {
     const value = e?.target?.value;
@@ -69,6 +72,7 @@ export const Folders = function Folders({
           setCreationStatus(false);
           setShowForm(false);
           setNewFolderName('');
+          handleFolderChange({});
           foldersChanged();
         })
         .catch(({ error }) => {
@@ -147,6 +151,7 @@ export const Folders = function Folders({
           setUpdationStatus(false);
           setShowUpdateForm(false);
           setNewFolderName('');
+          updateSidebarNAV(newFolderName);
           foldersChanged();
         })
         .catch(({ error }) => {
