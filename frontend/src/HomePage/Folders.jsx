@@ -52,6 +52,10 @@ export const Folders = function Folders({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [folders]);
 
+  useEffect(() => {
+    updateSidebarNAV('All apps');
+  }, []);
+
   const handleSearch = (e) => {
     const value = e?.target?.value;
     const filtered = folders.filter((item) => item?.name?.toLowerCase().includes(value?.toLowerCase()));
