@@ -101,6 +101,7 @@ export function Table({
     rowsPerPage,
     enabledSort,
     hideColumnSelectorButton,
+    allowSelection,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
@@ -416,6 +417,8 @@ export function Table({
       JSON.stringify(optionsData),
       JSON.stringify(component.definition.properties.columns),
       showBulkSelector,
+      allowSelection,
+      highlightSelectedRow,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
       darkMode,
     ] // Hack: need to fix
@@ -511,6 +514,18 @@ export function Table({
       getExportFileBlob,
       disableSortBy: !enabledSort,
       manualSortBy: serverSideSort,
+      stateReducer: (newState, action, prevState) => {
+        if (allowSelection && !highlightSelectedRow && !showBulkSelector && action.type === 'toggleRowSelected') {
+          prevState.selectedRowIds[action.id]
+            ? (newState.selectedRowIds = {
+                [action.id]: false,
+              })
+            : (newState.selectedRowIds = {
+                [action.id]: true,
+              });
+        }
+        return newState;
+      },
     },
     useColumnOrder,
     useFilters,
@@ -522,20 +537,22 @@ export function Table({
     useExportData,
     useRowSelect,
     (hooks) => {
-      showBulkSelector &&
+      (showBulkSelector || (allowSelection && !highlightSelectedRow)) &&
         hooks.visibleColumns.push((columns) => [
           {
             id: 'selection',
             Header: ({ getToggleAllPageRowsSelectedProps }) => (
               <div className="d-flex flex-column align-items-center">
-                <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />
+                {showBulkSelector && <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />}
               </div>
             ),
-            Cell: ({ row }) => (
-              <div className="d-flex flex-column align-items-center">
-                <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-              </div>
-            ),
+            Cell: ({ row }) => {
+              return (
+                <div className="d-flex flex-column align-items-center">
+                  <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+                </div>
+              );
+            },
             width: 1,
             columnType: 'selector',
           },
