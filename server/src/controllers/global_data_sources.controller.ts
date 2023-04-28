@@ -46,6 +46,10 @@ export class GlobalDataSourcesController {
     }
 
     const decamelizedDatasources = dataSources.map((dataSource) => {
+      if (dataSource.pluginId) {
+        return dataSource;
+      }
+
       if (dataSource.kind === 'openapi') {
         const { options, ...objExceptOptions } = dataSource;
         const tempDs = decamelizeKeys(objExceptOptions);
