@@ -3,7 +3,7 @@ id: marketplace-plugin-openai
 title: OpenAI
 ---
 
-ToolJet can connect to OpenAI to utilize the services like **Completions** and **Chat**. OpenAI's Completions service is capable of automatically generating text based on an initial prompt or context, while Chat enables users to interact with a chatbot powered by OpenAI's language model.
+ToolJet can connect to OpenAI and utilize two main services: Completions and Chat. With OpenAI's Completions service, ToolJet can generate text automatically based on an initial prompt or context. The Chat service allows users to interact with a chatbot powered by OpenAI's language model. In addition, ToolJet can also leverage the GPT-3 Turbo service from OpenAI, which provides faster and more responsive completions.
 
 <div style={{textAlign: 'center'}}>
 

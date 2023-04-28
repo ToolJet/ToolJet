@@ -13,15 +13,17 @@ With ToolJet Marketplace, ToolJet users can conveniently add custom plugins (dat
 
 </div>
 
-## Enabling the marketplace 
+## Enabling the Marketplace 
 
-To **Activate** the marketplace feature, users need to add the following environment variable to their **[`.env`](/docs/setup/env-vars#marketplace)** file:
+To **Enable** the marketplace feature, users need to add the following environment variable to their **[`.env`](/docs/setup/env-vars#marketplace)** file:
 
 ```bash
 ENABLE_MARKETPLACE_FEATURE=true
 ```
 
 Once the marketplace feature has been activated, a Marketplace icon will appear on the left-hand sidebar of the dashboard, providing users with access to the Marketplace.
+
+When running ToolJet locally, ensure that all the plugins are available. Specifically, building the marketplace and then starting the server is mandatory.
 
 :::info Note
 The user logged-in should be the **Administrator** to access the marketplace page.

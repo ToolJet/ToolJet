@@ -20,6 +20,10 @@ Before following this guide, it is assumed that you have already completed the p
 For connecting to GitHub, following credentials are required:
 - **Personal Access Token**: Generate a Personal Access Token from your **[GitHub Account Settings](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)**
 
+:::caution
+If a Personal Access Token is not provided, the data from the private repositories will not be retrieved via the GitHub Plugin. However, the public repositories data can still be retrieved.
+:::
+
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/marketplace/plugins/github/connection.png" alt="Marketplace: GitHub" />
