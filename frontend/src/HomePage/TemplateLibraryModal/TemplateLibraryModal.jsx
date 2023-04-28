@@ -34,8 +34,6 @@ export default function TemplateLibraryModal(props) {
 
   const selectApplication = (app) => {
     posthog.capture('click_template_name', {
-      user_id:
-        authenticationService?.currentUserValue?.id || authenticationService?.currentSessionValue?.current_user?.id,
       workspace_id:
         authenticationService?.currentUserValue?.organization_id ||
         authenticationService?.currentSessionValue?.current_organization_id,
@@ -69,8 +67,6 @@ export default function TemplateLibraryModal(props) {
     const id = selectedApp.id;
     setDeploying(true);
     posthog.capture('create_application_from_template', {
-      user_id:
-        authenticationService?.currentUserValue?.id || authenticationService?.currentSessionValue?.current_user?.id,
       workspace_id:
         authenticationService?.currentUserValue?.organization_id ||
         authenticationService?.currentSessionValue?.current_organization_id,

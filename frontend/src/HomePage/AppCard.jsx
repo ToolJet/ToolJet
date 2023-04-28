@@ -45,8 +45,6 @@ export default function AppCard({
       appActionModal(app, currentFolder, action);
       if (action === 'add-to-folder') {
         posthog.capture('click_add_to_folder_option', {
-          user_id:
-            authenticationService?.currentUserValue?.id || authenticationService?.currentSessionValue?.current_user?.id,
           workspace_id:
             authenticationService?.currentUserValue?.organization_id ||
             authenticationService?.currentSessionValue?.current_organization_id,
@@ -136,9 +134,6 @@ export default function AppCard({
                   })}
                   onClick={() => {
                     posthog.capture('click_edit_button_on_card', {
-                      user_id:
-                        authenticationService?.currentUserValue?.id ||
-                        authenticationService?.currentSessionValue?.current_user?.id,
                       workspace_id:
                         authenticationService?.currentUserValue?.organization_id ||
                         authenticationService?.currentSessionValue?.current_organization_id,
@@ -186,9 +181,6 @@ export default function AppCard({
                   disabled={app?.current_version_id === null || app?.is_maintenance_on}
                   onClick={() => {
                     posthog.capture('click_launch_button_on_card', {
-                      user_id:
-                        authenticationService?.currentUserValue?.id ||
-                        authenticationService?.currentSessionValue?.current_user?.id,
                       workspace_id:
                         authenticationService?.currentUserValue?.organization_id ||
                         authenticationService?.currentSessionValue?.current_organization_id,

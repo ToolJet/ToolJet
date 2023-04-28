@@ -42,11 +42,7 @@ const Menu = (props) => {
             className="cursor-pointer d-flex align-items-center"
             style={{ padding: '8px 12px', color: '#3E63DD' }}
             onClick={() => {
-              posthog.capture('click_add_workspace', {
-                user_id:
-                  authenticationService?.currentUserValue?.id ||
-                  authenticationService?.currentSessionValue?.current_user?.id,
-              });
+              posthog.capture('click_add_workspace');
               props.selectProps.setShowCreateOrg(true);
             }}
           >

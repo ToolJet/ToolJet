@@ -83,8 +83,6 @@ class ManageGroupPermissionsComponent extends React.Component {
       .create(this.state.newGroupName)
       .then(() => {
         posthog.capture('create_group', {
-          user_id:
-            authenticationService?.currentUserValue?.id || authenticationService?.currentSessionValue?.current_user?.id,
           workspace_id:
             authenticationService?.currentUserValue?.organization_id ||
             authenticationService?.currentSessionValue?.current_organization_id,
@@ -207,9 +205,6 @@ class ManageGroupPermissionsComponent extends React.Component {
                         className="btn btn-primary"
                         onClick={() => {
                           posthog.capture('create_new_group', {
-                            user_id:
-                              authenticationService?.currentUserValue?.id ||
-                              authenticationService?.currentSessionValue?.current_user?.id,
                             workspace_id:
                               authenticationService?.currentUserValue?.organization_id ||
                               authenticationService?.currentSessionValue?.current_organization_id,

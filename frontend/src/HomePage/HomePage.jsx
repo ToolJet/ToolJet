@@ -124,8 +124,6 @@ class HomePageComponent extends React.Component {
       .then((data) => {
         /* Posthog Event */
         posthog.capture('click_new_app', {
-          user_id:
-            authenticationService?.currentUserValue?.id || authenticationService?.currentSessionValue?.current_user?.id,
           workspace_id:
             authenticationService?.currentUserValue?.organization_id ||
             authenticationService?.currentSessionValue?.current_organization_id,
@@ -333,8 +331,6 @@ class HomePageComponent extends React.Component {
     this.setState({ appOperations: { ...appOperations, isAdding: true } });
 
     posthog.capture('click_add_to_folder_button', {
-      user_id:
-        authenticationService?.currentUserValue?.id || authenticationService?.currentSessionValue?.current_user?.id,
       workspace_id:
         authenticationService?.currentUserValue?.organization_id ||
         authenticationService?.currentSessionValue?.current_organization_id,
@@ -615,9 +611,6 @@ class HomePageComponent extends React.Component {
                       <Dropdown.Item
                         onClick={() => {
                           posthog.capture('click_import_from_template', {
-                            user_id:
-                              authenticationService?.currentUserValue?.id ||
-                              authenticationService?.currentSessionValue?.current_user?.id,
                             workspace_id:
                               authenticationService?.currentUserValue?.organization_id ||
                               authenticationService?.currentSessionValue?.current_organization_id,
@@ -644,9 +637,6 @@ class HomePageComponent extends React.Component {
                           onClick={() => {
                             /* Posthog Events */
                             posthog.capture('click_import_button', {
-                              user_id:
-                                authenticationService?.currentUserValue?.id ||
-                                authenticationService?.currentSessionValue?.current_user?.id,
                               workspace_id:
                                 authenticationService?.currentUserValue?.organization_id ||
                                 authenticationService?.currentSessionValue?.current_organization_id,

@@ -82,9 +82,6 @@ const LeftSidebarPageSelector = ({
                 title={'Add Page'}
                 onClick={() => {
                   posthog.capture('click_add_page_plus_icon', {
-                    user_id:
-                      authenticationService?.currentUserValue?.id ||
-                      authenticationService?.currentSessionValue?.current_user?.id,
                     workspace_id:
                       authenticationService?.currentUserValue?.organization_id ||
                       authenticationService?.currentSessionValue?.current_organization_id,

@@ -56,7 +56,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             source === 'sso' ? (ssoType === 'google' ? 'google' : ssoType === 'openid' ? 'openid' : 'github') : 'email'
           }`;
           posthog.capture(event, {
-            user_id: data.id,
+            email: data.email,
             workspace_id: data.organization_id || data.current_organization_id,
           });
 

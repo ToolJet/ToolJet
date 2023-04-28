@@ -168,9 +168,9 @@ class LoginPageComponent extends React.Component {
       .then(this.authSuccessHandler, this.authFailureHandler);
   };
 
-  authSuccessHandler = ({ id, organization_id, current_organization_id }) => {
+  authSuccessHandler = ({ organization_id, current_organization_id, email }) => {
     posthog.capture('signin_email', {
-      user_id: id,
+      email,
       workspace_id: organization_id || current_organization_id,
     });
     authenticationService.deleteLoginOrganizationId();

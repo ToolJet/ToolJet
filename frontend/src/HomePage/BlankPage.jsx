@@ -137,9 +137,6 @@ export const BlankPage = function BlankPage({
                             onClick={() => {
                               /* Posthog Event */
                               posthog.capture('click_import_button', {
-                                user_id:
-                                  authenticationService?.currentUserValue?.id ||
-                                  authenticationService?.currentSessionValue?.current_user?.id,
                                 workspace_id:
                                   authenticationService?.currentUserValue?.organization_id ||
                                   authenticationService?.currentSessionValue?.current_organization_id,
@@ -168,9 +165,6 @@ export const BlankPage = function BlankPage({
                       onClick={() => {
                         /* Posthog Event */
                         posthog.capture('create_application_from_template', {
-                          user_id:
-                            authenticationService?.currentUserValue?.id ||
-                            authenticationService?.currentSessionValue?.current_user?.id,
                           workspace_id:
                             authenticationService?.currentUserValue?.organization_id ||
                             authenticationService?.currentSessionValue?.current_organization_id,
@@ -207,9 +201,6 @@ export const BlankPage = function BlankPage({
                   className="btn btn-link text-decoration-none"
                   onClick={() => {
                     posthog.capture('click_import_from_template', {
-                      user_id:
-                        authenticationService?.currentUserValue?.id ||
-                        authenticationService?.currentSessionValue?.current_user?.id,
                       workspace_id:
                         authenticationService?.currentUserValue?.organization_id ||
                         authenticationService?.currentSessionValue?.current_organization_id,

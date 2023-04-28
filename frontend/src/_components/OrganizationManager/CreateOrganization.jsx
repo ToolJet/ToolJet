@@ -23,7 +23,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     organizationService.createOrganization(newOrgName).then(
       (data) => {
         posthog.capture('create_workspace', {
-          user_id: data.id,
           workspace_id: data.organization_id || data.current_organization_id,
         });
         setIsCreating(false);

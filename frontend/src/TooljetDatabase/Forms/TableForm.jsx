@@ -61,8 +61,6 @@ const TableForm = ({
     onCreate && onCreate(tableName);
 
     posthog.capture('click_create_tooljet_table', {
-      user_id:
-        authenticationService?.currentUserValue?.id || authenticationService?.currentSessionValue?.current_user?.id,
       workspace_id:
         authenticationService?.currentUserValue?.organization_id ||
         authenticationService?.currentSessionValue?.current_organization_id,

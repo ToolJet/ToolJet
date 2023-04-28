@@ -123,7 +123,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
           source === 'sso' ? (ssoType === 'google' ? 'google' : ssoType === 'openid' ? 'openid' : 'github') : 'email'
         }`;
         posthog.capture(event, {
-          user_id: user.id,
+          email: user.email,
           workspace_id: user.organization_id || user.current_organization_id,
         });
         

@@ -145,9 +145,6 @@ class ManageOrgUsersComponent extends React.Component {
             position: 'top-center',
           });
           posthog.capture('create_bulk_users', {
-            user_id:
-              authenticationService?.currentUserValue?.id ||
-              authenticationService?.currentSessionValue?.current_user?.id,
             workspace_id:
               authenticationService?.currentUserValue?.organization_id ||
               authenticationService?.currentSessionValue?.current_organization_id,
@@ -198,9 +195,6 @@ class ManageOrgUsersComponent extends React.Component {
         .then(() => {
           toast.success('User has been created');
           posthog.capture('create_new_user', {
-            user_id:
-              authenticationService?.currentUserValue?.id ||
-              authenticationService?.currentSessionValue?.current_user?.id,
             workspace_id:
               authenticationService?.currentUserValue?.organization_id ||
               authenticationService?.currentSessionValue?.current_organization_id,
@@ -277,9 +271,6 @@ class ManageOrgUsersComponent extends React.Component {
                         className="btn btn-primary mx-2"
                         onClick={() => {
                           posthog.capture('click_invite_bulk_users', {
-                            user_id:
-                              authenticationService?.currentUserValue?.id ||
-                              authenticationService?.currentSessionValue?.current_user?.id,
                             workspace_id:
                               authenticationService?.currentUserValue?.organization_id ||
                               authenticationService?.currentSessionValue?.current_organization_id,
@@ -296,9 +287,6 @@ class ManageOrgUsersComponent extends React.Component {
                         className="btn btn-primary"
                         onClick={() => {
                           posthog.capture('click_invite_new_user', {
-                            user_id:
-                              authenticationService?.currentUserValue?.id ||
-                              authenticationService?.currentSessionValue?.current_user?.id,
                             workspace_id:
                               authenticationService?.currentUserValue?.organization_id ||
                               authenticationService?.currentSessionValue?.current_organization_id,
@@ -446,9 +434,6 @@ class ManageOrgUsersComponent extends React.Component {
                                   data-cy="bulk-user-upload-input"
                                   onClick={() => {
                                     posthog.capture('click_choose_bulkuser_file', {
-                                      user_id:
-                                        authenticationService?.currentUserValue?.id ||
-                                        authenticationService?.currentSessionValue?.current_user?.id,
                                       workspace_id:
                                         authenticationService?.currentUserValue?.organization_id ||
                                         authenticationService?.currentSessionValue?.current_organization_id,

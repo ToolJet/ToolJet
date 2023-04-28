@@ -50,9 +50,6 @@ export const Folders = function Folders({
           setNewFolderName('');
           foldersChanged();
           posthog.capture('create_folder', {
-            user_id:
-              authenticationService?.currentUserValue?.id ||
-              authenticationService?.currentSessionValue?.current_user?.id,
             workspace_id:
               authenticationService?.currentUserValue?.organization_id ||
               authenticationService?.currentSessionValue?.current_organization_id,
@@ -162,9 +159,6 @@ export const Folders = function Folders({
             className="folder-create-btn"
             onClick={() => {
               posthog.capture('create_new_folder', {
-                user_id:
-                  authenticationService?.currentUserValue?.id ||
-                  authenticationService?.currentSessionValue?.current_user?.id,
                 workspace_id:
                   authenticationService?.currentUserValue?.organization_id ||
                   authenticationService?.currentSessionValue?.current_organization_id,
