@@ -303,6 +303,7 @@ class ViewerComponent extends React.Component {
     const versionId = this.props.params.versionId;
     const environmentId = this.props.params.environmentId;
 
+    this.setState({ environmentId });
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
       if (currentSession?.load_app) {
         if (currentSession?.group_permissions) {
@@ -334,7 +335,7 @@ class ViewerComponent extends React.Component {
           slug && this.loadApplicationBySlug(slug);
         }
       }
-      this.setState({ isLoading: false, environmentId });
+      this.setState({ isLoading: false });
     });
   }
 

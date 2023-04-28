@@ -54,7 +54,9 @@ function run(queryId, options, environmentId) {
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(
-    `${config.apiUrl}/data_queries/${queryId}/run${environmentId ? `/${environmentId}` : ''}`,
+    `${config.apiUrl}/data_queries/${queryId}/run${
+      environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''
+    }`,
     requestOptions
   ).then(handleResponse);
 }
@@ -67,9 +69,10 @@ function preview(query, options, versionId, environmentId) {
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
-  return fetch(`${config.apiUrl}/data_queries/preview${environmentId ? `/${environmentId}` : ''}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    `${config.apiUrl}/data_queries/preview${environmentId && environmentId !== 'undefined' ? `/${environmentId}` : ''}`,
+    requestOptions
+  ).then(handleResponse);
 }
 
 function changeQueryDataSource(id, dataSourceId) {
