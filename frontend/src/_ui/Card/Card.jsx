@@ -13,7 +13,7 @@ const Card = ({ title, src, handleClick, height = 50, width = 50, usePluginIcon 
   };
 
   return (
-    <div style={{ height: '112px', width: '164px' }} className="col-md-2 mb-4">
+    <div style={{ height: '112px', width: '164px' }} className="col-md-2  mb-4">
       <div
         className="card"
         role="button"

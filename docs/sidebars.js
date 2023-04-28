@@ -25,6 +25,7 @@ const sidebars = {
         'setup/heroku',
         'setup/ec2',
         'setup/ecs',
+        'setup/openshift',
         'setup/kubernetes',
         'setup/kubernetes-gke',
         'setup/kubernetes-aks',
@@ -103,6 +104,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Components library',
           'items': [
+            'widgets/bounded-box',
             'widgets/button',
             'widgets/button-group',
             'widgets/calendar',
@@ -259,8 +261,8 @@ const sidebars = {
           'type': 'category',
           'label': 'Workspaces',
           'items': [
-            'tutorial/multiworkspace',
-            'tutorial/workspace-environment-variables',
+            'tutorial/workspace_overview',
+            'tutorial/workspace-variables',
           ],
         },
         'org-management/permissions',
@@ -291,6 +293,7 @@ const sidebars = {
         ]
       },
       'items': [
+        'how-to/build-plugin-for-marketplace',
         'how-to/use-inspector',
         'how-to/use-form-component',
         'how-to/access-cellvalue-rowdata',
@@ -298,9 +301,12 @@ const sidebars = {
         'how-to/access-currentuser',
         'how-to/use-axios-in-runjs',
         'how-to/import-external-libraries-using-runpy',
+        'how-to/import-external-libraries-using-runjs',
         'how-to/run-actions-from-runjs',
+        'how-to/intentionally-fail-js-query',
         'how-to/run-query-at-specified-intervals',
         'how-to/access-users-location',
+        'how-to/use-s3-signed-url-to-upload-docs',
         'how-to/s3-custom-endpoints',
         'how-to/oauth2-authorization',
         'how-to/upload-files-aws',

@@ -3,7 +3,9 @@ export const cyParamName = (paramName = "") => {
 };
 
 export const commonSelectors = {
-  toastMessage: ".go3958317564",
+  toastMessage: ".go3958317564", 
+  oldToastMessage: ".go318386747",
+  newToastMessage:'.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551',
   toastCloseButton: '[data-cy="toast-close-button"]',
   editButton: "[data-cy=edit-button]",
   searchField: "[data-cy=widget-search-box]",
@@ -26,7 +28,7 @@ export const commonSelectors = {
   loginButton: '[data-cy="login-button"]',
   dropdown: "[data-cy=workspace-dropdown]",
   backButton: "[data-cy=left-sidebar-back-button]",
-  emptyAppCreateButton: "[data-cy=create-new-application]",
+  dashboardAppCreateButton: '[data-cy="button-new-app-from-scratch"]',
   appCreateButton: "[data-cy=create-new-app-button]",
   createButton: "[data-cy=create-button]",
   appNameInput: "[data-cy=app-name-input]",
@@ -41,7 +43,7 @@ export const commonSelectors = {
   createNewFolderButton: "[data-cy=create-new-folder-button]",
   folderNameInput: "[data-cy=folder-name-input]",
   createFolderButton: "[data-cy=create-folder-button]",
-  folderList: ".css-2kg7t4-MenuList",
+  folderList: ".css-169zxdi-MenuList",
   empytyFolderImage: "[data-cy=empty-folder-image]",
   emptyFolderText: "[data-cy=empty-folder-text]",
   allApplicationsLink: "[data-cy=all-applications-link]",
@@ -55,9 +57,7 @@ export const commonSelectors = {
   viewerPageLogo: '[data-cy="viewer-page-logo"]',
   lastPageArrow: '[data-cy="last-page-link"]',
   nextPageArrow: '[data-cy="next-page-link"]',
-  emailFilterInput: '[data-cy="email-filter-input-field"]',
-  firstNameFilterInput: '[data-cy="first-name-filter-input-field"]',
-  lastNameFilterInput: '[data-cy="last-name-filter-input-field"]',
+  inputUserSearch: '[data-cy="input-field-user-filter-search"]',
   filterButton: '[data-cy="filter-button"]',
   copyIcon: '[data-cy="copy-icon"]',
   addWorkspaceButton: '[data-cy="add-new-workspace-link"]',
@@ -81,12 +81,13 @@ export const commonSelectors = {
   invitedUserName: '[data-cy="invited-user-name"]',
   invitedUserEmail: '[data-cy="invited-user-email"]',
   acceptInviteButton: '[data-cy="accept-invite-button"]',
+  databaseIcon: `[data-cy="database-icon"]`,
   profileSettings: '[data-cy="profile-settings"]',
-  workspaceSettingsIcon: '[data-cy="workspace-settings-icon"]',
-  manageUsersOption: '[data-cy="manage-users-option"]',
-  manageGroupsOption: '[data-cy="manage-groups-option"]',
-  manageSSOOption: '[data-cy="manage-sso-option"]',
-  workspaceVariableOption: '[data-cy="workspace-variable-option"]',
+  workspaceSettingsIcon: '[data-cy="icon-workspace-settings"]',
+  manageUsersOption: '[data-cy="users-list-item"]',
+  manageGroupsOption: '[data-cy="groups-list-item"]',
+  manageSSOOption: '[data-cy="sso-list-item"]',
+  workspaceVariableOption: '[data-cy="workspace-variables-list-item"]',
   clearFilterButton: '[data-cy="clear-filter-button"]',
   userStatusSelect: '[data-cy="user-status-select-continer"]',
   emailInputLabel: '[data-cy="email-input-label"]',
@@ -137,7 +138,7 @@ export const commonSelectors = {
   emailInputField: '[data-cy="email-input-field"]',
   signUpButton: '[data-cy="sign-up-button"]',
   emailImage: '[data-cy="email-image"]',
-  spamMessage: '[data-cy="signup-email-page-spam-msg"]',
+  spamMessage: '[data-cy="email-page-spam-msg"]',
   resendEmailButton: '[data-cy="resend-email-button"]',
   editEmailButton: '[data-cy="edit-email-button"]',
   createAccountCheckMark: '[data-cy="create-account-check-mark"]',
@@ -145,6 +146,27 @@ export const commonSelectors = {
   verifyEmailCheckMark: '[data-cy="verify-email-check-mark"]',
   verifyEmailCheckPoint: '[data-cy="verify-email-check-point"]',
   backtoSignUpButton: '[data-cy="back-to-signup-button"]',
+  forgotPasswordPageHeader: '[data-cy="forgot-password-page-header"]',
+  forgotPasswordPageSubHeader: '[data-cy="forgot-password-sub-header"]',
+  resetPasswordLinkButton: '[data-cy="reset-password-link"]',
+  enterIcon: '[data-cy="enter-icon"]',
+  passwordResetPageHeader: '[data-cy="reset-password-page-header"]',
+  newPasswordInputLabel: '[data-cy="new-password-input-label"]',
+  newPasswordInputField: '[data-cy="new-password-input-field"]',
+  confirmPasswordInputFieldLabel: '[data-cy="confirm-password-input-label"]',
+  confirmPasswordInputField: '[data-cy="confirm-password-input-field"]',
+  resetPasswordButton: '[data-cy="reset-password-button"]',
+  resetPasswordPageDescription: '[data-cy="reset-password-page-description"]',
+  backToLoginButton: '[data-cy="back-to-login-button"]',
+  breadcrumbTitle:'[data-cy="breadcrumb-title"]',
+  breadcrumbPageTitle:'[data-cy="breadcrumb-page-title"]',
+  labelFullNameInput: '[data-cy="label-full-name-input-field"]',
+  inputFieldFullName: '[data-cy="input-field-full-name"]',
+  labelEmailInput: '[data-cy="label-email-input-field"]',
+  inputFieldEmailAddress: '[data-cy="input-field-email"]',
+  closeButton: '[data-cy="close-button"]',
+
+  
 
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
@@ -156,6 +178,7 @@ export const commonSelectors = {
   currentWorkspaceName: (workspaceName) => {
     return `[data-cy="${cyParamName(workspaceName)}-current-workspace-name"]`;
   },
+  appHeaderLable: '[data-cy="app-header-label"]',
 
   folderListcard: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-list-card"]`;
@@ -259,8 +282,8 @@ export const commonWidgetSelector = {
     '[data-cy="action-options-action-selection-field"]',
   componentTextInput: '[data-cy="action-options-text-input-field"]',
   changeLayoutButton: "[data-cy= 'change-layout-button']",
-  changeLayoutToMobileButton: '[data-cy="button-change-layout-to-desktop"]',
-  changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-mobile"]',
+  changeLayoutToMobileButton: '[data-cy="button-change-layout-to-mobile"]',
+  changeLayoutToDesktopButton: '[data-cy="button-change-layout-to-desktop"]',
 
   sidebarinspector: "[data-cy='left-sidebar-inspect-button']",
   inspectorNodeComponents: "[data-cy='inspector-node-components']> .node-key",

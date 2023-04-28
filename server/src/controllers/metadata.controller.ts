@@ -1,4 +1,4 @@
-import { Controller, Get, Request, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { MetadataService } from '@services/metadata.service';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 
@@ -18,9 +18,8 @@ export class MetadataController {
     });
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get()
-  async getMetadata(@Request() req) {
+  async getMetadata() {
     const metadata = await this.metadataService.getMetaData();
     const data = metadata.data;
     let latestVersion = data['latest_version'];
@@ -29,16 +28,16 @@ export class MetadataController {
 
     if (process.env.NODE_ENV == 'production') {
       if (
-        process.env.CHECK_FOR_UPDATES &&
-        process.env.CHECK_FOR_UPDATES != '0' &&
-        process.env.CHECK_FOR_UPDATES != 'false'
+        process.env.CHECK_FOR_UPDATES === '1' ||
+        process.env.CHECK_FOR_UPDATES === 'true' ||
+        !process.env.CHECK_FOR_UPDATES
       ) {
         const result = await this.metadataService.checkForUpdates(metadata);
         latestVersion = result.latestVersion;
         versionIgnored = false;
       }
 
-      if (!process.env.DISABLE_TOOLJET_TELEMETRY) {
+      if (process.env.DISABLE_TOOLJET_TELEMETRY !== 'true') {
         void this.metadataService.sendTelemetryData(metadata);
       }
     }

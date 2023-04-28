@@ -1,0 +1,118 @@
+//Typography
+.tj-text {
+    font-family: 'IBM Plex Sans';
+    font-style: normal;
+    color: var(--slate12) !important;
+    margin: 0;
+    padding: 0;
+}
+
+.tj-header-lg {
+    font-weight: 500;
+    font-size: 52px;
+    line-height: 56px;
+    letter-spacing: -0.02em;
+    margin: 0;
+    padding: 0;
+}
+
+.tj-header-sm {
+    font-weight: 500;
+    font-size: 44px;
+    line-height: 48px;
+    letter-spacing: -0.02em;
+    margin: 0;
+    padding: 0;
+}
+
+.tj-header-h1 {
+    font-weight: 500;
+    font-size: 40px;
+    line-height: 48px;
+    letter-spacing: -0.02em;
+}
+
+.tj-header-h2 {
+    font-weight: 500;
+    font-size: 36px;
+    line-height: 44px;
+    letter-spacing: -0.02em;
+    margin: 0;
+    padding: 0;
+}
+
+.tj-header-h3 {
+    font-weight: 500;
+    font-size: 32px;
+    line-height: 40px;
+    letter-spacing: -0.02em;
+}
+
+.tj-header-h4 {
+    font-weight: 500;
+    font-size: 32px;
+    line-height: 40px;
+    letter-spacing: -0.02em;
+    margin: 0;
+    padding: 0;
+}
+
+.tj-header-h5 {
+    font-weight: 500;
+    font-size: 32px;
+    line-height: 40px;
+    letter-spacing: -0.02em;
+    margin: 0;
+    padding: 0;
+}
+
+.tj-header-h6 {
+    font-weight: 500;
+    font-size: 32px;
+    line-height: 40px;
+    letter-spacing: -0.02em;
+    margin: 0;
+    padding: 0;
+}
+
+// paragraph texts
+
+.tj-text-lg {
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 28px;
+    margin: 0;
+    padding: 0;
+}
+
+.tj-text-md {
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    margin: 0;
+    padding: 0;
+}
+
+.tj-text-sm {
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    margin: 0;
+    padding: 0;
+}
+
+.tj-text-xsm {
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 20px;
+    margin: 0;
+    padding: 0;
+}
+
+.tj-text-xxsm {
+    font-weight: 400;
+    font-size: 10px;
+    line-height: 16px;
+    margin: 0;
+    padding: 0;
+}

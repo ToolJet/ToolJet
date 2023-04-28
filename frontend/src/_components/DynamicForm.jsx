@@ -14,6 +14,7 @@ import Zendesk from '@/_components/Zendesk';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 
 import { find, isEmpty } from 'lodash';
+import { ButtonSolid } from './AppButton';
 
 const DynamicForm = ({
   schema,
@@ -40,29 +41,30 @@ const DynamicForm = ({
 
   React.useEffect(() => {
     const { properties } = schema;
-    if (isEmpty(properties)) return null;
+    if (!isEmpty(properties)) {
+      let fields = {};
+      let encrpytedFieldsProps = {};
+      const flipComponentDropdown = find(properties, ['type', 'dropdown-component-flip']);
 
-    let fields = {};
-    let encrpytedFieldsProps = {};
-    const flipComponentDropdown = find(properties, ['type', 'dropdown-component-flip']);
+      if (flipComponentDropdown) {
+        const selector = options?.[flipComponentDropdown?.key]?.value;
+        fields = { ...flipComponentDropdown?.commonFields, ...properties[selector] };
+      } else {
+        fields = { ...properties };
+      }
 
-    if (flipComponentDropdown) {
-      const selector = options?.[flipComponentDropdown?.key]?.value;
-      fields = { ...flipComponentDropdown?.commonFields, ...properties[selector] };
-    } else {
-      fields = { ...properties };
+      Object.keys(fields).map((key) => {
+        const { type, encrypted } = fields[key];
+        if ((type === 'password' || encrypted) && !(key in computedProps)) {
+          //Editable encrypted fields only if datasource doesn't exists
+          encrpytedFieldsProps[key] = {
+            disabled: !!selectedDataSource?.id,
+          };
+        }
+      });
+      setComputedProps({ ...computedProps, ...encrpytedFieldsProps });
     }
 
-    Object.keys(fields).map((key) => {
-      const { type, encrypted } = fields[key];
-      if ((type === 'password' || encrypted) && !(key in computedProps)) {
-        //Editable encrypted fields only if datasource doesn't exists
-        encrpytedFieldsProps[key] = {
-          disabled: !!selectedDataSource?.id,
-        };
-      }
-    });
-    setComputedProps({ ...computedProps, ...encrpytedFieldsProps });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options]);
 
@@ -253,6 +255,7 @@ const DynamicForm = ({
           auth_url: options.auth_url?.value,
           custom_auth_params: options.custom_auth_params?.value,
           custom_query_params: options.custom_query_params?.value,
+          spec: options.spec?.value,
         };
       default:
         return {};
@@ -306,14 +309,16 @@ const DynamicForm = ({
                 )}
                 {(type === 'password' || encrypted) && selectedDataSource?.id && (
                   <div className="mx-1 col">
-                    <button
-                      className="btn btn-sm font-500 color-primary border-1 mb-2 mx-2"
+                    <ButtonSolid
+                      className="datasource-edit-btn mb-2"
+                      type="a"
+                      variant="tertiary"
                       target="_blank"
                       rel="noreferrer"
                       onClick={(event) => handleEncryptedFieldsToggle(event, key)}
                     >
                       {computedProps?.[key]?.['disabled'] ? 'Edit' : 'Cancel'}
-                    </button>
+                    </ButtonSolid>
                   </div>
                 )}
                 {(type === 'password' || encrypted) && (
@@ -334,6 +339,7 @@ const DynamicForm = ({
                 {...getElementProps(obj[key])}
                 {...computedProps[key]}
                 data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
+                customWrap={true} //to be removed after whole ui is same
               />
             </div>
           );

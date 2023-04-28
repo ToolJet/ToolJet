@@ -6,7 +6,6 @@ export const Pagination = function Pagination({ currentPage, count, pageChanged,
   const totalPages = useMemo(() => {
     return Math.floor((count - 1) / itemsPerPage) + 1;
   }, [count, itemsPerPage]);
-
   const getPageLinks = (index) => {
     if (index < 1 || index > totalPages) {
       return;
@@ -22,7 +21,10 @@ export const Pagination = function Pagination({ currentPage, count, pageChanged,
       );
     }
   };
-
+  if (currentPage > totalPages) {
+    currentPage = totalPages;
+    pageChanged(currentPage);
+  }
   function gotoPage(page) {
     pageChanged(page);
   }
@@ -54,11 +56,15 @@ export const Pagination = function Pagination({ currentPage, count, pageChanged,
   }
 
   return (
-    <div className={`card-footer d-flex align-items-center px-1 ${darkMode ? ' bg-transparent' : ''}`}>
+    <div
+      className={`card-footer d-flex align-items-center ${darkMode ? ' bg-transparent' : ''}`}
+      style={{ padding: '16px' }}
+      data-cy="container-pagination"
+    >
       <p className={`m-0 ${darkMode ? 'text-light' : 'text-muted'}`}>
         {t('homePage.pagination.showing', 'Showing')} <span>{startingAppCount()}</span>{' '}
         {t('homePage.pagination.to', 'to')} <span>{endingAppCount()}</span> {t('homePage.pagination.of', 'of')}{' '}
-        <span>{count}</span>
+        <span data-cy="total-count">{count}</span>
       </p>
       <ul className="pagination m-0 ms-auto">
         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>

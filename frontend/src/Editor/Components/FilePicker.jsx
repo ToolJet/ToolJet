@@ -89,7 +89,7 @@ export const FilePicker = ({
 
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles, fileRejections } =
     useDropzone({
-      accept: parsedFileType,
+      accept: { parsedFileType: [parsedFileType] },
       noClick: !parsedEnablePicker || disablePicker,
       noDrag: !parsedEnableDropzone || disablePicker,
       noKeyboard: true,
@@ -388,7 +388,7 @@ FilePicker.AcceptedFiles = ({ children, width, height }) => {
 
 const processCSV = (str, delimiter = ',') => {
   try {
-    const wb = XLSX.read(str, { type: 'string' });
+    const wb = XLSX.read(str, { type: 'string', raw: true });
     const wsname = wb.SheetNames[0];
     const ws = wb.Sheets[wsname];
     const data = XLSX.utils.sheet_to_json(ws, { delimiter, defval: '' });

@@ -15,9 +15,11 @@ const ColumnsForm = ({ columns, setColumns }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
-    <div className="card">
+    <div className="">
       <div className="card-header">
-        <h3 className="card-title">Add columns</h3>
+        <h3 className="card-title" data-cy="add-columns-header">
+          Add columns
+        </h3>
       </div>
       <div className="card-body">
         <div
@@ -27,13 +29,13 @@ const ColumnsForm = ({ columns, setColumns }) => {
         >
           <div className="row align-items-center">
             <div className="col-3 m-0">
-              <span>Name</span>
+              <span data-cy="name-input-field-label">Name</span>
             </div>
             <div className="col-3 m-0">
-              <span>Type</span>
+              <span data-cy="type-input-field-label">Type</span>
             </div>
             <div className="col-3 m-0">
-              <span>Default</span>
+              <span data-cy="default-input-field-label">Default</span>
             </div>
           </div>
         </div>
@@ -48,7 +50,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
               {/* <div className="col-1">
                   <DragIcon />
                 </div> */}
-              <div className="col-3 m-0">
+              <div className="col-3 m-0" data-cy="column-name-input-field">
                 <input
                   onChange={(e) => {
                     e.persist();
@@ -60,12 +62,13 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   type="text"
                   className="form-control"
                   placeholder="Enter name"
+                  data-cy={`name-input-field-${columns[index].column_name}`}
                   disabled={columns[index].constraint === 'PRIMARY KEY'}
                 />
               </div>
-              <div className="col-3 m-0">
+              <div className="col-3" data-cy="type-dropdown-field" style={{ marginRight: '16px' }}>
                 <Select
-                  width={'100%'}
+                  width="120px"
                   isDisabled={columns[index].constraint === 'PRIMARY KEY'}
                   useMenuPortal={false}
                   options={columns[index].constraint === 'PRIMARY KEY' ? primaryKeydataTypes : dataTypes}
@@ -77,7 +80,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   }}
                 />
               </div>
-              <div className="col-3 m-0">
+              <div className="col-3 m-0" data-cy="column-default-input-field">
                 <input
                   onChange={(e) => {
                     e.persist();
@@ -88,16 +91,22 @@ const ColumnsForm = ({ columns, setColumns }) => {
                   value={columns[index].default}
                   type="text"
                   className="form-control"
+                  data-cy="default-input-field"
                   placeholder="NULL"
                   disabled={columns[index].constraint === 'PRIMARY KEY' || columns[index].data_type === 'serial'}
                 />
               </div>
               {columns[index].constraint === 'PRIMARY KEY' && (
                 <div className="col-2">
-                  <span className={`badge badge-outline ${darkMode ? 'text-white' : 'text-indigo'}`}>Primary Key</span>
+                  <span
+                    className={`badge badge-outline ${darkMode ? 'text-white' : 'text-indigo'}`}
+                    data-cy="primary-key-text"
+                  >
+                    Primary Key
+                  </span>
                 </div>
               )}
-              <div className="col-1 cursor-pointer" onClick={() => handleDelete(index)}>
+              <div className="col-1 cursor-pointer" data-cy="column-delete-icon" onClick={() => handleDelete(index)}>
                 {columns[index].constraint !== 'PRIMARY KEY' && <DeleteIcon />}
               </div>
             </div>
@@ -108,6 +117,7 @@ const ColumnsForm = ({ columns, setColumns }) => {
             setColumns((prevColumns) => ({ ...prevColumns, [+Object.keys(prevColumns).pop() + 1 || 0]: {} }))
           }
           className="mt-2 btn border-0 card-footer add-more-columns-btn"
+          data-cy="add-more-columns-button"
         >
           <AddColumnIcon />
           &nbsp;&nbsp; Add more columns

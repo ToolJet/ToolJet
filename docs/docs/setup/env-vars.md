@@ -11,9 +11,9 @@ Both the ToolJet server and client requires some environment variables to start 
 
 #### ToolJet host ( required )
 
-| variable     | description                                                     |
-| ------------ | --------------------------------------------------------------- |
-| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com )  |
+| variable     | description                                                      |
+| ------------ | ---------------------------------------------------------------- |
+| TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com ) |
 
 #### Lockbox configuration ( required )
 
@@ -46,6 +46,11 @@ ToolJet server uses PostgreSQL as the database.
 If you are using docker-compose setup, you can set PG_HOST as `postgres` which will be DNS resolved by docker
 :::
 
+:::info
+If you intent you use the DB connection url and if the connection does not support ssl. Please use the below format using the variable DATABASE_URL.
+`postgres://username:password@hostname:port/database_name?sslmode=disable`
+:::
+
 ### Disable database and extension creation (optional)
 
 ToolJet by default tries to create database based on `PG_DB` variable set and additionally my try to create postgres extensions. This requires the postgres user to have CREATEDB permission. If this cannot be granted you can disable this behaviour by setting `PG_DB_OWNER` as `false` and will have to manually run them.
@@ -58,38 +63,38 @@ Self-hosted version of ToolJet pings our server to fetch the latest product upda
 
 Use this environment variable to enable/disable the feature that allows you to add comments on the canvas.
 
-| variable | value            |
-| -------- | ---------------------- |
-| COMMENT_FEATURE_ENABLE  | `true` or `false` |
+| variable               | value             |
+| ---------------------- | ----------------- |
+| COMMENT_FEATURE_ENABLE | `true` or `false` |
 
 #### Multiplayer feature enable ( optional )
 
 Use this environment variable to enable/disable the feature that allows users to collaboratively work on the canvas.
 
-| variable | value            |
-| -------- | ---------------------- |
-| ENABLE_MULTIPLAYER_EDITING  | `true` or `false` |
+| variable                   | value             |
+| -------------------------- | ----------------- |
+| ENABLE_MULTIPLAYER_EDITING | `true` or `false` |
 
 #### Marketplace feature enable ( optional )
 
 Use this environment variable to enable/disable the feature that allows users to use the [marketplace](/docs/marketplace).
 
-| variable | value            |
-| -------- | ---------------------- |
-| ENABLE_MARKETPLACE_FEATURE  | `true` or `false` |
+| variable                   | value             |
+| -------------------------- | ----------------- |
+| ENABLE_MARKETPLACE_FEATURE | `true` or `false` |
 
 #### Enable ToolJet Database ( optional )
 
-| variable           | description                                  |
-| ------------------ | -------------------------------------------- |
-| ENABLE_TOOLJET_DB  | `true` or `false`                            |
-| TOOLJET_DB         | Default value is `tooljet_db`                |
-| TOOLJET_DB_HOST    | database host                                |
-| TOOLJET_DB_USER    | database username                            |
-| TOOLJET_DB_PASS    | database password                            |
-| TOOLJET_DB_PORT    | database port                                |
-| PGRST_JWT_SECRET   | JWT token client provided for authentication |
-| PGRST_HOST         | postgrest database host                      |
+| variable          | description                                  |
+| ----------------- | -------------------------------------------- |
+| ENABLE_TOOLJET_DB | `true` or `false`                            |
+| TOOLJET_DB        | Default value is `tooljet_db`                |
+| TOOLJET_DB_HOST   | database host                                |
+| TOOLJET_DB_USER   | database username                            |
+| TOOLJET_DB_PASS   | database password                            |
+| TOOLJET_DB_PORT   | database port                                |
+| PGRST_JWT_SECRET  | JWT token client provided for authentication |
+| PGRST_HOST        | postgrest database host                      |
 
 Use `ENABLE_TOOLJET_DB` to enable/disable the feature that allows users to work with inbuilt data store to build apps with. Inorder to set it up, [follow the instructions here](/docs/tooljet-database#enabling-the-tooljet-database-for-your-instance).
 
@@ -98,25 +103,26 @@ When this feature is enabled, the database name provided for `TOOLJET_DB` will b
 Incase you want to trigger it manually, use the command `npm run db:create` on ToolJet server.
 :::
 
+:::info
+If you intent you use the DB connection url and if the connection does not support ssl. Please use the below format using the variable TOOLJET_DB_URL.
+`postgres://username:password@hostname:port/database_name?sslmode=disable`
+:::
+
 #### Server Host ( optional )
 
 You can specify a different server for backend if it is hosted on another server.
 
-| variable | value            |
-| -------- | ---------------------- |
-| SERVER_HOST  | Configure a hostname for the server as a proxy pass. If no value is set, it defaults to `server`. |
-
-#### Disable Multi-Workspace ( optional )
-
-If you want to disable Multi-Workspace feature, set the environment variable `DISABLE_MULTI_WORKSPACE` to `true`.
+| variable    | value                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------- |
+| SERVER_HOST | Configure a hostname for the server as a proxy pass. If no value is set, it defaults to `server`. |
 
 ### Hide account setup link
 
-If you want to hide account setup link from admin in manage user page, set the environment variable `HIDE_ACCOUNT_SETUP_LINK` to `true`, please make sure you have configured SMTP to receive welcome mail for users. Valid only if `DISABLE_MULTI_WORKSPACE` is not `true`.
+If you want to hide account setup link from admin in manage user page, set the environment variable `HIDE_ACCOUNT_SETUP_LINK` to `true`, please make sure you have configured SMTP to receive welcome mail for users.
 
 #### Disabling signups ( optional )
 
-Sign up is enabled only if Multi-Workspace is enabled. If you want to restrict the signups and allow new users only by invitations, set the environment variable `DISABLE_SIGNUPS` to `true`.
+If you want to restrict the signups and allow new users only by invitations, set the environment variable `DISABLE_SIGNUPS` to `true`.
 
 :::tip
 You will still be able to see the signup page but won't be able to successfully submit the form.
@@ -180,24 +186,24 @@ Specify application monitoring vendor. Currently supported values - `sentry`.
 
 #### SENTRY DNS ( optional )
 
-| variable   | description                               |
-| ---------- | ----------------------------------------- |
-| SENTRY_DNS |  DSN tells a Sentry SDK where to send events so the events are associated with the correct project  |
+| variable   | description                                                                                       |
+| ---------- | ------------------------------------------------------------------------------------------------- |
+| SENTRY_DNS | DSN tells a Sentry SDK where to send events so the events are associated with the correct project |
 
 #### SENTRY DEBUG ( optional )
 
 Prints logs for sentry.
 
-| variable   | description                               |
-| ---------- | ----------------------------------------- |
+| variable     | description                                 |
+| ------------ | ------------------------------------------- |
 | SENTRY_DEBUG | `true` or `false`. Default value is `false` |
 
 #### Server URL ( optional)
 
 This is used to set up for CSP headers and put trace info to be used with APM vendors.
 
-| variable           | description                                                 |
-| ------------------ | ----------------------------------------------------------- |
+| variable           | description                                                  |
+| ------------------ | ------------------------------------------------------------ |
 | TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.com ) |
 
 #### RELEASE VERSION ( optional)
@@ -208,34 +214,35 @@ Once set any APM provider that supports segregation with releases will track it.
 
 Tooljet needs to be configured for custom CA certificate to be able to trust and establish connection over https. This requires you to configure an additional env var `NODE_EXTRA_CA_CERTS` to have absolute path to your CA certificates. This file named `cert.pem` needs to be in PEM format and can have more than one certificates.
 
-| variable            | description                                                       |
-| ------------------  | ----------------------------------------------------------------- |
+| variable            | description                                                        |
+| ------------------- | ------------------------------------------------------------------ |
 | NODE_EXTRA_CA_CERTS | absolute path to certificate PEM file ( eg: /ToolJet/ca/cert.pem ) |
-
 
 #### Disable telemetry ( optional )
 
 Pings our server to update the total user count every 24 hours. You can disable this by setting the value of `DISABLE_TOOLJET_TELEMETRY` environment variable to `true`. This feature is enabled by default.
 
 #### Password Retry Limit (Optional)
+
 The maximum retry limit of login password for a user is by default set to 5, account will be locked after 5 unsuccessful login attempts. Use the variables mentioned below to control this behavior:
 
-| variable                              | description                                                   |
-| ------------------------------------- | -----------------------------------------------------------   |
-| DISABLE_PASSWORD_RETRY_LIMIT          | (true/false) To disable the password retry check, if value is `true` then no limits for password retry |
-| PASSWORD_RETRY_LIMIT                  | To change the default password retry limit (5) |
+| variable                     | description                                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------ |
+| DISABLE_PASSWORD_RETRY_LIMIT | (true/false) To disable the password retry check, if value is `true` then no limits for password retry |
+| PASSWORD_RETRY_LIMIT         | To change the default password retry limit (5)                                                         |
 
 #### SSO Configurations (Optional)
-Configurations for instance level SSO. Valid only if `DISABLE_MULTI_WORKSPACE` is not `true`.
 
-| variable                              | description                                                   |
-| ------------------------------------- | -----------------------------------------------------------   |
-| SSO_GOOGLE_OAUTH2_CLIENT_ID           | Google OAuth client id |
-| SSO_GIT_OAUTH2_CLIENT_ID              | GitHub OAuth client id |
-| SSO_GIT_OAUTH2_CLIENT_SECRET          | GitHub OAuth client secret |
-| SSO_GIT_OAUTH2_HOST                   | GitHub OAuth host name if GitHub is self hosted |
-| SSO_ACCEPTED_DOMAINS                  | comma separated email domains that supports SSO authentication |
-| SSO_DISABLE_SIGNUPS                   | Disable user sign up if authenticated user does not exist |
+Configurations for instance level SSO.
+
+| variable                     | description                                                    |
+| ---------------------------- | -------------------------------------------------------------- |
+| SSO_GOOGLE_OAUTH2_CLIENT_ID  | Google OAuth client id                                         |
+| SSO_GIT_OAUTH2_CLIENT_ID     | GitHub OAuth client id                                         |
+| SSO_GIT_OAUTH2_CLIENT_SECRET | GitHub OAuth client secret                                     |
+| SSO_GIT_OAUTH2_HOST          | GitHub OAuth host name if GitHub is self hosted                |
+| SSO_ACCEPTED_DOMAINS         | comma separated email domains that supports SSO authentication |
+| SSO_DISABLE_SIGNUPS          | Disable user sign up if authenticated user does not exist      |
 
 ## ToolJet client
 
@@ -243,29 +250,26 @@ Configurations for instance level SSO. Valid only if `DISABLE_MULTI_WORKSPACE` i
 
 This is required when client is built separately.
 
-| variable           | description                                                 |
-| ------------------ | ----------------------------------------------------------- |
+| variable           | description                                                  |
+| ------------------ | ------------------------------------------------------------ |
 | TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.com ) |
-
 
 #### Server Port ( optional)
 
 This could be used to for local development, it will set the server url like so: `http://localhost:<TOOLJET_SERVER_PORT>`
 
 | variable            | description                             |
-|---------------------|-----------------------------------------|
+| ------------------- | --------------------------------------- |
 | TOOLJET_SERVER_PORT | the port of ToolJet server ( eg: 3000 ) |
-
 
 #### Asset path ( optionally required )
 
 This is required when the assets for the client are to be loaded from elsewhere (eg: CDN).
 This can be an absolute path, or relative to main HTML file.
 
-| variable           | description                                                   |
-| ------------------ | -----------------------------------------------------------   |
-| ASSET_PATH         | the asset path for the website ( eg: https://app.tooljet.com/) |
-
+| variable   | description                                                    |
+| ---------- | -------------------------------------------------------------- |
+| ASSET_PATH | the asset path for the website ( eg: https://app.tooljet.com/) |
 
 #### Serve client as a server end-point ( optional )
 
@@ -274,11 +278,11 @@ If you intend to use client separately then can set `SERVE_CLIENT` to `false`.
 
 ## PostgREST server (Optional)
 
-| variable           | description                                     |
-| ------------------ | ----------------------------------------------- |
-| PGRST_JWT_SECRET   | JWT token client provided for authentication    |
-| PGRST_DB_URI       | database connection string for tooljet database |
-| PGRST_LOG_LEVEL    | `info`                                          |
+| variable         | description                                     |
+| ---------------- | ----------------------------------------------- |
+| PGRST_JWT_SECRET | JWT token client provided for authentication    |
+| PGRST_DB_URI     | database connection string for tooljet database |
+| PGRST_LOG_LEVEL  | `info`                                          |
 
 If you intent to make changes in the above configuration. Please refer [PostgREST configuration docs](https://postgrest.org/en/stable/configuration.html#environment-variables).
 
@@ -291,3 +295,9 @@ If this parameter is not specified then PostgREST refuses authentication request
 :::info
 Please make sure that DB_URI is given in the format `postgrest://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
 :::
+
+## User Session Expiry Time (Optional)
+
+| variable         | description                                     |
+| ---------------- | ----------------------------------------------- |
+| USER_SESSION_EXPIRY | This variable controls the user session expiry time. By default, the session expires after 2 days. The variable expects the value in minutes. ex: USER_SESSION_EXPIRY = 120 which is 2 hours |

@@ -40,7 +40,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-      Math.random() * (endDate.getTime() - startDate.getTime())
+    Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -78,7 +78,7 @@ export const navigateToAppEditor = (appName) => {
     .trigger("mousehover")
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
-    .click();
+    .click({force:true});
   //cy.wait("@appEditor");
 };
 
@@ -152,8 +152,7 @@ export const manageUsersPagination = (email) => {
 };
 
 export const searchUser = (email) => {
-  cy.clearAndType(commonSelectors.emailFilterInput, email);
-  cy.get(commonSelectors.filterButton).click();
+  cy.clearAndType(commonSelectors.inputUserSearch, email);
 };
 
 export const createWorkspace = (workspaceName) => {
@@ -170,6 +169,10 @@ export const selectAppCardOption = (appName, appCardOption) => {
   cy.get(appCardOption).should("be.visible").click();
 };
 
+export const navigateToDatabase = () => {
+  cy.get(commonSelectors.databaseIcon).click();
+  cy.url().should("include", path.database);
+};
 export const randomValue = () => {
   return Math.floor(Math.random() * (1000 - 100) + 100) / 100;
 };

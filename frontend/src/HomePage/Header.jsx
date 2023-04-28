@@ -5,13 +5,15 @@ import { useTranslation } from 'react-i18next';
 export default function Header({ onSearchSubmit, darkMode }) {
   const { t } = useTranslation();
   return (
-    <div className="row mt-3 pt-2">
+    <div className="row">
       <div className="home-search-holder">
         <SearchBox
-          className="border-0 bg-light-gray homepage-search"
+          dataCy={`home-page`}
+          className="border-0 homepage-search"
           onSubmit={onSearchSubmit}
           darkMode={darkMode}
-          placeholder={t('globals.search', 'Search')}
+          placeholder={t('globals.searchItem', 'Search item')}
+          width={'100%'}
         />
       </div>
     </div>

@@ -1,9 +1,12 @@
 import React from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import Avatar from '../../../src/_ui/Avatar';
+import Avatar from '@/_ui/Avatar';
 import Skeleton from 'react-loading-skeleton';
 import cx from 'classnames';
 import { Pagination } from '@/_components';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { Tooltip } from 'react-tooltip';
 
 const UsersTable = ({
   isLoading,
@@ -20,19 +23,27 @@ const UsersTable = ({
   translator,
 }) => {
   return (
-    <div className="container-xl mb-4">
-      <div className="card">
-        <div className="card-table fixedHeader table-responsive table-bordered">
-          <table data-testid="usersTable" className="table table-vcenter h-100">
+    <div className="workspace-settings-table-wrap mb-4">
+      <div className="tj-user-table-wrapper">
+        <div className="card-table fixedHeader table-responsive  ">
+          <table data-testid="usersTable" className="users-table table table-vcenter h-100">
             <thead>
               <tr>
-                <th data-cy="name-title">{translator('header.organization.menus.manageUsers.name', 'Name')}</th>
-                <th data-cy="email-title">{translator('header.organization.menus.manageUsers.email', 'Email')}</th>
+                <th data-cy="users-table-name-column-header">
+                  {translator('header.organization.menus.manageUsers.name', 'Name')}
+                </th>
+                <th data-cy="users-table-email-column-header">
+                  {translator('header.organization.menus.manageUsers.email', 'Email')}
+                </th>
                 {users && users[0]?.status ? (
-                  <th data-cy="status-title">{translator('header.organization.menus.manageUsers.status', 'Status')}</th>
+                  <th data-cy="users-table-status-column-header">
+                    {translator('header.organization.menus.manageUsers.status', 'Status')}
+                  </th>
                 ) : (
                   <th className="w-1"></th>
                 )}
+                <th className="w-1"></th>
+                <th className="w-1"></th>
                 <th className="w-1"></th>
               </tr>
             </thead>
@@ -69,70 +80,76 @@ const UsersTable = ({
                   users.length > 0 &&
                   users.map((user) => (
                     <tr key={user.id}>
-                      <td className="d-flex align-items-center">
+                      <td>
                         <Avatar
                           avatarId={user.avatar_id}
                           text={`${user.first_name ? user.first_name[0] : ''}${
                             user.last_name ? user.last_name[0] : ''
                           }`}
                         />
-                        <span className="mx-3" data-cy="user-name">
+                        <span className="mx-3 tj-text-sm" data-cy="user-name">
                           {user.name}
                         </span>
                       </td>
                       <td className="text-muted">
-                        <a className="text-reset user-email" data-cy="user-email">
+                        <a className="text-reset user-email tj-text-sm" data-cy="user-email">
                           {user.email}
                         </a>
                       </td>
                       {user.status && (
                         <td className="text-muted">
                           <span
-                            className={cx('badge me-1 m-1', {
-                              'bg-warning': user.status === 'invited',
-                              'bg-danger': user.status === 'archived',
-                              'bg-success': user.status === 'active',
+                            className={cx('badge', {
+                              'tj-invited': user.status === 'invited',
+                              'tj-archive': user.status === 'archived',
+                              'tj-active': user.status === 'active',
                             })}
                             data-cy="status-badge"
                           ></span>
-                          <small className="user-status" data-cy="user-status">
+                          <small className="workspace-user-status tj-text-sm text-capitalize" data-cy="user-status">
                             {user.status}
                           </small>
                           {user.status === 'invited' && 'invitation_token' in user ? (
-                            <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
-                              <img
-                                data-tip="Copy invitation link"
-                                className="svg-icon cursor-pointer"
-                                src="assets/images/icons/copy.svg"
-                                width="15"
-                                height="15"
-                                data-cy="copy-invitation-link"
-                              ></img>
-                            </CopyToClipboard>
+                            <div className="workspace-clipboard-wrap">
+                              <CopyToClipboard text={generateInvitationURL(user)} onCopy={invitationLinkCopyHandler}>
+                                <span>
+                                  <SolidIcon
+                                    data-tooltip-id="tooltip-for-copy-invitation-link"
+                                    data-tooltip-content="Copy invitation link"
+                                    width="12"
+                                    fill="#889096"
+                                    name="copy"
+                                  />
+                                  <p className="tj-text-xsm" data-cy="copy-invitation-link">
+                                    Copy link
+                                  </p>
+                                </span>
+                              </CopyToClipboard>
+                              <Tooltip id="tooltip-for-copy-invitation-link" className="tooltip" />
+                            </div>
                           ) : (
                             ''
                           )}
                         </td>
                       )}
                       <td>
-                        <button
-                          type="button"
+                        <ButtonSolid
+                          variant="dangerSecondary"
                           style={{ minWidth: '100px' }}
-                          className={cx('btn btn-sm', {
-                            'btn-outline-success': user.status === 'archived',
-                            'btn-outline-danger': user.status === 'active' || user.status === 'invited',
-                            'btn-loading': unarchivingUser === user.id || archivingUser === user.id,
-                          })}
+                          className="workspace-user-archive-btn tj-text-xsm"
                           disabled={unarchivingUser === user.id || archivingUser === user.id}
+                          leftIcon="archive"
+                          fill="#E54D2E"
+                          iconWidth="12"
                           onClick={() => {
                             user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
                           }}
-                          data-cy="user-state"
+                          data-cy="button-user-status-change"
                         >
                           {user.status === 'archived'
                             ? translator('header.organization.menus.manageUsers.unarchive', 'Unarchive')
                             : translator('header.organization.menus.manageUsers.archive', 'Archive')}
-                        </button>
+                        </ButtonSolid>
                       </td>
                     </tr>
                   ))}

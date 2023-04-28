@@ -5,10 +5,8 @@ export const codeMirrorInputLabel = (content) => {
 export const path = {
   loginPath: "/login",
   profilePath: "/settings",
-  manageUsers: "/users",
   confirmInvite: "/confirm",
-  manageGroups: "/groups",
-  manageSSO: "/manage-sso",
+  database: "/database",
 };
 
 export const commonText = {
@@ -16,6 +14,7 @@ export const commonText = {
   email: "dev@tooljet.io",
   password: "password",
   loginErrorToast: "Invalid email or password",
+  welcomeTooljetWorkspace: "Welcome to your new ToolJet workspace",
   introductionMessage:
     "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
   changeIconOption: "Change Icon",
@@ -68,6 +67,8 @@ export const commonText = {
     "You are invited to a workspace My workspace. Accept the invite to join the workspace.",
   userNameInputLabel: "Name",
   acceptInviteButton: "Accept invite",
+  createButton: "Create",
+  saveChangesButton: "Save changes",
   emailInputLabel: "Email",
   allApplicationLink: "All apps",
   notificationsCardTitle: "Notifications",
@@ -87,9 +88,9 @@ export const commonText = {
   companyProfileCheckPoint: "Company profile",
   setUpAdminHeader: "Set up your admin account",
   onboardingPageSubHeader: "This information will help us improve ToolJet.",
-  passwordHelperText: "Password must be at least 5 character",
+  passwordHelperText: "Password must be at least 5 characters",
   continueButton: "Continue",
-
+  resetPasswordButton: "Reset password",
   setUpWorkspaceHeader: "Set up your workspace",
   userRolePageHeader: "What best describes your role?",
   sizeOftheCompanyHeader: "What is the size of your company?",
@@ -97,7 +98,7 @@ export const commonText = {
   onboardingSeperatorText: "OR",
   getStartedButton: "Get started for free",
   emailPageHeader: "Check your mail",
-  spamMessage: "Did not receive an email? Check your spam folder",
+  spamMessage: "Did not receive an email? Check your spam folder.",
   resendEmailButton: "Resend verification mail",
   editEmailButton: "Edit email address",
   emailVerifiedText: "Successfully verified email",
@@ -107,11 +108,37 @@ export const commonText = {
   inalidInvitationLinkHeader: "Invalid verification link",
   inalidInvitationLinkDescription: "This verification link is invalid.",
   backtoSignUpButton: "Back to signup",
+  createAnAccountLink: "Create an account",
+  forgotPasswordPageHeader: "Forgot Password",
+  newToTooljetText: "New to ToolJet?",
+  emailAddressLabel: "Email address",
+  resetPasswordLinkButton: " Send a reset link",
+  passwordResetEmailToast:
+    "Please check your email/inbox for the password reset link",
+  passwordResetPageHeader: "Reset Password",
+  passwordResetSuccessPageHeader: "Password has been reset",
+  newPasswordInputLabel: "New Password",
+  confirmPasswordInputFieldLabel: "Re-enter the password",
+  passwordResetSuccessToast: "Password reset successfully",
+  backToLoginButton: "Back to log in",
+  resetPasswordPageDescription:
+    "Your password has been reset successfully, log into ToolJet to continue your session",
+  labelFullNameInput: "Enter full name",
+  labelEmailInput: "Email address",
+  breadcrumbworkspaceSettingTitle:"Workspace settings",
+  breadcrumbGlobalDatasourceTitle: "Global datasources",
+  breadcrumbDatabaseTitle: "Databse",
+  breadcrumbApplications: "Applications",
+  breadcrumbSettings: "Settings",
+
   emailPageDescription: (email) => {
     return `We’ve sent an email to ${email} with a verification link. Please use that to verify your email address.`;
   },
   companyPageHeader: (userName) => {
     return `Where do you work ${userName}?`;
+  },
+  resetPasswordEmailDescription: (email) => {
+    return `We’ve sent an email to ${email} with a password reset link. Please click on that link to reset your password.`;
   },
   userJobRole: {
     HeadOfEngineering: "Head of engineering",
