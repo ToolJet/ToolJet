@@ -1,4 +1,5 @@
 import { get } from 'lodash';
+
 /**
  * Checks if the queryOptions object contains a filter with an 'eq' (equal) operator and a value equal to '{{null}}'.
  *
@@ -34,3 +35,8 @@ export const hasEqualWithNull = (queryOptions, operation) => {
   }
   return false;
 };
+
+export const isOperatorOptions = [
+  { value: 'null', label: 'null' },
+  { value: 'notNull', label: 'not null' },
+];

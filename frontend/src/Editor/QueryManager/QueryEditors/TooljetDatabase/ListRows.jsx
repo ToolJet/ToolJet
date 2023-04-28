@@ -4,11 +4,7 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { uniqueId } from 'lodash';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
-
-const isOperatorOptions = [
-  { value: 'null', label: 'null' },
-  { value: 'notNull', label: 'not null' },
-];
+import { isOperatorOptions } from './util';
 
 export const ListRows = React.memo(({ currentState, darkMode }) => {
   const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange } = useContext(TooljetDatabaseContext);
@@ -99,9 +95,6 @@ export const ListRows = React.memo(({ currentState, darkMode }) => {
       updateFilterOptionsChanged({ ...listRowsOptions?.where_filters[id], ...{ value: newValue } });
     };
 
-    console.log('value', value);
-    console.log('operator', operator);
-
     return (
       <div className="mt-1 row-container">
         <div className="d-flex fields-container">
@@ -127,7 +120,7 @@ export const ListRows = React.memo(({ currentState, darkMode }) => {
             {operator === 'is' ? (
               <Select
                 useMenuPortal={true}
-                placeholder="Select operation"
+                placeholder="Select value"
                 value={value}
                 options={isOperatorOptions}
                 onChange={handleValueChange}
