@@ -151,6 +151,8 @@ class AppComponent extends React.Component {
         currentUser.email, // distinct_id, required
         { name: `${currentUser.first_name} ${currentUser.last_name}`, time: currentUser.created_at }
       );
+      //incase if the user properties have default time property.
+      posthog.register({'user_created_at': currentUser.created_at});
     }
   }
 
