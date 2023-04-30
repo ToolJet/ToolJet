@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { MultiSelect } from 'react-multi-select-component';
 
 const ItemRenderer = ({ checked, option, onClick, disabled }) => (
@@ -66,6 +66,7 @@ export const Multiselect = function Multiselect({
   }, []);
 
   const onChangeHandler = (items) => {
+    console.log('onChangeHandler');
     setSelected(items);
     setExposedVariable(
       'values',
@@ -125,6 +126,35 @@ export const Multiselect = function Multiselect({
     [selected, setSelected]
   );
 
+  // NEW FEATURE onSearchTextChange
+  // const onSearchTextChange = (searchText, actionProps) => {
+  //   console.log("MultiSelect text: " + searchText);
+  //   setExposedVariable("searchText", searchText);
+  //   fireEvent("onSearchTextChanged");
+  //   if (actionProps.action === "input-change") {
+  //     setExposedVariable("searchText", searchText);
+  //     fireEvent("onSearchTextChanged");
+  //   }
+  // };
+
+  // Overrides the default filterOptions function of react-multi-select-component
+  // The same logic of default filterOptions function is used
+  const filterOptionsHandler = useCallback(
+    (options, filter) => {
+      if (!filter) {
+        return options;
+      }
+      console.log('filterOptions');
+      // setExposedVariable("searchText", filter);
+      fireEvent('onSearchTextChanged');
+
+      return options.filter(
+        ({ label, value }) => label != null && value != null && label.toLowerCase().includes(filter.toLowerCase())
+      );
+    },
+    [fireEvent]
+  );
+
   return (
     <div
       className="multiselect-widget row g-0"
@@ -153,6 +183,7 @@ export const Multiselect = function Multiselect({
           disabled={disabledState}
           className={`multiselect-box${darkMode ? ' dark dark-multiselectinput' : ''}`}
           ItemRenderer={ItemRenderer}
+          // filterOptions={filterOptionsHandler}
         />
       </div>
     </div>
