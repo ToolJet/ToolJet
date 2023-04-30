@@ -11,6 +11,7 @@ import Popover from '@/_ui/Popover';
 import EmptyIllustration from '@assets/images/no-results.svg';
 import posthog from 'posthog-js';
 import { authenticationService } from '@/_services';
+import useRouter from '@/_hooks/use-router';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -39,7 +40,7 @@ const LeftSidebarPageSelector = ({
 }) => {
   const [allpages, setPages] = useState(pages);
   const [pinned, setPinned] = useState(false);
-
+  const router = useRouter();
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
 
@@ -85,6 +86,7 @@ const LeftSidebarPageSelector = ({
                     workspace_id:
                       authenticationService?.currentUserValue?.organization_id ||
                       authenticationService?.currentSessionValue?.current_organization_id,
+                    appId: router.query.id,
                   });
                   setNewPageBeingCreated(true);
                 }}

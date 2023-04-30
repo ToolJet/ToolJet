@@ -2,6 +2,7 @@ import React from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import posthog from 'posthog-js';
+import useRouter from '@/_hooks/use-router';
 import { useTranslation } from 'react-i18next';
 
 export const LeftSidebarItem = ({
@@ -18,7 +19,7 @@ export const LeftSidebarItem = ({
 }) => {
   const { t } = useTranslation();
   const displayIcon = selectedSidebarItem === icon ? `${icon}-selected` : icon;
-
+  const router = useRouter();
   const Icon = require('@assets/images/icons/editor/left-sidebar/' + displayIcon + '.svg');
 
   const content = (
@@ -28,7 +29,7 @@ export const LeftSidebarItem = ({
       onClick={(e) => {
         if (onClick) {
           onClick(e);
-          computePosthogEvent(text);
+          computePosthogEvent(text, router.query.id);
         }
       }}
     >
@@ -59,7 +60,7 @@ export const LeftSidebarItem = ({
   );
 };
 
-function computePosthogEvent(text) {
+function computePosthogEvent(text, appId) {
   let label = '';
   switch (text) {
     case 'Sources':
@@ -75,7 +76,7 @@ function computePosthogEvent(text) {
       label = 'click_menu_comment';
       break;
   }
-  posthog.capture(label);
+  posthog.capture(label, { appId });
 }
 
 function CommentBadge() {

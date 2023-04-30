@@ -216,7 +216,6 @@ class EditorComponent extends React.Component {
         threshold: 0,
       },
     });
-    posthog.register({ appId: this.state.appId });
   }
 
   /**
@@ -2121,7 +2120,7 @@ class EditorComponent extends React.Component {
                                   this.props.darkMode && 'theme-dark'
                                 }`}
                                 onClick={() => {
-                                  posthog.capture('click_create_query_plus'); //posthog event
+                                  posthog.capture('click_create_query_plus', { appId: this.state.appId }); //posthog event
                                   this.handleAddNewQuery(setSaveConfirmation, setCancelData);
                                 }}
                                 data-tooltip-id="tooltip-for-add-query"
@@ -2179,7 +2178,7 @@ class EditorComponent extends React.Component {
                             <div>
                               <QueryManager
                                 addNewQueryAndDeselectSelectedQuery={() => {
-                                  posthog.capture('click_create_query'); //posthog event
+                                  posthog.capture('click_create_query', { appId: this.state.appId }); //posthog event
                                   this.handleAddNewQuery(setSaveConfirmation, setCancelData);
                                 }}
                                 toggleQueryEditor={toggleQueryEditor}

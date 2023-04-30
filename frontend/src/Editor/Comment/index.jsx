@@ -74,7 +74,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
   }, [router]);
 
   const handleSubmit = async (comment) => {
-    posthog.capture('save_comment'); //posthog event
+    posthog.capture('save_comment', { appId: router.query.id }); //posthog event
     await commentsService.createComment({
       threadId,
       comment: DOMPurify.sanitize(comment),

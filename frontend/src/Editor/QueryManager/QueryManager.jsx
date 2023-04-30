@@ -361,7 +361,7 @@ class QueryManagerComponent extends React.Component {
         });
     } else {
       this.setState({ isCreating: true });
-      posthog.capture('save_query', { dataSource: selectedDataSource.kind }); //posthog event
+      posthog.capture('save_query', { dataSource: selectedDataSource.kind, appId }); //posthog event
       dataqueryService
         .create(appId, appVersionId, queryName, kind, options, dataSourceId, pluginId)
         .then((data) => {
@@ -630,7 +630,7 @@ class QueryManagerComponent extends React.Component {
               <button
                 onClick={() => {
                   const _options = { ...options };
-                  posthog.capture('click_preview', { dataSource: selectedDataSource.kind }); //posthog event
+                  posthog.capture('click_preview', { dataSource: selectedDataSource.kind, appId: this.state.appId }); //posthog event
                   const query = {
                     data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
                     pluginId: selectedDataSource.pluginId,

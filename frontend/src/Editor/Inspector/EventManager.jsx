@@ -13,6 +13,7 @@ import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import posthog from 'posthog-js';
 import { useTranslation } from 'react-i18next';
+import useRouter from '@/_hooks/use-router';
 
 export const EventManager = ({
   component,
@@ -30,6 +31,7 @@ export const EventManager = ({
   const [events, setEvents] = useState(() => component.component.definition.events || []);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
+  const router = useRouter();
 
   let actionOptions = ActionTypes.map((action) => {
     return { name: action.name, value: action.id };
@@ -200,7 +202,7 @@ export const EventManager = ({
     });
     setEvents(newEvents);
     eventsChanged(newEvents);
-    posthog.capture('click_add_event_handler', { widget: component.component.component });
+    posthog.capture('click_add_event_handler', { widget: component.component.component, appId: router.query.id });
   }
   function eventPopover(event, index) {
     return (

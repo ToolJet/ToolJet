@@ -19,7 +19,7 @@ export const ReleaseVersionButton = function DeployVersionButton({
   const releaseVersion = (editingVersion) => {
     setIsReleasing(true);
     saveEditingVersion();
-    posthog.capture('click_release'); //posthog event
+    posthog.capture('click_release', { appId }); //posthog event
     appService
       .saveApp(appId, {
         name: appName,
