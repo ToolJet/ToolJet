@@ -123,7 +123,7 @@ export class WorkflowExecutionsService {
     };
   }
 
-  async execute(workflowExecution: WorkflowExecution, params: object = {}): Promise<boolean> {
+  async execute(workflowExecution: WorkflowExecution, params: object = {}): Promise<object> {
     const appVersion = await this.appVersionsRepository.findOne(workflowExecution.appVersionId);
 
     workflowExecution = await this.workflowExecutionRepository.findOne({
@@ -137,6 +137,7 @@ export class WorkflowExecutionsService {
 
     queue.push(workflowExecution.startNode);
 
+    let finalResult = {};
     while (queue.length !== 0) {
       const nodeToBeExecuted = queue.shift();
 
@@ -210,6 +211,13 @@ export class WorkflowExecutionsService {
             await this.completeNodeExecution(currentNode, JSON.stringify(result), {});
 
             void queue.push(...(await this.forwardNodes(currentNode, sourceHandle)));
+
+            break;
+          }
+
+          case 'output': {
+            finalResult = { ...state };
+            break;
           }
         }
       }
@@ -217,7 +225,7 @@ export class WorkflowExecutionsService {
 
     await this.markWorkflowAsExecuted(workflowExecution);
 
-    return true;
+    return finalResult;
   }
 
   async completeNodeExecution(node: WorkflowExecutionNode, result: any, state: object) {

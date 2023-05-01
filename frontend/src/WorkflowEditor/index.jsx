@@ -111,7 +111,9 @@ function WorkflowEditor(props) {
   };
 
   const executeWorkflow = async () => {
-    const execution = await workflowExecutionsService.create(editorSession.app.versionId);
+    const { workflowExecution: execution, _result } = await workflowExecutionsService.create(
+      editorSession.app.versionId
+    );
     editorSessionActions.setMode(Modes.Running);
     editorSessionActions.setExecutionId(execution.id);
     const intervalHandle = setInterval(async () => {

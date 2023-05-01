@@ -788,5 +788,5 @@ export function isExpectedDataType(data, expectedDataType) {
 export const executeWorkflow = async (self, workflowId, _blocking = false, params = {}) => {
   const resolvedParams = resolveReferences(params, self.state.currentState, {}, {});
   const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams);
-  return executionResponse;
+  return { data: executionResponse.result };
 };
