@@ -105,7 +105,7 @@ class DataSourceManagerComponent extends React.Component {
     this.setState({
       dataSourceMeta: source.manifestFile?.data?.source ?? source,
       selectedDataSource: source.manifestFile?.data?.source ?? source,
-      selectedDataSourceIcon: source.iconFile?.data,
+      selectedDataSourceIcon: source?.iconFile?.data,
       name: source.manifestFile?.data?.source?.kind ?? source.kind,
       dataSourceSchema: source.manifestFile?.data,
       selectedDataSourcePluginId: source.id,
@@ -482,7 +482,7 @@ class DataSourceManagerComponent extends React.Component {
 
     if (this.state.queryString && this.state.queryString.length > 0) {
       const filteredDatasources = this.state.filteredDatasources.map((datasource) => {
-        const src = datasource.iconFile?.data
+        const src = datasource?.iconFile?.data
           ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
           : datasource.kind.toLowerCase();
 
@@ -503,7 +503,7 @@ class DataSourceManagerComponent extends React.Component {
                 title={item.title}
                 src={item.src}
                 handleClick={() => renderSelectedDatasource(item)}
-                usePluginIcon={isEmpty(item.iconFile?.data)}
+                usePluginIcon={isEmpty(item?.iconFile?.data)}
                 height="35px"
                 width="35px"
               />
@@ -591,7 +591,7 @@ class DataSourceManagerComponent extends React.Component {
     }
 
     const datasources = source.map((datasource) => {
-      const src = datasource.iconFile?.data
+      const src = datasource?.iconFile?.data
         ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
         : datasource.kind.toLowerCase();
 
@@ -612,7 +612,7 @@ class DataSourceManagerComponent extends React.Component {
               title={item.title}
               src={item?.src}
               handleClick={() => renderSelectedDatasource(item)}
-              usePluginIcon={isEmpty(item.iconFile?.data)}
+              usePluginIcon={isEmpty(item?.iconFile?.data)}
               height="35px"
               width="35px"
             />
