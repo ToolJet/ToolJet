@@ -60,7 +60,7 @@ async function listRows(queryOptions, organizationId, currentState) {
     return {
       status: 'failed',
       statusText: 'failed',
-      message: 'Null value comparison not allowed with equal/not equal operator, Please use IS operator instead.',
+      message: 'Null value comparison not allowed, To check null values Please use IS operator instead.',
       description: 'Is operator should be used with null value comparision.',
       data: {},
     };
@@ -105,7 +105,7 @@ async function updateRows(queryOptions, organizationId, currentState) {
     return {
       status: 'failed',
       statusText: 'failed',
-      message: 'Null value comparison not allowed with equal/not equal operator, Please use IS operator instead.',
+      message: 'Null value comparison not allowed, To check null values Please use IS operator instead.',
       description: 'Is operator should be used with null value comparision.',
       data: {},
     };
@@ -131,7 +131,7 @@ async function deleteRows(queryOptions, organizationId, currentState) {
     return {
       status: 'failed',
       statusText: 'failed',
-      message: 'Null value comparison not allowed with equal/not equal operator, Please use IS operator instead.',
+      message: 'Null value comparison not allowed, To check null values Please use IS operator instead.',
       description: 'Is operator should be used with null value comparision.',
       data: {},
     };
