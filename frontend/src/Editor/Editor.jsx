@@ -1947,7 +1947,7 @@ class EditorComponent extends React.Component {
                   className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                   style={{ transform: `scale(${zoomLevel})` }}
                   onMouseUp={(e) => {
-                    if (['real-canvas', 'modal'].includes(e.target.className)) {
+                    if (['real-canvas show-grid', 'modal'].includes(e.target.className)) {
                       this.setState({ selectedComponents: [], currentSidebarTab: 2, hoveredComponent: false });
                     }
                   }}
