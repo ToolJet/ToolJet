@@ -17,6 +17,7 @@ apps:
       threshold:
         cpu: 0.75
         ram: 768Mi
+    useExistingSecret: false
     secret:
       name: tooljet-server
       data:

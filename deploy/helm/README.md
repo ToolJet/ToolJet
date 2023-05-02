@@ -3,6 +3,15 @@
 This chart can be used to install ToolJet in a Kubernetes Cluster via [Helm v3](https://helm.sh).\
 This setup is very rudimentary and comes with an included PostgreSQL server out of the box.
 
+## Secret management
+You can use an existing secret to configure psql auth and additional ToolJet secret env vars.
+`.Values.apps.tooljet.useExistingSecret: true`
+
+See deploy/helm/templates/tooljet/secret.yaml for desired format.
+`.Values.apps.tooljet.secret.name` must be the name of the manually created secret.
+
+If `.Values.apps.tooljet.useExistingSecret: true`, `.Values.apps.tooljet.secret.data` will not be used by helm chart.
+
 ## Installation
 
 To install, follow these steps:
