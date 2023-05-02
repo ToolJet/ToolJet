@@ -642,9 +642,9 @@ export function Table({
   registerAction(
     'downloadTableData',
     async function (format) {
-      await exportData(`${format}`, true);
+      exportData(format, true);
     },
-    [_.toString(globalFilteredRows)]
+    [_.toString(globalFilteredRows), columns]
   );
 
   useEffect(() => {
