@@ -86,8 +86,6 @@ export const SubContainer = ({
 
   const [boxes, setBoxes] = useState(allComponents);
   const [childWidgets, setChildWidgets] = useState(() => getChildWidgets(allComponents));
-  const [isDragging, setIsDragging] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
   // const [subContainerHeight, setSubContainerHeight] = useState('100%'); //used to determine the height of the sub container for modal
   const subContainerHeightRef = useRef(height ?? '100%');
 
@@ -253,10 +251,6 @@ export const SubContainer = ({
       return { draggingState: false };
     }
   });
-
-  useEffect(() => {
-    setIsDragging(draggingState);
-  }, [draggingState]);
 
   function convertXToPercentage(x, canvasWidth) {
     return (x * 100) / canvasWidth;
@@ -458,12 +452,7 @@ export const SubContainer = ({
   }
 
   return (
-    <div
-      ref={drop}
-      style={styles}
-      id={`canvas-${parent}`}
-      className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}
-    >
+    <div ref={drop} style={styles} id={`canvas-${parent}`} className={`real-canvas show-grid`}>
       {checkParentVisibility() &&
         Object.keys(childWidgets).map((key) => {
           const addDefaultChildren = childWidgets[key]['withDefaultChildren'] || false;
@@ -488,8 +477,6 @@ export const SubContainer = ({
                 allComponents={allComponents}
                 {...childWidgets[key]}
                 mode={mode}
-                resizingStatusChanged={(status) => setIsResizing(status)}
-                draggingStatusChanged={(status) => setIsDragging(status)}
                 inCanvas={true}
                 zoomLevel={zoomLevel}
                 setSelectedComponent={setSelectedComponent}
