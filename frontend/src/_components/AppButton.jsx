@@ -15,7 +15,6 @@ export const ButtonBase = function ButtonBase(props) {
     disabled,
     rightIcon,
     leftIcon,
-    Icon,
     ...restProps
   } = props;
 
