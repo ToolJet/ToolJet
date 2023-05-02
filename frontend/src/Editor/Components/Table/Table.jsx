@@ -692,7 +692,10 @@ export function Table({
     if (highlightSelectedRow && showBulkSelector && !_.isEmpty(tableDetails?.selectedRow)) {
       mergeToTableDetails({ selectedRow: {}, selectedRowId: null });
     }
-  }, [showBulkSelector, highlightSelectedRow]);
+    if (!allowSelection && (highlightSelectedRow || showBulkSelector)) {
+      mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowsDetails: [] });
+    }
+  }, [showBulkSelector, highlightSelectedRow, allowSelection]);
 
   React.useEffect(() => {
     if (serverSidePagination || !clientSidePagination) {
