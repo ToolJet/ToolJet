@@ -4,38 +4,19 @@ import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
-export const BaseUrl = ({ dataSourceURL, theme }) => {
-  return (
-    <span
-      className="col-6"
-      htmlFor=""
-      style={{
-        padding: '5px',
-        border: theme === 'default' ? '1px solid rgb(217 220 222)' : '1px solid white',
-        background: theme === 'default' ? 'rgb(246 247 251)' : '#20211e',
-        color: theme === 'default' ? '#9ca1a6' : '#9e9e9e',
-        height: '32px',
-      }}
-    >
-      {dataSourceURL}
-    </span>
-  );
-};
-
-const GRPC = ({ darkMode, selectedDataSource, ...restProps }) => {
+const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
   const protobufDefintion = JSON.parse(selectedDataSource?.options?.protobuf?.value);
 
   const { options, optionsChanged, queryName } = restProps;
-  const serverUrl = selectedDataSource?.options?.url?.value;
 
-  console.log('---GRPC options', { x: selectedDataSource?.options });
+  const serverUrl = selectedDataSource?.options?.url?.value;
 
   const [serviceNames, setServiceNames] = React.useState([]);
   const [selectedServiceName, setSelectedServiceName] = React.useState({
     label: options?.serviceName ?? '',
     value: options?.serviceName ?? '',
   });
-  const [rcp, setRcp] = React.useState(options.rcp ?? '');
+  const [rpc, setRpc] = React.useState(options.rpc ?? '');
   const [metaDataOptions, setMetaDataOptions] = React.useState(() => {
     if (options?.metaDataOptions) {
       return JSON.parse(options?.metaDataOptions);
@@ -43,49 +24,42 @@ const GRPC = ({ darkMode, selectedDataSource, ...restProps }) => {
     return [];
   });
 
-  console.log('---GRPC options xx ==>', { metaDataOptions });
-
   React.useEffect(() => {
     if (protobufDefintion) {
       const serviceNamesFromDef = Object.keys(protobufDefintion).map((serviceName) => ({
         label: serviceName,
         value: serviceName,
-        rcps: protobufDefintion[serviceName]?.map((rcp) => ({ label: rcp, value: rcp })),
+        rpcs: protobufDefintion[serviceName]?.map((rpc) => ({ label: rpc, value: rpc })),
       }));
       setServiceNames(serviceNamesFromDef);
 
       setSelectedServiceName(serviceNamesFromDef[0]);
+
+      optionsChanged({
+        ...options,
+        serviceName: serviceNamesFromDef[0].value,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const addNewMetaDataKeyValuePair = () => {
     const currentMetaDataOptions = JSON.parse(JSON.stringify(metaDataOptions));
-
     currentMetaDataOptions.push({ key: '', value: '' });
-
     setMetaDataOptions(currentMetaDataOptions);
   };
 
   const removeMetaDataKeyValuePair = (index) => {
     const currentMetaDataOptions = JSON.parse(JSON.stringify(metaDataOptions));
-
     currentMetaDataOptions.splice(index, 1);
-
     setMetaDataOptions(currentMetaDataOptions);
   };
 
   const handleOnMetaDataKeyChange = (type, index, value) => {
     const currentMetaDataOptions = JSON.parse(JSON.stringify(metaDataOptions));
-
-    if (type === 'key') {
-      currentMetaDataOptions[index][0] = value;
-    } else {
-      currentMetaDataOptions[index][1] = value;
-    }
+    currentMetaDataOptions[index][type === 'key' ? 0 : 1] = value;
 
     setMetaDataOptions(currentMetaDataOptions);
-
     optionsChanged({
       ...options,
       metaDataOptions: JSON.stringify(currentMetaDataOptions),
@@ -129,8 +103,7 @@ const GRPC = ({ darkMode, selectedDataSource, ...restProps }) => {
     <div>
       <div className="rest-api-methods-select-element-container">
         <div className={`col field w-100 d-flex rest-methods-url ${darkMode && 'dark'}`}>
-          <BaseUrl theme={darkMode ? 'monokai' : 'default'} dataSourceURL={serverUrl} />
-
+          <GRPCComponent.ServerUrl theme={darkMode ? 'monokai' : 'default'} dataSourceURL={serverUrl} />
           <div className="col-6 d-flex">
             <div className={`${darkMode && 'dark'}`} style={{ width: '200px', height: '32px' }}>
               <Select
@@ -152,15 +125,15 @@ const GRPC = ({ darkMode, selectedDataSource, ...restProps }) => {
             </div>
             <div className={`${darkMode && 'dark'}`} style={{ width: '180px', height: '32px' }}>
               <Select
-                options={selectedServiceName?.rcps || []}
+                options={selectedServiceName?.rpcs || []}
                 onChange={(value) => {
-                  setRcp(value);
+                  setRpc(value);
                   optionsChanged({
                     ...options,
-                    rcp: value,
+                    rpc: value,
                   });
                 }}
-                value={rcp}
+                value={rpc}
                 placeholder="Select a RPC"
                 height={32}
                 styles={customSelectStyles(darkMode, 170)}
@@ -172,7 +145,7 @@ const GRPC = ({ darkMode, selectedDataSource, ...restProps }) => {
       </div>
 
       <div className={`query-pane-restapi-tabs  ${darkMode ? 'dark' : ''}`}>
-        <ControlledTabs
+        <GRPCComponent.Tabs
           theme={darkMode ? 'monokai' : 'default'}
           metaDataoptions={metaDataOptions}
           currentState={restProps.currentState}
@@ -223,7 +196,7 @@ function ControlledTabs({
             className="border overflow-hidden query-manager-border-color rounded"
           >
             <Tab.Pane eventKey="metadata" t bsPrefix="rest-api-tabpanes" transition={false}>
-              <TabContent
+              <GRPCComponent.TabContent
                 options={metaDataoptions}
                 currentState={currentState}
                 theme={theme}
@@ -233,6 +206,7 @@ function ControlledTabs({
                 tabType={'metadata'}
                 paramType={'metadata'}
                 addNewKeyValuePair={addNewKeyValuePair}
+                darkMode={darkMode}
               />
             </Tab.Pane>
 
@@ -271,11 +245,8 @@ const TabContent = ({
   paramType,
   tabType,
   addNewKeyValuePair,
+  darkMode,
 }) => {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-  console.log('TabContent ==>', {
-    options,
-  });
   return (
     <div className="tab-content-wrapper">
       {options?.map((option, index) => {
@@ -352,4 +323,26 @@ const TabContent = ({
   );
 };
 
-export default GRPC;
+export const BaseUrl = ({ dataSourceURL, theme }) => {
+  return (
+    <span
+      className="col-6"
+      htmlFor=""
+      style={{
+        padding: '5px',
+        border: theme === 'default' ? '1px solid rgb(217 220 222)' : '1px solid white',
+        background: theme === 'default' ? 'rgb(246 247 251)' : '#20211e',
+        color: theme === 'default' ? '#9ca1a6' : '#9e9e9e',
+        height: '32px',
+      }}
+    >
+      {dataSourceURL}
+    </span>
+  );
+};
+
+GRPCComponent.ServerUrl = BaseUrl;
+GRPCComponent.Tabs = ControlledTabs;
+GRPCComponent.TabContent = TabContent;
+
+export default GRPCComponent;
