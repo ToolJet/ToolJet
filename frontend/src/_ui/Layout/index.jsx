@@ -148,6 +148,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     <div
                       className="cursor-pointer  tj-leftsidebar-icon-items"
                       onClick={() => switchDarkMode(!darkMode)}
+                      data-cy="mode-switch-button"
                     >
                       <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill={darkMode ? '#4C5155' : '#C1C8CD'} />
                     </div>

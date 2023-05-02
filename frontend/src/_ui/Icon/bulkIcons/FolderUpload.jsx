@@ -8,6 +8,7 @@ const FolderUpload = ({ fill = '#C1C8CD', width = '25', className = '', viewBox 
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
+    data-cy="folder-upload-icon"
   >
     <path
       opacity="0.4"
