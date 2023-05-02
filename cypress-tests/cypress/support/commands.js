@@ -172,7 +172,9 @@ Cypress.Commands.add(
 Cypress.Commands.add("deleteApp", (appName) => {
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
   cy.get(commonSelectors.appCard(appName))
+    .realHover()
     .find(commonSelectors.appCardOptionsButton)
+    .realHover()
     .click();
   cy.get(commonSelectors.deleteAppOption).click();
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
