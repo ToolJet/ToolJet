@@ -217,7 +217,7 @@ export function Table({
   const copyOfTableDetails = useRef(tableDetails);
   useEffect(() => {
     copyOfTableDetails.current = _.cloneDeep(tableDetails);
-  }, [JSON.stringify(tableDetails)]);
+  }, [_.toString(tableDetails)]);
 
   function handleNewRowCellValueChange(index, key, value, rowData) {
     const changeSet = copyOfTableDetails.current.addNewRowsDetails.newRowsChangeSet || {};
@@ -523,8 +523,8 @@ export function Table({
             : (newState.selectedRowIds = {
                 [action.id]: true,
               });
+          return newState;
         }
-        return newState;
       },
     },
     useColumnOrder,
@@ -537,7 +537,9 @@ export function Table({
     useExportData,
     useRowSelect,
     (hooks) => {
-      (showBulkSelector || (allowSelection && !highlightSelectedRow)) &&
+      ((showBulkSelector && !highlightSelectedRow) ||
+        (allowSelection && !highlightSelectedRow) ||
+        (showBulkSelector && !allowSelection)) &&
         hooks.visibleColumns.push((columns) => [
           {
             id: 'selection',
@@ -560,6 +562,8 @@ export function Table({
         ]);
     }
   );
+
+  useEffect(() => mergeToTableDetails(selectedFlatRows), [_.toString(selectedFlatRows)]);
 
   const currentColOrder = React.useRef();
 
@@ -658,9 +662,37 @@ export function Table({
   );
 
   useEffect(() => {
-    const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
-    onComponentOptionChanged(component, 'selectedRows', selectedRowsOriginalData);
-  }, [selectedFlatRows.length]);
+    if (showBulkSelector) {
+      const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
+      const selectedRowsId = selectedFlatRows.map((row) => row.id);
+      setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId });
+    } else {
+      const selectedRow = selectedFlatRows.reduce((accumulator, row) => {
+        accumulator = { ...row.original };
+        return accumulator;
+      }, {});
+      const selectedRowId = selectedFlatRows?.[0]?.id ?? null;
+      setExposedVariables({ selectedRow, selectedRowId });
+    }
+  }, [selectedFlatRows.length, selectedFlatRows, _.toString(selectedFlatRows)]);
+
+  useEffect(() => {
+    if (!showBulkSelector && !_.isEmpty(exposedVariables.selectedRows)) {
+      setExposedVariables({ selectedRows: [], selectedRowsId: [] });
+    }
+    if (
+      (!highlightSelectedRow || !showBulkSelector || (!highlightSelectedRow && !showBulkSelector)) &&
+      !_.isEmpty(tableDetails?.selectedRowsDetails)
+    ) {
+      mergeToTableDetails({ selectedRowsDetails: [] });
+    }
+    if (!highlightSelectedRow && !_.isEmpty(tableDetails?.selectedRow)) {
+      mergeToTableDetails({ selectedRow: {}, selectedRowId: null });
+    }
+    if (highlightSelectedRow && showBulkSelector && !_.isEmpty(tableDetails?.selectedRow)) {
+      mergeToTableDetails({ selectedRow: {}, selectedRowId: null });
+    }
+  }, [showBulkSelector, highlightSelectedRow]);
 
   React.useEffect(() => {
     if (serverSidePagination || !clientSidePagination) {
@@ -999,15 +1031,40 @@ export function Table({
                     key={index}
                     className={`table-row ${
                       highlightSelectedRow && row.id === tableDetails.selectedRowId ? 'selected' : ''
+                    } ${
+                      highlightSelectedRow &&
+                      showBulkSelector &&
+                      tableDetails?.selectedRowsDetails?.some((singleRow) => singleRow.selectedRowId === row.id) &&
+                      'selected'
                     }`}
                     {...row.getRowProps()}
                     onClick={(e) => {
                       e.stopPropagation();
-                      const selectedRowDetails = { selectedRowId: row.id, selectedRow: row.original };
-                      mergeToTableDetails(selectedRowDetails);
-                      setExposedVariables(selectedRowDetails).then(() => {
-                        fireEvent('onRowClicked');
-                      });
+                      if (highlightSelectedRow && !showBulkSelector) {
+                        const selectedRowDetails = { selectedRowId: row.id, selectedRow: row.original };
+                        mergeToTableDetails(selectedRowDetails);
+                        setExposedVariables(selectedRowDetails).then(() => {
+                          fireEvent('onRowClicked');
+                        });
+                      }
+                      if (highlightSelectedRow && showBulkSelector) {
+                        const selectedRowDetails = { selectedRowId: row.id, selectedRow: row.original };
+                        const selectedRowsDetails = tableDetails?.selectedRowsDetails ?? [];
+                        if (
+                          _.isEmpty(selectedRowsDetails) ||
+                          (selectedRowsDetails.length >= 1 &&
+                            !selectedRowsDetails.some((row) => row.selectedRowId === selectedRowDetails.selectedRowId))
+                        ) {
+                          selectedRowsDetails.push(selectedRowDetails);
+                          setExposedVariables({
+                            selectedRows: selectedRowsDetails.map((row) => row.selectedRow),
+                            selectedRowsId: selectedRowsDetails.map((row) => row.selectedRowId),
+                          }).then(() => {
+                            mergeToTableDetails({ selectedRowsDetails });
+                            fireEvent('onRowClicked');
+                          });
+                        }
+                      }
                     }}
                     onMouseOver={(e) => {
                       if (hoverAdded) {
