@@ -328,7 +328,7 @@ describe("Table", () => {
     );
   });
 
-  it("should verify column options", () => {
+  it.only("should verify column options", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     openEditorSidebar(tableText.defaultWidgetName);

@@ -68,7 +68,7 @@ export const verifyAndEnterColumnOptionInput = (label, value) => {
     .realClick()
     .realPress(["Meta", "A"])
     .realType(
-      `{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}${value}`
+      `{backspace}{selectAll}{backspace}{selectAll}{backspace}{selectAll}{backspace}{selectAll}{backspace}{selectAll}{backspace}{backspace}{selectAll}{backspace}${value}`
     );
 };
 
