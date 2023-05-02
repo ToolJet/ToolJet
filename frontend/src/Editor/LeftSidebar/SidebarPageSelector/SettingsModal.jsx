@@ -14,6 +14,7 @@ export const SettingsModal = ({
   pages,
   components,
   dataQueries,
+  pinPagesPopover,
 }) => {
   const [isSaving, _setIsSaving] = useState(false);
   console.log({ dataQueries });
@@ -55,7 +56,7 @@ export const SettingsModal = ({
             </svg>
           </span>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body onClick={() => pinPagesPopover(true)}>
           <b data-cy={'page-events-labe'}>Events</b>
           <EventManager
             component={{
