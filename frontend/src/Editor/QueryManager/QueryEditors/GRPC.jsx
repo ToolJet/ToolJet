@@ -26,8 +26,9 @@ const GRPC = ({ darkMode, selectedDataSource, ...restProps }) => {
   const protobufDefintion = JSON.parse(selectedDataSource?.options?.protobuf?.value);
 
   const { options, optionsChanged, queryName } = restProps;
+  const serverUrl = selectedDataSource?.options?.url?.value;
 
-  console.log('---GRPC options', { options });
+  console.log('---GRPC options', { x: selectedDataSource?.options });
 
   const [serviceNames, setServiceNames] = React.useState([]);
   const [selectedServiceName, setSelectedServiceName] = React.useState({
@@ -128,7 +129,7 @@ const GRPC = ({ darkMode, selectedDataSource, ...restProps }) => {
     <div>
       <div className="rest-api-methods-select-element-container">
         <div className={`col field w-100 d-flex rest-methods-url ${darkMode && 'dark'}`}>
-          <BaseUrl theme={darkMode ? 'monokai' : 'default'} dataSourceURL={'dataSourceURL'} />
+          <BaseUrl theme={darkMode ? 'monokai' : 'default'} dataSourceURL={serverUrl} />
 
           <div className="col-6 d-flex">
             <div className={`${darkMode && 'dark'}`} style={{ width: '200px', height: '32px' }}>
