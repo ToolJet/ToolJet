@@ -352,7 +352,7 @@ describe("Table", () => {
     verifyAndEnterColumnOptionInput("Text color", "red");
     verifyAndEnterColumnOptionInput(
       "Cell Background Color",
-      "{selectAll}{backspace}{selectAll}{backspace}{selectAll}{backspace}{selectAll}{backspace}{selectAll}backspace}{selectAll}{backspace}yellow"
+      "{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}backspace}{backspace}{backspace}yellow"
     );
     cy.get(
       '[data-cy="input-and-label-cell-background-color"] > .form-label'
