@@ -92,7 +92,7 @@ Cypress.Commands.add("waitForAutoSave", () => {
 Cypress.Commands.add("createApp", (appName) => {
   cy.get("body").then(($title) => {
     if ($title.text().includes(commonText.introductionMessage)) {
-      cy.get(commonSelectors.emptyAppCreateButton).eq(0).click();
+      cy.get(commonSelectors.dashboardAppCreateButton).eq(0).click();
     } else {
       cy.get(commonSelectors.appCreateButton).click();
     }
@@ -170,9 +170,11 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("deleteApp", (appName) => {
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
-  cy.get(commonSelectors.appCard(appName))
-    .find(commonSelectors.appCardOptionsButton)
-    .click();
+  cy.contains("div", appName)
+  .parent()
+  .within(() => {
+    cy.get(commonSelectors.appCardOptionsButton).invoke("click");
+  });
   cy.get(commonSelectors.deleteAppOption).click();
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
   cy.wait("@appDeleted");
