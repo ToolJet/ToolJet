@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
 import Fuse from 'fuse.js';
-import { LeftSidebarItem } from '../SidebarItem';
 import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import { PageHandler, AddingPageHandler } from './PageHandler';
 import { GlobalSettings } from './GlobalSettings';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
-import Popover from '@/_ui/Popover';
 // eslint-disable-next-line import/no-unresolved
 import EmptyIllustration from '@assets/images/no-results.svg';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
-  selectedSidebarItem,
-  setSelectedSidebarItem,
   darkMode,
   currentPageId,
   addNewPage,
@@ -33,11 +29,10 @@ const LeftSidebarPageSelector = ({
   currentState,
   apps,
   dataQueries,
-  popoverContentHeight,
+  pinned,
+  setPinned,
 }) => {
   const [allpages, setPages] = useState(pages);
-  const [pinned, setPinned] = useState(false);
-
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
 
@@ -61,7 +56,7 @@ const LeftSidebarPageSelector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ pages })]);
 
-  const popoverContent = (
+  return (
     <div>
       <div className="card-body p-0 pb-5">
         <HeaderSection darkMode={darkMode}>
@@ -171,27 +166,6 @@ const LeftSidebarPageSelector = ({
         </div>
       </div>
     </div>
-  );
-
-  return (
-    <Popover
-      handleToggle={(open) => {
-        if (!open) setSelectedSidebarItem('');
-      }}
-      {...(pinned && { open: true })}
-      popoverContentClassName="p-0 sidebar-h-100-popover"
-      side="right"
-      popoverContent={popoverContent}
-      popoverContentHeight={popoverContentHeight}
-    >
-      <LeftSidebarItem
-        selectedSidebarItem={selectedSidebarItem}
-        onClick={() => setSelectedSidebarItem('page')}
-        icon="page"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
-        tip="Pages"
-      />
-    </Popover>
   );
 };
 
