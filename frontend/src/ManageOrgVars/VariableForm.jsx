@@ -28,7 +28,7 @@ class VariableForm extends React.Component {
             <div className="form-group mb-3 ">
               <div>
                 <div className="col tj-app-input">
-                  <label className="form-label">
+                  <label className="form-label" data-cy="workspace-variable-name-label">
                     {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.name', 'Name')}
                   </label>
                   <input
@@ -43,11 +43,14 @@ class VariableForm extends React.Component {
                     value={this.props.fields['variable_name']}
                     data
                     autoFocus
+                    data-cy="workspace-variable-name-input"
                   />
-                  <span className="text-danger">{this.props.errors['variable_name']}</span>
+                  <span className="text-danger" data-cy="name-error-text">
+                    {this.props.errors['variable_name']}
+                  </span>
                 </div>
                 <div className="col tj-app-input">
-                  <label className="form-label">
+                  <label className="form-label" data-cy="workspace-variable-value-label">
                     {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.value', 'Value')}
                   </label>
                   <input
@@ -60,15 +63,18 @@ class VariableForm extends React.Component {
                     name="value"
                     onChange={this.props.changeNewVariableOption.bind(this, 'value')}
                     value={this.props.fields['value']}
+                    data-cy="workspace-variable-value-input"
                   />
-                  <span className="text-danger">{this.props.errors['value']}</span>
+                  <span className="text-danger" data-cy="value-error-text">
+                    {this.props.errors['value']}
+                  </span>
                 </div>
               </div>
             </div>
             <div className="form-group mb-3 ">
               <div className="row">
                 <div className="col">
-                  <label className="form-label">
+                  <label className="form-label" data-cy="workspace-variable-type-label">
                     {this.props.t('header.organization.menus.manageSSO.environmentVar.variableForm.type', 'Type')}
                   </label>
                   {this.props.selectedVariableId ? (

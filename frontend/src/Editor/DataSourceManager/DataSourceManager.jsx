@@ -185,6 +185,7 @@ class DataSourceManagerComponent extends React.Component {
             environment_id: currentEnvironment,
           })
           .then(() => {
+            this.props.updateSelectedDatasource(selectedDataSource.name);
             this.setState({ isSaving: false });
             this.hideModal();
             toast.success(
@@ -213,11 +214,14 @@ class DataSourceManagerComponent extends React.Component {
           })
           .then((data) => {
             this.setState({ isSaving: false });
+            this.props.updateSelectedDatasource(name);
+
             this.hideModal();
             toast.success(
               this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
               { position: 'top-center' }
             );
+
             this.props.dataSourcesChanged(false, data);
             this.props.globalDataSourcesChanged();
           })

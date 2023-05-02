@@ -138,3 +138,9 @@ Any property having `Fx` button next to its field can be **programmatically conf
 | searchText | This variable is initially empty and will hold the value whenever the user searches on the dropdown. searchText's value can be accesed using`{{components.dropdown1.searchText}}` |
 | label | The variable label holds the label name of the dropdown. label's value can be accesed using`{{components.dropdown1.searchText}}` |
 | optionLabels | The optionLabels holds the option labels for the values of the dropdown. optionLabels can be accesed using`{{components.dropdown1.optionLabels}}` for all the option labels in the array form or `{{components.dropdown1.optionLabels[0]}}` for particular option label |
+
+## Component specific actions (CSA)
+
+| Actions | Description |
+| -------- | ----------- |
+| selectOption | You can set an option on the dropdown component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.dropdown1.setOption(1)` |

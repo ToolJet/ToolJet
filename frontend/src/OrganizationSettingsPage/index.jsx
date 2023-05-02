@@ -15,10 +15,6 @@ export function OrganizationSettings(props) {
   const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  useEffect(() => {
-    updateSidebarNAV('Users & permissions');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
@@ -38,7 +34,7 @@ export function OrganizationSettings(props) {
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
-      admin ? setSelectedTab('Users & permissions') : setSelectedTab('manageEnvVars');
+      admin ? updateSidebarNAV('Users & permissions') : updateSidebarNAV('Workspace variables');
     });
 
     () => subscription.unsubsciption();
@@ -54,19 +50,21 @@ export function OrganizationSettings(props) {
               {sideBarNavs.map((item, index) => {
                 return (
                   <>
-                    <FolderList
-                      className="workspace-settings-nav-items"
-                      key={index}
-                      onClick={() => {
-                        setSelectedTab(defaultOrgName(item));
-                        if (item == 'Users') updateSidebarNAV('Users & permissions');
-                        else updateSidebarNAV(item);
-                      }}
-                      selectedItem={selectedTab == defaultOrgName(item)}
-                      dataCy={item.toLowerCase().replace(/\s+/g, '-')}
-                    >
-                      {item}
-                    </FolderList>
+                    {(admin || item == 'Workspace variables') && (
+                      <FolderList
+                        className="workspace-settings-nav-items"
+                        key={index}
+                        onClick={() => {
+                          setSelectedTab(defaultOrgName(item));
+                          if (item == 'Users') updateSidebarNAV('Users & permissions');
+                          else updateSidebarNAV(item);
+                        }}
+                        selectedItem={selectedTab == defaultOrgName(item)}
+                        dataCy={item.toLowerCase().replace(/\s+/g, '-')}
+                      >
+                        {item}
+                      </FolderList>
+                    )}
                   </>
                 );
               })}

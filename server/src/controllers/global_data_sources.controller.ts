@@ -44,10 +44,21 @@ export class GlobalDataSourcesController {
         );
       }
     }
-    return decamelizeKeys({ data_sources: dataSources }, function (key, convert, options) {
-      const checkForKeysAsPath = /^(\/{0,1}(?!\/))[A-Za-z0-9/\-_]+(.([a-zA-Z]+))?$/gm;
-      return checkForKeysAsPath.test(key) ? key : convert(key, options);
+
+    const decamelizedDatasources = dataSources.map((dataSource) => {
+      if (dataSource.kind === 'openapi') {
+        const { options, ...objExceptOptions } = dataSource;
+        const tempDs = decamelizeKeys(objExceptOptions);
+        const { spec, ...objExceptSpec } = options;
+        const decamelizedOptions = decamelizeKeys(objExceptSpec);
+        decamelizedOptions['spec'] = spec;
+        tempDs['options'] = decamelizedOptions;
+        return tempDs;
+      }
+      return decamelizeKeys(dataSource);
     });
+
+    return { data_sources: decamelizedDatasources };
   }
 
   @UseGuards(JwtAuthGuard)

@@ -55,7 +55,14 @@ function InviteUsersForm({
               <h3 className="tj-text-lg tj-text font-weight-500" data-cy="add-users-card-title">
                 {t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}
               </h3>
-              <div onClick={() => onClose()} style={{ cursor: 'pointer' }} data-cy="close-button">
+              <div
+                onClick={() => {
+                  onCancel();
+                  onClose();
+                }}
+                style={{ cursor: 'pointer' }}
+                data-cy="close-button"
+              >
                 <SolidIcon name="remove" width="16" />
               </div>
             </div>

@@ -107,7 +107,7 @@ Learn more about the **[ToolJet Database here](/docs/tooljet-database)**
 
 ### Create a new application
 
-1. To create a new ToolJet application, go to the **Dashboard** -> **New App from scratch**. 
+1. To create a new ToolJet application, go to the **Dashboard** -> **Create new application**. 
 
     <div style={{textAlign: 'center'}}>
 
