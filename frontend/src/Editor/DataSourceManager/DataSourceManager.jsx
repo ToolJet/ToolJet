@@ -105,7 +105,7 @@ class DataSourceManagerComponent extends React.Component {
     this.setState({
       dataSourceMeta: source.manifestFile?.data?.source ?? source,
       selectedDataSource: source.manifestFile?.data?.source ?? source,
-      selectedDataSourceIcon: source?.iconFile?.data,
+      selectedDataSourceIcon: source.iconFile?.data,
       name: source.manifestFile?.data?.source?.kind ?? source.kind,
       dataSourceSchema: source.manifestFile?.data,
       selectedDataSourcePluginId: source.id,
