@@ -76,9 +76,10 @@ export const BlankPage = function BlankPage({
                       className="col"
                       fill={'#FDFDFE'}
                     >
-                      New app from scratch
+                      Create new application
                     </ButtonSolid>
                     <div className="col">
+
                       <ButtonSolid
                         leftIcon="folderdownload"
                         onChange={handleImportApp}
