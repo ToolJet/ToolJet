@@ -25,9 +25,12 @@ Cypress.Commands.add("forceClickOnCanvas", () => {
 });
 
 Cypress.Commands.add("verifyToastMessage", (selector, message) => {
+  cy.screenshot();
+  cy.wait(1000);
+  cy.screenshot();
   cy.get(selector)
+    .screenshot()
     .eq(0)
-    .invoke("show")
     .should("be.visible")
     .and("contain.text", message);
   cy.get("body").then(($body) => {
