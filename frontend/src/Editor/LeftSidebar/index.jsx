@@ -10,6 +10,8 @@ import { LeftSidebarComment } from './SidebarComment';
 import LeftSidebarPageSelector from './SidebarPageSelector';
 import { ConfirmDialog } from '@/_components';
 import config from 'config';
+import { LeftSidebarItem } from './SidebarItem';
+import Popover from '@/_ui/Popover';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -54,6 +56,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
+  const [pinned, setPinned] = useState(false);
+
   useEffect(() => {
     popoverContentHeight !== queryPanelHeight && setPopoverContentHeight(queryPanelHeight);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -75,31 +79,50 @@ export const LeftSidebar = forwardRef((props, ref) => {
 
   return (
     <div className="left-sidebar" data-cy="left-sidebar-inspector">
-      <LeftSidebarPageSelector
-        darkMode={darkMode}
-        selectedSidebarItem={selectedSidebarItem}
-        setSelectedSidebarItem={handleSelectedSidebarItem}
-        appDefinition={appDefinition}
-        currentPageId={currentPageId}
-        addNewPage={addNewPage}
-        switchPage={switchPage}
-        deletePage={deletePage}
-        renamePage={renamePage}
-        hidePage={hidePage}
-        unHidePage={unHidePage}
-        updateHomePage={updateHomePage}
-        updatePageHandle={updatePageHandle}
-        clonePage={clonePage}
-        pages={Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page })) || []}
-        homePageId={appDefinition.homePageId}
-        showHideViewerNavigationControls={showHideViewerNavigationControls}
-        updateOnSortingPages={updateOnSortingPages}
-        updateOnPageLoadEvents={updateOnPageLoadEvents}
-        currentState={currentState}
-        apps={apps}
-        dataQueries={dataQueries}
+      <Popover
+        handleToggle={(open) => {
+          if (!open) setSelectedSidebarItem('');
+        }}
+        {...(pinned && { open: true })}
+        popoverContentClassName="p-0 sidebar-h-100-popover"
+        side="right"
+        popoverContent={
+          <LeftSidebarPageSelector
+            darkMode={darkMode}
+            selectedSidebarItem={selectedSidebarItem}
+            setSelectedSidebarItem={handleSelectedSidebarItem}
+            appDefinition={appDefinition}
+            currentPageId={currentPageId}
+            addNewPage={addNewPage}
+            switchPage={switchPage}
+            deletePage={deletePage}
+            renamePage={renamePage}
+            hidePage={hidePage}
+            unHidePage={unHidePage}
+            updateHomePage={updateHomePage}
+            updatePageHandle={updatePageHandle}
+            clonePage={clonePage}
+            pages={Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page })) || []}
+            homePageId={appDefinition.homePageId}
+            showHideViewerNavigationControls={showHideViewerNavigationControls}
+            updateOnSortingPages={updateOnSortingPages}
+            updateOnPageLoadEvents={updateOnPageLoadEvents}
+            currentState={currentState}
+            apps={apps}
+            dataQueries={dataQueries}
+            popoverContentHeight={popoverContentHeight}
+          />
+        }
         popoverContentHeight={popoverContentHeight}
-      />
+      >
+        <LeftSidebarItem
+          selectedSidebarItem={selectedSidebarItem}
+          onClick={() => setSelectedSidebarItem('page')}
+          icon="page"
+          className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
+          tip="Pages"
+        />
+      </Popover>
       <LeftSidebarInspector
         darkMode={darkMode}
         selectedSidebarItem={selectedSidebarItem}

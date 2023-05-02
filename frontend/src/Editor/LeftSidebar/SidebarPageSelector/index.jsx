@@ -173,26 +173,27 @@ const LeftSidebarPageSelector = ({
     </div>
   );
 
-  return (
-    <Popover
-      handleToggle={(open) => {
-        if (!open) setSelectedSidebarItem('');
-      }}
-      {...(pinned && { open: true })}
-      popoverContentClassName="p-0 sidebar-h-100-popover"
-      side="right"
-      popoverContent={popoverContent}
-      popoverContentHeight={popoverContentHeight}
-    >
-      <LeftSidebarItem
-        selectedSidebarItem={selectedSidebarItem}
-        onClick={() => setSelectedSidebarItem('page')}
-        icon="page"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
-        tip="Pages"
-      />
-    </Popover>
-  );
+  return popoverContent;
+  // (
+  //   <Popover
+  //     handleToggle={(open) => {
+  //       if (!open) setSelectedSidebarItem('');
+  //     }}
+  //     {...(pinned && { open: true })}
+  //     popoverContentClassName="p-0 sidebar-h-100-popover"
+  //     side="right"
+  //     popoverContent={popoverContent}
+  //     popoverContentHeight={popoverContentHeight}
+  //   >
+  //     <LeftSidebarItem
+  //       selectedSidebarItem={selectedSidebarItem}
+  //       onClick={() => setSelectedSidebarItem('page')}
+  //       icon="page"
+  //       className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
+  //       tip="Pages"
+  //     />
+  //   </Popover>
+  // );
 };
 
 export default LeftSidebarPageSelector;
