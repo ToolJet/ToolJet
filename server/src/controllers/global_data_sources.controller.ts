@@ -79,16 +79,13 @@ export class GlobalDataSourcesController {
 
     if (kind === 'grpc') {
       const rootDir = process.cwd().split('/').slice(0, -1).join('/');
-      const protoFilePath = `${rootDir}/protos/password.proto`;
+      const protoFilePath = `${rootDir}/protos/service.proto`;
       const fs = require('fs');
 
       const filecontent = fs.readFileSync(protoFilePath, 'utf8');
-
       const rcps = await getServiceAndRpcNames(filecontent);
-
-      options.find((option) => (option['key'] = 'protobuf')).value = JSON.stringify(rcps, null, 2);
+      options.find((option) => option['key'] === 'protobuf').value = JSON.stringify(rcps, null, 2);
     }
-
     const dataSource = await this.dataSourcesService.create(
       name,
       kind,

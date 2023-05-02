@@ -173,7 +173,6 @@ const DynamicForm = ({
         };
       }
       case 'react-component-oauth-authentication':
-        console.log('---GRPC options ===>', { options });
         return {
           isGrpc: source === 'grpc',
           grant_type: options?.grant_type?.value,

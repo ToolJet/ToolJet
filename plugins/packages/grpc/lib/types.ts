@@ -1,4 +1,5 @@
 export type SourceOptions = {
+  url: string;
   protobuf: string;
   auth_type: 'none' | 'basic' | 'bearer' | 'api_key';
   username?: string;
@@ -10,5 +11,5 @@ export type SourceOptions = {
 export type QueryOptions = {
   operation: string;
   serviceName: string;
-  rcp: string;
+  rpc: string;
 };

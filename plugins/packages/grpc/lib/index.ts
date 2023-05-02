@@ -6,13 +6,19 @@ import * as protoLoader from '@grpc/proto-loader';
 
 export default class GRPC implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    console.log('sourceOptions GRPC ===>', queryOptions);
+    const { serviceName, rpc } = queryOptions;
 
-    const { serviceName, rcp } = queryOptions;
+    if (!sourceOptions.url) {
+      throw new QueryError('Missing URL', {}, {});
+    }
 
     const cwd = process.cwd();
     const rootDir = cwd.split('/').slice(0, -1).join('/');
-    const protoFilePath = `${rootDir}/protos/password.proto`;
+    const protoFilePath = `${rootDir}/protos/service.proto`;
+
+    if (!sourceOptions.protobuf || sourceOptions.protobuf.length === 0) {
+      throw new QueryError('Missing protobuf files', {}, {});
+    }
 
     const options: protoLoader.Options = {
       keepCase: true,
@@ -27,7 +33,7 @@ export default class GRPC implements QueryService {
     const grpcObj: any = protoLoader.loadSync(protoFilePath, options);
     const Service: any = grpc.loadPackageDefinition(grpcObj)[serviceName];
 
-    const clientStub: any = new Service('localhost:50051', grpc.credentials.createInsecure());
+    const clientStub: any = new Service(sourceOptions.url, grpc.credentials.createInsecure());
 
     const metadata = new grpc.Metadata();
 
@@ -45,7 +51,7 @@ export default class GRPC implements QueryService {
     }
 
     const result = await new Promise((resolve, reject) => {
-      clientStub[rcp]({}, metadata, (err: any, response: any) => {
+      clientStub[rpc]({}, metadata, (err: any, response: any) => {
         if (err) {
           reject(err);
         }
@@ -57,10 +63,7 @@ export default class GRPC implements QueryService {
 
     return {
       status: 'ok',
-      data: {
-        dir: rootDir,
-        result,
-      },
+      data: result as any,
     };
   }
 }

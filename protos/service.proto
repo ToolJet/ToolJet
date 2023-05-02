@@ -1,0 +1,16 @@
+syntax = "proto3";
+message PasswordDetails {
+    string id = 1;
+    string password = 2;
+    string hashValue = 3;
+    string saltValue = 4;
+}
+service PasswordService {
+    rpc RetrievePasswords (Empty) returns (PasswordList) {}
+    rpc AddNewDetails (PasswordDetails) returns (PasswordDetails) {}
+    rpc UpdatePasswordDetails (PasswordDetails) returns (PasswordDetails) {}
+}
+message Empty {}
+message PasswordList {
+   repeated PasswordDetails passwords = 1;
+}
