@@ -52,7 +52,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </ToolTip>
                 </li>
                 {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
-                  <li className="text-center  cursor-pointer">
+                  <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
                     <ToolTip message="Tables" placement="right">
                       <Link
                         to={getPrivateRoute('database')}
