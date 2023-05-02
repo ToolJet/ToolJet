@@ -50,5 +50,5 @@ jobs:
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: screenshots
-          path: cypress-tests/cypress/screenshots
+          name: videos
+          path: cypress-tests/cypress/videos
