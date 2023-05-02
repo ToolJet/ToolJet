@@ -93,7 +93,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
               </span>
             </label>
             <div className="help-text">
-              <div data-cy="enable-sign-up-helper-text tj-text-xsm">
+              <div data-cy="enable-sign-up-helper-text">
                 {t(
                   'header.organization.menus.manageSSO.generalSettings.newAccountWillBeCreated',
                   `New account will be created for user's first time SSO sign in`
@@ -116,10 +116,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
                 </span>
               </label>
               <div className="help-text tj-text-xsm mt-1">
-                <div
-                  data-cy="allow-default-sso-helper-text tj-text-xsm"
-                  className="allow-default-sso-helper-text tj-text-xsm mt"
-                >
+                <div data-cy="allow-default-sso-helper-text" className="allow-default-sso-helper-text tj-text-xsm mt">
                   {t(
                     'header.organization.menus.manageSSO.generalSettings.ssoAuth',
                     `Allow users to authenticate via default SSO. Default SSO configurations can be overridden by workspace level SSO.`
@@ -171,7 +168,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
               <p id="login-url" data-cy="workspace-login-url">
                 {`${window.public_config?.TOOLJET_HOST}/login/${authenticationService?.currentSessionValue?.current_organization_id}`}
               </p>
-              <SolidIcon name="copy" width="16" data-cy="copy-icon" onClick={() => copyFunction('login-url')} />
+              <SolidIcon name="copy" width="16" onClick={() => copyFunction('login-url')} />
             </div>
             <div className="mt-1 tj-text-xxsm">
               <div data-cy="workspace-login-help-text">
@@ -196,7 +193,9 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
           <div className="password-disable-danger-wrap">
             <div className="default-danger-tag-wrap">
               <SolidIcon name="information" fill="#E54D2E" width="13" />
-              <p className="font-weight-500 tj-text-xsm">Danger zone</p>
+              <p className="font-weight-500 tj-text-xsm" data-cy="alert-text">
+                Danger zone
+              </p>
             </div>
             <div className="form-group mb-3">
               <label className="form-check form-switch">
@@ -204,13 +203,15 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
                   className="form-check-input"
                   type="checkbox"
                   onChange={() => (enabled ? setShowDisablingPasswordConfirmation(true) : changeStatus())}
-                  data-cy="enable-sign-up-toggle"
+                  data-cy="password-enable-toggle"
                   checked={enabled}
                 />
-                <span className="form-check-label">Password login </span>
+                <span className="form-check-label" data-cy="label-password-login">
+                  Password login{' '}
+                </span>
               </label>
               <div className="help-text tj-text-xsm danger-text-login">
-                <div data-cy="enable-sign-up-helper-text ">
+                <div data-cy="disable-password-helper-text">
                   Disable password login only if your SSO is configured otherwise you will get logged out.
                 </div>
               </div>

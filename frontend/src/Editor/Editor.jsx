@@ -1403,12 +1403,13 @@ class EditorComponent extends React.Component {
     );
   };
 
-  deletePageRequest = (pageId, isHomePage = false) => {
+  deletePageRequest = (pageId, isHomePage = false, pageName = '') => {
     this.setState({
       showPageDeletionConfirmation: {
         isOpen: true,
         pageId,
         isHomePage,
+        pageName,
       },
     });
   };
@@ -1419,6 +1420,7 @@ class EditorComponent extends React.Component {
         isOpen: false,
         pageId: null,
         isHomePage: false,
+        pageName: null,
       },
     });
   };
@@ -1837,7 +1839,7 @@ class EditorComponent extends React.Component {
         <Confirm
           show={this.state.showPageDeletionConfirmation?.isOpen ?? false}
           title={'Delete Page'}
-          message={`Do you really want to delete this page?`}
+          message={`Do you really want to delete ${this.state.showPageDeletionConfirmation?.pageName || 'this'} page?`}
           confirmButtonLoading={this.state.isDeletingPage}
           onConfirm={() => this.executeDeletepageRequest()}
           onCancel={() => this.cancelDeletePageRequest()}

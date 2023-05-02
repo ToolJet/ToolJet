@@ -101,7 +101,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
                 isDisabled={dataLoading}
               />
             </div>
-            <div className="col mx-2" data-cy="records-dropdown-field">
+            <div className="col mx-2 records-dropdown-field" data-cy="records-dropdown-field">
               <Select
                 isLoading={dataLoading}
                 customWrap={true}
