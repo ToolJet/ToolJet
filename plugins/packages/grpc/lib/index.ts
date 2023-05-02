@@ -16,7 +16,7 @@ export default class GRPC implements QueryService {
     const rootDir = cwd.split('/').slice(0, -1).join('/');
     const protoFilePath = `${rootDir}/protos/service.proto`;
 
-    if (!sourceOptions.protobuf || sourceOptions.protobuf.length === 0) {
+    if (!sourceOptions.protobuf) {
       throw new QueryError('Missing protobuf files', {}, {});
     }
 
