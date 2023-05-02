@@ -55,13 +55,14 @@ export default function generateColumnsData({
       column.dateFormat = column.dateFormat ? column.dateFormat : 'DD/MM/YYYY';
       column.parseDateFormat = column.parseDateFormat ?? column.dateFormat; //backwards compatibility
       sortType = (firstDate, secondDate) => {
+        const columnKey = column.key || column.name;
         // Return -1 if second date is higher, 1 if first date is higher
-        if (secondDate?.original[column.name] === '') {
+        if (secondDate?.original[columnKey] === '') {
           return 1;
-        } else if (firstDate?.original[column.name] === '') return -1;
+        } else if (firstDate?.original[columnKey] === '') return -1;
 
-        const parsedFirstDate = moment(firstDate?.original[column.name], column.parseDateFormat);
-        const parsedSecondDate = moment(secondDate?.original[column.name], column.parseDateFormat);
+        const parsedFirstDate = moment(firstDate?.original[columnKey], column.parseDateFormat);
+        const parsedSecondDate = moment(secondDate?.original[columnKey], column.parseDateFormat);
 
         if (moment(parsedSecondDate).isSameOrAfter(parsedFirstDate)) {
           return -1;
@@ -90,6 +91,7 @@ export default function generateColumnsData({
       maxLength: column.maxLength,
       regex: column.regex,
       customRule: column?.customRule,
+      sortType,
       Cell: function ({ cell, isEditable, newRowsChangeSet = null }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;

@@ -149,7 +149,11 @@ class OpenapiComponent extends React.Component {
       return servers.map((url) => {
         return url.url;
       });
-    } else if (path && this.state.spec.paths[path]['servers'] && this.state.spec?.paths[path]['servers'].length > 0) {
+    } else if (
+      path &&
+      this.state.spec.paths[path]?.['servers'] &&
+      this.state.spec.paths[path]?.['servers'].length > 0
+    ) {
       const servers = this.state.spec.paths[path]['servers'];
       return servers.map((url) => {
         return url.url;
@@ -167,7 +171,7 @@ class OpenapiComponent extends React.Component {
     const path = this.state.options.path;
 
     if (operation.parameters) {
-      if (this.state.spec.paths[path]['parameters']) {
+      if (this.state.spec.paths[path]?.['parameters']) {
         const generalParams = this.state.spec.paths[path]['parameters'].filter((param) => param.in === paramType);
         const operationParams = operation.parameters.filter((param) => param.in === paramType);
         const result = generalParams.concat(operationParams).filter(function (o) {
@@ -176,7 +180,7 @@ class OpenapiComponent extends React.Component {
         return result;
       }
       return operation.parameters.filter((param) => param.in === paramType);
-    } else if (this.state.spec.paths[path]['parameters'])
+    } else if (this.state.spec.paths[path]?.['parameters'])
       return this.state.spec.paths[path]['parameters'].filter((param) => param.in === paramType);
     else return [];
   }

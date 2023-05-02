@@ -337,7 +337,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                 {(groupPermission.group == 'admin' || groupPermission.group == 'all_users') && (
                   <div className="default-group-wrap">
                     <SolidIcon name="information" fill="#46A758" width="13" />
-                    <p className="font-weight-500 tj-text-xsm">Default group</p>
+                    <p className="font-weight-500 tj-text-xsm" data-cy="text-default-group">
+                      Default group
+                    </p>
                   </div>
                 )}
                 {groupPermission.group !== 'admin' && groupPermission.group !== 'all_users' && (
@@ -857,8 +859,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                           }}
                                           checked={orgEnvironmentPermission}
                                           disabled={groupPermission.group === 'admin'}
+                                          data-cy="env-variable-checkbox"
                                         />
-                                        <span className="form-check-label">
+                                        <span className="form-check-label" data-cy="workspace-variable-create-label">
                                           {this.props.t(
                                             'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
                                             'Create/Update/Delete'

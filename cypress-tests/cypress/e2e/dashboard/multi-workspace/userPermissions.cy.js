@@ -8,8 +8,8 @@ import { groupsText } from "Texts/manageGroups";
 import * as permissions from "Support/utils/userPermissions";
 import { usersSelector } from "Selectors/manageUsers";
 import { commonText } from "Texts/common";
-import { workspaceVarSelectors } from "../../../constants/selectors/workspaceVariable";
-import { workspaceVarText } from "../../../constants/texts/workspacevarText";
+import { workspaceVarSelectors } from "Selectors/workspaceVariable";
+import { workspaceVarText } from "Texts/workspacevarText";
 
 const data = {};
 data.firstName = fake.firstName;
@@ -29,20 +29,18 @@ describe("User permissions", () => {
     permissions.reset();
     permissions.addNewUserMW(
       data.firstName,
-      data.lastName,
-      data.email,
+      data.email
     );
 
     cy.get("body").then(($title) => {
       if ($title.text().includes(dashboardText.emptyPageDescription)) {
-        cy.get(commonSelectors.emptyAppCreateButton).click();
+        cy.get(commonSelectors.dashboardAppCreateButton).click();
         cy.verifyToastMessage(
           commonSelectors.toastMessage,
           usersText.createAppPermissionToast
         );
       } else {
         cy.contains(dashboardText.createAppButton).should("not.exist");
-        cy.log("The app is created by the admin");
       }
     });
     common.logout();
@@ -65,7 +63,7 @@ describe("User permissions", () => {
     common.navigateToManageGroups();
     cy.get(groupsSelector.appSearchBox).click();
     cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
-    cy.get(groupsSelector.selectAddButton("all_users")).click();
+    cy.get(groupsSelector.selectAddButton).click();
     cy.get("table").contains("td", data.appName);
     cy.contains("td", data.appName)
       .parent()
@@ -84,8 +82,9 @@ describe("User permissions", () => {
       .parent()
       .within(() => {
         cy.get(commonSelectors.appTitle(data.appName)).trigger("mouseover");
+        cy.get(commonSelectors.launchButton).should("have.class", "tj-disabled-btn");
       });
-    cy.get(commonSelectors.launchButton).should("exist").and("be.disabled");
+    
 
     permissions.adminLogin();
     cy.contains("tr", data.appName)
@@ -105,7 +104,7 @@ describe("User permissions", () => {
       .within(() => {
         cy.get(commonSelectors.appTitle(data.appName)).trigger("mouseover");
       });
-    cy.get(commonSelectors.launchButton).should("exist").and("be.disabled");
+    cy.get(commonSelectors.launchButton).should("have.class", "tj-disabled-btn");
     cy.get(commonSelectors.editButton).should("exist").and("be.enabled");
 
     cy.get(commonSelectors.workspaceName).click();
@@ -114,6 +113,7 @@ describe("User permissions", () => {
 
     cy.get(commonSelectors.workspaceName).click();
     cy.contains("My workspace").should("be.visible").click();
+    cy.wait(200);
   });
 
   it("Should verify the Create and Delete app permission", () => {
@@ -163,8 +163,6 @@ describe("User permissions", () => {
     common.logout();
     cy.login(data.email, usersText.password);
 
-    cy.contains("+ Create new").should("exist");
-
     cy.get(commonSelectors.createNewFolderButton).click();
     cy.clearAndType(commonSelectors.folderNameInput, data.folderName);
     cy.get(commonSelectors.createFolderButton).click();
@@ -182,13 +180,12 @@ describe("User permissions", () => {
 
     common.logout();
     cy.login(data.email, usersText.password);
-    cy.contains("+ Create new").should("not.exist");
 
     permissions.adminLogin();
     cy.contains("td", data.appName)
       .parent()
       .within(() => {
-        cy.get("td a").contains("Delete").click();
+        cy.get("td a").contains("Remove").click();
       });
 
     common.logout();

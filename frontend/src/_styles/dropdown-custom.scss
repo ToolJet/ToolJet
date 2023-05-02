@@ -52,7 +52,8 @@
 .select-operation-field,
 .select-column-field,
 .select-order-field,
-.select-column-field {
+.select-column-field,
+.records-dropdown-field {
     .react-select__control {
         border: 1px solid var(--slate7) !important;
     }

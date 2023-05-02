@@ -75,3 +75,18 @@ This property only accepts boolean values. If set to `{{true}}`, the widget will
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Exposed Variables
+
+| Variables    | Description |
+| ----------- | ----------- |
+| text | This variable gets updated with HEX color code whenever a user selects a color from the color picker. You can access the value dynamically using JS: `{{components.colorpicker1.selectedColorHex}}`|
+
+## Component specific actions (CSA)
+
+Following actions of color picker component can be controlled using the component specific actions(CSA):
+
+| Actions     | Description |
+| ----------- | ----------- |
+| visibility | Set a visibility of the text via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.text1.visibility(false)` |
+| setText | Set a text value on the text component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.text1.setText('this is a text')` |
