@@ -77,6 +77,36 @@ export const LeftSidebar = forwardRef((props, ref) => {
     }
   };
 
+  const SELECTED_ITEMS = {
+    page: (
+      <LeftSidebarPageSelector
+        darkMode={darkMode}
+        selectedSidebarItem={selectedSidebarItem}
+        setSelectedSidebarItem={handleSelectedSidebarItem}
+        appDefinition={appDefinition}
+        currentPageId={currentPageId}
+        addNewPage={addNewPage}
+        switchPage={switchPage}
+        deletePage={deletePage}
+        renamePage={renamePage}
+        hidePage={hidePage}
+        unHidePage={unHidePage}
+        updateHomePage={updateHomePage}
+        updatePageHandle={updatePageHandle}
+        clonePage={clonePage}
+        pages={Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page })) || []}
+        homePageId={appDefinition.homePageId}
+        showHideViewerNavigationControls={showHideViewerNavigationControls}
+        updateOnSortingPages={updateOnSortingPages}
+        updateOnPageLoadEvents={updateOnPageLoadEvents}
+        currentState={currentState}
+        apps={apps}
+        dataQueries={dataQueries}
+        popoverContentHeight={popoverContentHeight}
+      />
+    ),
+  };
+
   return (
     <div className="left-sidebar" data-cy="left-sidebar-inspector">
       <Popover
@@ -86,33 +116,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         {...(pinned && { open: true })}
         popoverContentClassName="p-0 sidebar-h-100-popover"
         side="right"
-        popoverContent={
-          <LeftSidebarPageSelector
-            darkMode={darkMode}
-            selectedSidebarItem={selectedSidebarItem}
-            setSelectedSidebarItem={handleSelectedSidebarItem}
-            appDefinition={appDefinition}
-            currentPageId={currentPageId}
-            addNewPage={addNewPage}
-            switchPage={switchPage}
-            deletePage={deletePage}
-            renamePage={renamePage}
-            hidePage={hidePage}
-            unHidePage={unHidePage}
-            updateHomePage={updateHomePage}
-            updatePageHandle={updatePageHandle}
-            clonePage={clonePage}
-            pages={Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page })) || []}
-            homePageId={appDefinition.homePageId}
-            showHideViewerNavigationControls={showHideViewerNavigationControls}
-            updateOnSortingPages={updateOnSortingPages}
-            updateOnPageLoadEvents={updateOnPageLoadEvents}
-            currentState={currentState}
-            apps={apps}
-            dataQueries={dataQueries}
-            popoverContentHeight={popoverContentHeight}
-          />
-        }
+        popoverContent={SELECTED_ITEMS['page']}
         popoverContentHeight={popoverContentHeight}
       >
         <LeftSidebarItem
