@@ -447,6 +447,7 @@ export function Table({
     component.definition.properties.data.value,
     JSON.stringify(properties.data),
     showBulkSelector,
+    allowSelection,
   ]);
 
   useEffect(() => {
@@ -564,8 +565,6 @@ export function Table({
         ]);
     }
   );
-
-  useEffect(() => mergeToTableDetails(selectedFlatRows), [_.toString(selectedFlatRows)]);
 
   const currentColOrder = React.useRef();
 
