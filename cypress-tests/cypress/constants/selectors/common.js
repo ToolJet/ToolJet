@@ -3,16 +3,16 @@ export const cyParamName = (paramName = "") => {
 };
 
 export const commonSelectors = {
-  toastMessage: ".go3958317564", 
+  toastMessage: ".go3958317564",
   oldToastMessage: ".go318386747",
-  newToastMessage:'.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551',
+  newToastMessage:
+    '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551',
   toastCloseButton: '[data-cy="toast-close-button"]',
   editButton: "[data-cy=edit-button]",
   searchField: "[data-cy=widget-search-box]",
   firstWidget: "[data-cy=widget-list]:eq(0)",
   canvas: "[data-cy=real-canvas]",
   appCardOptionsButton: "[data-cy=app-card-menu-icon]",
-  folderCardOptions: "[data-cy=folder-card-menu-icon]",
   autoSave: "[data-cy=autosave-indicator]",
   skipButton: ".driver-close-btn",
   skipInstallationModal: "[data-cy=skip-button]",
@@ -34,8 +34,6 @@ export const commonSelectors = {
   appNameInput: "[data-cy=app-name-input]",
   launchButton: "[data-cy=launch-button]",
   folderNameInput: "[data-cy=folder-name-input]",
-  deleteFolderOption: "[data-cy=delete-folder-card-option]",
-  editFolderOption: "[data-cy=edit-folder-card-option]",
   deleteAppOption: "[data-cy=delete-app-card-option]",
   cancelButton: "[data-cy=cancel-button]",
   modalComponent: "[data-cy=modal-component]",
@@ -97,7 +95,7 @@ export const commonSelectors = {
   enableToggleLabel: '[data-cy="enable-toggle-label"]',
   enableToggle: '[data-cy="enable-toggle"]',
   mainWrapper: '[data-cy="main-wrapper"]',
-  workspaceEditButton: '[data-cy="edit-workspace-button"]',
+  editRectangleIcon: '[data-cy="edit-rectangle-icon"]',
   dashboardIcon: '[data-cy="dashboard-icon"]',
   notificationsIcon: '[data-cy="notifications-icon"]',
   notificationsCard: '[data-cy="notifications-card"]',
@@ -158,15 +156,14 @@ export const commonSelectors = {
   resetPasswordButton: '[data-cy="reset-password-button"]',
   resetPasswordPageDescription: '[data-cy="reset-password-page-description"]',
   backToLoginButton: '[data-cy="back-to-login-button"]',
-  breadcrumbTitle:'[data-cy="breadcrumb-title"]',
-  breadcrumbPageTitle:'[data-cy="breadcrumb-page-title"]',
+  breadcrumbTitle: '[data-cy="app-header-label"]>>',
+  breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
   labelFullNameInput: '[data-cy="label-full-name-input-field"]',
   inputFieldFullName: '[data-cy="input-field-full-name"]',
   labelEmailInput: '[data-cy="label-email-input-field"]',
   inputFieldEmailAddress: '[data-cy="input-field-email"]',
   closeButton: '[data-cy="close-button"]',
-
-  
+  emptyAppCreateButton: "[data-cy='button-new-app-from-scratch']",
 
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
@@ -201,6 +198,16 @@ export const commonSelectors = {
   },
   buttonSelector: (buttonText) => {
     return `[data-cy="${cyParamName(buttonText)}-button"]`;
+  },
+
+  folderCardOptions:(folderName) =>{
+    return `[data-cy="${cyParamName(folderName)}-card-menu-icon"]`
+  },
+  deleteFolderOption: (folderName) =>{
+    return `[data-cy="${cyParamName(folderName)}-delete-folder-option"]`
+  },
+  editFolderOption: (folderName) =>{
+    return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`
   },
 };
 

@@ -79,7 +79,12 @@ class AppComponent extends React.Component {
       'confirm',
       'confirm-invite',
     ];
-    return existedPaths.find((path) => window.location.pathname.includes(path));
+
+    const subpath = getSubpath();
+    const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
+    const pathnames = window.location.pathname.split('/')?.filter((path) => path != '');
+    const checkPath = () => existedPaths.find((path) => pathnames[subpath ? subpathArray.length : 0] === path);
+    return pathnames?.length > 0 ? (checkPath() ? true : false) : false;
   };
 
   componentDidMount() {

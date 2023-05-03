@@ -59,7 +59,7 @@ export const createFolder = (folderName) => {
 
 export const deleteFolder = (folderName) => {
   viewFolderCardOptions(folderName);
-  cy.get(commonSelectors.deleteFolderOption).click();
+  cy.get(commonSelectors.deleteFolderOption(folderName)).click();
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
   cy.wait("@folderDeleted");
   cy.verifyToastMessage(
@@ -83,16 +83,18 @@ export const navigateToAppEditor = (appName) => {
 };
 
 export const viewAppCardOptions = (appName) => {
-  cy.get(commonSelectors.appCard(appName))
-    .find(commonSelectors.appCardOptionsButton)
-    .click();
+    cy.contains("div", appName)
+    .parent()
+    .within(() => {
+      cy.get(commonSelectors.appCardOptionsButton).invoke("click");
+    });
 };
 
 export const viewFolderCardOptions = (folderName) => {
-  cy.contains("div", folderName)
+  cy.get(commonSelectors.folderListcard(folderName))
     .parent()
     .within(() => {
-      cy.get(commonSelectors.folderCardOptions).invoke("click");
+      cy.get(commonSelectors.folderCardOptions(folderName)).invoke('click');
     });
 };
 
