@@ -9,7 +9,7 @@ User can create their own workspaces, user who created workspace will be having 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/multiworkspace/multiwork.gif" alt="multi workspace" />
+<img className="screenshot-full" src="/img/multiworkspace/multiwork2.gif" alt="multi workspace" />
 
 </div>
 

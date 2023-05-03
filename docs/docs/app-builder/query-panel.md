@@ -3,7 +3,7 @@ id: query-panel
 title: Query Panel
 ---
 
-The Query Panel is present at the bottom of the app-builder, this is where you create queries to interact with connected datasources. You can perform API requests, query **[databases](/docs/data-sources/overview)**, or **[transform](/docs/tutorial/transformations)** or manipulate data with **[JavaScript](/docs/data-sources/run-js)** & **[Python](/docs/data-sources/run-py)**.
+The Query Panel is present at the bottom of the app-builder, this is where you create queries to interact with connected **local** and **global** datasources. You can perform API requests, query **[databases](/docs/data-sources/overview)**, or **[transform](/docs/tutorial/transformations)** or manipulate data with **[JavaScript](/docs/data-sources/run-js)** & **[Python](/docs/data-sources/run-py)**.
 
 The Query Panel has two sections:
 - **[Query Manager](#query-manager)** on the right that includes a list of all the created queries
@@ -11,7 +11,7 @@ The Query Panel has two sections:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/querypanel.png" alt="App Builder: Component library- right sidebar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui/querypanel.png" alt="App Builder: Component library- right sidebar"/>
 
 </div>
 
@@ -35,7 +35,7 @@ Add button is used to add more queries in the application. When Add button is cl
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/add.png" alt="App Builder: Component library- right sidebar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui/add.png" alt="App Builder: Component library- right sidebar"/>
 
 </div>
 
@@ -173,5 +173,16 @@ Learn more about [Event Handlers and Actions](/docs/widgets/overview#component-e
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/advanced.png" alt="App Builder: Component library- right sidebar"/>
+
+</div>
+
+### Change Datasource
+
+If more than one datasources are connected of same type then you can change the datasource of the query from this dropdown.
+
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui/switch.png" alt="App Builder: Component library- right sidebar"/>
 
 </div>

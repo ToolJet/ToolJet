@@ -7,13 +7,12 @@ Left-sidebar has the following options:
 
 - **[Pages](#pages)**
 - **[Inspector](#inspector)**
-- **[Datasources Manager](#datasources-manager)**
 - **[Debugger](#debugger)**
 - **[Theme switch](#theme-switch)**
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/leftsidebar.png" alt="App Builder: Left-sidebar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/newside.png" alt="App Builder: Left-sidebar"/>
 
 </div>
 
@@ -25,7 +24,7 @@ Check the detailed documentation for **[Pages](/docs/tutorial/pages)**.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/pages.png" alt="App Builder: Left-sidebar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/pages2.png" alt="App Builder: Left-sidebar"/>
 
 </div>
 
@@ -37,19 +36,7 @@ Check the detailed guide on **[using Inspector](/docs/how-to/use-inspector)**.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/inspector.png" alt="App Builder: Left-sidebar"/>
-
-</div>
-
-## Datasources Manager
-
-Datasources Manager is used to connect or remove the datasources. 
-
-Check the detailed **[Datasources documentation](/docs/data-sources/overview)**.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/datasources.png" alt="App Builder: Left-sidebar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/inspector2.png" alt="App Builder: Left-sidebar"/>
 
 </div>
 
@@ -59,7 +46,7 @@ The debugger captures errors that happens while running the queries. For example
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/debugger.png" alt="App Builder: Left-sidebar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/newdebug.png" alt="App Builder: Left-sidebar"/>
 
 </div>
 

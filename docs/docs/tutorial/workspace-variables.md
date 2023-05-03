@@ -18,7 +18,7 @@ Suppose there is an `API key` or a value that you want to use in the queries or 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/work-var.gif" alt="add variable" />
+<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/work-var2.gif" alt="add variable" />
 
 </div>
 
