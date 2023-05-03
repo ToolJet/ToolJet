@@ -125,6 +125,7 @@ const DynamicForm = ({
     className,
     controller,
   }) => {
+    const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
 
     if (!options) return;
@@ -173,6 +174,7 @@ const DynamicForm = ({
       }
       case 'react-component-oauth-authentication':
         return {
+          isGrpc: source === 'grpc',
           grant_type: options?.grant_type?.value,
           auth_type: options?.auth_type?.value,
           add_token_to: options?.add_token_to?.value,
@@ -185,6 +187,8 @@ const DynamicForm = ({
           scopes: options?.scopes?.value,
           username: options?.username?.value,
           password: options?.password?.value,
+          grpc_apiKey_key: options?.grpc_apikey_key?.value,
+          grpc_apiKey_value: options?.grpc_apikey_value?.value,
           bearer_token: options?.bearer_token?.value,
           auth_url: options?.auth_url?.value,
           auth_key: options?.auth_key?.value,

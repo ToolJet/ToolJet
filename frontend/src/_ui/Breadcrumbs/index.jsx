@@ -9,7 +9,7 @@ export const Breadcrumbs = ({ darkMode }) => {
   const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
   return (
     <ol className="breadcrumb breadcrumb-arrows">
-      {breadcrumbs.map(({ breadcrumb, dataCy, beta }, i) => {
+      {breadcrumbs.map(({ breadcrumb, beta }, i) => {
         if (i == 1 || breadcrumbs?.length == 1) {
           return (
             <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy="breadcrumb-title">
