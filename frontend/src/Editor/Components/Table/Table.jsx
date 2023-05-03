@@ -498,6 +498,7 @@ export function Table({
     selectedFlatRows,
     globalFilteredRows,
     getToggleHideAllColumnsProps,
+    toggleRowSelected,
   } = useTable(
     {
       autoResetPage: false,
@@ -1050,8 +1051,7 @@ export function Table({
                         setExposedVariables(selectedRowDetails).then(() => {
                           fireEvent('onRowClicked');
                         });
-                      }
-                      if (highlightSelectedRow && showBulkSelector) {
+                      } else if (highlightSelectedRow && showBulkSelector) {
                         const selectedRowDetails = { selectedRowId: row.id, selectedRow: row.original };
                         const selectedRowsDetails = tableDetails?.selectedRowsDetails ?? [];
                         if (
@@ -1068,6 +1068,8 @@ export function Table({
                             fireEvent('onRowClicked');
                           });
                         }
+                      } else {
+                        toggleRowSelected(row.id, true);
                       }
                     }}
                     onMouseOver={(e) => {
