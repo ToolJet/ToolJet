@@ -131,7 +131,14 @@ export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, darkMode, chi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const updateDraftQueryName = useCallback((newName) => setDraftQuery((query) => ({ ...query, name: newName })), []);
+  const updateDraftQueryName = useCallback(
+    (newName) => {
+      setDraftQuery((query) => ({ ...query, name: newName }));
+      setSelectedQuery(draftQuery.id, { ...draftQuery, name: newName });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [draftQuery]
+  );
 
   return (
     <>

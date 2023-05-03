@@ -10,6 +10,7 @@ export const useQueryPanelStore = create(
     queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
     selectedQuery: null,
     isUnsavedChangesAvailable: false,
+    queryToBeRun: null,
     actions: {
       updateQueryPanelHeight: (newHeight) => set(() => ({ queryPanelHeight: newHeight })),
       setSelectedQuery: (queryId, dataQuery = {}) => {
@@ -24,6 +25,7 @@ export const useQueryPanelStore = create(
         });
       },
       setUnSavedChanges: (value) => set({ isUnsavedChangesAvailable: value }),
+      setQueryToBeRun: (value) => set({ queryToBeRun: value }),
     },
   }))
 );

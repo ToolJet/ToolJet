@@ -1628,12 +1628,13 @@ class EditorComponent extends React.Component {
                               runQuery={this.runQuery}
                               dataSourceModalHandler={this.dataSourceModalHandler}
                               appDefinition={appDefinition}
-                              editorState={this}
+                              editorRef={this}
                               showQueryConfirmation={queryConfirmationList.length > 0}
                               createDraftQuery={createDraftQuery}
                               clearDraftQuery={this.clearDraftQuery}
                               isUnsavedQueriesAvailable={isUnsavedQueriesAvailable}
                               updateDraftQueryName={updateDraftQueryName}
+                              fetchDataQueries={this.fetchDataQueries}
                             />
                           </div>
                         </div>

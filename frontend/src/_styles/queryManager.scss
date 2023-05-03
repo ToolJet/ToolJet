@@ -12,6 +12,7 @@ $border-radius: 4px;
     --tblr-gutter-x: 0rem;
     position: sticky;
     top: 0;
+    padding: 8px 0;
   }
 
   .nav-header {
@@ -241,8 +242,21 @@ $border-radius: 4px;
         text-overflow: ellipsis;
       }
 
+      &>div{
+        margin: auto;
+        align-items: center;
+        height: 100%;
+        display: flex
+      }
+      &>div:first-child{
+        gap: 10px;
+        padding: 0.25rem 1rem;
+      }
+
       .query-header-buttons {
         gap: 8px;
+        flex: 0 0 auto;
+        width: auto;
       }
     }
   }

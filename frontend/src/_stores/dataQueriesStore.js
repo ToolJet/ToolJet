@@ -12,9 +12,11 @@ export const useDataQueriesStore = create(
     dataQueries: [],
     loadingDataQueries: true,
     isDeletingQueryInProcess: false,
+    isCreatingQueryInProcess: false,
+    isUpdatingQueryInProcess: false,
     actions: {
       // TODO: Remove editor state while refactoring QueryManager
-      fetchDataQueries: (appId, selectFirstQuery = false, runQueriesOnAppLoad = false, editorState) => {
+      fetchDataQueries: (appId, selectFirstQuery = false, runQueriesOnAppLoad = false, editorRef) => {
         set({ loadingDataQueries: true });
         dataqueryService.getAll(appId).then((data) => {
           set({
@@ -22,9 +24,9 @@ export const useDataQueriesStore = create(
             loadingDataQueries: false,
           });
           // Runs query on loading application
-          if (runQueriesOnAppLoad) runQueries(data.data_queries, editorState);
+          if (runQueriesOnAppLoad) runQueries(data.data_queries, editorRef);
           // Compute query state to be added in the current state
-          computeQueryState(data.data_queries, editorState);
+          computeQueryState(data.data_queries, editorRef);
           const { actions, selectedQuery } = useQueryPanelStore.getState();
           if (selectFirstQuery || selectedQuery?.id === 'draftQuery') {
             actions.setSelectedQuery(data.data_queries[0]?.id, data.data_queries[0]);
@@ -55,6 +57,28 @@ export const useDataQueriesStore = create(
             set({
               isDeletingQueryInProcess: false,
             });
+            toast.error(error);
+          });
+      },
+      updateDataQuery: (options, shouldRunQuery) => {
+        set({ isUpdatingQueryInProcess: true });
+        const { actions, selectedQuery } = useQueryPanelStore.getState();
+        dataqueryService
+          .update(selectedQuery?.id, selectedQuery?.name, options)
+          .then((data) => {
+            // this.props.dataQueriesChanged();
+            actions.setUnSavedChanges(false);
+            localStorage.removeItem('transformation');
+            toast.success('Query Saved');
+            if (shouldRunQuery) actions.setQueryToBeRun();
+          })
+          .catch(({ error }) => {
+            this.setState({
+              isUpdating: false,
+              isFieldsChanged: false,
+              restArrayValuesChanged: false,
+            });
+            this.setUnsavedQueryChanges(false);
             toast.error(error);
           });
       },

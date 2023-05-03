@@ -19,6 +19,8 @@ import cx from 'classnames';
 import { diff } from 'deep-object-diff';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { ChangeDataSource } from './ChangeDataSource';
+import { QueryManagerHeader } from './Components/QueryManagerHeader';
+import { QueryManagerBody } from './Components/QueryManagerBody';
 
 import { useDataSourcesStore, useLoadingDataSources } from '@/_stores/dataSourcesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
@@ -171,56 +173,56 @@ class QueryManagerComponent extends React.Component {
     );
   };
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    if (useDataSourcesStore.getState().loadingDataSources) return;
-    if (nextProps.loadingDataSources) return;
-    if (this.props.showQueryConfirmation && !nextProps.showQueryConfirmation) {
-      if (this.state.isUpdating) {
-        this.setState({
-          isUpdating: false,
-        });
-      }
-      if (this.state.isCreating) {
-        this.setState({
-          isCreating: false,
-        });
-      }
-    }
-    if (!isEmpty(this.state.updatedQuery)) {
-      const query = nextProps.dataQueries.find((q) => q.id === this.state.updatedQuery.id);
-      if (query) {
-        const isLoading = nextProps.currentState?.queries[query.name]
-          ? nextProps.currentState?.queries[query.name]?.isLoading
-          : false;
-        const prevLoading = this.state.currentState?.queries[query.name]
-          ? this.state.currentState?.queries[query.name]?.isLoading
-          : false;
-        if (!isEmpty(nextProps.selectedQuery) && !isEqual(this.state.selectedQuery, nextProps.selectedQuery)) {
-          if (query && !isLoading && !prevLoading) {
-            this.props.runQuery(query.id, query.name);
-          }
-        } else if (!isLoading && prevLoading) {
-          this.state.updatedQuery.updateQuery
-            ? this.setState({ updatedQuery: {}, isUpdating: false })
-            : this.setState({ updatedQuery: {}, isCreating: false });
-        }
-      }
-    }
+  // UNSAFE_componentWillReceiveProps(nextProps) {
+  //   if (useDataSourcesStore.getState().loadingDataSources) return;
+  //   if (nextProps.loadingDataSources) return;
+  //   if (this.props.showQueryConfirmation && !nextProps.showQueryConfirmation) {
+  //     if (this.state.isUpdating) {
+  //       this.setState({
+  //         isUpdating: false,
+  //       });
+  //     }
+  //     if (this.state.isCreating) {
+  //       this.setState({
+  //         isCreating: false,
+  //       });
+  //     }
+  //   }
+  //   if (!isEmpty(this.state.updatedQuery)) {
+  //     const query = nextProps.dataQueries.find((q) => q.id === this.state.updatedQuery.id);
+  //     if (query) {
+  //       const isLoading = nextProps.currentState?.queries[query.name]
+  //         ? nextProps.currentState?.queries[query.name]?.isLoading
+  //         : false;
+  //       const prevLoading = this.state.currentState?.queries[query.name]
+  //         ? this.state.currentState?.queries[query.name]?.isLoading
+  //         : false;
+  //       if (!isEmpty(nextProps.selectedQuery) && !isEqual(this.state.selectedQuery, nextProps.selectedQuery)) {
+  //         if (query && !isLoading && !prevLoading) {
+  //           this.props.runQuery(query.id, query.name);
+  //         }
+  //       } else if (!isLoading && prevLoading) {
+  //         this.state.updatedQuery.updateQuery
+  //           ? this.setState({ updatedQuery: {}, isUpdating: false })
+  //           : this.setState({ updatedQuery: {}, isCreating: false });
+  //       }
+  //     }
+  //   }
 
-    const diffProps = diff(this.props, nextProps);
+  //   const diffProps = diff(this.props, nextProps);
 
-    if (
-      Object.keys(diffProps).length === 0 ||
-      'toggleQueryEditor' in diffProps ||
-      'darkMode' in diffProps ||
-      (Object.keys(diffProps).length === 1 && 'addNewQueryAndDeselectSelectedQuery' in diffProps) ||
-      (!this.props.isUnsavedQueriesAvailable && nextProps.isUnsavedQueriesAvailable)
-    ) {
-      return;
-    }
+  //   if (
+  //     Object.keys(diffProps).length === 0 ||
+  //     'toggleQueryEditor' in diffProps ||
+  //     'darkMode' in diffProps ||
+  //     (Object.keys(diffProps).length === 1 && 'addNewQueryAndDeselectSelectedQuery' in diffProps) ||
+  //     (!this.props.isUnsavedQueriesAvailable && nextProps.isUnsavedQueriesAvailable)
+  //   ) {
+  //     return;
+  //   }
 
-    this.setStateFromProps(nextProps);
-  }
+  //   this.setStateFromProps(nextProps);
+  // }
 
   removeRestKey = (options) => {
     delete options.arrayValuesChanged;
@@ -449,6 +451,15 @@ class QueryManagerComponent extends React.Component {
     this.optionchanged(option, !currentValue);
   };
 
+  previewQueryButtonClick = (query) =>
+    previewQuery(this, query, this.props.editorRef)
+      .then(() => {
+        this.previewPanelRef.current.scrollIntoView();
+      })
+      .catch(({ error, data }) => {
+        console.log(error, data);
+      });
+
   // Here we have mocked data query in format of a component to be usable by event manager
   // TODO: Refactor EventManager to be generic
   mockDataQueryAsComponent = () => {
@@ -557,7 +568,20 @@ class QueryManagerComponent extends React.Component {
         })}
         key={selectedQuery ? selectedQuery?.id : ''}
       >
-        <div className="row header" style={{ padding: '8px 0' }}>
+        <QueryManagerHeader
+          darkMode={this.props.darkMode}
+          mode={mode}
+          addNewQueryAndDeselectSelectedQuery={this.props.addNewQueryAndDeselectSelectedQuery}
+          queryName={queryName}
+          fetchDataQueries={this.props.fetchDataQueries}
+          updateDraftQueryName={this.props.updateDraftQueryName}
+          toggleQueryEditor={this.props.toggleQueryEditor}
+          previewQueryButtonClick={this.previewQueryButtonClick}
+          currentState={this.state.currentState}
+          selectedDataSource={selectedDataSource}
+          options={this.state.options}
+        />
+        {/* <div className="row header">
           <div className="col d-flex align-items-center px-3 h-100 font-weight-500 py-1" style={{ gap: '10px' }}>
             {(addingQuery || editingQuery) && selectedDataSource && (
               <>
@@ -640,7 +664,7 @@ class QueryManagerComponent extends React.Component {
                     kind: selectedDataSource.kind,
                   };
 
-                  previewQuery(this, query, this.props.editorState)
+                  previewQuery(this, query, this.props.editorRef)
                     .then(() => {
                       this.previewPanelRef.current.scrollIntoView();
                     })
@@ -745,9 +769,24 @@ class QueryManagerComponent extends React.Component {
             </span>
             <Tooltip id="tooltip-for-hide-query-editor" className="tooltip" />
           </div>
-        </div>
+        </div> */}
+        <QueryManagerBody
+          darkMode={this.props.darkMode}
+          selectedDataSource={selectedDataSource}
+          dataSourceModalHandler={this.props.dataSourceModalHandler}
+          options={this.state.options}
+          currentState={this.props.currentState}
+          prevLoading={previewLoading}
+          queryPreviewData={queryPreviewData}
+          allComponents={this.props.allComponents}
+          apps={this.props.apps}
+          appDefinition={this.props.appDefinition}
+          updateState={(values) => this.setState(values)}
+          createDraftQuery={this.props.createDraftQuery}
+          changeDataSourceQueryAssociation={this.changeDataSourceQueryAssociation}
+        />
 
-        {(addingQuery || editingQuery) && (
+        {/* {(addingQuery || editingQuery) && (
           <div>
             <div
               className={`row row-deck px-2 mt-0 query-details ${
@@ -962,7 +1001,7 @@ class QueryManagerComponent extends React.Component {
               </div>
             )}
           </div>
-        )}
+        )} */}
       </div>
     );
   }
