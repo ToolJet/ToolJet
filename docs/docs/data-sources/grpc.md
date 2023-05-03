@@ -58,7 +58,7 @@ After setting up your proto files, you should be able to establish a connection 
 
 ### Connect the gRPC datasource
 
-ToolJet requires the following to connect to Amazon SES:
+ToolJet requires the following to connect to gRPC servers:
 
 - **Server URL**
 - **Authentication type** (None, Basic, Bearer, and API key)
