@@ -82,17 +82,18 @@ Cypress.Commands.add("appLogin", () => {
 });
 
 Cypress.Commands.add("waitForAutoSave", () => {
-  cy.wait(200)
+  cy.wait(200);
   cy.get(commonSelectors.autoSave, { timeout: 20000 }).should(
     "have.text",
-    commonText.autoSave, { timeout: 20000 }
+    commonText.autoSave,
+    { timeout: 20000 }
   );
 });
 
 Cypress.Commands.add("createApp", (appName) => {
   cy.get("body").then(($title) => {
     if ($title.text().includes(commonText.introductionMessage)) {
-      cy.get(commonSelectors.dashboardAppCreateButton).eq(0).click();
+      cy.get(commonSelectors.emptyAppCreateButton).eq(0).click();
     } else {
       cy.get(commonSelectors.appCreateButton).click();
     }
@@ -170,11 +171,11 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("deleteApp", (appName) => {
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
-  cy.contains("div", appName)
-  .parent()
-  .within(() => {
-    cy.get(commonSelectors.appCardOptionsButton).invoke("click");
-  });
+  cy.get(commonSelectors.appCard(appName))
+    .realHover()
+    .find(commonSelectors.appCardOptionsButton)
+    .realHover()
+    .click();
   cy.get(commonSelectors.deleteAppOption).click();
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
   cy.wait("@appDeleted");
@@ -206,7 +207,10 @@ Cypress.Commands.add("modifyCanvasSize", (x, y) => {
 });
 
 Cypress.Commands.add("renameApp", (appName) => {
-  cy.get(commonSelectors.appNameInput).type(`{selectAll}{backspace}${appName}`, {force:true});
+  cy.get(commonSelectors.appNameInput).type(
+    `{selectAll}{backspace}${appName}`,
+    { force: true }
+  );
   cy.waitForAutoSave();
 });
 
@@ -240,11 +244,10 @@ Cypress.Commands.add("notVisible", (dataCy) => {
     }
   });
   const log = Cypress.log({
-    name: 'notVisible',
-    displayName: 'Not Visible',
-    message: dataCy
-  })
-
+    name: "notVisible",
+    displayName: "Not Visible",
+    message: dataCy,
+  });
 });
 
 Cypress.Commands.add("resizeWidget", (widgetName, x, y) => {

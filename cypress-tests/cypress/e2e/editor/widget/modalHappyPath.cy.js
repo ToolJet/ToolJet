@@ -320,6 +320,8 @@ describe("Modal", () => {
       "{{components.toggleswitch1.value"
     );
     cy.get("[data-cy='modal-header']").realClick();
+    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+
     typeOnFx(
       commonWidgetText.parameterDisable,
       "{{components.toggleswitch2.value"

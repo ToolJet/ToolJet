@@ -362,8 +362,16 @@ export class UsersService {
     return !!app && app.organizationId === user.organizationId;
   }
 
-  async returnOrgIdOfAnApp(appId: string): Promise<any> {
-    const app = await this.appsRepository.findOne(appId);
+  async returnOrgIdOfAnApp(slug: string): Promise<any> {
+    let app: App;
+    try {
+      app = await this.appsRepository.findOneOrFail(slug);
+    } catch (error) {
+      app = await this.appsRepository.findOne({
+        slug,
+      });
+    }
+
     return app?.organizationId;
   }
 
