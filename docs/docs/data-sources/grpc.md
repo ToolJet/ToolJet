@@ -79,7 +79,7 @@ Once you have added the gRPC from the global datasource page, you'll find it on 
 
 ### Creating query
 
-You can now query a particular of RPC of the added services.
+You can now query a particular RPC method of the added services.
 
 <div style={{textAlign: 'center'}}>
 
