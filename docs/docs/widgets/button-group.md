@@ -93,3 +93,14 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+
+## Exposed Variables
+
+| Variables      | Description |
+| ----------- | ----------- |
+| selected | If the "enable multiple selection" option is turned off, then the variable is an array of objects, and the first object holds the value of the selected button. However, if the "enable multiple selection" option is turned on, the variable type changes from an array to an object, and the selected button values are stored as a string within that object. The value can be accessed using `{{components.buttongroup1.selected[0]}}` or `{{components.buttongroup1.selected}}` |
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the button-group component.

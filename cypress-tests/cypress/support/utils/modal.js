@@ -46,8 +46,9 @@ export const addAndVerifyColor = (
 
   selectColourFromColourPicker(section, color);
   verifyWidgetColorCss(dataCy, type, color, true);
-  cy.get(dataCy).realClick();
-  cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+  closeModal("modal1");
+  launchModal("modal1");
+  cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click({ force: true });
 };
 
 export const typeOnFx = (fx, data) => {

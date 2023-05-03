@@ -1,20 +1,21 @@
 export const usersText = {
   usersElements: {
-    pageTitle: "Users & Permissions",
-    nameTitile: "NAME",
-    emailTitle: "EMAIL",
-    statusTitle: "STATUS",
-
+    usersTableNameColumnHeader: "NAME",
+    usersTableEmailColumnHeader: "EMAIL",
+    usersTableStatusColumnHeader: "STATUS",
+    usersFilterLabel: "Showing"
   },
+  usersPageTitle: "users",
+  breadcrumbUsersPageTitle: " Users & permissions",
   adminUserName: "The Developer",
   adminUserEmail: "dev@tooljet.io",
   adminUserState: "Archive",
-  inviteUserButton: "Invite new user",
-  cardTitle: "Add new user",
+  buttonAddUsers: "Add users",
+  addUsersCardTitle: "Add users",
   emailLabel: "Email address",
   cancelButton: "Cancel",
-  createUserButton: "Create User",
-  fieldRequired: "This field is required",
+  buttonInviteUsers: "Invite users",
+  errorTextFieldRequired: "This field is required",
   exsitingEmail: "User with such email already exists.",
   userCreatedToast: "User has been created",
   inviteCopiedToast: "Invitation URL copied",
@@ -47,6 +48,13 @@ export const usersText = {
     "Added to the workspace and password has been set successfully.",
   inviteBulkUserButton:"Invite bulk users",
   bulkUserUploadPageTitle: "Upload Users",
-  downloadTemplateButton: 'Download Template',
-  createUsersButton:"Create Users",
+  buttonDownloadTemplate: 'Download Template',
+  buttonUploadUsers:"Upload users",
+
+  buttonInviteWithEmail: " Invite with email",
+  buttonUploadCsvFile: "Upload CSV file",
+
+  helperTextBulkUpload: 'Download the ToolJet template to add user details or format your file in the same as the template. ToolJet won’t be able to recognise files in any other format. ',
+  helperTextSelectFile:'Select a CSV file to upload',
+  helperTextDropFile: 'Or drag and drop it here',
 };
