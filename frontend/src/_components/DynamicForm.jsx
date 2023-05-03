@@ -7,6 +7,7 @@ import Headers from '@/_ui/HttpHeaders';
 import OAuth from '@/_ui/OAuth';
 import Toggle from '@/_ui/Toggle';
 import OpenApi from '@/_ui/OpenAPI';
+import { Checkbox, CheckboxGroup } from '@/_ui/CheckBox';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
@@ -53,15 +54,16 @@ const DynamicForm = ({
         fields = { ...properties };
       }
 
-      Object.keys(fields).map((key) => {
-        const { type, encrypted } = fields[key];
-        if ((type === 'password' || encrypted) && !(key in computedProps)) {
-          //Editable encrypted fields only if datasource doesn't exists
-          encrpytedFieldsProps[key] = {
-            disabled: !!selectedDataSource?.id,
-          };
-        }
-      });
+      Object.keys(fields).length > 0 &&
+        Object.keys(fields).map((key) => {
+          const { type, encrypted } = fields[key];
+          if ((type === 'password' || encrypted) && !(key in computedProps)) {
+            //Editable encrypted fields only if datasource doesn't exists
+            encrpytedFieldsProps[key] = {
+              disabled: !!selectedDataSource?.id,
+            };
+          }
+        });
       setComputedProps({ ...computedProps, ...encrpytedFieldsProps });
     }
 
@@ -79,6 +81,10 @@ const DynamicForm = ({
         return Select;
       case 'toggle':
         return Toggle;
+      case 'checkbox':
+        return Checkbox;
+      case 'checkbox-group':
+        return CheckboxGroup;
       case 'tooljetdb-operations':
         return ToolJetDbOperations;
       case 'react-component-headers':
@@ -160,6 +166,16 @@ const DynamicForm = ({
           styles: computeSelectStyles ? computeSelectStyles('100%') : {},
           useCustomStyles: computeSelectStyles ? true : false,
         };
+
+      case 'checkbox-group':
+        return {
+          options: list,
+          values: options?.[key] ?? [],
+          onChange: (value) => {
+            optionchanged(key, [...value]);
+          },
+        };
+
       case 'react-component-headers': {
         const isRenderedAsQueryEditor = currentState != null;
         return {
