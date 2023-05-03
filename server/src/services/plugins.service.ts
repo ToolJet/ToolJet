@@ -240,8 +240,6 @@ export class PluginsService {
       // validate manifest and operations as JSON files
       const validManifest = JSON.parse(manifest.toString()) ? manifest : null;
       const validOperations = JSON.parse(operations.toString()) ? operations : null;
-
-      console.log('validManifest', { validManifest, validOperations });
     } catch (error) {
       throw new InternalServerErrorException('Invalid plugin files');
     }
