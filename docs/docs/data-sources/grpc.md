@@ -20,7 +20,7 @@ Find instructions on how to do this in the setup guides located here: https://do
 
 ### Step 2: Add proto files
 
-Add proto files by creating a directory named "protos" and placing a file called "**service.proto**" inside it.
+At the root, create a directory named "**protos**" and add a "**service.proto**" file inside it.
 
 :::info Note
 Copy-pase the current service.proto service
