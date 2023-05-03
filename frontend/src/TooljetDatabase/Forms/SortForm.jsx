@@ -58,7 +58,7 @@ export const SortForm = ({ filters, setFilters, index, column = '', order = '' }
           customWrap={true}
         />
       </div>
-      <div className="col-1 py-3 cursor-pointer" onClick={() => handleDelete()}>
+      <div className="col-1 py-3 cursor-pointer" data-cy="delete-icon" onClick={() => handleDelete()}>
         <SolidIcon name="trash" fill="#E54D2E" width="14" />
       </div>
     </div>

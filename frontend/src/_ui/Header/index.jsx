@@ -12,7 +12,7 @@ function Header() {
       case 'workspaceId':
         return 'Applications';
       case 'database':
-        return 'Tables';
+        return 'Database';
       case 'workspace-settings':
         return 'Workspace settings';
       case 'global-datasources':

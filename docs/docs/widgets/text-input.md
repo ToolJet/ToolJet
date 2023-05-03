@@ -109,3 +109,23 @@ This property only accepts boolean values. If set to `{{true}}`, the widget will
 :::info
 Check the **component specific actions** available for this component **[here](/docs/actions/control-component)**.
 :::
+
+
+## Exposed Variables
+
+| Variables    | Description |
+| ----------- | ----------- |
+| value | This variable holds the value whenever user a user inputs a value in the component. You can access the value dynamically using JS: `{{components.textinput1.value}}`|
+
+## Component specific actions (CSA)
+
+Following actions of text input component can be controlled using the component specific actions(CSA):
+
+| Actions     | Description |
+| ----------- | ----------- |
+| setFocus | Set the focus of the cursor on the text input via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textinput1.setFocus()` |
+| setBlur | Removes the focus of the cursor on the text input via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textinput1.setBlur()` |
+| disable | disable the component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textinput1.disable(true)` |
+| visibility | Set a visibility of the text input via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textinput1.visibility(false)` |
+| setText | Set a text value on the text input component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textinput1.setText('this is input text')` |
+| clear | Clear the entered text from the text input via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textinput1.clear()` |

@@ -94,8 +94,14 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 
 </div>
 
-## Actions
+## Exposed variables
 
-| Action      | Description | Properties |
-| ----------- | ----------- | ------------------ |
-| selectOption | Select an option from the radio buttons. | `option` eg: `component.radiobutton1.selectOption('one')` |
+There are currently no exposed variables for the component.
+
+## Component specific actions (CSA)
+
+Following actions of color picker component can be controlled using the component specific actions(CSA):
+
+| Actions     | Description |
+| ----------- | ----------- |
+| selectOption | Select an option from the radio buttons via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as: `await components.radiobutton1.selectOption('one')` |

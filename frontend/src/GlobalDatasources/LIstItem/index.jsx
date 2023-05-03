@@ -1,11 +1,11 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import cx from 'classnames';
 import { GlobalDataSourcesContext } from '..';
 import { DataSourceTypes } from '../../Editor/DataSourceManager/SourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
 
-export const ListItem = ({ dataSource, key, active, onDelete, updateSidebarNAV }) => {
+export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedDatasource }) => {
   const { setSelectedDataSource, toggleDataSourceManagerModal, environments, setCurrentEnvironment } =
     useContext(GlobalDataSourcesContext);
 
@@ -24,11 +24,6 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSidebarNAV }
     const element = document.getElementsByClassName('form-control-plaintext form-control-plaintext-sm')[0];
     element.focus();
   };
-  useEffect(() => {
-    if (active) updateSidebarNAV(dataSource?.name);
-    else if (dataSource?.length == 0) updateSidebarNAV('');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(dataSource)]);
 
   return (
     <div
@@ -44,7 +39,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSidebarNAV }
           setCurrentEnvironment(environments[0]);
           toggleDataSourceManagerModal(true);
           focusModal();
-          updateSidebarNAV(dataSource?.name);
+          updateSelectedDatasource(dataSource?.name);
         }}
         className="col d-flex align-items-center"
       >
