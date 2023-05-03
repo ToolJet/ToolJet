@@ -155,6 +155,7 @@ class EditorComponent extends React.Component {
       queryPanelHeight: this.queryManagerPreferences?.isExpanded
         ? this.queryManagerPreferences?.queryPanelHeight
         : 95 ?? 70,
+      editorMarginLeft: 0,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -1924,6 +1925,7 @@ class EditorComponent extends React.Component {
                 apps={apps}
                 dataQueries={dataQueries}
                 queryPanelHeight={queryPanelHeight}
+                setEditorMarginLeft={(value) => this.setState({ editorMarginLeft: value })}
               />
               {!showComments && (
                 <Selecto
@@ -1948,7 +1950,7 @@ class EditorComponent extends React.Component {
               <div className="main main-editor-canvas" id="main-editor-canvas">
                 <div
                   className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
-                  style={{ transform: `scale(${zoomLevel})` }}
+                  style={{ transform: `scale(${zoomLevel})`, marginLeft: this.state.editorMarginLeft }}
                   onMouseUp={(e) => {
                     if (['real-canvas', 'modal'].includes(e.target.className)) {
                       this.setState({ selectedComponents: [], currentSidebarTab: 2, hoveredComponent: false });
@@ -1968,6 +1970,7 @@ class EditorComponent extends React.Component {
                         +this.state.appDefinition.globalSettings.canvasMaxWidth +
                         this.state.appDefinition.globalSettings.canvasMaxWidthType,
                       maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
+                      minWidth: '1070px',
                       backgroundColor: this.computeCanvasBackgroundColor(),
                     }}
                   >

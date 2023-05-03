@@ -1,5 +1,5 @@
 import '@/_styles/left-sidebar.scss';
-import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
+import React, { useState, useImperativeHandle, forwardRef, useEffect, useRef } from 'react';
 import _ from 'lodash';
 import { LeftSidebarInspector } from './SidebarInspector';
 import { LeftSidebarDataSources } from './SidebarDatasources';
@@ -51,6 +51,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     dataQueries,
     clonePage,
     queryPanelHeight,
+    setEditorMarginLeft,
   } = props;
   const [selectedSidebarItem, setSelectedSidebarItem] = useState(localStorage.getItem('selectedSidebarItem'));
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
@@ -60,6 +61,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [errorLogs, setErrorLogs] = React.useState([]);
   const [errorHistory, setErrorHistory] = React.useState({ appLevel: [], pageLevel: [] });
   const [unReadErrorCount, setUnReadErrorCount] = React.useState({ read: 0, unread: 0 });
+  const elemRef = useRef();
 
   const open = !!selectedSidebarItem;
 
@@ -130,6 +132,12 @@ export const LeftSidebar = forwardRef((props, ref) => {
     popoverContentHeight !== queryPanelHeight && setPopoverContentHeight(queryPanelHeight);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryPanelHeight]);
+
+  useEffect(() => {
+    if (!selectedSidebarItem) {
+      setEditorMarginLeft(0);
+    }
+  }, [selectedSidebarItem]);
 
   useImperativeHandle(ref, () => ({
     dataSourceModalToggleStateHandler() {
@@ -213,6 +221,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         clearErrorLogs={clearErrorLogs}
         setPinned={handlePin}
         pinned={pinned}
+        setEditorMarginLeft={setEditorMarginLeft}
       />
     ),
   };
@@ -240,6 +249,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         {...(pinned ? { open: true } : { open: !!selectedSidebarItem })}
         popoverContentClassName="p-0 sidebar-h-100-popover"
         side="right"
+        ref={elemRef}
         popoverContent={SELECTED_ITEMS[selectedSidebarItem]}
         popoverContentHeight={popoverContentHeight}
       />

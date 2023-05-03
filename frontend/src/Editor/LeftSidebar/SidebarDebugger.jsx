@@ -1,15 +1,22 @@
-import React from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import _ from 'lodash';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 
-export const LeftSidebarDebugger = ({ darkMode, errors, clearErrorLogs, setPinned, pinned }) => {
+export const LeftSidebarDebugger = ({ darkMode, errors, clearErrorLogs, setPinned, pinned, setEditorMarginLeft }) => {
   const { t } = useTranslation();
+  const elemRef = useRef();
+
+  useLayoutEffect(() => {
+    if (elemRef.current) {
+      setEditorMarginLeft(elemRef.current.offsetWidth);
+    }
+  }, [elemRef?.current?.offsetWidth]);
 
   return (
-    <div>
+    <div ref={elemRef}>
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Debugger">
           <div className="d-flex justify-content-end">
