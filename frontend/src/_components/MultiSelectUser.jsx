@@ -43,7 +43,7 @@ function MultiSelectUser({
         <div>
           <input
             type="checkbox"
-            onClick={(e) => {
+            onClick={() => {
               onSelect([...selectedValues, option]);
             }}
           />

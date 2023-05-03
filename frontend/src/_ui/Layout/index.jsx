@@ -36,6 +36,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         (router.pathname === '/:workspaceId' || router.pathname === getPrivateRoute('dashboard')) &&
                         `current-seleted-route`
                       }`}
+                      data-cy="icon-dashboard"
                     >
                       <SolidIcon
                         name="apps"
@@ -51,13 +52,14 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </ToolTip>
                 </li>
                 {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
-                  <li className="text-center  cursor-pointer">
-                    <ToolTip message="Tables" placement="right">
+                  <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
+                    <ToolTip message="Database" placement="right">
                       <Link
                         to={getPrivateRoute('database')}
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === getPrivateRoute('database') && `current-seleted-route`
                         }`}
+                        data-cy="icon-database"
                       >
                         <SolidIcon
                           name="table"
@@ -83,6 +85,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === getPrivateRoute('global_datasources') && `current-seleted-route`
                         }`}
+                        data-cy="icon-global-datasources"
                       >
                         <SolidIcon
                           name="datasource"
@@ -106,6 +109,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === '/integrations' && `current-seleted-route`
                         }`}
+                        data-cy="icon-marketplace"
                       >
                         <SolidIcon
                           name="marketplace"
@@ -122,6 +126,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                       className={`tj-leftsidebar-icon-items  ${
                         router.pathname === getPrivateRoute('workspace_settings') && `current-seleted-route`
                       }`}
+                      data-cy="icon-workspace-settings"
                     >
                       <SolidIcon
                         name="setting"
@@ -143,6 +148,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     <div
                       className="cursor-pointer  tj-leftsidebar-icon-items"
                       onClick={() => switchDarkMode(!darkMode)}
+                      data-cy="mode-switch-button"
                     >
                       <SolidIcon name={darkMode ? 'lightmode' : 'darkmode'} fill={darkMode ? '#4C5155' : '#C1C8CD'} />
                     </div>

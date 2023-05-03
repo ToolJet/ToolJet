@@ -3,7 +3,7 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
-import { useDropzone } from 'react-dropzone';
+// import { useDropzone } from 'react-dropzone';
 import { FileDropzone } from './FileDropzone';
 
 function InviteUsersForm({
@@ -21,10 +21,10 @@ function InviteUsersForm({
   const [activeTab, setActiveTab] = useState(1);
 
   const hiddenFileInput = useRef(null);
-  const { acceptedFiles } = useDropzone({
-    onDrop,
-    accept: 'text/csv',
-  });
+  // const { acceptedFiles } = useDropzone({
+  //   onDrop,
+  //   accept: 'text/csv',
+  // });
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -40,11 +40,11 @@ function InviteUsersForm({
     hiddenFileInput.current.click();
   };
 
-  const files = acceptedFiles.map((file) => (
-    <li key={file.path}>
-      {file.path} - {file.size} bytes
-    </li>
-  ));
+  // const files = acceptedFiles.map((file) => (
+  //   <li key={file.path}>
+  //     {file.path} - {file.size} bytes
+  //   </li>
+  // ));
 
   return (
     <div>
@@ -52,10 +52,17 @@ function InviteUsersForm({
         <div className="drawer-card-wrap invite-user-drawer-wrap">
           <div className="card-header">
             <div className="card-header-inner-wrap">
-              <h3 className="tj-text-lg tj-text font-weight-500" data-cy="add-new-user">
-                {t('header.organization.menus.manageUsers.inviteNewUsers', 'Invite new users')}
+              <h3 className="tj-text-lg tj-text font-weight-500" data-cy="add-users-card-title">
+                {t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}
               </h3>
-              <div onClick={() => onClose()} style={{ cursor: 'pointer' }}>
+              <div
+                onClick={() => {
+                  onCancel();
+                  onClose();
+                }}
+                style={{ cursor: 'pointer' }}
+                data-cy="close-button"
+              >
                 <SolidIcon name="remove" width="16" />
               </div>
             </div>
@@ -64,6 +71,7 @@ function InviteUsersForm({
                 <button
                   className={`tj-drawer-tabs-btn tj-text-xsm ${activeTab == 1 && 'tj-drawer-tabs-btn-active'}`}
                   onClick={() => setActiveTab(1)}
+                  data-cy="button-invite-with-email"
                 >
                   <SolidIcon name="mail" width="14" fill={activeTab == 1 ? '#11181C' : '#687076'} />
                   <span> Invite with email</span>
@@ -71,6 +79,7 @@ function InviteUsersForm({
                 <button
                   className={`tj-drawer-tabs-btn  tj-text-xsm ${activeTab == 2 && 'tj-drawer-tabs-btn-active'}`}
                   onClick={() => setActiveTab(2)}
+                  data-cy="button-upload-csv-file"
                 >
                   <SolidIcon name="fileupload" width="14" fill={activeTab == 2 ? '#11181C' : '#687076'} />
                   <span>Upload CSV file</span>
@@ -82,7 +91,7 @@ function InviteUsersForm({
             <div className="manage-users-drawer-content">
               <div className="invite-user-by-email">
                 <form onSubmit={createUser} noValidate className="invite-email-body" id="inviteByEmail">
-                  <label className="form-label" data-cy="email-label">
+                  <label className="form-label" data-cy="label-full-name-input-field">
                     {t('header.organization.menus.manageUsers.fullName', 'Enter full name')}
                   </label>
                   <div className="form-group mb-3 ">
@@ -94,14 +103,15 @@ function InviteUsersForm({
                         name="fullName"
                         onChange={changeNewUserOption.bind(this, 'fullName')}
                         value={fields['fullName']}
+                        data-cy="input-field-full-name"
                       />
-                      <span className="text-danger" data-cy="first-name-error">
+                      <span className="text-danger" data-cy="error-message-fullname">
                         {errors['fullName']}
                       </span>
                     </div>
                   </div>
                   <div className="form-group mb-3 ">
-                    <label className="form-label" data-cy="email-label">
+                    <label className="form-label" data-cy="label-email-input-field">
                       {t('header.organization.menus.manageUsers.emailAddress', 'Email Address')}
                     </label>
                     <div className="tj-app-input">
@@ -113,9 +123,9 @@ function InviteUsersForm({
                         name="email"
                         onChange={changeNewUserOption.bind(this, 'email')}
                         value={fields['email']}
-                        data-cy="email-input"
+                        data-cy="input-field-email"
                       />
-                      <span className="text-danger" data-cy="email-error">
+                      <span className="text-danger" data-cy="error-message-email">
                         {errors['email']}
                       </span>
                     </div>
@@ -131,7 +141,7 @@ function InviteUsersForm({
                     <SolidIcon name="information" fill="#F76808" width="26" />
                   </div>
                   <div>
-                    <p className="tj-text tj-text-sm">
+                    <p className="tj-text tj-text-sm" data-cy="helper-text-bulk-upload">
                       Download the ToolJet template to add user details or format your file in the same as the template.
                       ToolJet won’t be able to recognise files in any other format.{' '}
                     </p>
@@ -143,6 +153,7 @@ function InviteUsersForm({
                       as={'a'}
                       leftIcon="folderdownload"
                       iconWidth="13"
+                      data-cy="button-download-template"
                     >
                       Download Template
                     </ButtonSolid>
@@ -176,7 +187,7 @@ function InviteUsersForm({
               type="submit"
               variant="primary"
               disabled={uploadingUsers}
-              data-cy="create-users-button"
+              data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"
               fill={'#FDFDFE'}
