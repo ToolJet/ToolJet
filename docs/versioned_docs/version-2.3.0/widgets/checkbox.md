@@ -101,8 +101,16 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
 
-## Actions
+## Exposed Variables
 
-| Action      | Description | Properties |
-| ----------- | ----------- | ------------------ |
-| `setChecked` | Set checkbox state. | pass status as parameter. ex: `components.checkbox1.setChecked(true)` |
+| Variables      | Description |
+| ----------- | ----------- |
+| value | This variable holds the boolean value `true` if the checkbox is checked and `false` if unchecked. You can access the value dynamically using JS: `{{components.checkbox1.value}}`| 
+
+## Component specific actions (CSA)
+
+Following actions of checkbox component can be controlled using the component specific actions(CSA):
+
+| Actions     | Description |
+| ----------- | ----------- |
+| setChecked | You can change the status of the checkbox component using component specific action from within any event handler. Additionally, you have the option to trigger it from the RunJS query: `await components.checkbox1.setChecked(true)` or `await components.checkbox1.setChecked(false)` |

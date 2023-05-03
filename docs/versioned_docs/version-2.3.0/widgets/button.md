@@ -94,3 +94,19 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Exposed variables
+
+There are currently no exposed variables for the component.
+
+## Component specific actions (CSA)
+
+Following actions of button component can be controlled using the component specific actions(CSA):
+
+| Actions     | Description |
+| ----------- | ----------- |
+| click | You can regulate the click of a button via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.button1.click()` |
+| setText | button's text can be controlled using component specific action from any of the event handler. You can also use RunJS query to execute component specific actions: `await components.button1.setText('New Button Text')` |
+| disable | button can be disabled using the component specific action from any of the event handler. You can also use RunJS query to execute this action: `await components.button1.disable(true)` or `await components.button1.disable(false)` |
+| visibility | button's visibility can be switched using the component specific action from any of the event handler. You can also use RunJS query to execute this action: `await components.button1.disable(true)` or `await components.button1.disable(false)` |
+| loading | The loading state of the button can be set dynamically using the component specific actions from any of the event handler. You can also use this action from RunJS: `await components.button1.loading(true)` or `await components.button1.loading(false)` |

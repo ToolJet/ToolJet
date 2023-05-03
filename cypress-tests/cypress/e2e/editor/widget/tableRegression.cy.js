@@ -212,7 +212,7 @@ describe("Table", () => {
       ]`)
     );
     // cy.get('[data-cy="inspector-close-icon"]').click();
-    cy.forceClickOnCanvas()
+    cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     verifyTableElements([
       { id: 1, name: "Mike", email: "mike@example.com" },
@@ -272,9 +272,8 @@ describe("Table", () => {
     cy.get('[data-cy="rightActions-cell-2"]')
       .eq(0)
       .should("have.text", "FakeName1");
-    cy.get(
-      `[data-cy="dropdown-action-button-position"]>>:eq(0)`).click()
-      cy.get('[data-index="0"] > .select-search-option').click()
+    cy.get(`[data-cy="dropdown-action-button-position"]>>:eq(0)`).click();
+    cy.get('[data-index="0"] > .select-search-option').click();
 
     cy.get('[data-cy="leftActions-cell-0"]')
       .eq(0)
@@ -329,7 +328,7 @@ describe("Table", () => {
     );
   });
 
-  it.only("should verify column options", () => {
+  it("should verify column options", () => {
     const data = {};
     data.widgetName = fake.widgetName;
     openEditorSidebar(tableText.defaultWidgetName);
@@ -348,20 +347,23 @@ describe("Table", () => {
     addAndOpenColumnOption("Fake-String", `string`);
     selectDropdownOption('[data-cy="input-overflow"] >>:eq(0)', `wrap`);
     cy.get('[data-index="0"]>.select-search-option:eq(1)').realClick();
-    cy.wait(2000)
+    cy.wait(2000);
     verifyAndEnterColumnOptionInput("key", "name");
     verifyAndEnterColumnOptionInput("Text color", "red");
     verifyAndEnterColumnOptionInput(
       "Cell Background Color",
-      "{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}yellow"
+      "{backspace}{backspace}{backspace}{backspace}{backspace}yellow"
     );
     cy.get(
       '[data-cy="input-and-label-cell-background-color"] > .form-label'
     ).click();
+    cy.wait(500);
 
     cy.get(tableSelector.column(0))
       .eq(0)
-      .should("have.css", "background-color", "rgb(255, 255, 0)", {timeout:10000})
+      .should("have.css", "background-color", "rgb(255, 255, 0)", {
+        timeout: 10000,
+      })
       .last()
       .should("have.css", "color", "rgb(62, 82, 91)")
       .and("have.text", "Sarah");
@@ -647,7 +649,9 @@ describe("Table", () => {
       data.color,
       data.boxShadowParam
     );
-    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)).click()
+    cy.get(
+      commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
+    ).click();
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
     cy.get('[data-cy="label-table-type"]').verifyVisibleElement(
@@ -665,14 +669,17 @@ describe("Table", () => {
       .find("table")
       .invoke("attr", "class")
       .and("contain", "randomText");
-      cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)).click()
+    cy.get(
+      commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
+    ).click();
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
     cy.get('[data-cy="table-type-fx-button"]').click();
     cy.get('[data-cy="dropdown-table-type"]').click();
     selectFromSidebarDropdown('[data-cy="dropdown-table-type"]', "Classic");
     cy.forceClickOnCanvas();
-    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)).click()
+    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName))
+      .click()
       .find("table")
       .invoke("attr", "class")
       .and("contain", "classic");
@@ -683,7 +690,8 @@ describe("Table", () => {
       "Striped & bordered"
     );
     cy.forceClickOnCanvas();
-    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)).click()
+    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName))
+      .click()
       .find("table")
       .invoke("attr", "class")
       .and("contain", "table-striped table-bordered ");
@@ -701,7 +709,9 @@ describe("Table", () => {
       `randomText`
     );
     cy.forceClickOnCanvas();
-    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)).click()
+    cy.get(
+      commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
+    ).click();
     cy.get(tableSelector.column(0))
       .eq(0)
       .invoke("attr", "class")
@@ -712,7 +722,9 @@ describe("Table", () => {
     cy.get('[data-cy="cell-size-fx-button"]').click();
     selectFromSidebarDropdown('[data-cy="dropdown-cell-size"]', "Spacious");
     cy.forceClickOnCanvas();
-    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)).click()
+    cy.get(
+      commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
+    ).click();
 
     cy.get(tableSelector.column(0))
       .eq(0)
@@ -726,8 +738,9 @@ describe("Table", () => {
     );
 
     selectColourFromColourPicker(`Text color`, data.color);
-    cy.forceClickOnCanvas()
-    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)).click()
+    cy.forceClickOnCanvas();
+    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName))
+      .click()
       .find("tbody")
       .should(
         "have.css",
@@ -792,7 +805,7 @@ describe("Table", () => {
     verifyAndModifyToggleFx("Loading State", "{{false}}", true);
   });
 
-  it.only("should verify download", () => {
+  it("should verify download", () => {
     cy.get(tableSelector.buttonDownloadDropdown).should("be.visible").click();
     cy.get(tableSelector.optionDownloadPdf).click();
     cy.task("readPdf", "cypress/downloads/all-data.pdf")
