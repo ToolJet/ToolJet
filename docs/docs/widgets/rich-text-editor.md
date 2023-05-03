@@ -54,3 +54,13 @@ Toggle on or off to control the visibility of the widget. You can programmatical
 ### Disable
 
 This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`.
+
+## Exposed Variables
+
+| Variables    | Description |
+| ----------- | ----------- |
+| value | This variable holds the value whenever a user enters a value in the rich text editor component. You can access the value dynamically using JS: `{{components.richtexteditor1.value}}`|
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.

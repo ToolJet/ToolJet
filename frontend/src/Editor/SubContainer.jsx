@@ -71,7 +71,8 @@ export const SubContainer = ({
   const allComponents = appDefinition ? appDefinition.pages[currentPageId].components : {};
   const isParentModal =
     (allComponents[parent]?.component?.component === 'Modal' ||
-      allComponents[parent]?.component?.component === 'Form') ??
+      allComponents[parent]?.component?.component === 'Form' ||
+      allComponents[parent]?.component?.component === 'Container') ??
     false;
 
   const getChildWidgets = (components) => {

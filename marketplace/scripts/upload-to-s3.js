@@ -11,7 +11,7 @@ config.update({
   region: process.env.AWS_REGION || 'us-west-1',
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.SECRET_ACCESS_KEY,
-  maxRetries: 3
+  maxRetries: 3,
 });
 
 const directoryPath = _resolve(__dirname, 'plugins');
@@ -22,7 +22,7 @@ const getDirectoryFilesRecursive = (dir, ignores = []) => {
   });
 };
 
-const generateFileKey = fileName => {
+const generateFileKey = (fileName) => {
   const S3objectPath = fileName.split('/marketplace/plugins/')[1];
   return `marketplace-assets/${S3objectPath}`;
 };
@@ -40,10 +40,10 @@ const uploadToS3 = async () => {
       'README.md',
       'package-lock.json',
       'package.json',
-      'tsconfig.json'
+      'tsconfig.json',
     ]);
 
-    fileArray.map(file => {
+    fileArray.map((file) => {
       // Configuring parameters for S3 Object
       const S3params = {
         Bucket: process.env.AWS_BUCKET,
@@ -51,9 +51,9 @@ const uploadToS3 = async () => {
         Key: generateFileKey(file),
         ContentType: lookup(file),
         ContentEncoding: 'utf-8',
-        CacheControl: 'immutable,max-age=31536000,public'
+        CacheControl: 'immutable,max-age=31536000,public',
       };
-      s3.upload(S3params, function(err, data) {
+      s3.upload(S3params, function (err, data) {
         if (err) {
           // Set the exit code while letting
           // the process exit gracefully.

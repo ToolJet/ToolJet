@@ -47,7 +47,7 @@ export const FolderMenu = function FolderMenu({
       overlay={
         <Popover
           id="popover-app-menu"
-          className={darkMode && 'popover-dark-themed'}
+          className={darkMode && 'dark-theme'}
           data-cy="folder-card"
           style={{ transition: 'none' }}
         >

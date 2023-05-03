@@ -4,8 +4,8 @@ import Skeleton from 'react-loading-skeleton';
 
 export function Menu({ isLoading, onChange, items, selected }) {
   return (
-    <div className="left-menu card">
-      <ul data-cy="left-menu-items">
+    <div className="left-menu">
+      <ul data-cy="left-menu-items tj-text-xsm">
         {!isLoading &&
           Array.isArray(items) &&
           items.length > 0 &&
@@ -14,7 +14,7 @@ export function Menu({ isLoading, onChange, items, selected }) {
               key={item.id}
               onClick={() => onChange(item.id)}
               className={cx({
-                active: selected === item.id,
+                'folder-list-selected': selected === item.id,
               })}
             >
               {item.label}
