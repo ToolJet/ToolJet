@@ -1,0 +1,66 @@
+name: Documentation version release
+
+on:
+  workflow_dispatch:
+    inputs:
+      create-branch:
+        description: "Branch name"
+      version:
+        description: "RELEASE_VERSION"
+
+jobs:
+  versioned-docs:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Create new branch
+      if: "${{ github.event.inputs.create-branch != '' }}"
+      run: |
+        git checkout -b "${{ github.event.inputs.create-branch }}"
+
+    - name: Creating a new doc version
+      if: "${{ github.event.inputs.RELEASE_VERSION != '' }}"
+      with:
+        working-directory: ./docs/
+      run: |
+        npm run docusaurus docs:"${{ github.event.inputs.RELEASE_VERSION }}"
+
+    - name: Commit changes and push
+      run: |
+        git config user.email "adish.madhu@gmail.com"
+        git config user.name "adishM98"
+        git add -A
+        git commit -m "created new version folder"
+        git push --set-upstream origin "${{ github.event.inputs.create-branch }}"
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v3.9.2
+      with:
+        title: "Creating a new version folder"
+        body: "Created a new version folder for version: ${{ github.event.inputs.RELEASE_VERSION }}"
+        branch: "${{ github.event.inputs.create-branch }}"
+        base: "develop"
+        token: ${{ secrets.GITHUB_TOKEN }}
+      
+    - name: Auto-approve and merge Pull Request
+      uses: marvinpinto/action-auto-approve@v2.0.1
+      if: success()
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        pull-request-number: ${{ steps.create-pull-request.outputs.pull-request-number }}
+
+    - name: Merge Pull Request
+      uses: peter-evans/merge-pull-request@v1.1.0
+      if: success() && steps.auto-approve-and-merge.outputs.approved == 'true'
+      with:
+        commit-message: "Merge pull request #${{ steps.create-pull-request.outputs.pull-request-number }}: Created a new version folder"
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        pull-request-number: ${{ steps.create-pull-request.outputs.pull-request-number }}
+
+
+
+
+
+    
