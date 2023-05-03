@@ -95,7 +95,7 @@ export const ButtonGroup = function Button({
               color: defaultActive?.includes(values[index]) ? selectedTextColor : textColor,
               transition: 'all .1s ease',
             }}
-            key={item}
+            key={index}
             disabled={disabledState}
             className={'group-button overflow-hidden'}
             onClick={(event) => {
