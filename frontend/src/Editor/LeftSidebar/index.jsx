@@ -61,6 +61,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [errorHistory, setErrorHistory] = React.useState({ appLevel: [], pageLevel: [] });
   const [unReadErrorCount, setUnReadErrorCount] = React.useState({ read: 0, unread: 0 });
 
+  const open = !!selectedSidebarItem;
+
   const clearErrorLogs = () => {
     setUnReadErrorCount(() => {
       return { read: 0, unread: 0 };
@@ -90,7 +92,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     const newErrorLogs = debuggerActions.generateErrorLogs(newError);
     const newPageLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'page_level');
     const newAppLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'app_level');
-
     if (newErrorLogs) {
       setErrorLogs((prevErrors) => {
         const copy = JSON.parse(JSON.stringify(prevErrors));
