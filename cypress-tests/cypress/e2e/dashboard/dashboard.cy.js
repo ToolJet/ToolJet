@@ -133,10 +133,10 @@ describe("dashboard", () => {
       "have.text",
       dashboardText.createAppButton
     );
-    // cy.get(dashboardSelector.importAppButton).verifyVisibleElement(
-    //   "have.text",
-    //       dashboardText.importAppButton
-    //     );
+    cy.get(dashboardSelector.importAppButton).should("be.visible");
+    cy.get(dashboardSelector.importAppButton).invoke('text').then((text) => {
+      expect(text.trim()).equal(dashboardText.importAppButton)
+  });
       
     cy.get(dashboardSelector.appTemplateRow).should("be.visible");
   });
@@ -367,16 +367,16 @@ describe("dashboard", () => {
 
     viewFolderCardOptions(data.folderName);
     cy.get(commonSelectors.folderCard).should("be.visible");
-    cy.get(commonSelectors.editFolderOption).verifyVisibleElement(
+    cy.get(commonSelectors.editFolderOption(data.folderName)).verifyVisibleElement(
       "have.text",
       commonText.editFolderOption
     );
-    cy.get(commonSelectors.deleteFolderOption).verifyVisibleElement(
+    cy.get(commonSelectors.deleteFolderOption(data.folderName)).verifyVisibleElement(
       "have.text",
       commonText.deleteFolderOption
     );
 
-    cy.get(commonSelectors.editFolderOption).click();
+    cy.get(commonSelectors.editFolderOption(data.folderName)).click();
     verifyModal(
       commonText.updateFolderTitle,
       commonText.updateFolderButton,
@@ -390,7 +390,7 @@ describe("dashboard", () => {
     );
 
     viewFolderCardOptions(data.folderName);
-    cy.get(commonSelectors.editFolderOption).click();
+    cy.get(commonSelectors.editFolderOption(data.folderName)).click();
     cy.clearAndType(commonSelectors.folderNameInput, data.updatedFolderName);
 
     cancelModal(commonText.cancelButton);
@@ -399,7 +399,7 @@ describe("dashboard", () => {
     );
 
     viewFolderCardOptions(data.folderName);
-    cy.get(commonSelectors.editFolderOption).click();
+    cy.get(commonSelectors.editFolderOption(data.folderName)).click();
     cy.clearAndType(commonSelectors.folderNameInput, data.updatedFolderName);
     cy.get(
       commonSelectors.buttonSelector(commonText.updateFolderButton)
@@ -410,7 +410,7 @@ describe("dashboard", () => {
       .and("be.visible");
 
     viewFolderCardOptions(data.updatedFolderName);
-    cy.get(commonSelectors.deleteFolderOption).click();
+    cy.get(commonSelectors.deleteFolderOption(data.updatedFolderName)).click();
     verifyConfirmationModal(commonText.folderDeleteModalMessage);
 
     cancelModal(commonText.cancelButton);

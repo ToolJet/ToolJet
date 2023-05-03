@@ -169,7 +169,7 @@ describe("User permissions", () => {
     cy.contains(data.folderName).should("exist");
 
     cy.contains("div", data.folderName).parent().within(()=>{
-      cy.get(commonSelectors.folderCardOptions).invoke("click");
+      cy.get(commonSelectors.folderCardOptions(data.folderName)).invoke("click");
     })
     cy.get(commonSelectors.deleteFolderOption).click();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
