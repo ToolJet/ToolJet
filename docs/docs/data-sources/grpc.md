@@ -6,7 +6,7 @@ title: gRPC
 <div className='badge badge--primary heading-badge'>Self-hosted only</div>
 
 :::caution
-At present, gRPC can be deployed for self-hosting and has the capability to handle unary requests and responses.
+only self-hosted deployments will have access to a gRPC datasource that is capable of handling unary requests and responses.
 :::
 
 - [Setup](#setup)
