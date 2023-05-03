@@ -14,6 +14,7 @@ import Zendesk from '@/_components/Zendesk';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
 
 import { find, isEmpty } from 'lodash';
+import { ButtonSolid } from './AppButton';
 
 const DynamicForm = ({
   schema,
@@ -124,6 +125,7 @@ const DynamicForm = ({
     className,
     controller,
   }) => {
+    const source = schema?.source?.kind;
     const darkMode = localStorage.getItem('darkMode') === 'true';
 
     if (!options) return;
@@ -172,6 +174,7 @@ const DynamicForm = ({
       }
       case 'react-component-oauth-authentication':
         return {
+          isGrpc: source === 'grpc',
           grant_type: options?.grant_type?.value,
           auth_type: options?.auth_type?.value,
           add_token_to: options?.add_token_to?.value,
@@ -184,6 +187,8 @@ const DynamicForm = ({
           scopes: options?.scopes?.value,
           username: options?.username?.value,
           password: options?.password?.value,
+          grpc_apiKey_key: options?.grpc_apikey_key?.value,
+          grpc_apiKey_value: options?.grpc_apikey_value?.value,
           bearer_token: options?.bearer_token?.value,
           auth_url: options?.auth_url?.value,
           auth_key: options?.auth_key?.value,
@@ -308,14 +313,16 @@ const DynamicForm = ({
                 )}
                 {(type === 'password' || encrypted) && selectedDataSource?.id && (
                   <div className="mx-1 col">
-                    <button
-                      className="btn btn-sm font-500 color-primary border-1 mb-2 mx-2"
+                    <ButtonSolid
+                      className="datasource-edit-btn mb-2"
+                      type="a"
+                      variant="tertiary"
                       target="_blank"
                       rel="noreferrer"
                       onClick={(event) => handleEncryptedFieldsToggle(event, key)}
                     >
                       {computedProps?.[key]?.['disabled'] ? 'Edit' : 'Cancel'}
-                    </button>
+                    </ButtonSolid>
                   </div>
                 )}
                 {(type === 'password' || encrypted) && (
@@ -336,6 +343,7 @@ const DynamicForm = ({
                 {...getElementProps(obj[key])}
                 {...computedProps[key]}
                 data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
+                customWrap={true} //to be removed after whole ui is same
               />
             </div>
           );

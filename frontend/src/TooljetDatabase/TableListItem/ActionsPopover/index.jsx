@@ -5,13 +5,13 @@ import Popover from 'react-bootstrap/Popover';
 import EditIcon from './Icons/Edit.svg';
 // import CloneIcon from './Icons/Clone.svg';
 import DeleteIcon from './Icons/Delete.svg';
-import EllipsisIcon from './Icons/Ellipsis.svg';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
   const [open, setOpen] = React.useState(false);
 
   const popover = (
-    <Popover id="popover-contained" className="table-list-items">
+    <Popover id="popover-contained" className={`table-list-items ${darkMode && 'dark-theme'}`}>
       <Popover.Body className={`${darkMode && 'theme-dark'}`}>
         <div className={`row cursor-pointer`}>
           <div className="col-auto" data-cy="edit-option-icon">
@@ -48,7 +48,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
 
   return (
     <div
-      className={cx(`float-right cursor-pointer table-list-item-popover ${darkMode && 'dark'}`, {
+      className={cx(`float-right cursor-pointer table-list-item-popover`, {
         'd-grid': open,
       })}
       data-cy="table-kebab-icon"
@@ -65,7 +65,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
         transition={false}
       >
         <span>
-          <EllipsisIcon />
+          <SolidIcon name="morevertical" width="14" fill={darkMode ? '#FDFDFE' : '#11181C'} />
         </span>
       </OverlayTrigger>
     </div>
