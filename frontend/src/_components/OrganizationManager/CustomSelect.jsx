@@ -37,16 +37,11 @@ const Menu = (props) => {
           onClick={props.selectProps.setShowCreateOrg}
         >
           <div className="add-new-workspace-icon-old-wrap">
-            <SolidIcon
-              name="plus"
-              fill="#FDFDFE"
-              className="add-new-workspace-icon-old"
-              data-cy="add-new-workspace-link"
-            />
+            <SolidIcon name="plus" fill="#FDFDFE" className="add-new-workspace-icon-old" />
           </div>
 
           <div className="add-new-workspace-icon-wrap">
-            <SolidIcon name="plus" fill="#3E63DD" className="add-new-workspace-icon" data-cy="add-new-workspace-link" />
+            <SolidIcon name="plus" fill="#3E63DD" className="add-new-workspace-icon" dataCy="add-new-workspace-link" />
           </div>
           <span className="p-1 tj-text-xsm">{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
         </div>

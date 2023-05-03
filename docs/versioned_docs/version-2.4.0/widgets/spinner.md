@@ -47,3 +47,11 @@ Change the color of the Spinner by entering the `Hex color code` or choosing a c
 ### Size
 
 Change the size of the Spinner by selecting options from the dropdown. It has small and large sizes available.
+
+## Exposed variables
+
+There are currently no exposed variables for the component.
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.

@@ -8,6 +8,7 @@ const Share = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
+    data-cy="share-icon"
   >
     <path
       opacity="0.4"
