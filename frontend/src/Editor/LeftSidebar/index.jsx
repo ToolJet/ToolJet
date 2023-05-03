@@ -52,11 +52,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
     clonePage,
     queryPanelHeight,
   } = props;
-  const [selectedSidebarItem, setSelectedSidebarItem] = useState();
+  const [selectedSidebarItem, setSelectedSidebarItem] = useState(localStorage.getItem('selectedSidebarItem'));
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
-  const [pinned, setPinned] = useState(false);
+  const [pinned, setPinned] = useState(!!localStorage.getItem('selectedSidebarItem'));
   const [errorLogs, setErrorLogs] = React.useState([]);
   const [errorHistory, setErrorHistory] = React.useState({ appLevel: [], pageLevel: [] });
   const [unReadErrorCount, setUnReadErrorCount] = React.useState({ read: 0, unread: 0 });
@@ -138,11 +138,20 @@ export const LeftSidebar = forwardRef((props, ref) => {
   }));
 
   const handleSelectedSidebarItem = (item) => {
-    if (item === selectedSidebarItem) {
+    if (item === selectedSidebarItem && !pinned) {
       setSelectedSidebarItem(null);
     } else {
       setSelectedSidebarItem(item);
+      pinned && localStorage.setItem('selectedSidebarItem', item);
     }
+  };
+
+  const handlePin = (isPin) => {
+    isPin
+      ? localStorage.setItem('selectedSidebarItem', selectedSidebarItem)
+      : localStorage.removeItem('selectedSidebarItem');
+
+    setPinned(isPin);
   };
 
   const SELECTED_ITEMS = {
@@ -171,7 +180,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         apps={apps}
         dataQueries={dataQueries}
         popoverContentHeight={popoverContentHeight}
-        setPinned={setPinned}
+        setPinned={handlePin}
         pinned={pinned}
       />
     ),
@@ -187,7 +196,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         runQuery={runQuery}
         dataSources={dataSources}
         popoverContentHeight={popoverContentHeight}
-        setPinned={setPinned}
+        setPinned={handlePin}
         pinned={pinned}
       />
     ),
@@ -202,7 +211,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         currentPageId={currentPageId}
         popoverContentHeight={popoverContentHeight}
         clearErrorLogs={clearErrorLogs}
-        setPinned={setPinned}
+        setPinned={handlePin}
         pinned={pinned}
       />
     ),
@@ -212,21 +221,21 @@ export const LeftSidebar = forwardRef((props, ref) => {
     <div className="left-sidebar" data-cy="left-sidebar-inspector">
       <LeftSidebarItem
         selectedSidebarItem={selectedSidebarItem}
-        onClick={() => setSelectedSidebarItem('page')}
+        onClick={() => handleSelectedSidebarItem('page')}
         icon="page"
         className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
         tip="Pages"
       />
       <LeftSidebarItem
         selectedSidebarItem={selectedSidebarItem}
-        onClick={() => setSelectedSidebarItem('inspect')}
+        onClick={() => handleSelectedSidebarItem('inspect')}
         icon="inspect"
         className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
         tip="Inspector"
       />
       <Popover
         handleToggle={(open) => {
-          if (!open && !pinned) setSelectedSidebarItem('');
+          if (!open && !pinned) handleSelectedSidebarItem('');
         }}
         {...(pinned ? { open: true } : { open: !!selectedSidebarItem })}
         popoverContentClassName="p-0 sidebar-h-100-popover"
@@ -271,7 +280,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         <LeftSidebarItem
           icon="debugger"
           selectedSidebarItem={selectedSidebarItem}
-          onClick={() => setSelectedSidebarItem('debugger')}
+          onClick={() => handleSelectedSidebarItem('debugger')}
           className={`left-sidebar-item  left-sidebar-layout`}
           badge={true}
           count={unReadErrorCount.unread}
