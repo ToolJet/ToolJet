@@ -27,6 +27,7 @@ export const PageHandler = ({
   components,
   dataQueries,
   pinPagesPopover,
+  haveUserPinned,
 }) => {
   const isHomePage = page.id === homePageId;
   const isSelected = page.id === currentPageId;
@@ -177,7 +178,7 @@ export const PageHandler = ({
               show={showSettingsModal}
               handleClose={() => {
                 setShowSettingsModal(false);
-                pinPagesPopover(false);
+                !haveUserPinned && pinPagesPopover(false);
               }}
               darkMode={darkMode}
               updateOnPageLoadEvents={updateOnPageLoadEvents}

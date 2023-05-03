@@ -37,6 +37,7 @@ const LeftSidebarPageSelector = ({
 }) => {
   const [allpages, setPages] = useState(pages);
   const [pinned, setPinned] = useState(false);
+  const [haveUserPinned, setHaveUserPinned] = useState(false);
 
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -62,7 +63,9 @@ const LeftSidebarPageSelector = ({
   }, [JSON.stringify({ pages })]);
 
   const pinPagesPopover = (state) => {
-    setPinned(state);
+    if (!haveUserPinned) {
+      setPinned(state);
+    }
   };
 
   const popoverContent = (
@@ -100,7 +103,10 @@ const LeftSidebarPageSelector = ({
               </Button>
               <Button
                 title={`${pinned ? 'Unpin' : 'Pin'}`}
-                onClick={() => setPinned(!pinned)}
+                onClick={() => {
+                  setPinned(!pinned);
+                  setHaveUserPinned(true);
+                }}
                 darkMode={darkMode}
                 size="sm"
                 styles={{ width: '28px', padding: 0 }}
@@ -150,6 +156,7 @@ const LeftSidebarPageSelector = ({
                 components={appDefinition?.components ?? {}}
                 dataQueries={dataQueries}
                 pinPagesPopover={pinPagesPopover}
+                haveUserPinned={haveUserPinned}
               />
             ) : (
               <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
