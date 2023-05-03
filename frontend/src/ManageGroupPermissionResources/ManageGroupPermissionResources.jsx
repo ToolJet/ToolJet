@@ -859,8 +859,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                           }}
                                           checked={orgEnvironmentPermission}
                                           disabled={groupPermission.group === 'admin'}
+                                          data-cy="env-variable-checkbox"
                                         />
-                                        <span className="form-check-label">
+                                        <span className="form-check-label" data-cy="workspace-variable-create-label">
                                           {this.props.t(
                                             'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
                                             'Create/Update/Delete'

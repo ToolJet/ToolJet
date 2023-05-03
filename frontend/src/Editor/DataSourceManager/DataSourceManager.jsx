@@ -185,6 +185,7 @@ class DataSourceManagerComponent extends React.Component {
             environment_id: currentEnvironment,
           })
           .then(() => {
+            this.props.updateSelectedDatasource(selectedDataSource.name);
             this.setState({ isSaving: false });
             this.hideModal();
             toast.success(
@@ -213,11 +214,14 @@ class DataSourceManagerComponent extends React.Component {
           })
           .then((data) => {
             this.setState({ isSaving: false });
+            this.props.updateSelectedDatasource(name);
+
             this.hideModal();
             toast.success(
               this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
               { position: 'top-center' }
             );
+
             this.props.dataSourcesChanged(false, data);
             this.props.globalDataSourcesChanged();
           })
@@ -401,7 +405,12 @@ class DataSourceManagerComponent extends React.Component {
       {
         type: 'All Datasources',
         key: '#alldatasources',
-        list: [...allDataSourcesList.databases, ...allDataSourcesList.apis, ...allDataSourcesList.cloudStorages],
+        list: [
+          ...allDataSourcesList.databases,
+          ...allDataSourcesList.apis,
+          ...allDataSourcesList.cloudStorages,
+          ...allDataSourcesList.plugins,
+        ],
         renderDatasources: () => this.renderCardGroup(allDataSourcesList, 'All Datasources'),
       },
       {
@@ -478,7 +487,7 @@ class DataSourceManagerComponent extends React.Component {
 
     if (this.state.queryString && this.state.queryString.length > 0) {
       const filteredDatasources = this.state.filteredDatasources.map((datasource) => {
-        const src = datasource.iconFile?.data
+        const src = datasource?.iconFile?.data
           ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
           : datasource.kind.toLowerCase();
 
@@ -499,7 +508,7 @@ class DataSourceManagerComponent extends React.Component {
                 title={item.title}
                 src={item.src}
                 handleClick={() => renderSelectedDatasource(item)}
-                usePluginIcon={isEmpty(item.iconFile?.data)}
+                usePluginIcon={isEmpty(item?.iconFile?.data)}
                 height="35px"
                 width="35px"
               />
@@ -587,7 +596,7 @@ class DataSourceManagerComponent extends React.Component {
     }
 
     const datasources = source.map((datasource) => {
-      const src = datasource.iconFile?.data
+      const src = datasource?.iconFile?.data
         ? `data:image/svg+xml;base64,${datasource.iconFile?.data}`
         : datasource.kind.toLowerCase();
 
@@ -608,7 +617,7 @@ class DataSourceManagerComponent extends React.Component {
               title={item.title}
               src={item?.src}
               handleClick={() => renderSelectedDatasource(item)}
-              usePluginIcon={isEmpty(item.iconFile?.data)}
+              usePluginIcon={isEmpty(item?.iconFile?.data)}
               height="35px"
               width="35px"
             />
