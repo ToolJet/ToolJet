@@ -4,13 +4,13 @@ import SolidIcon from '../Icon/SolidIcons';
 import { BreadCrumbContext } from '../../App/App';
 import useBreadcrumbs from 'use-react-router-breadcrumbs';
 
-export const Breadcrumbs = ({ darkMode }) => {
+export const Breadcrumbs = ({ darkMode, dataCy }) => {
   const { sidebarNav } = useContext(BreadCrumbContext);
   const breadcrumbs = useBreadcrumbs(routes, { excludePaths: ['/'] });
 
   return (
     <ol className="breadcrumb breadcrumb-arrows">
-      {breadcrumbs.map(({ breadcrumb, dataCy, beta }, i) => {
+      {breadcrumbs.map(({ breadcrumb, beta }, i) => {
         if (i == 1 || breadcrumbs?.length == 1) {
           return (
             <div key={breadcrumb.key} className="tj-dashboard-header-title-wrap" data-cy={dataCy ?? ''}>

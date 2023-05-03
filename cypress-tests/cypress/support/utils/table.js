@@ -57,16 +57,19 @@ export const selectDropdownOption = (inputSelector, option) => {
     isNaN(option)
       ? `[data-index="${data[option]}"]>.select-search-option:eq(0)`
       : `[data-index="${option}"]>.select-search-option:eq(0)`
-  ).click({force:true});
+  ).click({ force: true });
 };
 
 export const verifyAndEnterColumnOptionInput = (label, value) => {
   cy.get(`[data-cy="input-and-label-${cyParamName(label)}"]`)
     .find("label")
     .should("have.text", label);
-  cy.get(`[data-cy="input-and-label-${cyParamName(label)}"]`).realClick().realPress(["Meta", "A"]).realType(
-    `${value}`
-  );
+  cy.get(`[data-cy="input-and-label-${cyParamName(label)}"]`)
+    .realClick()
+    .realPress(["Meta", "A"])
+    .realType(
+      `{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}${value}`
+    );
 };
 
 export const addAndOpenColumnOption = (name, type) => {
@@ -76,10 +79,7 @@ export const addAndOpenColumnOption = (name, type) => {
     .find('[data-cy*="column-new_column"]')
     .last()
     .click();
-  selectDropdownOption(
-    '[data-cy="dropdown-column-type"]>>:eq(0)',
-    type
-  );
+  selectDropdownOption('[data-cy="dropdown-column-type"]>>:eq(0)', type);
   verifyAndEnterColumnOptionInput("Column name", name);
 };
 
@@ -92,7 +92,7 @@ export const deleteAndVerifyColumn = (columnName) => {
 export const verifyInvalidFeedback = (columnIndex = 0, rowIndex = 0, text) => {
   cy.get(tableSelector.column(columnIndex))
     .eq(rowIndex)
-    .find('>>>>:eq(1)')
+    .find(">>>>:eq(1)")
     .should("have.text", text);
   // cy.forceClickOnCanvas();
 };
@@ -165,14 +165,18 @@ export const dataCsvAssertionHelper = (data) => {
   return dataArray;
 };
 
-export const addFilter =(data=[{column:'name', operation: "contains", value: 'Sarah'}], freshFilter=false)=>{
+export const addFilter = (
+  data = [{ column: "name", operation: "contains", value: "Sarah" }],
+  freshFilter = false
+) => {
   cy.get(tableSelector.filterButton).click();
 
-
-  data.forEach((filter,index) => {
-    if(freshFilter==true){
-      if(index==0){cy.get(tableSelector.buttonClearFilter).click()}
-    cy.get(tableSelector.buttonAddFilter).click()
+  data.forEach((filter, index) => {
+    if (freshFilter == true) {
+      if (index == 0) {
+        cy.get(tableSelector.buttonClearFilter).click();
+      }
+      cy.get(tableSelector.buttonAddFilter).click();
     }
     cy.get(tableSelector.filterSelectColumn(index))
       .click()
@@ -180,10 +184,11 @@ export const addFilter =(data=[{column:'name', operation: "contains", value: 'Sa
     cy.get(tableSelector.filterSelectOperation(index))
       .click()
       .type(`${filter.operation}{enter}`);
-  if(filter.value){
-    cy.get(tableSelector.filterInput(index)).type(`{selectAll}{del}${filter.value}`);
-  }
-    
+    if (filter.value) {
+      cy.get(tableSelector.filterInput(index)).type(
+        `{selectAll}{del}${filter.value}`
+      );
+    }
   });
-  cy.get(tableSelector.buttonCloseFilters).click()
-}
+  cy.get(tableSelector.buttonCloseFilters).click();
+};

@@ -6,6 +6,10 @@
     background-color: var(--indigo9);
 }
 
+.form-check-input:hover{
+    cursor: pointer;
+}
+
 .form-check>.form-check-input:not(:checked) {
     background-color: #ffffff;
 }
