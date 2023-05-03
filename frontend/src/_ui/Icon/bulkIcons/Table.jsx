@@ -1,7 +1,14 @@
 import React from 'react';
 
 const Table = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25 25' }) => (
-  <svg width={width} height={width} viewBox={viewBox} xmlns="http://www.w3.org/2000/svg" className={className}>
+  <svg
+    width={width}
+    height={width}
+    viewBox={viewBox}
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    data-cy="table-icon"
+  >
     <g opacity="0.4">
       <path d="M22 18C22 20.2091 20.2091 22 18 22H8V8H22V18Z" fill={fill} />
     </g>

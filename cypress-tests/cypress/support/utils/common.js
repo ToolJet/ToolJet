@@ -83,16 +83,18 @@ export const navigateToAppEditor = (appName) => {
 };
 
 export const viewAppCardOptions = (appName) => {
-  cy.get(commonSelectors.appCard(appName))
-    .find(commonSelectors.appCardOptionsButton)
-    .click();
+    cy.contains("div", appName)
+    .parent()
+    .within(() => {
+      cy.get(commonSelectors.appCardOptionsButton).invoke("click");
+    });
 };
 
 export const viewFolderCardOptions = (folderName) => {
-  cy.contains("div", folderName)
+  cy.get(commonSelectors.folderListcard(folderName))
     .parent()
     .within(() => {
-      cy.get(commonSelectors.folderCardOptions).invoke("click");
+      cy.get('[data-cy="folder-card-menu-icon"]').invoke('click');
     });
 };
 

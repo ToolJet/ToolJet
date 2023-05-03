@@ -5,7 +5,7 @@ export const dashboardSelector = {
   emptyPageHeader: "[data-cy=empty-homepage-welcome-header]",
   emptyPageDescription: "[data-cy=empty-homepage-description]",
   createAppButton: "[data-cy=create-new-application]",
-  importAppButton: "[data-cy=import-an-application]",
+  importAppButton: '[data-cy="button-import-an-app"]',
   chooseFromTemplate: "[data-cy=choose-from-template]",
   modeToggle: '[data-cy="mode-switch-button"]',
   dropdownText: "[data-cy=dropdown-organization-list]>>:eq(0)",
@@ -30,6 +30,8 @@ export const dashboardSelector = {
   folderLabel: '[data-cy="folder-info"]',
   dashboardAppsHeaderLabel:'[data-cy="app-header-label"]',
   versionLabel: '[data-cy="version-label"]',
+  dashboardAppCreateButton: '[data-cy="button-new-app-from-scratch"]',
+   
   appCardIcon: (iconName) => {
     return `[data-cy="app-card-${cyParamName(iconName)}-icon"]`;
   },
