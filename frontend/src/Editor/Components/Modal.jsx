@@ -122,8 +122,9 @@ export const Modal = function Modal({
           onClick={(event) => {
             event.stopPropagation();
             setShowModal(true);
-            setExposedVariable('show', true).then(() => fireEvent('onOpen'));
+            setExposedVariable('show', true);
           }}
+          data-cy={`${dataCy}-launch-button`}
         >
           {triggerButtonLabel ?? 'Show Modal'}
         </button>
@@ -204,11 +205,14 @@ const Component = ({ children, ...restProps }) => {
         />
       )}
       {!hideTitleBar && (
-        <BootstrapModal.Header style={{ ...customStyles.modalHeader }}>
-          <BootstrapModal.Title id="contained-modal-title-vcenter">{title}</BootstrapModal.Title>
+        <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
+          <BootstrapModal.Title id="contained-modal-title-vcenter" data-cy={`modal-title`}>
+            {title}
+          </BootstrapModal.Title>
           {!hideCloseButton && (
             <span
               className="cursor-pointer"
+              data-cy={`modal-close-button`}
               size="sm"
               onClick={(e) => {
                 e.preventDefault();
@@ -236,7 +240,7 @@ const Component = ({ children, ...restProps }) => {
           )}
         </BootstrapModal.Header>
       )}
-      <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id}>
+      <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
         {children}
       </BootstrapModal.Body>
     </BootstrapModal>

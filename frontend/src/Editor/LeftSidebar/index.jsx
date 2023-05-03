@@ -109,7 +109,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         setSelectedComponent={setSelectedComponent}
         removeComponent={removeComponent}
         runQuery={runQuery}
-        dataSources={dataSources}
+        dataSources={globalDataSources}
         popoverContentHeight={popoverContentHeight}
       />
       {dataSources?.length > 0 && (

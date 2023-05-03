@@ -693,7 +693,7 @@ export const EventManager = ({
             )}
             <div className="row mt-3">
               <div className="col-3 p-2">{t('editor.inspector.eventManager.debounce', 'Debounce')}</div>
-              <div className="col-9" data-cy="alert-message-input-field">
+              <div className="col-9" data-cy="debounce-input-field">
                 <CodeHinter
                   theme={darkMode ? 'monokai' : 'default'}
                   currentState={currentState}

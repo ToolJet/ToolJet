@@ -8,7 +8,17 @@ Containers are used to group widgets together. You can move the desired number o
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/container/container.gif" alt="ToolJet - Widget Reference - Container" />
+<img className="screenshot-full" src="/img/widgets/container/container.png" alt="ToolJet - Widget Reference - Container" />
+
+</div>
+
+## Enabling vertical scroll on container
+
+To enable the vertical scroll on the container, drag and place any component to the bottom grid of the container and the container will automatically enable the scrolling.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/container/scrollcontainer.png" alt="ToolJet - Widget Reference - Container" />
 
 </div>
 
@@ -58,3 +68,12 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+
+## Exposed variables
+
+There are currently no exposed variables for the component.
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
