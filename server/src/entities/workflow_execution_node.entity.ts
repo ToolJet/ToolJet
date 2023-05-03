@@ -34,7 +34,7 @@ export class WorkflowExecutionNode {
   @Column({ name: 'workflow_execution_id' })
   workflowExecutionId: string;
 
-  @Column('json', { name: 'definition' })
+  @Column('simple-json', { name: 'definition' })
   definition;
 
   @ManyToOne(() => WorkflowExecution, (workflowExecution) => workflowExecution.id)

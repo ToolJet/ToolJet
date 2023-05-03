@@ -7,6 +7,13 @@ export const Modes = {
   Running: 'Running',
 };
 
+export const ServerDataStates = {
+  NotFetched: 'NotFetched',
+  Fetching: 'Fetching',
+  Fetched: 'Fetched',
+  Failed: 'Failed',
+};
+
 export const initialState = ({ appId, appVersionId }) => ({
   app: {
     id: appId,
@@ -44,6 +51,8 @@ export const initialState = ({ appId, appVersionId }) => ({
   execution: {
     nodes: [],
   },
+  executionHistoryLoadingStatus: ServerDataStates.NotFetched,
+  executionHistory: [],
 });
 
 export const reducer = (state = initialState(), { payload, type }) => {
@@ -264,6 +273,24 @@ export const reducer = (state = initialState(), { payload, type }) => {
           ...state.execution,
           nodes: nodes,
         },
+      };
+    }
+
+    case 'SET_EXECUTION_HISTORY_LOADING_STATUS': {
+      const { status } = payload;
+
+      return {
+        ...state,
+        executionHistoryLoadingStatus: status,
+      };
+    }
+
+    case 'SET_EXECUTION_HISTORY': {
+      const { history } = payload;
+
+      return {
+        ...state,
+        executionHistory: history,
       };
     }
 

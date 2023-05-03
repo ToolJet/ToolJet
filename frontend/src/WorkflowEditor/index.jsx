@@ -7,7 +7,7 @@ import {
   workflowExecutionsService,
   dataqueryService,
 } from '@/_services';
-import { reducer, initialState, Modes } from './reducer/reducer';
+import { reducer, initialState, Modes, ServerDataStates } from './reducer/reducer';
 import FlowBuilder from './FlowBuilder';
 import { ReactFlowProvider } from 'reactflow';
 import { EditorContextWrapper } from '@/Editor/Context/EditorContextWrapper';
@@ -55,13 +55,21 @@ function WorkflowEditor(props) {
         });
         return { definition, queriesData, versionId };
       })
-      .then(({ definition, queriesData }) => {
+      .then(({ definition, queriesData, versionId }) => {
         const queries = queriesData.map((query) => ({
           ...query,
           idOnDefinition: find(definition.queries, { id: query.id }).idOnDefinition,
         }));
         editorSessionActions.setQueries(queries);
         editorSessionActions.setBootupComplete(true);
+        return { versionId };
+      })
+      .then(({ versionId }) => {
+        editorSessionActions.setExecutionHistoryLoadingStatus(ServerDataStates.Fetching);
+        workflowExecutionsService.all(versionId).then((executions) => {
+          editorSessionActions.setExecutionHistoryLoadingStatus(ServerDataStates.Fetched);
+          editorSessionActions.setExecutionHistory(executions);
+        });
       });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

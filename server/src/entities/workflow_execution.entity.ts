@@ -30,6 +30,9 @@ export class WorkflowExecution {
   @Column({ name: 'executing_user_id' })
   executingUserId: string;
 
+  @Column('json', { name: 'logs' })
+  logs: string[];
+
   @OneToOne(() => User)
   @JoinColumn({ name: 'executing_user_id' })
   user: User;

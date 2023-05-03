@@ -5,7 +5,9 @@ import { authenticationService } from '@/_services';
 export const workflowExecutionsService = {
   create,
   getStatus,
+  getWorkflowExecution,
   execute,
+  all,
 };
 
 function create(appVersionId) {
@@ -17,7 +19,19 @@ function create(appVersionId) {
 
 function getStatus(workflowExecutionId) {
   const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/workflow_executions/${workflowExecutionId}/status`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function getWorkflowExecution(workflowExecutionId) {
+  const requestOptions = { method: 'GET', headers: authHeader() };
   return fetch(`${config.apiUrl}/workflow_executions/${workflowExecutionId}`, requestOptions).then(handleResponse);
+}
+
+function all(appVersionId) {
+  const requestOptions = { method: 'GET', headers: authHeader() };
+  return fetch(`${config.apiUrl}/workflow_executions/all/${appVersionId}`, requestOptions).then(handleResponse);
 }
 
 function execute(appId, params) {

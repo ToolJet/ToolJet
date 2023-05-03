@@ -22,5 +22,8 @@ export default function generateActions(dispatch) {
     updateExecutionStatus: (nodes) => dispatch({ type: 'UPDATE_EXECUTION_STATUS', payload: { nodes } }),
     storeExecutionStatusCheckerIntervalHandle: (handle) =>
       dispatch({ type: 'STORE_EXECUTION_STATUS_CHECKER_INTERVAL_HANDLE', payload: { handle } }),
+    setExecutionHistoryLoadingStatus: (status) =>
+      dispatch({ type: 'SET_EXECUTION_HISTORY_LOADING_STATUS', payload: { status } }),
+    setExecutionHistory: (history) => dispatch({ type: 'SET_EXECUTION_HISTORY', payload: { history } }),
   };
 }

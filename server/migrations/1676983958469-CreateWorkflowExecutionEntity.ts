@@ -30,6 +30,11 @@ export class CreateWorkflowExecutionEntity1676983958469 implements MigrationInte
             default: false,
           },
           {
+            name: 'logs',
+            type: 'json',
+            isNullable: true,
+          },
+          {
             name: 'created_at',
             type: 'timestamp',
             isNullable: true,

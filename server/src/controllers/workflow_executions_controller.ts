@@ -14,8 +14,18 @@ export class WorkflowExecutionsController {
     return { workflowExecution, result };
   }
 
+  @Get(':id/status')
+  async status(@Param('id') id: any) {
+    return decamelizeKeys(await this.workflowExecutionsService.getStatus(id));
+  }
+
   @Get(':id')
   async show(@Param('id') id: any) {
-    return decamelizeKeys(await this.workflowExecutionsService.getStatus(id));
+    return await this.workflowExecutionsService.getWorkflowExecution(id);
+  }
+
+  @Get('all/:appVersionId')
+  async index(@Param('appVersionId') appVersionId: any) {
+    return await this.workflowExecutionsService.listWorkflowExecutions(appVersionId);
   }
 }

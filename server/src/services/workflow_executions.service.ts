@@ -123,6 +123,26 @@ export class WorkflowExecutionsService {
     };
   }
 
+  async getWorkflowExecution(workflowExecutionId: string) {
+    const workflowExecution = await this.workflowExecutionRepository.findOne(workflowExecutionId);
+
+    return workflowExecution;
+  }
+
+  async listWorkflowExecutions(appVersionId: string) {
+    const workflowExecutions = await this.workflowExecutionRepository.find({
+      where: {
+        appVersionId,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+      take: 10,
+    });
+
+    return workflowExecutions;
+  }
+
   async execute(workflowExecution: WorkflowExecution, params: object = {}): Promise<object> {
     const appVersion = await this.appVersionsRepository.findOne(workflowExecution.appVersionId);
 
@@ -138,6 +158,8 @@ export class WorkflowExecutionsService {
     queue.push(workflowExecution.startNode);
 
     let finalResult = {};
+    const logs = [];
+
     while (queue.length !== 0) {
       const nodeToBeExecuted = queue.shift();
 
@@ -176,6 +198,7 @@ export class WorkflowExecutionsService {
 
             const options = getQueryVariables(query.options, state);
             try {
+              logs.push(`${query.name}: Started execution`);
               const result = await this.dataQueriesService.runQuery(user, query, options);
 
               const newState = {
@@ -183,9 +206,11 @@ export class WorkflowExecutionsService {
                 [query.name]: result,
               };
 
+              logs.push(`${query.name}: Execution succeeded`);
               await this.completeNodeExecution(currentNode, JSON.stringify(result), newState);
               void queue.push(...(await this.forwardNodes(currentNode)));
             } catch (exception) {
+              logs.push(`${query.name}: Execution failed`);
               const result = { status: 'failed', exception };
 
               const newState = {
@@ -224,6 +249,7 @@ export class WorkflowExecutionsService {
     }
 
     await this.markWorkflowAsExecuted(workflowExecution);
+    await this.saveWorkflowLogs(workflowExecution, logs);
 
     return finalResult;
   }
@@ -237,6 +263,12 @@ export class WorkflowExecutionsService {
   async markWorkflowAsExecuted(workflow: WorkflowExecution) {
     await dbTransactionWrap(async (manager: EntityManager) => {
       await manager.update(WorkflowExecution, workflow.id, { executed: true });
+    });
+  }
+
+  async saveWorkflowLogs(workflow: WorkflowExecution, logs: string[]) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(WorkflowExecution, workflow.id, { logs });
     });
   }
 
