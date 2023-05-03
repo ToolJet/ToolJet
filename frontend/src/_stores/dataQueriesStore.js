@@ -34,6 +34,7 @@ export const useDataQueriesStore = create(
           }
         });
       },
+      setDataQueries: (dataQueries) => set({ dataQueries }),
       deleteDataQueries: (queryId) => {
         set({ isDeletingQueryInProcess: true });
         dataqueryService

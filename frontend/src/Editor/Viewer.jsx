@@ -31,6 +31,8 @@ import Spinner from '@/_ui/Spinner';
 import { toast } from 'react-hot-toast';
 import { withRouter } from '@/_hoc/withRouter';
 
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+
 class ViewerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -140,6 +142,8 @@ class ViewerComponent extends React.Component {
     const startingPageHandle = this.props?.params?.pageHandle;
     const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
     const currentPage = pages.find((page) => page.id === currentPageId);
+
+    useDataQueriesStore.getState().actions.setDataQueries(data.data_queries);
 
     this.setState(
       {
