@@ -294,6 +294,18 @@ export const reducer = (state = initialState(), { payload, type }) => {
       };
     }
 
+    case 'SET_EXECUTION_LOGS': {
+      const { logs } = payload;
+
+      return {
+        ...state,
+        execution: {
+          ...state.execution,
+          logs,
+        },
+      };
+    }
+
     default: {
       return state;
     }

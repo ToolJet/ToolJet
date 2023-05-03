@@ -25,5 +25,6 @@ export default function generateActions(dispatch) {
     setExecutionHistoryLoadingStatus: (status) =>
       dispatch({ type: 'SET_EXECUTION_HISTORY_LOADING_STATUS', payload: { status } }),
     setExecutionHistory: (history) => dispatch({ type: 'SET_EXECUTION_HISTORY', payload: { history } }),
+    setExecutionLogs: (logs) => dispatch({ type: 'SET_EXECUTION_LOGS', payload: { logs } }),
   };
 }

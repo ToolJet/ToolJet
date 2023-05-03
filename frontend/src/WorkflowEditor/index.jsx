@@ -125,8 +125,9 @@ function WorkflowEditor(props) {
     editorSessionActions.setMode(Modes.Running);
     editorSessionActions.setExecutionId(execution.id);
     const intervalHandle = setInterval(async () => {
-      const { status, nodes } = await workflowExecutionsService.getStatus(execution.id);
+      const { status, nodes, logs } = await workflowExecutionsService.getStatus(execution.id);
       editorSessionActions.updateExecutionStatus(nodes);
+      editorSessionActions.setExecutionLogs(logs);
 
       if (status) {
         clearInterval(intervalHandle);

@@ -118,6 +118,7 @@ export class WorkflowExecutionsService {
     }));
 
     return {
+      logs: workflowExecution.logs,
       status: workflowExecution.executed,
       nodes,
     };
