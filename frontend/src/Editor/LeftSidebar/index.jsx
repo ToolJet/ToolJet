@@ -1,6 +1,6 @@
 import '@/_styles/left-sidebar.scss';
 import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
-
+import _ from 'lodash';
 import { LeftSidebarInspector } from './SidebarInspector';
 import { LeftSidebarDataSources } from './SidebarDatasources';
 import { DarkModeToggle } from '../../_components/DarkModeToggle';
@@ -27,7 +27,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     dataSourcesChanged,
     globalDataSourcesChanged,
     dataQueriesChanged,
-    errorLogs,
+    errorLogs: errors,
     appVersionsId,
     debuggerActions,
     currentState,
@@ -57,6 +57,73 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const [pinned, setPinned] = useState(false);
+  const [errorLogs, setErrorLogs] = React.useState([]);
+  const [errorHistory, setErrorHistory] = React.useState({ appLevel: [], pageLevel: [] });
+  const [unReadErrorCount, setUnReadErrorCount] = React.useState({ read: 0, unread: 0 });
+
+  const clearErrorLogs = () => {
+    setUnReadErrorCount(() => {
+      return { read: 0, unread: 0 };
+    });
+
+    setErrorLogs(() => []);
+    setErrorHistory(() => ({ appLevel: [], pageLevel: [] }));
+  };
+
+  React.useEffect(() => {
+    if (currentPageId) {
+      const olderPageErrorFromHistory = errorHistory.pageLevel[currentPageId] ?? [];
+      const olderAppErrorFromHistory = errorHistory.appLevel ?? [];
+      setErrorLogs(() => [...olderPageErrorFromHistory, ...olderAppErrorFromHistory]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPageId]);
+
+  React.useEffect(() => {
+    const newError = _.flow([
+      Object.entries,
+      // eslint-disable-next-line no-unused-vars
+      (arr) => arr.filter(([key, value]) => value.data?.status),
+      Object.fromEntries,
+    ])(errors);
+
+    const newErrorLogs = debuggerActions.generateErrorLogs(newError);
+    const newPageLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'page_level');
+    const newAppLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'app_level');
+
+    if (newErrorLogs) {
+      setErrorLogs((prevErrors) => {
+        const copy = JSON.parse(JSON.stringify(prevErrors));
+
+        return [...newAppLevelErrorLogs, ...newPageLevelErrorLogs, ...copy];
+      });
+
+      setErrorHistory((prevErrors) => {
+        const copy = JSON.parse(JSON.stringify(prevErrors));
+
+        return {
+          appLevel: [...newAppLevelErrorLogs, ...copy.appLevel],
+          pageLevel: {
+            [currentPageId]: [...newPageLevelErrorLogs, ...(copy.pageLevel[currentPageId] ?? [])],
+          },
+        };
+      });
+    }
+    debuggerActions.flush();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ errors })]);
+
+  React.useEffect(() => {
+    const unReadErrors = open ? 0 : errorLogs.length - unReadErrorCount.read;
+    setUnReadErrorCount((prev) => {
+      if (open) {
+        return { read: errorLogs.length, unread: 0 };
+      }
+      return { ...prev, unread: unReadErrors };
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [errorLogs.length, open]);
 
   useEffect(() => {
     popoverContentHeight !== queryPanelHeight && setPopoverContentHeight(queryPanelHeight);
@@ -103,30 +170,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
         apps={apps}
         dataQueries={dataQueries}
         popoverContentHeight={popoverContentHeight}
+        setPinned={setPinned}
+        pinned={pinned}
       />
     ),
-  };
-
-  return (
-    <div className="left-sidebar" data-cy="left-sidebar-inspector">
-      <Popover
-        handleToggle={(open) => {
-          if (!open) setSelectedSidebarItem('');
-        }}
-        {...(pinned && { open: true })}
-        popoverContentClassName="p-0 sidebar-h-100-popover"
-        side="right"
-        popoverContent={SELECTED_ITEMS['page']}
-        popoverContentHeight={popoverContentHeight}
-      >
-        <LeftSidebarItem
-          selectedSidebarItem={selectedSidebarItem}
-          onClick={() => setSelectedSidebarItem('page')}
-          icon="page"
-          className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
-          tip="Pages"
-        />
-      </Popover>
+    inspect: (
       <LeftSidebarInspector
         darkMode={darkMode}
         selectedSidebarItem={selectedSidebarItem}
@@ -138,7 +186,54 @@ export const LeftSidebar = forwardRef((props, ref) => {
         runQuery={runQuery}
         dataSources={dataSources}
         popoverContentHeight={popoverContentHeight}
+        setPinned={setPinned}
+        pinned={pinned}
       />
+    ),
+    debugger: (
+      <LeftSidebarDebugger
+        darkMode={darkMode}
+        selectedSidebarItem={selectedSidebarItem}
+        setSelectedSidebarItem={handleSelectedSidebarItem}
+        components={components}
+        errors={errorLogs}
+        debuggerActions={debuggerActions}
+        currentPageId={currentPageId}
+        popoverContentHeight={popoverContentHeight}
+        clearErrorLogs={clearErrorLogs}
+        setPinned={setPinned}
+        pinned={pinned}
+      />
+    ),
+  };
+
+  return (
+    <div className="left-sidebar" data-cy="left-sidebar-inspector">
+      <LeftSidebarItem
+        selectedSidebarItem={selectedSidebarItem}
+        onClick={() => setSelectedSidebarItem('page')}
+        icon="page"
+        className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
+        tip="Pages"
+      />
+      <LeftSidebarItem
+        selectedSidebarItem={selectedSidebarItem}
+        onClick={() => setSelectedSidebarItem('inspect')}
+        icon="inspect"
+        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
+        tip="Inspector"
+      />
+      <Popover
+        handleToggle={(open) => {
+          if (!open && !pinned) setSelectedSidebarItem('');
+        }}
+        {...(pinned ? { open: true } : { open: !!selectedSidebarItem })}
+        popoverContentClassName="p-0 sidebar-h-100-popover"
+        side="right"
+        popoverContent={SELECTED_ITEMS[selectedSidebarItem]}
+        popoverContentHeight={popoverContentHeight}
+      />
+
       {dataSources?.length > 0 && (
         <LeftSidebarDataSources
           darkMode={darkMode}
@@ -172,16 +267,16 @@ export const LeftSidebar = forwardRef((props, ref) => {
         darkMode={darkMode}
       />
       <div className="left-sidebar-stack-bottom">
-        <LeftSidebarDebugger
-          darkMode={darkMode}
+        <LeftSidebarItem
+          icon="debugger"
           selectedSidebarItem={selectedSidebarItem}
-          setSelectedSidebarItem={handleSelectedSidebarItem}
-          components={components}
-          errors={errorLogs}
-          debuggerActions={debuggerActions}
-          currentPageId={currentPageId}
-          popoverContentHeight={popoverContentHeight}
+          onClick={() => setSelectedSidebarItem('debugger')}
+          className={`left-sidebar-item  left-sidebar-layout`}
+          badge={true}
+          count={unReadErrorCount.unread}
+          tip="Debugger"
         />
+
         <div className="left-sidebar-item no-border">
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>

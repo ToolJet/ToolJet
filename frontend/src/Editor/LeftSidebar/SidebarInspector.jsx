@@ -1,5 +1,4 @@
-import React, { useMemo, useState } from 'react';
-import { LeftSidebarItem } from './SidebarItem';
+import React, { useMemo } from 'react';
 import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
@@ -8,21 +7,19 @@ import RunTooljetDbIcon from '../Icons/tooljetdb.svg';
 import RunpyIcon from '../Icons/runpy.svg';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
-import Popover from '@/_ui/Popover';
 
 export const LeftSidebarInspector = ({
   darkMode,
   currentState,
-  selectedSidebarItem,
-  setSelectedSidebarItem,
   appDefinition,
   setSelectedComponent,
   removeComponent,
   runQuery,
   dataSources,
-  popoverContentHeight,
+  setPinned,
+  pinned,
 }) => {
-  const [pinned, setPinned] = useState(false);
+  // const [pinned, setPinned] = useState(false);
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
   const queryDefinitions = appDefinition['queries'];
   const selectedComponent = React.useMemo(() => {
@@ -158,7 +155,7 @@ export const LeftSidebarInspector = ({
     },
   ];
 
-  const popoverContent = (
+  return (
     <div className={`left-sidebar-inspector`} style={{ resize: 'horizontal', minWidth: 288 }}>
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Inspector">
@@ -196,26 +193,5 @@ export const LeftSidebarInspector = ({
         />
       </div>
     </div>
-  );
-
-  return (
-    <Popover
-      handleToggle={(open) => {
-        if (!open) setSelectedSidebarItem('');
-      }}
-      {...(pinned && { open: true })}
-      side="right"
-      popoverContentClassName="p-0 sidebar-h-100-popover sidebar-h-100-popover-inspector"
-      popoverContent={popoverContent}
-      popoverContentHeight={popoverContentHeight}
-    >
-      <LeftSidebarItem
-        selectedSidebarItem={selectedSidebarItem}
-        onClick={() => setSelectedSidebarItem('inspect')}
-        icon="inspect"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
-        tip="Inspector"
-      />
-    </Popover>
   );
 };

@@ -1,93 +1,14 @@
-import React, { useState } from 'react';
-import Popover from '@/_ui/Popover';
+import React from 'react';
 import { Button, HeaderSection } from '@/_ui/LeftSidebar';
-import { LeftSidebarItem } from './SidebarItem';
 import _ from 'lodash';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 
-export const LeftSidebarDebugger = ({
-  darkMode,
-  selectedSidebarItem,
-  setSelectedSidebarItem,
-  errors,
-  debuggerActions,
-  currentPageId,
-  popoverContentHeight,
-}) => {
+export const LeftSidebarDebugger = ({ darkMode, errors, clearErrorLogs, setPinned, pinned }) => {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  const [pinned, setPinned] = useState(false);
-  const [errorLogs, setErrorLogs] = React.useState([]);
-  const [errorHistory, setErrorHistory] = React.useState({ appLevel: [], pageLevel: [] });
-  const [unReadErrorCount, setUnReadErrorCount] = React.useState({ read: 0, unread: 0 });
 
-  const clearErrorLogs = () => {
-    setUnReadErrorCount(() => {
-      return { read: 0, unread: 0 };
-    });
-
-    setErrorLogs(() => []);
-    setErrorHistory(() => ({ appLevel: [], pageLevel: [] }));
-  };
-
-  React.useEffect(() => {
-    if (currentPageId) {
-      const olderPageErrorFromHistory = errorHistory.pageLevel[currentPageId] ?? [];
-      const olderAppErrorFromHistory = errorHistory.appLevel ?? [];
-      setErrorLogs(() => [...olderPageErrorFromHistory, ...olderAppErrorFromHistory]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPageId]);
-
-  React.useEffect(() => {
-    const newError = _.flow([
-      Object.entries,
-      // eslint-disable-next-line no-unused-vars
-      (arr) => arr.filter(([key, value]) => value.data?.status),
-      Object.fromEntries,
-    ])(errors);
-
-    const newErrorLogs = debuggerActions.generateErrorLogs(newError);
-    const newPageLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'page_level');
-    const newAppLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'app_level');
-
-    if (newErrorLogs) {
-      setErrorLogs((prevErrors) => {
-        const copy = JSON.parse(JSON.stringify(prevErrors));
-
-        return [...newAppLevelErrorLogs, ...newPageLevelErrorLogs, ...copy];
-      });
-
-      setErrorHistory((prevErrors) => {
-        const copy = JSON.parse(JSON.stringify(prevErrors));
-
-        return {
-          appLevel: [...newAppLevelErrorLogs, ...copy.appLevel],
-          pageLevel: {
-            [currentPageId]: [...newPageLevelErrorLogs, ...(copy.pageLevel[currentPageId] ?? [])],
-          },
-        };
-      });
-    }
-    debuggerActions.flush();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ errors })]);
-
-  React.useEffect(() => {
-    const unReadErrors = open ? 0 : errorLogs.length - unReadErrorCount.read;
-    setUnReadErrorCount((prev) => {
-      if (open) {
-        return { read: errorLogs.length, unread: 0 };
-      }
-      return { ...prev, unread: unReadErrors };
-    });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [errorLogs.length, open]);
-
-  const popoverContent = (
+  return (
     <div>
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Debugger">
@@ -112,41 +33,17 @@ export const LeftSidebarDebugger = ({
       </HeaderSection>
 
       <div className="card-body mb-5">
-        {errorLogs.length === 0 && (
+        {errors.length === 0 && (
           <center className="p-2 text-muted">{t(`leftSidebar.Debugger.noErrors`, 'No errors found.')}</center>
         )}
 
         <div className="tab-content">
-          {errorLogs.map((error, index) => (
+          {errors.map((error, index) => (
             <LeftSidebarDebugger.ErrorLogs key={index} errorProps={error} idx={index} darkMode={darkMode} />
           ))}
         </div>
       </div>
     </div>
-  );
-
-  return (
-    <Popover
-      handleToggle={(open) => {
-        if (!open) setSelectedSidebarItem('');
-        setOpen(open);
-      }}
-      {...(pinned && { open: true })}
-      popoverContentClassName="p-0 sidebar-h-100-popover"
-      side="right"
-      popoverContent={popoverContent}
-      popoverContentHeight={popoverContentHeight}
-    >
-      <LeftSidebarItem
-        icon="debugger"
-        selectedSidebarItem={selectedSidebarItem}
-        onClick={() => setSelectedSidebarItem('debugger')}
-        className={`left-sidebar-item  left-sidebar-layout`}
-        badge={true}
-        count={unReadErrorCount.unread}
-        tip="Debugger"
-      />
-    </Popover>
   );
 };
 
