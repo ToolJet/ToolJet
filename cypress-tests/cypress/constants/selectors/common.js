@@ -3,9 +3,10 @@ export const cyParamName = (paramName = "") => {
 };
 
 export const commonSelectors = {
-  toastMessage: ".go3958317564", 
+  toastMessage: ".go3958317564",
   oldToastMessage: ".go318386747",
-  newToastMessage:'.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551',
+  newToastMessage:
+    '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551',
   toastCloseButton: '[data-cy="toast-close-button"]',
   editButton: "[data-cy=edit-button]",
   searchField: "[data-cy=widget-search-box]",
@@ -157,15 +158,14 @@ export const commonSelectors = {
   resetPasswordButton: '[data-cy="reset-password-button"]',
   resetPasswordPageDescription: '[data-cy="reset-password-page-description"]',
   backToLoginButton: '[data-cy="back-to-login-button"]',
-  breadcrumbTitle:'[data-cy="breadcrumb-title"]',
-  breadcrumbPageTitle:'[data-cy="breadcrumb-page-title"]',
+  breadcrumbTitle: '[data-cy="breadcrumb-title"]',
+  breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
   labelFullNameInput: '[data-cy="label-full-name-input-field"]',
   inputFieldFullName: '[data-cy="input-field-full-name"]',
   labelEmailInput: '[data-cy="label-email-input-field"]',
   inputFieldEmailAddress: '[data-cy="input-field-email"]',
   closeButton: '[data-cy="close-button"]',
-
-  
+  emptyAppCreateButton: "[data-cy='button-new-app-from-scratch']",
 
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
