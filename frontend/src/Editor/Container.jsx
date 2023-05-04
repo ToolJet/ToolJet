@@ -183,10 +183,6 @@ export const Container = ({
     () => ({
       accept: [ItemTypes.BOX, ItemTypes.COMMENT],
       async drop(item, monitor) {
-        if (isVersionReleased) {
-          setReleasedVersionPopupState();
-          return;
-        }
         if (item.parent) {
           return;
         }
@@ -569,6 +565,8 @@ export const Container = ({
                 addDefaultChildren,
                 currentPageId,
                 childComponents,
+                isVersionReleased,
+                setReleasedVersionPopupState,
               }}
               isVersionReleased={isVersionReleased}
             />

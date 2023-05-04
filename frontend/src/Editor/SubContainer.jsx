@@ -47,6 +47,8 @@ export const SubContainer = ({
   height = '100%',
   currentPageId,
   childComponents = null,
+  isVersionReleased,
+  setReleasedVersionPopupState,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -319,6 +321,10 @@ export const SubContainer = ({
   }
 
   function onDragStop(e, componentId, direction, currentLayout) {
+    if (isVersionReleased) {
+      setReleasedVersionPopupState();
+      return;
+    }
     const canvasWidth = getContainerCanvasWidth();
     const nodeBounds = direction.node.getBoundingClientRect();
 
@@ -360,6 +366,10 @@ export const SubContainer = ({
   }
 
   function onResizeStop(id, e, direction, ref, d, position) {
+    if (isVersionReleased) {
+      setReleasedVersionPopupState();
+      return;
+    }
     const deltaWidth = d.width;
     const deltaHeight = d.height;
 
