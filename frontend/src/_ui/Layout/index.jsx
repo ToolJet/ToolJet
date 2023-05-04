@@ -53,7 +53,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 </li>
                 {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
                   <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
-                    <ToolTip message="Tables" placement="right">
+                    <ToolTip message="Database" placement="right">
                       <Link
                         to={getPrivateRoute('database')}
                         className={`tj-leftsidebar-icon-items  ${

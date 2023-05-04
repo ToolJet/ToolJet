@@ -165,6 +165,9 @@ class EditorComponent extends React.Component {
     document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
   }
 
+  onVersionDelete = () => {
+    this.fetchApp(this.props.params.pageHandle);
+  };
   getCurrentOrganizationDetails() {
     const currentSession = authenticationService.currentSessionValue;
     const currentUser = currentSession?.current_user;
@@ -1873,6 +1876,7 @@ class EditorComponent extends React.Component {
             handleSlugChange={this.handleSlugChange}
             onVersionRelease={this.onVersionRelease}
             saveEditingVersion={this.saveEditingVersion}
+            onVersionDelete={this.onVersionDelete}
             currentUser={this.state.currentUser}
           />
           <DndProvider backend={HTML5Backend}>

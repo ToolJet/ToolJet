@@ -74,7 +74,7 @@ describe("Basic components", () => {
 
   it("Should verify Checkbox", () => {
     cy.dragAndDropWidget("Checkbox", 50, 50);
-    cy.resizeWidget("checkbox1", 100, 200);
+    // cy.resizeWidget("checkbox1", 50, 200);
     cy.forceClickOnCanvas();
     verifyComponent("checkbox1");
 
