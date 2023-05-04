@@ -17,7 +17,7 @@ You can open the **Pages Panel** by clicking on the **Pages** icon on the left s
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/pages/pages-panel.png" alt="Pages Panel"/>
+<img className="screenshot-full" src="/img/v2-beta/pages/pages-panel2.png" alt="Pages Panel"/>
 
 </div>
 
@@ -34,14 +34,14 @@ On the header of the Pages Manager, the **+** button that allows you to add more
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/pages/add.png" alt="Pages Panel" width="400" />
+<img className="screenshot-full" src="/img/v2-beta/pages/add2.png" alt="Pages Panel" width="400" />
 
 </div>
 
 On clicking the **+** button, a new page will be added, enter the name for the page and press enter.
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/pages/newpage.png" alt="Pages Panel" width="400" />
+<img className="screenshot-full" src="/img/v2-beta/pages/newpage2.png" alt="Pages Panel" width="400" />
 
 </div>
 
@@ -59,7 +59,7 @@ From **Settings**, you can hide the **page navigation sidebar** in viewer mode, 
 You can pin the pages panel from the **Pin** button and the panel won't close until you **unpin** it.
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/pages/pin.png" alt="Pages Panel" width="400" />
+<img className="screenshot-full" src="/img/v2-beta/pages/pin2.png" alt="Pages Panel" width="400" />
 
 </div>
 
@@ -68,7 +68,7 @@ You can pin the pages panel from the **Pin** button and the panel won't close un
 If there are many pages on the panel then you can use the **Search bar** to look for specific page.
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/pages/search.png" alt="Pages Panel" width="400" />
+<img className="screenshot-full" src="/img/v2-beta/pages/search2.png" alt="Pages Panel" width="400" />
 
 </div>
 

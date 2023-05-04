@@ -59,7 +59,7 @@ export const createFolder = (folderName) => {
 
 export const deleteFolder = (folderName) => {
   viewFolderCardOptions(folderName);
-  cy.get(commonSelectors.deleteFolderOption).click();
+  cy.get(commonSelectors.deleteFolderOption(folderName)).click();
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
   cy.wait("@folderDeleted");
   cy.verifyToastMessage(
@@ -94,7 +94,7 @@ export const viewFolderCardOptions = (folderName) => {
   cy.get(commonSelectors.folderListcard(folderName))
     .parent()
     .within(() => {
-      cy.get('[data-cy="folder-card-menu-icon"]').invoke('click');
+      cy.get(commonSelectors.folderCardOptions(folderName)).invoke('click');
     });
 };
 
