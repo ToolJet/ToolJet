@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { zustandDevTools } from './utils';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
 
@@ -8,7 +8,7 @@ import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { runQueries, computeQueryState } from '@/_helpers/appUtils';
 
 export const useDataQueriesStore = create(
-  devtools((set, get) => ({
+  zustandDevTools((set, get) => ({
     dataQueries: [],
     loadingDataQueries: true,
     isDeletingQueryInProcess: false,

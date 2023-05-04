@@ -8,6 +8,7 @@ const Sun = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0 0 25
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
+    data-cy="sun-icon"
   >
     <circle opacity="0.4" cx="12" cy="12" r="6" fill={fill} />
     <path

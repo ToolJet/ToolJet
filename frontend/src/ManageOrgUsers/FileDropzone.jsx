@@ -9,7 +9,6 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
     accept: 'text/csv',
   });
   const [fileData, setFileData] = useState();
-
   const files =
     acceptedFiles.length > 0
       ? acceptedFiles

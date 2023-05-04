@@ -237,7 +237,7 @@ class QueryManagerComponent extends React.Component {
   };
 
   changeDataSource = (source) => {
-    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'runpy', 'tooljetdb'].includes(source.kind);
+    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'runpy', 'tooljetdb', 'grpc'].includes(source.kind);
     const schemaUnavailableOptions = {
       restapi: {
         method: 'get',
@@ -256,6 +256,7 @@ class QueryManagerComponent extends React.Component {
         code: '',
       },
       runpy: {},
+      grpc: {},
     };
 
     let newOptions = {};

@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { zustandDevTools } from './utils';
 import { datasourceService, globalDatasourceService } from '@/_services';
 
 export const useDataSourcesStore = create(
-  devtools((set) => ({
+  zustandDevTools((set) => ({
     dataSources: [],
     loadingDataSources: true,
     globalDataSources: [],
