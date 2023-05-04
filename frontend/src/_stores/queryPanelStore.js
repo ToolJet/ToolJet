@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { zustandDevTools } from './utils';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
 
 export const useQueryPanelStore = create(
-  devtools((set) => ({
+  zustandDevTools((set) => ({
     queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
     selectedQuery: null,
     isUnsavedChangesAvailable: false,

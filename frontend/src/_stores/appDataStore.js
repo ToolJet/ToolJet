@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { zustandDevTools } from './utils';
 
 export const useAppDataStore = create(
-  devtools((set) => ({
+  zustandDevTools((set) => ({
     editingVersion: null,
     actions: {
       updateEditingVersion: (version) => set(() => ({ editingVersion: version })),
