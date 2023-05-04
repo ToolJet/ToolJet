@@ -3355,7 +3355,7 @@ export const widgets = [
         componentName: 'Image',
         layout: {
           top: 60,
-          left: 37,
+          left: 34.9,
           height: 100,
         },
         tab: 0,
@@ -3368,7 +3368,7 @@ export const widgets = [
         componentName: 'Text',
         layout: {
           top: 100,
-          left: 17,
+          left: 16.4,
           height: 50,
           width: 34,
         },
@@ -3630,7 +3630,7 @@ export const widgets = [
         componentName: 'Text',
         layout: {
           top: 50,
-          left: 27,
+          left: 28,
           height: 30,
         },
         properties: ['text'],
@@ -3640,7 +3640,7 @@ export const widgets = [
         componentName: 'Button',
         layout: {
           top: 50,
-          left: 60,
+          left: 62.7,
           height: 30,
         },
         incrementWidth: 2,
