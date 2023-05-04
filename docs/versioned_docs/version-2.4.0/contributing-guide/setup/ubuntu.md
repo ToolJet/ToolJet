@@ -3,7 +3,10 @@ id: ubuntu
 title: Ubuntu
 ---
 
-# Ubuntu
+:::warning
+The following guide is intended for contributors to set-up ToolJet locally. If you're interested in **self-hosting** ToolJet, please refer to the **[Setup](/docs/setup/)** section.
+:::
+
 Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the commands below.
 
 ## Setting up
