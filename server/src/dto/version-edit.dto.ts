@@ -13,5 +13,6 @@ export class VersionEditDto {
   definition: any;
 
   @IsBoolean()
+  @IsOptional()
   is_user_switched_version: boolean;
 }
