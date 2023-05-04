@@ -3,6 +3,7 @@ import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
 import { Configuration, OpenAIApi } from 'openai';
+const protobuf = require('protobufjs');
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -102,4 +103,16 @@ export async function getOpenAIConnection() {
   });
 
   return new OpenAIApi(config);
+}
+
+export async function getServiceAndRpcNames(protoDefinition) {
+  const root = protobuf.parse(protoDefinition).root;
+  const serviceNamesAndMethods = root.nestedArray
+    .filter((item) => item instanceof protobuf.Service)
+    .reduce((acc, service) => {
+      const rpcMethods = service.methodsArray.map((method) => method.name);
+      acc[service.name] = rpcMethods;
+      return acc;
+    }, {});
+  return serviceNamesAndMethods;
 }

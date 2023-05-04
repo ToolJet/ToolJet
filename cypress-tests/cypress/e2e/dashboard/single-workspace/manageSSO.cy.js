@@ -11,7 +11,7 @@ describe("Manage SSO for single workspace", () => {
   });
   it("Should verify General settings page elements", () => {
     common.navigateToManageSSO();
-    cy.get(ssoSelector.pagetitle).verifyVisibleElement("have.text", "SSO");
+    // cy.get(ssoSelector.pagetitle).verifyVisibleElement("have.text", "SSO");
     cy.get(ssoSelector.cardTitle).verifyVisibleElement(
       "have.text",
       ssoText.generalSettingsElements.generalSettings

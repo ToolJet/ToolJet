@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { datasourceService } from '@/_services';
 import { useTranslation } from 'react-i18next';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed, darkMode }) => {
+export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed }) => {
   const [isTesting, setTestingStatus] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('unknown');
   const [buttonText, setButtonText] = useState('Test Connection');
@@ -59,14 +60,15 @@ export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed
       )}
 
       {connectionStatus === 'unknown' && (
-        <button
-          className={`datasource-modal-button ${darkMode && 'dark-button'}`}
+        <ButtonSolid
           disabled={isTesting || connectionStatus === 'success'}
           onClick={testDataSource}
           data-cy={`test-connection-button`}
+          variant="tertiary"
+          leftIcon="arrowsort"
         >
           {buttonText}
-        </button>
+        </ButtonSolid>
       )}
     </div>
   );

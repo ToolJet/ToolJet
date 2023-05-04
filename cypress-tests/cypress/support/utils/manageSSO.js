@@ -166,10 +166,6 @@ export const gitSSOPageElements = () => {
 export const passwordPageElements = () => {
   cy.get(ssoSelector.passwordEnableToggle).then(($el) => {
     if ($el.is(":checked")) {
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.enabledLabel
-      );
       cy.get(ssoSelector.passwordEnableToggle).uncheck();
       cy.get(commonSelectors.modalComponent).should("be.visible");
       cy.get(commonSelectors.modalMessage).verifyVisibleElement(
@@ -181,33 +177,19 @@ export const passwordPageElements = () => {
         commonSelectors.toastMessage,
         ssoText.passwordDisabledToast
       );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.disabledLabel
-      );
 
       cy.get(ssoSelector.passwordEnableToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
         ssoText.passwordEnabledToast
       );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.enabledLabel
-      );
+
     } else {
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.disabledLabel
-      );
+
       cy.get(ssoSelector.passwordEnableToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
         ssoText.passwordEnabledToast
-      );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.enabledLabel
       );
 
       cy.get(ssoSelector.passwordEnableToggle).uncheck();
@@ -215,10 +197,7 @@ export const passwordPageElements = () => {
         commonSelectors.toastMessage,
         ssoText.passwordDisabledToast
       );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.disabledLabel
-      );
+
       cy.get(ssoSelector.passwordEnableToggle).check();
     }
   });

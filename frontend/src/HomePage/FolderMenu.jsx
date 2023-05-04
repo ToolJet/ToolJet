@@ -10,6 +10,7 @@ export const FolderMenu = function FolderMenu({
   canDeleteFolder,
   canUpdateFolder,
   darkMode,
+  dataCy = '',
 }) {
   const [open, setOpen] = React.useState(false);
   const closeMenu = () => {
@@ -28,7 +29,9 @@ export const FolderMenu = function FolderMenu({
             closeMenu();
             onClick();
           }}
-          data-cy={`${text.toLowerCase().replace(/\s+/g, '-')}-card-option`}
+          data-cy={`${String(dataCy + '-' + text)
+            .toLowerCase()
+            .replace(/\s+/g, '-')}-option`}
         >
           {text}
         </span>
@@ -47,7 +50,7 @@ export const FolderMenu = function FolderMenu({
       overlay={
         <Popover
           id="popover-app-menu"
-          className={darkMode && 'popover-dark-themed'}
+          className={darkMode && 'dark-theme'}
           data-cy="folder-card"
           style={{ transition: 'none' }}
         >
@@ -72,7 +75,7 @@ export const FolderMenu = function FolderMenu({
         className={cx('folder-menu-icon', {
           'd-grid': open,
         })}
-        data-cy="folder-card-menu-icon"
+        data-cy={`${dataCy.toLowerCase().replace(/\s+/g, '-')}-card-menu-icon`}
       >
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path

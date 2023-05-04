@@ -95,3 +95,13 @@ Change the color of the number in number-input component by entering the Hex col
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Exposed variables
+
+| Variables    | Description |
+| ----------- | ----------- |
+| value | This variable updates whenever a user selects a number on the number input. You can access the value dynamically using JS: `{{components.numberinput1.value}}`|
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
