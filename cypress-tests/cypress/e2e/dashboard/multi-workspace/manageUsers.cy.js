@@ -49,8 +49,8 @@ describe("Manage Users for multiple workspace", () => {
     );
     cy.get(usersSelector.buttonInviteUsers).click();
 
-    cy.verifyToastMessage(
-      commonSelectors.newToastMessage,
+    cy.get(
+      commonSelectors.newToastMessage).should("have.text",
       usersText.exsitingEmail
     );
   });
