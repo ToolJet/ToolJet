@@ -15,7 +15,7 @@ export const CopilotSetting = () => {
 
   const saveCopilotApiKey = async (apikey) => {
     setIsLoading(true);
-    const isCopilotApiKeyPresent = await fetchCopilotApiKey(apikey);
+    const isCopilotApiKeyPresent = await validateApiKey(apikey);
 
     return setTimeout(() => {
       if (isCopilotApiKeyPresent === true && !copilotWorkspaceVarId) {
@@ -54,12 +54,12 @@ export const CopilotSetting = () => {
     setState((prevState) => !prevState);
   };
 
-  const fetchCopilotApiKey = (apiKey) => {
+  const validateApiKey = (apiKey) => {
     return new Promise((resolve, reject) => {
       copilotService
-        .getCopilotApiKey()
-        .then(({ data, status }) => {
-          if (status === 200 && data === apiKey) {
+        .validateCopilotAPIKey(apiKey)
+        .then(({ status }) => {
+          if (status === 'ok') {
             return resolve(true);
           }
 
@@ -72,24 +72,27 @@ export const CopilotSetting = () => {
   };
 
   useEffect(() => {
+    if (!state) {
+      return setCopilotApiKey('');
+    }
+
     orgEnvironmentVariableService.getVariables().then((data) => {
       const isCopilotApiKeyPresent = data.variables.some((variable) => variable.variable_name === 'copilot_api_key');
 
       const copilotVariableId = data.variables.find((variable) => variable.variable_name === 'copilot_api_key')?.id;
-
-      const shouldUpdate = isCopilotApiKeyPresent
-        ? fetchCopilotApiKey(isCopilotApiKeyPresent) && set(copilotVariableId)
-        : false;
+      const shouldUpdate = isCopilotApiKeyPresent;
       if (shouldUpdate) {
-        //place holder for api key of 32 length
-        const key = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+        const key = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+        set(copilotVariableId);
         setCopilotApiKey(key);
       }
     });
 
     return () => {
       setCopilotApiKey('');
+      set('');
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';

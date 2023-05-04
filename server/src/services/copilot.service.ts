@@ -1,19 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { CopilotRequestDto } from '@dto/copilot.dto';
+import { EncryptionService } from '@services/encryption.service';
 import got from 'got';
 
 type ICopilotOptions = CopilotRequestDto;
 
 @Injectable()
 export class CopilotService {
-  async getCopilotRecommendations(copilotOptions: ICopilotOptions, userId: string, apKey: string) {
+  constructor(private encryptionService: EncryptionService) {}
+  async getCopilotRecommendations(
+    copilotOptions: ICopilotOptions,
+    userId: string,
+    orgnaizationId: string,
+    encryptedAPIKey: string
+  ) {
     const { query, context, language } = copilotOptions;
 
-    const response = await got('https://0p94cxsi3g.execute-api.us-west-1.amazonaws.com/Prod/copilot', {
+    const decryptedAPIkey = await this.encryptionService.decryptColumnValue(
+      'org_environment_variables',
+      orgnaizationId,
+      encryptedAPIKey
+    );
+
+    const response = await got('http://127.0.0.1:3002/copilot', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apKey,
+        'x-api-key': decryptedAPIkey,
       },
       body: JSON.stringify({
         query: query,
@@ -22,10 +35,6 @@ export class CopilotService {
         userId: userId,
       }),
     });
-    console.log('---LAMBDA API RESPONSE---', {
-      body: JSON.parse(response.body),
-      status: response.statusCode,
-    });
 
     return {
       data: JSON.parse(response.body),
@@ -33,39 +42,21 @@ export class CopilotService {
     };
   }
 
-  async addUpdateCopilotAPIKey(apiKey: string, userId: string) {
+  async validateCopilotAPIKey(userId: string, secretKey: string) {
     const options = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ key: apiKey, userId: userId, action: 'save' }),
+      body: JSON.stringify({ userId: userId, action: 'get', apiKey: secretKey }),
     };
 
-    const response = await fetch('https://0p94cxsi3g.execute-api.us-west-1.amazonaws.com/Prod/api-key', options);
-    const { data } = await response.json();
+    const response = await fetch('http://127.0.0.1:3002/api-key', options);
+    const { isValid } = await response.json();
 
     return {
-      data: data,
-      status: response.status,
-    };
-  }
-
-  async getCopilotAPIKey(userId: string) {
-    const options = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ userId: userId, action: 'get' }),
-    };
-
-    const response = await fetch('https://0p94cxsi3g.execute-api.us-west-1.amazonaws.com/Prod/api-key', options);
-    const { apiKey } = await response.json();
-
-    return {
-      data: apiKey,
-      status: response.status,
+      statusCode: response.status,
+      status: isValid ? 'ok' : 'invalid',
     };
   }
 }

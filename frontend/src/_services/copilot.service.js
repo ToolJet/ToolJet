@@ -3,8 +3,7 @@ import { authHeader, handleResponse } from '@/_helpers';
 
 export const copilotService = {
   getCopilotRecommendations,
-  getCopilotApiKey,
-  saveCopilotApiKey,
+  validateCopilotAPIKey,
 };
 
 async function getCopilotRecommendations(options) {
@@ -21,17 +20,11 @@ async function getCopilotRecommendations(options) {
   return data || {};
 }
 
-function getCopilotApiKey() {
-  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/copilot/api-key`, requestOptions).then(handleResponse);
-}
-
-function saveCopilotApiKey(apiKey) {
-  const requestOptions = {
-    method: 'POST',
-    headers: authHeader(),
-    credentials: 'include',
-    body: JSON.stringify({ key: apiKey }),
+function validateCopilotAPIKey(key) {
+  const body = {
+    secretKey: key,
   };
+
+  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/copilot/api-key`, requestOptions).then(handleResponse);
 }
