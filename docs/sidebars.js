@@ -281,7 +281,34 @@ const sidebars = {
         'tutorial/versioning-and-release',
       ],
     },
-    'marketplace',
+    {
+      'type': 'category',
+      'label': 'Marketplace',
+      'link': {
+        'type': 'generated-index',
+        'title': 'Marketplace',
+        //        'description': 'ToolJet Marketplace documentation',
+        'keywords': [
+          'Marketplace',
+          'Marketplace for plugins',
+          'Using Marketplace',
+          'Build plugins for marketplace',
+        ],
+      },
+      'collapsed': true,
+      'items': [
+        'marketplace/marketplace-overview',
+        {
+          'type': 'category',
+          'label': 'Marketplace Plugins',
+          'items': [
+            'marketplace/plugins/marketplace-plugin-github',
+            'marketplace/plugins/marketplace-plugin-openai',
+            'marketplace/plugins/marketplace-plugin-plivo',
+          ],
+        },
+      ],
+    },
     {
       'type': 'category',
       'label': 'How To',
@@ -294,7 +321,6 @@ const sidebars = {
         ]
       },
       'items': [
-        'how-to/build-plugin-for-marketplace',
         'how-to/use-inspector',
         'how-to/use-form-component',
         'how-to/access-cellvalue-rowdata',
@@ -341,10 +367,10 @@ const sidebars = {
         },
         {
           'type': 'category',
-          'label': 'Tutorials',
+          'label': 'Marketplace',
           'items': [
-            'contributing-guide/tutorials/creating-widget',
-            'contributing-guide/tutorials/creating-a-plugin',
+            'contributing-guide/marketplace/marketplace-setup',
+            'contributing-guide/marketplace/creating-a-plugin',
           ],
         },
         'contributing-guide/testing',
