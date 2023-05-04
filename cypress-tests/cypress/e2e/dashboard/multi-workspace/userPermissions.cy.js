@@ -24,14 +24,10 @@ describe("User permissions", () => {
     cy.appUILogin();
   });
 
-
   it("Should verify the create new app permission", () => {
     permissions.reset();
-    permissions.addNewUserMW(
-      data.firstName,
-      data.email
-    );
-
+    permissions.addNewUserMW(data.firstName, data.email);
+    
     cy.get("body").then(($title) => {
       if ($title.text().includes(dashboardText.emptyPageDescription)) {
         cy.get(commonSelectors.dashboardAppCreateButton).click();
@@ -54,12 +50,13 @@ describe("User permissions", () => {
       .within(() => {
         cy.get("td small").should("have.text", usersText.activeStatus);
       });
-    cy.intercept('GET', '/api/apps?page=1&folder=&searchKey=').as('homePage');
+    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
     cy.get(commonSelectors.homePageLogo).click();
-    cy.wait('@homePage');
+    cy.wait("@homePage");
     cy.createApp();
     cy.renameApp(data.appName);
     cy.get(commonSelectors.editorPageLogo).click();
+    cy.reload();
     common.navigateToManageGroups();
     cy.get(groupsSelector.appSearchBox).click();
     cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
@@ -82,9 +79,11 @@ describe("User permissions", () => {
       .parent()
       .within(() => {
         cy.get(commonSelectors.appTitle(data.appName)).trigger("mouseover");
-        cy.get(commonSelectors.launchButton).should("have.class", "tj-disabled-btn");
+        cy.get(commonSelectors.launchButton).should(
+          "have.class",
+          "tj-disabled-btn"
+        );
       });
-    
 
     permissions.adminLogin();
     cy.contains("tr", data.appName)
@@ -104,7 +103,10 @@ describe("User permissions", () => {
       .within(() => {
         cy.get(commonSelectors.appTitle(data.appName)).trigger("mouseover");
       });
-    cy.get(commonSelectors.launchButton).should("have.class", "tj-disabled-btn");
+    cy.get(commonSelectors.launchButton).should(
+      "have.class",
+      "tj-disabled-btn"
+    );
     cy.get(commonSelectors.editButton).should("exist").and("be.enabled");
 
     cy.get(commonSelectors.workspaceName).click();
@@ -126,7 +128,7 @@ describe("User permissions", () => {
     common.logout();
     cy.login(data.email, usersText.password);
     cy.get(commonSelectors.appCreateButton).should("exist");
-    cy.get(commonSelectors.appCardOptionsButton).first().click();
+    common.viewAppCardOptions(data.appName);
     cy.contains("Delete app").should("exist");
 
     permissions.adminLogin();
@@ -135,13 +137,14 @@ describe("User permissions", () => {
 
     common.logout();
     cy.login(data.email, usersText.password);
-    cy.get(commonSelectors.appCardOptionsButton).first().click();
+    common.viewAppCardOptions(data.appName);
     cy.contains("Delete app").should("not.exist");
 
     cy.createApp();
     cy.renameApp(data.appName);
     cy.get(commonSelectors.editorPageLogo).click();
-    cy.get(commonSelectors.appCardOptionsButton).first().click();
+    cy.reload();
+    common.viewAppCardOptions(data.appName);
     cy.contains("Delete app").should("exist");
     cy.get(commonSelectors.appCardOptions(commonText.deleteAppOption)).click();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
@@ -168,10 +171,14 @@ describe("User permissions", () => {
     cy.get(commonSelectors.createFolderButton).click();
     cy.contains(data.folderName).should("exist");
 
-    cy.contains("div", data.folderName).parent().within(()=>{
-      cy.get(commonSelectors.folderCardOptions(data.folderName)).invoke("click");
-    })
-    cy.get(commonSelectors.deleteFolderOption).click();
+    cy.contains("div", data.folderName)
+      .parent()
+      .within(() => {
+        cy.get(commonSelectors.folderCardOptions(data.folderName)).invoke(
+          "click"
+        );
+      });
+    cy.get(commonSelectors.deleteFolderOption(data.folderName)).click();
     cy.get(commonSelectors.buttonSelector("Yes")).click();
 
     permissions.adminLogin();
@@ -197,10 +204,10 @@ describe("User permissions", () => {
     cy.deleteApp(data.appName);
   });
 
-  it("Should verify Create/Update/Delete workspace variable permission", ()=>{
+  it("Should verify Create/Update/Delete workspace variable permission", () => {
     common.navigateToWorkspaceVariable();
     cy.get(workspaceVarSelectors.addNewVariableButton).should("exist");
-   
+
     common.logout();
     cy.login(data.email, usersText.password);
     common.navigateToWorkspaceVariable();
@@ -209,32 +216,46 @@ describe("User permissions", () => {
     permissions.adminLogin();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(groupsSelector.workspaceVarCheckbox).check();
-   common.logout();
-   
-   cy.login(data.email, usersText.password);
-   common.navigateToWorkspaceVariable();
-   cy.get(workspaceVarSelectors.addNewVariableButton).should("exist").click();
-   cy.clearAndType(workspaceVarSelectors.workspaceVarNameInput, data.firstName);
-   cy.clearAndType(workspaceVarSelectors.workspaceVarValueInput, common.randomValue());
-   cy.get(workspaceVarSelectors.addVariableButton).click();
-   cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    workspaceVarText.workspaceVarCreatedToast
-  );
-   cy.get(workspaceVarSelectors.workspaceVarName(data.firstName)).should("be.visible");
-   cy.get(workspaceVarSelectors.workspaceVarEditButton(data.firstName)).click();
-   cy.clearAndType(workspaceVarSelectors.workspaceVarNameInput, data.lastName);
-   cy.get(workspaceVarSelectors.addVariableButton).click();
-   cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    workspaceVarText.workspaceVarUpdatedToast
-  );
-   cy.get(workspaceVarSelectors.workspaceVarName(data.lastName)).should("be.visible");
-   cy.get(workspaceVarSelectors.workspaceVarDeleteButton(data.lastName)).click();
-  cy.get(commonSelectors.buttonSelector("Yes")).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    workspaceVarText.workspaceVarDeletedToast
-  );
-  })
+    common.logout();
+
+    cy.login(data.email, usersText.password);
+    common.navigateToWorkspaceVariable();
+    cy.get(workspaceVarSelectors.addNewVariableButton).should("exist").click();
+    cy.clearAndType(
+      workspaceVarSelectors.workspaceVarNameInput,
+      data.firstName
+    );
+    cy.clearAndType(
+      workspaceVarSelectors.workspaceVarValueInput,
+      common.randomValue()
+    );
+    cy.get(workspaceVarSelectors.addVariableButton).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      workspaceVarText.workspaceVarCreatedToast
+    );
+    cy.get(workspaceVarSelectors.workspaceVarName(data.firstName)).should(
+      "be.visible"
+    );
+    cy.get(
+      workspaceVarSelectors.workspaceVarEditButton(data.firstName)
+    ).click();
+    cy.clearAndType(workspaceVarSelectors.workspaceVarNameInput, data.lastName);
+    cy.get(workspaceVarSelectors.addVariableButton).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      workspaceVarText.workspaceVarUpdatedToast
+    );
+    cy.get(workspaceVarSelectors.workspaceVarName(data.lastName)).should(
+      "be.visible"
+    );
+    cy.get(
+      workspaceVarSelectors.workspaceVarDeleteButton(data.lastName)
+    ).click();
+    cy.get(commonSelectors.buttonSelector("Yes")).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      workspaceVarText.workspaceVarDeletedToast
+    );
+  });
 });
