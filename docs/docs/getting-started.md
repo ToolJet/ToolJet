@@ -83,21 +83,21 @@ Before getting into the quickstart, Sign up and create your account on **[ToolJe
 1. Navigate to **ToolJet DB Editor** from the left sidebar on the dashboard
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/11c.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/111c.png" alt="Getting started: Quickstart" />
 
     </div>
 
-2. Click on **Add Table** button, enter **Table name** and **Add columns** from the drawer that slides from the right.
+2. Click on **Create New Table** button, enter **Table name** and **Add columns** from the drawer that slides from the right. Click on **Create** to add the table.
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/table.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/prodtable.png" alt="Getting started: Quickstart" />
 
     </div>
 
 3. Once the table is created, click on the **Add new row** button to add the data to the table and click **Create**.
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/row.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/newrow1.png" alt="Getting started: Quickstart" />
 
     </div>
 
@@ -107,11 +107,11 @@ Learn more about the **[ToolJet Database here](/docs/tooljet-database)**
 
 ### Create a new application
 
-1. To create a new ToolJet application, go to the **Dashboard** -> **New App from scratch**. 
+1. To create a new ToolJet application, go to the **Dashboard** -> **Create new application**. 
 
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/newapp.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/newapp1.png" alt="Getting started: Quickstart" />
 
     </div>
 
@@ -122,7 +122,7 @@ Learn more about the **[ToolJet Database here](/docs/tooljet-database)**
 2. When you click on create new app the **App-builder** will open up. You can rename your application from `untitled` to **Support Tool** from the top left of app-builder.
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/name_app.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/appbuilder2.png" alt="Getting started: Quickstart" />
 
     </div>
 
@@ -148,10 +148,10 @@ ToolJet application's User interface is constructed using Components like Tables
 
 ### Build queries and bind data to UI
 
-1. We can add a new datasource from the **Datasource manager** on the left-sidebar of the app builder but since we are using **ToolJet Database** we don't need to add any external datasource. Go to the **Query Panel -> Run ToolJetDb Query**
+1. We can add a new datasource from the **[Global datasources](/docs/data-sources/overview)** page from the dashboard but since we are using **ToolJet Database** we don't need to add any external datasource. Go to the **Query Panel and select ToolJet Database**
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/querypanel.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/tjdb2.png" alt="Getting started: Quickstart" />
 
     </div>
 
@@ -164,7 +164,7 @@ ToolJet application's User interface is constructed using Components like Tables
 3. Click on **Create** to create the query and then click **Run** to trigger the query and get response. You can also check the query response by clicking **Preview** button without firing the query.
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/query.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/listrowsq.png" alt="Getting started: Quickstart" />
 
     </div>
 

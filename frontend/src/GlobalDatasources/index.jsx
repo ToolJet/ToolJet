@@ -1,8 +1,9 @@
-import React, { createContext, useMemo, useState, useEffect } from 'react';
+import React, { createContext, useMemo, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
 import { globalDatasourceService, appEnvironmentService, authenticationService } from '@/_services';
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
+import { BreadCrumbContext } from '@/App/App';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
@@ -20,6 +21,13 @@ export const GlobalDatasources = (props) => {
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
   const navigate = useNavigate();
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  useEffect(() => {
+    if (dataSources?.length == 0) updateSidebarNAV('');
+    else selectedDataSource ? updateSidebarNAV(selectedDataSource.name) : updateSidebarNAV(dataSources?.[0].name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource)]);
 
   useEffect(() => {
     if (!admin) {
@@ -28,6 +36,10 @@ export const GlobalDatasources = (props) => {
     fetchEnvironments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [admin]);
+
+  function updateSelectedDatasource(source) {
+    updateSidebarNAV(source);
+  }
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     globalDatasourceService
@@ -103,7 +115,7 @@ export const GlobalDatasources = (props) => {
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <GlobalDataSourcesContext.Provider value={value}>
         <div className="page-wrapper">
-          <GlobalDataSourcesPage darkMode={props.darkMode} />
+          <GlobalDataSourcesPage darkMode={props.darkMode} updateSelectedDatasource={updateSelectedDatasource} />
         </div>
       </GlobalDataSourcesContext.Provider>
     </Layout>

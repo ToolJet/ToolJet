@@ -89,7 +89,7 @@ export const FilePicker = ({
 
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles, fileRejections } =
     useDropzone({
-      accept: parsedFileType,
+      accept: { parsedFileType: [parsedFileType] },
       noClick: !parsedEnablePicker || disablePicker,
       noDrag: !parsedEnableDropzone || disablePicker,
       noKeyboard: true,

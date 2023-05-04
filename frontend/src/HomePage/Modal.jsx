@@ -7,7 +7,7 @@ export default function Modal({ title, show, closeModal, customClassName, childr
     <BootstrapModal
       onHide={() => closeModal(false)}
       contentClassName={`home-modal-component animation-fade${customClassName ? ` ${customClassName}` : ''} ${
-        darkMode && 'dark'
+        darkMode && 'dark-theme'
       }`}
       show={show}
       size="sm"

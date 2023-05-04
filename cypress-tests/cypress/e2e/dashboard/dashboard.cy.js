@@ -27,7 +27,7 @@ describe("dashboard", () => {
   const data = {};
   data.appName = `${fake.companyName}-App`;
   data.folderName = `${fake.companyName}-Folder`;
-  data.cloneAppName = `${data.appName}-Clone`;
+  data.cloneAppName = `cloned-${data.appName}`;
   data.updatedFolderName = `New-${data.folderName}`;
 
   beforeEach(() => {
@@ -40,9 +40,10 @@ describe("dashboard", () => {
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
       fixture: "intercept/emptyDashboard.json",
     }).as("emptyDashboard");
+    cy.intercept("GET", "/api/folders?searchKey=",{"folders":[]}).as("folders");
     login();
     cy.wait("@emptyDashboard");
-
+    cy.wait("@folders");
     deleteDownloadsFolder();
   });
 
@@ -51,19 +52,17 @@ describe("dashboard", () => {
     cy.get(
       commonSelectors.workspaceName
     ).verifyVisibleElement("have.text", "My workspace");
-    cy.get(commonSelectors.workspaceEditButton).should("be.visible");
+    cy.get(commonSelectors.workspaceName).click();
+    cy.get(commonSelectors.editRectangleIcon).should("be.visible");
     cy.get(commonSelectors.appCreateButton).verifyVisibleElement(
       "have.text",
-      "New app"
+      "Create new app"
     );
     cy.get(dashboardSelector.folderLabel).should("be.visible");
     cy.get(dashboardSelector.folderLabel).should(($el) => {
       expect($el.contents().first().text().trim()).to.eq("Folders");
     });
-    cy.get(commonSelectors.createNewFolderButton).verifyVisibleElement(
-      "have.text",
-      "+ Create new"
-    );
+    cy.get(commonSelectors.createNewFolderButton).should("be.visible");
     cy.get(commonSelectors.allApplicationLink).verifyVisibleElement(
       "have.text",
       commonText.allApplicationLink
@@ -92,32 +91,34 @@ describe("dashboard", () => {
       commonText.viewReadNotifications
     );
 
-    cy.get(commonSelectors.profileSettings).should("be.visible").click();
-    cy.get(profileSelector.profileLink).verifyVisibleElement(
-      "have.text",
-      profileText.profileLink
-    );
-    cy.get(dashboardSelector.modeToggle)
-      .verifyVisibleElement("have.text", dashboardText.darkModeText)
+
+    cy.get(dashboardSelector.modeToggle).should("be.visible")
       .click();
     cy.get(commonSelectors.mainWrapper)
       .should("have.attr", "class")
       .and("contain", "theme-dark");
-    cy.get(dashboardSelector.modeToggle)
-      .verifyVisibleElement("have.text", dashboardText.lightModeText)
-      .click();
+    cy.get(dashboardSelector.modeToggle).click();
     cy.get(dashboardSelector.homePageContent)
       .should("have.attr", "class")
       .and("contain", "bg-light-gray");
+
+      cy.get(commonSelectors.profileSettings).should("be.visible").click();
+      cy.get(profileSelector.profileLink).verifyVisibleElement(
+        "have.text",
+        profileText.profileLink
+      );
     cy.get(commonSelectors.logoutLink).verifyVisibleElement(
       "have.text",
       commonText.logoutLink
     );
 
-    cy.get(dashboardSelector.dashboardAppsHeaderLabel).verifyVisibleElement(
-      "have.text",
-      dashboardText.dashboardAppsHeaderLabel
-    );
+    cy.get(commonSelectors.breadcrumbTitle).should(($el) => {
+      expect($el.contents().first().text().trim()).to.eq(
+        commonText.breadcrumbApplications
+      );
+    });
+    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement( "have.text",dashboardText.dashboardAppsHeaderLabel);
+
     cy.get(dashboardSelector.versionLabel).should("be.visible");
     cy.get(dashboardSelector.emptyPageImage).should("be.visible");
     cy.get(dashboardSelector.emptyPageHeader).verifyVisibleElement(
@@ -128,17 +129,15 @@ describe("dashboard", () => {
       "have.text",
       dashboardText.emptyPageDescription
     );
-    cy.get(dashboardSelector.createAppButton).verifyVisibleElement(
+    cy.get(dashboardSelector.dashboardAppCreateButton).verifyVisibleElement(
       "have.text",
       dashboardText.createAppButton
     );
-    cy.get(dashboardSelector.importAppButton)
-      .invoke("text")
-      .then((text) => {
-        expect(text.replace(/\u00a0/g, " ")).equal(
-          dashboardText.importAppButton
-        );
-      });
+    cy.get(dashboardSelector.importAppButton).should("be.visible");
+    cy.get(dashboardSelector.importAppButton).invoke('text').then((text) => {
+      expect(text.trim()).equal(dashboardText.importAppButton)
+  });
+      
     cy.get(dashboardSelector.appTemplateRow).should("be.visible");
   });
 
@@ -166,9 +165,8 @@ describe("dashboard", () => {
           });
       });
 
-    viewAppCardOptions(data.appName);
-    cy.get(
-      commonSelectors.appCardOptions(commonText.changeIconOption)
+      viewAppCardOptions(data.appName);
+    cy.get(commonSelectors.appCardOptions(commonText.changeIconOption)
     ).verifyVisibleElement("have.text", commonText.changeIconOption);
     cy.get(
       commonSelectors.appCardOptions(commonText.addToFolderOption)
@@ -226,7 +224,7 @@ describe("dashboard", () => {
 
     cancelModal(commonText.cancelButton);
 
-    cy.get(commonSelectors.appCardOptionsButton).click();
+    viewAppCardOptions(data.appName);
     cy.get(
       commonSelectors.appCardOptions(commonText.removeFromFolderOption)
     ).click();
@@ -256,7 +254,7 @@ describe("dashboard", () => {
     cy.get(commonSelectors.editorPageLogo).click();
     cy.wait("@appLibrary");
     cy.wait(500);
-    cy.reloadAppForTheElement(data.appName);
+    cy.reloadAppForTheElement(data.cloneAppName);
 
     cy.get(commonSelectors.appCard(data.cloneAppName)).should("be.visible");
 
@@ -304,10 +302,12 @@ describe("dashboard", () => {
   });
 
   it("Should verify the app CRUD operation", () => {
+    data.appName = `${fake.companyName}-App`;
     cy.appUILogin();
     cy.createApp();
     cy.renameApp(data.appName);
     cy.get(commonSelectors.editorPageLogo).click();
+    cy.reloadAppForTheElement(data.appName);
     cy.get(commonSelectors.appCard(data.appName)).should(
       "contain.text",
       data.appName
@@ -328,6 +328,7 @@ describe("dashboard", () => {
   });
 
   it("Should verify the folder CRUD operation", () => {
+    data.appName = `${fake.companyName}-App`;
     cy.appUILogin();
     cy.createApp();
     cy.renameApp(data.appName);
@@ -366,16 +367,16 @@ describe("dashboard", () => {
 
     viewFolderCardOptions(data.folderName);
     cy.get(commonSelectors.folderCard).should("be.visible");
-    cy.get(commonSelectors.editFolderOption).verifyVisibleElement(
+    cy.get(commonSelectors.editFolderOption(data.folderName)).verifyVisibleElement(
       "have.text",
       commonText.editFolderOption
     );
-    cy.get(commonSelectors.deleteFolderOption).verifyVisibleElement(
+    cy.get(commonSelectors.deleteFolderOption(data.folderName)).verifyVisibleElement(
       "have.text",
       commonText.deleteFolderOption
     );
 
-    cy.get(commonSelectors.editFolderOption).click();
+    cy.get(commonSelectors.editFolderOption(data.folderName)).click();
     verifyModal(
       commonText.updateFolderTitle,
       commonText.updateFolderButton,
@@ -389,7 +390,7 @@ describe("dashboard", () => {
     );
 
     viewFolderCardOptions(data.folderName);
-    cy.get(commonSelectors.editFolderOption).click();
+    cy.get(commonSelectors.editFolderOption(data.folderName)).click();
     cy.clearAndType(commonSelectors.folderNameInput, data.updatedFolderName);
 
     cancelModal(commonText.cancelButton);
@@ -398,7 +399,7 @@ describe("dashboard", () => {
     );
 
     viewFolderCardOptions(data.folderName);
-    cy.get(commonSelectors.editFolderOption).click();
+    cy.get(commonSelectors.editFolderOption(data.folderName)).click();
     cy.clearAndType(commonSelectors.folderNameInput, data.updatedFolderName);
     cy.get(
       commonSelectors.buttonSelector(commonText.updateFolderButton)
@@ -409,7 +410,7 @@ describe("dashboard", () => {
       .and("be.visible");
 
     viewFolderCardOptions(data.updatedFolderName);
-    cy.get(commonSelectors.deleteFolderOption).click();
+    cy.get(commonSelectors.deleteFolderOption(data.updatedFolderName)).click();
     verifyConfirmationModal(commonText.folderDeleteModalMessage);
 
     cancelModal(commonText.cancelButton);
