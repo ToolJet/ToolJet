@@ -65,6 +65,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
 
   const open = !!selectedSidebarItem;
 
+  console.log('selectedSidebarItem', selectedSidebarItem, open);
+
   const clearErrorLogs = () => {
     setUnReadErrorCount(() => {
       return { read: 0, unread: 0 };
@@ -136,6 +138,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
   useEffect(() => {
     if (!selectedSidebarItem) {
       setEditorMarginLeft(0);
+    } else {
+      setEditorMarginLeft(350);
     }
   }, [selectedSidebarItem]);
 

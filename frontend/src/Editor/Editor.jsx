@@ -255,6 +255,10 @@ class EditorComponent extends React.Component {
     if (!isEqual(prevState.appDefinition, this.state.appDefinition)) {
       computeComponentState(this, this.state.appDefinition.pages[this.state.currentPageId]?.components);
     }
+
+    if (!isEqual(prevState.editorMarginLeft, this.state.editorMarginLeft)) {
+      this.canvasContainerRef.current.scrollLeft += this.state.editorMarginLeft;
+    }
   }
 
   isVersionReleased = (version = this.state.editingVersion) => {
@@ -1779,6 +1783,25 @@ class EditorComponent extends React.Component {
       queryPanelHeight: height,
     });
   };
+
+  getCanvasMinWidth = () => {
+    /**
+     * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
+     * default canvas min width = calc((total view width - width component editor side bar) - width of editor sidebar on left)
+     **/
+    const defaultCanvasMinWidth = `calc((100vw - 300px) - 48px)`;
+    const userSetMaxWidth = `${
+      +this.state.appDefinition.globalSettings.canvasMaxWidth +
+      this.state.appDefinition.globalSettings.canvasMaxWidthType
+    }`;
+    console.log(`min(${defaultCanvasMinWidth}, ${userSetMaxWidth})`);
+    if (this.state.appDefinition.globalSettings.canvasMaxWidth) {
+      return `min(${defaultCanvasMinWidth}, ${userSetMaxWidth})`;
+    } else {
+      return defaultCanvasMinWidth;
+    }
+  };
+
   render() {
     const {
       currentSidebarTab,
@@ -1950,7 +1973,12 @@ class EditorComponent extends React.Component {
               <div className="main main-editor-canvas" id="main-editor-canvas">
                 <div
                   className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
-                  style={{ transform: `scale(${zoomLevel})`, marginLeft: this.state.editorMarginLeft }}
+                  style={{
+                    transform: `scale(${zoomLevel})`,
+                    paddingLeft:
+                      (this.state.editorMarginLeft ? this.state.editorMarginLeft - 1 : this.state.editorMarginLeft) +
+                      'px',
+                  }}
                   onMouseUp={(e) => {
                     if (['real-canvas', 'modal'].includes(e.target.className)) {
                       this.setState({ selectedComponents: [], currentSidebarTab: 2, hoveredComponent: false });
@@ -1970,7 +1998,11 @@ class EditorComponent extends React.Component {
                         +this.state.appDefinition.globalSettings.canvasMaxWidth +
                         this.state.appDefinition.globalSettings.canvasMaxWidthType,
                       maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
-                      minWidth: '1070px',
+                      /**
+                       * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
+                       * default canvas min width = calc(((screen width - width component editor side bar) - width of editor sidebar on left) - width of left sidebar popover)
+                       **/
+                      minWidth: this.getCanvasMinWidth(),
                       backgroundColor: this.computeCanvasBackgroundColor(),
                     }}
                   >

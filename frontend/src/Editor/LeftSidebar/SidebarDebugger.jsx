@@ -5,15 +5,9 @@ import moment from 'moment';
 import { useTranslation } from 'react-i18next';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 
-export const LeftSidebarDebugger = ({ darkMode, errors, clearErrorLogs, setPinned, pinned, setEditorMarginLeft }) => {
+export const LeftSidebarDebugger = ({ darkMode, errors, clearErrorLogs, setPinned, pinned }) => {
   const { t } = useTranslation();
   const elemRef = useRef();
-
-  useLayoutEffect(() => {
-    if (elemRef.current) {
-      setEditorMarginLeft(elemRef.current.offsetWidth);
-    }
-  }, [elemRef?.current?.offsetWidth]);
 
   return (
     <div ref={elemRef}>
@@ -72,8 +66,8 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
 
   return (
     <div className="tab-content debugger-content mb-1" key={`${errorProps.key}-${idx}`}>
-      <p className="text-azure m-0 " onClick={() => setOpen((prev) => !prev)}>
-        <span className="mx-1" style={defaultStyles}>
+      <p className="text-azure m-0 d-flex" onClick={() => setOpen((prev) => !prev)}>
+        <span className="mx-1 position-absolute" style={defaultStyles}>
           <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M1.02063 1L5.01032 5.01028L1.00003 8.99997"
@@ -83,10 +77,13 @@ function ErrorLogsComponent({ errorProps, idx, darkMode }) {
             />
           </svg>
         </span>
-
-        <span>{errorTitle}</span>
-        <span className="text-red mx-1">{errorMessage}</span>
-        <small className="text-muted px-1">{moment(errorProps.timestamp).fromNow()}</small>
+        <span className="ps-3 w-100">
+          <span className="d-flex justify-content-between align-items-center  text-truncate">
+            <span className="text-truncate">{errorTitle}</span>
+            <small className="text-muted text-right px-1">{moment(errorProps.timestamp).fromNow()}</small>
+          </span>
+          <span className="text-red mx-1">{errorMessage}</span>
+        </span>
       </p>
 
       {open && (
