@@ -27,7 +27,7 @@ describe("User permissions", () => {
   it("Should verify the create new app permission", () => {
     permissions.reset();
     permissions.addNewUserMW(data.firstName, data.email);
-    
+
     cy.get("body").then(($title) => {
       if ($title.text().includes(dashboardText.emptyPageDescription)) {
         cy.get(commonSelectors.dashboardAppCreateButton).click();

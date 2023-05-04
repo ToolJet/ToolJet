@@ -1,6 +1,6 @@
-import { commonSelectors } from "Selectors/common"
+import { commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { usersText } from "Texts/manageUsers"
+import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import * as users from "Support/utils/manageUsers";
 import * as common from "Support/utils/common";
@@ -26,13 +26,22 @@ describe("Manage Users for multiple workspace", () => {
     cy.get(usersSelector.buttonAddUsers).click();
 
     cy.get(usersSelector.buttonInviteUsers).click();
-    cy.get(usersSelector.fullNameError).verifyVisibleElement("have.text",usersText.errorTextFieldRequired);
-    cy.get(usersSelector.emailError).verifyVisibleElement("have.text",usersText.errorTextFieldRequired);
+    cy.get(usersSelector.fullNameError).verifyVisibleElement(
+      "have.text",
+      usersText.errorTextFieldRequired
+    );
+    cy.get(usersSelector.emailError).verifyVisibleElement(
+      "have.text",
+      usersText.errorTextFieldRequired
+    );
 
     cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
     cy.get(commonSelectors.inputFieldEmailAddress).clear();
     cy.get(usersSelector.buttonInviteUsers).click();
-    cy.get(usersSelector.emailError).verifyVisibleElement("have.text",usersText.errorTextFieldRequired);
+    cy.get(usersSelector.emailError).verifyVisibleElement(
+      "have.text",
+      usersText.errorTextFieldRequired
+    );
 
     cy.get(commonSelectors.inputFieldFullName).clear();
     cy.clearAndType(commonSelectors.inputFieldEmailAddress, data.email);
@@ -49,8 +58,8 @@ describe("Manage Users for multiple workspace", () => {
     );
     cy.get(usersSelector.buttonInviteUsers).click();
 
-    cy.get(
-      commonSelectors.newToastMessage).should("have.text",
+    cy.get(commonSelectors.newToastMessage).should(
+      "have.text",
       usersText.exsitingEmail
     );
   });
@@ -61,9 +70,9 @@ describe("Manage Users for multiple workspace", () => {
     users.confirmInviteElements();
 
     cy.clearAndType(commonSelectors.passwordInputField, "pass");
-    cy.get(commonSelectors.acceptInviteButton).should('be.disabled');
+    cy.get(commonSelectors.acceptInviteButton).should("be.disabled");
     cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
-    cy.get(commonSelectors.acceptInviteButton).should('not.be.disabled');
+    cy.get(commonSelectors.acceptInviteButton).should("not.be.disabled");
     cy.get(commonSelectors.acceptInviteButton).click();
     cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
@@ -82,9 +91,7 @@ describe("Manage Users for multiple workspace", () => {
       .within(() => {
         cy.get("td small").should("have.text", usersText.activeStatus);
       });
-    
   });
-
 
   it("Should verify the archive functionality", () => {
     common.navigateToManageUsers();

@@ -28,10 +28,10 @@ export const dashboardSelector = {
   homePageContent: '[data-cy="home-page-content"]',
   seeAllAppsTemplateButton: '[data-cy="see-all-app-template-buton"]',
   folderLabel: '[data-cy="folder-info"]',
-  dashboardAppsHeaderLabel:'[data-cy="app-header-label"]',
+  dashboardAppsHeaderLabel: '[data-cy="app-header-label"]',
   versionLabel: '[data-cy="version-label"]',
   dashboardAppCreateButton: '[data-cy="button-new-app-from-scratch"]',
-   
+
   appCardIcon: (iconName) => {
     return `[data-cy="app-card-${cyParamName(iconName)}-icon"]`;
   },
@@ -41,5 +41,4 @@ export const dashboardSelector = {
   folderName: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-name"]`;
   },
-
 };

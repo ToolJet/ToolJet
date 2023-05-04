@@ -200,14 +200,14 @@ export const commonSelectors = {
     return `[data-cy="${cyParamName(buttonText)}-button"]`;
   },
 
-  folderCardOptions:(folderName) =>{
-    return `[data-cy="${cyParamName(folderName)}-card-menu-icon"]`
+  folderCardOptions: (folderName) => {
+    return `[data-cy="${cyParamName(folderName)}-card-menu-icon"]`;
   },
-  deleteFolderOption: (folderName) =>{
-    return `[data-cy="${cyParamName(folderName)}-delete-folder-option"]`
+  deleteFolderOption: (folderName) => {
+    return `[data-cy="${cyParamName(folderName)}-delete-folder-option"]`;
   },
-  editFolderOption: (folderName) =>{
-    return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`
+  editFolderOption: (folderName) => {
+    return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`;
   },
 };
 
