@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import CreateColumnsForm from './ColumnsForm';
@@ -21,6 +21,10 @@ const TableForm = ({
   const { organizationId } = useContext(TooljetDatabaseContext);
   const isEditMode = !isEmpty(selectedTable);
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  useEffect(() => {
+    toast.dismiss();
+  }, []);
 
   const validateTableName = () => {
     if (isEmpty(tableName)) {
@@ -120,14 +124,14 @@ const TableForm = ({
           </div>
         </div>
         {!isEditMode && <CreateColumnsForm columns={columns} setColumns={setColumns} />}
-        <DrawerFooter
-          fetching={fetching}
-          isEditMode={isEditMode}
-          onClose={onClose}
-          onEdit={handleEdit}
-          onCreate={handleCreate}
-        />
       </div>
+      <DrawerFooter
+        fetching={fetching}
+        isEditMode={isEditMode}
+        onClose={onClose}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+      />
     </div>
   );
 };

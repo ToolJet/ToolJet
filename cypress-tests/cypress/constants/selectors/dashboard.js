@@ -41,4 +41,5 @@ export const dashboardSelector = {
   folderName: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-name"]`;
   },
+
 };
