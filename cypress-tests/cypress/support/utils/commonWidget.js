@@ -71,7 +71,8 @@ export const addDefaultEventHandler = (message) => {
     .click();
   cy.get(commonWidgetSelector.eventHandlerCard).click();
   cy.get(commonWidgetSelector.alertMessageInputField)
-    .find('[data-cy*="-input-field"]').eq(0)
+    .find('[data-cy*="-input-field"]')
+    .eq(0)
     .clearAndTypeOnCodeMirror(message);
 };
 
@@ -240,9 +241,16 @@ export const verifyAndModifyStylePickerFx = (
     });
 };
 
-export const verifyWidgetColorCss = (widgetName, cssProperty, color, innerProp=false) => {
+export const verifyWidgetColorCss = (
+  widgetName,
+  cssProperty,
+  color,
+  innerProp = false
+) => {
   cy.forceClickOnCanvas();
-  cy.get(innerProp?widgetName:componentcommonWidgetSelector.draggableWidget(widgetName)).should(
+  cy.get(
+    innerProp ? widgetName : commonWidgetSelector.draggableWidget(widgetName)
+  ).should(
     "have.css",
     cssProperty,
     `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3] / 100})`

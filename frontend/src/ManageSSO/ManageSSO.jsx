@@ -1,24 +1,20 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { organizationService } from '@/_services';
-import { Menu } from '@/_components';
 import { GeneralSettings } from './GeneralSettings';
 import { Google } from './Google';
 import { Loader } from './Loader';
 import { Git } from './Git';
-import { Form } from './Form';
 // eslint-disable-next-line import/no-unresolved
-import { useTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { toast } from 'react-hot-toast';
+import FolderList from '@/_ui/FolderList/FolderList';
 
 export function ManageSSO({ darkMode }) {
   const menuItems = [
     { id: 'general-settings', label: 'General Settings' },
     { id: 'google', label: 'Google' },
     { id: 'git', label: 'GitHub' },
-    { id: 'form', label: 'Password Login' },
   ];
-  const { t } = useTranslation();
   const changePage = useCallback(
     (page) => {
       setCurrentPage(page);
@@ -33,19 +29,18 @@ export function ManageSSO({ darkMode }) {
   const showPage = () => {
     switch (currentPage) {
       case 'general-settings':
-        return <GeneralSettings updateData={updateData} settings={ssoData} instanceSettings={instanceSettings} />;
+        return (
+          <GeneralSettings
+            updateData={updateData}
+            settings={ssoData}
+            instanceSettings={instanceSettings}
+            darkMode={darkMode}
+          />
+        );
       case 'google':
         return <Google updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'google')} />;
       case 'git':
         return <Git updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'git')} />;
-      case 'form':
-        return (
-          <Form
-            updateData={updateData}
-            settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'form')}
-            darkMode={darkMode}
-          />
-        );
       default:
         return <Loader />;
     }
@@ -101,27 +96,28 @@ export function ManageSSO({ darkMode }) {
       <div className="wrapper manage-sso animation-fade">
         <div className="page-wrapper">
           <div className="container-xl">
-            <div className="page-header d-print-none">
-              <div className="row align-items-center">
-                <div className="col">
-                  <div className="page-pretitle"></div>
-                  <h2 className="page-title" data-cy="manage-sso-page-title">
-                    {t('header.organization.menus.manageSSO.manageSso', 'SSO')}
-                  </h2>
+            <div className="manage-sso-container">
+              <div className="d-flex manage-sso-wrapper-card">
+                <div className="left-menu">
+                  <ul data-cy="left-menu-items tj-text-xsm">
+                    {menuItems.map((item, index) => {
+                      return (
+                        <FolderList
+                          onClick={() => changePage(item.id)}
+                          key={index}
+                          selectedItem={currentPage == item.id}
+                          items={menuItems}
+                          onChange={changePage}
+                          isLoading={isLoading}
+                          dataCy={`${String(item.label).toLowerCase().replace(/\s+/g, '-')}`}
+                        >
+                          {item.label}
+                        </FolderList>
+                      );
+                    })}
+                  </ul>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div className="container-xl">
-              <div className="row">
-                <div className="col-3">
-                  <div>
-                    <Menu isLoading={isLoading} items={menuItems} onChange={changePage} selected={currentPage} />
-                  </div>
-                </div>
-                <div className="col-9">{showPage()}</div>
+                <div>{showPage()}</div>
               </div>
             </div>
           </div>

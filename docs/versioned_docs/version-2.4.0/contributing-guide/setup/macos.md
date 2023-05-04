@@ -3,7 +3,10 @@ id: macos
 title: Mac OS
 ---
 
-# Mac OS
+:::warning
+The following guide is intended for contributors to set-up ToolJet locally. If you're interested in **self-hosting** ToolJet, please refer to the **[Setup](/docs/setup/)** section.
+:::
+
 Follow these steps to setup and run ToolJet on macOS for development purposes. Open terminal and run the commands below. We recommend reading our guide on [architecture](/docs/contributing-guide/setup/architecture) of ToolJet before proceeding.
 
 ## Setting up

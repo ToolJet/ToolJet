@@ -64,6 +64,7 @@ export const CreateVersion = ({
         setShowCreateAppVersion(false);
       }}
       title={t('editor.appVersionManager.createVersion', 'Create new version')}
+      checkForBackground={true}
     >
       <form
         onSubmit={(e) => {

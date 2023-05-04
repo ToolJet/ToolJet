@@ -55,7 +55,7 @@ export const PageHandler = ({
     setIsHovered(false);
     switch (id) {
       case 'delete-page':
-        deletePage(page.id, isHomePage);
+        deletePage(page.id, isHomePage, page.name);
         break;
 
       case 'rename-page':

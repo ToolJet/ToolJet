@@ -55,7 +55,9 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
   return (
     <BootstrapModal
       onHide={() => closeModal(false)}
-      contentClassName={`home-modal-component ${customClassName ? ` ${customClassName}` : ''} ${darkMode && 'dark'}`}
+      contentClassName={`home-modal-component ${customClassName ? ` ${customClassName}` : ''} ${
+        darkMode && 'dark-theme'
+      }`}
       show={show}
       size="md"
       backdrop={true}

@@ -10,12 +10,12 @@ export const appVersionSelectors = {
   createNewVersion: '[data-cy="create-new-version-title"]',
   versionNamelabel: '[data-cy="version-name-label"]',
   appVersionMenuField:
-    '[data-cy="app-version-selector"] .custom-version-selector__indicators',
+    '[data-cy="app-version-selector"] .undefined__indicators',
   versionNameInputField: '[data-cy="version-name-input-field"]',
   createVersionFromLabel: '[data-cy="create-version-from-label"]',
   createVersionInputField: '[data-cy="create-version-from-input-field"]',
   createNewVersionButton: '[data-cy="create-new-version-button"]',
-  appVersionContentList: ".custom-version-selector__menu-list",
+  appVersionContentList: ".undefined__menu-list",
 };
 export const exportAppModalSelectors = {
   selectVersionTitle: '[data-cy= "select-a-version-to-export-title"]',

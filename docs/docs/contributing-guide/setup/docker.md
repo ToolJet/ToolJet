@@ -3,7 +3,9 @@ id: docker
 title: Docker
 ---
 
-# Docker
+:::warning
+The following guide is intended for contributors to set-up ToolJet locally. If you're interested in **self-hosting** ToolJet, please refer to the **[Setup](/docs/setup/)** section.
+:::
 
 Docker compose is the easiest way to setup ToolJet server and client locally.
 
