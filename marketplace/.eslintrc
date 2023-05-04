@@ -6,15 +6,6 @@
   "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:prettier/recommended"],
   "ignorePatterns": [".eslintrc"],
   "parser": "@typescript-eslint/parser",
-  "overrides": [
-    {
-      "files": ["*.ts"],
-      "parserOptions": {
-        "project": ["./tsconfig.json"],
-        "tsconfigRootDir": "."
-      }
-    }
-  ],
   "plugins": ["@typescript-eslint", "jest", "prettier"],
   "rules": {
     "prettier/prettier": [

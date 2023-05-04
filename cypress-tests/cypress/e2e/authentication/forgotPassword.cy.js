@@ -13,7 +13,7 @@ describe("Password reset functionality", () => {
 
   before(() => {
     cy.appUILogin();
-    addNewUserMW(data.firstName, data.lastName, data.email);
+    addNewUserMW(data.firstName, data.email);
     logout();
   });
 

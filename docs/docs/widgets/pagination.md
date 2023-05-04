@@ -67,3 +67,13 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
 
+## Exposed Variables
+
+| Variables    | Description |
+| ----------- | ----------- |
+| totalPages | This variable holds the value of the `Number of Pages` set from the pagination component properties. You can access the value dynamically using JS: `{{components.pagination1.totalPages}}`|
+| currentPageIndex | This variable will hold the index of the currently selected option on the pagination component. You can access the value dynamically using JS: `{{components.pagination1.currentPageIndex}}`|
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.

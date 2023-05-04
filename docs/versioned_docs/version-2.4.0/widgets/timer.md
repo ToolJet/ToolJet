@@ -78,3 +78,12 @@ This property only accepts boolean values. If set to `{{true}}`, the widget will
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Exposed Variables
+
+| Variables    | Description |
+| ----------- | ----------- |
+| value | This variable holds the value of the timer in the following keys: **hour**, **minute**, **second**, and **mSecond**. You can access the value dynamically using JS: `{{components.timer1.value.second}}`|
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
