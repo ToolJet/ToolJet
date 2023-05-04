@@ -235,6 +235,14 @@ export class PluginsService {
   async install(body: CreatePluginDto) {
     const { id, repo } = body;
     const [index, operations, icon, manifest, version] = await this.fetchPluginFiles(id, repo);
+
+    try {
+      // validate manifest and operations as JSON files
+      const validManifest = JSON.parse(manifest.toString()) ? manifest : null;
+      const validOperations = JSON.parse(operations.toString()) ? operations : null;
+    } catch (error) {
+      throw new InternalServerErrorException('Invalid plugin files');
+    }
     return await this.create(body, version, { index, operations, icon, manifest });
   }
 

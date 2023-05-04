@@ -35,7 +35,7 @@ To configure the app's global settings, click on the kebab menu(three vertical d
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/globalset.png" alt="App Builder: Toolbar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/toolbar/newglobalset.png" alt="App Builder: Toolbar"/>
 
 </div>
 

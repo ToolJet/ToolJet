@@ -6,7 +6,7 @@ import * as common from "Support/utils/common";
 import { path } from "Texts/common";
 import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
-import { dashboardSelector } from "../../constants/selectors/dashboard";
+import { dashboardSelector } from "Selectors/dashboard";
 
 export const adminLogin = () => {
   common.logout();
@@ -59,9 +59,9 @@ export const reset = () => {
   });
 };
 
-export const addNewUserMW = (firstName, lastName, email, companyName) => {
+export const addNewUserMW = (firstName, email, companyName) => {
   common.navigateToManageUsers();
-  users.inviteUser(firstName, lastName, email);
+  users.inviteUser(firstName, email);
   cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
   cy.get(commonSelectors.acceptInviteButton).click();
   cy.get(commonSelectors.workspaceName).verifyVisibleElement(

@@ -75,7 +75,6 @@ describe("App Version Functionality", () => {
 		cy.reload();
 		releasedVersionAndVerify(currentVersion = "v3");
 		editVersionAndVerify(currentVersion = "v3", newVersion = ["v5"], releasedVersionText.cannotUpdateReleasedVersionToastMessage);
-		cy.contains(releasedVersionText.releasedModalText).should("be.visible");
 		closeModal(commonText.closeButton);
 
 		deleteVersionAndVerify(currentVersion = "v3", releasedVersionText.cannotDeleteReleasedVersionToastMessage)

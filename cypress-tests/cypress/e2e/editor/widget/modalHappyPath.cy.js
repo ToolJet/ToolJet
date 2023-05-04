@@ -105,15 +105,19 @@ describe("Modal", () => {
     cy.notVisible('[data-cy="modal-title"]');
 
     verifyAndModifyToggleFx(
-      "Hide on escape",
+      "Close on escape key",
       commonWidgetText.codeMirrorLabelTrue
     );
     launchModal(data.widgetName);
 
     cy.realPress("Escape");
-    cy.get('[data-cy="modal-title"]')
-      .verifyVisibleElement("have.text", data.customTitle)
-      .click();
+    cy.get('[data-cy="modal-title"]').verifyVisibleElement(
+      "have.text",
+      data.customTitle
+    );
+
+    closeModal(data.widgetName);
+    launchModal(data.widgetName);
 
     verifySize("Medium");
     verifySize("Large");
@@ -308,19 +312,21 @@ describe("Modal", () => {
       launchButton("modal1"),
       "color"
     );
-    cy.get("[data-cy='modal-header']").realClick();
 
+    closeModal("modal1");
+    launchModal("modal1");
     typeOnFx(
       commonWidgetText.parameterVisibility,
       "{{components.toggleswitch1.value"
     );
     cy.get("[data-cy='modal-header']").realClick();
+    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+
     typeOnFx(
       commonWidgetText.parameterDisable,
       "{{components.toggleswitch2.value"
     );
-    cy.get(".close-svg > path").click();
-    cy.get("[data-cy='modal-header']").realClick();
+    cy.get('[data-cy="sidebar-option-properties"]').click();
 
     typeOnFx("Loading State", "{{components.toggleswitch3.value");
     cy.get("[data-cy='modal-header']").realClick();

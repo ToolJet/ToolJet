@@ -32,10 +32,15 @@ export const OrganizationList = function () {
     name: org.name,
     label: (
       <div className={`align-items-center d-flex tj-org-dropdown  ${darkMode && 'dark-theme'}`}>
-        <div className="dashboard-org-avatar " data-cy={`${org.name}-avatar`}>
+        <div
+          className="dashboard-org-avatar "
+          data-cy={`${String(org.name).toLowerCase().replace(/\s+/g, '-')}-avatar`}
+        >
           {getAvatar(org.name)}
         </div>
-        <div className="org-name">{org.name}</div>
+        <div className="org-name" data-cy={`${String(org.name).toLowerCase().replace(/\s+/g, '-')}-name-selector`}>
+          {org.name}
+        </div>
       </div>
     ),
   }));

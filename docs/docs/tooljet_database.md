@@ -7,7 +7,7 @@ Use the ToolJet-hosted database to build apps faster, and manage your data with 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/db.png" alt="ToolJet Database" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui/db.png" alt="ToolJet Database" />
 
 </div>
 
@@ -17,7 +17,7 @@ Requires:
 - PostgREST server
 - Additional configuration for ToolJet server
 
-This feature is only enabled if [`ENABLE_TOOLJET_DB`](/docs/setup/env-vars#tooljet-database-feature-enable--optional-) is set to `true`.
+This feature is only enabled if [`ENABLE_TOOLJET_DB`](/docs/setup/env-vars#enable-tooljet-database--optional-) is set to `true`.
 
 ### PostgREST server
 
@@ -77,7 +77,7 @@ The ToolJet Database is available on: **[ToolJet Cloud](https://tooljet.com)**, 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/dbeditor.png" alt="ToolJet Database editor" width="700"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/tjdbside.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -87,25 +87,25 @@ You can manage the ToolJet Database directly from the Database Editor. ToolJet D
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/tables.png" alt="ToolJet Database editor" width="700"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/tables.png" alt="ToolJet Database editor"/>
 
 </div>
 
-### Add table
+### Create New Table
 
-For creating a new table in ToolJet Database, click on the **Add table** button on the top left corner of the Database editor.
+For creating a new table in ToolJet Database, click on the **Create New Table** button on the top left corner of the Database editor.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/addtable.png" alt="ToolJet Database editor" width="500"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/newtable.png" alt="ToolJet Database editor"/>
 
 </div>
 
-When the **Add table** button is clicked, a drawer opens up from the right where you can enter the details of your new table.
+When the **Create New Table** button is clicked, a drawer opens up from the right from where you can enter the details of your new table.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/addtable1.png" alt="ToolJet Database editor"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/drawer.png" alt="ToolJet Database editor"/>
 
 </div>
 
@@ -124,7 +124,7 @@ Click on **Create** button to create a new table.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/addtable2.png" alt="ToolJet Database editor" width="600"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/newtable2.png" alt="ToolJet Database editor" width="500"/>
 
 </div>
 
@@ -134,7 +134,7 @@ You can enter a search term to search through all tables in the database.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/search.png" alt="ToolJet Database editor" width="600"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/search.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -149,7 +149,7 @@ A drawer from the right will open up from where you can create a new column by e
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newcol.png" alt="ToolJet Database editor"/>
+<img className="screenshot-full" src="/img/v2-beta/database/newui/newcolumn2.png" alt="ToolJet Database editor"/>
 
 </div>
 
@@ -180,7 +180,7 @@ You can add as many filter as you want into the table by clicking on the **Filte
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/filter.png" alt="ToolJet Database editor" width="700" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui/filter2.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -190,7 +190,7 @@ To sort the table data, click on the **Sort** button on top, select a **column**
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/sort.png" alt="ToolJet Database editor" width="700" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui/sort2.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -200,7 +200,7 @@ To add a new row to the existing table data, click on the **Add new row** button
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/newrow.png" alt="ToolJet Database editor" width="700" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui/newrow2.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -210,7 +210,7 @@ To edit the rows from the ToolJet database dashboard, click on the **Edit row** 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/editrowg.gif" alt="ToolJet Database editor" width="700" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui/editrow.gif" alt="ToolJet Database editor"  />
 
 </div>
 
@@ -220,7 +220,7 @@ To delete one or many records/rows, select on the checkbox at the right of the r
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/delrec.png" alt="ToolJet Database editor" width="700" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui/deleterecord.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -230,7 +230,7 @@ To delete a particular column, just click on the column name and the **delete** 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/delcol.png" alt="ToolJet Database editor" width="700" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui/delcol.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -242,7 +242,7 @@ When you click on the kebab menu (three vertical dots icon) on the right of the 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/database/deltable.png" alt="ToolJet Database editor" width="500" />
+<img className="screenshot-full" src="/img/v2-beta/database/newui/edittable.png" alt="ToolJet Database editor" />
 
 </div>
 
@@ -253,14 +253,14 @@ Querying ToolJet database is as easy as querying any other datasource on ToolJet
 - Go to the **query panel**, and click on the **+Add** button to add a new query, and select **Run ToolJetDb query**
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/database/newquery.png" alt="ToolJet Database editor" />
+    <img className="screenshot-full" src="/img/v2-beta/database/newui/q1.png" alt="ToolJet Database editor" />
 
     </div>
 
 - Enter the **Name** of the table that you want to query, select an **Operation** from the dropdown, **Create** the query, and then **Run** the query to get the response.
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/database/users.png" alt="ToolJet Database editor" />
+    <img className="screenshot-full" src="/img/v2-beta/database/newui/q2.png" alt="ToolJet Database editor" />
 
     </div>
 

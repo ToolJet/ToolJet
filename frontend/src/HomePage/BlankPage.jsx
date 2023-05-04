@@ -72,18 +72,18 @@ export const BlankPage = function BlankPage({
                       leftIcon="plus"
                       onClick={createApp}
                       isLoading={creatingApp}
-                      data-cy="create-new-application"
+                      data-cy="button-new-app-from-scratch"
                       className="col"
                       fill={'#FDFDFE'}
                     >
-                      New app from scratch
+                      Create new application
                     </ButtonSolid>
                     <div className="col">
                       <ButtonSolid
                         leftIcon="folderdownload"
                         onChange={handleImportApp}
                         isLoading={isImportingApp}
-                        data-cy="create-new-application"
+                        data-cy="button-import-an-app"
                         className="col"
                         variant="tertiary"
                       >
