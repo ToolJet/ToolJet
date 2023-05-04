@@ -168,7 +168,7 @@ class QueryManagerComponent extends React.Component {
   };
 
   componentDidUpdate(prevState) {
-    if (this.state?.selectedQuery?.id == prevState?.selectedQuery?.name) {
+    if (this.state?.selectedQuery?.id == prevState?.selectedQuery?.id) {
       if (prevState?.selectedQuery?.name !== this.state?.selectedQuery?.name) {
         this.setState({
           queryName: this.state.selectedQuery?.name,
