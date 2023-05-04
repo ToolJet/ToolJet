@@ -458,13 +458,22 @@ export const SubContainer = ({
     return false;
   }
 
+  function checkIFChild() {
+    const child = Object.keys(childWidgets).find((key) => key == selectedComponents?.[0]?.id);
+    if (child) {
+      return true;
+    }
+    return false;
+  }
   return (
     <div
       ref={drop}
       style={styles}
       id={`canvas-${parent}`}
       className={`real-canvas ${
-        (isDragging || isResizing || parent.includes(selectedComponents?.[0]?.id)) && !readOnly ? ' show-grid' : ''
+        (isDragging || isResizing || parent.includes(selectedComponents?.[0]?.id) || checkIFChild()) && !readOnly
+          ? ' show-grid'
+          : ''
       }`}
     >
       {checkParentVisibility() &&
