@@ -1,20 +1,9 @@
 import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 import { commonSelectors } from "Selectors/common";
+import { commonText } from "Texts/common";
 
 export const manageGroupsElements = () => {
-  cy.get(groupsSelector.pageTitle).verifyVisibleElement(
-    "have.text",
-    groupsText.pageTitle
-  );
-  cy.get(groupsSelector.createNewGroupButton).verifyVisibleElement(
-    "have.text",
-    groupsText.createNewGroupButton
-  );
-  cy.get(groupsSelector.tableHeader).verifyVisibleElement(
-    "have.text",
-    groupsText.tableHeader
-  );
   cy.get(groupsSelector.groupLink("All users")).verifyVisibleElement(
     "have.text",
     groupsText.allUsers
@@ -24,8 +13,66 @@ export const manageGroupsElements = () => {
     groupsText.admin
   );
 
+  cy.get(groupsSelector.groupPageTitle("All Users")).verifyVisibleElement(
+    "have.text",
+    groupsText.allUsers
+  );
+  cy.get(groupsSelector.createNewGroupButton).verifyVisibleElement(
+    "have.text",
+    groupsText.createNewGroupButton
+  );
+
+  cy.get(groupsSelector.appsLink).verifyVisibleElement(
+    "have.text",
+    groupsText.appsLink
+  );
+  cy.get(groupsSelector.usersLink).verifyVisibleElement(
+    "have.text",
+    groupsText.usersLink
+  );
+  cy.get(groupsSelector.permissionsLink).verifyVisibleElement(
+    "have.text",
+    groupsText.permissionsLink
+  );
+
+  cy.get(groupsSelector.appsLink).click();
+
+  cy.get(groupsSelector.textDefaultGroup).verifyVisibleElement(
+    "have.text",
+    groupsText.textDefaultGroup
+  );
+
+  cy.get(groupsSelector.searchBox).should("be.visible");
+  cy.get(groupsSelector.selectAddButton).verifyVisibleElement(
+    "have.text",
+    groupsText.addButton
+  );
+
+  cy.get(groupsSelector.nameTableHeader).verifyVisibleElement(
+    "have.text",
+    groupsText.textAppName
+  );
+
+  cy.get(groupsSelector.permissionstableHedaer).verifyVisibleElement(
+    "have.text",
+    groupsText.permissionstableHedaer
+  );
+
+  cy.get("body").then(($title) => {
+    if ($title.text().includes(groupsText.helperTextNoAppsAdded)) {
+      cy.get(groupsSelector.helperTextNoAppsAdded).verifyVisibleElement(
+        "have.text",
+        groupsText.helperTextNoAppsAdded
+      );
+      cy.get(groupsSelector.helperTextPermissions).verifyVisibleElement(
+        "have.text",
+        groupsText.helperTextPermissions
+      );
+    }
+  });
+
   cy.get(groupsSelector.createNewGroupButton).should("be.visible").click();
-  cy.get(groupsSelector.cardTitle).verifyVisibleElement(
+  cy.get(groupsSelector.addNewGroupModalTitle).verifyVisibleElement(
     "have.text",
     groupsText.cardTitle
   );
@@ -40,23 +87,15 @@ export const manageGroupsElements = () => {
   );
   cy.get(groupsSelector.cancelButton).click();
   cy.get(groupsSelector.searchBox).should("be.visible");
-  cy.get(groupsSelector.selectAddButton("all_users")).verifyVisibleElement(
-    "have.text",
-    groupsText.addButton
-  );
-  cy.get(groupsSelector.nameTableHeader).verifyVisibleElement(
-    "have.text",
-    groupsText.nameTableHeader
-  );
-  cy.get(groupsSelector.permissionstableHedaer).verifyVisibleElement(
-    "have.text",
-    groupsText.permissionstableHedaer
-  );
 
   cy.get(groupsSelector.usersLink).click();
+  cy.get(groupsSelector.helperTextAllUsersIncluded).verifyVisibleElement(
+    "have.text",
+    groupsText.helperTextAllUsersIncluded
+  );
   cy.get(groupsSelector.nameTableHeader).verifyVisibleElement(
     "have.text",
-    groupsText.nameTableHeader
+    groupsText.userNameTableHeader
   );
   cy.get(groupsSelector.emailTableHeader).verifyVisibleElement(
     "have.text",
@@ -122,15 +161,44 @@ export const manageGroupsElements = () => {
     groupsText.admin
   );
 
+  cy.get(groupsSelector.appsLink).click();
+  cy.get(groupsSelector.textDefaultGroup).verifyVisibleElement(
+    "have.text",
+    groupsText.textDefaultGroup
+  );
+
+  cy.get(groupsSelector.nameTableHeader).verifyVisibleElement(
+    "have.text",
+    groupsText.textAppName
+  );
+
+  cy.get(groupsSelector.permissionstableHedaer).verifyVisibleElement(
+    "have.text",
+    groupsText.permissionstableHedaer
+  );
+
+  cy.get("body").then(($title) => {
+    if ($title.text().includes(groupsText.helperTextNoAppsAdded)) {
+      cy.get(groupsSelector.helperTextNoAppsAdded).verifyVisibleElement(
+        "have.text",
+        groupsText.helperTextNoAppsAdded
+      );
+      cy.get(groupsSelector.helperTextPermissions).verifyVisibleElement(
+        "have.text",
+        groupsText.helperTextPermissions
+      );
+    }
+  });
+
   cy.get(groupsSelector.usersLink).click();
   cy.get(groupsSelector.multiSelectSearch).should("be.visible");
   cy.get(groupsSelector.mutiSelectAddButton("Admin")).verifyVisibleElement(
     "have.text",
-    groupsText.addButton
+    groupsText.addUsersButton
   );
   cy.get(groupsSelector.nameTableHeader).verifyVisibleElement(
     "have.text",
-    groupsText.nameTableHeader
+    groupsText.userNameTableHeader
   );
   cy.get(groupsSelector.emailTableHeader).verifyVisibleElement(
     "have.text",
