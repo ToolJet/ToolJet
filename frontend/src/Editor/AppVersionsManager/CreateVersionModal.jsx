@@ -92,7 +92,7 @@ export const CreateVersion = ({
           </div>
         </div>
 
-        <div className="mb-4 pb-2">
+        <div className="mb-4 pb-2 version-select">
           <label className="form-label" data-cy="create-version-from-label">
             {t('editor.appVersionManager.createVersionFrom', 'Create version from')}
           </label>
@@ -106,6 +106,7 @@ export const CreateVersion = ({
               useMenuPortal={false}
               width="100%"
               maxMenuHeight={100}
+              customWrap={true}
             />
           </div>
         </div>

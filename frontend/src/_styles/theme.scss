@@ -7510,10 +7510,6 @@ tbody {
   max-width: 80px;
 }
 
-.app-version-delete {
-  display: none;
-}
-
 .custom-version-selector__option:hover .app-version-delete {
   display: block;
 }
@@ -10494,6 +10490,14 @@ tbody {
 
     .search-box-wrapper input {
       color: var(--base) !important;
+    }
+  }
+}
+
+.version-select {
+  .react-select__menu {
+    .react-select__menu-list {
+      max-height: 150px;
     }
   }
 }
