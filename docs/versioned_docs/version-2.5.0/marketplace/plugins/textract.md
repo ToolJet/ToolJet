@@ -24,7 +24,8 @@ For connecting to Amazon Textract, following credentials are required:
 - **Region**
 
 :::caution
-Access to the S3 bucket is dependent on the permissions granted to the IAM role added for the connection.
+- Access to the S3 bucket is dependent on the permissions granted to the IAM role added for the connection.
+- Only single page documents are supported. if there is a multipage PDF you can convert it to single page using available online tools.
 :::
 
 <div style={{textAlign: 'center'}}>
