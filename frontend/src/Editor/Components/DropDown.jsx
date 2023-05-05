@@ -57,7 +57,7 @@ export const DropDown = function DropDown({
     async function (value) {
       selectOption(value);
     },
-    [JSON.stringify(values), setCurrentValue]
+    [JSON.stringify(values), setCurrentValue, JSON.stringify(display_values)]
   );
 
   const validationData = validate(value);
@@ -75,17 +75,14 @@ export const DropDown = function DropDown({
       newValue = value;
       index = values.indexOf(value);
     }
+    setCurrentValue(newValue);
     setExposedVariable('value', newValue);
     setExposedVariable('selectedOptionLabel', display_values?.[index]);
-
-    setCurrentValue(newValue);
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [value, JSON.stringify(display_values)]);
 
   useEffect(() => {
     let index = null;
-
     if (exposedValue !== currentValue) {
       setExposedVariable('value', currentValue);
       index = values.indexOf(currentValue);
@@ -100,14 +97,10 @@ export const DropDown = function DropDown({
 
     if (values?.includes(currentValue)) newValue = currentValue;
     else if (values?.includes(value)) newValue = value;
-
     setCurrentValue(newValue);
     setExposedVariable('value', newValue);
     index = values.indexOf(newValue);
     setExposedVariable('selectedOptionLabel', display_values?.[index]);
-
-    // setExposedVariable('selectedOptionLabel', ;
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(values)]);
 
