@@ -1596,6 +1596,7 @@ class EditorComponent extends React.Component {
                   dataQueriesChanged={this.dataQueriesChanged}
                   fetchDataQueries={this.fetchDataQueries}
                   darkMode={this.props.darkMode}
+                  editorRef={this}
                 >
                   {({
                     toggleQueryEditor,

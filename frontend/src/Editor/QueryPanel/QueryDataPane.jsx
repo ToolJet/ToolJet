@@ -17,6 +17,7 @@ export const QueryDataPane = ({
   setSelectedDataSource,
   darkMode,
   fetchDataQueries,
+  editorRef,
 }) => {
   const { t } = useTranslation();
   const { loadingDataQueries } = useDataQueriesStore();
@@ -120,6 +121,7 @@ export const QueryDataPane = ({
                   setSelectedDataSource={setSelectedDataSource}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
+                  editorRef={editorRef}
                 />
               ))}
             </div>

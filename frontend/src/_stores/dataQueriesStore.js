@@ -35,7 +35,7 @@ export const useDataQueriesStore = create(
         });
       },
       setDataQueries: (dataQueries) => set({ dataQueries }),
-      deleteDataQueries: (queryId) => {
+      deleteDataQueries: (queryId, editorRef) => {
         set({ isDeletingQueryInProcess: true });
         dataqueryService
           .del(queryId)
@@ -44,11 +44,16 @@ export const useDataQueriesStore = create(
             set({
               isDeletingQueryInProcess: false,
             });
-            const { actions, isUnsavedChangesAvailable, selectedQuery } = useQueryPanelStore.getState();
-            actions.setUnSavedChanges(queryId === selectedQuery?.id ? false : isUnsavedChangesAvailable);
+            const { actions, selectedQuery } = useQueryPanelStore.getState();
+            if (queryId === selectedQuery?.id) {
+              actions.setUnSavedChanges(false);
+              actions.setSelectedQuery(null);
+            }
             get().actions.fetchDataQueries(
               useAppDataStore.getState().editingVersion?.id,
-              selectedQuery?.id === queryId
+              selectedQuery?.id === queryId,
+              false,
+              editorRef
             );
           })
           .catch(({ error }) => {
