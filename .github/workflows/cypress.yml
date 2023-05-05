@@ -52,3 +52,10 @@ jobs:
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
+
+      - name: Capturing downloads
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: screenshots
+          path: cypress-tests/cypress/downloads
