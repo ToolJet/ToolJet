@@ -6522,7 +6522,13 @@ tbody {
         opacity: 0.5;
       }
     }
-
+    .react-datepicker-time__input{
+      color: white;
+      background-color: #232E3C;
+    }
+    .react-datepicker-time__caption{
+      color: white;
+    }
     .react-datepicker {
       background-color: #232e3c;
     }
