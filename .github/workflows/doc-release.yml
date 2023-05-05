@@ -14,42 +14,26 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         
       - name: Setup node 16.14
         uses: actions/setup-node@v2
         with:
           node-version: 16.14        
       - run: cd docs && yarn install && npm run docusaurus docs:version ${{ github.event.inputs.version }}
-      
-      - name: extract git commmit data
-        uses: rlespinasse/git-commit-data-action@v1
 
       - name: Create Pull Request
         id: doc
-        uses: peter-evans/create-pull-request@v3.9.2
+        uses: peter-evans/create-pull-request@v5
         with:
           title: "Creating a new version folder ${{ github.event.version }}"
           body: "Created a new version folder for version: ${{ github.event.inputs.version }}"
           branch: ${{ github.event.inputs.create-branch }}
           base: "develop"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB }}
           delete-branch : true
-      
-      - name: Approve Pull request
-        uses: juliangruber/approve-pull-request-action@v2
-        with:
-          pull-request-number: ${{ steps.doc.output.pull-request-number }}
-      
-      - name: Merge Pull request
-        uses: juliangruber/approve-pull-request-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          number: ${{ steps.doc.output.pull-request-number }}
-          method: sqaush
-          
-
-      
+          labels: versioned-docs, automated pr
+          commit-message: added new version folder
 
 
 
