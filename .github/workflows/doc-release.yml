@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 16.14        
-      - run: cd docs && yarn install && npm run docusaurus docs:version "${{ github.event.inputs.RELEASE_VERSION }}"
+      - run: cd docs && yarn install && npm run docusaurus docs:version ${{ github.event.inputs.version }}
       
       - name: extract git commmit data
         uses: rlespinasse/git-commit-data-action@v1
@@ -29,8 +29,8 @@ jobs:
         id: doc
         uses: peter-evans/create-pull-request@v3.9.2
         with:
-          title: "Creating a new version folder"
-          body: "Created a new version folder for version: ${{ github.event.inputs.RELEASE_VERSION }}"
+          title: "Creating a new version folder ${{ github.event.version }}"
+          body: "Created a new version folder for version: ${{ github.event.inputs.version }}"
           branch: ${{ github.event.inputs.create-branch }}
           base: "develop"
           token: ${{ secrets.GITHUB_TOKEN }}
