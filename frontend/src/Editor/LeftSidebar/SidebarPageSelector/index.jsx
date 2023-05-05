@@ -105,7 +105,7 @@ const LeftSidebarPageSelector = ({
                 title={`${pinned ? 'Unpin' : 'Pin'}`}
                 onClick={() => {
                   setPinned(!pinned);
-                  setHaveUserPinned(true);
+                  !haveUserPinned && setHaveUserPinned(true);
                 }}
                 darkMode={darkMode}
                 size="sm"

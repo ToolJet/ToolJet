@@ -22,16 +22,15 @@ export const SettingsModal = ({
   const allpages = pages.filter((p) => p.id !== page.id);
 
   return (
-    <div onClick={(event) => event.stopPropagation()}>
+    <div>
       <Modal
         show={show}
-        // onHide={handleClose}
+        onHide={handleClose}
         size="sm"
         centered
         className={`${darkMode && 'theme-dark'} page-handle-edit-modal`}
         backdrop="static"
         enforceFocus={false}
-        onClick={(event) => event.stopPropagation()}
       >
         <Modal.Header>
           <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }} data-cy={'modal-title-page-events'}>
