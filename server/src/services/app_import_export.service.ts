@@ -385,6 +385,7 @@ export class AppImportExportService {
           kind: source.kind,
           type: source.type || DataSourceTypes.DEFAULT,
           appVersionId: appVersionMapping[appVersion.id],
+          pluginId: source?.pluginId || null,
         });
         await manager.save(newSource);
 
