@@ -7,7 +7,7 @@ import { Confirm } from '../Viewer/Confirm';
 import { useQueryPanelActions, useUnsavedChanges, useSelectedQuery } from '@/_stores/queryPanelStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 
-export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, darkMode, children }) => {
+export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, darkMode, editorRef, children }) => {
   const { setSelectedQuery, updateQueryPanelHeight, setUnSavedChanges } = useQueryPanelActions();
   const isUnsavedQueriesAvailable = useUnsavedChanges();
   const selectedQuery = useSelectedQuery();
@@ -34,6 +34,13 @@ export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, darkMode, chi
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedQuery?.id, editingQuery]);
+
+  useEffect(() => {
+    if (dataQueries.length === 0) {
+      setSelectedDataSource(null);
+    }
+    setEditingQuery(dataQueries.length > 0);
+  }, [dataQueries.length]);
 
   useEffect(() => {
     if (!isDragging && isExpanded) {
@@ -220,6 +227,7 @@ export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, darkMode, chi
             setSelectedDataSource={setSelectedDataSource}
             fetchDataQueries={fetchDataQueries}
             darkMode={darkMode}
+            editorRef={editorRef}
           />
           {children({
             toggleQueryEditor,

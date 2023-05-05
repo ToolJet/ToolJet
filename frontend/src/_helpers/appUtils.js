@@ -1628,7 +1628,7 @@ export const computeQueryState = (queries, _ref) => {
       };
     }
   });
-  const hasDiffQueryState = _.isEqual(_ref.state?.currentState?.queries, queryState);
+  const hasDiffQueryState = !_.isEqual(_ref.state?.currentState?.queries, queryState);
   if (hasDiffQueryState) {
     _ref.setState({
       currentState: {
