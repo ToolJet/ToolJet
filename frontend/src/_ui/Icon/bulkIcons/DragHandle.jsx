@@ -8,6 +8,7 @@ const DragHandle = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = 
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
+    data-cy="drag-handle-icon"
   >
     <path
       d="M10.5022 11.25C10.5022 11.9404 9.94255 12.5 9.2522 12.5C8.56184 12.5 8.0022 11.9404 8.0022 11.25C8.0022 10.5596 8.56184 10 9.2522 10C9.94255 10 10.5022 10.5596 10.5022 11.25Z"

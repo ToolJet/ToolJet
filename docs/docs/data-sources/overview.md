@@ -22,21 +22,21 @@ Global datasources are available only on **ToolJet version 2.3.0 and above**.
 1. From the ToolJet dashboard, go to the **global datasources page** from the left sidebar.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/datasource-reference/overview/global.png" alt="Datasources: Overview" />
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/global.png" alt="Datasources: Overview" />
 
   </div>
 
 2. Click on the **Add new datasource** button, a modal will pop-up with all the available global datasources.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/datasource-reference/overview/popup.png" alt="Datasources: Overview" />
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/popup.png" alt="Datasources: Overview" />
 
   </div>
 
 3. Select the datasource, enter the **Credentials** and **Save** the datasource.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/datasource-reference/overview/connection.png" alt="Datasources: Overview" />
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/connection.png" alt="Datasources: Overview" />
 
   </div>
 

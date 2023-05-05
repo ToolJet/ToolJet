@@ -1,7 +1,7 @@
 export const ssoSelector = {
   pagetitle: "[data-cy=manage-sso-page-title]",
   generalSettingsElements: {
-    generalSettings: "[data-cy=left-menu-items] :eq(0)",
+    generalSettings: '[data-cy="general-settings-list-item"]',
     enableSignupLabel: '[data-cy="enable-sign-up-label"]',
     helperText: "[data-cy=enable-sign-up-helper-text]",
     allowDefaultSSOLabel: '[data-cy="allow-default-sso-label"]',
@@ -19,7 +19,7 @@ export const ssoSelector = {
   workspaceLoginUrl: '[data-cy="workspace-login-url"]',
   cancelButton: "[data-cy=cancel-button]",
   saveButton: "[data-cy=save-button]",
-  google: "[data-cy=left-menu-items] :eq(1)",
+  google: '[data-cy="google-list-item"]',
   googleEnableToggle: '[data-cy="google-enable-toggle"]',
   statusLabel: "[data-cy=status-label]",
   clientIdLabel: "[data-cy=client-id-label]",
@@ -29,8 +29,9 @@ export const ssoSelector = {
   googleTile: '[data-cy="google-sign-in-text"]',
   googleIcon: "[data-cy=google-sso-icon]",
   googleSSOText: "[data-cy=google-sso-text]",
-  git: "[data-cy=left-menu-items] :eq(2)",
-  gitEnableToggle: '[data-cy="git-enable-toogle"]',
+  git: '[data-cy="github-list-item"]',
+  gitEnableToggle: '[data-cy="github-toggle-input"]',
+  githubLabel:'[data-cy="github-toggle-label"]',
   clientSecretLabel: "[data-cy=client-secret-label]",
   encriptedLabel: "[data-cy=encripted-label]",
   clientSecretInput: "[data-cy=client-secret-input]",
@@ -48,4 +49,7 @@ export const ssoSelector = {
   signInHeader: '[data-cy="sign-in-header"]',
   workspaceSubHeader: '[data-cy="workspace-sign-in-sub-header"]',
   noLoginMethodWarning: '[data-cy="no-login-methods-warning"]',
+  passwordLoginToggleLbale: '[data-cy="label-password-login"]',
+  alertText: '[data-cy="alert-text"]',
+  disablePasswordHelperText: '[data-cy="disable-password-helper-text"]',
 };

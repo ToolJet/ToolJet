@@ -251,7 +251,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
                     >
                       {column.render('Header')}
                       <span className="tj-text-xsm tj-db-dataype text-lowercase">
-                        {checkDataType(column?.dataType)}
+                        {column.Header == 'id' ? 'serial' : checkDataType(column?.dataType)}
                       </span>
                     </th>
                   </TablePopover>

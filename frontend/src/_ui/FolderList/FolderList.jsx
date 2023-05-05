@@ -12,6 +12,7 @@ function FolderList({
   children,
   onClick,
   selectedItem,
+  dataCy = '',
   isLoading = false,
   ...restProps
 }) {
@@ -25,6 +26,7 @@ function FolderList({
           }`}
           style={backgroundColor && { backgroundColor }}
           onClick={onClick}
+          data-cy={`${dataCy}-list-item`}
         >
           {LeftIcon && (
             <div className="tj-list-item-icon">

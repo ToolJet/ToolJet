@@ -8,21 +8,21 @@ title: GitHub
 - Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/general/workside.png" alt="General Settings: SSO" width="500"/>
+  <img className="screenshot-full" src="/img/sso/general/workside2.png" alt="General Settings: SSO" width="500"/>
 
   </div>
 
 - Select `SSO` from sidebar and then select **GitHub**. GitHub login will be **disabled** by default,
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/git/gitssov2.png" alt="General Settings: SSO" />
+  <img className="screenshot-full" src="/img/sso/git/gitssov22.png" alt="General Settings: SSO" />
 
   </div>
 
 - Enable GitHub. You can see `Redirect URL` generated
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/git/gitsso2v2.png" alt="General Settings: SSO" />
+  <img className="screenshot-full" src="/img/sso/git/gitsso2v22.png" alt="General Settings: SSO" />
 
   </div>
 
