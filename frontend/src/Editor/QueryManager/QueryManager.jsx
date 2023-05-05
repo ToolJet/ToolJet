@@ -167,14 +167,6 @@ class QueryManagerComponent extends React.Component {
     );
   };
 
-  componentDidUpdate(prevState) {
-    if (prevState?.selectedQuery?.name !== this.state?.selectedQuery?.name) {
-      this.setState({
-        queryName: this.state.selectedQuery?.name,
-      });
-    }
-  }
-
   componentWillReceiveProps(nextProps) {
     if (nextProps.loadingDataSources) return;
     if (this.props.showQueryConfirmation && !nextProps.showQueryConfirmation) {
@@ -502,7 +494,7 @@ class QueryManagerComponent extends React.Component {
       }
     } else {
       if (isNewQueryNameAlreadyExists) toast.error('Query name already exists');
-      this.setState({ renameQuery: false });
+      this.setState({ queryName: newName, renameQuery: false });
     }
   };
 
