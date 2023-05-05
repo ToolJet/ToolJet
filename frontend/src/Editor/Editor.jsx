@@ -2057,7 +2057,7 @@ class EditorComponent extends React.Component {
                     <>
                       <Confirm
                         show={showSaveConfirmation}
-                        message={`Query ${selectedQuery?.name} has unsaved changes`}
+                        message={`Query ${selectedQuery?.name} has unsaved changes. Are you sure you want to discard changes?`}
                         onConfirm={() => {
                           setSaveConfirmation(false);
                         }}
