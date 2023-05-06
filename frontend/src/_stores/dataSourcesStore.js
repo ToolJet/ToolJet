@@ -1,12 +1,15 @@
-import { create } from 'zustand';
-import { zustandDevTools } from './utils';
+import { create, zustandDevTools } from './utils';
 import { datasourceService, globalDatasourceService } from '@/_services';
+
+const initialState = {
+  dataSources: [],
+  loadingDataSources: true,
+  globalDataSources: [],
+};
 
 export const useDataSourcesStore = create(
   zustandDevTools((set) => ({
-    dataSources: [],
-    loadingDataSources: true,
-    globalDataSources: [],
+    ...initialState,
     actions: {
       fetchDataSources: (appId) => {
         set({ loadingDataSources: true });

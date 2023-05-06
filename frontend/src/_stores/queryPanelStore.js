@@ -1,16 +1,18 @@
-import { create } from 'zustand';
-import { zustandDevTools } from './utils';
+import { create, zustandDevTools } from './utils';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 
 const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
+const initialState = {
+  queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
+  selectedQuery: null,
+  isUnsavedChangesAvailable: false,
+  queryToBeRun: null,
+};
 
 export const useQueryPanelStore = create(
   zustandDevTools((set) => ({
-    queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
-    selectedQuery: null,
-    isUnsavedChangesAvailable: false,
-    queryToBeRun: null,
+    ...initialState,
     actions: {
       updateQueryPanelHeight: (newHeight) => set(() => ({ queryPanelHeight: newHeight })),
       setSelectedQuery: (queryId, dataQuery = {}) => {
@@ -21,7 +23,7 @@ export const useQueryPanelStore = create(
             return { selectedQuery: dataQuery };
           }
           const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
-          return { selectedQuery: query };
+          return { selectedQuery: query ? query : null };
         });
       },
       setUnSavedChanges: (value) => set({ isUnsavedChangesAvailable: value }),

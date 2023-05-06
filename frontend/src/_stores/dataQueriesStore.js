@@ -1,5 +1,4 @@
-import { create } from 'zustand';
-import { zustandDevTools } from './utils';
+import { create, zustandDevTools } from './utils';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
 
@@ -7,13 +6,17 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { runQueries, computeQueryState } from '@/_helpers/appUtils';
 
+const initialState = {
+  dataQueries: [],
+  loadingDataQueries: true,
+  isDeletingQueryInProcess: false,
+  isCreatingQueryInProcess: false,
+  isUpdatingQueryInProcess: false,
+};
+
 export const useDataQueriesStore = create(
   zustandDevTools((set, get) => ({
-    dataQueries: [],
-    loadingDataQueries: true,
-    isDeletingQueryInProcess: false,
-    isCreatingQueryInProcess: false,
-    isUpdatingQueryInProcess: false,
+    ...initialState,
     actions: {
       // TODO: Remove editor state while refactoring QueryManager
       fetchDataQueries: (appId, selectFirstQuery = false, runQueriesOnAppLoad = false, editorRef) => {
