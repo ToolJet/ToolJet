@@ -46,6 +46,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import { resetAllStores } from '@/_stores/utils';
 
 setAutoFreeze(false);
 enablePatches();
@@ -177,6 +178,7 @@ class EditorComponent extends React.Component {
   }
 
   componentDidMount() {
+    resetAllStores();
     this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);

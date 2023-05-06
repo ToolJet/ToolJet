@@ -1,9 +1,12 @@
-import { create } from 'zustand';
-import { zustandDevTools } from './utils';
+import { create, zustandDevTools } from './utils';
+
+const initialState = {
+  editingVersion: null,
+};
 
 export const useAppDataStore = create(
   zustandDevTools((set) => ({
-    editingVersion: null,
+    ...initialState,
     actions: {
       updateEditingVersion: (version) => set(() => ({ editingVersion: version })),
     },
