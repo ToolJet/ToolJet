@@ -302,6 +302,7 @@ const sidebars = {
           'type': 'category',
           'label': 'Marketplace Plugins',
           'items': [
+            'marketplace/plugins/marketplace-plugin-textract',
             'marketplace/plugins/marketplace-plugin-github',
             'marketplace/plugins/marketplace-plugin-openai',
             'marketplace/plugins/marketplace-plugin-plivo',
