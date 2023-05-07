@@ -86,7 +86,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
             size="sm"
             styles={{ width: '118px', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
           >
-            <Button.Content title={'Add new row'} iconSrc={'assets/images/icons/add-row.svg'} direction="right" />
+            <Button.Content title={'Add new row'} iconSrc={'assets/images/icons/add-row.svg'} direction="left" />
           </Button>
         </div>
         {tableDataLength > 0 && (
@@ -101,10 +101,10 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
                 isDisabled={dataLoading}
               />
             </div>
-            <div className="col mx-2" data-cy="records-dropdown-field">
+            <div className="col mx-2 records-dropdown-field" data-cy="records-dropdown-field">
               <Select
                 isLoading={dataLoading}
-                className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                customWrap={true}
                 options={selectOptions}
                 value={selectOptions.find((option) => option.value === pageSize)}
                 search={false}

@@ -79,3 +79,16 @@ This property only accepts boolean values. If set to `{{true}}`, the widget will
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+
+## Exposed variables
+
+| Variables   | Description |
+| ----------- | ----------- |
+| endDate | This variable will hold the date of the endDate selected in the component. You can access the value dynamically using JS: `{{components.customcomponent1.data.title}}`|
+| startDate | This variable will hold the value assigned inside the `code` for custom component. You can access the value dynamically using JS: `{{components.customcomponent1.data.title}}`|
+
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.

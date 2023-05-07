@@ -12,14 +12,14 @@ title: Setup
 - Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/general/workside.png" alt="General Settings: SSO" width="500"/>
+  <img className="screenshot-full" src="/img/sso/general/workside2.png" alt="General Settings: SSO" width="500"/>
 
   </div>
 
 - Select `SSO` from workspace options
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/okta/oktassov2.png" alt="Okta: SSO" width="500"/> 
+  <img className="screenshot-full" src="/img/sso/okta/sso2.png" alt="Okta: SSO" width="500"/> 
 
   </div>
 

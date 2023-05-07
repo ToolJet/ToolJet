@@ -59,7 +59,7 @@ export const createFolder = (folderName) => {
 
 export const deleteFolder = (folderName) => {
   viewFolderCardOptions(folderName);
-  cy.get(commonSelectors.deleteFolderOption).click();
+  cy.get(commonSelectors.deleteFolderOption(folderName)).click();
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
   cy.wait("@folderDeleted");
   cy.verifyToastMessage(
@@ -78,21 +78,23 @@ export const navigateToAppEditor = (appName) => {
     .trigger("mousehover")
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
-    .click();
+    .click({force:true});
   //cy.wait("@appEditor");
 };
 
 export const viewAppCardOptions = (appName) => {
-  cy.get(commonSelectors.appCard(appName))
-    .find(commonSelectors.appCardOptionsButton)
-    .click();
+    cy.contains("div", appName)
+    .parent()
+    .within(() => {
+      cy.get(commonSelectors.appCardOptionsButton).invoke("click");
+    });
 };
 
 export const viewFolderCardOptions = (folderName) => {
-  cy.contains("div", folderName)
+  cy.get(commonSelectors.folderListcard(folderName))
     .parent()
     .within(() => {
-      cy.get(commonSelectors.folderCardOptions).invoke("click");
+      cy.get(commonSelectors.folderCardOptions(folderName)).invoke('click');
     });
 };
 
@@ -152,8 +154,7 @@ export const manageUsersPagination = (email) => {
 };
 
 export const searchUser = (email) => {
-  cy.clearAndType(commonSelectors.emailFilterInput, email);
-  cy.get(commonSelectors.filterButton).click();
+  cy.clearAndType(commonSelectors.inputUserSearch, email);
 };
 
 export const createWorkspace = (workspaceName) => {

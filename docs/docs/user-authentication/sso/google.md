@@ -8,21 +8,21 @@ title: Google
 - Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/general/workside.png" alt="General Settings: SSO" width="500"/>
+  <img className="screenshot-full" src="/img/sso/general/workside2.png" alt="General Settings: SSO" width="500"/>
 
   </div>
 
 - Select `SSO` from sidebar and then select **Google**. Google login will be **disabled** by default,
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/google/googlessov2.png" alt="General Settings: SSO" />
+  <img className="screenshot-full" src="/img/sso/google/googlessov22.png" alt="General Settings: SSO" />
 
   </div>
 
 - Enable Google. You can see `Redirect URL` generated
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/google/googlesso2v2.png" alt="General Settings: SSO" />
+  <img className="screenshot-full" src="/img/sso/google/googlesso2v22.png" alt="General Settings: SSO" />
 
   </div>
 
@@ -73,13 +73,13 @@ user who is signing in
 
 Lastly, set the `client id` in google manage SSO page. This value will be available from your [Google cloud console credentials page](https://console.cloud.google.com/apis/credentials)
 
-The Google sign-in button will now be available in your ToolJet login screen, if you are not enabled Multi-Workspace.
+The Google sign-in button will now be available in your ToolJet login screen.
 
-## Multi-Workspace
-If you have enabled Multi-Workspace you can configure Google SSO as mentioned above, for setting default SSO for the instance use environment variable.
+## Setting default SSO
+To set Google as default SSO for the instance use environment variable.
 
 | variable                              | description                                                   |
 | ------------------------------------- | -----------------------------------------------------------   |
 | SSO_GOOGLE_OAUTH2_CLIENT_ID           | Google OAuth client id |
 
-Redirect URL should be `<host>/sso/google`
+**Redirect URL should be `<host>/sso/google`**

@@ -11,7 +11,7 @@ Admin of a workspace can add users to the workspace. To manage the users in your
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/manageusersv2.png" alt="Manage Users" />
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/usersnew.png" alt="Manage Users" />
 
 </div>
 
@@ -19,17 +19,17 @@ Admin of a workspace can add users to the workspace. To manage the users in your
 
 Admins can invite anyone to a workspace using the email address. To invite a user:
 
-- On the **Users** page click on the `Invite new user` button.
+- On the **Users** page click on the `Add users` button.
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/invitev2.png" alt="Manage Users" />
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/addusersbutton.png" alt="Manage Users" />
     
   </div>
 
-- Now enter the details of new user such as first name, last name, email, and then click on the **Create User**.
+- A drawer from the right will open, and on the `Invite with email` tab, enter the details of new user such full name and email, and then click on the **Invite Users**.
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/useremailv2.png" alt="add new user" />
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/inviteviaemail.png" alt="add new user" />
     
   </div>
 
@@ -42,18 +42,17 @@ Admins can invite anyone to a workspace using the email address. To invite a use
 
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/invitedv2.png" alt="add new user" />
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/invited2.png" alt="add new user" />
     
   </div>
 
-:::tip
-You can also **Bulk Invite Users** by editing and uploading the sample CSV file including all the users details.
-<div style={{textAlign: 'center'}}>
+- You can also **Bulk Invite Users** by editing and uploading the sample CSV file including all the users details. Click on the `Add users` button and on the drawer, click on the **Upload CSV file** tab.
+  <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/bulkinvite.png" alt="add new user" />
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/bulknew.png" alt="add new user" />
     
-</div>
-:::
+  </div>
+
 
 ### Disabling a user's access
 
@@ -61,7 +60,7 @@ You can disable any active user's access to your workspace by clicking on the **
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/archivev2.png" alt="archived"/>
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/archivenew.png" alt="archived"/>
     
 </div>
 
@@ -71,56 +70,75 @@ Similar to archiving a user's access, you can enable it again by clicking on **U
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/unarchivev2.png" alt="status" />
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/unarchivenew.png" alt="status" />
     
 </div>
 
 ## Managing Groups
 
-On ToolJet, Admins can create groups for users added in a workspace and grant them access to particular app(s) with specific permissions. To manage groups, just go to the **Workspace Settings** from the left-sidebar of the dashboard and click on the **Groups**.
+On ToolJet, Admins and Super Admins can create groups for users added in a workspace and grant them access to particular app(s) with specific permissions. To manage groups, just go to the **Workspace Settings** from the left-sidebar of the dashboard and click on the **Groups**.
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/managegroupsv2.png" alt="Manage Groups" />
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/groupsnew.png" alt="Manage Groups" />
     
 </div>
 
 ### Group properties
 
-Every group on ToolJet has three sections:
+Every group on ToolJet has **four** sections:
+
+- [Apps](#apps)
+- [Users](#users)
+- [Permissions](#permissions)
+- [Datasources](#datasources)
 
 #### Apps: 
 
-Admins can add or remove any number of apps for a group of users. To add an app to a group, select an app from the dropdown and click on `Add` button next to it. You can also set app permissions such as `View` or `Edit` for the group. You can set different permissions for different apps in a group.
+Admins and Super Admins can add or remove any number of apps for a group of users. To add an app to a group, select an app from the dropdown and click on `Add` button next to it. You can also set app permissions such as `View` or `Edit` for the group. You can set different permissions for different apps in a group.
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/appsv2.png" alt="apps"/>
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/appsnew.png" alt="apps"/>
     
 </div>
 
 #### Users: 
 
-Admins can add or remove any numbers of users in a group. Just select a user from the dropdown and click on `Add` button to add it to a group. To delete a user from a group, click on `Delete` button next to it.
+Admins and Super Admins can add or remove any numbers of users in a group. Just select a user from the dropdown and click on `Add` button to add it to a group. To delete a user from a group, click on `Delete` button next to it.
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/usersv2.png" alt="users" />
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/newusers.png" alt="users" />
     
 </div>
 
 #### Permissions: 
 
-Admins can set granular permission like creating/deleting apps or creating folder for a group of users.
+Admins and Super Admins can set granular permission for the users added in that particular group, such as:
+- **Create** and **Delete** Apps
+- **Create**, **Update**, and **Delete** Folders
+- **Create**, **Update**, and **Delete** [Workspace Variables](/docs/tutorial/workspace-variables)
+- **Create** and **Delete** [Global Datasources](/docs/widgets/overview)
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/permissionsv2.png" alt="permissions" />
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/dspermission.png" alt="permissions" />
+    
+</div>
+
+#### Datasources: 
+
+Only Admins and Super Admins can define what datasources can be **viewed** or **edited** by the users of that group.
+
+<div style={{textAlign: 'center'}}>
+    
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/gdspermission.png" alt="permissions" />
     
 </div>
 
 :::tip
-All the activities performed by any Admin or any user in a workspace is logged in `Audit logs` - including any activity related with managing users and groups.
+All the activities performed by any Admin, Super Admin or any user in a workspace is logged in [Audit logs](/docs/Enterprise/audit_logs) - including any activity related with managing users and groups.
 :::
 
 ### Predefined Groups
@@ -137,7 +155,7 @@ This group contains all the users and admins.
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/allusersv2.png" alt="all users" />
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/allusersnew.png" alt="all users" />
     
 </div>
 
@@ -151,27 +169,32 @@ This group contains admins by default. Admins can add more admins or remove the 
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/adminv2.png" alt="admin" />
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/adminnew.png" alt="admin" />
     
 </div>
 
 ### Creating new group
 
-- Click on `Create new group` button in the **User Groups** page.
+- Click on `Create new group` button in the **Groups** page.
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/newgroup1v2.png" alt="new group" />
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/newgrp2.png" alt="new group" />
     
   </div>
 
 - Enter a name for the group and click `Create Group` button.
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/newgroup2v2.png" alt="new group 2"/>
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/newgrp22.png" alt="new group 2"/>
     
   </div>
 
 - Once the group is created, you can add **Apps**, **Users** and set their **Permissions** for that group.
+  <div style={{textAlign: 'center'}}>
+    
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/newgrpadd.png" alt="new group 2"/>
+    
+  </div>
 
 ### Deleting a group
 
@@ -179,6 +202,6 @@ To delete a group, click on `Delete` next to it. It will confirm whether you wan
 
 <div style={{textAlign: 'center'}}>
     
-<img className="screenshot-full" src="/img/tutorial/manage-users-groups/deletev2.png" alt="delete group" width="400"/>
+<img className="screenshot-full" src="/img/tutorial/manage-users-groups/grpdelnew.png" alt="delete group"/>
     
 </div>

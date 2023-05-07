@@ -1,8 +1,9 @@
-import React, { createContext, useMemo, useState, useEffect } from 'react';
+import React, { createContext, useMemo, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
-import { globalDatasourceService } from '@/_services';
+import { globalDatasourceService, appEnvironmentService, authenticationService } from '@/_services';
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
+import { BreadCrumbContext } from '@/App/App';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
@@ -12,39 +13,55 @@ export const GlobalDataSourcesContext = createContext({
 });
 
 export const GlobalDatasources = (props) => {
-  const { organization_id, admin } = JSON.parse(localStorage.getItem('currentUser')) || {};
-  const [organizationId, setOrganizationId] = useState(organization_id);
+  const { admin } = authenticationService.currentSessionValue;
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [isEditing, setEditing] = useState(true);
+  const [environments, setEnvironments] = useState([]);
+  const [currentEnvironment, setCurrentEnvironment] = useState(null);
   const navigate = useNavigate();
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  useEffect(() => {
+    if (dataSources?.length == 0) updateSidebarNAV('');
+    else selectedDataSource ? updateSidebarNAV(selectedDataSource.name) : updateSidebarNAV(dataSources?.[0].name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource)]);
 
   useEffect(() => {
     if (!admin) {
       navigate('/');
     }
+    fetchEnvironments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [admin]);
 
-  const fetchDataSources = async (resetSelection = false, dsName = null) => {
+  function updateSelectedDatasource(source) {
+    updateSidebarNAV(source);
+  }
+
+  const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     globalDatasourceService
-      .getAll(organizationId)
+      .getAll()
       .then((data) => {
         const orderedDataSources = data.data_sources.sort((a, b) => a.name.localeCompare(b.name));
         setDataSources([...(orderedDataSources ?? [])]);
-        const ds = dsName && orderedDataSources.find((ds) => ds.name === dsName);
+        const ds = dataSource && orderedDataSources.find((ds) => ds.id === dataSource.id);
 
         if (!resetSelection && ds) {
+          setEditing(true);
           setSelectedDataSource(ds);
           toggleDataSourceManagerModal(true);
         }
-
         if (orderedDataSources.length && resetSelection) {
           setSelectedDataSource(orderedDataSources[0]);
           toggleDataSourceManagerModal(true);
         }
       })
-      .catch(() => setDataSources([]));
+      .catch(() => {
+        setDataSources([]);
+      });
   };
 
   const handleToggleSourceManagerModal = () => {
@@ -62,6 +79,17 @@ export const GlobalDatasources = (props) => {
     handleToggleSourceManagerModal();
   };
 
+  const fetchEnvironments = () => {
+    appEnvironmentService.getAllEnvironments().then((data) => {
+      const envArray = data?.environments;
+      setEnvironments(envArray);
+      if (envArray.length > 0) {
+        const env = envArray.find((env) => env.is_default === true);
+        setCurrentEnvironment(env);
+      }
+    });
+  };
+
   const value = useMemo(
     () => ({
       selectedDataSource,
@@ -73,15 +101,21 @@ export const GlobalDatasources = (props) => {
       handleModalVisibility,
       isEditing,
       setEditing,
+      fetchEnvironments,
+      environments,
+      currentEnvironment,
+      setCurrentEnvironment,
+      setDataSources,
     }),
-    [selectedDataSource, dataSources, showDataSourceManagerModal, isEditing]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedDataSource, dataSources, showDataSourceManagerModal, isEditing, environments, currentEnvironment]
   );
 
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <GlobalDataSourcesContext.Provider value={value}>
         <div className="page-wrapper">
-          <GlobalDataSourcesPage darkMode={props.darkMode} />
+          <GlobalDataSourcesPage darkMode={props.darkMode} updateSelectedDatasource={updateSelectedDatasource} />
         </div>
       </GlobalDataSourcesContext.Provider>
     </Layout>

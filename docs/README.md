@@ -15,7 +15,7 @@ This repository contains the ToolJet documentation website code and Markdown sou
 - [Local setup](#local-setup)
 
 ## Feedback
-If you want to give documentation feedback, please join our [Slack Community](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg) and drop us a message.
+If you want to give documentation feedback, please join our [Slack Community](https://tooljet.com/slack) and drop us a message.
 
 ## Documentation Issues
 To enter documentation bugs or submit any feature request for documentation, please create a new [GitHub issue](https://github.com/ToolJet/ToolJet/issues/new?assignees=&labels=documentation&template=03_documentation_report.yml&title=%5Bdocs%5D%3A+). Please check if there is an existing issue first.

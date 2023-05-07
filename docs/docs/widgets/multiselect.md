@@ -87,3 +87,21 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Exposed Variables
+
+| Variables    | Description |
+| ----------- | ----------- |
+| values | This variable holds the values of the multiselect component in an array of objects where the objects are the options in the multiselect. You can access the value dynamically using JS: `{{components.multiselect1.values[1]}}` |
+
+## Component specific actions (CSA)
+await components.multiselect1.clearSelections()
+await components.multiselect1.deselectOption(2)
+
+Following actions of multselect component can be controlled using the component specific actions(CSA):
+
+| Actions     | Description |
+| ----------- | ----------- |
+| selectOption | Select an option on the multiselect component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.multiselect1.selectOption(3)` |
+| deselectOption | Deselect a selected option on the multiselect component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.multiselect1.deselectOption(3)` | 
+| clearOptions | Clear all the selected options from the multiselect component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.multiselect1.clearSelections(2,3)` |
