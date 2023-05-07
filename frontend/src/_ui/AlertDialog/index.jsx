@@ -2,12 +2,29 @@ import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import cx from 'classnames';
 
-export default function AlertDialog({ title, size = 'sm', show, closeModal, customClassName, children }) {
+export default function AlertDialog({
+  title,
+  size = 'sm',
+  show,
+  closeModal,
+  customClassName,
+  children,
+  checkForBackground = false,
+}) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  //checkForBackground :: remove this once all ui is revamped used only so that editor styles is unaltered
   return (
     <Modal
       onHide={() => closeModal(false)}
-      contentClassName={cx('animation-fade home-modal-component', customClassName, { dark: darkMode })}
+      contentClassName={cx(
+        `animation-fade ${!checkForBackground ? 'home-modal-component' : 'home-modal-component-editor'} ${
+          darkMode && 'dark-theme'
+        }`,
+        customClassName,
+        {
+          dark: checkForBackground && darkMode,
+        }
+      )}
       show={show}
       size={size}
       backdrop={'static'}
@@ -18,7 +35,7 @@ export default function AlertDialog({ title, size = 'sm', show, closeModal, cust
       centered
       data-cy={'modal-component'}
       style={{ zIndex: 9992 }}
-      backdropClassName="home-modal-backdrop"
+      // backdropClassName="home-modal-backdrop"
     >
       {title && (
         <Modal.Header>

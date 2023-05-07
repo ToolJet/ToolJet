@@ -8,21 +8,21 @@ title: GitHub
 - Go to the **Workspace Settings** (⚙️) from the left sidebar in the ToolJet dashboard
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/general/workside.png" alt="General Settings: SSO" width="500"/>
+  <img className="screenshot-full" src="/img/sso/general/workside2.png" alt="General Settings: SSO" width="500"/>
 
   </div>
 
 - Select `SSO` from sidebar and then select **GitHub**. GitHub login will be **disabled** by default,
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/git/gitssov2.png" alt="General Settings: SSO" />
+  <img className="screenshot-full" src="/img/sso/git/gitssov22.png" alt="General Settings: SSO" />
 
   </div>
 
 - Enable GitHub. You can see `Redirect URL` generated
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/sso/git/gitsso2v2.png" alt="General Settings: SSO" />
+  <img className="screenshot-full" src="/img/sso/git/gitsso2v22.png" alt="General Settings: SSO" />
 
   </div>
 
@@ -49,14 +49,14 @@ title: GitHub
 
 Lastly, enter **Client Id** and **Client Secret** in GitHub manage SSO page and save.
 
-The GitHub sign-in button will now be available in your ToolJet login screen if you have not enabled Multi-Workspace.
+The GitHub sign-in button will now be available in your ToolJet login screen.
 
 :::info
 Should configure `Host Name` if you are using GitHub Enterprise self hosted. Host name should be a URL and should not ends with `/`, example: `https://github.tooljet.com`
 :::
 
-## Multi-Workspace
-If you have enabled Multi-Workspace you can configure GitHub SSO as mentioned above, for setting default SSO for the instance use environment variable.
+## Setting default SSO
+To set GitHub as default SSO for the instance use environment variable.
 
 | variable                              | description                                                   |
 | ------------------------------------- | -----------------------------------------------------------   |
@@ -64,4 +64,4 @@ If you have enabled Multi-Workspace you can configure GitHub SSO as mentioned ab
 | SSO_GIT_OAUTH2_CLIENT_SECRET          | GitHub OAuth client secret |
 | SSO_GIT_OAUTH2_HOST                   | GitHub OAuth host name if GitHub is self hosted |
 
-Redirect URL should be `<host>/sso/git`
+**Redirect URL should be `<host>/sso/git`**

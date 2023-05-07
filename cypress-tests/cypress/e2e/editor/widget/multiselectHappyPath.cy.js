@@ -123,8 +123,7 @@ describe("Multiselect widget", () => {
     cy.get(multiselectSelector.dropdownAllItems)
       .first()
       .should("have.text", multiselectText.dropdwonOptionSelectAll)
-      .click()
-      .click();
+      .realClick();
 
     verifyMultiselectHeader(
       data.widgetName,

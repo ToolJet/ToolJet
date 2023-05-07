@@ -5,7 +5,7 @@ import { Link, Navigate } from 'react-router-dom';
 import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
-import { validateEmail } from '../_helpers/utils';
+import { getSubpath, getWorkspaceId, validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -26,39 +26,74 @@ class LoginPageComponent extends React.Component {
       configs: undefined,
       emailError: false,
       navigateToLogin: false,
+      current_organization_name: null,
     };
-    this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
     this.organizationId = props.params.organizationId;
   }
   darkMode = localStorage.getItem('darkMode') === 'true';
 
+  returnWorkspaceIdIfNeed = (path) => {
+    if (path) {
+      return !path.includes('applications') && !path.includes('integrations') ? `/${getWorkspaceId()}` : '';
+    }
+    return `/${getWorkspaceId()}`;
+  };
+
   componentDidMount() {
     this.setRedirectUrlToCookie();
     authenticationService.deleteLoginOrganizationId();
-    if (
-      (!this.organizationId && authenticationService.currentUserValue) ||
-      (this.organizationId && authenticationService?.currentUserValue?.organization_id === this.organizationId)
-    ) {
-      return this.setState({ navigateToLogin: true });
-    }
-    if (this.organizationId || this.single_organization)
+    this.currentSessionObservable = authenticationService.currentSession.subscribe((newSession) => {
+      if (newSession?.current_organization_name)
+        this.setState({ current_organization_name: newSession.current_organization_name });
+      if (newSession?.group_permissions || newSession?.id) {
+        if (
+          (!this.organizationId && newSession?.current_organization_id) ||
+          (this.organizationId && newSession?.current_organization_id === this.organizationId)
+        ) {
+          // redirect to home if already logged in
+          // set redirect path for sso login
+          const path = this.eraseRedirectUrl();
+          const redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
+          window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+        }
+      }
+    });
+
+    if (this.organizationId) {
       authenticationService.saveLoginOrganizationId(this.organizationId);
+    }
 
     authenticationService.getOrganizationConfigs(this.organizationId).then(
       (configs) => {
         this.setState({ isGettingConfigs: false, configs });
       },
       (response) => {
-        if (response.data.statusCode !== 404) {
+        if (response.data.statusCode !== 404 && response.data.statusCode !== 422) {
           return this.props.navigate({
             pathname: '/',
             state: { errorMessage: 'Error while login, please try again' },
           });
         }
+
         // If there is no organization found for single organization setup
         // show form to sign up
         // redirected here for self hosted version
-        this.props.navigate('/setup');
+        response.data.statusCode !== 422 && this.props.navigate('/setup');
+
+        // if wrong workspace id then show workspace-switching page
+        if (response.data.statusCode === 422) {
+          authenticationService
+            .validateSession()
+            .then(({ current_organization_id }) => {
+              authenticationService.updateCurrentSession({
+                current_organization_id,
+              });
+              this.props.history.push('/switch-workspace');
+            })
+            .catch(() => {
+              window.location = '/login';
+            });
+        }
 
         this.setState({
           isGettingConfigs: false,
@@ -77,6 +112,10 @@ class LoginPageComponent extends React.Component {
         id: 'toast-login-auth-error',
         position: 'top-center',
       });
+  }
+
+  componentWillUnmount() {
+    this.currentSessionObservable && this.currentSessionObservable.unsubscribe();
   }
 
   eraseRedirectUrl() {
@@ -129,10 +168,13 @@ class LoginPageComponent extends React.Component {
     authenticationService.deleteLoginOrganizationId();
     const params = queryString.parse(this.props.location.search);
     const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
-    const redirectPath = from.pathname === '/confirm' ? '/' : from;
-    this.props.navigate(redirectPath);
+    if (from.pathname !== '/confirm')
+      // appending workspace-id to avoid 401 error. App.jsx will take the workspace id from URL
+      from.pathname = `${this.returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
+    const redirectPath = from.pathname === '/confirm' ? '/' : from.pathname;
     this.setState({ isLoading: false });
     this.eraseRedirectUrl();
+    window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
   };
 
   authFailureHandler = (res) => {
@@ -354,14 +396,23 @@ class LoginPageComponent extends React.Component {
                             )}
                           </ButtonSolid>
                         )}
-                        {authenticationService?.currentUserValue?.organization && this.organizationId && (
+                        {this.state.current_organization_name && this.organizationId && (
                           <div
                             className="text-center-onboard mt-3"
-                            data-cy={`back-to-${String(authenticationService?.currentUserValue?.organization)
+                            data-cy={`back-to-${String(this.state.current_organization_name)
                               .toLowerCase()
                               .replace(/\s+/g, '-')}`}
                           >
-                            back to&nbsp; <Link to="/">{authenticationService?.currentUserValue?.organization}</Link>
+                            back to&nbsp;{' '}
+                            <Link
+                              onClick={() =>
+                                (window.location = `${getSubpath() ? getSubpath() : ''}/${
+                                  authenticationService.currentSessionValue?.current_organization_id
+                                }`)
+                              }
+                            >
+                              {this.state.current_organization_name}
+                            </Link>
                           </div>
                         )}
                       </div>

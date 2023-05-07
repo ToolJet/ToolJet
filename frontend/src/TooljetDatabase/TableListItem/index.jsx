@@ -15,6 +15,10 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
+  function updateSelectedTable(tablename) {
+    setSelectedTable(tablename);
+  }
+
   const handleDeleteTable = async () => {
     const shouldDelete = confirm(`Are you sure you want to delete the table "${text}"?`);
     if (shouldDelete) {
@@ -48,7 +52,10 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
       onClick={onClick}
     >
       <ToolTip message={text}>
-        <span className="table-name" data-cy={`${String(text).toLowerCase().replace(/\s+/g, '-')}-table-name`}>
+        <span
+          className="table-name tj-text-xsm"
+          data-cy={`${String(text).toLowerCase().replace(/\s+/g, '-')}-table-name`}
+        >
           {text}
         </span>
       </ToolTip>
@@ -62,11 +69,11 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         <EditTableForm
           selectedColumns={formColumns}
           selectedTable={selectedTable}
+          updateSelectedTable={updateSelectedTable}
           onEdit={() => {
             tooljetDatabaseService.findAll(organizationId).then(({ data = [] }) => {
               if (Array.isArray(data?.result) && data.result.length > 0) {
                 setTables(data.result || []);
-                setSelectedTable(data?.result[0]?.table_name);
               }
             });
             setIsEditTableDrawerOpen(false);

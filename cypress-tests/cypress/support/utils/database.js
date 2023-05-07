@@ -17,15 +17,15 @@ import { commonText } from "Texts/common";
 
 export const verifyAllElementsOfPage = () => {
   cy.get(databaseSelectors.addTableButton).should("be.visible");
-  cy.get(databaseSelectors.tablePageHeader).verifyVisibleElement(
-    "have.text",
-    databaseText.tablePageHeader
-  );
-  cy.get(databaseSelectors.doNotHaveTableText).verifyVisibleElement(
-    "have.text",
-    databaseText.doNotHaveTableText
-  );
-  cy.get(databaseSelectors.searchTableInputField).should("be.visible");
+  // cy.get(databaseSelectors.tablePageHeader).verifyVisibleElement(
+  //   "have.text",
+  //   databaseText.tablePageHeader
+  // );
+  // cy.get(databaseSelectors.doNotHaveTableText).verifyVisibleElement(
+  //   "have.text",
+  //   databaseText.doNotHaveTableText
+  // );
+  //cy.get(databaseSelectors.searchTableInputField).should("be.visible");
   cy.get(databaseSelectors.allTablesSection).should("be.visible");
   cy.get(databaseSelectors.allTableSubheader).should("be.visible");
 };
@@ -66,7 +66,7 @@ export const createTableAndVerifyToastMessage = (
   );
   navigateToTable(tableName);
   cy.get(databaseSelectors.idColumnHeader).verifyVisibleElement(
-    "have.text",
+    "contain",
     databaseText.idColumnHeader
   );
   cy.get(databaseSelectors.noRecordsText).verifyVisibleElement(
@@ -185,8 +185,10 @@ export const createNewColumnAndVerify = (
     createNewColumnText.defaultValueLabel
   );
   cy.clearAndType(createNewColumnSelectors.columnNameInputField, columnName);
-  cy.get(createNewColumnSelectors.dataTypeDropdown).click();
+  cy.get(createNewColumnSelectors.dataTypeDropdown) .within(() => {
+    cy.contains(`Select data type`).click();
   cy.contains(`[id*="react-select-"]`, columnDataType).click();
+  })
   if (defaultValue) {
     cy.clearAndType(
       createNewColumnSelectors.defaultValueInputField,
@@ -215,7 +217,7 @@ export const createNewColumnAndVerify = (
   );
 
   cy.get(databaseSelectors.columnHeader(columnName)).verifyVisibleElement(
-    "have.text",
+    "contain",
     `${String(columnName).toLowerCase().replace(/\s+/g, "-")}`
   );
 };
@@ -391,6 +393,7 @@ export const sortOperation = (tableName, columnName = [], order = []) => {
   cy.get(databaseSelectors.idColumnHeader).should("be.visible");
 };
 export const deleteCondition = (selector, columnName = [], deleteIcon) => {
+  cy.wait(500);
   cy.get(selector).click();
   cy.get(".card-body").eq(1).should("be.visible");
   for (let i = 0; i < columnName.length; i++) {

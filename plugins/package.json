@@ -35,6 +35,7 @@
     "@tooljet-plugins/gcs": "file:packages/gcs",
     "@tooljet-plugins/googlesheets": "file:packages/googlesheets",
     "@tooljet-plugins/graphql": "file:packages/graphql",
+    "@tooljet-plugins/grpc": "file:packages/grpc",
     "@tooljet-plugins/influxdb": "file:packages/influxdb",
     "@tooljet-plugins/mailgun": "file:packages/mailgun",
     "@tooljet-plugins/mariadb": "file:packages/mariadb",
@@ -68,7 +69,7 @@
   "devDependencies": {
     "@types/jest": "^27.5.2",
     "@types/nodemailer": "^6.4.7",
-    "@types/oracledb": "^5.2.3",
+    "@types/oracledb": "^5.2.2",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "eslint": "^7.32.0",

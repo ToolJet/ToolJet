@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
@@ -19,6 +19,10 @@ const RowForm = ({ onCreate, onClose }) => {
     });
     return data;
   });
+
+  useEffect(() => {
+    toast.dismiss();
+  }, []);
 
   const handleInputChange = (columnName) => (e) => {
     setData({ ...data, [columnName]: e.target.value });
@@ -81,13 +85,13 @@ const RowForm = ({ onCreate, onClose }) => {
   };
 
   return (
-    <div className="card">
+    <div className="drawer-card-wrapper ">
       <div className="card-header">
         <h3 className="card-title" data-cy="create-new-row-header">
           Create a new row
         </h3>
       </div>
-      <div className="card-body">
+      <div className="card-body tj-app-input">
         {Array.isArray(columns) &&
           columns?.map(({ Header, accessor, dataType, isPrimaryKey, column_default }, index) => {
             return (

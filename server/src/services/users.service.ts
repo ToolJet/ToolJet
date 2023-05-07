@@ -362,6 +362,19 @@ export class UsersService {
     return !!app && app.organizationId === user.organizationId;
   }
 
+  async returnOrgIdOfAnApp(slug: string): Promise<any> {
+    let app: App;
+    try {
+      app = await this.appsRepository.findOneOrFail(slug);
+    } catch (error) {
+      app = await this.appsRepository.findOne({
+        slug,
+      });
+    }
+
+    return app?.organizationId;
+  }
+
   async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const user = await manager.findOne(User, userId);

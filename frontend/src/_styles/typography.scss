@@ -2,7 +2,7 @@
 .tj-text {
     font-family: 'IBM Plex Sans';
     font-style: normal;
-    color: #121212;
+    color: var(--slate12) !important;
     margin: 0;
     padding: 0;
 }
@@ -87,7 +87,7 @@
 
 .tj-text-md {
     font-weight: 400;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 24px;
     margin: 0;
     padding: 0;
@@ -113,15 +113,6 @@
     font-weight: 400;
     font-size: 10px;
     line-height: 16px;
-    margin: 0;
-    padding: 0;
-}
-
-
-.tj-para-md {
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 24px;
     margin: 0;
     padding: 0;
 }

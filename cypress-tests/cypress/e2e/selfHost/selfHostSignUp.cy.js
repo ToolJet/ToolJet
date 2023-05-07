@@ -66,7 +66,7 @@ describe("Self host onboarding", () => {
       .and("have.attr", "href")
       .and("equal", "https://www.tooljet.com/privacy");
 
-    cy.clearAndType(commonSelectors.nameInputField, "The developer");
+    cy.clearAndType(commonSelectors.nameInputField, "The Developer");
     cy.clearAndType(commonSelectors.emailInputField, "dev@tooljet.io");
     cy.clearAndType(commonSelectors.passwordInputField, "password");
     cy.get(commonSelectors.continueButton).click();

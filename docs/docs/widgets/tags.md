@@ -58,3 +58,12 @@ Toggle on or off to display the widget in mobile view. You can programmatically 
 ### Visibility
 
 Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`.
+
+
+## Exposed variables
+
+There are currently no exposed variables for the component.
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
