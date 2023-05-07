@@ -89,7 +89,7 @@ export class WorkflowExecutionsController {
   @UseGuards(JwtAuthGuard)
   @Get('all/:appVersionId')
   async index(@Param('appVersionId') appVersionId: any, @User() user) {
-    const appVersion = await this.appVersionsRepository.findOne(appVersionId, { relations: ['App'] });
+    const appVersion = await this.appVersionsRepository.findOne(appVersionId, { relations: ['app'] });
     const app = appVersion.app;
 
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
