@@ -37,18 +37,20 @@ export const DropDown = function DropDown({
     console.log(err);
   }
 
+  const setExposedItem = (value, index, onSelectFired = false) => {
+    setCurrentValue(value);
+    onSelectFired ? setExposedVariable('value', value).then(fireEvent('onSelect')) : setExposedVariable('value', value);
+    setExposedVariable('selectedOptionLabel', index === undefined ? undefined : display_values?.[index]);
+  };
+
   function selectOption(value) {
     let index = null;
     index = values.indexOf(value);
 
     if (values.includes(value)) {
-      setCurrentValue(value);
-      setExposedVariable('value', value).then(fireEvent('onSelect'));
-      setExposedVariable('selectedOptionLabel', display_values[index]);
+      setExposedItem(value, index, true);
     } else {
-      setCurrentValue(undefined);
-      setExposedVariable('value', undefined).then(fireEvent('onSelect'));
-      setExposedVariable('selectedOptionLabel', undefined);
+      setExposedItem(undefined, undefined, true);
     }
   }
 
@@ -75,9 +77,8 @@ export const DropDown = function DropDown({
       newValue = value;
       index = values.indexOf(value);
     }
-    setCurrentValue(newValue);
-    setExposedVariable('value', newValue);
-    setExposedVariable('selectedOptionLabel', display_values?.[index]);
+    setExposedItem(newValue, index);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, JSON.stringify(display_values)]);
 
@@ -97,10 +98,8 @@ export const DropDown = function DropDown({
 
     if (values?.includes(currentValue)) newValue = currentValue;
     else if (values?.includes(value)) newValue = value;
-    setCurrentValue(newValue);
-    setExposedVariable('value', newValue);
     index = values.indexOf(newValue);
-    setExposedVariable('selectedOptionLabel', display_values?.[index]);
+    setExposedItem(newValue, index);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(values)]);
 
