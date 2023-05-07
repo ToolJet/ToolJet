@@ -746,7 +746,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                                 data-cy="checkbox-view-app"
                                               />
                                               <span className="form-check-label" data-cy="label-app-view">
-                                                {this.props.t('globals.view', 'view')}
+                                                {this.props.t('globals.execute', 'Execute')}
                                               </span>
                                             </label>
                                             <label className="form-check form-check-inline">

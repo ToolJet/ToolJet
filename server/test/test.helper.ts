@@ -106,7 +106,7 @@ export async function clearDB() {
   }
 }
 
-export async function createApplication(nestApp, { name, user, isPublic, slug }: any) {
+export async function createApplication(nestApp, { name, user, isPublic, slug, type = 'front-end' }: any) {
   let appRepository: Repository<App>;
   appRepository = nestApp.get('AppRepository');
 
@@ -117,6 +117,7 @@ export async function createApplication(nestApp, { name, user, isPublic, slug }:
       name,
       user,
       slug,
+      type,
       isPublic: isPublic || false,
       organizationId: user.organizationId,
       createdAt: new Date(),
