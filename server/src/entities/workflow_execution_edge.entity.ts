@@ -48,4 +48,6 @@ export class WorkflowExecutionEdge {
 
   @UpdateDateColumn({ default: () => 'now()', name: 'updated_at' })
   updatedAt: Date;
+
+  skipped: boolean;
 }

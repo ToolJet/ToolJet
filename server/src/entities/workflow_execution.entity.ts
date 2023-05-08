@@ -12,6 +12,7 @@ import {
 import { AppVersion } from './app_version.entity';
 import { User } from './user.entity';
 import { WorkflowExecutionNode } from './workflow_execution_node.entity';
+import { WorkflowExecutionEdge } from './workflow_execution_edge.entity';
 
 @Entity({ name: 'workflow_executions' })
 export class WorkflowExecution {
@@ -43,6 +44,9 @@ export class WorkflowExecution {
 
   @OneToMany(() => WorkflowExecutionNode, (node) => node.workflowExecution)
   nodes: WorkflowExecutionNode[];
+
+  @OneToMany(() => WorkflowExecutionEdge, (edge) => edge.workflowExecution)
+  edges: WorkflowExecutionEdge[];
 
   @ManyToOne(() => AppVersion, (appVersion) => appVersion.id)
   @JoinColumn({ name: 'app_version_id' })

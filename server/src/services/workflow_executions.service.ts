@@ -12,6 +12,7 @@ import { find } from 'lodash';
 import { DataQueriesService } from './data_queries.service';
 import { User } from 'src/entities/user.entity';
 import { getQueryVariables, resolveCode } from 'lib/utils';
+import { Graph, alg } from '@dagrejs/graphlib';
 
 @Injectable()
 export class WorkflowExecutionsService {
@@ -79,7 +80,6 @@ export class WorkflowExecutionsService {
         // const sourceNode = find(nodes, (node) => node.idOnWorkflowDefinition === edgeData.source);
         // const targetNode = find(nodes, (node) => node.idOnWorkflowDefinition === edgeData.target);
 
-        console.log({ nodes, edges: definition.edges });
         const edge = await manager.save(
           WorkflowExecutionEdge,
           manager.create(WorkflowExecutionEdge, {
@@ -151,12 +151,14 @@ export class WorkflowExecutionsService {
       where: {
         id: workflowExecution.id,
       },
-      relations: ['startNode', 'user'],
+      relations: ['startNode', 'user', 'nodes', 'edges'],
     });
 
     const queue = [];
 
-    queue.push(workflowExecution.startNode);
+    queue.push(
+      ...this.computeNodesToBeExecuted(workflowExecution.startNode, workflowExecution.nodes, workflowExecution.edges)
+    );
 
     let finalResult = {};
     const logs = [];
@@ -166,64 +168,19 @@ export class WorkflowExecutionsService {
 
       const currentNode = await this.workflowExecutionNodeRepository.findOne({ where: { id: nodeToBeExecuted.id } });
 
-      const { state, previousNodesExecutionCompletionStatus } =
-        await this.getStateAndPreviousNodesExecutionCompletionStatus(currentNode);
+      const { state } = await this.getStateAndPreviousNodesExecutionCompletionStatus(currentNode);
 
       // eslint-disable-next-line no-empty
       if (currentNode.executed) {
-      } else if (!previousNodesExecutionCompletionStatus) {
-        queue.push(currentNode);
       } else {
         switch (currentNode.type) {
           case 'input': {
-            await this.completeNodeExecution(currentNode, '', { startTrigger: { params } });
-            void queue.push(...(await this.forwardNodes(currentNode)));
+            await this.processStartNode(currentNode, params);
             break;
           }
 
           case 'query': {
-            const queryId = find(appVersion.definition.queries, {
-              idOnDefinition: currentNode.definition.idOnDefinition,
-            }).id;
-
-            const query = await this.dataQueriesService.findOne(queryId);
-            const user = await this.userRepository.findOne(workflowExecution.executingUserId, {
-              relations: ['organization'],
-            });
-            user.organizationId = user.organization.id;
-            try {
-              void getQueryVariables(query.options, state);
-            } catch (e) {
-              console.log({ e });
-            }
-
-            const options = getQueryVariables(query.options, state);
-            try {
-              logs.push(`${query.name}: Started execution`);
-              const result = await this.dataQueriesService.runQuery(user, query, options);
-
-              const newState = {
-                ...state,
-                [query.name]: result,
-              };
-
-              logs.push(`${query.name}: Execution succeeded`);
-              await this.completeNodeExecution(currentNode, JSON.stringify(result), newState);
-              void queue.push(...(await this.forwardNodes(currentNode)));
-            } catch (exception) {
-              logs.push(`${query.name}: Execution failed`);
-              const result = { status: 'failed', exception };
-
-              const newState = {
-                ...state,
-                [query.name]: result,
-              };
-
-              await this.completeNodeExecution(currentNode, JSON.stringify(result), newState);
-              queue.push(...(await this.forwardNodes(currentNode)));
-              console.log({ exception });
-            }
-
+            await this.processQueryNode(currentNode, workflowExecution, appVersion, state, logs);
             break;
           }
 
@@ -232,11 +189,19 @@ export class WorkflowExecutionsService {
 
             const result = resolveCode(code, state);
 
-            const sourceHandle = result ? 'true' : 'false';
+            const sourceHandleToBeSkipped = result ? 'false' : 'true';
 
             await this.completeNodeExecution(currentNode, JSON.stringify(result), {});
 
-            void queue.push(...(await this.forwardNodes(currentNode, sourceHandle)));
+            const edgeToBeSkipped = workflowExecution.edges.filter(
+              (edge) =>
+                edge.sourceWorkflowExecutionNodeId === currentNode.id && edge.sourceHandle === sourceHandleToBeSkipped
+            )[0];
+
+            edgeToBeSkipped.skipped = true;
+
+            queue.length = 0;
+            queue.push(...this.computeNodesToBeExecuted(currentNode, workflowExecution.nodes, workflowExecution.edges));
 
             break;
           }
@@ -253,6 +218,85 @@ export class WorkflowExecutionsService {
     await this.saveWorkflowLogs(workflowExecution, logs);
 
     return finalResult;
+  }
+
+  async processStartNode(node: WorkflowExecutionNode, params: object) {
+    await this.completeNodeExecution(node, '', { startTrigger: { params } });
+  }
+
+  async processQueryNode(
+    node: WorkflowExecutionNode,
+    execution: WorkflowExecution,
+    appVersion: AppVersion,
+    state: object,
+    logs: string[]
+  ) {
+    const queryId = find(appVersion.definition.queries, {
+      idOnDefinition: node.definition.idOnDefinition,
+    }).id;
+
+    const query = await this.dataQueriesService.findOne(queryId);
+    const user = await this.userRepository.findOne(execution.executingUserId, {
+      relations: ['organization'],
+    });
+    user.organizationId = user.organization.id;
+    try {
+      void getQueryVariables(query.options, state);
+    } catch (e) {
+      console.log({ e });
+    }
+
+    const options = getQueryVariables(query.options, state);
+    try {
+      logs.push(`${query.name}: Started execution`);
+      const result = await this.dataQueriesService.runQuery(user, query, options);
+
+      const newState = {
+        ...state,
+        [query.name]: result,
+      };
+
+      logs.push(`${query.name}: Execution succeeded`);
+      await this.completeNodeExecution(node, JSON.stringify(result), newState);
+    } catch (exception) {
+      logs.push(`${query.name}: Execution failed`);
+      const result = { status: 'failed', exception };
+
+      const newState = {
+        ...state,
+        [query.name]: result,
+      };
+
+      await this.completeNodeExecution(node, JSON.stringify(result), newState);
+      console.log({ exception });
+    }
+  }
+
+  computeNodesToBeExecuted(
+    currentNode: WorkflowExecutionNode,
+    nodes: WorkflowExecutionNode[],
+    edges: WorkflowExecutionEdge[]
+  ) {
+    const nodeIds = nodes.map((node) => node.id);
+    const dag = new Graph({ directed: true });
+
+    nodeIds.forEach((nodeId) => dag.setNode(nodeId));
+
+    edges.forEach((edge) => {
+      if (!edge.skipped) {
+        dag.setEdge(edge.sourceWorkflowExecutionNodeId, edge.targetWorkflowExecutionNodeId);
+      }
+    });
+
+    const sortedNodeIds = alg.topsort(dag);
+    const traversedNodeIds = alg.postorder(dag, [currentNode.id]);
+
+    const orderedNodes = sortedNodeIds
+      .filter((nodeId) => traversedNodeIds.includes(nodeId))
+      .map((id) => {
+        return find(nodes, { id });
+      });
+    return orderedNodes;
   }
 
   async completeNodeExecution(node: WorkflowExecutionNode, result: any, state: object) {
