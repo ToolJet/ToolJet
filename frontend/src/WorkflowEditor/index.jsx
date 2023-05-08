@@ -58,7 +58,7 @@ function WorkflowEditor(props) {
       .then(({ definition, queriesData, versionId }) => {
         const queries = queriesData.map((query) => ({
           ...query,
-          idOnDefinition: find(definition.queries, { id: query.id }).idOnDefinition,
+          idOnDefinition: find(definition.queries, { id: query.id })?.idOnDefinition,
         }));
         editorSessionActions.setQueries(queries);
         editorSessionActions.setBootupComplete(true);

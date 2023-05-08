@@ -1,5 +1,6 @@
-import React, { useCallback, useRef, useMemo, useContext } from 'react';
+import React, { useCallback, useRef, useMemo, useContext, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { Modal, Button } from 'react-bootstrap';
 import {
   ReactFlow,
   useReactFlow,
@@ -13,10 +14,12 @@ import QueryNode from './node-types/QueryNode';
 import ifCondition from './node-types/IfConditionNode';
 import WorkflowEditorContext from '../context';
 import { query } from '../reducer/defaults';
+import './styles.scss';
 
 function FlowBuilder(_props) {
   const { project } = useReactFlow();
   const { editorSession, editorSessionActions, addQuery } = useContext(WorkflowEditorContext);
+  const [showBlockOptions, setShowBlockOptions] = useState(false);
 
   const { editingActivity } = editorSession;
   const { nodes, edges } = editorSession.app.flow;
@@ -49,54 +52,60 @@ function FlowBuilder(_props) {
   // Here we add a new node
   const onConnectEnd = useCallback(
     (event) => {
+      const { top, left } = flowElement.current.getBoundingClientRect();
+      const x = event.clientX - left - 75;
+      const y = event.clientY - top;
       const startingNodeId = editingActivity.nodeId;
       const startingNodeHandleId = editingActivity.handleId;
-
+      setShowBlockOptions({ x, y, startingNodeId, startingNodeHandleId });
       setEditingActivity({ type: 'IDLE' });
 
       if (event.target.className === 'react-flow__pane') {
-        const { top, left } = flowElement.current.getBoundingClientRect();
-        const x = event.clientX - left - 75;
-        const y = event.clientY - top;
+        // const nodeType = prompt('Node type (Query/If):', 'Query');
+        // setShowBlockOptions({ x, y });
+      }
+    },
+    [editingActivity.nodeId, setEditingActivity, project, addNode, addEdge]
+  );
 
-        const nodeType = prompt('Node type (Query/If):', 'Query');
+  const addNewNode = useCallback(
+    (nodeType) => {
+      const { x, y, startingNodeId, startingNodeHandleId } = showBlockOptions;
+      setShowBlockOptions(null);
+      if (nodeType === 'Query') {
+        const queryId = addQuery();
 
-        if (nodeType === 'Query') {
-          const queryId = addQuery();
+        const newNode = {
+          id: uuidv4(),
+          position: project({ x, y }),
+          data: {
+            ...query(queryId),
+          },
+        };
+        const newEdge = {
+          id: uuidv4(),
+          source: startingNodeId,
+          target: newNode.id,
+          sourceHandle: startingNodeHandleId,
+        };
 
-          const newNode = {
-            id: uuidv4(),
-            position: project({ x, y }),
-            data: {
-              ...query(queryId),
-            },
-          };
+        addNode(newNode);
+        addEdge(newEdge);
+      } else if (nodeType === 'If') {
+        const newNode = {
+          id: uuidv4(),
+          position: project({ x, y }),
+        };
 
-          const newEdge = {
-            id: uuidv4(),
-            source: startingNodeId,
-            target: newNode.id,
-            sourceHandle: startingNodeHandleId,
-          };
+        const newEdge = {
+          id: uuidv4(),
+          source: startingNodeId,
+          target: newNode.id,
+          sourceHandle: startingNodeHandleId,
+        };
 
-          addNode(newNode);
-          addEdge(newEdge);
-        } else if (nodeType === 'If') {
-          const newNode = {
-            id: uuidv4(),
-            position: project({ x, y }),
-          };
-
-          const newEdge = {
-            id: uuidv4(),
-            source: startingNodeId,
-            target: newNode.id,
-            sourceHandle: startingNodeHandleId,
-          };
-
-          addIfConditionNode(newNode);
-          addEdge(newEdge);
-        }
+        addIfConditionNode(newNode);
+        addEdge(newEdge);
       }
     },
     [editingActivity.nodeId, setEditingActivity, project, addNode, addEdge]
@@ -156,6 +165,20 @@ function FlowBuilder(_props) {
       >
         <Background />
       </ReactFlow>
+      <Modal show={showBlockOptions} onHide={() => setShowBlockOptions(false)} className="transparent-modal">
+        <Modal.Body>This is a modal.</Modal.Body>
+        <Modal.Footer>
+          {/* <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleClose}>
+            Save Changes
+          </Button> */}
+          <Button variant="primary" onClick={() => addNewNode('Query')}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

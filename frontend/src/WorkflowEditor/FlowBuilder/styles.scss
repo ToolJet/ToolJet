@@ -1,0 +1,19 @@
+.transparent-modal .modal-content {
+    background-color: rgba(255, 255, 255, 0.5); /* Change the alpha value (0.5) to adjust transparency */
+    border: none;
+    border-radius: 5px;
+  }
+  
+  .transparent-modal .modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5); /* Change the alpha value (0.5) to adjust transparency */
+  }
+  
+
+
+ .react-flow__handle {
+    right: -10px;
+    width: 15px;
+    height: 15px;
+    background-color: #778899;
+  }
+  
