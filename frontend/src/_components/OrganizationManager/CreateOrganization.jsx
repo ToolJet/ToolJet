@@ -27,9 +27,9 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         window.history.replaceState(null, null, newPath);
         window.location.reload();
       },
-      () => {
+      (error) => {
         setIsCreating(false);
-        toast.error('Error while creating workspace', {
+        toast.error(error?.error ? error.error : 'Error while creating workspace', {
           position: 'top-center',
         });
       }
@@ -50,7 +50,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             className="form-control"
             placeholder={t('header.organization.workspaceName', 'workspace name')}
             disabled={isCreating}
-            maxLength={25}
+            maxLength={40}
             data-cy="workspace-name-input-field"
             autoFocus
           />

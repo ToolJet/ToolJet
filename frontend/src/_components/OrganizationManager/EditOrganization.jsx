@@ -46,7 +46,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
             placeholder={t('header.organization.workspaceName', 'workspace name')}
             disabled={isCreating}
             value={newOrgName}
-            maxLength={25}
+            maxLength={40}
             autoFocus
           />
         </div>

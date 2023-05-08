@@ -66,6 +66,12 @@ export class OrganizationsService {
   async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
     let organization: Organization;
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const ifWorkspaceNameExists = await manager.findOne(Organization, { name });
+
+      if (ifWorkspaceNameExists) {
+        throw new BadRequestException('Workspace name already exists.');
+      }
+
       organization = await manager.save(
         manager.create(Organization, {
           ssoConfigs: [
@@ -452,6 +458,14 @@ export class OrganizationsService {
 
   async updateOrganization(organizationId: string, params) {
     const { name, domain, enableSignUp, inheritSSO } = params;
+
+    if (name) {
+      const ifWorkspaceNameExists = await this.organizationsRepository.findOne({ name });
+
+      if (ifWorkspaceNameExists) {
+        throw new BadRequestException('Workspace name already exists.');
+      }
+    }
 
     const updatableParams = {
       name,
