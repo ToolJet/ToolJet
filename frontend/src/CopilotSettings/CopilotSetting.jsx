@@ -129,8 +129,9 @@ const Container = ({ children, isCopilotEnabled, handleCopilotToggle, darkMode }
   return (
     <div className="card p-2 card-container">
       <div className="card-header row">
-        <div className="col-8">
+        <div className="col-8 d-flex">
           <h3 className="card-title">Copilot</h3>
+          <span className="badge bg-color-primary mx-2 mt-1">beta</span>
         </div>
         <div className="col">
           <EducativeLebel darkMode={darkMode} />
