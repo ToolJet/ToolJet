@@ -65,6 +65,14 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                 />
 
                 <Field
+                  id="clone-page"
+                  text="Clone page"
+                  iconSrc={`assets/images/icons/clone.svg`}
+                  closeMenu={closeMenu}
+                  callback={handlePageCallback}
+                />
+
+                <Field
                   id="settings"
                   text="Event Handlers"
                   customClass={'delete-btn'}
