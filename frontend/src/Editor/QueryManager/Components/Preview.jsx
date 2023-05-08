@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { getTheme, tabs } from './constants';
+import { getTheme, tabs } from '../constants';
 
 const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, darkMode }) => {
   const { t } = useTranslation();
@@ -15,12 +15,12 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, darkMode }
   }, [darkMode]);
 
   useEffect(() => {
-    if (typeof queryPreviewData === 'object') {
+    if (queryPreviewData !== null && typeof queryPreviewData === 'object') {
       setKey('json');
     } else {
       setKey('raw');
     }
-    setIsJson(typeof queryPreviewData === 'object');
+    setIsJson(queryPreviewData !== null && typeof queryPreviewData === 'object');
   }, [queryPreviewData]);
 
   const renderRawData = () => {

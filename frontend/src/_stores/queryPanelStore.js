@@ -6,8 +6,11 @@ const queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPre
 const initialState = {
   queryPanelHeight: queryManagerPreferences?.isExpanded ? queryManagerPreferences?.queryPanelHeight : 95 ?? 70,
   selectedQuery: null,
+  selectedDataSource: null,
   isUnsavedChangesAvailable: false,
   queryToBeRun: null,
+  previewLoading: false,
+  queryPreviewData: null,
 };
 
 export const useQueryPanelStore = create(
@@ -26,13 +29,20 @@ export const useQueryPanelStore = create(
           return { selectedQuery: query ? query : null };
         });
       },
+      setSelectedDataSource: (dataSource = null) => set({ selectedDataSource: dataSource }),
       setUnSavedChanges: (value) => set({ isUnsavedChangesAvailable: value }),
-      setQueryToBeRun: (value) => set({ queryToBeRun: value }),
+      setQueryToBeRun: (query) => set({ queryToBeRun: query }),
+      setPreviewLoading: (status) => set({ previewLoading: status }),
+      setPreviewData: (data) => set({ queryPreviewData: data }),
     },
   }))
 );
 
 export const usePanelHeight = () => useQueryPanelStore((state) => state.queryPanelHeight);
 export const useSelectedQuery = () => useQueryPanelStore((state) => state.selectedQuery);
+export const useSelectedDataSource = () => useQueryPanelStore((state) => state.selectedDataSource);
 export const useUnsavedChanges = () => useQueryPanelStore((state) => state.isUnsavedChangesAvailable);
+export const useQueryToBeRun = () => useQueryPanelStore((state) => state.queryToBeRun);
+export const usePreviewLoading = () => useQueryPanelStore((state) => state.previewLoading);
+export const usePreviewData = () => useQueryPanelStore((state) => state.queryPreviewData);
 export const useQueryPanelActions = () => useQueryPanelStore((state) => state.actions);

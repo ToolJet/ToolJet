@@ -14,7 +14,6 @@ export const QueryDataPane = ({
   draftQuery,
   handleAddNewQuery,
   setDraftQuery,
-  setSelectedDataSource,
   darkMode,
   fetchDataQueries,
   editorRef,
@@ -104,9 +103,9 @@ export const QueryDataPane = ({
                   setSaveConfirmation={setSaveConfirmation}
                   setCancelData={setCancelData}
                   setDraftQuery={setDraftQuery}
-                  setSelectedDataSource={setSelectedDataSource}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
+                  editorRef={editorRef}
                 />
               ) : (
                 ''
@@ -118,7 +117,6 @@ export const QueryDataPane = ({
                   setSaveConfirmation={setSaveConfirmation}
                   setCancelData={setCancelData}
                   setDraftQuery={setDraftQuery}
-                  setSelectedDataSource={setSelectedDataSource}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
                   editorRef={editorRef}

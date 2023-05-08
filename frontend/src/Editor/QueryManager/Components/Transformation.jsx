@@ -4,7 +4,7 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
-import { CodeHinter } from '../CodeBuilder/CodeHinter';
+import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { Popover, OverlayTrigger } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';

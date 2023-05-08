@@ -1,344 +1,346 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 import { capitalize, isEqual } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
-import DataSourceLister from '../DataSourceLister';
-import { Transformation } from '../Transformation';
-import Preview from '../Preview';
-import { ChangeDataSource } from '../ChangeDataSource';
-import { CustomToggleSwitch } from '../CustomToggleSwitch';
+import DataSourceLister from './DataSourceLister';
+import { Transformation } from './Transformation';
+import Preview from './Preview';
+import { ChangeDataSource } from './ChangeDataSource';
+import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { EventManager } from '@/Editor/Inspector/EventManager';
 import { allOperations } from '@tooljet/plugins/client';
 import { staticDataSources, customToggles, mockDataQueryAsComponent, schemaUnavailableOptions } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
 
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
-import { useDataQueries } from '@/_stores/dataQueriesStore';
-import { useUnsavedChanges, useSelectedQuery, useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { useDataQueries, useDataQueriesActions } from '@/_stores/dataQueriesStore';
+import {
+  useUnsavedChanges,
+  useSelectedQuery,
+  useSelectedDataSource,
+  useQueryPanelActions,
+} from '@/_stores/queryPanelStore';
 
-export const QueryManagerBody = ({
-  darkMode,
-  selectedDataSource,
-  dataSourceModalHandler,
-  options,
-  currentState,
-  previewLoading,
-  queryPreviewData,
-  allComponents,
-  apps,
-  appDefinition,
-  updateState,
-  createDraftQuery,
-  changeDataSourceQueryAssociation,
-}) => {
-  const { t } = useTranslation();
-  const dataQueries = useDataQueries();
-  const dataSources = useDataSources();
-  const globalDataSources = useGlobalDataSources();
-  const selectedQuery = useSelectedQuery();
-  const isUnsavedQueriesAvailable = useUnsavedChanges();
-  const { setUnSavedChanges } = useQueryPanelActions();
+export const QueryManagerBody = forwardRef(
+  (
+    {
+      darkMode,
+      dataSourceModalHandler,
+      options,
+      currentState,
+      previewLoading,
+      queryPreviewData,
+      allComponents,
+      apps,
+      appDefinition,
+      createDraftQuery,
+      setOptions,
+    },
+    ref
+  ) => {
+    const { t } = useTranslation();
+    const dataQueries = useDataQueries();
+    const dataSources = useDataSources();
+    const globalDataSources = useGlobalDataSources();
+    const selectedQuery = useSelectedQuery();
+    const isUnsavedQueriesAvailable = useUnsavedChanges();
+    const selectedDataSource = useSelectedDataSource();
+    const { setSelectedDataSource, setUnSavedChanges, setPreviewData } = useQueryPanelActions();
+    const { changeDataQuery } = useDataQueriesActions();
 
-  const [dataSourceMeta, setDataSourceMeta] = useState(null);
+    const [dataSourceMeta, setDataSourceMeta] = useState(null);
 
-  const queryName = selectedQuery?.name ?? '';
-  const sourcecomponentName = selectedDataSource?.kind.charAt(0).toUpperCase() + selectedDataSource?.kind.slice(1);
-  const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
+    const queryName = selectedQuery?.name ?? '';
+    const sourcecomponentName = selectedDataSource?.kind.charAt(0).toUpperCase() + selectedDataSource?.kind.slice(1);
+    const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
 
-  const defaultOptions = useRef({});
+    const defaultOptions = useRef({});
 
-  useEffect(() => {
-    setDataSourceMeta(
-      selectedQuery?.pluginId
-        ? selectedQuery?.manifestFile?.data?.source
-        : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind)
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedQuery?.id]);
+    useEffect(() => {
+      setDataSourceMeta(
+        selectedQuery?.pluginId
+          ? selectedQuery?.manifestFile?.data?.source
+          : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind)
+      );
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedQuery?.id]);
 
-  const computeQueryName = (kind) => {
-    const currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
-    let currentNumber = currentQueriesForKind.length + 1;
+    const computeQueryName = (kind) => {
+      const currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
+      let currentNumber = currentQueriesForKind.length + 1;
 
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const newName = `${kind}${currentNumber}`;
-      if (dataQueries.find((query) => query.name === newName) === undefined) {
-        return newName;
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const newName = `${kind}${currentNumber}`;
+        if (dataQueries.find((query) => query.name === newName) === undefined) {
+          return newName;
+        }
+        currentNumber += 1;
       }
-      currentNumber += 1;
-    }
-  };
+    };
 
-  const changeDataSource = (source) => {
-    const isSchemaUnavailable = Object.keys(schemaUnavailableOptions).includes(source.kind);
-    let newOptions = {};
+    const changeDataSource = (source) => {
+      const isSchemaUnavailable = Object.keys(schemaUnavailableOptions).includes(source.kind);
+      let newOptions = {};
 
-    if (isSchemaUnavailable) {
-      newOptions = {
-        ...{ ...schemaUnavailableOptions[source.kind] },
-        ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
-      };
-    } else {
-      const selectedSourceDefault =
-        source?.plugin?.operationsFile?.data?.defaults ?? allOperations[capitalize(source.kind)]?.defaults;
-      if (selectedSourceDefault) {
+      if (isSchemaUnavailable) {
         newOptions = {
-          ...{ ...selectedSourceDefault },
+          ...{ ...schemaUnavailableOptions[source.kind] },
           ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
         };
       } else {
-        newOptions = {
-          ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
-        };
-      }
-    }
-
-    const newQueryName = computeQueryName(source.kind);
-    defaultOptions.current = { ...newOptions };
-
-    //To be Changed---
-    updateState({
-      selectedDataSource: source,
-      selectedSource: source,
-      queryName: newQueryName,
-      options: { ...newOptions },
-    });
-
-    createDraftQuery(
-      { ...source, data_source_id: source.id, name: newQueryName, id: 'draftQuery', options: { ...newOptions } },
-      source
-    );
-  };
-
-  // Clear the focus field value from options
-  const cleanFocusedFields = (newOptions) => {
-    const diffFields = diff(newOptions, defaultOptions.current);
-    const updatedOptions = { ...newOptions };
-    Object.keys(diffFields).forEach((key) => {
-      if (newOptions[key] === '' && defaultOptions.current[key] === undefined) {
-        delete updatedOptions[key];
-      }
-    });
-    return updatedOptions;
-  };
-
-  const removeRestKey = (options) => {
-    delete options.arrayValuesChanged;
-    return options;
-  };
-
-  const validateNewOptions = (newOptions) => {
-    const headersChanged = newOptions.arrayValuesChanged ?? false;
-    const updatedOptions = cleanFocusedFields(newOptions);
-    let isFieldsChanged = false;
-    if (selectedQuery) {
-      const isQueryChanged = !isEqual(removeRestKey(updatedOptions), removeRestKey(defaultOptions.current));
-      if (isQueryChanged) {
-        isFieldsChanged = true;
-      } else if (selectedQuery?.kind === 'restapi') {
-        if (headersChanged) {
-          isFieldsChanged = true;
+        const selectedSourceDefault =
+          source?.plugin?.operationsFile?.data?.defaults ?? allOperations[capitalize(source.kind)]?.defaults;
+        if (selectedSourceDefault) {
+          newOptions = {
+            ...{ ...selectedSourceDefault },
+            ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
+          };
+        } else {
+          newOptions = {
+            ...(source?.kind != 'runjs' && { transformationLanguage: 'javascript', enableTransformation: false }),
+          };
         }
       }
-    }
-    updateState({
-      options: { ...options, ...updatedOptions },
-      isFieldsChanged,
-    });
-    if (isFieldsChanged !== isUnsavedQueriesAvailable) setUnSavedChanges(isFieldsChanged);
-  };
 
-  const optionchanged = (option, value) => {
-    const newOptions = { ...options, [option]: value };
-    validateNewOptions(newOptions);
-  };
+      const newQueryName = computeQueryName(source.kind);
+      defaultOptions.current = { ...newOptions };
 
-  const optionsChanged = (newOptions) => {
-    validateNewOptions(newOptions);
-  };
+      setSelectedDataSource(source);
+      setOptions({ ...newOptions });
 
-  const handleBackButton = () => {
-    updateState({
-      isSourceSelected: true,
-      queryPreviewData: undefined,
-    });
-  };
+      createDraftQuery(
+        { ...source, data_source_id: source.id, name: newQueryName, id: 'draftQuery', options: { ...newOptions } },
+        source
+      );
+    };
 
-  const eventsChanged = (events) => {
-    this.optionchanged('events', events);
-  };
+    // Clear the focus field value from options
+    const cleanFocusedFields = (newOptions) => {
+      const diffFields = diff(newOptions, defaultOptions.current);
+      const updatedOptions = { ...newOptions };
+      Object.keys(diffFields).forEach((key) => {
+        if (newOptions[key] === '' && defaultOptions.current[key] === undefined) {
+          delete updatedOptions[key];
+        }
+      });
+      return updatedOptions;
+    };
 
-  const toggleOption = (option) => {
-    const currentValue = options[option] ? options[option] : false;
-    optionchanged(option, !currentValue);
-  };
+    const removeRestKey = (options) => {
+      delete options.arrayValuesChanged;
+      return options;
+    };
 
-  const renderDataSources = (labelText, dataSourcesList, staticList = []) => {
-    return (
-      <div className="datasource-picker">
-        <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
-          {labelText}
-        </label>
-        <DataSourceLister
-          dataSources={dataSourcesList}
-          staticDataSources={staticList}
-          changeDataSource={changeDataSource}
-          handleBackButton={handleBackButton}
-          darkMode={darkMode}
-          showAddDatasourceBtn={false}
-          dataSourceModalHandler={dataSourceModalHandler}
-        />
-      </div>
-    );
-  };
+    const validateNewOptions = (newOptions) => {
+      const headersChanged = newOptions.arrayValuesChanged ?? false;
+      const updatedOptions = cleanFocusedFields(newOptions);
+      let isFieldsChanged = false;
+      if (selectedQuery) {
+        const isQueryChanged = !isEqual(removeRestKey(updatedOptions), removeRestKey(defaultOptions.current));
+        if (isQueryChanged) {
+          isFieldsChanged = true;
+        } else if (selectedQuery?.kind === 'restapi') {
+          if (headersChanged) {
+            isFieldsChanged = true;
+          }
+        }
+      }
+      setOptions((options) => ({ ...options, ...updatedOptions }));
+      if (isFieldsChanged !== isUnsavedQueriesAvailable) setUnSavedChanges(isFieldsChanged);
+    };
 
-  const renderDataSourcesList = () => (
-    <>
-      {renderDataSources(
-        t('editor.queryManager.selectDatasource', 'Select Datasource'),
-        dataSources,
-        staticDataSources
-      )}
-      {renderDataSources(
-        t('editor.queryManager.selectGlobalDatasource', 'Select Global Datasource'),
-        globalDataSources
-      )}
-    </>
-  );
+    const optionchanged = (option, value) => {
+      const newOptions = { ...options, [option]: value };
+      validateNewOptions(newOptions);
+    };
 
-  const renderTransformation = () => {
-    if (
-      dataSourceMeta?.disableTransformations ||
-      selectedDataSource?.kind === 'runjs' ||
-      selectedDataSource?.kind === 'runpy'
-    )
-      return;
-    return (
-      <Transformation
-        changeOption={optionchanged}
-        options={options ?? {}}
-        currentState={currentState}
-        darkMode={darkMode}
-        queryId={selectedQuery?.id}
-      />
-    );
-  };
+    const optionsChanged = (newOptions) => {
+      validateNewOptions(newOptions);
+    };
 
-  const renderQueryElement = () => {
-    return (
-      <div style={{ padding: '0 32px' }}>
-        <div>
-          <ElementToRender
-            pluginSchema={selectedDataSource?.plugin?.operationsFile?.data}
-            selectedDataSource={selectedDataSource}
-            options={options}
-            optionsChanged={optionsChanged}
-            optionchanged={optionchanged}
-            currentState={currentState}
+    const handleBackButton = () => {
+      setPreviewData(null);
+    };
+
+    const eventsChanged = (events) => {
+      optionchanged('events', events);
+    };
+
+    const toggleOption = (option) => {
+      const currentValue = options[option] ? options[option] : false;
+      optionchanged(option, !currentValue);
+    };
+
+    const renderDataSources = (labelText, dataSourcesList, staticList = []) => {
+      return (
+        <div className="datasource-picker">
+          <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
+            {labelText}
+          </label>
+          <DataSourceLister
+            dataSources={dataSourcesList}
+            staticDataSources={staticList}
+            changeDataSource={changeDataSource}
+            handleBackButton={handleBackButton}
             darkMode={darkMode}
-            isEditMode={true} // Made TRUE always to avoid setting default options again
-            queryName={queryName}
-          />
-          {renderTransformation()}
-          <Preview
-            // previewPanelRef={this.previewPanelRef}
-            previewLoading={previewLoading}
-            queryPreviewData={queryPreviewData}
-            darkMode={darkMode}
+            showAddDatasourceBtn={false}
+            dataSourceModalHandler={dataSourceModalHandler}
           />
         </div>
-      </div>
-    );
-  };
+      );
+    };
 
-  const renderEventManager = () => {
-    const queryComponent = mockDataQueryAsComponent(options?.events || []);
-    return (
+    const renderDataSourcesList = () => (
       <>
-        <div
-          className={`border-top query-manager-border-color hr-text-left px-4 ${
-            darkMode ? 'color-white' : 'color-light-slate-12'
-          }`}
-          style={{ paddingTop: '28px' }}
-        >
-          {t('editor.queryManager.eventsHandler', 'Events Handler')}
-        </div>
-        <div className="query-manager-events px-4 mt-2 pb-4">
-          <EventManager
-            eventsChanged={eventsChanged}
-            component={queryComponent.component}
-            componentMeta={queryComponent.componentMeta}
-            currentState={currentState}
-            dataQueries={dataQueries}
-            components={allComponents}
-            apps={apps}
-            popoverPlacement="top"
-            pages={
-              appDefinition?.pages ? Object.entries(appDefinition?.pages).map(([id, page]) => ({ ...page, id })) : []
-            }
-          />
-        </div>
+        {renderDataSources(
+          t('editor.queryManager.selectDatasource', 'Select Datasource'),
+          dataSources,
+          staticDataSources
+        )}
+        {renderDataSources(
+          t('editor.queryManager.selectGlobalDatasource', 'Select Global Datasource'),
+          globalDataSources
+        )}
       </>
     );
-  };
 
-  const renderCustomToggle = ({ dataCy, action, translatedLabel, label }, index) => (
-    <div className={cx('mx-4', { 'pb-3 pt-3': index === 1 })}>
-      <CustomToggleSwitch
-        dataCy={dataCy}
-        isChecked={options[action]}
-        toggleSwitchFunction={toggleOption}
-        action={action}
-        darkMode={darkMode}
-        label={t(translatedLabel, label)}
-      />
-    </div>
-  );
+    const renderTransformation = () => {
+      if (
+        dataSourceMeta?.disableTransformations ||
+        selectedDataSource?.kind === 'runjs' ||
+        selectedDataSource?.kind === 'runpy'
+      )
+        return;
+      return (
+        <Transformation
+          changeOption={optionchanged}
+          options={options ?? {}}
+          currentState={currentState}
+          darkMode={darkMode}
+          queryId={selectedQuery?.id}
+        />
+      );
+    };
 
-  const renderQueryOptions = () => {
-    return (
-      <div className="advanced-options-container font-weight-400 border-top query-manager-border-color">
-        <div className="advance-options-input-form-container">
-          {Object.keys(customToggles).map((toggle, index) => renderCustomToggle(customToggles[toggle], index))}
+    const renderQueryElement = () => {
+      return (
+        <div style={{ padding: '0 32px' }}>
+          <div>
+            <ElementToRender
+              pluginSchema={selectedDataSource?.plugin?.operationsFile?.data}
+              selectedDataSource={selectedDataSource}
+              options={options}
+              optionsChanged={optionsChanged}
+              optionchanged={optionchanged}
+              currentState={currentState}
+              darkMode={darkMode}
+              isEditMode={true} // Made TRUE always to avoid setting default options again
+              queryName={queryName}
+            />
+            {renderTransformation()}
+            <Preview
+              previewPanelRef={ref}
+              previewLoading={previewLoading}
+              queryPreviewData={queryPreviewData}
+              darkMode={darkMode}
+            />
+          </div>
         </div>
-        {renderEventManager()}
-      </div>
-    );
-  };
+      );
+    };
 
-  const renderChangeDataSource = () => {
-    return (
-      <div className="mt-2 pb-4">
-        <div
-          className={`border-top query-manager-border-color px-4 hr-text-left py-2 ${
-            darkMode ? 'color-white' : 'color-light-slate-12'
-          }`}
-        >
-          Change Datasource
-        </div>
-        <ChangeDataSource
-          dataSources={[...globalDataSources, ...dataSources]}
-          value={selectedDataSource}
-          selectedQuery={selectedQuery}
-          onChange={(selectedDataSource) => changeDataSourceQueryAssociation(selectedDataSource, selectedQuery)}
+    const renderEventManager = () => {
+      const queryComponent = mockDataQueryAsComponent(options?.events || []);
+      return (
+        <>
+          <div
+            className={`border-top query-manager-border-color hr-text-left px-4 ${
+              darkMode ? 'color-white' : 'color-light-slate-12'
+            }`}
+            style={{ paddingTop: '28px' }}
+          >
+            {t('editor.queryManager.eventsHandler', 'Events Handler')}
+          </div>
+          <div className="query-manager-events px-4 mt-2 pb-4">
+            <EventManager
+              eventsChanged={eventsChanged}
+              component={queryComponent.component}
+              componentMeta={queryComponent.componentMeta}
+              currentState={currentState}
+              dataQueries={dataQueries}
+              components={allComponents}
+              apps={apps}
+              popoverPlacement="top"
+              pages={
+                appDefinition?.pages ? Object.entries(appDefinition?.pages).map(([id, page]) => ({ ...page, id })) : []
+              }
+            />
+          </div>
+        </>
+      );
+    };
+
+    const renderCustomToggle = ({ dataCy, action, translatedLabel, label }, index) => (
+      <div className={cx('mx-4', { 'pb-3 pt-3': index === 1 })}>
+        <CustomToggleSwitch
+          dataCy={dataCy}
+          isChecked={options && options[action]}
+          toggleSwitchFunction={toggleOption}
+          action={action}
+          darkMode={darkMode}
+          label={t(translatedLabel, label)}
         />
       </div>
     );
-  };
 
-  return (
-    <div
-      className={`row row-deck px-2 mt-0 query-details ${
-        selectedDataSource?.kind === 'tooljetdb' && 'tooljetdb-query-details'
-      }`}
-    >
-      {selectedDataSource === null ? renderDataSourcesList() : renderQueryElement()}
-      {selectedDataSource !== null ? renderQueryOptions() : null}
-      {selectedQuery?.data_source_id && selectedDataSource !== null ? renderChangeDataSource() : null}
-    </div>
-  );
-};
+    const renderQueryOptions = () => {
+      return (
+        <div className="advanced-options-container font-weight-400 border-top query-manager-border-color">
+          <div className="advance-options-input-form-container">
+            {Object.keys(customToggles).map((toggle, index) => renderCustomToggle(customToggles[toggle], index))}
+          </div>
+          {renderEventManager()}
+        </div>
+      );
+    };
+
+    const renderChangeDataSource = () => {
+      return (
+        <div className="mt-2 pb-4">
+          <div
+            className={`border-top query-manager-border-color px-4 hr-text-left py-2 ${
+              darkMode ? 'color-white' : 'color-light-slate-12'
+            }`}
+          >
+            Change Datasource
+          </div>
+          <ChangeDataSource
+            dataSources={[...globalDataSources, ...dataSources]}
+            value={selectedDataSource}
+            selectedQuery={selectedQuery}
+            onChange={(newDataSource) => {
+              changeDataQuery(newDataSource);
+            }}
+            //   onChange={(selectedDataSource) => changeDataSourceQueryAssociation(selectedDataSource, selectedQuery)}
+          />
+        </div>
+      );
+    };
+
+    return (
+      <div
+        className={`row row-deck px-2 mt-0 query-details ${
+          selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''
+        }`}
+      >
+        {selectedDataSource === null ? renderDataSourcesList() : renderQueryElement()}
+        {selectedDataSource !== null ? renderQueryOptions() : null}
+        {selectedQuery?.data_source_id && selectedDataSource !== null ? renderChangeDataSource() : null}
+      </div>
+    );
+  }
+);

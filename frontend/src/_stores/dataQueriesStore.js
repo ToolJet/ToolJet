@@ -74,31 +74,78 @@ export const useDataQueriesStore = create(
         dataqueryService
           .update(selectedQuery?.id, selectedQuery?.name, options)
           .then((data) => {
-            // this.props.dataQueriesChanged();
             actions.setUnSavedChanges(false);
             localStorage.removeItem('transformation');
             toast.success('Query Saved');
-            if (shouldRunQuery) actions.setQueryToBeRun();
+            set((state) => ({
+              isUpdatingQueryInProcess: false,
+              dataQueries: state.dataQueries.map((query) => {
+                if (query.id === data.id) return data;
+                return query;
+              }),
+            }));
+            if (shouldRunQuery) actions.setQueryToBeRun(data);
           })
           .catch(({ error }) => {
-            this.setState({
-              isUpdating: false,
-              isFieldsChanged: false,
-              restArrayValuesChanged: false,
-            });
-            this.setUnsavedQueryChanges(false);
+            actions.setUnSavedChanges(false);
             toast.error(error);
+            set({
+              isUpdatingQueryInProcess: false,
+            });
           });
       },
-      renameQuery: (id, newName, fetchDataQueries) => {
+      createDataQuery: (appId, appVersionId, options, shouldRunQuery) => {
+        set({ isCreatingQueryInProcess: true });
+        const { actions, selectedQuery } = useQueryPanelStore.getState();
+        const { name, kind, dataSourceId, pluginId } = selectedQuery;
+        dataqueryService
+          .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId)
+          .then((data) => {
+            actions.setUnSavedChanges(false);
+            toast.success('Query Added');
+            set((state) => ({
+              isCreatingQueryInProcess: false,
+              dataQueries: [data, ...state.dataQueries],
+            }));
+            if (shouldRunQuery) actions.setQueryToBeRun(data);
+          })
+          .catch(({ error }) => {
+            actions.setUnSavedChanges(false);
+            toast.error(error);
+            set({
+              isCreatingQueryInProcess: false,
+            });
+          });
+      },
+      renameQuery: (id, newName, editorRef) => {
         dataqueryService
           .update(id, newName)
           .then(() => {
             toast.success('Query Name Updated');
-            fetchDataQueries(useAppDataStore.getState().editingVersion?.id); // Should be replaced with - get().actions.fetchDataQueries(useAppDataStore.getState().editingVersion?.id);
+            get().actions.fetchDataQueries(useAppDataStore.getState().editingVersion?.id, false, false, editorRef);
           })
           .catch(({ error }) => {
             toast.error(error);
+          });
+      },
+      changeDataQuery: (newDataSource) => {
+        const { selectedQuery } = useQueryPanelStore.getState();
+        set({
+          isUpdatingQueryInProcess: true,
+        });
+        dataqueryService
+          .changeQueryDataSource(selectedQuery?.id, newDataSource.id)
+          .then(() => {
+            set({
+              isUpdatingQueryInProcess: false,
+            });
+            toast.success('Data source changed');
+          })
+          .catch((error) => {
+            toast.error(error);
+            set({
+              isUpdatingQueryInProcess: false,
+            });
           });
       },
     },
@@ -107,3 +154,5 @@ export const useDataQueriesStore = create(
 
 export const useDataQueries = () => useDataQueriesStore((state) => state.dataQueries);
 export const useDataQueriesActions = () => useDataQueriesStore((state) => state.actions);
+export const useQueryCreationLoading = () => useDataQueriesStore((state) => state.isCreatingQueryInProcess);
+export const useQueryUpdationLoading = () => useDataQueriesStore((state) => state.isUpdatingQueryInProcess);

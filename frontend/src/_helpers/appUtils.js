@@ -29,6 +29,7 @@ import { setCookie } from '@/_helpers/cookie';
 import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -99,7 +100,7 @@ export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
 
-async function executeRunPycode(_ref, code, query, editorState, isPreview, mode) {
+async function executeRunPycode(_ref, code, query, isPreview, mode) {
   const pyodide = await loadPyodide();
 
   function log(line) {
@@ -112,7 +113,7 @@ async function executeRunPycode(_ref, code, query, editorState, isPreview, mode)
     try {
       const appStateVars = currentState['variables'] ?? {};
 
-      const actions = generateAppActions(_ref, query.id, mode, editorState, isPreview);
+      const actions = generateAppActions(_ref, query.id, mode, isPreview);
 
       for (const key of Object.keys(currentState.queries)) {
         currentState.queries[key] = {
@@ -803,15 +804,16 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query, editorState, calledFromQuery = false) {
+export function previewQuery(_ref, query, calledFromQuery = false) {
   const options = getQueryVariables(query.options, _ref.props.currentState);
 
-  _ref.setState({ previewLoading: true });
+  const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
+  setPreviewLoading(true);
 
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query?.id, true);
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, query?.id, true);
     } else if (query.kind === 'tooljetdb') {
       const currentSessionValue = authenticationService.currentSessionValue;
       queryExecutionPromise = tooljetDbOperations.perform(
@@ -820,9 +822,9 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         _ref.state.currentState
       );
     } else if (query.kind === 'runpy') {
-      queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, editorState, true, 'edit');
+      queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit');
     } else {
-      queryExecutionPromise = dataqueryService.preview(query, options, editorState?.state?.editingVersion?.id);
+      queryExecutionPromise = dataqueryService.preview(query, options, _ref?.state?.editingVersion?.id);
     }
 
     queryExecutionPromise
@@ -841,9 +843,10 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         }
 
         if (calledFromQuery) {
-          _ref.setState({ previewLoading: false });
+          setPreviewLoading(false);
         } else {
-          _ref.setState({ previewLoading: false, queryPreviewData: finalData });
+          setPreviewLoading(false);
+          setPreviewData(finalData);
         }
 
         const queryStatus =
@@ -879,7 +882,8 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         resolve({ status: data.status, data: finalData });
       })
       .catch(({ error, data }) => {
-        _ref.setState({ previewLoading: false, queryPreviewData: data });
+        setPreviewLoading(false);
+        setPreviewData(data);
         toast.error(error);
         reject({ error, data });
       });
