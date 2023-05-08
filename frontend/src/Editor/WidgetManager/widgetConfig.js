@@ -707,6 +707,21 @@ export const widgets = [
           },
         },
       },
+      barmode: {
+        type: 'select',
+        displayName: 'Bar mode',
+        options: [
+          { name: 'Stack', value: 'stack' },
+          { name: 'Group', value: 'group' },
+          { name: 'Overlay', value: 'overlay' },
+          { name: 'Relative', value: 'relative' },
+        ],
+        validation: {
+          schema: {
+            schemas: { type: 'string' },
+          },
+        },
+      },
     },
     events: {},
     styles: {
@@ -754,6 +769,7 @@ export const widgets = [
         showGridLines: { value: '{{true}}' },
         plotFromJson: { value: '{{false}}' },
         loadingState: { value: `{{false}}` },
+        barmode: { value: `group` },
         jsonDescription: {
           value: `{
             "data": [
