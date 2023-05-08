@@ -158,7 +158,7 @@ export const searchUser = (email) => {
 };
 
 export const createWorkspace = (workspaceName) => {
-  cy.get('[data-cy="workspace-name"]').click();
+  cy.get(commonSelectors.workspaceName).click();
   cy.get(commonSelectors.addWorkspaceButton).click();
   cy.clearAndType(commonSelectors.workspaceNameInput, workspaceName);
   cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");

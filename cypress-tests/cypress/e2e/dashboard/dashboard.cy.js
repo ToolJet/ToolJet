@@ -257,6 +257,7 @@ describe("dashboard", () => {
       dashboardText.appClonedToast
     );
     cy.wait("@appEditor");
+    cy.wait(300);
     cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
     cy.get(commonSelectors.editorPageLogo).click();
     cy.wait("@appLibrary");
