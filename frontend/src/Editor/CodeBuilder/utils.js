@@ -28,7 +28,7 @@ export async function getRecommendation(currentContext, query, lang = 'javascrip
 
     const { data } = await copilotService.getCopilotRecommendations({ context, query, lang });
 
-    return data;
+    return query + '\n' + data;
   } catch ({ error, data }) {
     const errorMessage = data?.message.includes('Unauthorized') ? 'Invalid Copilot API Key' : 'Something went wrong';
     toast.error(errorMessage);
