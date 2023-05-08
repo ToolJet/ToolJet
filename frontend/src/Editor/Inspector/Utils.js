@@ -30,7 +30,8 @@ export function renderElement(
 ) {
   const componentDefinition = component.component.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
-  const definition = paramTypeDefinition[param] || {};
+  const definition =
+    param === 'allowSelection' ? paramTypeDefinition[param] || { value: '{{true}}' } : paramTypeDefinition[param] || {};
 
   const meta = componentMeta[paramType][param];
 
