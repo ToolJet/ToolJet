@@ -42,6 +42,7 @@ $btn-dark-color: #FFFFFF;
 
   &:hover {
     background: lighten($btn-dark-bg, 10%);
+    border-color: #D7DBDF !important;
   }
 
   img {

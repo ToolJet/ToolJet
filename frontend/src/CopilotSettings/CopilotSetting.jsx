@@ -127,7 +127,7 @@ export const CopilotSetting = () => {
 
 const Container = ({ children, isCopilotEnabled, handleCopilotToggle, darkMode }) => {
   return (
-    <div className="card p-2">
+    <div className="card p-2 card-container">
       <div className="card-header row">
         <div className="col-8">
           <h3 className="card-title">Copilot</h3>
