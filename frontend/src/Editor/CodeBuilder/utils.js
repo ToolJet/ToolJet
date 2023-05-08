@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { copilotService } from '@/_services/copilot.service';
+import { toast } from 'react-hot-toast';
 
 export async function getRecommendation(currentContext, query, lang = 'javascript') {
   const words = query.split(' ');
@@ -28,8 +29,10 @@ export async function getRecommendation(currentContext, query, lang = 'javascrip
     const { data } = await copilotService.getCopilotRecommendations({ context, query, lang });
 
     return data;
-  } catch (error) {
-    console.error(error);
+  } catch ({ error, data }) {
+    const errorMessage = data?.message.includes('Unauthorized') ? 'Invalid Copilot API Key' : 'Something went wrong';
+    toast.error(errorMessage);
+    return query;
   }
 }
 
