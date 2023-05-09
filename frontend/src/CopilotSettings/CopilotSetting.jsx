@@ -35,7 +35,7 @@ export const CopilotSetting = () => {
 
       if (isCopilotApiKeyPresent === true && copilotWorkspaceVarId) {
         return orgEnvironmentVariableService
-          .update(copilotWorkspaceVarId, 'copilot_api_key', apikey)
+          .update(copilotWorkspaceVarId, `copilot_api_key-${current_organization_id}`, apikey)
           .then(() => {
             setCopilotApiKey(apikey);
             toast.success('Copilot API key saved successfully');
