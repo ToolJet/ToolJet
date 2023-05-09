@@ -715,7 +715,8 @@ export const getWorkspaceIdFromURL = () => {
     'integrations',
   ];
 
-  if (pathname.includes('login')) {
+  const route = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
+  if (route === 'login') {
     return subpath ? pathnameArray[subpathArray.length + 1] : pathnameArray[1];
   }
 
