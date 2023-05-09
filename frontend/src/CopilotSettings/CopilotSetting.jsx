@@ -73,10 +73,6 @@ export const CopilotSetting = () => {
   };
 
   useEffect(() => {
-    if (!state) {
-      return setCopilotApiKey('');
-    }
-
     orgEnvironmentVariableService.getVariables().then((data) => {
       const isCopilotApiKeyPresent = data.variables.some(
         (variable) => variable.variable_name === `copilot_api_key-${current_organization_id}`
@@ -90,14 +86,13 @@ export const CopilotSetting = () => {
         const key = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
         set(copilotVariableId);
         setCopilotApiKey(key);
-        setState(shouldUpdate);
       }
+      setState(shouldUpdate);
     });
 
     return () => {
       setCopilotApiKey('');
       set(null);
-      setState(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
