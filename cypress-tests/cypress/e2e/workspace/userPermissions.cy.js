@@ -58,6 +58,8 @@ describe("User permissions", () => {
     cy.get(commonSelectors.editorPageLogo).click();
     cy.reload();
     common.navigateToManageGroups();
+    cy.get(groupsSelector.groupLink("Admin")).click();
+    cy.get(groupsSelector.groupLink("All users")).click();
     cy.get(groupsSelector.appSearchBox).click();
     cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
     cy.get(groupsSelector.selectAddButton).click();
