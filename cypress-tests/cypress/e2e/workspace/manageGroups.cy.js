@@ -35,7 +35,7 @@ describe("Manage Groups", () => {
     );
     cy.get(groupsSelector.cancelButton).click();
     cy.get(groupsSelector.groupNameInput).should("not.exist");
-    
+
     cy.get(groupsSelector.createNewGroupButton).click();
     cy.clearAndType(groupsSelector.groupNameInput, groupName);
     cy.get(groupsSelector.createGroupButton).click();

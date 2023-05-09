@@ -6,7 +6,6 @@ import * as SSO from "Support/utils/manageSSO";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 
-
 describe("Manage SSO for multi workspace", () => {
   const data = {};
   beforeEach(() => {
@@ -20,7 +19,10 @@ describe("Manage SSO for multi workspace", () => {
         commonText.breadcrumbworkspaceSettingTitle
       );
     });
-    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement( "have.text",ssoText.pagetitle);
+    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
+      "have.text",
+      ssoText.pagetitle
+    );
 
     cy.get(ssoSelector.cardTitle).verifyVisibleElement(
       "have.text",
@@ -50,10 +52,19 @@ describe("Manage SSO for multi workspace", () => {
 
     SSO.generalSettings();
 
-    cy.get(ssoSelector.alertText).verifyVisibleElement( "have.text",ssoText.alertText);
+    cy.get(ssoSelector.alertText).verifyVisibleElement(
+      "have.text",
+      ssoText.alertText
+    );
     cy.get(ssoSelector.passwordEnableToggle).should("be.visible");
-    cy.get(ssoSelector.passwordLoginToggleLbale).verifyVisibleElement( "have.text",ssoText.passwordLoginToggleLbale);
-    cy.get(ssoSelector.disablePasswordHelperText).verifyVisibleElement( "have.text",ssoText.disablePasswordHelperText);
+    cy.get(ssoSelector.passwordLoginToggleLbale).verifyVisibleElement(
+      "have.text",
+      ssoText.passwordLoginToggleLbale
+    );
+    cy.get(ssoSelector.disablePasswordHelperText).verifyVisibleElement(
+      "have.text",
+      ssoText.disablePasswordHelperText
+    );
 
     SSO.passwordPageElements();
   });
@@ -62,7 +73,9 @@ describe("Manage SSO for multi workspace", () => {
     common.navigateToManageSSO();
     cy.get(ssoSelector.google).should("be.visible").click();
     cy.get(ssoSelector.cardTitle).verifyVisibleElement(
-      "have.text",ssoText.googleTitle)
+      "have.text",
+      ssoText.googleTitle
+    );
     cy.get(ssoSelector.googleEnableToggle).should("be.visible");
     cy.get(ssoSelector.clientIdLabel).verifyVisibleElement(
       "have.text",
@@ -89,15 +102,16 @@ describe("Manage SSO for multi workspace", () => {
     );
   });
 
-  it("Should verify Git SSO page elements",  () => {
-
+  it("Should verify Git SSO page elements", () => {
     common.navigateToManageSSO();
 
     cy.get(ssoSelector.git).should("be.visible").click();
     cy.get(ssoSelector.githubLabel).verifyVisibleElement(
-      "have.text",ssoText.gitTitle);
+      "have.text",
+      ssoText.gitTitle
+    );
 
-      cy.get(ssoSelector.hostNameLabel).verifyVisibleElement(
+    cy.get(ssoSelector.hostNameLabel).verifyVisibleElement(
       "have.text",
       ssoText.hostNameLabel
     );
