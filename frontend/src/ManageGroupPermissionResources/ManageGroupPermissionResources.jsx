@@ -270,7 +270,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     groupPermissionService
       .update(groupPermissionId, updateParams)
       .then(() => {
-        posthog.capture('click_choose_bulkuser_file', {
+        posthog.capture('click_add_app_button', {
           workspace_id:
             authenticationService?.currentUserValue?.organization_id ||
             authenticationService?.currentSessionValue?.current_organization_id,
@@ -369,13 +369,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     };
     posthog.capture(
       'click_add_user_button',
-      posthog.capture('click_choose_bulkuser_file', {
+      {
         workspace_id:
           authenticationService?.currentUserValue?.organization_id ||
           authenticationService?.currentSessionValue?.current_organization_id,
         group_id: groupPermissionId,
-      })
-    );
+      });
     groupPermissionService
       .update(groupPermissionId, updateParams)
       .then(() => {
