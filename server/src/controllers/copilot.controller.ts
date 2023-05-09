@@ -19,7 +19,7 @@ export class CopilotController {
 
     const workspaceEnvs = await this.orgEnvironmentVariablesService.fetchVariables(user.organizationId);
 
-    const copilotApiKeyId = workspaceEnvs.find((env) => env.variableName === 'copilot_api_key');
+    const copilotApiKeyId = workspaceEnvs.find((env) => env.variableName.includes('copilot_api_key'));
 
     const { value } = copilotApiKeyId
       ? await this.orgEnvironmentVariablesService.fetch(user.organizationId, copilotApiKeyId.id)
