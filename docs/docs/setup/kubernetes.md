@@ -41,6 +41,7 @@ If there are self signed HTTPS endpoints that Tooljet needs to connect to, pleas
 5. Create a Kubernetes services to publish the Kubernetes deployment that you've created. This step varies with cloud providers. We have a [template](https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/service.yaml) for exposing the ToolJet server as a service using an AWS loadbalancer.
 
    **Examples:**
+
    - [Application load balancing on Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html)
    - [GKE Ingress for HTTP(S) Load Balancing](https://cloud.google.com/kubernetes-engine/docs/concepts/ingress)
 
@@ -55,7 +56,7 @@ If you intend to use this feature, you'd have to set up and deploy PostgREST ser
 1. Setup PostgREST server
 
    ```bash
-    kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/postgrest.yaml
+    kubectl apply -f https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/kubernetes/deployment.yaml
    ```
 
 2. Update ToolJet deployment with the appropriate env variables [here](https://github.com/ToolJet/ToolJet/blob/chore/main/kubernetes/deployment.yaml#L83) and apply the changes.
