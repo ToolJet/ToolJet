@@ -13,11 +13,14 @@ describe("Password reset functionality", () => {
 
   before(() => {
     cy.appUILogin();
-    addNewUserMW(data.firstName, data.email);
-    logout();
+    // addNewUserMW(data.firstName, data.email);
+    // logout();
   });
 
   it("Verify wrong password limit", () => {
+    let test=Cypress.env("app_db")
+    cy.log(test.database)
+    cy.pause();
     for (let i = 0; i < 5; i++) {
       cy.clearAndType(commonSelectors.workEmailInputField, data.email);
       cy.clearAndType(commonSelectors.passwordInputField, "passw");
