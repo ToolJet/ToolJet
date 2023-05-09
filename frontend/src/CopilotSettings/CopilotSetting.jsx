@@ -90,12 +90,14 @@ export const CopilotSetting = () => {
         const key = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
         set(copilotVariableId);
         setCopilotApiKey(key);
+        setState(shouldUpdate);
       }
     });
 
     return () => {
       setCopilotApiKey('');
       set(null);
+      setState(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
