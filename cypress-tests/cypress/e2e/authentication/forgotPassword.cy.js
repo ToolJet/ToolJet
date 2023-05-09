@@ -12,17 +12,20 @@ describe("Password reset functionality", () => {
   let passwordResetLink = "";
 
   before(() => {
-    // cy.appUILogin();
-    cy.visit("/")
+    cy.appUILogin();
     // addNewUserMW(data.firstName, data.email);
     // logout();
   });
 
   it.only("Verify wrong password limit", () => {
+
+
+    cy.screenshot()
     cy.log(Cypress.env("pg_host"))
+    cy.screenshot()
     let test=Cypress.env("app_db")
     cy.log(test.database)
-    cy.get(commonSelectors.workEmailInputFields).click()
+    cy.screenshot();
     for (let i = 0; i < 5; i++) {
       cy.clearAndType(commonSelectors.workEmailInputField, data.email);
       cy.clearAndType(commonSelectors.passwordInputField, "passw");
