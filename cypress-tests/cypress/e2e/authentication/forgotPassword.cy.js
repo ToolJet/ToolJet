@@ -20,7 +20,7 @@ describe("Password reset functionality", () => {
   it.only("Verify wrong password limit", () => {
     let test=Cypress.env("app_db")
     cy.log(test.database)
-    cy.get(commonSelectors.workEmailInputFields)
+    cy.get(commonSelectors.workEmailInputFields).click()
     for (let i = 0; i < 5; i++) {
       cy.clearAndType(commonSelectors.workEmailInputField, data.email);
       cy.clearAndType(commonSelectors.passwordInputField, "passw");
