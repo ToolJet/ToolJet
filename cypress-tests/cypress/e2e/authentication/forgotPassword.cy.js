@@ -18,6 +18,7 @@ describe("Password reset functionality", () => {
   });
 
   it.only("Verify wrong password limit", () => {
+    cy.log(Cypress.env("pg_host"))
     let test=Cypress.env("app_db")
     cy.log(test.database)
     cy.get(commonSelectors.workEmailInputFields).click()

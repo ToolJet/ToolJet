@@ -93,7 +93,7 @@ module.exports = defineConfig({
     redirectionLimit: 10,
     experimentalRunAllSpecs: true,
     experimentalMemoryManagement: true,
-    video: false,
+    video: true,
     videoUploadOnPasses: false,
   },
 });
