@@ -3,7 +3,8 @@ import cx from 'classnames';
 
 export const ReleasedVersionError = ({ isUserEditingTheVersion, changeBackTheState }) => {
   React.useState(() => {
-    setInterval(() => changeBackTheState(), 2000);
+    const intervalId = setInterval(() => changeBackTheState(), 2000);
+    return () => clearInterval(intervalId);
   }, [isUserEditingTheVersion]);
 
   return (
