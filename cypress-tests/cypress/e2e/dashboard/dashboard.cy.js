@@ -46,7 +46,7 @@ describe("dashboard", () => {
     login();
     cy.wait("@emptyDashboard");
     cy.wait("@folders");
-    deleteDownloadsFolder();
+    // deleteDownloadsFolder();
   });
 
   it("should verify the elements on empty dashboard", () => {

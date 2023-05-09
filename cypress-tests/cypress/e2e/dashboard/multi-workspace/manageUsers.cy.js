@@ -17,6 +17,11 @@ describe("Manage Users for multiple workspace", () => {
   beforeEach(() => {
     cy.appUILogin();
   });
+  let invitationToken,
+    organizationToken,
+    workspaceId,
+    userId,
+    url = "";
   it("Should verify the Manage users page", () => {
     common.navigateToManageUsers();
     users.manageUsersElements();
@@ -138,31 +143,46 @@ describe("Manage Users for multiple workspace", () => {
       usersText.unarchivedToast
     );
 
-    cy.window().then((win) => {
-      cy.stub(win, "prompt").returns(win.prompt).as("copyToClipboardPrompt");
-    });
-    cy.contains("td", data.email)
-      .parent()
-      .within(() => {
-        cy.get(usersSelector.copyInvitationLink).click();
-      });
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      usersText.inviteCopiedToast
-    );
+    cy.task("updateId", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `select invitation_token from users where email='${data.email}';`,
+    }).then((resp) => {
+      invitationToken = resp.rows[0].invitation_token;
 
-    cy.contains("td", data.email)
-      .parent()
-      .within(() => {
-        cy.get(usersSelector.userStatus, { timeout: 9000 }).should(
-          "have.text",
-          usersText.invitedStatus
-        );
-      });
+      cy.task("updateId", {
+        dbconfig: Cypress.env("app_db"),
+        sql: "select id from organizations where name='My workspace';",
+      }).then((resp) => {
+        workspaceId = resp.rows[0].id;
 
-    cy.get("@copyToClipboardPrompt").then((prompt) => {
-      common.logout();
-      cy.visit(prompt.args[0][1]);
+        cy.task("updateId", {
+          dbconfig: Cypress.env("app_db"),
+          sql: `select id from users where email='${data.email}';`,
+        }).then((resp) => {
+          userId = resp.rows[0].id;
+
+          cy.task("updateId", {
+            dbconfig: Cypress.env("app_db"),
+            sql: `select invitation_token from organization_users where user_id='${userId}';`,
+          }).then((resp) => {
+            organizationToken = resp.rows[1].invitation_token;
+
+            url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
+
+            cy.contains("td", data.email)
+              .parent()
+              .within(() => {
+                cy.get(usersSelector.userStatus, { timeout: 9000 }).should(
+                  "have.text",
+                  usersText.invitedStatus
+                );
+              });
+            common.logout();
+            cy.wait(500);
+            cy.visit(url);
+          });
+        });
+      });
     });
 
     cy.get(usersSelector.acceptInvite).click();
