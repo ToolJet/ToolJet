@@ -62,7 +62,7 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        UpdateId({ dbconfig, sql }) {
+        updateId({ dbconfig, sql }) {
           const client = new pg.Pool(dbconfig);
           return client.query(sql);
         },
