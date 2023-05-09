@@ -77,7 +77,7 @@ export const Folders = function Folders({
           foldersChanged();
         })
         .catch(({ error }) => {
-          toast.error('Error creating folder: ' + error);
+          toast.error(error || 'Error while creating the folder');
           setCreationStatus(false);
           setShowForm(false);
           setNewFolderName('');
@@ -135,8 +135,8 @@ export const Folders = function Folders({
       return false;
     }
 
-    if (newFolderName?.trim().length > 25) {
-      toast.error('Folder name cannot be longer than 25 characters.');
+    if (newFolderName?.trim().length > 40) {
+      toast.error('Folder name cannot be longer than 40 characters.');
       return false;
     }
     return true;
@@ -156,7 +156,7 @@ export const Folders = function Folders({
           foldersChanged();
         })
         .catch(({ error }) => {
-          toast.error(error);
+          toast.error(error || 'Error while updating the folder');
           setNewFolderName('');
           setUpdationStatus(false);
         });
@@ -301,7 +301,7 @@ export const Folders = function Folders({
               placeholder={t('homePage.foldersSection.folderName', 'folder name')}
               disabled={isCreating || isUpdating}
               value={newFolderName}
-              maxLength={25}
+              maxLength={40}
               data-cy="folder-name-input"
               autoFocus
             />
