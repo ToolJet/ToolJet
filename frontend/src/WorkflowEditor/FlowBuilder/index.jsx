@@ -1,6 +1,5 @@
-import React, { useCallback, useRef, useMemo, useContext, useState } from 'react';
+import React, { useCallback, useRef, useMemo, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Modal, Button } from 'react-bootstrap';
 import {
   ReactFlow,
   useReactFlow,
@@ -15,6 +14,7 @@ import ifCondition from './node-types/IfConditionNode';
 import WorkflowEditorContext from '../context';
 import { query } from '../reducer/defaults';
 import './styles.scss';
+import BlockOptions from './BlockOptions';
 
 function FlowBuilder(_props) {
   const { project } = useReactFlow();
@@ -57,7 +57,14 @@ function FlowBuilder(_props) {
       const y = event.clientY - top;
       const startingNodeId = editingActivity.nodeId;
       const startingNodeHandleId = editingActivity.handleId;
-      setShowBlockOptions({ x, y, startingNodeId, startingNodeHandleId });
+      setShowBlockOptions({
+        x,
+        y,
+        startingNodeId,
+        startingNodeHandleId,
+        clientX: event.clientX,
+        clientY: event.clientY,
+      });
       setEditingActivity({ type: 'IDLE' });
 
       if (event.target.className === 'react-flow__pane') {
@@ -69,29 +76,10 @@ function FlowBuilder(_props) {
   );
 
   const addNewNode = useCallback(
-    (nodeType) => {
+    (kind) => {
       const { x, y, startingNodeId, startingNodeHandleId } = showBlockOptions;
       setShowBlockOptions(null);
-      if (nodeType === 'Query') {
-        const queryId = addQuery();
-
-        const newNode = {
-          id: uuidv4(),
-          position: project({ x, y }),
-          data: {
-            ...query(queryId),
-          },
-        };
-        const newEdge = {
-          id: uuidv4(),
-          source: startingNodeId,
-          target: newNode.id,
-          sourceHandle: startingNodeHandleId,
-        };
-
-        addNode(newNode);
-        addEdge(newEdge);
-      } else if (nodeType === 'If') {
+      if (kind === 'if') {
         const newNode = {
           id: uuidv4(),
           position: project({ x, y }),
@@ -105,6 +93,24 @@ function FlowBuilder(_props) {
         };
 
         addIfConditionNode(newNode);
+        addEdge(newEdge);
+      } else {
+        const queryId = addQuery(kind);
+
+        const newNode = {
+          id: uuidv4(),
+          position: project({ x, y }),
+          data: {
+            ...query(queryId, kind),
+          },
+        };
+        const newEdge = {
+          id: uuidv4(),
+          source: startingNodeId,
+          target: newNode.id,
+          sourceHandle: startingNodeHandleId,
+        };
+        addNode(newNode);
         addEdge(newEdge);
       }
     },
@@ -141,7 +147,6 @@ function FlowBuilder(_props) {
   );
 
   const nodeTypes = useMemo(() => ({ query: QueryNode, 'if-condition': ifCondition }), []);
-
   return (
     <div style={{ height: '100%' }}>
       <ReactFlow
@@ -162,23 +167,18 @@ function FlowBuilder(_props) {
         zoomOnScroll={false}
         panOnScroll={true}
         zoomOnDoubleClick={false}
+        onPaneMouseMove={() => setShowBlockOptions(null)}
       >
         <Background />
       </ReactFlow>
-      <Modal show={showBlockOptions} onHide={() => setShowBlockOptions(false)} className="transparent-modal">
-        <Modal.Body>This is a modal.</Modal.Body>
-        <Modal.Footer>
-          {/* <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleClose}>
-            Save Changes
-          </Button> */}
-          <Button variant="primary" onClick={() => addNewNode('Query')}>
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {showBlockOptions && (
+        <BlockOptions
+          onNewNode={addNewNode}
+          editorSession={editorSession}
+          // give style so it renders on given clientx & client y
+          style={{ left: showBlockOptions?.clientX, top: showBlockOptions?.clientY, position: 'absolute' }}
+        />
+      )}
     </div>
   );
 }
