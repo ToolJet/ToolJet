@@ -167,7 +167,7 @@ function FlowBuilder(_props) {
         zoomOnScroll={false}
         panOnScroll={true}
         zoomOnDoubleClick={false}
-        onPaneMouseMove={() => setShowBlockOptions(null)}
+        onMove={() => setShowBlockOptions(null)}
       >
         <Background />
       </ReactFlow>
