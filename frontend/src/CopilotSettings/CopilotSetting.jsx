@@ -8,11 +8,11 @@ import { Button } from '@/_ui/LeftSidebar';
 import { useLocalStorageState } from '@/_hooks/use-local-storage';
 
 export const CopilotSetting = () => {
+  const { current_organization_id } = authenticationService.currentSessionValue;
   const [copilotApiKey, setCopilotApiKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [state, setState] = useLocalStorageState('copilotEnabled', false);
+  const [state, setState] = useLocalStorageState(`copilotEnabled-${current_organization_id}`, false);
   const [copilotWorkspaceVarId, set] = useState(null);
-  const { current_organization_id } = authenticationService.currentSessionValue;
 
   const saveCopilotApiKey = async (apikey) => {
     setIsLoading(true);
@@ -73,6 +73,10 @@ export const CopilotSetting = () => {
   };
 
   useEffect(() => {
+    if (!state) {
+      return;
+    }
+
     orgEnvironmentVariableService.getVariables().then((data) => {
       const isCopilotApiKeyPresent = data.variables.some(
         (variable) => variable.variable_name === `copilot_api_key-${current_organization_id}`
@@ -87,7 +91,6 @@ export const CopilotSetting = () => {
         set(copilotVariableId);
         setCopilotApiKey(key);
       }
-      setState(shouldUpdate);
     });
 
     return () => {
@@ -142,20 +145,21 @@ const Container = ({ children, isCopilotEnabled, handleCopilotToggle, darkMode }
       <div className="card-body">
         <div className="container-fluid">
           <div className="d-flex flex-fill p-3">
-            <div className="mb-0">
+            <div className="mb-0 d-flex">
               <CustomToggleSwitch
                 isChecked={isCopilotEnabled}
                 toggleSwitchFunction={handleCopilotToggle}
                 action="enableTransformation"
                 dataCy={'copilot'}
               />
+
+              <span className="mx-2 mt-3 font-weight-400 tranformation-label" data-cy={'label-query-transformation'}>
+                Enable Copilot
+                <small className="text-muted" style={{ display: 'block' }}>
+                  Turn on Copilot functionality in your workspace
+                </small>
+              </span>
             </div>
-            <span className="mx-1 font-weight-400 tranformation-label" data-cy={'label-query-transformation'}>
-              Enable Copilot
-              <small className="text-muted" style={{ display: 'block' }}>
-                Turn on Copilot functionality in your workspace
-              </small>
-            </span>
           </div>
           {children}
         </div>
