@@ -1,5 +1,6 @@
 import React from 'react';
 import { getSvgIcon } from '@/_helpers/appUtils';
+import IfIcon from '../../../../../assets/images/icons/if.svg';
 
 import './styles.scss';
 
@@ -40,7 +41,7 @@ function OptionLister(props) {
         );
       })}
       <div className="option-source-card" key={`if-key`} onClick={() => onOptionClick('if')}>
-        {fetchIconForSource('if')}
+        <IfIcon />
         <div data-cy={`${String('if').toLocaleLowerCase().replace(/\s+/g, '-')}-add-query-card`}> If condition</div>
       </div>
     </>
