@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ApiKeyContainer } from './ApiKeyContainer';
-import { copilotService, orgEnvironmentVariableService } from '@/_services';
+import { copilotService, orgEnvironmentVariableService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { CustomToggleSwitch } from '@/Editor/QueryManager/CustomToggleSwitch';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
@@ -11,7 +11,8 @@ export const CopilotSetting = () => {
   const [copilotApiKey, setCopilotApiKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [state, setState] = useLocalStorageState('copilotEnabled', false);
-  const [copilotWorkspaceVarId, set] = useState(false);
+  const [copilotWorkspaceVarId, set] = useState(null);
+  const { current_organization_id } = authenticationService.currentSessionValue;
 
   const saveCopilotApiKey = async (apikey) => {
     setIsLoading(true);
@@ -20,7 +21,7 @@ export const CopilotSetting = () => {
     return setTimeout(() => {
       if (isCopilotApiKeyPresent === true && !copilotWorkspaceVarId) {
         return orgEnvironmentVariableService
-          .create('copilot_api_key', apikey, 'server', false)
+          .create(`copilot_api_key-${current_organization_id}`, apikey, 'server', false)
           .then(() => {
             setCopilotApiKey(apikey);
             toast.success('Copilot API key saved successfully');
@@ -77,11 +78,15 @@ export const CopilotSetting = () => {
     }
 
     orgEnvironmentVariableService.getVariables().then((data) => {
-      const isCopilotApiKeyPresent = data.variables.some((variable) => variable.variable_name === 'copilot_api_key');
+      const isCopilotApiKeyPresent = data.variables.some(
+        (variable) => variable.variable_name === `copilot_api_key-${current_organization_id}`
+      );
 
-      const copilotVariableId = data.variables.find((variable) => variable.variable_name === 'copilot_api_key')?.id;
       const shouldUpdate = isCopilotApiKeyPresent;
       if (shouldUpdate) {
+        const copilotVariableId = data.variables.find(
+          (variable) => variable.variable_name === `copilot_api_key-${current_organization_id}`
+        )?.id;
         const key = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
         set(copilotVariableId);
         setCopilotApiKey(key);
@@ -90,7 +95,7 @@ export const CopilotSetting = () => {
 
     return () => {
       setCopilotApiKey('');
-      set('');
+      set(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
