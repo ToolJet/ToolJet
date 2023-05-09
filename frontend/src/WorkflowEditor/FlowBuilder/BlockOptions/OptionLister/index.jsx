@@ -1,5 +1,6 @@
 import React from 'react';
 import { getSvgIcon } from '@/_helpers/appUtils';
+
 import IfIcon from '../../../../../assets/images/icons/if.svg';
 
 import './styles.scss';
