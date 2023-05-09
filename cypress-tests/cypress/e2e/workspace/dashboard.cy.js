@@ -40,18 +40,21 @@ describe("dashboard", () => {
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
       fixture: "intercept/emptyDashboard.json",
     }).as("emptyDashboard");
-    cy.intercept("GET", "/api/folders?searchKey=",{"folders":[]}).as("folders");
+    cy.intercept("GET", "/api/folders?searchKey=", { folders: [] }).as(
+      "folders"
+    );
     login();
     cy.wait("@emptyDashboard");
     cy.wait("@folders");
-    deleteDownloadsFolder();
+    // deleteDownloadsFolder();
   });
 
   it("should verify the elements on empty dashboard", () => {
     cy.get(commonSelectors.homePageLogo).should("be.visible");
-    cy.get(
-      commonSelectors.workspaceName
-    ).verifyVisibleElement("have.text", "My workspace");
+    cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+      "have.text",
+      "My workspace"
+    );
     cy.get(commonSelectors.workspaceName).click();
     cy.get(commonSelectors.editRectangleIcon).should("be.visible");
     cy.get(commonSelectors.appCreateButton).verifyVisibleElement(
@@ -91,9 +94,7 @@ describe("dashboard", () => {
       commonText.viewReadNotifications
     );
 
-
-    cy.get(dashboardSelector.modeToggle).should("be.visible")
-      .click();
+    cy.get(dashboardSelector.modeToggle).should("be.visible").click();
     cy.get(commonSelectors.mainWrapper)
       .should("have.attr", "class")
       .and("contain", "theme-dark");
@@ -102,11 +103,11 @@ describe("dashboard", () => {
       .should("have.attr", "class")
       .and("contain", "bg-light-gray");
 
-      cy.get(commonSelectors.profileSettings).should("be.visible").click();
-      cy.get(profileSelector.profileLink).verifyVisibleElement(
-        "have.text",
-        profileText.profileLink
-      );
+    cy.get(commonSelectors.profileSettings).should("be.visible").click();
+    cy.get(profileSelector.profileLink).verifyVisibleElement(
+      "have.text",
+      profileText.profileLink
+    );
     cy.get(commonSelectors.logoutLink).verifyVisibleElement(
       "have.text",
       commonText.logoutLink
@@ -117,7 +118,10 @@ describe("dashboard", () => {
         commonText.breadcrumbApplications
       );
     });
-    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement( "have.text",dashboardText.dashboardAppsHeaderLabel);
+    cy.get(commonSelectors.breadcrumbPageTitle).verifyVisibleElement(
+      "have.text",
+      dashboardText.dashboardAppsHeaderLabel
+    );
 
     cy.get(dashboardSelector.versionLabel).should("be.visible");
     cy.get(dashboardSelector.emptyPageImage).should("be.visible");
@@ -134,10 +138,12 @@ describe("dashboard", () => {
       dashboardText.createAppButton
     );
     cy.get(dashboardSelector.importAppButton).should("be.visible");
-    cy.get(dashboardSelector.importAppButton).invoke('text').then((text) => {
-      expect(text.trim()).equal(dashboardText.importAppButton)
-  });
-      
+    cy.get(dashboardSelector.importAppButton)
+      .invoke("text")
+      .then((text) => {
+        expect(text.trim()).equal(dashboardText.importAppButton);
+      });
+
     cy.get(dashboardSelector.appTemplateRow).should("be.visible");
   });
 
@@ -165,8 +171,9 @@ describe("dashboard", () => {
           });
       });
 
-      viewAppCardOptions(data.appName);
-    cy.get(commonSelectors.appCardOptions(commonText.changeIconOption)
+    viewAppCardOptions(data.appName);
+    cy.get(
+      commonSelectors.appCardOptions(commonText.changeIconOption)
     ).verifyVisibleElement("have.text", commonText.changeIconOption);
     cy.get(
       commonSelectors.appCardOptions(commonText.addToFolderOption)
@@ -250,6 +257,7 @@ describe("dashboard", () => {
       dashboardText.appClonedToast
     );
     cy.wait("@appEditor");
+    cy.wait(300);
     cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
     cy.get(commonSelectors.editorPageLogo).click();
     cy.wait("@appLibrary");
@@ -367,14 +375,12 @@ describe("dashboard", () => {
 
     viewFolderCardOptions(data.folderName);
     cy.get(commonSelectors.folderCard).should("be.visible");
-    cy.get(commonSelectors.editFolderOption(data.folderName)).verifyVisibleElement(
-      "have.text",
-      commonText.editFolderOption
-    );
-    cy.get(commonSelectors.deleteFolderOption(data.folderName)).verifyVisibleElement(
-      "have.text",
-      commonText.deleteFolderOption
-    );
+    cy.get(
+      commonSelectors.editFolderOption(data.folderName)
+    ).verifyVisibleElement("have.text", commonText.editFolderOption);
+    cy.get(
+      commonSelectors.deleteFolderOption(data.folderName)
+    ).verifyVisibleElement("have.text", commonText.deleteFolderOption);
 
     cy.get(commonSelectors.editFolderOption(data.folderName)).click();
     verifyModal(

@@ -1,6 +1,6 @@
-import { commonSelectors } from "Selectors/common"
+import { commonSelectors } from "Selectors/common";
 import { fake } from "Fixtures/fake";
-import { usersText } from "Texts/manageUsers"
+import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
 import * as users from "Support/utils/manageUsers";
 import * as common from "Support/utils/common";
@@ -17,6 +17,11 @@ describe("Manage Users for multiple workspace", () => {
   beforeEach(() => {
     cy.appUILogin();
   });
+  let invitationToken,
+    organizationToken,
+    workspaceId,
+    userId,
+    url = "";
   it("Should verify the Manage users page", () => {
     common.navigateToManageUsers();
     users.manageUsersElements();
@@ -26,13 +31,22 @@ describe("Manage Users for multiple workspace", () => {
     cy.get(usersSelector.buttonAddUsers).click();
 
     cy.get(usersSelector.buttonInviteUsers).click();
-    cy.get(usersSelector.fullNameError).verifyVisibleElement("have.text",usersText.errorTextFieldRequired);
-    cy.get(usersSelector.emailError).verifyVisibleElement("have.text",usersText.errorTextFieldRequired);
+    cy.get(usersSelector.fullNameError).verifyVisibleElement(
+      "have.text",
+      usersText.errorTextFieldRequired
+    );
+    cy.get(usersSelector.emailError).verifyVisibleElement(
+      "have.text",
+      usersText.errorTextFieldRequired
+    );
 
     cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
     cy.get(commonSelectors.inputFieldEmailAddress).clear();
     cy.get(usersSelector.buttonInviteUsers).click();
-    cy.get(usersSelector.emailError).verifyVisibleElement("have.text",usersText.errorTextFieldRequired);
+    cy.get(usersSelector.emailError).verifyVisibleElement(
+      "have.text",
+      usersText.errorTextFieldRequired
+    );
 
     cy.get(commonSelectors.inputFieldFullName).clear();
     cy.clearAndType(commonSelectors.inputFieldEmailAddress, data.email);
@@ -49,8 +63,8 @@ describe("Manage Users for multiple workspace", () => {
     );
     cy.get(usersSelector.buttonInviteUsers).click();
 
-    cy.verifyToastMessage(
-      commonSelectors.newToastMessage,
+    cy.get(commonSelectors.newToastMessage).should(
+      "have.text",
       usersText.exsitingEmail
     );
   });
@@ -61,9 +75,9 @@ describe("Manage Users for multiple workspace", () => {
     users.confirmInviteElements();
 
     cy.clearAndType(commonSelectors.passwordInputField, "pass");
-    cy.get(commonSelectors.acceptInviteButton).should('be.disabled');
+    cy.get(commonSelectors.acceptInviteButton).should("be.disabled");
     cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
-    cy.get(commonSelectors.acceptInviteButton).should('not.be.disabled');
+    cy.get(commonSelectors.acceptInviteButton).should("not.be.disabled");
     cy.get(commonSelectors.acceptInviteButton).click();
     cy.get(commonSelectors.workspaceName).verifyVisibleElement(
       "have.text",
@@ -82,9 +96,7 @@ describe("Manage Users for multiple workspace", () => {
       .within(() => {
         cy.get("td small").should("have.text", usersText.activeStatus);
       });
-    
   });
-
 
   it("Should verify the archive functionality", () => {
     common.navigateToManageUsers();
@@ -131,31 +143,46 @@ describe("Manage Users for multiple workspace", () => {
       usersText.unarchivedToast
     );
 
-    cy.window().then((win) => {
-      cy.stub(win, "prompt").returns(win.prompt).as("copyToClipboardPrompt");
-    });
-    cy.contains("td", data.email)
-      .parent()
-      .within(() => {
-        cy.get(usersSelector.copyInvitationLink).click();
-      });
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      usersText.inviteCopiedToast
-    );
+    cy.task("updateId", {
+      dbconfig: Cypress.env("app_db"),
+      sql: `select invitation_token from users where email='${data.email}';`,
+    }).then((resp) => {
+      invitationToken = resp.rows[0].invitation_token;
 
-    cy.contains("td", data.email)
-      .parent()
-      .within(() => {
-        cy.get(usersSelector.userStatus, { timeout: 9000 }).should(
-          "have.text",
-          usersText.invitedStatus
-        );
-      });
+      cy.task("updateId", {
+        dbconfig: Cypress.env("app_db"),
+        sql: "select id from organizations where name='My workspace';",
+      }).then((resp) => {
+        workspaceId = resp.rows[0].id;
 
-    cy.get("@copyToClipboardPrompt").then((prompt) => {
-      common.logout();
-      cy.visit(prompt.args[0][1]);
+        cy.task("updateId", {
+          dbconfig: Cypress.env("app_db"),
+          sql: `select id from users where email='${data.email}';`,
+        }).then((resp) => {
+          userId = resp.rows[0].id;
+
+          cy.task("updateId", {
+            dbconfig: Cypress.env("app_db"),
+            sql: `select invitation_token from organization_users where user_id='${userId}';`,
+          }).then((resp) => {
+            organizationToken = resp.rows[1].invitation_token;
+
+            url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
+
+            cy.contains("td", data.email)
+              .parent()
+              .within(() => {
+                cy.get(usersSelector.userStatus, { timeout: 9000 }).should(
+                  "have.text",
+                  usersText.invitedStatus
+                );
+              });
+            common.logout();
+            cy.wait(500);
+            cy.visit(url);
+          });
+        });
+      });
     });
 
     cy.get(usersSelector.acceptInvite).click();

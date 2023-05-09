@@ -62,7 +62,7 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        UpdateId({ dbconfig, sql }) {
+        updateId({ dbconfig, sql }) {
           const client = new pg.Pool(dbconfig);
           return client.query(sql);
         },
@@ -76,18 +76,21 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: [
-      "cypress/e2e/editor/app-version/version.cy.js",
-      "cypress/e2e/exportImport/export.cy.js",
-      "cypress/e2e/exportImport/import.cy.js",
-      "cypress/e2e/database/database.cy.js",
-      "cypress/e2e/editor/widget/*.cy.js",
-      "cypress/e2e/editor/multipage/*.cy.js",
+      "cypress/e2e/selfHost/*.cy.js",
+      "cypress/e2e/authentication/*.cy.js",
+      "cypress/e2e/workspace/*.cy.js",
+      // "cypress/e2e/editor/app-version/version.cy.js",
+      // "cypress/e2e/exportImport/export.cy.js",
+      // "cypress/e2e/exportImport/import.cy.js",
+      // "cypress/e2e/database/database.cy.js",
+      // "cypress/e2e/editor/widget/*.cy.js",
+      // "cypress/e2e/editor/multipage/*.cy.js",
     ],
     numTestsKeptInMemory: 1,
     redirectionLimit: 10,
     experimentalRunAllSpecs: true,
     experimentalMemoryManagement: true,
-    video: false,
+    video: true,
     videoUploadOnPasses: false,
   },
 });

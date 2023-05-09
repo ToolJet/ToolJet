@@ -3,7 +3,7 @@ export const usersText = {
     usersTableNameColumnHeader: "NAME",
     usersTableEmailColumnHeader: "EMAIL",
     usersTableStatusColumnHeader: "STATUS",
-    usersFilterLabel: "Showing"
+    usersFilterLabel: "Showing",
   },
   usersPageTitle: "users",
   breadcrumbUsersPageTitle: " Users & permissions",
@@ -46,15 +46,16 @@ export const usersText = {
   },
   swPasswordSuccessToast:
     "Added to the workspace and password has been set successfully.",
-  inviteBulkUserButton:"Invite bulk users",
+  inviteBulkUserButton: "Invite bulk users",
   bulkUserUploadPageTitle: "Upload Users",
-  buttonDownloadTemplate: 'Download Template',
-  buttonUploadUsers:"Upload users",
+  buttonDownloadTemplate: "Download Template",
+  buttonUploadUsers: "Upload users",
 
   buttonInviteWithEmail: " Invite with email",
   buttonUploadCsvFile: "Upload CSV file",
 
-  helperTextBulkUpload: 'Download the ToolJet template to add user details or format your file in the same as the template. ToolJet won’t be able to recognise files in any other format. ',
-  helperTextSelectFile:'Select a CSV file to upload',
-  helperTextDropFile: 'Or drag and drop it here',
+  helperTextBulkUpload:
+    "Download the ToolJet template to add user details or format your file in the same as the template. ToolJet won’t be able to recognise files in any other format. ",
+  helperTextSelectFile: "Select a CSV file to upload",
+  helperTextDropFile: "Or drag and drop it here",
 };
