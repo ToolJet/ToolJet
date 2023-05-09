@@ -406,7 +406,7 @@ describe("Text Input", () => {
     );
   });
 
-  it.only("should verify CSA", () => {
+  it("should verify CSA", () => {
     const data = {};
     data.customText = randomString(12);
 
