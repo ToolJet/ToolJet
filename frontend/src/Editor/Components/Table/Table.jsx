@@ -346,7 +346,7 @@ export function Table({
 
   const tableRef = useRef();
 
-  const columnData = generateColumnsData({
+  let columnData = generateColumnsData({
     columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
     columnSizes,
     currentState,
@@ -362,6 +362,12 @@ export function Table({
     tableRef,
     t,
     darkMode,
+  });
+
+  columnData = columnData.filter((column) => {
+    if (resolveReferences(column.columnVisibility, currentState)) {
+      return column;
+    }
   });
 
   const columnDataForAddNewRows = generateColumnsData({
