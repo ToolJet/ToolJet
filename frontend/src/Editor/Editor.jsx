@@ -1381,17 +1381,17 @@ class EditorComponent extends React.Component {
         this.fetchDataSources();
       }
     );
-    const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentAppEnvironmentIds') || JSON.stringify({}));
+    const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
     if (currentEnvironmentObj[this.state.appId] !== currentAppEnvironmentId) {
       currentEnvironmentObj[this.state.appId] = currentAppEnvironmentId;
-      localStorage.setItem('currentAppEnvironmentIds', JSON.stringify(currentEnvironmentObj));
+      localStorage.setItem('currentEnvironmentIds', JSON.stringify(currentEnvironmentObj));
       !isVersionChanged && window.location.reload(false);
     }
   };
 
   setCurrentAppEnvironmentId = () => {
     const appId = this.props.params.id;
-    const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentAppEnvironmentIds') || JSON.stringify({}));
+    const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
     this.setState({ currentAppEnvironmentId: currentEnvironmentObj[appId] });
   };
 
