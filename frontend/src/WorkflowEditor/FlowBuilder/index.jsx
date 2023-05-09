@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useMemo, useContext } from 'react';
+import React, { useCallback, useRef, useMemo, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
   ReactFlow,
@@ -13,10 +13,13 @@ import QueryNode from './node-types/QueryNode';
 import ifCondition from './node-types/IfConditionNode';
 import WorkflowEditorContext from '../context';
 import { query } from '../reducer/defaults';
+import './styles.scss';
+import BlockOptions from './BlockOptions';
 
 function FlowBuilder(_props) {
   const { project } = useReactFlow();
   const { editorSession, editorSessionActions, addQuery } = useContext(WorkflowEditorContext);
+  const [showBlockOptions, setShowBlockOptions] = useState(false);
 
   const { editingActivity } = editorSession;
   const { nodes, edges } = editorSession.app.flow;
@@ -49,54 +52,66 @@ function FlowBuilder(_props) {
   // Here we add a new node
   const onConnectEnd = useCallback(
     (event) => {
+      const { top, left } = flowElement.current.getBoundingClientRect();
+      const x = event.clientX - left - 75;
+      const y = event.clientY - top;
       const startingNodeId = editingActivity.nodeId;
       const startingNodeHandleId = editingActivity.handleId;
-
+      setShowBlockOptions({
+        x,
+        y,
+        startingNodeId,
+        startingNodeHandleId,
+        clientX: event.clientX,
+        clientY: event.clientY,
+      });
       setEditingActivity({ type: 'IDLE' });
 
       if (event.target.className === 'react-flow__pane') {
-        const { top, left } = flowElement.current.getBoundingClientRect();
-        const x = event.clientX - left - 75;
-        const y = event.clientY - top;
+        // const nodeType = prompt('Node type (Query/If):', 'Query');
+        // setShowBlockOptions({ x, y });
+      }
+    },
+    [editingActivity.nodeId, setEditingActivity, project, addNode, addEdge]
+  );
 
-        const nodeType = prompt('Node type (Query/If):', 'Query');
+  const addNewNode = useCallback(
+    (kind) => {
+      const { x, y, startingNodeId, startingNodeHandleId } = showBlockOptions;
+      setShowBlockOptions(null);
+      if (kind === 'if') {
+        const newNode = {
+          id: uuidv4(),
+          position: project({ x, y }),
+        };
 
-        if (nodeType === 'Query') {
-          const queryId = addQuery();
+        const newEdge = {
+          id: uuidv4(),
+          source: startingNodeId,
+          target: newNode.id,
+          sourceHandle: startingNodeHandleId,
+        };
 
-          const newNode = {
-            id: uuidv4(),
-            position: project({ x, y }),
-            data: {
-              ...query(queryId),
-            },
-          };
+        addIfConditionNode(newNode);
+        addEdge(newEdge);
+      } else {
+        const queryId = addQuery(kind);
 
-          const newEdge = {
-            id: uuidv4(),
-            source: startingNodeId,
-            target: newNode.id,
-            sourceHandle: startingNodeHandleId,
-          };
-
-          addNode(newNode);
-          addEdge(newEdge);
-        } else if (nodeType === 'If') {
-          const newNode = {
-            id: uuidv4(),
-            position: project({ x, y }),
-          };
-
-          const newEdge = {
-            id: uuidv4(),
-            source: startingNodeId,
-            target: newNode.id,
-            sourceHandle: startingNodeHandleId,
-          };
-
-          addIfConditionNode(newNode);
-          addEdge(newEdge);
-        }
+        const newNode = {
+          id: uuidv4(),
+          position: project({ x, y }),
+          data: {
+            ...query(queryId, kind),
+          },
+        };
+        const newEdge = {
+          id: uuidv4(),
+          source: startingNodeId,
+          target: newNode.id,
+          sourceHandle: startingNodeHandleId,
+        };
+        addNode(newNode);
+        addEdge(newEdge);
       }
     },
     [editingActivity.nodeId, setEditingActivity, project, addNode, addEdge]
@@ -132,7 +147,6 @@ function FlowBuilder(_props) {
   );
 
   const nodeTypes = useMemo(() => ({ query: QueryNode, 'if-condition': ifCondition }), []);
-
   return (
     <div style={{ height: '100%' }}>
       <ReactFlow
@@ -153,9 +167,18 @@ function FlowBuilder(_props) {
         zoomOnScroll={false}
         panOnScroll={true}
         zoomOnDoubleClick={false}
+        onPaneMouseMove={() => setShowBlockOptions(null)}
       >
         <Background />
       </ReactFlow>
+      {showBlockOptions && (
+        <BlockOptions
+          onNewNode={addNewNode}
+          editorSession={editorSession}
+          // give style so it renders on given clientx & client y
+          style={{ left: showBlockOptions?.clientX, top: showBlockOptions?.clientY, position: 'absolute' }}
+        />
+      )}
     </div>
   );
 }
