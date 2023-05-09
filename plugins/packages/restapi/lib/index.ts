@@ -247,8 +247,8 @@ export default class RestapiQueryService implements QueryService {
       if (this.isJson(response.body)) {
         return JSON.parse(response.body);
       }
-      if (response.body && response.headers?.['content-type']?.startsWith('image/')) {
-        return Buffer.from(response.body).toString('base64');
+      if (response.rawBody && response.headers?.['content-type']?.startsWith('image/')) {
+        return Buffer.from(response.rawBody, 'binary').toString('base64');
       }
     } catch (error) {
       console.error('Error while parsing response', error);
