@@ -126,6 +126,11 @@ export const manageUsersElements = () => {
 };
 
 export const inviteUser = (firstName, email) => {
+  let invitationToken,
+    organizationToken,
+    workspaceId,
+    userId,
+    url = "";
   cy.get(usersSelector.buttonAddUsers).click();
   cy.clearAndType(commonSelectors.inputFieldFullName, firstName);
   cy.clearAndType(commonSelectors.inputFieldEmailAddress, email);
@@ -135,22 +140,37 @@ export const inviteUser = (firstName, email) => {
     commonSelectors.toastMessage,
     usersText.userCreatedToast
   );
-  cy.window().then((win) => {
-    cy.stub(win, "prompt").returns(win.prompt).as("copyToClipboardPrompt");
-  });
-  common.searchUser(email);
-  cy.contains("td", email)
-    .parent()
-    .within(() => {
-      cy.get(usersSelector.copyInvitationLink).click();
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select invitation_token from users where email='${email}';`,
+  }).then((resp) => {
+    invitationToken = resp.rows[0].invitation_token;
+
+    cy.task("updateId", {
+      dbconfig: Cypress.env("app_db"),
+      sql: "select id from organizations where name='My workspace';",
+    }).then((resp) => {
+      workspaceId = resp.rows[0].id;
+
+      cy.task("updateId", {
+        dbconfig: Cypress.env("app_db"),
+        sql: `select id from users where email='${email}';`,
+      }).then((resp) => {
+        userId = resp.rows[0].id;
+
+        cy.task("updateId", {
+          dbconfig: Cypress.env("app_db"),
+          sql: `select invitation_token from organization_users where user_id='${userId}';`,
+        }).then((resp) => {
+          organizationToken = resp.rows[1].invitation_token;
+
+          url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
+          common.logout();
+          cy.wait(500);
+          cy.visit(url);
+        });
+      });
     });
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    usersText.inviteCopiedToast
-  );
-  cy.get("@copyToClipboardPrompt").then((prompt) => {
-    common.logout();
-    cy.visit(prompt.args[0][1]);
   });
 };
 
