@@ -43,7 +43,7 @@ export const Folders = function Folders({
       setCreationStatus(true);
       folderService
         .create(newFolderName)
-        .then(() => {
+        .then((data) => {
           toast.success('Folder created.');
           setCreationStatus(false);
           setShowForm(false);
@@ -53,6 +53,7 @@ export const Folders = function Folders({
             workspace_id:
               authenticationService?.currentUserValue?.organization_id ||
               authenticationService?.currentSessionValue?.current_organization_id,
+            folder_id: data?.id 
           });
         })
         .catch(({ error }) => {

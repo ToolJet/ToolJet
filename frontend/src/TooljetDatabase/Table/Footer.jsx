@@ -81,7 +81,15 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
         <div className="col-5" data-cy="add-new-row-button">
           <Button
             disabled={dataLoading}
-            onClick={openCreateRowDrawer}
+            onClick={()=> {
+              posthog.capture('click_add_new_row', {
+                workspace_id:
+                  authenticationService?.currentUserValue?.organization_id ||
+                  authenticationService?.currentSessionValue?.current_organization_id,
+                datasource: 'tooljet_db',
+              });
+              openCreateRowDrawer();
+            }}
             darkMode={darkMode}
             size="sm"
             styles={{ width: '118px', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
