@@ -341,7 +341,7 @@ describe("Editor- Test Button widget", () => {
     cy.deleteApp(data.appName);
   });
 
-  it.only("Should verify csa", () => {
+  it("Should verify csa", () => {
     // cy.dragAndDropWidget(buttonText.defaultWidgetText);
     selectEvent("On click", "Show alert");
 

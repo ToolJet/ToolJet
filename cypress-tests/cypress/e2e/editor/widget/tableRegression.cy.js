@@ -942,7 +942,7 @@ describe("Table", () => {
     ]);
   });
 
-  it.only("should verify table CSA", () => {
+  it("should verify table CSA", () => {
     cy.get('[data-cy="column-id"]').click();
     cy.get('[data-cy="make-editable-toggle-button"]').click();
 
