@@ -8,7 +8,6 @@ var tinycolor = require('tinycolor2');
 export const Modal = function Modal({
   id,
   component,
-  height,
   containerProps,
   darkMode,
   properties,
@@ -28,6 +27,7 @@ export const Modal = function Modal({
     loadingState,
     useDefaultButton,
     triggerButtonLabel,
+    height,
   } = properties;
   const {
     headerBackgroundColor,
