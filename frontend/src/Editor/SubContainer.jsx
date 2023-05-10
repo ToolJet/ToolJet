@@ -34,7 +34,6 @@ export const SubContainer = ({
   darkMode,
   containerCanvasWidth,
   readOnly,
-  dataQueries,
   customResolvables,
   parentComponent,
   onComponentHover,
@@ -480,7 +479,6 @@ export const SubContainer = ({
                 onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
                 onComponentOptionsChanged={onComponentOptionsChanged}
                 key={key}
-                dataQueries={dataQueries}
                 currentState={currentState}
                 onResizeStop={onResizeStop}
                 onDragStop={onDragStop}
