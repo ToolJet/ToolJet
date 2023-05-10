@@ -398,7 +398,10 @@ class EditorComponent extends React.Component {
         skipYmapUpdate: true,
         versionChanged: true,
       });
-      useAppDataStore.getState().actions.updateIsVersionReleased(version?.id === this.state.app?.current_version_id);
+      if (version?.id === this.state.app?.current_version_id) {
+        useAppDataStore.getState().actions.updateIsVersionReleased(true);
+        (this.canUndo = false), (this.canRedo = false);
+      }
       this.setState(
         {
           editingVersion: version,
