@@ -128,6 +128,7 @@ export default function QueryNode(props) {
                     options: { ...queryData.options, [key]: value },
                   })
                 }
+                disableMenuPortal={true}
               />
             ) : (
               <JSONTreeViewer

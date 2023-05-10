@@ -29,6 +29,7 @@ const DynamicForm = ({
   optionsChanged,
   queryName,
   computeSelectStyles = false,
+  disableMenuPortal = false,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
 
@@ -162,7 +163,7 @@ const DynamicForm = ({
           value: options?.[key]?.value || options?.[key],
           onChange: (value) => optionchanged(key, value),
           width: width || '100%',
-          useMenuPortal: queryName ? true : false,
+          useMenuPortal: disableMenuPortal ? false : queryName ? true : false,
           styles: computeSelectStyles ? computeSelectStyles('100%') : {},
           useCustomStyles: computeSelectStyles ? true : false,
         };
