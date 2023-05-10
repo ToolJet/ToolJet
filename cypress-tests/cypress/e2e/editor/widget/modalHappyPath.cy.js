@@ -425,7 +425,7 @@ describe("Modal", () => {
     cy.notVisible('[data-cy="modal-close-button"]');
   });
 
-  it.only("should verify csa", () => {
+  it("should verify csa", () => {
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 200);
     selectEvent("On click", "Control Component");
