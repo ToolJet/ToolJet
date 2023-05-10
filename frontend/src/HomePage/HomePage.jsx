@@ -193,10 +193,10 @@ class HomePageComponent extends React.Component {
   };
 
   canUserPerform(user, action, app) {
-    if (this.state.currentUser?.super_admin) {
+    const currentSession = authenticationService.currentSessionValue;
+    if (currentSession?.super_admin) {
       return true;
     }
-    const currentSession = authenticationService.currentSessionValue;
     let permissionGrant;
 
     switch (action) {
