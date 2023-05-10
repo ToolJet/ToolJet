@@ -44,7 +44,6 @@ export const Container = ({
   onComponentHover,
   hoveredComponent,
   sideBarDebugger,
-  dataQueries,
   currentPageId,
   isVersionReleased,
   setReleasedVersionPopupState,
@@ -538,7 +537,6 @@ export const Container = ({
               hoveredComponent={hoveredComponent}
               sideBarDebugger={sideBarDebugger}
               isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
-              dataQueries={dataQueries}
               childComponents={childComponents[key]}
               containerProps={{
                 mode,
@@ -561,7 +559,6 @@ export const Container = ({
                 onComponentHover,
                 hoveredComponent,
                 sideBarDebugger,
-                dataQueries,
                 addDefaultChildren,
                 currentPageId,
                 childComponents,

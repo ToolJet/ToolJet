@@ -32,7 +32,6 @@ const LeftSidebarPageSelector = ({
   updateOnPageLoadEvents,
   currentState,
   apps,
-  dataQueries,
   popoverContentHeight,
   isVersionReleased,
   setReleasedVersionPopupState,
@@ -164,7 +163,6 @@ const LeftSidebarPageSelector = ({
                 apps={apps}
                 allpages={pages}
                 components={appDefinition?.components ?? {}}
-                dataQueries={dataQueries}
                 isVersionReleased={isVersionReleased}
                 setReleasedVersionPopupState={setReleasedVersionPopupState}
                 pinPagesPopover={pinPagesPopover}

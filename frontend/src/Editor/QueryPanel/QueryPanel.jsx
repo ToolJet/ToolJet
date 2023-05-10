@@ -1,8 +1,17 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useEventListener } from '@/_hooks/use-event-listener';
 import { Tooltip } from 'react-tooltip';
+import { QueryDataPane } from './QueryDataPane';
+import { Confirm } from '../Viewer/Confirm';
 
-const QueryPanel = ({ children, computeCurrentQueryPanelHeight }) => {
+import { useQueryPanelActions, useUnsavedChanges, useSelectedQuery } from '@/_stores/queryPanelStore';
+import { useDataQueries } from '@/_stores/dataQueriesStore';
+
+export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, darkMode, editorRef, children }) => {
+  const { setSelectedQuery, updateQueryPanelHeight, setUnSavedChanges } = useQueryPanelActions();
+  const isUnsavedQueriesAvailable = useUnsavedChanges();
+  const selectedQuery = useSelectedQuery();
+  const dataQueries = useDataQueries();
   const queryManagerPreferences = useRef(JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {});
   const queryPaneRef = useRef(null);
   const [isExpanded, setExpanded] = useState(queryManagerPreferences.current?.isExpanded ?? true);
@@ -15,6 +24,36 @@ const QueryPanel = ({ children, computeCurrentQueryPanelHeight }) => {
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
   const [showSaveConfirmation, setSaveConfirmation] = useState(false);
   const [queryCancelData, setCancelData] = useState({});
+  const [draftQuery, setDraftQuery] = useState(null);
+  const [selectedDataSource, setSelectedDataSource] = useState(null);
+  const [editingQuery, setEditingQuery] = useState(dataQueries.length > 0);
+
+  useEffect(() => {
+    if (!editingQuery && selectedQuery !== null && selectedQuery?.id !== 'draftQuery') {
+      setEditingQuery(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedQuery?.id, editingQuery]);
+
+  useEffect(() => {
+    if (dataQueries.length === 0) {
+      setSelectedDataSource(null);
+    }
+    setEditingQuery(dataQueries.length > 0);
+  }, [dataQueries.length]);
+
+  useEffect(() => {
+    if (!isDragging && isExpanded) {
+      updateQueryPanelHeight(height);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDragging]);
+
+  const createDraftQuery = useCallback((queryDetails, source = null) => {
+    setSelectedQuery(queryDetails.id, queryDetails);
+    setDraftQuery(queryDetails);
+    setSelectedDataSource(source);
+  }, []);
 
   const onMouseUp = () => {
     setDragging(false);
@@ -56,30 +95,74 @@ const QueryPanel = ({ children, computeCurrentQueryPanelHeight }) => {
     }
   };
 
-  useEffect(() => {
-    if (!isDragging && isExpanded) {
-      computeCurrentQueryPanelHeight(height);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDragging]);
-
   useEventListener('mousemove', onMouseMove);
   useEventListener('mouseup', onMouseUp);
+
+  const handleAddNewQuery = useCallback(() => {
+    const stateToBeUpdated = {
+      selectedDataSource: null,
+      selectedQuery: null,
+      editingQuery: false,
+      isSourceSelected: false,
+      draftQuery: null,
+    };
+
+    if (isUnsavedQueriesAvailable) {
+      setSaveConfirmation(true);
+      setCancelData(stateToBeUpdated);
+    } else {
+      setSelectedDataSource(null);
+      setSelectedQuery(null);
+      setDraftQuery(null);
+      setEditingQuery(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isUnsavedQueriesAvailable]);
 
   const toggleQueryEditor = useCallback(() => {
     queryManagerPreferences.current = { ...queryManagerPreferences.current, isExpanded: !isExpanded };
     localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
     if (isExpanded) {
-      computeCurrentQueryPanelHeight(95);
+      updateQueryPanelHeight(95);
     } else {
-      computeCurrentQueryPanelHeight(height);
+      updateQueryPanelHeight(height);
     }
     setExpanded(!isExpanded);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded]);
 
+  const updateDataQueries = useCallback(() => {
+    setEditingQuery(true);
+    setDraftQuery(null);
+    dataQueriesChanged();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const updateDraftQueryName = useCallback((newName) => setDraftQuery((query) => ({ ...query, name: newName })), []);
+
   return (
     <>
+      <Confirm
+        show={showSaveConfirmation}
+        message={`Query ${selectedQuery?.name} has unsaved changes`}
+        onConfirm={() => {
+          setSaveConfirmation(false);
+        }}
+        onCancel={(data) => {
+          setSaveConfirmation(false);
+          setDraftQuery(null);
+          setSelectedQuery(data?.selectedQuery?.id ?? null);
+          setUnSavedChanges(false);
+          if (data.hasOwnProperty('editingQuery')) {
+            setEditingQuery(data.editingQuery);
+          }
+        }}
+        confirmButtonText="Continue editing"
+        cancelButtonText="Discard changes"
+        callCancelFnOnConfirm={false}
+        queryCancelData={queryCancelData}
+        darkMode={darkMode}
+      />
       <div
         className="query-pane"
         style={{
@@ -126,17 +209,34 @@ const QueryPanel = ({ children, computeCurrentQueryPanelHeight }) => {
           cursor: isDragging || isTopOfQueryPanel ? 'row-resize' : 'default',
         }}
       >
-        {children({
-          toggleQueryEditor,
-          showSaveConfirmation,
-          setSaveConfirmation,
-          queryCancelData,
-          setCancelData,
-        })}
+        <div className="row main-row">
+          <QueryDataPane
+            showSaveConfirmation={showSaveConfirmation}
+            setSaveConfirmation={setSaveConfirmation}
+            setCancelData={setCancelData}
+            draftQuery={draftQuery}
+            handleAddNewQuery={handleAddNewQuery}
+            setDraftQuery={setDraftQuery}
+            setSelectedDataSource={setSelectedDataSource}
+            fetchDataQueries={fetchDataQueries}
+            darkMode={darkMode}
+            editorRef={editorRef}
+          />
+          {children({
+            toggleQueryEditor,
+            selectedDataSource,
+            createDraftQuery,
+            isUnsavedQueriesAvailable,
+            selectedQuery,
+            dataQueries,
+            handleAddNewQuery,
+            editingQuery,
+            updateDataQueries,
+            updateDraftQueryName,
+          })}
+        </div>
       </div>
       <Tooltip id="tooltip-for-show-query-editor" className="tooltip" />
     </>
   );
 };
-
-export { QueryPanel };

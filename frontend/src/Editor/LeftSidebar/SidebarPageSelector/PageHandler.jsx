@@ -25,7 +25,6 @@ export const PageHandler = ({
   apps,
   pages,
   components,
-  dataQueries,
   isVersionReleased,
   pinPagesPopover,
   haveUserPinned,
@@ -187,7 +186,6 @@ export const PageHandler = ({
               apps={apps}
               pages={pages}
               components={components}
-              dataQueries={dataQueries}
               pinPagesPopover={pinPagesPopover}
             />
           </div>
