@@ -125,6 +125,7 @@ function WorkflowEditor(props) {
   };
 
   const executeWorkflow = async () => {
+    editorSessionActions.clearLogsConsole();
     editorSessionActions.setMode(Modes.Running);
     editorSessionActions.displayLogsConsole(true);
     const { workflowExecution: execution, _result } = await workflowExecutionsService.create(

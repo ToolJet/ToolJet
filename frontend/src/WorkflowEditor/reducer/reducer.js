@@ -58,6 +58,7 @@ export const initialState = ({ appId, appVersionId }) => ({
     display: false,
   },
   logsConsole: {
+    logs: [],
     display: false,
     showingHistoricalLogs: false,
   },
@@ -311,6 +312,10 @@ export const reducer = (state = initialState(), { payload, type }) => {
           ...state.execution,
           logs,
         },
+        logsConsole: {
+          ...state.logsConsole,
+          logs,
+        },
       };
     }
 
@@ -359,6 +364,8 @@ export const reducer = (state = initialState(), { payload, type }) => {
     case 'SHOW_HISTORICAL_LOGS': {
       const { executionId } = payload;
 
+      const logs = find(state.executionHistory, { id: executionId }).logs;
+
       return {
         ...state,
         logsConsole: {
@@ -366,6 +373,17 @@ export const reducer = (state = initialState(), { payload, type }) => {
           showingHistoricalLogs: true,
           executionId,
           display: true,
+          logs,
+        },
+      };
+    }
+
+    case 'CLEAR_LOGS_CONSOLE': {
+      return {
+        ...state,
+        logsConsole: {
+          ...state.logsConsole,
+          logs: [],
         },
       };
     }

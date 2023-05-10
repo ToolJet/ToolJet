@@ -4,9 +4,7 @@ import DownIcon from './down.svg';
 import { find } from 'lodash';
 
 export default function LogsPanel({ editorSession, editorSessionActions }) {
-  const { showingHistoricalLogs, executionId } = editorSession.logsConsole;
-  const { execution, executionHistory } = editorSession;
-  const logs = showingHistoricalLogs ? find(executionHistory, { id: executionId }).logs : execution.logs;
+  const logs = editorSession.logsConsole.logs;
 
   return (
     <div className="logs-panel">

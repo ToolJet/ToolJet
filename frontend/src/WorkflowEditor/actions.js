@@ -31,5 +31,6 @@ export default function generateActions(dispatch) {
     toggleLogsConsole: () => dispatch({ type: 'TOGGLE_LOGS_CONSOLE' }),
     displayLogsConsole: (display) => dispatch({ type: 'DISPLAY_LOGS_CONSOLE', payload: { display } }),
     showHistoricalLogs: (executionId) => dispatch({ type: 'SHOW_HISTORICAL_LOGS', payload: { executionId } }),
+    clearLogsConsole: () => dispatch({ type: 'CLEAR_LOGS_CONSOLE' }),
   };
 }

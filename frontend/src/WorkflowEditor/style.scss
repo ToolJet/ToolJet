@@ -33,17 +33,25 @@
 
     .left-sidebar-column {
       background-color: white;
-      width: 56px;
       padding:0;
+      border-right: solid 0.5px lightgrey;
+
+      .left-sidebar-container.drawer-open {
+        width: 356px
+      }
 
       .left-sidebar-container {
 
         display: flex;
         flex-direction: row;
+        width: 56px;
+        height: 100%;
 
         .left-sidebar {
           height: 100%;
           padding: 0;
+          width: 56px;
+          border-left: solid 0.5px lightgrey;
   
           .icon {
             width: 30px;
@@ -71,12 +79,11 @@
           }
         }
 
-        .drawer {
+        .left-sidebar-drawer {
           width: 300px;
           height: 100%;
           background-color: white;
           display: flex;
-          margin-left: 56px;
           border-color: white;
           border-width: 0;
           overflow: clip;
