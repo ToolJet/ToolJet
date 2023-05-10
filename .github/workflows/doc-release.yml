@@ -1,0 +1,39 @@
+name: Documentation version release
+
+on:
+  workflow_dispatch:
+    inputs:
+      create-branch:
+        description: "Branch name"
+      version:
+        description: "RELEASE_VERSION"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Setup node 16.14
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.14        
+      - run: cd docs && yarn install && npm run docusaurus docs:version ${{ github.event.inputs.version }}
+
+      - name: Create Pull Request
+        id: doc
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: "Creating a new version folder ${{ github.event.version }}"
+          body: "Created a new version folder for version: ${{ github.event.inputs.version }}"
+          branch: ${{ github.event.inputs.create-branch }}
+          base: "develop"
+          token: ${{ secrets.GITHUB }}
+          delete-branch : true
+          labels: versioned-docs, automated pr
+          commit-message: added new version folder
+
+
+
