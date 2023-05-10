@@ -33,11 +33,11 @@ jobs:
           sleep 1
           done
 
-      - name: Getting cypress secrets
-        # use quotes around the secret, as its value
-        # is simply inserted as a string into the command
-        run: |
-          echo '${{ secrets.CYPRESS_SECRETS }}' > cypress.env.json
+      # - name: Getting cypress secrets
+      #   # use quotes around the secret, as its value
+      #   # is simply inserted as a string into the command
+      #   run: |
+      #     echo '${{ secrets.CYPRESS_SECRETS }}' > cypress.env.json
 
       - name: Cypress integration test
         uses: cypress-io/github-action@v5
@@ -45,6 +45,7 @@ jobs:
           working-directory: ./cypress-tests
           config: "baseUrl=https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
           config-file: cypress-run.config.js
+          env: ${{ secrets.CYPRESS_SECRETS }}
 
       - name: Capturing screenshots
         uses: actions/upload-artifact@v3
@@ -52,3 +53,10 @@ jobs:
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
+
+      - name: Capturing downloads
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: screenshots
+          path: cypress-tests/cypress/downloads
