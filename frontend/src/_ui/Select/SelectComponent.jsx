@@ -75,7 +75,7 @@ export const SelectComponent = ({
       formatOptionLabel={(option) => renderCustomOption(option)}
       menuPlacement={menuPlacement}
       maxMenuHeight={maxMenuHeight}
-      menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
+      menuPortalTarget={menuPortalTarget}
       classNamePrefix={`${darkMode && 'dark-theme'} ${customWrap && 'react-select'}`}
       closeMenuOnSelect={closeMenuOnSelect ?? true}
     />

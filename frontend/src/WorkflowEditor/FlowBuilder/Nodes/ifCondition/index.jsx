@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
 import { Handle, Position } from 'reactflow';
-import { CodeHinter } from '../../../Editor/CodeBuilder/CodeHinter';
-import WorkflowEditorContext from '../../context';
+import { CodeHinter } from '../../../../Editor/CodeBuilder/CodeHinter';
+import WorkflowEditorContext from '../../../context';
 
-import './if-condition-node-styles.scss';
+import './styles.scss';
 
 export default function IfConditionNode(props) {
   const { width, height, id, data: nodeData } = props;
