@@ -21,6 +21,9 @@
       "database": {
         "type": "string"
       },
+      "socket_path": {
+        "type": "string"
+      },
       "username": {
         "type": "string"
       },
@@ -38,6 +41,9 @@
       "value": 3306
     },
     "database": {
+      "value": ""
+    },
+    "socket_path": {
       "value": ""
     },
     "username": {
@@ -68,6 +74,12 @@
       "key": "database",
       "type": "text",
       "description": "Name of the database"
+    },
+    "socket_path": {
+      "label": "Socket Path",
+      "type": "text",
+      "name": "socket_path",
+      "description": "Enter the socket path"
     },
     "ssl_enabled": {
       "label": "SSL",
