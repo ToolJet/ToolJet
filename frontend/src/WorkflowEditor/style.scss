@@ -32,48 +32,55 @@
     }
 
     .left-sidebar-column {
+      background-color: white;
       width: 56px;
       padding:0;
 
-      .left-sidebar {
-        height: 100%;
-        padding: 0;
+      .left-sidebar-container {
 
-        .icon {
-          width: 30px;
-          height: 30px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 3px;
-          cursor: pointer;
-          margin-top: 5px;
-          
-          svg {
-            width: 20px;
-            height: 20px;
+        display: flex;
+        flex-direction: row;
+
+        .left-sidebar {
+          height: 100%;
+          padding: 0;
+  
+          .icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 5px;
+            
+            svg {
+              width: 20px;
+              height: 20px;
+            }
+  
+            svg.active {
+              stroke: black;
+              stroke-width: 2px;
+            }
           }
-
-          svg.active {
-            stroke: black;
-            stroke-width: 2px;
+  
+          .icon:hover {
+            background-color: rgb(239, 239, 239);
           }
-        }
-
-        .icon:hover {
-          background-color: rgb(239, 239, 239);
         }
 
         .drawer {
           width: 300px;
-          height: 90%;
+          height: 100%;
           background-color: white;
           display: flex;
-          position: absolute;
-          left: 56px;
+          margin-left: 56px;
           border-color: white;
           border-width: 0;
           overflow: clip;
+          z-index: 1;
 
           .title-row {
             border-bottom: solid 0.5px rgb(235, 234, 234);
@@ -117,11 +124,13 @@
           }
         }
       }
+
     }
 
   }
 
   .logs-panel {
+    z-index: 2;
     .header {
       padding-left: 10px;
       height: 40px;
@@ -129,6 +138,7 @@
       flex-direction: row;
       line-height: 40px;
       cursor: pointer;
+      border: solid 0.5px lightgrey;
 
       .up-icon {
         cursor: pointer;
@@ -153,13 +163,14 @@
     }
 
     .logs-console {
-      height: 300px;
+      height: 250px;
       background-color: #222323;
       color: white;
       padding-left: 10px;
       padding-top: 10px;
       font-family: 'Courier New', Courier, monospace;
       font-size: 15px;
+      overflow-y: auto;
     }
   }
 

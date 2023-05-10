@@ -13,6 +13,7 @@ import { DataQueriesService } from './data_queries.service';
 import { User } from 'src/entities/user.entity';
 import { getQueryVariables, resolveCode } from 'lib/utils';
 import { Graph, alg } from '@dagrejs/graphlib';
+import * as moment from 'moment';
 
 @Injectable()
 export class WorkflowExecutionsService {
@@ -254,7 +255,7 @@ export class WorkflowExecutionsService {
 
     const options = getQueryVariables(query.options, state);
     try {
-      logs.push(`${query.name}: Started execution`);
+      logs.push(`[${moment().format('YYYY-MM-DD HH:mm:ss.SSS A')}] ${query.name}: Started execution`);
       const result = await this.dataQueriesService.runQuery(user, query, options);
 
       const newState = {
@@ -262,10 +263,10 @@ export class WorkflowExecutionsService {
         [query.name]: result,
       };
 
-      logs.push(`${query.name}: Execution succeeded`);
+      logs.push(`[${moment().format('YYYY-MM-DD HH:mm:ss.SSS A')}] ${query.name}: Execution succeeded`);
       await this.completeNodeExecution(node, JSON.stringify(result), newState);
     } catch (exception) {
-      logs.push(`${query.name}: Execution failed`);
+      logs.push(`[${moment().format('YYYY-MM-DD HH:mm:ss.SSS A')}] ${query.name}: Execution failed`);
       const result = { status: 'failed', exception };
 
       const newState = {

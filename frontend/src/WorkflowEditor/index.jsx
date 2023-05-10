@@ -31,6 +31,14 @@ function WorkflowEditor(props) {
 
   const editorSessionActions = generateActions(dispatch);
 
+  const fetchExecutionHistory = (versionId) => {
+    editorSessionActions.setExecutionHistoryLoadingStatus(ServerDataStates.Fetching);
+    workflowExecutionsService.all(versionId).then((executions) => {
+      editorSessionActions.setExecutionHistoryLoadingStatus(ServerDataStates.Fetched);
+      editorSessionActions.setExecutionHistory(executions);
+    });
+  };
+
   // This useEffect fetches the app, and then the corresponding datasources
   useEffect(() => {
     appService
@@ -67,11 +75,7 @@ function WorkflowEditor(props) {
         return { versionId };
       })
       .then(({ versionId }) => {
-        editorSessionActions.setExecutionHistoryLoadingStatus(ServerDataStates.Fetching);
-        workflowExecutionsService.all(versionId).then((executions) => {
-          editorSessionActions.setExecutionHistoryLoadingStatus(ServerDataStates.Fetched);
-          editorSessionActions.setExecutionHistory(executions);
-        });
+        fetchExecutionHistory(versionId);
       });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -121,11 +125,11 @@ function WorkflowEditor(props) {
   };
 
   const executeWorkflow = async () => {
+    editorSessionActions.setMode(Modes.Running);
     editorSessionActions.displayLogsConsole(true);
     const { workflowExecution: execution, _result } = await workflowExecutionsService.create(
       editorSession.app.versionId
     );
-    editorSessionActions.setMode(Modes.Running);
     editorSessionActions.setExecutionId(execution.id);
     const intervalHandle = setInterval(async () => {
       const { status, nodes, logs } = await workflowExecutionsService.getStatus(execution.id);
@@ -135,6 +139,7 @@ function WorkflowEditor(props) {
       if (status) {
         clearInterval(intervalHandle);
         editorSessionActions.setMode(Modes.Editing);
+        fetchExecutionHistory(editorSession.app.versionId);
       }
     }, 100);
   };

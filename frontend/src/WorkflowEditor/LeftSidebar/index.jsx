@@ -5,9 +5,11 @@ import RunItem from './RunItem';
 export default function LeftSidebar(props) {
   const { editorSession, editorSessionActions } = props;
   return (
-    <div className="left-sidebar">
-      <div className="icon" onClick={() => editorSessionActions.toggleLeftDrawer((prevValue) => !prevValue)}>
-        <HistoryIcon className={editorSession.leftDrawer?.display ? 'active' : ''} />
+    <div className="left-sidebar-container">
+      <div className="left-sidebar">
+        <div className="icon" onClick={() => editorSessionActions.toggleLeftDrawer((prevValue) => !prevValue)}>
+          <HistoryIcon className={editorSession.leftDrawer?.display ? 'active' : ''} />
+        </div>
       </div>
       {editorSession.leftDrawer?.display && (
         <div className="drawer">
