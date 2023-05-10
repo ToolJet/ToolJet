@@ -46,7 +46,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     updateOnPageLoadEvents,
     apps,
     clonePage,
-    queryPanelHeight,
     isVersionReleased,
     setReleasedVersionPopupState,
   } = props;

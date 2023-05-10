@@ -5,6 +5,7 @@ import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import { QueryCard } from './QueryCard';
 import Fuse from 'fuse.js';
+import cx from 'classnames';
 
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 
@@ -70,9 +71,14 @@ export const QueryDataPane = ({
           </div>
           <button
             data-cy={`button-add-new-queries`}
-            className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button  ${
-              darkMode && 'theme-dark'
-            }`}
+            className={cx(
+              `col-auto d-flex align-items-center py-1 rounded default-secondary-button ${
+                this.isVersionReleased() && 'disabled'
+              }`,
+              {
+                'theme-dark': this.props.darkMode,
+              }
+            )}
             onClick={handleAddNewQuery}
             data-tooltip-id="tooltip-for-add-query"
             data-tooltip-content="Add new query"
