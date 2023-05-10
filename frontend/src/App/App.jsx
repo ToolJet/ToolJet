@@ -36,8 +36,7 @@ import '@/_styles/theme.scss';
 import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 import { InstanceSettings } from '@/InstanceSettingsPage';
-import posthog from 'posthog-js';
-import moment from 'moment';
+import initPosthog from '../_helpers/initPosthog';
 
 const AppWrapper = (props) => {
   return (
@@ -80,8 +79,8 @@ class AppComponent extends React.Component {
       'confirm-invite',
     ];
 
-    const pathnames = window.location.pathname.split('/')?.filter(path=> path!='');
-    return pathnames?.length > 0 ? existedPaths.find((path) =>  pathnames[0] === path ) : false;
+    const pathnames = window.location.pathname.split('/')?.filter((path) => path != '');
+    return pathnames?.length > 0 ? existedPaths.find((path) => pathnames[0] === path) : false;
   };
 
   setFaviconAndTitle() {
@@ -143,19 +142,7 @@ class AppComponent extends React.Component {
     } catch (e) {
       console.log(e);
     }
-
-    if (currentUser) {
-      posthog.init('phc_26ABY7KUsjfqamS7V0WxcLzfTr6AT4Du21CAEvCISo7', {
-        api_host: 'https://app.posthog.com',
-        autocapture: false,
-      });
-      posthog.identify(
-        currentUser.email, // distinct_id, required
-        { name: `${currentUser.first_name} ${currentUser.last_name}`, time: currentUser.created_at }
-      );
-      //incase if the user properties have default time property.
-      posthog.register({'user_created_at': currentUser.created_at});
-    }
+    initPosthog(currentUser);
   }
 
   componentDidMount() {

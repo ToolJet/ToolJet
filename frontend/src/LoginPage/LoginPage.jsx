@@ -18,6 +18,7 @@ import Spinner from '@/_ui/Spinner';
 import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
 import posthog from 'posthog-js';
 import { withRouter } from '@/_hoc/withRouter';
+import initPosthog from '../_helpers/initPosthog';
 class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -168,7 +169,9 @@ class LoginPageComponent extends React.Component {
       .then(this.authSuccessHandler, this.authFailureHandler);
   };
 
-  authSuccessHandler = ({ organization_id, current_organization_id, email }) => {
+  authSuccessHandler = (currentUser) => {
+    const { organization_id, current_organization_id, email } = currentUser;
+    initPosthog(currentUser);
     posthog.capture('signin_email', {
       email,
       workspace_id: organization_id || current_organization_id,

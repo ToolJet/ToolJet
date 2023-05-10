@@ -5,6 +5,7 @@ import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
 import { RedirectLoader } from '../_components';
 import posthog from 'posthog-js';
+import initPosthog from '../_helpers/initPosthog';
 
 export function Authorize() {
   const [error, setError] = useState('');
@@ -61,7 +62,8 @@ export function Authorize() {
   const signIn = (authParams, configs) => {
     authenticationService
       .signInViaOAuth(router.query.configId, router.query.origin, authParams)
-      .then(({ redirect_url, organization_id, current_organization_id, email }) => {
+      .then((response) => {
+        const { redirect_url, organization_id, current_organization_id, email } = response;
         if (redirect_url) {
           localStorage.setItem('ph-sso-type', router.query.origin); //for posthog event
           window.location.href = redirect_url;
@@ -70,6 +72,7 @@ export function Authorize() {
         const event = `${redirect_url ? 'signup' : 'signin'}_${
           router.query.origin === 'google' ? 'google' : router.query.origin === 'openid' ? 'openid' : 'github'
         }`;
+        initPosthog(response);
         posthog.capture(event, {
           email,
           workspace_id: organization_id || current_organization_id,

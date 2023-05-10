@@ -14,6 +14,7 @@ import startsWith from 'lodash.startswith';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import posthog from 'posthog-js';
+import initPosthog from '../_helpers/initPosthog';
 
 function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode, source }) {
   const Logo = darkMode ? LogoDarkMode : LogoLightMode;
@@ -55,6 +56,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           const event = `signup_${
             source === 'sso' ? (ssoType === 'google' ? 'google' : ssoType === 'openid' ? 'openid' : 'github') : 'email'
           }`;
+          initPosthog(data);
           posthog.capture(event, {
             email: data.email,
             workspace_id: data.organization_id || data.current_organization_id,
