@@ -6,6 +6,7 @@ import { Confirm } from '../Viewer/Confirm';
 
 import { useQueryPanelActions, useUnsavedChanges, useSelectedQuery } from '@/_stores/queryPanelStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, darkMode, editorRef, children }) => {
   const { setSelectedQuery, updateQueryPanelHeight, setUnSavedChanges } = useQueryPanelActions();
@@ -27,6 +28,7 @@ export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, darkMode, edi
   const [draftQuery, setDraftQuery] = useState(null);
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [editingQuery, setEditingQuery] = useState(dataQueries.length > 0);
+  const { isVersionReleased } = useAppDataStore();
 
   useEffect(() => {
     if (!editingQuery && selectedQuery !== null && selectedQuery?.id !== 'draftQuery') {
@@ -221,6 +223,7 @@ export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, darkMode, edi
             fetchDataQueries={fetchDataQueries}
             darkMode={darkMode}
             editorRef={editorRef}
+            isVersionReleased={isVersionReleased}
           />
           {children({
             toggleQueryEditor,

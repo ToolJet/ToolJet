@@ -6,7 +6,7 @@ import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg'
 import { QueryCard } from './QueryCard';
 import Fuse from 'fuse.js';
 import cx from 'classnames';
-
+import { useAppDataStore } from '@/_stores/appDataStore';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 
 export const QueryDataPane = ({
@@ -24,6 +24,7 @@ export const QueryDataPane = ({
   const { loadingDataQueries } = useDataQueriesStore();
   const dataQueries = useDataQueries();
   const [filteredQueries, setFilteredQueries] = useState(dataQueries);
+  const { isVersionReleased } = useAppDataStore();
 
   useEffect(() => {
     setFilteredQueries(dataQueries);
@@ -73,10 +74,10 @@ export const QueryDataPane = ({
             data-cy={`button-add-new-queries`}
             className={cx(
               `col-auto d-flex align-items-center py-1 rounded default-secondary-button ${
-                this.isVersionReleased() && 'disabled'
+                isVersionReleased && 'disabled'
               }`,
               {
-                'theme-dark': this.props.darkMode,
+                'theme-dark': darkMode,
               }
             )}
             onClick={handleAddNewQuery}
@@ -113,6 +114,7 @@ export const QueryDataPane = ({
                   setSelectedDataSource={setSelectedDataSource}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
+                  isVersionReleased={isVersionReleased}
                 />
               ) : (
                 ''
@@ -128,6 +130,7 @@ export const QueryDataPane = ({
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
                   editorRef={editorRef}
+                  isVersionReleased={isVersionReleased}
                 />
               ))}
             </div>

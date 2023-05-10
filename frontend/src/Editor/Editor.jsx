@@ -342,6 +342,7 @@ class EditorComponent extends React.Component {
       const homePageId = startingPageId ?? dataDefinition.homePageId;
 
       useAppDataStore.getState().actions.updateEditingVersion(data.editing_version);
+      useAppDataStore.getState().actions.updateIsVersionReleased(data.editing_version?.id === data?.current_version_id);
 
       this.setState(
         {
@@ -397,6 +398,7 @@ class EditorComponent extends React.Component {
         skipYmapUpdate: true,
         versionChanged: true,
       });
+      useAppDataStore.getState().actions.updateIsVersionReleased(version?.id === this.state.app?.current_version_id);
       this.setState(
         {
           editingVersion: version,
@@ -1644,6 +1646,7 @@ class EditorComponent extends React.Component {
                   dataQueriesChanged={this.dataQueriesChanged}
                   fetchDataQueries={this.fetchDataQueries}
                   darkMode={this.props.darkMode}
+                  isVersionReleased={this.isVersionReleased()}
                   editorRef={this}
                 >
                   {({
