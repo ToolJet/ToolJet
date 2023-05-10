@@ -1,5 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
+// eslint-disable-next-line import/no-unresolved
 import Select from 'react-select';
 import defaultStyles from './styles';
 
@@ -75,8 +76,7 @@ export const SelectComponent = ({
       menuPlacement={menuPlacement}
       maxMenuHeight={maxMenuHeight}
       menuPortalTarget={useMenuPortal ? document.body : menuPortalTarget}
-      className="nodrag"
-      classNamePrefix={`nodrag ${darkMode && 'dark-theme'} ${customWrap && 'react-select'}`}
+      classNamePrefix={`${darkMode && 'dark-theme'} ${customWrap && 'react-select'}`}
       closeMenuOnSelect={closeMenuOnSelect ?? true}
     />
   );
