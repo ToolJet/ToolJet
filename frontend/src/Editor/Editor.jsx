@@ -1270,6 +1270,7 @@ class EditorComponent extends React.Component {
   };
 
   switchPage = (pageId, queryParams = []) => {
+    document.getElementById('real-canvas').scrollIntoView();
     if (this.state.currentPageId === pageId) return;
 
     const { name, handle, events } = this.state.appDefinition.pages[pageId];

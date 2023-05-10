@@ -125,7 +125,7 @@ export const commonText = {
     "Your password has been reset successfully, log into ToolJet to continue your session",
   labelFullNameInput: "Enter full name",
   labelEmailInput: "Email address",
-  breadcrumbworkspaceSettingTitle:"Workspace settings",
+  breadcrumbworkspaceSettingTitle: "Workspace settings",
   breadcrumbGlobalDatasourceTitle: "Global datasources",
   breadcrumbDatabaseTitle: "Databse",
   breadcrumbApplications: "Applications",

@@ -4,8 +4,9 @@ export const usersSelector = {
   usersElements: {
     usersTableNameColumnHeader: '[data-cy="users-table-name-column-header"]',
     usersTableEmailColumnHeader: '[data-cy="users-table-email-column-header"]',
-    usersTableStatusColumnHeader: '[data-cy="users-table-status-column-header"]',
-    usersFilterLabel: '[data-cy="users-filter-label"]'
+    usersTableStatusColumnHeader:
+      '[data-cy="users-table-status-column-header"]',
+    usersFilterLabel: '[data-cy="users-filter-label"]',
   },
   usersPageTitle: '[data-cy="title-users-page"]',
   userFilterInput: '[data-cy="users-filter-input"]',
@@ -54,8 +55,8 @@ export const usersSelector = {
   buttonDownloadTemplate: '[data-cy="button-download-template"]',
   buttonUploadUsers: '[data-cy="button-upload-users"]',
   helperTextBulkUpload: '[data-cy="helper-text-bulk-upload"]',
-  iconBulkUpload:'[data-cy="icon-bulk-upload"]',
-  helperTextSelectFile:'[data-cy="helper-text-select-file"]',
+  iconBulkUpload: '[data-cy="icon-bulk-upload"]',
+  helperTextSelectFile: '[data-cy="helper-text-select-file"]',
   helperTextDropFile: '[data-cy="helper-text-drop-file"]',
   inputFieldBulkUpload: '[data-cy="input-field-bulk-upload"]',
   copyInvitationLink: '[data-cy="copy-invitation-link"]',
