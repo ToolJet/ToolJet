@@ -80,6 +80,7 @@
         }
 
         .left-sidebar-drawer {
+          position: fixed;
           width: 300px;
           height: 100%;
           background-color: white;
@@ -87,6 +88,7 @@
           border-color: white;
           border-width: 0;
           overflow: clip;
+          left: 56px;
           z-index: 1;
 
           .title-row {
