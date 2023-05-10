@@ -1,0 +1,22 @@
+.common-custom-node {
+    display: flex;
+    width: 384px;
+    height: 80px;
+    background-color: #ffffff;
+    border-radius: 6px;
+    padding: 24px;
+
+  
+    .left-handle, .right-handle {
+      width: 20px;
+    }
+
+    .title {
+      font-family: 'IBM Plex Sans';
+      font-style: normal;
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 24px;
+      margin-left: 16px;
+    }
+}

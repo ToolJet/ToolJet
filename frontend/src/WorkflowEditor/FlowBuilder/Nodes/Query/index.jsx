@@ -1,14 +1,13 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Handle } from 'reactflow';
-import { allSources } from '../../../Editor/QueryManager/QueryEditors';
+import { allSources } from '../../../../Editor/QueryManager/QueryEditors';
 import Select from 'react-select';
-import WorkflowEditorContext from '../../context';
-import { capitalize, isUndefined } from 'lodash';
-import { find } from 'lodash';
-import { generateQueryName } from '../../utils';
+import WorkflowEditorContext from '../../../context';
+import { capitalize, isUndefined, find } from 'lodash';
+import { generateQueryName } from '../../../utils';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 
-import './query-node-styles.scss';
+import './styles.scss';
 
 const staticDataSourceSchemas = {
   restapi: {

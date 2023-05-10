@@ -9,12 +9,13 @@ import {
   addEdge as addReactFlowEdge,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import QueryNode from './node-types/QueryNode';
-import ifCondition from './node-types/IfConditionNode';
+import QueryNode from './Nodes/Query';
+import ifConditionNode from './Nodes/ifCondition';
 import WorkflowEditorContext from '../context';
 import { query } from '../reducer/defaults';
 import './styles.scss';
 import BlockOptions from './BlockOptions';
+import CommonCustomNode from './Nodes/CommonCustomNode';
 
 function FlowBuilder(_props) {
   const { project } = useReactFlow();
@@ -57,19 +58,15 @@ function FlowBuilder(_props) {
       const y = event.clientY - top;
       const startingNodeId = editingActivity.nodeId;
       const startingNodeHandleId = editingActivity.handleId;
-      setShowBlockOptions({
-        x,
-        y,
-        startingNodeId,
-        startingNodeHandleId,
-        clientX: event.clientX,
-        clientY: event.clientY,
-      });
-      setEditingActivity({ type: 'IDLE' });
 
       if (event.target.className === 'react-flow__pane') {
-        // const nodeType = prompt('Node type (Query/If):', 'Query');
-        // setShowBlockOptions({ x, y });
+        setShowBlockOptions({
+          x,
+          y,
+          startingNodeId,
+          startingNodeHandleId,
+        });
+        setEditingActivity({ type: 'IDLE' });
       }
     },
     [editingActivity.nodeId, setEditingActivity, project, addNode, addEdge]
@@ -146,7 +143,10 @@ function FlowBuilder(_props) {
     [removeEdge]
   );
 
-  const nodeTypes = useMemo(() => ({ query: QueryNode, 'if-condition': ifCondition }), []);
+  const nodeTypes = useMemo(
+    () => ({ query: QueryNode, 'if-condition': ifConditionNode, 'common-custom-node': CommonCustomNode }),
+    []
+  );
   return (
     <div style={{ height: '100%' }}>
       <ReactFlow
@@ -168,6 +168,7 @@ function FlowBuilder(_props) {
         panOnScroll={true}
         zoomOnDoubleClick={false}
         onMove={() => setShowBlockOptions(null)}
+        onNodeClick={(event, node) => console.log('node data', node)}
       >
         <Background />
       </ReactFlow>
@@ -176,7 +177,7 @@ function FlowBuilder(_props) {
           onNewNode={addNewNode}
           editorSession={editorSession}
           // give style so it renders on given clientx & client y
-          style={{ left: showBlockOptions?.clientX, top: showBlockOptions?.clientY, position: 'absolute' }}
+          style={{ left: showBlockOptions?.x, top: showBlockOptions?.y, position: 'absolute' }}
         />
       )}
     </div>
