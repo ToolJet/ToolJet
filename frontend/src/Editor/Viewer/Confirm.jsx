@@ -69,11 +69,11 @@ export function Confirm({
       )}
       <Modal.Body data-cy={'modal-message'}>{message}</Modal.Body>
       <Modal.Footer className="mt-3">
-        <button className="btn btn-danger" onClick={handleClose} data-cy={'modal-cancel-button'}>
-          {cancelButtonText === '' ? t('globals.cancel', 'Cancel') : cancelButtonText}
-        </button>
         <button className="btn" onClick={handleConfirm} data-cy={'modal-confirm-button'}>
           {confirmButtonText === '' ? t('globals.yes', 'Yes') : confirmButtonText}
+        </button>
+        <button className="btn btn-danger" onClick={handleClose} data-cy={'modal-cancel-button'}>
+          {cancelButtonText === '' ? t('globals.cancel', 'Cancel') : cancelButtonText}
         </button>
       </Modal.Footer>
     </Modal>
