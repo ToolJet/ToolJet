@@ -201,7 +201,13 @@ export class WorkflowExecutionsService {
             edgeToBeSkipped.skipped = true;
 
             queue.length = 0;
-            queue.push(...this.computeNodesToBeExecuted(currentNode, workflowExecution.nodes, workflowExecution.edges));
+            queue.push(
+              ...this.computeNodesToBeExecuted(
+                workflowExecution.startNode,
+                workflowExecution.nodes,
+                workflowExecution.edges
+              )
+            );
 
             break;
           }
