@@ -10,7 +10,7 @@ import { CodeHinter } from '../CodeBuilder/CodeHinter';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import Preview from './Preview';
 import DataSourceLister from './DataSourceLister';
-import _, { isEmpty, isEqual, capitalize } from 'lodash';
+import _, { isEmpty, isEqual, capitalize, cloneDeep } from 'lodash';
 import { allOperations } from '@tooljet/plugins/client';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
@@ -92,7 +92,7 @@ class QueryManagerComponent extends React.Component {
         options:
           this.state.isFieldsChanged || props.isUnsavedQueriesAvailable
             ? this.state.options
-            : selectedQuery?.options ?? {},
+            : cloneDeep(selectedQuery?.options ?? {}),
         dataSourceMeta,
         paneHeightChanged,
         isSourceSelected: paneHeightChanged || queryPaneDragged ? this.state.isSourceSelected : props.isSourceSelected,
@@ -152,9 +152,14 @@ class QueryManagerComponent extends React.Component {
         }
         if (this.props.mode === 'edit') {
           this.defaultOptions.current =
-            this.state.selectedQuery?.id === selectedQuery?.id ? this.state.options : selectedQuery?.options;
+            this.state.selectedQuery?.id === selectedQuery?.id
+              ? cloneDeep(this.state.options)
+              : cloneDeep(selectedQuery?.options);
           this.setState({
-            options: paneHeightChanged || props.isUnsavedQueriesAvailable ? this.state.options : selectedQuery?.options,
+            options:
+              paneHeightChanged || props.isUnsavedQueriesAvailable
+                ? this.state.options
+                : cloneDeep(selectedQuery?.options),
             selectedQuery,
             queryName: selectedQuery?.name,
           });
