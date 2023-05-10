@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { appVersionService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
@@ -45,6 +45,7 @@ export const EditVersion = ({
       show={showEditAppVersion}
       closeModal={() => setShowEditAppVersion(false)}
       title={t('editor.appVersionManager.editVersion', 'Edit Version')}
+      checkForBackground={true}
     >
       <form
         onSubmit={(e) => {
@@ -58,6 +59,7 @@ export const EditVersion = ({
               type="text"
               onChange={(e) => setVersionName(e.target.value)}
               className="form-control"
+              data-cy="edit-version-name-input-field"
               placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
               disabled={isEditingVersion}
               value={versionName}
@@ -67,10 +69,19 @@ export const EditVersion = ({
         </div>
         <div className="row">
           <div className="col d-flex justify-content-end">
-            <button className="btn mx-2" onClick={() => setShowEditAppVersion(false)} type="button">
+            <button
+              className="btn mx-2"
+              data-cy="cancel-button"
+              onClick={() => setShowEditAppVersion(false)}
+              type="button"
+            >
               {t('globals.cancel', 'Cancel')}
             </button>
-            <button className={`btn btn-primary ${isEditingVersion ? 'btn-loading' : ''}`} type="submit">
+            <button
+              className={`btn btn-primary ${isEditingVersion ? 'btn-loading' : ''}`}
+              data-cy="save-button"
+              type="submit"
+            >
               {t('globals.save', 'Save')}
             </button>
           </div>

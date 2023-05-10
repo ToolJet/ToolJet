@@ -42,6 +42,7 @@
     "@nestjs/passport": "^8.2.1",
     "@nestjs/platform-express": "^8.4.6",
     "@nestjs/platform-ws": "^8.0.10",
+    "@nestjs/schedule": "^2.2.0",
     "@nestjs/serve-static": "^2.2.2",
     "@nestjs/typeorm": "^8.0.0",
     "@nestjs/websockets": "^8.0.10",
@@ -52,6 +53,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.1",
     "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
     "dotenv": "^10.0.0",
     "express-http-proxy": "^1.6.3",
     "fast-csv": "^4.3.6",
@@ -73,7 +75,9 @@
     "passport-jwt": "^4.0.0",
     "pg": "^8.7.1",
     "pino-pretty": "^6.0.0",
+    "protobufjs": "^7.2.3",
     "reflect-metadata": "^0.1.13",
+    "request-ip": "^3.3.0",
     "rxjs": "^7.2.0",
     "sanitize-html": "^2.7.0",
     "semver": "^7.3.5",
@@ -91,6 +95,8 @@
     "@nestjs/schematics": "^8.0.0",
     "@nestjs/testing": "^8.0.0",
     "@types/compression": "^1.7.2",
+    "@types/cookie-parser": "^1.4.3",
+    "@types/cron": "^2.0.0",
     "@types/express": "^4.17.13",
     "@types/express-http-proxy": "^1.6.3",
     "@types/got": "^9.6.12",
@@ -100,6 +106,7 @@
     "@types/node": "^16.0.0",
     "@types/nodemailer": "^6.4.4",
     "@types/passport-jwt": "^3.0.6",
+    "@types/request-ip": "^0.0.37",
     "@types/sanitize-html": "^2.6.2",
     "@types/supertest": "^2.0.11",
     "@types/ws": "^8.2.2",
@@ -120,7 +127,7 @@
     "typescript": "^4.3.5"
   },
   "engines": {
-    "node": ">=14.17.3",
-    "npm": "<=7.20.0"
+    "node": "18.3.0",
+    "npm": "8.11.0"
   }
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AppLogo from '@/_components/AppLogo';
 import { GlobalSettings } from './GlobalSettings';
@@ -10,6 +10,8 @@ import { ManageAppUsers } from '../ManageAppUsers';
 import { ReleaseVersionButton } from '../ReleaseVersionButton';
 import cx from 'classnames';
 import config from 'config';
+// eslint-disable-next-line import/no-unresolved
+import { useUpdatePresence } from '@y-presence/react';
 
 export default function EditorHeader({
   darkMode,
@@ -38,8 +40,26 @@ export default function EditorHeader({
   handleSlugChange,
   onVersionRelease,
   saveEditingVersion,
+  onVersionDelete,
+  currentUser,
 }) {
   const { is_maintenance_on } = app;
+
+  const updatePresence = useUpdatePresence();
+  useEffect(() => {
+    const initialPresence = {
+      firstName: currentUser?.first_name ?? '',
+      lastName: currentUser?.last_name ?? '',
+      email: currentUser?.email ?? '',
+      image: '',
+      editingVersionId: '',
+      x: 0,
+      y: 0,
+      color: '',
+    };
+    updatePresence(initialPresence);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser]);
 
   return (
     <div className="header">
@@ -105,6 +125,7 @@ export default function EditorHeader({
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
                       showCreateVersionModalPrompt={showCreateVersionModalPrompt}
                       closeCreateVersionModalPrompt={closeCreateVersionModalPrompt}
+                      onVersionDelete={onVersionDelete}
                     />
                   )}
                 </div>

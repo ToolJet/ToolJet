@@ -17,9 +17,18 @@ export const Modal = function Modal({
   setExposedVariable,
   registerAction,
   fireEvent,
+  dataCy,
 }) {
   const [showModal, setShowModal] = useState(false);
-  const { hideOnEsc, hideCloseButton, hideTitleBar, loadingState, useDefaultButton, triggerButtonLabel } = properties;
+  const {
+    closeOnClickingOutside = false,
+    hideOnEsc,
+    hideCloseButton,
+    hideTitleBar,
+    loadingState,
+    useDefaultButton,
+    triggerButtonLabel,
+  } = properties;
   const {
     headerBackgroundColor,
     headerTextColor,
@@ -52,23 +61,15 @@ export const Modal = function Modal({
   );
 
   useEffect(() => {
-    if (exposedVariables.show !== showModal) {
-      setExposedVariable('show', showModal).then(() => fireEvent(showModal ? 'onOpen' : 'onClose'));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal]);
-
-  useEffect(() => {
     const canShowModal = exposedVariables.show ?? false;
-    if (canShowModal !== showModal) {
-      setShowModal(canShowModal);
-      fireEvent(canShowModal ? 'onOpen' : 'onClose');
-    }
+    setShowModal(exposedVariables.show ?? false);
+    fireEvent(canShowModal ? 'onOpen' : 'onClose');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
 
   function hideModal() {
     setShowModal(false);
+    setExposedVariable('show', false).then(() => fireEvent('onClose'));
   }
 
   const customStyles = {
@@ -94,7 +95,7 @@ export const Modal = function Modal({
   };
 
   useEffect(() => {
-    if (containerProps.mode === 'view') {
+    if (closeOnClickingOutside) {
       const handleClickOutside = (event) => {
         const modalRef = parentRef.current.parentElement.parentElement.parentElement;
 
@@ -108,10 +109,11 @@ export const Modal = function Modal({
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
-  }, [containerProps.mode, parentRef]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [closeOnClickingOutside, parentRef]);
 
   return (
-    <div className="container" data-disabled={disabledState}>
+    <div className="container" data-disabled={disabledState} data-cy={dataCy}>
       {useDefaultButton && (
         <button
           disabled={disabledState}
@@ -120,7 +122,9 @@ export const Modal = function Modal({
           onClick={(event) => {
             event.stopPropagation();
             setShowModal(true);
+            setExposedVariable('show', true);
           }}
+          data-cy={`${dataCy}-launch-button`}
         >
           {triggerButtonLabel ?? 'Show Modal'}
         </button>
@@ -201,10 +205,21 @@ const Component = ({ children, ...restProps }) => {
         />
       )}
       {!hideTitleBar && (
-        <BootstrapModal.Header style={{ ...customStyles.modalHeader }}>
-          <BootstrapModal.Title id="contained-modal-title-vcenter">{title}</BootstrapModal.Title>
+        <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
+          <BootstrapModal.Title id="contained-modal-title-vcenter" data-cy={`modal-title`}>
+            {title}
+          </BootstrapModal.Title>
           {!hideCloseButton && (
-            <span className="cursor-pointer" size="sm" onClick={() => hideModal()}>
+            <span
+              className="cursor-pointer"
+              data-cy={`modal-close-button`}
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                hideModal();
+              }}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="icon icon-tabler icon-tabler-x"
@@ -225,7 +240,7 @@ const Component = ({ children, ...restProps }) => {
           )}
         </BootstrapModal.Header>
       )}
-      <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id}>
+      <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
         {children}
       </BootstrapModal.Body>
     </BootstrapModal>

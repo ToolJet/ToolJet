@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { isExpectedDataType } from '@/_helpers/utils';
 
-export const Steps = function Button({ properties, styles, fireEvent, setExposedVariable, height, darkMode }) {
-  const { currentStep, stepsSelectable, steps } = properties;
+export const Steps = function Button({ properties, styles, fireEvent, setExposedVariable, height, darkMode, dataCy }) {
+  const { stepsSelectable } = properties;
+  const currentStep = isExpectedDataType(properties.currentStep, 'number');
+  const steps = isExpectedDataType(properties.steps, 'array');
   const { color, theme, visibility } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [activeStep, setActiveStep] = useState(null);
@@ -24,7 +27,11 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
 
   return (
     visibility && (
-      <div className={`steps ${theme == 'numbers' && 'steps-counter '}`} style={{ color: textColor, height }}>
+      <div
+        className={`steps ${theme == 'numbers' && 'steps-counter '}`}
+        style={{ color: textColor, height }}
+        data-cy={dataCy}
+      >
         {steps?.map((item) => (
           <a
             key={item.id}

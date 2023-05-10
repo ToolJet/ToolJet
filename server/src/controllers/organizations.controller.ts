@@ -1,6 +1,5 @@
-import { Body, Controller, Get, NotFoundException, Param, Patch, Post, UseGuards, Query } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Patch, Post, UseGuards, Query, Res } from '@nestjs/common';
 import { OrganizationsService } from '@services/organizations.service';
-import { AppConfigService } from '@services/app_config.service';
 import { decamelizeKeys } from 'humps';
 import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -9,28 +8,20 @@ import { AppAbility } from 'src/modules/casl/casl-ability.factory';
 import { CheckPolicies } from 'src/modules/casl/check_policies.decorator';
 import { PoliciesGuard } from 'src/modules/casl/policies.guard';
 import { User as UserEntity } from 'src/entities/user.entity';
-import { ConfigService } from '@nestjs/config';
-import { MultiOrganizationGuard } from 'src/modules/auth/multi-organization.guard';
-import { OrganizationCreateDto } from '@dto/organization-create.dto';
+import { OrganizationCreateDto, OrganizationUpdateDto } from '@dto/organization.dto';
+import { Response } from 'express';
 
 @Controller('organizations')
 export class OrganizationsController {
-  constructor(
-    private organizationsService: OrganizationsService,
-    private authService: AuthService,
-    private readonly configService: ConfigService,
-    private appConfigService: AppConfigService
-  ) {}
+  constructor(private organizationsService: OrganizationsService, private authService: AuthService) {}
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('viewAllUsers', UserEntity))
   @Get('users')
   async getUsers(@User() user, @Query() query) {
-    const { page, email, firstName, lastName, status } = query;
+    const { page, searchText, status } = query;
     const filterOptions = {
-      ...(email && { email }),
-      ...(firstName && { firstName }),
-      ...(lastName && { lastName }),
+      ...(searchText && { searchText }),
       ...(status && { status }),
     };
     const usersCount = await this.organizationsService.usersCount(user, filterOptions);
@@ -69,15 +60,19 @@ export class OrganizationsController {
     return decamelizeKeys({ organizations: result });
   }
 
-  @UseGuards(JwtAuthGuard, MultiOrganizationGuard)
+  @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@User() user, @Body() organizationCreateDto: OrganizationCreateDto) {
+  async create(
+    @User() user,
+    @Body() organizationCreateDto: OrganizationCreateDto,
+    @Res({ passthrough: true }) response: Response
+  ) {
     const result = await this.organizationsService.create(organizationCreateDto.name, user);
 
     if (!result) {
       throw new Error();
     }
-    return await this.authService.switchOrganization(result.id, user, true);
+    return await this.authService.switchOrganization(response, result.id, user, true);
   }
 
   @Get(['/:organizationId/public-configs', '/public-configs'])
@@ -86,10 +81,7 @@ export class OrganizationsController {
     if (!existingOrganizationId) {
       throw new NotFoundException();
     }
-    if (!organizationId && this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
-      // Request from single organization login page - find one from organization and setting
-      organizationId = existingOrganizationId;
-    } else if (!organizationId) {
+    if (!organizationId) {
       const result = this.organizationsService.constructSSOConfigs();
       return decamelizeKeys({ ssoConfigs: result });
     }
@@ -112,9 +104,9 @@ export class OrganizationsController {
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('updateOrganizations', UserEntity))
   @Patch()
-  async update(@Body() body, @User() user) {
-    await this.organizationsService.updateOrganization(user.organizationId, body);
-    return {};
+  async update(@Body() organizationUpdateDto: OrganizationUpdateDto, @User() user) {
+    await this.organizationsService.updateOrganization(user.organizationId, organizationUpdateDto);
+    return;
   }
 
   @UseGuards(JwtAuthGuard, PoliciesGuard)

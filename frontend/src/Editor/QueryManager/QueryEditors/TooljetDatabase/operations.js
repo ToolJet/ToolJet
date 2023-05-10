@@ -59,6 +59,17 @@ async function listRows(queryOptions, organizationId, currentState) {
 
   if (!isEmpty(listRows)) {
     const { limit, where_filters: whereFilters, order_filters: orderFilters } = listRows;
+
+    if (limit && isNaN(limit)) {
+      return {
+        status: 'failed',
+        statusText: 'failed',
+        message: 'Please provide a valid limit',
+        description: 'Limit should be a number',
+        data: {},
+      };
+    }
+
     const whereQuery = buildPostgrestQuery(whereFilters);
     const orderQuery = buildPostgrestQuery(orderFilters);
 
@@ -92,23 +103,32 @@ async function updateRows(queryOptions, organizationId, currentState) {
 
   !isEmpty(whereQuery) && query.push(whereQuery);
 
-  return await tooljetDatabaseService.updateRows(organizationId, tableName, body, query.join('&'));
+  return await tooljetDatabaseService.updateRows(organizationId, tableName, body, query.join('&') + '&order=id');
 }
 
 async function deleteRows(queryOptions, organizationId, currentState) {
   const resolvedOptions = resolveReferences(queryOptions, currentState);
-  const { table_name: tableName, delete_rows: deleteRows } = resolvedOptions;
-  const { where_filters: whereFilters, limit } = deleteRows;
+  const { table_name: tableName, delete_rows: deleteRows = { whereFilters: {} } } = resolvedOptions;
+  const { where_filters: whereFilters, limit = 1 } = deleteRows;
 
   let query = [];
   const whereQuery = buildPostgrestQuery(whereFilters);
-
-  if (isEmpty(whereQuery) || !limit || limit === '') {
+  if (isEmpty(whereQuery)) {
     return {
       status: 'failed',
       statusText: 'failed',
       message: 'Please provide a where filter or a limit to delete rows',
       description: 'Please provide a where filter or a limit to delete rows',
+      data: {},
+    };
+  }
+
+  if (limit && isNaN(limit)) {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: 'Please provide a valid limit',
+      description: 'Limit should be a number',
       data: {},
     };
   }

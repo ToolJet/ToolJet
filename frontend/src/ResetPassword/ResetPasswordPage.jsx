@@ -9,6 +9,7 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import { withTranslation } from 'react-i18next';
 import Spinner from '@/_ui/Spinner';
+import { withRouter } from '@/_hoc/withRouter';
 
 class ResetPasswordComponent extends React.Component {
   constructor(props) {
@@ -39,7 +40,7 @@ class ResetPasswordComponent extends React.Component {
 
   handleClick = (event) => {
     event.preventDefault();
-    const { token } = this.props.location.state;
+    const { token } = this.props.params;
     const { password, password_confirmation } = this.state;
 
     if (password !== password_confirmation) {
@@ -75,9 +76,16 @@ class ResetPasswordComponent extends React.Component {
               <div className="common-auth-container-wrapper ">
                 {!showResponseScreen ? (
                   <>
-                    <h2 className="common-auth-section-header reset-password-header">Reset Password</h2>
+                    <h2
+                      className="common-auth-section-header reset-password-header"
+                      data-cy="reset-password-page-header"
+                    >
+                      Reset Password
+                    </h2>
                     <div className="reset-password-input-container">
-                      <label className="tj-text-input-label">New Password</label>
+                      <label className="tj-text-input-label" data-cy="new-password-input-label">
+                        New Password
+                      </label>
                       <div className="login-password">
                         <input
                           onChange={this.handleChange}
@@ -87,8 +95,13 @@ class ResetPasswordComponent extends React.Component {
                           autoComplete="off"
                           className="tj-text-input reset-password-input"
                           autoFocus
+                          data-cy="new-password-input-field"
                         />
-                        <div className="signup-password-hide-img" onClick={this.handleOnCheck}>
+                        <div
+                          className="signup-password-hide-img"
+                          onClick={this.handleOnCheck}
+                          data-cy="password-visiblity-action-button"
+                        >
                           {showPassword ? (
                             <EyeHide
                               fill={
@@ -115,13 +128,17 @@ class ResetPasswordComponent extends React.Component {
                             />
                           )}
                         </div>
-                        <span className="tj-input-helper-text">Password must be at least 5 characters</span>
+                        <span className="tj-input-helper-text" data-cy="password-helper-text">
+                          Password must be at least 5 characters
+                        </span>
 
                         <span></span>
                       </div>
                     </div>
                     <div className="reset-password-input-container">
-                      <label className="tj-text-input-label">Re-enter the password</label>
+                      <label className="tj-text-input-label" data-cy="confirm-password-input-label">
+                        Re-enter the password
+                      </label>
                       <div className="login-password">
                         <input
                           onChange={this.handleChange}
@@ -130,8 +147,13 @@ class ResetPasswordComponent extends React.Component {
                           placeholder="Re-enter the password"
                           autoComplete="off"
                           className="tj-text-input reset-password-input"
+                          data-cy="confirm-password-input-field"
                         />
-                        <div className="signup-password-hide-img" onClick={this.handleOnConfirmCheck}>
+                        <div
+                          className="signup-password-hide-img"
+                          onClick={this.handleOnConfirmCheck}
+                          data-cy="password-visiblity-action-button"
+                        >
                           {showConfirmPassword ? (
                             <EyeHide
                               fill={
@@ -158,7 +180,9 @@ class ResetPasswordComponent extends React.Component {
                             />
                           )}
                         </div>
-                        <span className="tj-input-helper-text">Password must be at least 5 characters</span>
+                        <span className="tj-input-helper-text" data-cy="password-helper-text">
+                          Password must be at least 5 characters
+                        </span>
 
                         <span></span>
                       </div>
@@ -173,6 +197,7 @@ class ResetPasswordComponent extends React.Component {
                         }
                         onClick={this.handleClick}
                         className="reset-password-btn"
+                        data-cy="reset-password-button"
                       >
                         {isLoading ? (
                           <div className="spinner-center">
@@ -208,4 +233,4 @@ class ResetPasswordComponent extends React.Component {
   }
 }
 
-export const ResetPassword = withTranslation()(ResetPasswordComponent);
+export const ResetPassword = withTranslation()(withRouter(ResetPasswordComponent));

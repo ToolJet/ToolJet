@@ -56,7 +56,7 @@ module.exports = {
           'aria-label': 'GitHub repository',
         },
         {
-          href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
+          href: 'https://tooljet.com/slack',
           position: 'right',
           className: 'navbar-social-link navbar-slack-logo',
           'aria-label': 'Slack workspace',
@@ -86,7 +86,7 @@ module.exports = {
           items: [
             {
               label: 'Slack',
-              href: 'https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg',
+              href: 'https://tooljet.com/slack',
             },
           ],
         },
@@ -127,17 +127,7 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false,
-          lastVersion: '2.0.0-beta',
-          versions: {
-            '2.0.0-beta': {
-              label: 'v2.0.0',
-              banner: 'none',
-            },
-            '1.x.x': {
-              label: 'v1.x.x',
-              banner: 'none',
-            },
-          },
+          lastVersion: '2.5.0',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

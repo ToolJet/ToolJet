@@ -20,7 +20,7 @@ const PopoverComponent = ({
   const computeStyle = () => {
     if (popoverContentHeight) {
       return {
-        height: `${popoverContentHeight}vh`,
+        height: popoverContentHeight === 'auto' ? 'auto' : `${popoverContentHeight}vh`,
         overflow: 'auto',
       };
     }

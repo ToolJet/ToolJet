@@ -63,6 +63,7 @@ export const CreateVersion = ({
         setShowCreateAppVersion(false);
       }}
       title={t('editor.appVersionManager.createVersion', 'Create new version')}
+      checkForBackground={true}
     >
       <form
         onSubmit={(e) => {
@@ -72,11 +73,14 @@ export const CreateVersion = ({
       >
         <div className="mb-3 pb-2">
           <div className="col">
-            <label className="form-label">{t('editor.appVersionManager.versionName', 'Version Name')}</label>
+            <label className="form-label" data-cy="version-name-label">
+              {t('editor.appVersionManager.versionName', 'Version Name')}
+            </label>
             <input
               type="text"
               onChange={(e) => setVersionName(e.target.value)}
               className="form-control"
+              data-cy="version-name-input-field"
               placeholder={t('editor.appVersionManager.enterVersionName', 'Enter version name')}
               disabled={isCreatingVersion}
               value={versionName}
@@ -88,13 +92,15 @@ export const CreateVersion = ({
         </div>
 
         <div className="mb-4 pb-2">
-          <label className="form-label">{t('editor.appVersionManager.createVersionFrom', 'Create version from')}</label>
-          <div className="ts-control">
+          <label className="form-label" data-cy="create-version-from-label">
+            {t('editor.appVersionManager.createVersionFrom', 'Create version from')}
+          </label>
+          <div className="ts-control" data-cy="create-version-from-input-field">
             <Select
               options={options}
               defaultValue={options[options.length - 1]}
               onChange={(version) => {
-                setAppDefinitionFromVersion(version);
+                setAppDefinitionFromVersion(version, false);
               }}
               useMenuPortal={false}
               width="100%"
@@ -131,6 +137,7 @@ export const CreateVersion = ({
           <div className="col d-flex justify-content-end">
             <button
               className="btn mx-2"
+              data-cy="cancel-button"
               onClick={() => {
                 closeCreateVersionModalPrompt();
                 setShowCreateAppVersion(false);
@@ -139,7 +146,11 @@ export const CreateVersion = ({
             >
               {t('globals.cancel', 'Cancel')}
             </button>
-            <button className={`btn btn-primary ${isCreatingVersion ? 'btn-loading' : ''}`} type="submit">
+            <button
+              className={`btn btn-primary ${isCreatingVersion ? 'btn-loading' : ''}`}
+              data-cy="create-new-version-button"
+              type="submit"
+            >
               <svg
                 className="icon"
                 width="21"

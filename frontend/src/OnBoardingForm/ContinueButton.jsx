@@ -13,11 +13,7 @@ function ContinueButton({ setPage, formData, page, setCompleted, isLoading, setI
   useEffect(() => {
     const keyDownHandler = (event) => {
       if (event.key === 'Enter' && !activeCondition) {
-        setPage((currPage) => currPage + 1);
-        if (page == 2) {
-          setIsLoading(true);
-          setCompleted(true);
-        }
+        if (page < 3) setPage((currPage) => currPage + 1);
       }
     };
     document.addEventListener('keydown', keyDownHandler);
@@ -33,12 +29,13 @@ function ContinueButton({ setPage, formData, page, setCompleted, isLoading, setI
       disabled={activeCondition}
       onClick={(e) => {
         e.preventDefault();
-        setPage((currPage) => currPage + 1);
-        if (page == 2) {
+        if (page < 3) setPage((currPage) => currPage + 1);
+        if (page == 3) {
           setIsLoading(true);
           setCompleted(true);
         }
       }}
+      data-cy="continue-button"
     >
       {isLoading ? (
         <div className="spinner-center">
@@ -49,7 +46,13 @@ function ContinueButton({ setPage, formData, page, setCompleted, isLoading, setI
           <p className="mb-0">Continue</p>
           <EnterIcon
             className="enter-icon-onboard"
-            fill={Object.values(formData)[page] == '' || isLoading ? (darkMode ? '#656565' : ' #D1D5DB') : '#fff'}
+            fill={
+              (Object.values(formData)[page] == '' && page !== 3) || isLoading
+                ? darkMode
+                  ? '#656565'
+                  : ' #D1D5DB'
+                : '#fff'
+            }
           />
         </>
       )}

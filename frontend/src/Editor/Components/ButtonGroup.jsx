@@ -1,7 +1,21 @@
 import React, { useEffect, useState } from 'react';
+import { isExpectedDataType } from '@/_helpers/utils';
+import _ from 'lodash';
 
-export const ButtonGroup = function Button({ height, properties, styles, fireEvent, setExposedVariable, darkMode }) {
-  const { values, labels, label, defaultSelected, multiSelection } = properties;
+export const ButtonGroup = function Button({
+  height,
+  properties,
+  styles,
+  fireEvent,
+  setExposedVariable,
+  darkMode,
+  dataCy,
+}) {
+  const { label, multiSelection } = properties;
+  const values = isExpectedDataType(properties.values, 'array');
+  const labels = isExpectedDataType(properties.labels, 'array');
+  const defaultSelected = isExpectedDataType(properties.defaultSelected, 'array');
+
   const {
     backgroundColor,
     textColor,
@@ -21,6 +35,7 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
 
   const [defaultActive, setDefaultActive] = useState(defaultSelected);
   const [data, setData] = useState(
+    // eslint-disable-next-line no-unsafe-optional-chaining
     values?.length <= labels?.length ? [...labels, ...values?.slice(labels?.length)] : labels
   );
   // data is used as state to show what to display , club of label+values / values
@@ -31,11 +46,13 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
 
   useEffect(() => {
     if (labels?.length < values?.length) {
+      // eslint-disable-next-line no-unsafe-optional-chaining
       setData([...labels, ...values?.slice(labels?.length)]);
     } else {
       setData(labels);
     }
-  }, [labels, values]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ labels, values })]);
 
   useEffect(() => {
     setDefaultActive(defaultSelected);
@@ -60,8 +77,15 @@ export const ButtonGroup = function Button({ height, properties, styles, fireEve
     }
   };
   return (
-    <div className="widget-buttongroup" style={{ height }}>
-      {label && <p className={`widget-buttongroup-label ${darkMode && 'text-light'}`}>{label}</p>}
+    <div className="widget-buttongroup" style={{ height }} data-cy={dataCy}>
+      {label && (
+        <p
+          style={{ display: computedStyles.display }}
+          className={`widget-buttongroup-label ${darkMode && 'text-light'}`}
+        >
+          {label}
+        </p>
+      )}
       <div>
         {data?.map((item, index) => (
           <button

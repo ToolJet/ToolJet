@@ -6,6 +6,7 @@ import {
   authenticationService,
   appVersionService,
   orgEnvironmentVariableService,
+  globalDatasourceService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -32,14 +33,14 @@ import {
   removeSelectedComponent,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
-import ReactTooltip from 'react-tooltip';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
 import CommentNotifications from './CommentNotifications';
 import { WidgetManager } from './WidgetManager';
 import Fuse from 'fuse.js';
 import config from 'config';
 import queryString from 'query-string';
 import { toast } from 'react-hot-toast';
-import { produce, enablePatches, setAutoFreeze, applyPatches } from 'immer';
+const { produce, enablePatches, setAutoFreeze, applyPatches } = require('immer');
 import { SearchBox } from '@/_components/SearchBox';
 import { createWebsocketConnection } from '@/_helpers/websocketConnection';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -53,6 +54,9 @@ import { v4 as uuid } from 'uuid';
 import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import EditorHeader from './Header';
+import { getWorkspaceId } from '@/_helpers/utils';
+import '@/_styles/editor/react-select-search.scss';
+import { withRouter } from '@/_hoc/withRouter';
 
 setAutoFreeze(false);
 enablePatches();
@@ -61,29 +65,19 @@ class EditorComponent extends React.Component {
   constructor(props) {
     super(props);
 
-    const appId = this.props.match.params.id;
+    const appId = this.props.params.id;
 
-    const pageHandle = this.props.match.params.pageHandle;
-
-    const currentUser = authenticationService.currentUserValue;
+    const pageHandle = this.props.params.pageHandle;
 
     const { socket } = createWebsocketConnection(appId);
 
     this.renameQueryNameId = React.createRef();
 
     this.socket = socket;
-    let userVars = {};
-
-    if (currentUser) {
-      userVars = {
-        email: currentUser.email,
-        firstName: currentUser.first_name,
-        lastName: currentUser.last_name,
-        groups: currentUser?.group_permissions.map((group) => group.group),
-      };
-    }
 
     const defaultPageId = uuid();
+
+    this.subscription = null;
 
     this.defaultDefinition = {
       showViewerNavigation: true,
@@ -112,7 +106,7 @@ class EditorComponent extends React.Component {
     this.selectionDragRef = React.createRef();
     this.queryManagerPreferences = JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {};
     this.state = {
-      currentUser: authenticationService.currentUserValue,
+      currentUser: {},
       app: {},
       allComponentTypes: componentTypes,
       isLoading: true,
@@ -120,6 +114,7 @@ class EditorComponent extends React.Component {
       appId,
       editingVersion: null,
       loadingDataSources: true,
+      loadingGlobalDataSources: true,
       loadingDataQueries: true,
       showLeftSidebar: true,
       showComments: false,
@@ -131,7 +126,6 @@ class EditorComponent extends React.Component {
         queries: {},
         components: {},
         globals: {
-          currentUser: userVars,
           theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
         },
@@ -171,10 +165,41 @@ class EditorComponent extends React.Component {
     document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
   }
 
+  onVersionDelete = () => {
+    this.fetchApp(this.props.params.pageHandle);
+  };
+  getCurrentOrganizationDetails() {
+    const currentSession = authenticationService.currentSessionValue;
+    const currentUser = currentSession?.current_user;
+    this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
+      if (currentUser && currentSession?.group_permissions) {
+        const userVars = {
+          email: currentUser.email,
+          firstName: currentUser.first_name,
+          lastName: currentUser.last_name,
+          groups: currentSession.group_permissions?.map((group) => group.group),
+        };
+
+        this.setState({
+          currentUser,
+          currentState: {
+            ...this.state.currentState,
+            globals: {
+              ...this.state.currentState.globals,
+              currentUser: userVars,
+            },
+          },
+          userVars,
+        });
+      }
+    });
+  }
+
   componentDidMount() {
+    this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
-    this.fetchApp(this.props.match.params.pageHandle);
+    this.fetchApp(this.props.params.pageHandle);
     this.fetchOrgEnvironmentVariables();
     this.initComponentVersioning();
     this.initRealtimeSave();
@@ -247,15 +272,17 @@ class EditorComponent extends React.Component {
 
   initEventListeners() {
     this.socket?.addEventListener('message', (event) => {
-      if (event.data === 'versionReleased') this.fetchApp();
-      else if (event.data === 'dataQueriesChanged') this.fetchDataQueries();
-      else if (event.data === 'dataSourcesChanged') this.fetchDataSources();
+      const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
+      if (data === 'versionReleased') this.fetchApp();
+      else if (data === 'dataQueriesChanged') this.fetchDataQueries();
+      else if (data === 'dataSourcesChanged') this.fetchDataSources();
     });
   }
 
   componentWillUnmount() {
     document.title = 'Tooljet - Dashboard';
     this.socket && this.socket?.close();
+    this.subscription && this.subscription.unsubscribe();
     if (config.ENABLE_MULTIPLAYER_EDITING) this.props?.provider?.disconnect();
   }
 
@@ -288,6 +315,23 @@ class EditorComponent extends React.Component {
     );
   };
 
+  fetchGlobalDataSources = () => {
+    this.setState(
+      {
+        loadingGlobalDataSources: true,
+      },
+      () => {
+        const { current_organization_id: organizationId } = this.state.currentUser;
+        globalDatasourceService.getAll(organizationId).then((data) =>
+          this.setState({
+            globalDataSources: data.data_sources,
+            loadingGlobalDataSources: false,
+          })
+        );
+      }
+    );
+  };
+
   fetchDataQueries = () => {
     this.setState(
       {
@@ -309,7 +353,7 @@ class EditorComponent extends React.Component {
             () => {
               let queryState = {};
               data.data_queries.forEach((query) => {
-                if (query.plugin_id) {
+                if (query.plugin?.plugin_id) {
                   queryState[query.name] = {
                     ...query.plugin.manifest_file.data.source.exposedVariables,
                     kind: query.plugin.manifest_file.data.source.kind,
@@ -402,7 +446,7 @@ class EditorComponent extends React.Component {
   };
 
   fetchApp = (startingPageHandle) => {
-    const appId = this.props.match.params.id;
+    const appId = this.props.params.id;
 
     const callBack = async (data) => {
       let dataDefinition = defaults(data.definition, this.defaultDefinition);
@@ -445,6 +489,7 @@ class EditorComponent extends React.Component {
 
       this.fetchDataSources();
       this.fetchDataQueries();
+      this.fetchGlobalDataSources();
       initEditorWalkThrough();
     };
 
@@ -458,21 +503,26 @@ class EditorComponent extends React.Component {
     );
   };
 
-  setAppDefinitionFromVersion = (version) => {
-    this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), {
-      skipAutoSave: true,
-      skipYmapUpdate: true,
-      versionChanged: true,
-    });
-    this.setState({
-      editingVersion: version,
-      isSaving: false,
-    });
-
-    this.saveEditingVersion();
-    this.fetchDataSources();
-    this.fetchDataQueries();
-    this.initComponentVersioning();
+  setAppDefinitionFromVersion = (version, shouldWeEditVersion = true) => {
+    if (version?.id !== this.state.editingVersion?.id) {
+      this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), {
+        skipAutoSave: true,
+        skipYmapUpdate: true,
+        versionChanged: true,
+      });
+      this.setState(
+        {
+          editingVersion: version,
+          isSaving: false,
+        },
+        () => {
+          shouldWeEditVersion && this.saveEditingVersion();
+          this.fetchDataSources();
+          this.fetchDataQueries();
+          this.initComponentVersioning();
+        }
+      );
+    }
   };
 
   /**
@@ -489,6 +539,10 @@ class EditorComponent extends React.Component {
     } else {
       this.fetchDataSources();
     }
+  };
+
+  globalDataSourcesChanged = () => {
+    this.fetchGlobalDataSources();
   };
 
   /**
@@ -648,7 +702,6 @@ class EditorComponent extends React.Component {
     this.setState({ isSaving: true, appDefinition: newDefinition, appDefinitionLocalVersion: uuid() }, () => {
       if (!opts.skipAutoSave) this.autoSave();
     });
-    computeComponentState(this, newDefinition.pages[currentPageId]?.components ?? {});
   };
 
   handleInspectorView = () => {
@@ -837,7 +890,7 @@ class EditorComponent extends React.Component {
 
   renderDataSource = (dataSource) => {
     const sourceMeta = this.getSourceMetaData(dataSource);
-    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.icon_file?.data);
+    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataSource?.plugin?.iconFile?.data);
 
     return (
       <tr
@@ -928,6 +981,7 @@ class EditorComponent extends React.Component {
         return this.setState({
           draftQuery: { ...this.state.draftQuery, name: newName },
           renameQueryName: false,
+          selectedQuery: { ...this.state.selectedQuery, name: newName },
         });
       }
       dataqueryService
@@ -971,7 +1025,8 @@ class EditorComponent extends React.Component {
 
   renderDataQuery = (dataQuery, setSaveConfirmation, setCancelData, isDraftQuery = false) => {
     const sourceMeta = this.getSourceMetaData(dataQuery);
-    const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 25, 25, dataQuery?.plugin?.icon_file?.data);
+    const iconFile = dataQuery?.plugin?.iconFile?.data || dataQuery?.plugin?.icon_file?.data;
+    const icon = getSvgIcon(sourceMeta?.kind.toLowerCase(), 20, 20, iconFile);
 
     let isSeletedQuery = false;
     if (this.state.selectedQuery) {
@@ -997,6 +1052,7 @@ class EditorComponent extends React.Component {
         <div className="col query-row-query-name">
           {this.state?.renameQueryName && this.renameQueryNameId?.current === dataQuery.id ? (
             <input
+              data-cy={`query-edit-input-field`}
               className={`query-name query-name-input-field border-indigo-09 bg-transparent  ${
                 this.props.darkMode && 'text-white'
               }`}
@@ -1014,7 +1070,9 @@ class EditorComponent extends React.Component {
               delay={{ show: 800, hide: 100 }}
               overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
             >
-              <div className="query-name">{dataQuery.name}</div>
+              <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
+                {dataQuery.name}
+              </div>
             </OverlayTrigger>
           )}
         </div>
@@ -1024,7 +1082,14 @@ class EditorComponent extends React.Component {
             onClick={() => this.createInputFieldToRenameQuery(dataQuery.id)}
           >
             <span className="d-flex">
-              <svg width="auto" height="auto" viewBox="0 0 19 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                data-cy={`edit-query-${dataQuery.name.toLowerCase()}`}
+                width="auto"
+                height="auto"
+                viewBox="0 0 19 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   fillRule="evenodd"
                   clipRule="evenodd"
@@ -1046,7 +1111,14 @@ class EditorComponent extends React.Component {
                 disabled={isDraftQuery}
               >
                 <span className="d-flex">
-                  <svg width="auto" height="auto" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg
+                    data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
+                    width="auto"
+                    height="auto"
+                    viewBox="0 0 18 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
                     <path
                       fillRule="evenodd"
                       clipRule="evenodd"
@@ -1334,12 +1406,13 @@ class EditorComponent extends React.Component {
     );
   };
 
-  deletePageRequest = (pageId, isHomePage = false) => {
+  deletePageRequest = (pageId, isHomePage = false, pageName = '') => {
     this.setState({
       showPageDeletionConfirmation: {
         isOpen: true,
         pageId,
         isHomePage,
+        pageName,
       },
     });
   };
@@ -1350,6 +1423,7 @@ class EditorComponent extends React.Component {
         isOpen: false,
         pageId: null,
         isHomePage: false,
+        pageName: null,
       },
     });
   };
@@ -1600,6 +1674,7 @@ class EditorComponent extends React.Component {
   };
 
   switchPage = (pageId, queryParams = []) => {
+    document.getElementById('real-canvas').scrollIntoView();
     if (this.state.currentPageId === pageId) return;
 
     const { name, handle, events } = this.state.appDefinition.pages[pageId];
@@ -1609,7 +1684,7 @@ class EditorComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    this.props.history.push(`/apps/${this.state.appId}/${handle}?${queryParamsString}`);
+    this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.appId}/${handle}?${queryParamsString}`);
 
     const { globals: existingGlobals } = this.state.currentState;
 
@@ -1715,6 +1790,7 @@ class EditorComponent extends React.Component {
       appId,
       slug,
       dataSources,
+      globalDataSources = [],
       loadingDataQueries,
       dataQueries,
       loadingDataSources,
@@ -1747,7 +1823,6 @@ class EditorComponent extends React.Component {
 
     return (
       <div className="editor wrapper">
-        <ReactTooltip type="dark" effect="solid" eventOff="click" delayShow={250} />
         <Confirm
           show={queryConfirmationList.length > 0}
           message={`Do you want to run this query - ${queryConfirmationList[0]?.queryName}?`}
@@ -1768,7 +1843,7 @@ class EditorComponent extends React.Component {
         <Confirm
           show={this.state.showPageDeletionConfirmation?.isOpen ?? false}
           title={'Delete Page'}
-          message={`Do you really want to delete this page?`}
+          message={`Do you really want to delete ${this.state.showPageDeletionConfirmation?.pageName || 'this'} page?`}
           confirmButtonLoading={this.state.isDeletingPage}
           onConfirm={() => this.executeDeletepageRequest()}
           onCancel={() => this.cancelDeletePageRequest()}
@@ -1802,6 +1877,8 @@ class EditorComponent extends React.Component {
             handleSlugChange={this.handleSlugChange}
             onVersionRelease={this.onVersionRelease}
             saveEditingVersion={this.saveEditingVersion}
+            onVersionDelete={this.onVersionDelete}
+            currentUser={this.state.currentUser}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
@@ -1813,8 +1890,10 @@ class EditorComponent extends React.Component {
                 appId={appId}
                 darkMode={this.props.darkMode}
                 dataSources={this.state.dataSources}
+                globalDataSources={globalDataSources}
                 dataSourcesChanged={this.dataSourcesChanged}
                 dataQueriesChanged={this.dataQueriesChanged}
+                globalDataSourcesChanged={this.globalDataSourcesChanged}
                 onZoomChanged={this.onZoomChanged}
                 toggleComments={this.toggleComments}
                 switchDarkMode={this.changeDarkMode}
@@ -2003,6 +2082,7 @@ class EditorComponent extends React.Component {
                               <div className="col-auto">
                                 <div className={`queries-search ${this.props.darkMode && 'theme-dark'}`}>
                                   <SearchBox
+                                    dataCy={`query-manager`}
                                     width="100%"
                                     onSubmit={this.filterQueries}
                                     placeholder={this.props.t('globals.search', 'Search')}
@@ -2011,17 +2091,18 @@ class EditorComponent extends React.Component {
                                 </div>
                               </div>
                               <button
+                                data-cy={`button-add-new-queries`}
                                 className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button  ${
                                   this.props.darkMode && 'theme-dark'
                                 }`}
                                 onClick={() => {
                                   this.handleAddNewQuery(setSaveConfirmation, setCancelData);
                                 }}
+                                data-tooltip-id="tooltip-for-add-query"
+                                data-tooltip-content="Add new query"
                               >
                                 <span
                                   className={` d-flex query-manager-btn-svg-wrapper align-items-center query-icon-wrapper`}
-                                  data-tip="Add new query"
-                                  data-class=""
                                 >
                                   <svg
                                     width="auto"
@@ -2057,7 +2138,10 @@ class EditorComponent extends React.Component {
                                 {this.state.filterDataQueries.length === 0 && this.state.draftQuery === null && (
                                   <div className=" d-flex  flex-column align-items-center justify-content-start">
                                     <EmptyQueriesIllustration />
-                                    <span className="mute-text pt-3">{dataQueriesDefaultText}</span> <br />
+                                    <span data-cy="no-query-message" className="mute-text pt-3">
+                                      {dataQueriesDefaultText}
+                                    </span>{' '}
+                                    <br />
                                   </div>
                                 )}
                               </div>
@@ -2073,6 +2157,7 @@ class EditorComponent extends React.Component {
                                 }
                                 toggleQueryEditor={toggleQueryEditor}
                                 dataSources={dataSources}
+                                globalDataSources={globalDataSources}
                                 dataQueries={dataQueries}
                                 mode={editingQuery ? 'edit' : 'create'}
                                 selectedQuery={selectedQuery}
@@ -2110,6 +2195,7 @@ class EditorComponent extends React.Component {
                     </>
                   )}
                 </QueryPanel>
+                <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
               </div>
               <div className="editor-sidebar">
                 <EditorKeyHooks
@@ -2174,4 +2260,4 @@ class EditorComponent extends React.Component {
   }
 }
 
-export const Editor = withTranslation()(EditorComponent);
+export const Editor = withTranslation()(withRouter(EditorComponent));

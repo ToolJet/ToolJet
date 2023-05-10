@@ -11,6 +11,7 @@ export const Container = function Container({
   removeComponent,
   styles,
   darkMode,
+  dataCy,
 }) {
   const { visibility, disabledState, borderRadius, borderColor } = styles;
   const backgroundColor =
@@ -21,6 +22,8 @@ export const Container = function Container({
     border: `1px solid ${borderColor}`,
     height,
     display: visibility ? 'flex' : 'none',
+    overflow: 'hidden auto',
+    position: 'relative',
   };
 
   const parentRef = useRef(null);
@@ -30,6 +33,7 @@ export const Container = function Container({
       data-disabled={disabledState}
       className="jet-container"
       id={id}
+      data-cy={dataCy}
       ref={parentRef}
       style={computedStyles}
       onClick={(e) => {

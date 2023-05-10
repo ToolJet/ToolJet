@@ -13,7 +13,7 @@ import { commentsService } from '@/_services';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
-import produce from 'immer';
+const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 
 export const Container = ({
@@ -55,6 +55,7 @@ export const Container = ({
     backgroundSize: `${canvasWidth / 43}px 10px`,
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const components = appDefinition.pages[currentPageId]?.components ?? {};
 
   const [boxes, setBoxes] = useState(components);
@@ -67,11 +68,11 @@ export const Container = ({
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
 
-  useHotkeys('⌘+z, control+z', () => handleUndo());
-  useHotkeys('⌘+shift+z, control+shift+z', () => handleRedo());
+  useHotkeys('meta+z, control+z', () => handleUndo());
+  useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
 
   useHotkeys(
-    '⌘+v, control+v',
+    'meta+v, control+v',
     () => {
       if (isContainerFocused) {
         navigator.clipboard.readText().then((cliptext) => {
@@ -115,6 +116,7 @@ export const Container = ({
 
   useEffect(() => {
     setBoxes(components);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(components)]);
 
   const moveBox = useCallback(
@@ -565,7 +567,7 @@ export const Container = ({
             <a href="https://docs.tooljet.com/docs#the-very-quick-quickstart" target="_blank" rel="noreferrer">
               guide
             </a>{' '}
-            on adding widgets.
+            on adding components.
           </center>
         </div>
       )}

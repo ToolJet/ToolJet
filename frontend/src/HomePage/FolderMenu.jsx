@@ -10,6 +10,7 @@ export const FolderMenu = function FolderMenu({
   canDeleteFolder,
   canUpdateFolder,
   darkMode,
+  dataCy = '',
 }) {
   const [open, setOpen] = React.useState(false);
   const closeMenu = () => {
@@ -28,7 +29,9 @@ export const FolderMenu = function FolderMenu({
             closeMenu();
             onClick();
           }}
-          data-cy={`${text.toLowerCase().replace(/\s+/g, '-')}-card-option`}
+          data-cy={`${String(dataCy + '-' + text)
+            .toLowerCase()
+            .replace(/\s+/g, '-')}-option`}
         >
           {text}
         </span>
@@ -45,8 +48,13 @@ export const FolderMenu = function FolderMenu({
         setOpen(isOpen);
       }}
       overlay={
-        <Popover id="popover-app-menu" className={darkMode && 'popover-dark-themed'} data-cy="folder-card">
-          <Popover.Content bsPrefix="popover-body">
+        <Popover
+          id="popover-app-menu"
+          className={darkMode && 'dark-theme'}
+          data-cy="folder-card"
+          style={{ transition: 'none' }}
+        >
+          <Popover.Body bsPrefix="popover-body">
             <div>
               {canUpdateFolder && (
                 <Field text={t('homePage.foldersSection.editFolder', 'Edit folder')} onClick={editFolder} />
@@ -59,7 +67,7 @@ export const FolderMenu = function FolderMenu({
                 />
               )}
             </div>
-          </Popover.Content>
+          </Popover.Body>
         </Popover>
       }
     >
@@ -67,6 +75,7 @@ export const FolderMenu = function FolderMenu({
         className={cx('folder-menu-icon', {
           'd-grid': open,
         })}
+        data-cy={`${dataCy.toLowerCase().replace(/\s+/g, '-')}-card-menu-icon`}
       >
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path

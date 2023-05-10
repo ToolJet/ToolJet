@@ -27,21 +27,20 @@ export class FoldersController {
     if (!ability.can('createFolder', Folder)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const folderName = req.body.name;
-
-    const folder = await this.foldersService.create(req.user, folderName);
+    const folder = await this.foldersService.create(req.user, createFolderDto.name);
     return decamelizeKeys(folder);
   }
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async update(@User() user, @Param('id') id, @Body('name') folderName: string) {
+  async update(@User() user, @Param('id') id, @Body() createFolderDto: CreateFolderDto) {
     const ability = await this.foldersAbilityFactory.folderActions(user, {});
 
     if (!ability.can('updateFolder', Folder)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const folder = await this.foldersService.update(id, folderName);
+
+    const folder = await this.foldersService.update(id, createFolderDto.name);
     return decamelizeKeys(folder);
   }
 

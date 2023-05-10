@@ -15,6 +15,7 @@ export const FilePicker = ({
   darkMode,
   styles,
   registerAction,
+  dataCy,
 }) => {
   //* properties definitions
   const instructionText =
@@ -88,7 +89,7 @@ export const FilePicker = ({
 
   const { getRootProps, getInputProps, isDragActive, isDragAccept, isDragReject, acceptedFiles, fileRejections } =
     useDropzone({
-      accept: parsedFileType,
+      accept: { parsedFileType: [parsedFileType] },
       noClick: !parsedEnablePicker || disablePicker,
       noDrag: !parsedEnableDropzone || disablePicker,
       noKeyboard: true,
@@ -304,7 +305,7 @@ export const FilePicker = ({
 
   return (
     <section>
-      <div className="container" {...getRootProps({ style, className: 'dropzone' })}>
+      <div className="container" {...getRootProps({ style, className: 'dropzone' })} data-cy={dataCy}>
         <input {...getInputProps()} />
         <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
 
@@ -386,25 +387,18 @@ FilePicker.AcceptedFiles = ({ children, width, height }) => {
 };
 
 const processCSV = (str, delimiter = ',') => {
-  const headers = str.slice(0, str.indexOf('\n')).split(delimiter);
-  const rows = str.slice(str.indexOf('\n') + 1).split('\n');
-
   try {
-    const newArray = rows.map((row) => {
-      const values = row.split(delimiter);
-      const eachObject = headers.reduce((obj, header, i) => {
-        obj[header] = values[i];
-        return obj;
-      }, {});
-      return eachObject;
-    });
-
-    return newArray;
+    const wb = XLSX.read(str, { type: 'string', raw: true });
+    const wsname = wb.SheetNames[0];
+    const ws = wb.Sheets[wsname];
+    const data = XLSX.utils.sheet_to_json(ws, { delimiter, defval: '' });
+    return data;
   } catch (error) {
     console.log(error);
     handleErrors(error);
   }
 };
+
 const processXls = (str) => {
   try {
     const wb = XLSX.read(str, { type: 'base64' });

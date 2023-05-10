@@ -29,7 +29,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
       show={showMenu}
       overlay={
         <Popover key={page.id} id="page-handler-menu" className={darkMode && 'popover-dark-themed'}>
-          <Popover.Content key={page.id} bsPrefix="popover-body">
+          <Popover.Body key={page.id} bsPrefix="popover-body">
             <div className="card-body">
               <PageHandleField page={page} updatePageHandle={handlePageCallback} />
               <hr style={{ margin: '0.75rem 0' }} />
@@ -84,19 +84,21 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                 />
               </div>
             </div>
-          </Popover.Content>
+          </Popover.Body>
         </Popover>
       }
     >
-      <Button.UnstyledButton
-        onClick={(event) => {
-          event.stopPropagation();
-          setShowMenu(true);
-        }}
-        styles={{ height: '20px', marginTop: '2px' }}
-      >
-        <Button.Content iconSrc={'assets/images/icons/3dots-menu.svg'} />
-      </Button.UnstyledButton>
+      <span>
+        <Button.UnstyledButton
+          onClick={(event) => {
+            event.stopPropagation();
+            setShowMenu(true);
+          }}
+          styles={{ height: '20px', marginTop: '2px' }}
+        >
+          <Button.Content dataCy={`page-menu`} iconSrc={'assets/images/icons/3dots-menu.svg'} />
+        </Button.UnstyledButton>
+      </span>
     </OverlayTrigger>
   );
 };
@@ -104,7 +106,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
 const PageHandleField = ({ page, updatePageHandle }) => {
   const Label = () => {
     return (
-      <label htmlFor="pin" className="form-label">
+      <label htmlFor="pin" className="form-label" data-cy={`header-page-handle`}>
         Page Handle
       </label>
     );
@@ -114,7 +116,7 @@ const PageHandleField = ({ page, updatePageHandle }) => {
     return (
       <div className="col">
         <span style={{ color: '#889096' }}>.../</span>
-        <span>{page.handle}</span>
+        <span data-cy={`page-handle-text`}>{page.handle}</span>
       </div>
     );
   };
@@ -129,7 +131,12 @@ const PageHandleField = ({ page, updatePageHandle }) => {
         }}
         classNames="page-handle-button-container"
       >
-        <Button.Content title={content} iconSrc={'assets/images/icons/input.svg'} direction="right" />
+        <Button.Content
+          title={content}
+          iconSrc={'assets/images/icons/input.svg'}
+          direction="right"
+          dataCy={`page-handler`}
+        />
       </Button.UnstyledButton>
     </div>
   );

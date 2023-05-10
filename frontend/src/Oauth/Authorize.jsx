@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import useRouter from '@/_hooks/use-router';
 import { authenticationService } from '@/_services';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
 import { RedirectLoader } from '../_components';
 
@@ -13,7 +13,6 @@ export function Authorize() {
   const organizationId = authenticationService.getLoginOrganizationId();
 
   useEffect(() => {
-    !organizationId && authenticationService.clearUser();
     const errorMessage = router.query.error_description || router.query.error;
 
     if (errorMessage) {
@@ -41,6 +40,24 @@ export function Authorize() {
       authParams.state = router.query[configs.params.state];
     }
 
+    let subsciption;
+    if (organizationId) {
+      subsciption = authenticationService.currentSession.subscribe((session) => {
+        //logged users should send tj-workspace-id when login to unauthorized workspace
+        if (session.authentication_status === false || session.current_organization_id) {
+          signIn(authParams, configs);
+        }
+      });
+    } else {
+      signIn(authParams, configs);
+    }
+
+    () => subsciption && subsciption.unsubscribe();
+    // Disabled for useEffect not being called for updation
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const signIn = (authParams, configs) => {
     authenticationService
       .signInViaOAuth(router.query.configId, router.query.origin, authParams)
       .then(({ redirect_url }) => {
@@ -51,19 +68,16 @@ export function Authorize() {
         setSuccess(true);
       })
       .catch((err) => setError(`${configs.name} login failed - ${err?.error || 'something went wrong'}`));
-    // Disabled for useEffect not being called for updation
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  };
 
   return (
     <div>
       <RedirectLoader origin={Configs[router.query.origin] ? router.query.origin : 'unknown'} />
       {(success || error) && (
-        <Redirect
-          to={{
-            pathname: `/login${error && organizationId ? `/${organizationId}` : ''}`,
-            state: { errorMessage: error && error },
-          }}
+        <Navigate
+          replace
+          to={`/login${error && organizationId ? `/${organizationId}` : ''}`}
+          state={{ errorMessage: error && error }}
         />
       )}
     </div>

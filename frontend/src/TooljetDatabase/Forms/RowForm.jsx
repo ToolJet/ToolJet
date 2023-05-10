@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
@@ -19,6 +19,10 @@ const RowForm = ({ onCreate, onClose }) => {
     });
     return data;
   });
+
+  useEffect(() => {
+    toast.dismiss();
+  }, []);
 
   const handleInputChange = (columnName) => (e) => {
     setData({ ...data, [columnName]: e.target.value });
@@ -57,6 +61,7 @@ const RowForm = ({ onCreate, onClose }) => {
             onChange={handleInputChange(columnName)}
             placeholder={isPrimaryKey ? 'Auto-generated' : 'Enter a value'}
             className="form-control"
+            data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-input-field`}
             autoComplete="off"
           />
         );
@@ -66,6 +71,7 @@ const RowForm = ({ onCreate, onClose }) => {
           <label className={`form-switch`}>
             <input
               className="form-check-input"
+              data-cy={`${String(columnName).toLocaleLowerCase().replace(/\s+/g, '-')}-check-input`}
               type="checkbox"
               defaultChecked={defaultValue === 'true'}
               onChange={handleToggleChange(columnName)}
@@ -79,18 +85,28 @@ const RowForm = ({ onCreate, onClose }) => {
   };
 
   return (
-    <div className="card">
+    <div className="drawer-card-wrapper ">
       <div className="card-header">
-        <h3 className="card-title">Create a new row</h3>
+        <h3 className="card-title" data-cy="create-new-row-header">
+          Create a new row
+        </h3>
       </div>
-      <div className="card-body">
+      <div className="card-body tj-app-input">
         {Array.isArray(columns) &&
           columns?.map(({ Header, accessor, dataType, isPrimaryKey, column_default }, index) => {
             return (
               <div className="mb-3" key={index}>
-                <div className="form-label">
+                <div
+                  className="form-label"
+                  data-cy={`${String(Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-name-label`}
+                >
                   {Header}&nbsp;
-                  <span className="badge badge-outline text-blue">{isPrimaryKey ? 'SERIAL' : dataType}</span>
+                  <span
+                    className="badge badge-outline text-blue"
+                    data-cy={`${String(dataType).toLocaleLowerCase().replace(/\s+/g, '-')}-data-type-label`}
+                  >
+                    {isPrimaryKey ? 'SERIAL' : dataType}
+                  </span>
                 </div>
                 {renderElement(accessor, dataType, isPrimaryKey, column_default)}
               </div>

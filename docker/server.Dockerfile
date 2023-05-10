@@ -1,9 +1,9 @@
-FROM node:14.17.3-buster as builder
+FROM node:18.3.0-buster as builder
 
 # Fix for JS heap limit allocation issue
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm i -g npm@7.20.0
+RUN npm i -g npm@8.11.0
 RUN npm install -g @nestjs/cli
 
 RUN mkdir -p /app
@@ -25,7 +25,20 @@ RUN npm --prefix server install --only=production
 COPY ./server/ ./server/
 RUN npm --prefix server run build
 
-FROM node:14.17.3-buster
+FROM debian:11
+
+RUN apt-get update -yq \
+    && apt-get install curl gnupg zip -yq \
+    && apt-get install -yq build-essential \
+    && apt-get clean -y
+
+RUN curl -O https://nodejs.org/dist/v18.3.0/node-v18.3.0-linux-x64.tar.xz \
+    && tar -xf node-v18.3.0-linux-x64.tar.xz \
+    && mv node-v18.3.0-linux-x64 /usr/local/lib/nodejs \
+    && echo 'export PATH="/usr/local/lib/nodejs/bin:$PATH"' >> /etc/profile.d/nodejs.sh \
+    && /bin/bash -c "source /etc/profile.d/nodejs.sh" \
+    && rm node-v18.3.0-linux-x64.tar.xz
+ENV PATH=/usr/local/lib/nodejs/bin:$PATH
 
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -60,7 +73,11 @@ COPY --from=builder /app/server/templates ./app/server/templates
 COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
-RUN chgrp -R 0 /app && chmod -R g=u /app
+# Define non-sudo user
+RUN useradd --create-home appuser \
+    && chown -R appuser:appuser /app
+USER appuser
+
 WORKDIR /app
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1

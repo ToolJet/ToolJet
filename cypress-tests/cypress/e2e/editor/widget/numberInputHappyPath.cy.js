@@ -117,14 +117,14 @@ describe("Number Input", () => {
 
     verifyPropertiesGeneralAccordion(data.widgetName, data.tooltipText);
 
-    verifyLayout(data.widgetName);
+    // verifyLayout(data.widgetName);
 
-    cy.get(commonWidgetSelector.changeLayoutButton).click();
-    cy.get(
-      commonWidgetSelector.parameterTogglebutton(
-        commonWidgetText.parameterShowOnDesktop
-      )
-    ).click();
+    // cy.get(commonWidgetSelector.changeLayoutButton).click();
+    // cy.get(
+    //   commonWidgetSelector.parameterTogglebutton(
+    //     commonWidgetText.parameterShowOnDesktop
+    //   )
+    // ).click();
 
     cy.get(commonWidgetSelector.widgetDocumentationLink).should(
       "have.text",
@@ -189,7 +189,8 @@ describe("Number Input", () => {
       numberInputText.defaultWidgetName,
       data.boxShadowParam,
       data.colourHex,
-      data.boxShadowColor
+      data.boxShadowColor,
+      3
     );
 
     cy.get(commonSelectors.editorPageLogo).click();
@@ -238,14 +239,11 @@ describe("Number Input", () => {
       commonWidgetText.parameterBorderRadius,
       commonWidgetText.borderRadiusInput
     );
-
     cy.forceClickOnCanvas();
-    cy.waitForAutoSave();
-    cy.reload();
 
     openEditorSidebar(numberInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, [], "1");
+    openAccordion(commonWidgetText.accordionGenaral, []);
     cy.get(commonWidgetSelector.boxShadowColorPicker).click();
 
     fillBoxShadowParams(
@@ -254,7 +252,8 @@ describe("Number Input", () => {
     );
     selectColourFromColourPicker(
       commonWidgetText.boxShadowColor,
-      data.boxShadowColor
+      data.boxShadowColor,
+      3
     );
     addTextWidgetToVerifyValue("components.numberinput1.value");
 

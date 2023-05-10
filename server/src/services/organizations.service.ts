@@ -24,6 +24,7 @@ import {
 } from 'src/helpers/user_lifecycle';
 import { decamelize } from 'humps';
 import { Response } from 'express';
+import { AppEnvironmentService } from './app_environments.service';
 
 const MAX_ROW_COUNT = 500;
 
@@ -38,7 +39,7 @@ type FetchUserResponse = {
   accountSetupToken?: string;
 };
 
-type UserFilterOptions = { email?: string; firstName?: string; lastName?: string; status?: string };
+type UserFilterOptions = { searchText?: string; status?: string };
 
 interface UserCsvRow {
   first_name: string;
@@ -56,6 +57,7 @@ export class OrganizationsService {
     private usersService: UsersService,
     private organizationUserService: OrganizationUsersService,
     private groupPermissionService: GroupPermissionsService,
+    private appEnvironmentService: AppEnvironmentService,
     private encryptionService: EncryptionService,
     private emailService: EmailService,
     private configService: ConfigService
@@ -77,6 +79,8 @@ export class OrganizationsService {
           updatedAt: new Date(),
         })
       );
+
+      await this.appEnvironmentService.createDefaultEnvironments(organization.id, manager);
 
       const createdGroupPermissions: GroupPermission[] = await this.createDefaultGroupPermissionsForOrganization(
         organization,
@@ -114,9 +118,7 @@ export class OrganizationsService {
         enable_sign_up: this.configService.get<string>('DISABLE_SIGNUPS') !== 'true',
         enabled: true,
       },
-      enableSignUp:
-        this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
-        this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
+      enableSignUp: this.configService.get<string>('SSO_DISABLE_SIGNUPS') !== 'true',
     };
   }
 
@@ -159,9 +161,7 @@ export class OrganizationsService {
       return [];
     }
     const options = {
-      email: searchInput,
-      firstName: searchInput,
-      lastName: searchInput,
+      searchText: searchInput,
     };
     const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'or')
       .orderBy('user.firstName', 'ASC')
@@ -180,20 +180,25 @@ export class OrganizationsService {
   }
 
   organizationUsersQuery(organizationId: string, options: UserFilterOptions, condition?: 'and' | 'or') {
+    const defaultConditions = () => {
+      return new Brackets((qb) => {
+        if (options?.searchText)
+          qb.orWhere('lower(user.email) like :email', {
+            email: `%${options?.searchText.toLowerCase()}%`,
+          });
+        if (options?.searchText)
+          qb.orWhere('lower(user.firstName) like :firstName', {
+            firstName: `%${options?.searchText.toLowerCase()}%`,
+          });
+        if (options?.searchText)
+          qb.orWhere('lower(user.lastName) like :lastName', {
+            lastName: `%${options?.searchText.toLowerCase()}%`,
+          });
+      });
+    };
+
     const getOrConditions = () => {
       return new Brackets((qb) => {
-        if (options?.email)
-          qb.orWhere('lower(user.email) like :email', {
-            email: `%${options?.email.toLowerCase()}%`,
-          });
-        if (options?.firstName)
-          qb.orWhere('lower(user.firstName) like :firstName', {
-            firstName: `%${options?.firstName.toLowerCase()}%`,
-          });
-        if (options?.lastName)
-          qb.orWhere('lower(user.lastName) like :lastName', {
-            lastName: `%${options?.lastName.toLowerCase()}%`,
-          });
         if (options?.status)
           qb.orWhere('organization_user.status = :status', {
             status: `${options?.status}`,
@@ -202,18 +207,6 @@ export class OrganizationsService {
     };
     const getAndConditions = () => {
       return new Brackets((qb) => {
-        if (options?.email)
-          qb.andWhere('lower(user.email) like :email', {
-            email: `%${options?.email.toLowerCase()}%`,
-          });
-        if (options?.firstName)
-          qb.andWhere('lower(user.firstName) like :firstName', {
-            firstName: `%${options?.firstName.toLowerCase()}%`,
-          });
-        if (options?.lastName)
-          qb.andWhere('lower(user.lastName) like :lastName', {
-            lastName: `%${options?.lastName.toLowerCase()}%`,
-          });
         if (options?.status)
           qb.andWhere('organization_user.status = :status', {
             status: `${options?.status}`,
@@ -224,13 +217,15 @@ export class OrganizationsService {
       .innerJoinAndSelect('organization_user.user', 'user')
       .where('organization_user.organization_id = :organizationId', {
         organizationId,
-      });
+      })
+      .andWhere(defaultConditions());
     query.andWhere(condition === 'and' ? getAndConditions() : getOrConditions());
     return query;
   }
 
   async fetchUsers(user: User, page: number, options: UserFilterOptions): Promise<FetchUserResponse[]> {
-    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'and')
+    const condition = options?.searchText ? 'and' : 'or';
+    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, condition)
       .orderBy('user.firstName', 'ASC')
       .take(10)
       .skip(10 * (page - 1))
@@ -248,9 +243,7 @@ export class OrganizationsService {
         status: orgUser.status,
         avatarId: orgUser.user.avatarId,
         ...(orgUser.invitationToken ? { invitationToken: orgUser.invitationToken } : {}),
-        ...(this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
-        this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' &&
-        orgUser.user.invitationToken
+        ...(this.configService.get<string>('HIDE_ACCOUNT_SETUP_LINK') !== 'true' && orgUser.user.invitationToken
           ? { accountSetupToken: orgUser.user.invitationToken }
           : {}),
       };
@@ -258,7 +251,8 @@ export class OrganizationsService {
   }
 
   async usersCount(user: User, options: UserFilterOptions): Promise<number> {
-    return await this.organizationUsersQuery(user.organizationId, options, 'and').getCount();
+    const condition = options?.searchText ? 'and' : 'or';
+    return await this.organizationUsersQuery(user.organizationId, options, condition).getCount();
   }
 
   async fetchOrganizations(user: any): Promise<Organization[]> {
@@ -351,11 +345,7 @@ export class OrganizationsService {
 
     if (!result) return;
 
-    if (
-      addInstanceLevelSSO &&
-      this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' &&
-      result.inheritSSO
-    ) {
+    if (addInstanceLevelSSO && result.inheritSSO) {
       if (
         this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID') &&
         !result.ssoConfigs?.some((config) => config.sso === 'google')
@@ -530,8 +520,6 @@ export class OrganizationsService {
     };
     const groups = inviteNewUserDto.groups ?? [];
 
-    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
-
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let user = await this.usersService.findByEmail(userParams.email, undefined, undefined, manager);
 
@@ -554,16 +542,14 @@ export class OrganizationsService {
         );
       }
 
-      if (!isSingleWorkspace) {
-        if (!user) {
-          // User not exist
-          shouldSendWelcomeMail = true;
-          // Create default organization if user not exist
-          defaultOrganization = await this.create('Untitled workspace', null, manager);
-        } else if (user.invitationToken) {
-          // User not setup
-          shouldSendWelcomeMail = true;
-        }
+      if (!user) {
+        // User not exist
+        shouldSendWelcomeMail = true;
+        // Create default organization if user not exist
+        defaultOrganization = await this.create('Untitled workspace', null, manager);
+      } else if (user.invitationToken) {
+        // User not setup
+        shouldSendWelcomeMail = true;
       }
       user = await this.usersService.create(
         userParams,

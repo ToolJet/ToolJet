@@ -3,6 +3,7 @@ import cx from 'classnames';
 import Table from '../Table';
 import CreateColumnDrawer from '../Drawers/CreateColumnDrawer';
 import CreateRowDrawer from '../Drawers/CreateRowDrawer';
+import EditRowDrawer from '../Drawers/EditRowDrawer';
 import Filter from '../Filter';
 import Sort from '../Sort';
 import Sidebar from '../Sidebar';
@@ -23,8 +24,9 @@ const TooljetDatabasePage = ({ totalTables }) => {
     setSortFilters,
   } = useContext(TooljetDatabaseContext);
 
-  const darkMode = localStorage.getItem('darkMode') === 'true';
   const [isCreateRowDrawerOpen, setIsCreateRowDrawerOpen] = useState(false);
+  const [isEditRowDrawerOpen, setIsEditRowDrawerOpen] = useState(false);
+  const [isCreateColumnDrawerOpen, setIsCreateColumnDrawerOpen] = useState(false);
 
   const EmptyState = () => {
     return (
@@ -38,9 +40,13 @@ const TooljetDatabasePage = ({ totalTables }) => {
           <EmptyFoldersIllustration />
         </div>
         <div className="text-center">
-          <div className="text-h3">You don&apos;t have any tables yet.</div>
+          <div className="text-h3" data-cy="do-not-have-table-text">
+            You don&apos;t have any tables yet.
+          </div>
         </div>
-        <div className="text-h5 text-secondary">Create a table to get started!</div>
+        <div className="text-h5 text-secondary" data-cy="create-table-to-get-started-text">
+          Create a table to get started!
+        </div>
       </div>
     );
   };
@@ -48,24 +54,20 @@ const TooljetDatabasePage = ({ totalTables }) => {
   return (
     <div className="row gx-0">
       <Sidebar />
-      <div
-        className={cx('col animation-fade', {
-          'bg-light-gray': !darkMode,
-        })}
-      >
+      <div className={cx('col animation-fade database-page-content-wrap')}>
         {totalTables === 0 && <EmptyState />}
 
         {selectedTable && (
           <>
             <div className="database-table-header-wrapper">
-              <div className="card border-0 px-3 py-2">
-                <span className="text-h3 font-weight-500">{selectedTable}</span>
-              </div>
               <div className="card border-0">
-                <div className="card-body p-0 py-2">
-                  <div className="row g-2 align-items-center">
+                <div className="card-body  tj-db-operaions-header">
+                  <div className="row align-items-center">
                     <div className="col">
-                      <CreateColumnDrawer />
+                      <CreateColumnDrawer
+                        isCreateColumnDrawerOpen={isCreateColumnDrawerOpen}
+                        setIsCreateColumnDrawerOpen={setIsCreateColumnDrawerOpen}
+                      />
                       {columns?.length > 0 && (
                         <>
                           <Filter
@@ -84,6 +86,10 @@ const TooljetDatabasePage = ({ totalTables }) => {
                             isCreateRowDrawerOpen={isCreateRowDrawerOpen}
                             setIsCreateRowDrawerOpen={setIsCreateRowDrawerOpen}
                           />
+                          <EditRowDrawer
+                            isCreateRowDrawerOpen={isEditRowDrawerOpen}
+                            setIsCreateRowDrawerOpen={setIsEditRowDrawerOpen}
+                          />
                         </>
                       )}
                     </div>
@@ -92,7 +98,10 @@ const TooljetDatabasePage = ({ totalTables }) => {
               </div>
             </div>
             <div className={cx('col')}>
-              <Table openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)} />
+              <Table
+                openCreateRowDrawer={() => setIsCreateRowDrawerOpen(true)}
+                openCreateColumnDrawer={() => setIsCreateColumnDrawerOpen(true)}
+              />
             </div>
           </>
         )}

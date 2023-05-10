@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Select from '@/_ui/Select';
+import { debounce } from 'lodash';
 
 const userStatusOptions = [
   { name: 'All', value: '' },
@@ -8,102 +9,83 @@ const userStatusOptions = [
   { name: 'Archived', value: 'archived' },
 ];
 
-const UsersFilter = ({ filterList, darkMode, clearIconPressed }) => {
-  const [options, setOptions] = React.useState({ email: '', firstName: '', lastName: '', status: '' });
+const UsersFilter = ({ filterList }) => {
+  const [options, setOptions] = useState({ searchText: '', status: '' });
+  const [statusVal, setStatusVal] = useState('');
+  const [queryVal, setQueryVal] = useState();
 
-  const valuesChanged = (event, key) => {
+  const statusValuesChanged = (event) => {
     let newOptions = {};
-    if (!key) {
-      newOptions = { ...options, [event.target.name]: event.target.value };
-    } else {
-      newOptions = { ...options, [key]: event };
-    }
+    newOptions = {
+      ...options,
+      searchText: queryVal,
+      status: event,
+    };
     setOptions(newOptions);
   };
 
-  const clearTextAndResult = () => {
-    setOptions({ email: '', firstName: '', lastName: '', status: '' });
-    clearIconPressed();
+  const queryValuesChanged = (event) => {
+    let newOptions = {};
+    newOptions = {
+      ...options,
+      status: statusVal,
+      searchText: event.target.value,
+    };
+    setOptions(newOptions);
   };
+  useEffect(() => {
+    const debouncedFilter = debounce(() => {
+      filterList(options);
+    }, 500);
 
-  const handleEnterKey = (e) => {
-    if (e.key === 'Enter') filterList(options);
-  };
+    debouncedFilter();
+    return debouncedFilter.cancel;
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options.searchText, options.status]);
 
   return (
-    <div className="container-xl">
-      <div className="row mb-3">
-        <div className="col-3">
-          <input
-            type="email"
-            className="form-control"
-            placeholder="Email"
-            name="email"
-            onKeyPress={handleEnterKey}
-            onChange={valuesChanged}
-            value={options.email}
-            data-cy="email-filter-input-field"
-          />
+    <div className="workspace-settings-table-wrap workspace-settings-filter-wrap">
+      <div className="row workspace-settings-filters">
+        <div
+          className="workspace-settings-filter-items d-flex align-items-center "
+          data-cy="user-status-select-continer"
+        >
+          <div className="tj-text-xsm mx-3" data-cy="users-filter-label">
+            Showing
+          </div>
+          <div className="users-filter-dropdown" data-cy="users-filter-input">
+            <Select
+              options={userStatusOptions}
+              value={options.status}
+              onChange={(value) => {
+                statusValuesChanged(value);
+                setStatusVal(value);
+              }}
+              height="32px"
+              useMenuPortal={true}
+              closeMenuOnSelect={true}
+              customWrap={true}
+              width="161.25px"
+            />
+          </div>
         </div>
-        <div className="col-2">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="First Name"
-            name="firstName"
-            onKeyPress={handleEnterKey}
-            onChange={valuesChanged}
-            value={options.firstName}
-            data-cy="first-name-filter-input-field"
-          />
-        </div>
-        <div className="col-2">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Last Name"
-            name="lastName"
-            onKeyPress={handleEnterKey}
-            onChange={valuesChanged}
-            value={options.lastName}
-            data-cy="last-name-filter-input-field"
-          />
-        </div>
-        <div className="col-2">
-          <Select
-            options={userStatusOptions}
-            value={options.status}
-            onChange={(value) => valuesChanged(value, 'status')}
-            width={'100%'}
-            height="36px"
-            useMenuPortal={true}
-          />
-        </div>
-        <div className="col-2 d-flex gap-3">
-          <button type="submit" className="btn btn-primary" onClick={() => filterList(options)} data-cy="filter-button">
-            Filter
-          </button>
-          <div className="d-flex align-items-center cursor-pointer" onClick={clearTextAndResult}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="icon icon-tabler icon-tabler-x"
-              width="44"
-              height="44"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke={!darkMode ? '#2c3e50' : '#fff'}
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              data-cy="clear-filter-button"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+        <div className="workspace-settings-filter-items workspace-clear-filter-wrap">
+          <div className="d-flex align-items-center cursor-pointer tj-app-input">
+            <input
+              type="text"
+              className="user-filter-search form-control"
+              placeholder="Search users by name or email"
+              onChange={(e) => {
+                setQueryVal(e.target.value);
+                queryValuesChanged(e);
+              }}
+              data-cy="input-field-user-filter-search"
+            />
           </div>
         </div>
       </div>
+      <div className="line"></div>
     </div>
   );
 };

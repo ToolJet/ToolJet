@@ -37,6 +37,7 @@ export const Calendar = function ({
   removeComponent,
   setExposedVariable,
   exposedVariables,
+  dataCy,
 }) {
   const style = { height };
   const resourcesParam = properties.resources?.length === 0 ? {} : { resources: properties.resources };
@@ -118,13 +119,8 @@ export const Calendar = function ({
     },
   };
 
-  //! hack
-  if (exposedVariables.currentDate === undefined) {
-    setExposedVariable('currentDate', moment(defaultDate).format(properties.dateFormat));
-  }
-
   return (
-    <div id={id} style={{ display: styles.visibility ? 'block' : 'none' }}>
+    <div id={id} style={{ display: styles.visibility ? 'block' : 'none' }} data-cy={dataCy}>
       <ReactCalendar
         className={`calendar-widget
         ${darkMode ? 'dark-mode' : ''}
