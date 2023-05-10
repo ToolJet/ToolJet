@@ -171,6 +171,7 @@ function FlowBuilder(_props) {
           // only show modal content if the node is not an if condition
           if (node.type !== 'if-condition') setSelectedNode(node);
         }}
+        onMouseDownCapture={editorSessionActions.hideLeftDrawer}
       >
         <Background />
       </ReactFlow>

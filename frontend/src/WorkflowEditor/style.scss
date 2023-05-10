@@ -52,6 +52,11 @@
             width: 20px;
             height: 20px;
           }
+
+          svg.active {
+            stroke: black;
+            stroke-width: 2px;
+          }
         }
 
         .icon:hover {
@@ -81,6 +86,31 @@
               padding-left: 10px;
               height: 35px;
               line-height: 35px;
+              display: flex;
+              flex-direction: row;
+              vertical-align: middle;
+
+              .check-icon {
+                width: 17px;
+                height: 17px;
+
+                svg {
+                  stroke: white;
+                  background: green;
+                  border-radius: 10px;
+                  width: inherit;
+                  height: inherit;
+                }
+              }
+
+              .text {
+                margin-left: 10px;
+              }
+            }
+
+            .run-item:hover {
+              background-color: aliceblue;
+              cursor: pointer;
             }
           }
         }

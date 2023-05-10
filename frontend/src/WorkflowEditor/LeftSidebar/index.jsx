@@ -1,16 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import HistoryIcon from './icons/history.svg';
+import RunItem from './RunItem';
 
 export default function LeftSidebar(props) {
-  const [displayDrawer, setDisplayDrawer] = useState(false);
-
-  const { editorSession, _editorSessionActions } = props;
+  const { editorSession, editorSessionActions } = props;
   return (
     <div className="left-sidebar">
-      <div className="icon" onClick={() => setDisplayDrawer((prevValue) => !prevValue)}>
-        <HistoryIcon />
+      <div className="icon" onClick={() => editorSessionActions.toggleLeftDrawer((prevValue) => !prevValue)}>
+        <HistoryIcon className={editorSession.leftDrawer?.display ? 'active' : ''} />
       </div>
-      {displayDrawer && (
+      {editorSession.leftDrawer?.display && (
         <div className="drawer">
           <div className="container p-0">
             <div className="row title-row">
@@ -21,9 +20,7 @@ export default function LeftSidebar(props) {
             <div className="row list-row">
               <div className="col">
                 {editorSession.executionHistory.map((run) => (
-                  <div className="run-item" key={run.id}>
-                    {run.createdAt}
-                  </div>
+                  <RunItem run={run} key={run.id} />
                 ))}
               </div>
             </div>

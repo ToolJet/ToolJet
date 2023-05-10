@@ -26,5 +26,7 @@ export default function generateActions(dispatch) {
       dispatch({ type: 'SET_EXECUTION_HISTORY_LOADING_STATUS', payload: { status } }),
     setExecutionHistory: (history) => dispatch({ type: 'SET_EXECUTION_HISTORY', payload: { history } }),
     setExecutionLogs: (logs) => dispatch({ type: 'SET_EXECUTION_LOGS', payload: { logs } }),
+    toggleLeftDrawer: () => dispatch({ type: 'TOGGLE_LEFT_DRAWER' }),
+    hideLeftDrawer: () => dispatch({ type: 'HIDE_LEFT_DRAWER' }),
   };
 }

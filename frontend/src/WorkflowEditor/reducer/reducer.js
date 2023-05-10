@@ -53,6 +53,9 @@ export const initialState = ({ appId, appVersionId }) => ({
   },
   executionHistoryLoadingStatus: ServerDataStates.NotFetched,
   executionHistory: [],
+  leftDrawer: {
+    display: false,
+  },
 });
 
 export const reducer = (state = initialState(), { payload, type }) => {
@@ -302,6 +305,26 @@ export const reducer = (state = initialState(), { payload, type }) => {
         execution: {
           ...state.execution,
           logs,
+        },
+      };
+    }
+
+    case 'TOGGLE_LEFT_DRAWER': {
+      return {
+        ...state,
+        leftDrawer: {
+          ...state.leftDrawer,
+          display: !(state.leftDrawer?.display ?? true),
+        },
+      };
+    }
+
+    case 'HIDE_LEFT_DRAWER': {
+      return {
+        ...state,
+        leftDrawer: {
+          ...state.leftDrawer,
+          display: false,
         },
       };
     }
