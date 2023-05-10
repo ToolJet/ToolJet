@@ -28,5 +28,8 @@ export default function generateActions(dispatch) {
     setExecutionLogs: (logs) => dispatch({ type: 'SET_EXECUTION_LOGS', payload: { logs } }),
     toggleLeftDrawer: () => dispatch({ type: 'TOGGLE_LEFT_DRAWER' }),
     hideLeftDrawer: () => dispatch({ type: 'HIDE_LEFT_DRAWER' }),
+    toggleLogsConsole: () => dispatch({ type: 'TOGGLE_LOGS_CONSOLE' }),
+    displayLogsConsole: (display) => dispatch({ type: 'DISPLAY_LOGS_CONSOLE', payload: { display } }),
+    showHistoricalLogs: (executionId) => dispatch({ type: 'SHOW_HISTORICAL_LOGS', payload: { executionId } }),
   };
 }

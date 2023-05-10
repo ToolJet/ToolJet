@@ -20,7 +20,7 @@ export default function LeftSidebar(props) {
             <div className="row list-row">
               <div className="col">
                 {editorSession.executionHistory.map((run) => (
-                  <RunItem run={run} key={run.id} />
+                  <RunItem run={run} onClick={() => editorSessionActions.showHistoricalLogs(run.id)} key={run.id} />
                 ))}
               </div>
             </div>

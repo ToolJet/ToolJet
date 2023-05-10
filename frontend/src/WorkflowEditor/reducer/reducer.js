@@ -50,11 +50,16 @@ export const initialState = ({ appId, appVersionId }) => ({
   bootupComplete: false,
   execution: {
     nodes: [],
+    logs: [],
   },
   executionHistoryLoadingStatus: ServerDataStates.NotFetched,
   executionHistory: [],
   leftDrawer: {
     display: false,
+  },
+  logsConsole: {
+    display: false,
+    showingHistoricalLogs: false,
   },
 });
 
@@ -325,6 +330,42 @@ export const reducer = (state = initialState(), { payload, type }) => {
         leftDrawer: {
           ...state.leftDrawer,
           display: false,
+        },
+      };
+    }
+
+    case 'TOGGLE_LOGS_CONSOLE': {
+      return {
+        ...state,
+        logsConsole: {
+          ...state.logsConsole,
+          display: !state.logsConsole.display,
+        },
+      };
+    }
+
+    case 'DISPLAY_LOGS_CONSOLE': {
+      const { display } = payload;
+
+      return {
+        ...state,
+        logsConsole: {
+          ...state.logsConsole,
+          display,
+        },
+      };
+    }
+
+    case 'SHOW_HISTORICAL_LOGS': {
+      const { executionId } = payload;
+
+      return {
+        ...state,
+        logsConsole: {
+          ...state.logsConsole,
+          showingHistoricalLogs: true,
+          executionId,
+          display: true,
         },
       };
     }

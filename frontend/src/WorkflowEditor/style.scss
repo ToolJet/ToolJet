@@ -3,6 +3,7 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow-x: clip;
 
   .header {
     height: 45px;
@@ -65,13 +66,14 @@
 
         .drawer {
           width: 300px;
-          height: 100%;
+          height: 90%;
           background-color: white;
           display: flex;
           position: absolute;
           left: 56px;
           border-color: white;
           border-width: 0;
+          overflow: clip;
 
           .title-row {
             border-bottom: solid 0.5px rgb(235, 234, 234);
@@ -115,6 +117,49 @@
           }
         }
       }
+    }
+
+  }
+
+  .logs-panel {
+    .header {
+      padding-left: 10px;
+      height: 40px;
+      display: flex;
+      flex-direction: row;
+      line-height: 40px;
+      cursor: pointer;
+
+      .up-icon {
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin-left: 2px;
+
+        svg {
+          stroke: black;
+          height: 13px;
+          width: 13px;
+          stroke-width: 2px;
+        }
+      }
+
+      span {
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+    }
+
+    .logs-console {
+      height: 300px;
+      background-color: #222323;
+      color: white;
+      padding-left: 10px;
+      padding-top: 10px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 15px;
     }
   }
 

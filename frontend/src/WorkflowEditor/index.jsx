@@ -21,6 +21,7 @@ import LeftSideBar from './LeftSidebar';
 
 import './style.scss';
 import Header from './Header';
+import LogsPanel from './LogsPanel';
 
 // Wherever this file uses the term 'app', it means 'workflow'
 function WorkflowEditor(props) {
@@ -120,6 +121,7 @@ function WorkflowEditor(props) {
   };
 
   const executeWorkflow = async () => {
+    editorSessionActions.displayLogsConsole(true);
     const { workflowExecution: execution, _result } = await workflowExecutionsService.create(
       editorSession.app.versionId
     );
@@ -191,6 +193,7 @@ function WorkflowEditor(props) {
           </div>
         </EditorContextWrapper>
       </div>
+      <LogsPanel editorSession={editorSession} editorSessionActions={editorSessionActions} />
     </div>
   );
 }
