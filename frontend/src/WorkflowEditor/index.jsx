@@ -13,10 +13,11 @@ import { ReactFlowProvider } from 'reactflow';
 import { EditorContextWrapper } from '@/Editor/Context/EditorContextWrapper';
 import generateActions from './actions';
 import WorkflowEditorContext from './context';
-import _, { debounce, find, merge, every, map } from 'lodash';
+import _, { debounce, find, merge } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { generateQueryName } from './utils';
 import { withRouter } from '@/_hoc/withRouter';
+import LeftSideBar from './LeftSidebar';
 
 import './style.scss';
 import Header from './Header';
@@ -166,8 +167,12 @@ function WorkflowEditor(props) {
         editorSessionActions={editorSessionActions}
         reloadQueries={() => {}}
       />
+
       <div className="body">
         <EditorContextWrapper>
+          <div className="left-sidebar-column">
+            <LeftSideBar editorSession={editorSession} editorSessionActions={editorSessionActions} />
+          </div>
           <div className="flow-editor-column">
             <ReactFlowProvider>
               <WorkflowEditorContext.Provider value={{ editorSession, editorSessionActions, addQuery, updateQuery }}>

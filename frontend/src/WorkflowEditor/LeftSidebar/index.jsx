@@ -1,41 +1,35 @@
-import '@/_styles/left-sidebar.scss';
-import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
+import React, { useState } from 'react';
+import HistoryIcon from './icons/history.svg';
 
-import { DarkMode } from '../../_components/DarkModeToggle';
-import useRouter from '../../_hooks/use-router';
-import { ConfirmDialog } from '@/_components';
-import config from 'config';
-import { getSvgIcon } from '@/_helpers/appUtils';
+export default function LeftSidebar(props) {
+  const [displayDrawer, setDisplayDrawer] = useState(false);
 
-export const LeftSidebar = forwardRef((props, ref) => {
-  const router = useRouter();
-  const { appId, switchDarkMode, darkMode = false, appVersionsId, queryPanelHeight } = props;
-  const [selectedSidebarItem, setSelectedSidebarItem] = useState();
-  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
-  const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
-  const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
-  useEffect(() => {
-    popoverContentHeight !== queryPanelHeight && setPopoverContentHeight(queryPanelHeight);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryPanelHeight]);
-
-  useImperativeHandle(ref, () => ({
-    dataSourceModalToggleStateHandler() {
-      toggleDataSourceManagerModal(true);
-    },
-  }));
-
-  const handleSelectedSidebarItem = (item) => {
-    if (item === selectedSidebarItem) {
-      setSelectedSidebarItem(null);
-    } else {
-      setSelectedSidebarItem(item);
-    }
-  };
-
+  const { editorSession, _editorSessionActions } = props;
   return (
-    <div className="left-sidebar" data-cy="left-sidebar-inspector">
-      <div className="w-90"></div>
+    <div className="left-sidebar">
+      <div className="icon" onClick={() => setDisplayDrawer((prevValue) => !prevValue)}>
+        <HistoryIcon />
+      </div>
+      {displayDrawer && (
+        <div className="drawer">
+          <div className="container p-0">
+            <div className="row title-row">
+              <div className="col">
+                <p className="title-text">Run history</p>
+              </div>
+            </div>
+            <div className="row list-row">
+              <div className="col">
+                {editorSession.executionHistory.map((run) => (
+                  <div className="run-item" key={run.id}>
+                    {run.createdAt}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-});
+}
