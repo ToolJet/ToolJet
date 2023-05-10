@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useMemo, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { Modal } from 'react-bootstrap';
 import {
   ReactFlow,
   useReactFlow,
@@ -9,18 +10,19 @@ import {
   addEdge as addReactFlowEdge,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import QueryNode from './Nodes/Query';
 import ifConditionNode from './Nodes/ifCondition';
 import WorkflowEditorContext from '../context';
 import { query } from '../reducer/defaults';
 import './styles.scss';
 import BlockOptions from './BlockOptions';
 import CommonCustomNode from './Nodes/CommonCustomNode';
+import ModalContent from './ModalContent';
 
 function FlowBuilder(_props) {
   const { project } = useReactFlow();
   const { editorSession, editorSessionActions, addQuery } = useContext(WorkflowEditorContext);
   const [showBlockOptions, setShowBlockOptions] = useState(false);
+  const [selectedNode, setSelectedNode] = useState(false);
 
   const { editingActivity } = editorSession;
   const { nodes, edges } = editorSession.app.flow;
@@ -143,10 +145,7 @@ function FlowBuilder(_props) {
     [removeEdge]
   );
 
-  const nodeTypes = useMemo(
-    () => ({ query: QueryNode, 'if-condition': ifConditionNode, 'common-custom-node': CommonCustomNode }),
-    []
-  );
+  const nodeTypes = useMemo(() => ({ 'if-condition': ifConditionNode, 'common-custom-node': CommonCustomNode }), []);
   return (
     <div style={{ height: '100%' }}>
       <ReactFlow
@@ -168,7 +167,10 @@ function FlowBuilder(_props) {
         panOnScroll={true}
         zoomOnDoubleClick={false}
         onMove={() => setShowBlockOptions(null)}
-        onNodeClick={(event, node) => console.log('node data', node)}
+        onNodeClick={(event, node) => {
+          // only show modal content if the node is not an if condition
+          if (node.type !== 'if-condition') setSelectedNode(node);
+        }}
       >
         <Background />
       </ReactFlow>
@@ -180,6 +182,17 @@ function FlowBuilder(_props) {
           style={{ left: showBlockOptions?.x, top: showBlockOptions?.y, position: 'absolute' }}
         />
       )}
+      {
+        <Modal
+          className="show-node-modal"
+          // dialogClassName="whatevert"
+          show={selectedNode}
+          onHide={() => setSelectedNode(null)}
+          size="lg"
+        >
+          <ModalContent node={selectedNode} />
+        </Modal>
+      }
     </div>
   );
 }

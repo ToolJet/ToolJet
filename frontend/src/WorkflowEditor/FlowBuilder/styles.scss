@@ -22,3 +22,12 @@
     background-color: #778899;
   }
   
+
+  .show-node-modal {
+    display: flex !important;
+    justify-content: flex-end;
+
+    .modal-dialog {
+      margin: 0px;
+    }
+  }
