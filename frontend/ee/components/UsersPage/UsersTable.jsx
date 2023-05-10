@@ -29,10 +29,16 @@ const UsersTable = ({
           <table data-testid="usersTable" className="users-table table table-vcenter h-100">
             <thead>
               <tr>
-                <th data-cy="name-title">{translator('header.organization.menus.manageUsers.name', 'Name')}</th>
-                <th data-cy="email-title">{translator('header.organization.menus.manageUsers.email', 'Email')}</th>
+                <th data-cy="users-table-name-column-header">
+                  {translator('header.organization.menus.manageUsers.name', 'Name')}
+                </th>
+                <th data-cy="users-table-email-column-header">
+                  {translator('header.organization.menus.manageUsers.email', 'Email')}
+                </th>
                 {users && users[0]?.status ? (
-                  <th data-cy="status-title">{translator('header.organization.menus.manageUsers.status', 'Status')}</th>
+                  <th data-cy="users-table-status-column-header">
+                    {translator('header.organization.menus.manageUsers.status', 'Status')}
+                  </th>
                 ) : (
                   <th className="w-1"></th>
                 )}
@@ -112,10 +118,11 @@ const UsersTable = ({
                                     data-tooltip-content="Copy invitation link"
                                     width="12"
                                     fill="#889096"
-                                    data-cy="copy-invitation-link"
                                     name="copy"
                                   />
-                                  <p className="tj-text-xsm">Copy link</p>
+                                  <p className="tj-text-xsm" data-cy="copy-invitation-link">
+                                    Copy link
+                                  </p>
                                 </span>
                               </CopyToClipboard>
                               <Tooltip id="tooltip-for-copy-invitation-link" className="tooltip" />
@@ -137,7 +144,7 @@ const UsersTable = ({
                           onClick={() => {
                             user.status === 'archived' ? unarchiveOrgUser(user.id) : archiveOrgUser(user.id);
                           }}
-                          data-cy="user-state"
+                          data-cy="button-user-status-change"
                         >
                           {user.status === 'archived'
                             ? translator('header.organization.menus.manageUsers.unarchive', 'Unarchive')

@@ -28,10 +28,19 @@
   {
     "name": "openai",
     "repo": "",
-    "description": "api plugin from openai",
+    "description": "Datasource plugin from openai",
     "version": "1.0.0",
     "id": "openai",
     "author": "Tooljet",
     "timestamp": "Mon, 10 Apr 2023 06:33:21 GMT"
+  },
+  {
+    "name": "AWS Textract",
+    "repo": "",
+    "description": "Datasource plugin from textract",
+    "version": "1.0.0",
+    "id": "textract",
+    "author": "Tooljet",
+    "timestamp": "Wed, 19 Apr 2023 11:36:56 GMT"
   }
 ]

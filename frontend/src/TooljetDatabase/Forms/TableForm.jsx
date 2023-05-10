@@ -1,10 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import CreateColumnsForm from './ColumnsForm';
 import { tooljetDatabaseService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { isEmpty } from 'lodash';
+import { BreadCrumbContext } from '@/App/App';
 
 const TableForm = ({
   selectedTable = '',
@@ -12,12 +13,18 @@ const TableForm = ({
   onCreate,
   onEdit,
   onClose,
+  updateSelectedTable,
 }) => {
   const [fetching, setFetching] = useState(false);
   const [tableName, setTableName] = useState(selectedTable);
   const [columns, setColumns] = useState(selectedColumns);
   const { organizationId } = useContext(TooljetDatabaseContext);
   const isEditMode = !isEmpty(selectedTable);
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  useEffect(() => {
+    toast.dismiss();
+  }, []);
 
   const validateTableName = () => {
     if (isEmpty(tableName)) {
@@ -73,6 +80,9 @@ const TableForm = ({
     }
 
     toast.success(`${tableName} edited successfully`);
+    updateSidebarNAV(tableName);
+    updateSelectedTable(tableName);
+
     onEdit && onEdit();
   };
 
@@ -105,21 +115,23 @@ const TableForm = ({
                 data-cy="table-name-input-field"
                 autoComplete="off"
                 value={tableName}
-                onChange={(e) => setTableName(e.target.value)}
+                onChange={(e) => {
+                  setTableName(e.target.value);
+                }}
                 autoFocus
               />
             </div>
           </div>
         </div>
         {!isEditMode && <CreateColumnsForm columns={columns} setColumns={setColumns} />}
-        <DrawerFooter
-          fetching={fetching}
-          isEditMode={isEditMode}
-          onClose={onClose}
-          onEdit={handleEdit}
-          onCreate={handleCreate}
-        />
       </div>
+      <DrawerFooter
+        fetching={fetching}
+        isEditMode={isEditMode}
+        onClose={onClose}
+        onEdit={handleEdit}
+        onCreate={handleCreate}
+      />
     </div>
   );
 };

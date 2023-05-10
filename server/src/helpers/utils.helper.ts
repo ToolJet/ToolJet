@@ -2,6 +2,7 @@ import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
+const protobuf = require('protobufjs');
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -93,4 +94,16 @@ export async function dropForeignKey(tableName: string, columnName: string, quer
   const table = await queryRunner.getTable(tableName);
   const foreignKey = table.foreignKeys.find((fk) => fk.columnNames.indexOf(columnName) !== -1);
   await queryRunner.dropForeignKey(tableName, foreignKey);
+}
+
+export async function getServiceAndRpcNames(protoDefinition) {
+  const root = protobuf.parse(protoDefinition).root;
+  const serviceNamesAndMethods = root.nestedArray
+    .filter((item) => item instanceof protobuf.Service)
+    .reduce((acc, service) => {
+      const rpcMethods = service.methodsArray.map((method) => method.name);
+      acc[service.name] = rpcMethods;
+      return acc;
+    }, {});
+  return serviceNamesAndMethods;
 }
