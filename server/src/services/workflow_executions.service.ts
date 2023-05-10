@@ -179,7 +179,7 @@ export class WorkflowExecutionsService {
             break;
           }
 
-          case 'query': {
+          case 'common-custom-node': {
             await this.processQueryNode(currentNode, workflowExecution, appVersion, state, logs);
             break;
           }
