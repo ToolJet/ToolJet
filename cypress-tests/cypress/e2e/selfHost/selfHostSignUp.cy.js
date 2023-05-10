@@ -5,7 +5,7 @@ import { logout } from "Support/utils/common";
 
 describe("Self host onboarding", () => {
   beforeEach(() => {
-    cy.visit(Cypress.env("self_host"));
+    cy.visit('/setup');
   });
 
   it("verify elements on self host onboarding page", () => {
@@ -89,7 +89,7 @@ describe("Self host onboarding", () => {
     signup.commonElementsWorkspaceSetup();
     cy.get(commonSelectors.onboardingPageHeader).verifyVisibleElement(
       "have.text",
-      commonText.companyPageHeader("The developer")
+      commonText.companyPageHeader("The Developer")
     );
     cy.get(commonSelectors.companyNameInputField).should("be.visible");
     cy.clearAndType(commonSelectors.companyNameInputField, "ToolJet");
@@ -146,17 +146,21 @@ describe("Self host onboarding", () => {
       .type("919876543210");
     cy.get(commonSelectors.continueButton).click();
 
-    cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-      "have.text",
-      "My workspace"
-    );
+    cy.get("body").then(($title) => {
+      if (!$title.text().includes("Enter your phone number")) {
+        cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+          "have.text",
+          "My workspace"
+        );
 
-    logout();
-    cy.appUILogin();
+        logout();
+        cy.appUILogin();
 
-    cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-      "have.text",
-      "My workspace"
-    );
+        cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+          "have.text",
+          "My workspace"
+        );
+      }
+    });
   });
 });

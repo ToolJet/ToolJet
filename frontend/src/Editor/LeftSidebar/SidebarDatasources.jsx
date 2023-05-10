@@ -17,14 +17,14 @@ import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
 import VerticalIcon from '@assets/images/icons/vertical-menu.svg';
 import { getPrivateRoute } from '@/_helpers/routes';
 
+import { useDataSources } from '@/_stores/dataSourcesStore';
+
 export const LeftSidebarDataSources = ({
   appId,
   editingVersionId,
   selectedSidebarItem,
   setSelectedSidebarItem,
   darkMode,
-  dataSources = [],
-  globalDataSources = [],
   dataSourcesChanged,
   globalDataSourcesChanged,
   dataQueriesChanged,
@@ -32,6 +32,7 @@ export const LeftSidebarDataSources = ({
   showDataSourceManagerModal,
   popoverContentHeight,
 }) => {
+  const dataSources = useDataSources();
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
@@ -181,10 +182,11 @@ export const LeftSidebarDataSources = ({
       darkMode={darkMode}
       RenderDataSource={RenderDataSource}
       dataSources={dataSources}
-      globalDataSources={globalDataSources}
       toggleDataSourceManagerModal={toggleDataSourceManagerModal}
     />
   );
+
+  if (dataSources?.length <= 0) return;
 
   return (
     <>
