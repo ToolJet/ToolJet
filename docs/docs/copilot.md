@@ -13,7 +13,7 @@ Tooljet Copilot is currently available in public beta for organizations.
 
 To activate Copilot for a ToolJet workspace, the administrator must go to the **workspace settings**, then the **Copilot** section, and toggle on the "**Enable Copilot**" option. Once Copilot is enabled, an **API key** must be provided in order to activate the feature.
 
-You can join the waitlist here: 
+You can join the waitlist here: **https://tooljet.com/copilot**
 
 <div style={{textAlign: 'center'}}>
 
@@ -29,7 +29,10 @@ In order for Copilot to function, a plain English prompt must be provided within
 
 ### Example: Generating a SQL statement 
 
-- Create a query, that returns some data. Enable the **Transformation** and select your preferred language from the dropdown.
+We will demonstrate the usage of copilot by generating a SQL query to fetch the order details from a PostgreSQL database based on the key provided in the REST API data.
+
+- Let's create a RESTAPI query using this mock api endpoint: https://fakestoreapi.com/users/1
+- Enable transformation on the query editor
 
 <div style={{textAlign: 'center'}}>
 
@@ -39,11 +42,29 @@ In order for Copilot to function, a plain English prompt must be provided within
 
 - To generate a SQL query using Copilot, first enter the desired prompt within comments in the transformations code editor. Once the prompt has been entered, simply click the **Generate Code** button, and Copilot will generate the corresponding SQL query.
 
+- Assuming that a PostgreSQL data source is already connected and there are two tables in it, namely `customer` and `orders`, enter the provided prompt in the code editor:
+
 ```bash
 /*
-Assume the data is an object which has country key.
-assume we have a database with two tables: "Customers" and "Orders." The "Customers" table has columns such as "customer_id," "customer_name," and "country." The "Orders" table has columns such as "order_id," "customer_id," "order_date," and "total_amount."
-return a SQL query string to retrieve the total order amounts for customers from the country key retrieved from the data, who have placed more than three orders.*/
+Assume the data is an object which has email key.
+assume we have a database with two tables: "customer" and "orders." The "customer" table has columns such as "customer_id," "customer_name," and "country." The "orders" table has columns such as "order_id," "customer_id," "order_date," and "total_amount."
+return a SQL query to retrieve the total order amounts for customers from the email key retrieved from the data, who have placed more than three orders.*/
+```
+
+- Click on the "Generate Code" button to generate the SQL query.
+
+- Once the code is generated, add a return statement below the code to return the generated SQL query. The variable name for the query might be different in your generated code.
+
+```bash
+return query //the variable might be different in your generated code
+```
+
+- Preview the returned SQL statement in the preview block to check if it is correct. Then click on the "Run" button to trigger the query.
+
+- Once the query is executed, create a new PostgreSQL query in SQL mode and use JavaScript to get the data query data dynamically:
+
+```js
+{{queries.restapi1.data}}
 ```
 
 <div style={{textAlign: 'center'}}>
