@@ -6,7 +6,7 @@ import WorkflowEditorContext from '../../../context';
 import './styles.scss';
 
 export default function IfConditionNode(props) {
-  const { width, height, id, data: nodeData } = props;
+  const { width, height, id, data: nodeData, showHandles = true } = props;
 
   const { editorSessionActions } = useContext(WorkflowEditorContext);
 
@@ -30,7 +30,7 @@ export default function IfConditionNode(props) {
       <div className="grid main-grid">
         <div className="row">
           <div className="col-12 d-flex flex-column" style={{ justifyContent: 'space-between' }}>
-            <div className="d-flex justify-content-center">True</div>
+            {showHandles && <div className="d-flex justify-content-center">True</div>}
             <div className="d-flex justify-content-center">
               <CodeHinter
                 currentState={{}}
@@ -38,7 +38,7 @@ export default function IfConditionNode(props) {
                 mode="javascript"
                 theme={props.darkMode ? 'monokai' : 'base16-light'}
                 lineNumbers={false}
-                height={35}
+                height={showHandles ? 35 : 120}
                 width="275px"
                 ignoreBraces={true}
                 onChange={(code) => editorSessionActions.updateNodeData(id, { code })}
@@ -46,7 +46,7 @@ export default function IfConditionNode(props) {
                 enablePreview={false}
               />
             </div>
-            <div className="d-flex justify-content-center">False</div>
+            {showHandles && <div className="d-flex justify-content-center">False</div>}
           </div>
         </div>
       </div>

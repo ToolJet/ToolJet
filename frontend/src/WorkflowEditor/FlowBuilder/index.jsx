@@ -145,6 +145,11 @@ function FlowBuilder(_props) {
     [removeEdge]
   );
 
+  const onNodeClick = useCallback((event, node) => {
+    // only show modal if node is not input or output node
+    if (node.type !== 'input' && node.type !== 'output') setSelectedNode(node);
+  }, []);
+
   const nodeTypes = useMemo(() => ({ 'if-condition': ifConditionNode, 'common-custom-node': CommonCustomNode }), []);
 
   return (
@@ -168,10 +173,7 @@ function FlowBuilder(_props) {
         panOnScroll={true}
         zoomOnDoubleClick={false}
         onMove={() => setShowBlockOptions(null)}
-        onNodeClick={(event, node) => {
-          // only show modal content if the node is not an if condition
-          if (node.type !== 'if-condition') setSelectedNode(node);
-        }}
+        onNodeClick={onNodeClick}
         onMouseDownCapture={editorSessionActions.hideLeftDrawer}
       >
         <Background />
