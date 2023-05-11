@@ -58,7 +58,9 @@ function DataSourceLister({
             className="query-datasource-card"
             style={computedStyles}
             key={`${source.id}-${source.kind}`}
-            onClick={() => handleChangeDataSource(source)}
+            onClick={() => {
+              handleChangeDataSource(source);
+            }}
           >
             {fetchIconForSource(source)}
             <p data-cy={`${String(source.name).toLocaleLowerCase().replace(/\s+/g, '-')}-add-query-card`}>
