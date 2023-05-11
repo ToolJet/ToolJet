@@ -407,6 +407,7 @@ describe('Authentication', () => {
           'admin',
           'app_group_permissions',
           'avatar_id',
+          'created_at',
           'data_source_group_permissions',
           'group_permissions',
           'organization',
