@@ -13,6 +13,7 @@ export function parseJson(jsonString: string, errorMessage?: string): object {
     throw new QueryError(errorMessage, err.message, {});
   }
 }
+const protobuf = require('protobufjs');
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -165,4 +166,15 @@ async function createCredential(
   });
   const credential = await credentialRepository.save(newCredential);
   return credential;
+}
+export async function getServiceAndRpcNames(protoDefinition) {
+  const root = protobuf.parse(protoDefinition).root;
+  const serviceNamesAndMethods = root.nestedArray
+    .filter((item) => item instanceof protobuf.Service)
+    .reduce((acc, service) => {
+      const rpcMethods = service.methodsArray.map((method) => method.name);
+      acc[service.name] = rpcMethods;
+      return acc;
+    }, {});
+  return serviceNamesAndMethods;
 }

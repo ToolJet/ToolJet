@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 // eslint-disable-next-line no-unused-vars
 import config from 'config';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+
 import {
   getWorkspaceIdFromURL,
   appendWorkspaceId,
@@ -36,6 +37,7 @@ import '@/_styles/theme.scss';
 import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 import { InstanceSettings } from '@/InstanceSettingsPage';
+export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
 
 const AppWrapper = (props) => {
@@ -58,7 +60,9 @@ class AppComponent extends React.Component {
       darkMode: localStorage.getItem('darkMode') === 'true',
     };
   }
-
+  updateSidebarNAV = (val) => {
+    this.setState({ sidebarNav: val });
+  };
   fetchMetadata = () => {
     tooljetService.fetchMetaData().then((data) => {
       localStorage.setItem('currentVersion', data.installed_version);
@@ -78,7 +82,12 @@ class AppComponent extends React.Component {
       'confirm',
       'confirm-invite',
     ];
-    return existedPaths.find((path) => window.location.pathname.includes(path));
+
+    const subpath = getSubpath();
+    const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
+    const pathnames = window.location.pathname.split('/')?.filter((path) => path != '');
+    const checkPath = () => existedPaths.find((path) => pathnames[subpath ? subpathArray.length : 0] === path);
+    return pathnames?.length > 0 ? (checkPath() ? true : false) : false;
   };
 
   setFaviconAndTitle() {
@@ -243,7 +252,8 @@ class AppComponent extends React.Component {
         },
       };
     }
-
+    const { sidebarNav } = this.state;
+    const { updateSidebarNAV } = this;
     return (
       <>
         <div className={`main-wrapper ${darkMode ? 'theme-dark dark-theme' : ''}`} data-cy="main-wrapper">
@@ -272,164 +282,195 @@ class AppComponent extends React.Component {
               </div>
             </div>
           )}
-          <Routes>
-            <Route path="/login/:organizationId" exact element={<LoginPage />} />
-            <Route path="/login" exact element={<LoginPage />} />
-            <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
-            <Route path="/sso/:origin/:configId" exact element={<Oauth />} />
-            <Route path="/sso/:origin" exact element={<Oauth />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
-            <Route
-              path="/invitations/:token/workspaces/:organizationToken"
-              element={<VerificationSuccessInfoScreen />}
-            />
-            <Route path="/confirm" element={<VerificationSuccessInfoScreen />} />
-            <Route
-              path="/organization-invitations/:token"
-              element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
-            />
-            <Route
-              path="/confirm-invite"
-              element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
-            />
-            <Route
-              exact
-              path="/:workspaceId/apps/:id/:pageHandle?/*"
-              element={
-                <PrivateRoute>
-                  <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/applications/:id/versions/:versionId/environments/:environmentId/:pageHandle?"
-              element={
-                <PrivateRoute>
-                  <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/applications/:slug/:pageHandle?"
-              element={
-                <PrivateRoute>
-                  <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/oauth2/authorize"
-              element={
-                <PrivateRoute>
-                  <Authorize switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/:workspaceId/workspace-settings"
-              element={
-                <PrivateRoute>
-                  <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/instance-settings"
-              element={
-                <PrivateRoute>
-                  <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/:workspaceId/audit-logs"
-              element={
-                <PrivateRoute>
-                  <AuditLogsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/:workspaceId/settings"
-              element={
-                <PrivateRoute>
-                  <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/:workspaceId/global-datasources"
-              element={
-                <PrivateRoute>
-                  <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
+          <BreadCrumbContext.Provider value={{ sidebarNav, updateSidebarNAV }}>
+            <Routes>
+              <Route path="/login/:organizationId" exact element={<LoginPage />} />
+              <Route path="/login" exact element={<LoginPage />} />
+              <Route path="/setup" exact element={<SetupScreenSelfHost {...this.props} darkMode={darkMode} />} />
+              <Route path="/sso/:origin/:configId" exact element={<Oauth />} />
+              <Route path="/sso/:origin" exact element={<Oauth />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/invitations/:token" element={<VerificationSuccessInfoScreen />} />
+              <Route
+                path="/invitations/:token/workspaces/:organizationToken"
+                element={<VerificationSuccessInfoScreen />}
+              />
+              <Route path="/confirm" element={<VerificationSuccessInfoScreen />} />
+              <Route
+                path="/organization-invitations/:token"
+                element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
+              />
+              <Route
+                path="/confirm-invite"
+                element={<OrganizationInvitationPage {...this.props} darkMode={darkMode} />}
+              />
               <Route
                 exact
-                path="/:workspaceId/database"
+                path="/:workspaceId/apps/:id/:pageHandle?/*"
                 element={
                   <PrivateRoute>
-                    <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
                   </PrivateRoute>
                 }
               />
-            )}
-            {window.public_config?.ENABLE_MARKETPLACE_FEATURE === 'true' && (
               <Route
                 exact
-                path="/integrations"
+                path="/applications/:id/versions/:versionId/environments/:environmentId/:pageHandle?"
                 element={
-                  <AdminRoute>
-                    <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                  </AdminRoute>
+                  <PrivateRoute>
+                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
                 }
               />
-            )}
-            <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
-            <Route
-              exact
-              path="/switch-workspace"
-              element={
-                <PrivateRoute>
-                  <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              exact
-              path="/:workspaceId"
-              element={
-                <PrivateRoute>
-                  <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="*"
-              render={() => {
-                if (authenticationService?.currentSessionValue?.current_organization_id) {
-                  return <Navigate to="/:workspaceId" />;
+              <Route
+                exact
+                path="/applications/:slug/:pageHandle?"
+                element={
+                  <PrivateRoute>
+                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
                 }
-                return <Navigate to="/login" />;
-              }}
-            />
-          </Routes>
+              />
+              <Route
+                exact
+                path="/oauth2/authorize"
+                element={
+                  <PrivateRoute>
+                    <Authorize switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/:workspaceId/workspace-settings"
+                element={
+                  <PrivateRoute>
+                    <OrganizationSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/instance-settings"
+                element={
+                  <PrivateRoute>
+                    <InstanceSettings switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/:workspaceId/audit-logs"
+                element={
+                  <PrivateRoute>
+                    <AuditLogsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/:workspaceId/settings"
+                element={
+                  <PrivateRoute>
+                    <SettingsPage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/:workspaceId/global-datasources"
+                element={
+                  <PrivateRoute>
+                    <GlobalDatasources switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/:workspaceId/apps/:id/:pageHandle?/*"
+                element={
+                  <PrivateRoute>
+                    <AppLoader switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/applications/:id/versions/:versionId/:pageHandle?"
+                element={
+                  <PrivateRoute>
+                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/applications/:slug/:pageHandle?"
+                element={
+                  <PrivateRoute>
+                    <Viewer switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              {window.public_config?.ENABLE_TOOLJET_DB == 'true' && (
+                <Route
+                  exact
+                  path="/:workspaceId/database"
+                  element={
+                    <PrivateRoute>
+                      <TooljetDatabase switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </PrivateRoute>
+                  }
+                />
+              )}
+
+              {window.public_config?.ENABLE_MARKETPLACE_FEATURE === 'true' && (
+                <Route
+                  exact
+                  path="/integrations"
+                  element={
+                    <AdminRoute>
+                      <MarketplacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    </AdminRoute>
+                  }
+                />
+              )}
+              <Route exact path="/" element={<Navigate to="/:workspaceId" />} />
+              <Route
+                exact
+                path="/switch-workspace"
+                element={
+                  <PrivateRoute>
+                    <SwitchWorkspacePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/:workspaceId"
+                element={
+                  <PrivateRoute>
+                    <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="*"
+                render={() => {
+                  if (authenticationService?.currentSessionValue?.current_organization_id) {
+                    return <Navigate to="/:workspaceId" />;
+                  }
+                  return <Navigate to="/login" />;
+                }}
+              />
+            </Routes>
+          </BreadCrumbContext.Provider>
           <div id="modal-div"></div>
         </div>
+
         <Toast toastOptions={toastOptions} />
       </>
     );

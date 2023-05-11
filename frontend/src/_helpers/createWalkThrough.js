@@ -25,8 +25,8 @@ export const initEditorWalkThrough = () => {
       {
         element: '.component-image-holder',
         popover: {
-          title: 'Drag and drop widgets',
-          description: 'From the widget sidebar, drag and drop widgets to the canvas.',
+          title: 'Drag and drop components',
+          description: 'From the component sidebar, drag and drop components to the canvas.',
           position: 'left',
           closeBtnText: 'Skip (1/6)',
         },

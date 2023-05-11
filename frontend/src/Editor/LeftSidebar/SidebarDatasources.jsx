@@ -233,7 +233,7 @@ export const LeftSidebarDataSources = ({
   );
 };
 
-const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [], globalDataSources = [] }) => {
+const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [] }) => {
   const { t } = useTranslation();
   return (
     <div>

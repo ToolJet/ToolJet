@@ -88,6 +88,7 @@ export const CreateRow = React.memo(({ currentState, optionchanged, options, dar
               value={column}
               options={displayColumns}
               onChange={handleColumnChange}
+              customWrap={true}
             />
           </div>
 

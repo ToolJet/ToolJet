@@ -66,3 +66,16 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+
+## Exposed variables
+
+There are currently no exposed variables for the component.
+
+## Component specific actions (CSA)
+
+Following actions of link component can be controlled using the component specific actions(CSA):
+
+| Actions     | Description |
+| ----------- | ----------- |
+| click | You can trigger the click action of the link component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.link1.click()` |

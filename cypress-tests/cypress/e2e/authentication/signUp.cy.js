@@ -22,7 +22,9 @@ describe("User signup", () => {
     cy.visit("/");
   });
   it("Verify sign up page elements", () => {
-    cy.get(commonSelectors.createAnAccountLink).click();
+    cy.wait(500);
+    cy.reload();
+    cy.get(commonSelectors.createAnAccountLink).realClick();
     SignUpPageElements();
 
     cy.clearAndType(commonSelectors.nameInputField, data.fullName);

@@ -57,7 +57,7 @@ ToolJet by default tries to create database based on `PG_DB` variable set and ad
 
 #### Check for updates ( optional )
 
-Self-hosted version of ToolJet pings our server to fetch the latest product updates every 24 hours. You can disable this by setting the value of `CHECK_FOR_UPDATES` environment variable to `0`. This feature is enabled by default.
+Self-hosted version of ToolJet pings our server to fetch the latest product updates every 24 hours. You can disable this by setting the value of `CHECK_FOR_UPDATES` environment variable to `false`. This feature is enabled by default.
 
 #### Comment feature enable ( optional )
 
@@ -295,3 +295,9 @@ If this parameter is not specified then PostgREST refuses authentication request
 :::info
 Please make sure that DB_URI is given in the format `postgrest://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
 :::
+
+## User Session Expiry Time (Optional)
+
+| variable         | description                                     |
+| ---------------- | ----------------------------------------------- |
+| USER_SESSION_EXPIRY | This variable controls the user session expiry time. By default, the session expires after 2 days. The variable expects the value in minutes. ex: USER_SESSION_EXPIRY = 120 which is 2 hours |
