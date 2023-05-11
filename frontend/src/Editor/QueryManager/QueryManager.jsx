@@ -19,6 +19,8 @@ import cx from 'classnames';
 import { diff } from 'deep-object-diff';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { ChangeDataSource } from './ChangeDataSource';
+import EmptyGlobalDataSources from './EmptyGlobalDataSources';
+import AddGlobalDataSourceButton from './AddGlobalDataSourceButton';
 
 import { useDataSourcesStore, useLoadingDataSources } from '@/_stores/dataSourcesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
@@ -781,10 +783,10 @@ class QueryManagerComponent extends React.Component {
                 </div>
               )}
 
-              {dataSources && mode === 'create' && !this.state.isSourceSelected && (
+              {globalDataSources && mode === 'create' && !this.state.isSourceSelected && (
                 <div className="datasource-picker">
                   {!this.state.isSourceSelected && <label className="form-label col-md-3">Global Datasources</label>}{' '}
-                  {!this.state.isSourceSelected && (
+                  {!this.state.isSourceSelected && globalDataSources?.length ? (
                     <DataSourceLister
                       dataSources={globalDataSources}
                       staticDataSources={[]}
@@ -792,8 +794,11 @@ class QueryManagerComponent extends React.Component {
                       handleBackButton={this.handleBackButton}
                       darkMode={this.props.darkMode}
                       dataSourceModalHandler={this.props.dataSourceModalHandler}
-                      showAddDatasourceBtn={false}
+                      showAddDatasourceBtn={true}
+                      dataSourceBtnComponent={<AddGlobalDataSourceButton />}
                     />
+                  ) : (
+                    <EmptyGlobalDataSources darkMode={this.props.darkMode} />
                   )}
                 </div>
               )}
