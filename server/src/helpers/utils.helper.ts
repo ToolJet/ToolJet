@@ -2,7 +2,6 @@ import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
-import { Configuration, OpenAIApi } from 'openai';
 const protobuf = require('protobufjs');
 
 export function maybeSetSubPath(path) {
@@ -95,14 +94,6 @@ export async function dropForeignKey(tableName: string, columnName: string, quer
   const table = await queryRunner.getTable(tableName);
   const foreignKey = table.foreignKeys.find((fk) => fk.columnNames.indexOf(columnName) !== -1);
   await queryRunner.dropForeignKey(tableName, foreignKey);
-}
-
-export async function getOpenAIConnection() {
-  const config = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  return new OpenAIApi(config);
 }
 
 export async function getServiceAndRpcNames(protoDefinition) {
