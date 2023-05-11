@@ -8,6 +8,7 @@ const Calender = ({ fill = '#C1C8CD', width = '25', className = '', viewBox = '0
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
+    data-cy="calendar-icon"
   >
     <path opacity="0.4" d="M3 9H21V18C21 20.2091 19.2091 22 17 22H7C4.79086 22 3 20.2091 3 18V9Z" fill="#121212" />
     <path d="M17 3.5H7C4.79086 3.5 3 5.29086 3 7.5V9H21V7.5C21 5.29086 19.2091 3.5 17 3.5Z" fill="#121212" />

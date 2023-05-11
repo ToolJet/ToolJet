@@ -28,11 +28,13 @@ const LeftSidebarPageSelector = ({
   updateOnPageLoadEvents,
   currentState,
   apps,
-  dataQueries,
   pinned,
   setPinned,
+  popoverContentHeight,
 }) => {
   const [allpages, setPages] = useState(pages);
+  const [haveUserPinned, setHaveUserPinned] = useState(false);
+
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
 
@@ -55,6 +57,12 @@ const LeftSidebarPageSelector = ({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ pages })]);
+
+  const pinPagesPopover = (state) => {
+    if (!haveUserPinned) {
+      setPinned(state);
+    }
+  };
 
   return (
     <div>
@@ -91,7 +99,10 @@ const LeftSidebarPageSelector = ({
               </Button>
               <Button
                 title={`${pinned ? 'Unpin' : 'Pin'}`}
-                onClick={() => setPinned(!pinned)}
+                onClick={() => {
+                  setPinned(!pinned);
+                  !haveUserPinned && setHaveUserPinned(true);
+                }}
                 darkMode={darkMode}
                 size="sm"
                 styles={{ width: '28px', padding: 0 }}
@@ -139,7 +150,8 @@ const LeftSidebarPageSelector = ({
                 apps={apps}
                 allpages={pages}
                 components={appDefinition?.components ?? {}}
-                dataQueries={dataQueries}
+                pinPagesPopover={pinPagesPopover}
+                haveUserPinned={haveUserPinned}
               />
             ) : (
               <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>

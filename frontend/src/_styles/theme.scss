@@ -5494,10 +5494,10 @@ div#driver-page-overlay {
     }
   }
 
-  .action-icons-group {
-    margin-right: 4rem !important;
-    margin-left: 2rem !important;
-  }
+  // .action-icons-group {
+  //   margin-right: 4rem !important;
+  //   margin-left: 2rem !important;
+  // }
 
   .action-icons-group {
     cursor: pointer;
@@ -7059,6 +7059,15 @@ tbody {
   grid-template-rows: auto 1fr auto !important;
 }
 
+.marketplace-page-sidebar {
+  height: calc(100vh - 64px);
+  max-width: 288px;
+  background-color: var(--base);
+  border-right: 1px solid var(--slate5) !important;
+  display: grid !important;
+  grid-template-rows: auto 1fr auto !important;
+}
+
 .home-page-sidebar {
   max-width: 288px;
   background-color: var(--base);
@@ -7437,9 +7446,6 @@ tbody {
   }
 }
 
-.folder-menu-icon {
-  display: none;
-}
 
 .tj-dashboard-section-header {
   max-width: 288px;
@@ -7462,11 +7468,11 @@ tbody {
 }
 
 .folder-menu-icon {
-  display: none;
+  visibility: hidden !important;
 }
 
 .folder-list-group-item:hover .folder-menu-icon {
-  display: block;
+  visibility: visible !important;
 }
 
 .folder-list-group-item {

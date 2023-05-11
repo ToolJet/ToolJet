@@ -54,6 +54,7 @@ export const Folders = function Folders({
 
   useEffect(() => {
     updateSidebarNAV('All apps');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearch = (e) => {
@@ -276,6 +277,7 @@ export const Folders = function Folders({
                 deleteFolder={() => deleteFolder(folder)}
                 editFolder={() => updateFolder(folder)}
                 darkMode={darkMode}
+                dataCy={folder.name}
               />
             )}
           </a>
