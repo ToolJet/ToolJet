@@ -4,7 +4,7 @@ title: Copilot
 ---
 
 :::info BETA
-Tooljet Copilot is currently available in public beta for organizations.
+Tooljet Copilot is currently available in public beta for all the users.
 :::
 
 **ToolJet Copilot** helps you write your queries faster. It uses OpenAI's GPT-3.5 to suggest queries based on your data. 
