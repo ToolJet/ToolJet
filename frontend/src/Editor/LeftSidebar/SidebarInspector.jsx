@@ -3,12 +3,18 @@ import { LeftSidebarItem } from './SidebarItem';
 import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
-import RunjsIcon from '../Icons/runjs.svg';
-import RunTooljetDbIcon from '../Icons/tooljetdb.svg';
-import RunpyIcon from '../Icons/runpy.svg';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import Popover from '@/_ui/Popover';
+
+import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
+import { useDataQueries } from '@/_stores/dataQueriesStore';
+const staticDataSources = [
+  { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
+  { kind: 'restapi', id: 'null', name: 'REST API' },
+  { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
+  { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
+];
 
 export const LeftSidebarInspector = ({
   darkMode,
@@ -19,12 +25,12 @@ export const LeftSidebarInspector = ({
   setSelectedComponent,
   removeComponent,
   runQuery,
-  dataSources,
   popoverContentHeight,
 }) => {
+  const dataSources = useGlobalDataSources();
+  const dataQueries = useDataQueries();
   const [pinned, setPinned] = useState(false);
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
-  const queryDefinitions = appDefinition['queries'];
   const selectedComponent = React.useMemo(() => {
     return {
       id: appDefinition['selectedComponent']?.id,
@@ -35,8 +41,8 @@ export const LeftSidebarInspector = ({
 
   const queries = {};
 
-  if (!_.isEmpty(queryDefinitions)) {
-    queryDefinitions.forEach((query) => {
+  if (!_.isEmpty(dataQueries)) {
+    dataQueries.forEach((query) => {
       queries[query.name] = { id: query.id };
     });
   }
@@ -77,19 +83,11 @@ export const LeftSidebarInspector = ({
   }, [currentState]);
 
   const queryIcons = Object.entries(currentState['queries']).map(([key, value]) => {
-    if (value.kind === 'runjs') {
-      return { iconName: key, jsx: () => <RunjsIcon style={{ height: 16, width: 16, marginRight: 12 }} /> };
-    }
-    if (value.kind === 'tooljetdb') {
-      return { iconName: key, jsx: () => <RunTooljetDbIcon /> };
-    }
+    const allDs = [...staticDataSources, ...dataSources];
 
-    if (value.kind === 'runpy') {
-      return { iconName: key, jsx: () => <RunpyIcon style={{ height: 16, width: 16, marginRight: 12 }} /> };
-    }
-    const icon = dataSources.find((ds) => ds.kind === value.kind);
-    const iconFile = icon?.plugin?.icon_file?.data ?? undefined;
-    const Icon = () => getSvgIcon(icon?.kind, 25, 25, iconFile ?? undefined);
+    const icon = allDs.find((ds) => ds.kind === value.kind);
+    const iconFile = icon?.plugin?.iconFile?.data ?? undefined;
+    const Icon = () => getSvgIcon(icon?.kind, 16, 16, iconFile ?? undefined);
     return { iconName: key, jsx: () => <Icon style={{ height: 16, width: 16, marginRight: 12 }} /> };
   });
 

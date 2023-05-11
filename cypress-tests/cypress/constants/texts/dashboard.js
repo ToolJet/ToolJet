@@ -2,8 +2,8 @@ export const dashboardText = {
   emptyPageHeader: "Welcome to your new ToolJet workspace",
   emptyPageDescription:
     "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
-  createAppButton: "New app from scratch",
-  importAppButton: ' Import an application',
+  createAppButton: "Create new application",
+  importAppButton: "Import an app",
   chooseFromTemplate: "Choose from template",
   darkMode: "#808080",
   lightMode: "#fff",
@@ -19,27 +19,29 @@ export const dashboardText = {
   iconUpdatedToast: "Icon updated.",
   iconText: {
     appsIcon: "apps",
-    businessIcon: "business",
-    calendarIcon: "calendar",
-    chartBarIcon: "Chart bar",
-    codeIcon: "Code",
-    cpuIcon: "cpu",
-    databaseIcon: "database",
-    fileAnalyticsIcon: "file analytics",
-    flameIcon: "flame",
-    presentationIcon: "presentation",
-    reportSearchIcon: "report-search",
-    settingsIcon: "settings",
-    userIcon: "users",
-    worldIcon: "world",
+    archiveIcon: "archive",
+    floppyIcon: "floppy",
+    layerIcon: "layer",
+    folderUpload: "folder-upload",
+    gridIcon: "grid",
+    homeIcon: "home",
+    sentFastIcon: "sent-fast",
+    serverIcon: "server",
+    globeIcon: "globe",
+    shareIcon: "share",
+    shieldIcon: "shield",
+    sunIcon: "sun",
+    tableIcon: "table",
+    menuHomeIcon: "menu-home",
+    dragHandleIcon: "drag-handle",
   },
   seeAllAppsTemplateButton: "See all templates",
   addToFolderTitle: "Add to folder",
   appClonedToast: "App cloned successfully.",
   darkModeText: "Dark Mode",
   lightModeText: "Light Mode",
-  dashboardAppsHeaderLabel: "Apps",
-  
+  dashboardAppsHeaderLabel: " All apps",
+
   moveAppText: (appName) => {
     return `Move "${appName}" to`;
   },
@@ -47,5 +49,4 @@ export const dashboardText = {
   folderName: (folderName) => {
     return folderName;
   },
-  
 };

@@ -1187,7 +1187,7 @@ export const widgets = [
       },
     },
     exposedVariables: {
-      value: 0,
+      value: 99,
     },
     definition: {
       others: {
@@ -2375,6 +2375,7 @@ export const widgets = [
       searchText: '',
       label: 'Select',
       optionLabels: ['one', 'two', 'three'],
+      selectedOptionLabel: 'two',
     },
     actions: [
       {
