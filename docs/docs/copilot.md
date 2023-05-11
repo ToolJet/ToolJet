@@ -25,7 +25,7 @@ You can join the waitlist here: **https://tooljet.com/copilot**
 
 Once activated, the Copilot feature can be accessed while editing any query within the transformations section in the query editor.
 
-In order for Copilot to function, a plain English prompt must be provided within comments. Copilot is capable of manipulating and accessing components, as well as generating code for component specific actions, as it has context of the current state of the application.
+For Copilot to operate, it requires a plain English prompt. Copilot possesses the ability to interact with and access components, along with generating code for specific actions related to those components. This capability is made possible by Copilot's awareness of the application's current state.
 
 ### Example: Generating a SQL statement 
 
