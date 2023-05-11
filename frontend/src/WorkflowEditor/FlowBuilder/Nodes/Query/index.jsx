@@ -6,6 +6,7 @@ import WorkflowEditorContext from '../../../context';
 import { capitalize, isUndefined, find } from 'lodash';
 import { generateQueryName } from '../../../utils';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
+import EditIcon from '../../../../Editor/Icons/edit.svg';
 
 import './styles.scss';
 
@@ -40,6 +41,8 @@ export default function QueryNode(props) {
 
   const QueryBuilder = useMemo(() => allSources[capitalize(queryData.kind)], [queryData.kind]);
   const schema = useMemo(() => staticDataSourceSchemas[queryData.kind], [queryData.kind]);
+
+  const [queryName, setQueryName] = useState(queryData.name);
 
   const dataSourceOptions = editorSession.dataSources.map((source) => ({
     label: capitalize(source.kind),
@@ -88,8 +91,25 @@ export default function QueryNode(props) {
       <div className="body">
         <div className="grid">
           <div className="row" style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row' }}>
-            <h3 style={{ width: 150 }}>{queryData.name}</h3>
-            <div className="results-switch" style={{ width: 100 }}>
+            <div className={`input-icon ${props.darkMode ? 'dark' : ''}`}>
+              <input
+                type="text"
+                onChange={(e) => setQueryName(e.target.value)}
+                onBlur={(e) =>
+                  updateQuery(queryData.idOnDefinition, {
+                    ...queryData,
+                    name: e.target.value,
+                  })
+                }
+                className="form-control-plaintext form-control-plaintext-sm"
+                value={queryName}
+                style={{ fontSize: 'medium' }}
+              />
+              <span className="input-icon-addon">
+                <EditIcon />
+              </span>
+            </div>
+            <div className="results-switch mt-1" style={{ width: 100 }}>
               <div className="form-check form-switch">
                 <input
                   className="form-check-input"

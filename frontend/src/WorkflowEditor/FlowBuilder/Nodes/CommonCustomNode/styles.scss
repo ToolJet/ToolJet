@@ -1,7 +1,8 @@
 .common-custom-node {
     display: flex;
     align-items: center;
-    width: 144px;
+    min-width: 144px;
+    width: auto;
     height: 52px;
     padding: 12px;
     border: 1px solid #E6E8EB;
