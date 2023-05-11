@@ -74,7 +74,7 @@ export const Modal = function Modal({
 
   const customStyles = {
     modalBody: {
-      height,
+      height: height ?? '100vw',
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
       overflowX: 'hidden',
