@@ -53,7 +53,7 @@ export const Folders = function Folders({
             workspace_id:
               authenticationService?.currentUserValue?.organization_id ||
               authenticationService?.currentSessionValue?.current_organization_id,
-            folder_id: data?.id 
+            folder_id: data?.id,
           });
         })
         .catch(({ error }) => {
