@@ -2393,14 +2393,14 @@ export const widgets = [
     },
   },
   {
-    name: 'dropdownwithjson',
-    displayName: 'Dropdown with JSON',
-    description: 'Select one value from options',
+    name: 'dropDownWidget',
+    displayName: 'Dropdown Widget',
+    description: 'Dropdown widget taking input as array of objects',
     defaultSize: {
       width: 8,
       height: 30,
     },
-    component: 'DropDownWithJSON',
+    component: 'DropDownWidget',
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },

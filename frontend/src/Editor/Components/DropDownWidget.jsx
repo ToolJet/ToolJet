@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
-export const DropDownWithJSON = function DropDownWithJSON({
+export const DropDownWidget = function DropDownWidget({
   height,
   validate,
   properties,
