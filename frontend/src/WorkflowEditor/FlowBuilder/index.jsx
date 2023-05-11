@@ -73,6 +73,19 @@ function FlowBuilder(_props) {
           startingNodeHandleId,
         });
         setEditingActivity({ type: 'IDLE' });
+      } else if (
+        startingNodeHandleId &&
+        event.target.className.split(' ').includes('node-handle') &&
+        event.target.className.split(' ').includes('target')
+      ) {
+        const newEdge = {
+          id: uuidv4(),
+          source: startingNodeId,
+          target: event.target.dataset.nodeid,
+          sourceHandle: startingNodeHandleId,
+        };
+
+        addEdge(newEdge);
       }
     },
     [editingActivity.nodeId, setEditingActivity, project, addNode, addEdge]
