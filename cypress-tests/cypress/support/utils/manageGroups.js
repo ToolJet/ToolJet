@@ -13,6 +13,9 @@ export const manageGroupsElements = () => {
     groupsText.admin
   );
 
+  cy.get(groupsSelector.groupLink("Admin")).click();
+  cy.get(groupsSelector.groupLink("All users")).click();
+
   cy.get(groupsSelector.groupPageTitle("All Users")).verifyVisibleElement(
     "have.text",
     groupsText.allUsers
@@ -155,6 +158,8 @@ export const manageGroupsElements = () => {
   );
   cy.get(groupsSelector.workspaceVarCheckbox).uncheck();
 
+  cy.get(groupsSelector.groupLink("Admin")).click();
+  cy.get(groupsSelector.groupLink("All users")).click();
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("Admin")).verifyVisibleElement(
     "have.text",
