@@ -2,6 +2,7 @@ import React from 'react';
 import { Handle } from 'reactflow';
 import AddThunder from '@assets/images/icons/add-thunder.svg';
 import './styles.scss';
+import AddBlock from '../AddBlock';
 
 const handlerStyle = {
   right: -30,
@@ -17,16 +18,13 @@ const handlerStyle = {
   backgroundColor: '#3E63DD',
 };
 
-function StartNode() {
+function StartNode(props) {
   return (
     <div className="start-node-container">
       <AddThunder />
       <span>Start trigger</span>
-      <Handle type="source" position="right" isValidConnection={(_connection) => true} style={handlerStyle}>
-        <div className="handle-plus" style={{ width: 12, height: 12, pointerEvents: 'none' }}>
-          +
-        </div>
-      </Handle>
+      <Handle type="source" position="right" isValidConnection={(_connection) => true} />
+      <AddBlock nodeData={props} />
     </div>
   );
 }

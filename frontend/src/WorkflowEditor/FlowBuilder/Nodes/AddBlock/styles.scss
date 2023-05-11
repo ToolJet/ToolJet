@@ -1,0 +1,25 @@
+.add-block {
+    position: absolute;
+    right: -30px;
+    top: 12px;
+    width: 28px;
+    height: 28px;
+}
+.handle-plus {
+    // font-size: 22px;
+    // position: absolute;
+    // right: -20px;
+    // top: 8px;
+    // z-index: 20;
+    z-index: 20;
+    background-color: gray;
+    width: 28px;
+    height: 28px;
+    color: #ffffff;
+    background-color: #3E63DD;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+}
