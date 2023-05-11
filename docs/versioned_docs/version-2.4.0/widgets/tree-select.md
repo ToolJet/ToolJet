@@ -155,3 +155,16 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Exposed Variables
+
+| Variables    | Description |
+| ----------- | ----------- |
+| checked | This variable holds the value of all the checked items on the tree select component. You can access the value dynamically using JS: `{{components.treeselect1.checked[1]}}`|
+| expanded | This variable holds the value of expanded items on the tree select component. You can access the value dynamically using JS: `{{components.treeselect1.expanded[0]}}`|
+| checkedPathArray | This variable holds the path of the checked items in differet arrays. You can access the value dynamically using JS: `{{components.treeselect1.checkedPathArray[1][1]}}`|
+| checkedPathStrings | This variable holds the path of the checked items in strings separated by a dash(-). You can access the value dynamically using JS: `{{components.treeselect1.checkedPathStrings[2]}}`|
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.

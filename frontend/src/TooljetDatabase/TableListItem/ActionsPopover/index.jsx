@@ -5,7 +5,7 @@ import Popover from 'react-bootstrap/Popover';
 import EditIcon from './Icons/Edit.svg';
 // import CloneIcon from './Icons/Clone.svg';
 import DeleteIcon from './Icons/Delete.svg';
-import EllipsisIcon from './Icons/Ellipsis.svg';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
   const [open, setOpen] = React.useState(false);
@@ -65,7 +65,7 @@ export const ListItemPopover = ({ onEdit, onDelete, darkMode }) => {
         transition={false}
       >
         <span>
-          <EllipsisIcon />
+          <SolidIcon name="morevertical" width="14" fill={darkMode ? '#FDFDFE' : '#11181C'} />
         </span>
       </OverlayTrigger>
     </div>

@@ -40,6 +40,7 @@ export default function EditorHeader({
   handleSlugChange,
   onVersionRelease,
   saveEditingVersion,
+  onVersionDelete,
   currentUser,
 }) {
   const { is_maintenance_on } = app;
@@ -124,6 +125,7 @@ export default function EditorHeader({
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
                       showCreateVersionModalPrompt={showCreateVersionModalPrompt}
                       closeCreateVersionModalPrompt={closeCreateVersionModalPrompt}
+                      onVersionDelete={onVersionDelete}
                     />
                   )}
                 </div>

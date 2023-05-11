@@ -22,7 +22,9 @@ describe("User signup", () => {
     cy.visit("/");
   });
   it("Verify sign up page elements", () => {
-    cy.get(commonSelectors.createAnAccountLink).click();
+    cy.wait(500);
+    cy.reload();
+    cy.get(commonSelectors.createAnAccountLink).realClick();
     SignUpPageElements();
 
     cy.clearAndType(commonSelectors.nameInputField, data.fullName);
@@ -35,7 +37,7 @@ describe("User signup", () => {
       dbconfig: Cypress.env("app_db"),
       sql: `select invitation_token from users where email='${data.email}';`,
     }).then((resp) => {
-      invitationLink = `http://localhost:8082/invitations/${resp.rows[0].invitation_token}`;
+      invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
     });
     verifyConfirmEmailPage(data.email);
   });
@@ -43,7 +45,7 @@ describe("User signup", () => {
     cy.visit(invitationLink);
     verifyConfirmPageElements();
     cy.get(commonSelectors.setUpToolJetButton).click();
-    cy.wait(500);
+    cy.wait(4000);
     cy.get("body").then(($el) => {
       if (!$el.text().includes(dashboardText.emptyPageHeader)) {
         verifyOnboardingQuestions(data.fullName, data.workspaceName);

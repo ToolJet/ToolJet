@@ -90,3 +90,13 @@ Toggle on or off to control the visibility of the widget. You can programmatical
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Exposed Variables
+
+| Variables    | Description |
+| ----------- | ----------- |
+| currentStepId | This variable holds the id of the currently selected step on the step component. You can access the value dynamically using JS: `{{components.steps1.currentStepId}}`|
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
