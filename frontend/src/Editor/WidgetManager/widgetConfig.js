@@ -278,6 +278,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      showAddNewRowButton: {
+        type: 'toggle',
+        displayName: 'Show add new row button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
@@ -458,6 +465,7 @@ export const widgets = [
         actions: { value: [] },
         enabledSort: { value: '{{true}}' },
         hideColumnSelectorButton: { value: '{{false}}' },
+        showAddNewRowButton: { value: '{{true}}' },
       },
       events: [],
       styles: {
