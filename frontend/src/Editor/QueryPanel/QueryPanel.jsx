@@ -7,7 +7,14 @@ import { Confirm } from '../Viewer/Confirm';
 import { useQueryPanelActions, useUnsavedChanges, useSelectedQuery } from '@/_stores/queryPanelStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 
-export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, darkMode, editorRef, children }) => {
+export const QueryPanel = ({
+  dataQueriesChanged,
+  fetchDataQueries,
+  darkMode,
+  editorRef,
+  children,
+  isVersionReleased,
+}) => {
   const { setSelectedQuery, updateQueryPanelHeight, setUnSavedChanges } = useQueryPanelActions();
   const isUnsavedQueriesAvailable = useUnsavedChanges();
   const selectedQuery = useSelectedQuery();
@@ -221,6 +228,7 @@ export const QueryPanel = ({ dataQueriesChanged, fetchDataQueries, darkMode, edi
             fetchDataQueries={fetchDataQueries}
             darkMode={darkMode}
             editorRef={editorRef}
+            isVersionReleased={isVersionReleased}
           />
           {children({
             toggleQueryEditor,
