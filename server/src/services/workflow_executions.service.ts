@@ -164,7 +164,15 @@ export class WorkflowExecutionsService {
     let finalResult = {};
     const logs = [];
 
+    const addLog = (log: string) => logs.push(`[${moment().utc().format('YYYY-MM-DD HH:mm:ss.SSS')} UTC] ${log}`);
+
     while (queue.length !== 0) {
+      const currentTime = moment();
+      const timeTaken = currentTime.diff(moment(workflowExecution.createdAt));
+      if (timeTaken / 1000 > 30) {
+        addLog('Execution stopped due to timeout');
+        break;
+      }
       const nodeToBeExecuted = queue.shift();
 
       const currentNode = await this.workflowExecutionNodeRepository.findOne({ where: { id: nodeToBeExecuted.id } });
@@ -181,7 +189,7 @@ export class WorkflowExecutionsService {
           }
 
           case 'query': {
-            await this.processQueryNode(currentNode, workflowExecution, appVersion, state, logs);
+            await this.processQueryNode(currentNode, workflowExecution, appVersion, state, addLog);
             break;
           }
 
@@ -236,7 +244,7 @@ export class WorkflowExecutionsService {
     execution: WorkflowExecution,
     appVersion: AppVersion,
     state: object,
-    logs: string[]
+    addLog: any
   ) {
     const queryId = find(appVersion.definition.queries, {
       idOnDefinition: node.definition.idOnDefinition,
@@ -255,7 +263,7 @@ export class WorkflowExecutionsService {
 
     const options = getQueryVariables(query.options, state);
     try {
-      logs.push(`[${moment().format('YYYY-MM-DD HH:mm:ss.SSS A')}] ${query.name}: Started execution`);
+      addLog(`${query.name}: Started execution`);
       const result = await this.dataQueriesService.runQuery(user, query, options);
 
       const newState = {
@@ -263,10 +271,10 @@ export class WorkflowExecutionsService {
         [query.name]: result,
       };
 
-      logs.push(`[${moment().format('YYYY-MM-DD HH:mm:ss.SSS A')}] ${query.name}: Execution succeeded`);
+      addLog(`${query.name}: Execution succeeded`);
       await this.completeNodeExecution(node, JSON.stringify(result), newState);
     } catch (exception) {
-      logs.push(`[${moment().format('YYYY-MM-DD HH:mm:ss.SSS A')}] ${query.name}: Execution failed`);
+      addLog(`${query.name}: Execution failed`);
       const result = { status: 'failed', exception };
 
       const newState = {
