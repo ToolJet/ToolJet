@@ -5,7 +5,7 @@ import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
 import { auditLogsService } from '../_services/auditLogsService';
 import { appService } from '../_services/app.service';
-import { Pagination, MultiSelect, FilterPreview, ToolTip } from '@/_components';
+import { Pagination, MultiSelectUser, FilterPreview, ToolTip } from '@/_components';
 import Layout from '@/_ui/Layout';
 import moment from 'moment';
 import { withRouter } from '@/_hoc/withRouter';
@@ -378,7 +378,7 @@ class AuditLogs extends React.Component {
                   <div className="card-body border-bottom py-3 overflow-auto" style={{ height: '75vh' }}>
                     <div className="row">
                       <div className="col-3" data-cy="select-users-dropdown">
-                        <MultiSelect
+                        <MultiSelectUser
                           className={{
                             container: searchSelectClass,
                             value: `${searchSelectClass}__value`,
@@ -402,10 +402,11 @@ class AuditLogs extends React.Component {
                           onReset={() => this.setSelectedSearchOptions({ users: [] })}
                           placeholder="Select Users"
                           searchLabel="Enter name or email"
+                          allowCustomRender={false}
                         />
                       </div>
                       <div className="col-3" data-cy="select-apps-dropdown">
-                        <MultiSelect
+                        <MultiSelectUser
                           className={{
                             container: searchSelectClass,
                             value: `${searchSelectClass}__value`,
@@ -435,10 +436,11 @@ class AuditLogs extends React.Component {
                           onReset={() => this.setSelectedSearchOptions({ apps: [], resources: [], actions: [] })}
                           placeholder="Select Apps"
                           disabled={isLoadingApps}
+                          allowCustomRender={false}
                         />
                       </div>
                       <div className="col" data-cy="select-resources-dropdown">
-                        <MultiSelect
+                        <MultiSelectUser
                           className={{
                             container: searchSelectClass,
                             value: `${searchSelectClass}__value`,
@@ -467,10 +469,11 @@ class AuditLogs extends React.Component {
                           onReset={() => this.setSelectedSearchOptions({ actions: [], resources: [] })}
                           placeholder="Select Resources"
                           disabled={this.isLoading()}
+                          allowCustomRender={false}
                         />
                       </div>
                       <div className="col" data-cy="select-actions-dropdown">
-                        <MultiSelect
+                        <MultiSelectUser
                           className={{
                             container: searchSelectClass,
                             value: `${searchSelectClass}__value`,
@@ -494,6 +497,7 @@ class AuditLogs extends React.Component {
                           onReset={() => this.setSelectedSearchOptions({ actions: [], resources: [] })}
                           placeholder="Select Actions"
                           disabled={this.isLoading()}
+                          allowCustomRender={false}
                         />
                       </div>
 
