@@ -17,6 +17,9 @@ import './styles.scss';
 import BlockOptions from './BlockOptions';
 import CommonCustomNode from './Nodes/CommonCustomNode';
 import ModalContent from './ModalContent';
+import StartNode from './Nodes/StartNode';
+
+const nodeTypes = { 'if-condition': ifConditionNode, query: CommonCustomNode, input: StartNode };
 
 function FlowBuilder(_props) {
   const { project } = useReactFlow();
@@ -149,8 +152,6 @@ function FlowBuilder(_props) {
     // only show modal if node is not input or output node
     if (node.type !== 'input' && node.type !== 'output') setSelectedNode(node);
   }, []);
-
-  const nodeTypes = useMemo(() => ({ 'if-condition': ifConditionNode, query: CommonCustomNode }), []);
 
   return (
     <div style={{ height: '100%' }}>

@@ -27,6 +27,7 @@ export const initialState = ({ appId, appVersionId }) => ({
           position: { x: 100, y: 250 },
           type: 'input',
           sourcePosition: 'right',
+          deletable: false,
         },
         {
           id: uuidv4(),
@@ -34,6 +35,7 @@ export const initialState = ({ appId, appVersionId }) => ({
           position: { x: 650, y: 250 },
           type: 'output',
           targetPosition: 'left',
+          deletable: false,
         },
       ],
       edges: [],
