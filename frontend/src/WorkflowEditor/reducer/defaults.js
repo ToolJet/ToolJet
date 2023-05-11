@@ -7,7 +7,7 @@ export const defaultQueryNode = {
   targetPosition: 'left',
   draggable: true,
   data: {
-    nodeType: 'query',
+    nodeType: 'common-custom-node',
     label: 'Query',
     idOnDefinition: undefined,
   },

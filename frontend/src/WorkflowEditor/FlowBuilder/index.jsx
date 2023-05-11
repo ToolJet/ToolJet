@@ -146,6 +146,7 @@ function FlowBuilder(_props) {
   );
 
   const nodeTypes = useMemo(() => ({ 'if-condition': ifConditionNode, 'common-custom-node': CommonCustomNode }), []);
+
   return (
     <div style={{ height: '100%' }}>
       <ReactFlow
@@ -179,18 +180,13 @@ function FlowBuilder(_props) {
         <BlockOptions
           onNewNode={addNewNode}
           editorSession={editorSession}
+          onClose={() => setShowBlockOptions(null)}
           // give style so it renders on given clientx & client y
           style={{ left: showBlockOptions?.x, top: showBlockOptions?.y, position: 'absolute' }}
         />
       )}
       {
-        <Modal
-          className="show-node-modal"
-          // dialogClassName="whatevert"
-          show={selectedNode}
-          onHide={() => setSelectedNode(null)}
-          size="lg"
-        >
+        <Modal className="show-node-modal" show={selectedNode} onHide={() => setSelectedNode(null)}>
           <ModalContent node={selectedNode} />
         </Modal>
       }
