@@ -367,14 +367,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     const updateParams = {
       add_users: selectedUsers.map((user) => user.value),
     };
-    posthog.capture(
-      'click_add_user_button',
-      {
-        workspace_id:
-          authenticationService?.currentUserValue?.organization_id ||
-          authenticationService?.currentSessionValue?.current_organization_id,
-        group_id: groupPermissionId,
-      });
+    posthog.capture('click_add_user_button', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      group_id: groupPermissionId,
+    });
     groupPermissionService
       .update(groupPermissionId, updateParams)
       .then(() => {
