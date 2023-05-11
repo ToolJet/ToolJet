@@ -342,7 +342,6 @@ class EditorComponent extends React.Component {
       const homePageId = startingPageId ?? dataDefinition.homePageId;
 
       useAppDataStore.getState().actions.updateEditingVersion(data.editing_version);
-      useAppDataStore.getState().actions.updateIsVersionReleased(data.editing_version?.id === data?.current_version_id);
 
       this.setState(
         {
@@ -399,7 +398,6 @@ class EditorComponent extends React.Component {
         versionChanged: true,
       });
       if (version?.id === this.state.app?.current_version_id) {
-        useAppDataStore.getState().actions.updateIsVersionReleased(true);
         (this.canUndo = false), (this.canRedo = false);
       }
       this.setState(

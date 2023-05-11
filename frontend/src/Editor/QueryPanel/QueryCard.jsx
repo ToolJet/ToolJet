@@ -10,7 +10,6 @@ import { toast } from 'react-hot-toast';
 
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions, useSelectedQuery, useUnsavedChanges } from '@/_stores/queryPanelStore';
-import { useAppDataStore } from '@/_stores/appDataStore';
 
 export const QueryCard = ({
   dataQuery,
@@ -21,6 +20,7 @@ export const QueryCard = ({
   darkMode = false,
   fetchDataQueries,
   editorRef,
+  isVersionReleased,
 }) => {
   const selectedQuery = useSelectedQuery();
   const isUnsavedChangesAvailable = useUnsavedChanges();
@@ -29,7 +29,6 @@ export const QueryCard = ({
   const { setSelectedQuery, setUnSavedChanges } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [renamingQuery, setRenamingQuery] = useState(false);
-  const { isVersionReleased } = useAppDataStore();
 
   const getSourceMetaData = (dataSource) => {
     if (dataSource?.plugin_id) {
