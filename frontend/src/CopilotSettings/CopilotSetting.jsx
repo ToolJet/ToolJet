@@ -193,6 +193,7 @@ const EducativeLebel = ({ darkMode }) => {
             size="sm"
             classNames="default-secondary-button"
             styles={{ width: '100%', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
+            onClick={() => window.open('https://docs.tooljet.com/docs/tooljet-copilot', '_blank')}
           >
             <Button.Content title={'Read more'} />
           </Button>

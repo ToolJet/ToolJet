@@ -62,6 +62,7 @@ export const ApiKeyContainer = ({
           </div>
           <div className="mt-2 w-25">
             <Button
+              onClick={() => window.open('https://tooljet.com/copilot', '_blank')}
               darkMode={darkMode}
               size="sm"
               styles={{ width: '100%', fontSize: '12px', fontWeight: 500, borderColor: darkMode && 'transparent' }}

@@ -164,6 +164,7 @@ return [row for row in data if row['amount'] > 1000]
           </p>
 
           <Button
+            onClick={() => window.open('https://docs.tooljet.com/docs/tooljet-copilot', '_blank')}
             darkMode={darkMode}
             size="sm"
             classNames="default-secondary-button"
