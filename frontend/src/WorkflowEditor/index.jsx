@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { generateQueryName } from './utils';
 import { withRouter } from '@/_hoc/withRouter';
 import LeftSideBar from './LeftSidebar';
+import { toast } from 'react-hot-toast';
 
 import './style.scss';
 import Header from './Header';
@@ -46,7 +47,11 @@ function WorkflowEditor(props) {
       .then((appData) => {
         const versionId = appData.editing_version.id;
         const organizationId = appData.organizationId;
+        const name = appData.name;
         editorSessionActions.setAppVersionId(versionId);
+        editorSessionActions.setAppName(name);
+        document.title = `${name} - ToolJet`;
+
         if (appData.definition) {
           editorSessionActions.updateFlow({ edges: appData.definition.edges, nodes: appData.definition.nodes });
           // editorSessionActions.setQueries(appData.definition.queries);
@@ -80,6 +85,26 @@ function WorkflowEditor(props) {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const saveAppName = async (name) => {
+    if (!name.trim()) {
+      toast("App name can't be empty or whitespace", {
+        icon: '🚨',
+      });
+      return;
+    }
+    await appService
+      .saveApp(appId, { name })
+      .then(() => {
+        editorSessionActions.setAppName(name);
+        document.title = `${name} - ToolJet`;
+      })
+      .catch(() => {
+        toast('Something went wrong while editing app name', {
+          icon: '🚨',
+        });
+      });
+  };
 
   const save = (editorSession, editorSessionActions) => {
     editorSessionActions.setAppSavingStatus(true);
@@ -174,6 +199,7 @@ function WorkflowEditor(props) {
         updateFlow={updateFlow}
         editorSessionActions={editorSessionActions}
         reloadQueries={() => {}}
+        saveAppName={saveAppName}
       />
 
       <div className="body">

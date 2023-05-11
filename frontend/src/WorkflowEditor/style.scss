@@ -7,18 +7,63 @@
 
   .header {
     height: 45px;
+    min-height: 45px;
     width: 100%;
     background-color: white;
     border-bottom: solid aliceblue 1px;
 
-    .logo-section {
+
+    .items {
+
       display: flex;
-      align-items: center;
-      width: 60px;
-      flex-direction: column;
-      justify-content: center;
-      height: 100%;
+      flex-direction: row;
+
+      .logo-section {
+        display: flex;
+        align-items: center;
+        width: 80px;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+        
+      }
+
+      .name-editor {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        .app-name {
+          position: relative;
+          left: 0;
+          top:0;
+        }
+      }
+
+      .saving-status {
+        line-height: 45px;
+        width: 200px;
+        padding-left: 4px;
+      }
+
+      .run-button {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        width: 100%;
+
+        .button-container {
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-end;
+
+          button {
+            width: 100px;
+          }
+        }
+      }
     }
+
   }
 
   .body {
@@ -133,9 +178,7 @@
           }
         }
       }
-
     }
-
   }
 
   .logs-panel {
@@ -168,7 +211,6 @@
         cursor: pointer;
         font-weight: bold;
       }
-
     }
 
     .logs-console {

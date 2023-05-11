@@ -1,5 +1,6 @@
 export default function generateActions(dispatch) {
   return {
+    setAppName: (name) => dispatch({ type: 'SET_APP_NAME', payload: { name } }),
     setMode: (mode) => dispatch({ type: 'SET_MODE', payload: { mode } }),
     setAppVersionId: (versionId) => dispatch({ type: 'SET_APP_VERSION_ID', payload: { versionId } }),
     setDataSources: (dataSources) => dispatch({ type: 'SET_DATA_SOURCES', payload: { dataSources } }),

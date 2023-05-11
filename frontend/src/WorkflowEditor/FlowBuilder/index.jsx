@@ -172,6 +172,7 @@ function FlowBuilder(_props) {
         zoomOnScroll={false}
         panOnScroll={true}
         zoomOnDoubleClick={false}
+        zoomActivationKeyCode={null}
         onMove={() => setShowBlockOptions(null)}
         onNodeClick={onNodeClick}
         onMouseDownCapture={editorSessionActions.hideLeftDrawer}

@@ -2,33 +2,49 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import AppLogo from '@/_components/AppLogo';
 import { Modes } from '../reducer/reducer';
-import { AppVersionsManager } from '../../Editor/AppVersionsManager/List';
+import EditAppName from '../../Editor/Header/EditAppName';
 
 export default function Header(props) {
-  const { executeWorkflow, editorSession, updateFlow, editorSessionActions, reloadQueries } = props;
+  const { executeWorkflow, editorSession, editorSessionActions, saveAppName } = props;
 
   return (
     <div className="header">
       <div className="grid">
         <div className="row" style={{ height: '40px' }}>
-          <div className="col-4 d-flex flex-columns align-items-center">
+          <div className="items">
             <div className="logo-section">
               <Link to="/">
                 <AppLogo isLoadingFromHeader={true} />
               </Link>
             </div>
-            <button
-              onClick={executeWorkflow}
-              type="button"
-              className="btn btn-primary"
-              style={{ height: '30px', marginRight: 6 }}
-              disabled={editorSession.mode === Modes.Running}
-            >
-              {editorSession.mode === Modes.Running ? 'Running' : 'Run'}
-            </button>
-            {editorSession.appSavingStatus.status ? 'Saving..' : 'All changes saved'}
+            <div className="name-editor">
+              <EditAppName
+                appId={editorSession.app.id}
+                appName={editorSession.app.name}
+                onNameChanged={(name) => {
+                  saveAppName(name);
+                }}
+              />
+            </div>
+            <div className="saving-status">
+              {editorSession.appSavingStatus.status ? 'Saving..' : 'All changes saved'}
+            </div>
+            <div className="run-button">
+              <div className="button-container">
+                <button
+                  onClick={executeWorkflow}
+                  type="button"
+                  className="btn btn-primary run-button"
+                  style={{ height: '30px', marginRight: 6 }}
+                  disabled={editorSession.mode === Modes.Running}
+                >
+                  {editorSession.mode === Modes.Running ? 'Running' : 'Run'}
+                </button>
+              </div>
+            </div>
           </div>
-          {/* <div className="col-3">
+        </div>
+        {/* <div className="col-3">
             <AppVersionsManager
               appId={editorSession.app.id}
               editingVersion={{ id: editorSession.app.versionId }}
@@ -44,7 +60,6 @@ export default function Header(props) {
               closeCreateVersionModalPrompt={() => {}}
             />
           </div> */}
-        </div>
       </div>
     </div>
   );
