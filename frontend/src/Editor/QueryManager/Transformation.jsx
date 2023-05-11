@@ -15,9 +15,11 @@ import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { Button } from '@/_ui/LeftSidebar';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
+import { authenticationService } from '@/_services';
 
 export const Transformation = ({ changeOption, currentState, options, darkMode, queryId }) => {
   const { t } = useTranslation();
+  const { current_organization_id } = authenticationService.currentSessionValue;
 
   const [lang, setLang] = React.useState(options?.transformationLanguage ?? 'javascript');
 
@@ -37,7 +39,7 @@ return [row for row in data if row['amount'] > 1000]
   const [state, setState] = useLocalStorageState('transformation', defaultValue);
 
   const [fetchingRecommendation, setFetchingRecommendation] = useState(false);
-  const isCopilotEnabled = localStorage.getItem('copilotEnabled') === 'true';
+  const isCopilotEnabled = localStorage.getItem(`copilotEnabled-${current_organization_id}`) === 'true';
 
   const handleCallToGPT = async () => {
     setFetchingRecommendation(true);
