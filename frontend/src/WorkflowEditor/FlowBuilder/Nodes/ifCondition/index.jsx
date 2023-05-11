@@ -1,17 +1,18 @@
 import React, { useContext } from 'react';
 import { Handle, Position } from 'reactflow';
-import { CodeHinter } from '../../../../Editor/CodeBuilder/CodeHinter';
-import WorkflowEditorContext from '../../../context';
-
+import IfIcon from '../../../../../assets/images/icons/if.svg';
+import { find } from 'lodash';
 import './styles.scss';
 
-export default function IfConditionNode(props) {
-  const { width, height, id, data: nodeData, showHandles = true } = props;
+import WorkflowEditorContext from '../../../context';
+import DataSourceIcon from '../../DataSourceIcon';
 
-  const { editorSessionActions } = useContext(WorkflowEditorContext);
+function IfConditionNode(props) {
+  const { editorSession, updateQuery } = useContext(WorkflowEditorContext);
+  const { width, height, id, data: nodeData } = props;
 
   return (
-    <div className="if-condition-node" style={{ width, height }}>
+    <div className="common-custom-node">
       <Handle
         type="target"
         position={Position.Left}
@@ -25,39 +26,20 @@ export default function IfConditionNode(props) {
         position={Position.Top}
         isValidConnection={(connection) => connection.source === 'some-id'}
         onConnect={(params) => console.log('handle onConnect', params)}
-        style={{ background: '#000' }}
+        style={{ background: 'green' }}
       />
-      <div className="grid main-grid">
-        <div className="row">
-          <div className="col-12 d-flex flex-column" style={{ justifyContent: 'space-between' }}>
-            {showHandles && <div className="d-flex justify-content-center">True</div>}
-            <div className="d-flex justify-content-center">
-              <CodeHinter
-                currentState={{}}
-                initialValue={nodeData.code}
-                mode="javascript"
-                theme={props.darkMode ? 'monokai' : 'base16-light'}
-                lineNumbers={false}
-                height={showHandles ? 35 : 120}
-                width="275px"
-                ignoreBraces={true}
-                onChange={(code) => editorSessionActions.updateNodeData(id, { code })}
-                isMultiLineJs={false}
-                enablePreview={false}
-              />
-            </div>
-            {showHandles && <div className="d-flex justify-content-center">False</div>}
-          </div>
-        </div>
-      </div>
+      <IfIcon />
+      <span>If condition</span>
       <Handle
         id="false"
         type="source"
         position={Position.Bottom}
         isValidConnection={(connection) => connection.source === 'some-id'}
         onConnect={(params) => console.log('handle onConnect', params)}
-        style={{ background: '#000' }}
+        style={{ background: 'red' }}
       />
     </div>
   );
 }
+
+export default IfConditionNode;
