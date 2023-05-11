@@ -18,8 +18,9 @@ import BlockOptions from './BlockOptions';
 import CommonCustomNode from './Nodes/CommonCustomNode';
 import ModalContent from './ModalContent';
 import StartNode from './Nodes/StartNode';
+import ResultNode from './Nodes/ResultNode';
 
-const nodeTypes = { 'if-condition': ifConditionNode, query: CommonCustomNode, input: StartNode };
+const nodeTypes = { 'if-condition': ifConditionNode, query: CommonCustomNode, input: StartNode, output: ResultNode };
 
 function FlowBuilder(_props) {
   const { project } = useReactFlow();

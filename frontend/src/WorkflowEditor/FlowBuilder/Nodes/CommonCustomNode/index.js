@@ -14,22 +14,10 @@ function CommonCustomNode(props) {
 
   return (
     <div className="common-custom-node">
-      <Handle
-        type="target"
-        position="left"
-        isValidConnection={(_connection) => true}
-        style={{ background: '#000' }}
-        className="node-handle"
-      />
+      <Handle type="target" position="left" isValidConnection={(_connection) => true} className="node-handle left" />
       <DataSourceIcon source={sourceData} />
       <div className="title">{queryData.name}</div>
-      <Handle
-        type="source"
-        position="right"
-        isValidConnection={(_connection) => true}
-        style={{ background: '#000' }}
-        className="node-handle"
-      />
+      <Handle type="source" position="right" isValidConnection={(_connection) => true} className="node-handle right" />
     </div>
   );
 }

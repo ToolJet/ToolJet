@@ -12,13 +12,13 @@ function IfConditionNode(props) {
   const { width, height, id, data: nodeData } = props;
 
   return (
-    <div className="common-custom-node">
+    <div className="common-custom-node if-condition-node">
       <Handle
         type="target"
         position={Position.Left}
         isValidConnection={(connection) => connection.source === 'some-id'}
         onConnect={(params) => console.log('handle onConnect', params)}
-        style={{ background: '#000' }}
+        className="node-handle"
       />
       <Handle
         id="true"
@@ -26,7 +26,8 @@ function IfConditionNode(props) {
         position={Position.Top}
         isValidConnection={(connection) => connection.source === 'some-id'}
         onConnect={(params) => console.log('handle onConnect', params)}
-        style={{ background: 'green' }}
+        style={{ background: 'lawngreen' }}
+        className="node-handle"
       />
       <IfIcon />
       <span>If condition</span>
@@ -37,6 +38,7 @@ function IfConditionNode(props) {
         isValidConnection={(connection) => connection.source === 'some-id'}
         onConnect={(params) => console.log('handle onConnect', params)}
         style={{ background: 'red' }}
+        className="node-handle"
       />
     </div>
   );

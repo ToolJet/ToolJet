@@ -1,10 +1,23 @@
 
 div.if-condition-node {
-  width: 300px;
-  background-color: white;
-  border-radius: 5px;
-  padding-top: 5px;
-  padding-bottom: 5px;
+
+  span {
+    margin-left: 10px;
+    font-family: 'IBM Plex Sans';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: #11181C;
+  }
+
+  .node-handle {
+    // z-index: -1;
+    background-color: #3D63DC;
+    border-radius: 20px;
+    width: 10px;
+    height: 10px;
+  }
 
   div.grid.main-grid {
     height: 100%;

@@ -1,4 +1,4 @@
-.start-node-container{
+.result-node-container {
     display: flex;
     align-items: center;
     width: 144px;
@@ -30,7 +30,7 @@
     }
 }
 
-.react-flow__node-input {
+.react-flow__node-output {
     border: 0px !important;
     padding: 0px;
     width: fit-content;
