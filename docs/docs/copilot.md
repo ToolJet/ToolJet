@@ -11,7 +11,7 @@ Tooljet Copilot is currently available in public beta for organizations.
 
 ## Activating Copilot
 
-To activate Copilot for a ToolJet workspace, the administrator must go to the **workspace settings**, then the **Copilot** section, and toggle on the "**Enable Copilot**" option. Once Copilot is enabled, an **API key** must be provided in order to activate the feature.
+To access the Copilot, each user, including administrators, can sign up for the waitlist program individually. After signing up, each user will receive a unique API key associated with their account. Only administrators, however, will have the privilege to enable Copilot within the workspace settings. Administrators can navigate to the Copilot section in the workspace settings and toggle on the "Enable Copilot" option using their respective API key.
 
 You can join the waitlist here: **https://tooljet.com/copilot**
 
