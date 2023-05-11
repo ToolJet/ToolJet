@@ -2393,6 +2393,159 @@ export const widgets = [
     },
   },
   {
+    name: 'dropdownwithjson',
+    displayName: 'Dropdown with JSON',
+    description: 'Select one value from options',
+    defaultSize: {
+      width: 8,
+      height: 30,
+    },
+    component: 'DropDownWithJSON',
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    validation: {
+      customRule: { type: 'code', displayName: 'Custom validation' },
+    },
+    properties: {
+      schema: {
+        type: 'code',
+        displayName: 'Schema',
+      },
+      label: {
+        type: 'code',
+        displayName: 'Label',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      defaultValue: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
+          },
+        },
+      },
+      placeholder: {
+        type: 'code',
+        displayName: 'Default placeholder',
+        validation: {
+          validation: {
+            schema: { type: 'string' },
+          },
+        },
+      },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+    },
+    events: {
+      onSelect: { displayName: 'On select' },
+      onSearchTextChanged: { displayName: 'On search text changed' },
+    },
+    styles: {
+      borderRadius: {
+        type: 'code',
+        displayName: 'Border radius',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'number' }, { type: 'string' }],
+          },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      selectedTextColor: {
+        type: 'color',
+        displayName: 'Selected Text Color',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: {
+            type: 'boolean',
+          },
+        },
+      },
+      justifyContent: {
+        type: 'alignButtons',
+        displayName: 'Align Text',
+        validation: {
+          schema: {
+            type: 'string',
+          },
+        },
+      },
+    },
+    exposedVariables: {
+      value: 2,
+      searchText: '',
+      label: 'Select',
+      optionLabels: ['one', 'two', 'three'],
+    },
+    actions: [
+      {
+        handle: 'selectOption',
+        displayName: 'Select option',
+        params: [{ handle: 'select', displayName: 'Select' }],
+      },
+    ],
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      validation: {
+        customRule: { value: null },
+      },
+      properties: {
+        schema: {
+          value:
+            "{{[\t{label: 'One',value: 1,disable: false,visible: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}\t]}}",
+        },
+        label: { value: 'Select' },
+        visibility: { value: '{{true}}' },
+        loadingState: { value: '{{false}}' },
+        defaultValue: { value: '{{2}}' },
+        placeholder: { value: 'select a value' },
+      },
+      events: [],
+      styles: {
+        borderRadius: { value: '0' },
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+        justifyContent: { value: 'left' },
+      },
+    },
+  },
+  {
     name: 'Multiselect',
     displayName: 'Multiselect',
     description: 'Select multiple values from options',
