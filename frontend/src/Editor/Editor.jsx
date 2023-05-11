@@ -156,6 +156,7 @@ class EditorComponent extends React.Component {
         ? this.queryManagerPreferences?.queryPanelHeight
         : 95 ?? 70,
       editorMarginLeft: 0,
+      isQueryPaneDragging: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -1232,6 +1233,19 @@ class EditorComponent extends React.Component {
     return canvasBackgroundColor;
   };
 
+  computeCanvasContainerHeight = () => {
+    const queryPaneHeaderHeight = this.state.queryPanelHeight >= 95 ? 84 : 40;
+    const canvasContainerHeight = this.state.queryPanelHeight
+      ? this.state.queryPanelHeight >= 95
+        ? 100
+        : this.state.queryPanelHeight
+      : 100;
+
+    return `calc(${100}% - ${Math.max(this.state.queryPanelHeight + 44, 84)}px)`;
+  };
+
+  handleQueryPaneDragging = (isQueryPaneDragging) => this.setState({ isQueryPaneDragging });
+
   saveEditingVersion = () => {
     if (this.isVersionReleased()) {
       this.setState({ isSaving: false, showCreateVersionModalPrompt: true });
@@ -1947,7 +1961,7 @@ class EditorComponent extends React.Component {
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
                 dataQueries={dataQueries}
-                queryPanelHeight={queryPanelHeight}
+                queryPanelHeight={((window.innerHeight - this.state.queryPanelHeight) / window.innerHeight) * 100}
                 setEditorMarginLeft={(value) => this.setState({ editorMarginLeft: value })}
               />
               {!showComments && (
@@ -1970,14 +1984,19 @@ class EditorComponent extends React.Component {
                   }}
                 />
               )}
-              <div className="main main-editor-canvas" id="main-editor-canvas">
+              <div
+                className={`main main-editor-canvas ${this.state.isQueryPaneDragging ? 'hide-scrollbar' : ''}`}
+                id="main-editor-canvas"
+                style={{ backgroundColor: this.computeCanvasBackgroundColor() }}
+              >
                 <div
                   className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                   style={{
                     transform: `scale(${zoomLevel})`,
-                    paddingLeft:
+                    borderLeft:
                       (this.state.editorMarginLeft ? this.state.editorMarginLeft - 1 : this.state.editorMarginLeft) +
-                      'px',
+                      `px solid ${this.computeCanvasBackgroundColor()}`,
+                    height: this.computeCanvasContainerHeight(),
                   }}
                   onMouseUp={(e) => {
                     if (['real-canvas', 'modal'].includes(e.target.className)) {
@@ -2077,7 +2096,10 @@ class EditorComponent extends React.Component {
                     )}
                   </div>
                 </div>
-                <QueryPanel computeCurrentQueryPanelHeight={this.computeCurrentQueryPanelHeight}>
+                <QueryPanel
+                  computeCurrentQueryPanelHeight={this.computeCurrentQueryPanelHeight}
+                  onQueryPaneDragging={this.handleQueryPaneDragging}
+                >
                   {({
                     toggleQueryEditor,
                     showSaveConfirmation,

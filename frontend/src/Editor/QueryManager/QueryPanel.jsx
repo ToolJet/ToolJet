@@ -1,8 +1,8 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
 import { useEventListener } from '@/_hooks/use-event-listener';
 import { Tooltip } from 'react-tooltip';
 
-const QueryPanel = ({ children, computeCurrentQueryPanelHeight }) => {
+const QueryPanel = ({ children, computeCurrentQueryPanelHeight, onQueryPaneDragging }) => {
   const queryManagerPreferences = useRef(JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {});
   const queryPaneRef = useRef(null);
   const [isExpanded, setExpanded] = useState(queryManagerPreferences.current?.isExpanded ?? true);
@@ -57,11 +57,32 @@ const QueryPanel = ({ children, computeCurrentQueryPanelHeight }) => {
   };
 
   useEffect(() => {
+    onQueryPaneDragging(isDragging);
     if (!isDragging && isExpanded) {
-      computeCurrentQueryPanelHeight(height);
+      console.log(queryPaneRef?.current);
+      console.log('queryPaneRef?.current?.offsetHeight', queryPaneRef?.current?.offsetHeight);
+      computeCurrentQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDragging]);
+  }, [isDragging, height]);
+
+  useEffect(() => {
+    if (isExpanded === false) {
+      console.log(queryPaneRef?.current);
+      console.log('queryPaneRef?.current?.offsetHeight', queryPaneRef?.current?.offsetHeight);
+      computeCurrentQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isExpanded]);
+
+  useLayoutEffect(() => {
+    function updateSize() {
+      computeCurrentQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
+    }
+    window.addEventListener('resize', updateSize);
+    updateSize();
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
 
   useEventListener('mousemove', onMouseMove);
   useEventListener('mouseup', onMouseUp);

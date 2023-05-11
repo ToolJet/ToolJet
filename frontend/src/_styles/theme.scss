@@ -490,20 +490,26 @@ button {
     margin-left: 3%;
     width: 82%;
     top: 0;
+    height: calc(100vh - 84px);
+
+    &.hide-scrollbar {
+      .canvas-container::-webkit-scrollbar {
+        height: 0;
+      }
+    }
 
     .canvas-container::-webkit-scrollbar {
       width: 0;
       background: transparent;
-      height: 0;
+      // height: 0;
+    }
+
+    .canvas-container::-webkit-scrollbar-track {
+      background: transparent !important;
     }
 
     .canvas-container {
       scrollbar-width: none;
-    }
-
-    .canvas-container::-webkit-scrollbar {
-      width: 0;
-      background: transparent;
     }
 
     .canvas-container {
@@ -513,7 +519,7 @@ button {
       right: 300px;
       left: 48px;
       overflow-y: scroll;
-      overflow-x: scroll;
+      overflow-x: auto;
       -webkit-box-pack: center;
       justify-content: center;
       -webkit-box-align: center;
