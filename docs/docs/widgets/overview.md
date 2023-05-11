@@ -3,7 +3,7 @@ id: overview
 title: Overview
 ---
 
-# Components : Overview
+# Components: Overview
 
 Components are used to build the UI of the applications. They can be dragged onto the canvas from the Component Library and can be modified from the Properties Panel without needing to write any code. **[Event Handlers](/docs/actions/event-handler)** in Components allow end users to trigger queries and other application events to perform the **[Actions](/docs/category/actions-reference)**.
 
