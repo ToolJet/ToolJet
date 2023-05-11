@@ -102,7 +102,8 @@
     "uuid": "9.0.0",
     "xlsx": "^0.18.5",
     "y-websocket": "^1.4.5",
-    "yjs": "^13.5.46"
+    "yjs": "^13.5.46",
+    "zustand": "^4.3.6"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
