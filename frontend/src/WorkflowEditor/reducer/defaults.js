@@ -2,12 +2,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const defaultQueryNode = {
   id: uuidv4(),
-  type: 'common-custom-node',
+  type: 'query',
   sourcePosition: 'right',
   targetPosition: 'left',
   draggable: true,
   data: {
-    nodeType: 'common-custom-node',
+    nodeType: 'query',
     label: 'Query',
     idOnDefinition: undefined,
   },

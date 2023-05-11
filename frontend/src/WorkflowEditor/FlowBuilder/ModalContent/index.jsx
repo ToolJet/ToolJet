@@ -7,7 +7,7 @@ function ModalContent({ node }) {
   if (!node) return null;
 
   const renderNode =
-    node.type === 'common-custom-node' ? (
+    node.type === 'query' ? (
       <QueryNode data={node.data} id={node.id} />
     ) : (
       <IfConditionNode data={node.data} id={node.id} showHandles={false} />

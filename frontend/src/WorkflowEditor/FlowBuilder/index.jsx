@@ -150,7 +150,7 @@ function FlowBuilder(_props) {
     if (node.type !== 'input' && node.type !== 'output') setSelectedNode(node);
   }, []);
 
-  const nodeTypes = useMemo(() => ({ 'if-condition': ifConditionNode, 'common-custom-node': CommonCustomNode }), []);
+  const nodeTypes = useMemo(() => ({ 'if-condition': ifConditionNode, query: CommonCustomNode }), []);
 
   return (
     <div style={{ height: '100%' }}>

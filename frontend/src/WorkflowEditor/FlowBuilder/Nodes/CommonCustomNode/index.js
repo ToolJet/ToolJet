@@ -11,7 +11,7 @@ function CommonCustomNode(props) {
   const { width, height, id, data: nodeData } = props;
   const queryData = find(editorSession.queries, { idOnDefinition: nodeData.idOnDefinition });
   const sourceData = find(editorSession.dataSources, { kind: queryData.kind });
-  console.log('queryData', queryData);
+
   return (
     <div className="common-custom-node">
       <Handle
