@@ -7250,6 +7250,7 @@ tbody {
   font-weight: 500;
   height: 28px;
   cursor: pointer;
+  white-space: nowrap;
 
   .query-btn-svg-wrapper {
     width: 16px !important;
@@ -10494,6 +10495,9 @@ tbody {
   }
 }
 
+.theme-dark .card-container {
+  background-color: #121212 !important
+}
 .version-select {
   .react-select__menu {
     .react-select__menu-list {
