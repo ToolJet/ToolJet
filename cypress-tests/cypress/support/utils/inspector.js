@@ -12,10 +12,10 @@ export const verifyNodeData = (node, type, children) => {
   ).verifyVisibleElement("have.text", type);
 };
 
-export const openNode = (node) => {
-  cy.get(
-    `[data-cy="inspector-node-${node.toLowerCase()}"] > .node-key`
-  ).click();
+export const openNode = (node, index = 0) => {
+  cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .node-key`)
+    .eq(index)
+    .click();
 };
 
 export const verifyValue = (node, type, children) => {
