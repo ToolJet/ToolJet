@@ -197,9 +197,6 @@ class HomePageComponent extends React.Component {
 
   canUserPerform(user, action, app) {
     const currentSession = authenticationService.currentSessionValue;
-    if (currentSession?.super_admin) {
-      return true;
-    }
     let permissionGrant;
 
     switch (action) {
@@ -227,6 +224,9 @@ class HomePageComponent extends React.Component {
   }
 
   canAnyGroupPerformActionOnApp(action, appGroupPermissions, app) {
+    if (authenticationService.currentSessionValue?.super_admin) {
+      return true;
+    }
     if (!appGroupPermissions) {
       return false;
     }
@@ -236,6 +236,9 @@ class HomePageComponent extends React.Component {
   }
 
   canAnyGroupPerformAction(action, permissions) {
+    if (authenticationService.currentSessionValue?.super_admin) {
+      return true;
+    }
     if (!permissions) {
       return false;
     }
