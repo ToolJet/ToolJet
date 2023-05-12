@@ -27,6 +27,7 @@ import urlJoin from 'url-join';
 import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
+import SolidIcon from '../_ui/Icon/SolidIcons';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -1207,6 +1208,7 @@ export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, s
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   if (key === 'tooljetdb') return <RunTooljetDbIcon />;
   if (key === 'runpy') return <RunPyIcon />;
+  if (key === 'workflows') return <SolidIcon name="workflows" fill="#3D63DC" />;
   const Icon = allSvgs[key];
 
   if (!Icon) return <></>;

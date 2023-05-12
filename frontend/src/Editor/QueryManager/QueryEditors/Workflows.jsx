@@ -44,6 +44,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
         closeMenuOnSelect={true}
         customWrap={true}
         width="300px"
+        menuPlacement="bottom"
       />
       <label className="my-2">Params</label>
       <div className="grid"></div>

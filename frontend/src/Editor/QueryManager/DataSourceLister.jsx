@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import RunjsIcon from '../Icons/runjs.svg';
 import RunTooljetDbIcon from '../Icons/tooljetdb.svg';
+import SolidIcon from '../../_ui/Icon/SolidIcons';
 import RunpyIcon from '../Icons/runpy.svg';
 import AddIcon from '../../../assets/images/icons/add-source.svg';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +44,8 @@ function DataSourceLister({
         return <RunpyIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />;
       case 'tooljetdb':
         return <RunTooljetDbIcon />;
+      case 'workflows':
+        return <SolidIcon name="workflows" fill="rgb(61,99,220)" width="20" />;
       default:
         return <Icon />;
     }
