@@ -278,7 +278,7 @@
   }
 
   .modal-searchbar {
-    width: 200px;
+    width: 200px !important;
     height: 36px;
     float: right;
     margin-right: 3.5rem !important;
@@ -349,6 +349,17 @@
 .select-datasource-list-modal {
   .modal-body {
     padding: 0px !important;
+  }
+}
+
+.select-datasource-list-modal {
+  .form-control:focus {
+    padding: 0px;
+    width: 200px !important;
+  }
+
+  .modal-body-content {
+    scrollbar-width: none;
   }
 }
 
