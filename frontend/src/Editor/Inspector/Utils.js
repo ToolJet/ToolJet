@@ -28,18 +28,9 @@ export function renderElement(
   components = {},
   darkMode = false
 ) {
-  const getDefinitionForNewProps = (param) => {
-    if (['allowSelection', 'showAddNewRowButton'].includes(param)) {
-      return { value: '{{true}}' };
-    }
-  };
   const componentDefinition = component.component.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
-  console.log('arpit', { paramTypeDefinition });
-  const definition = ['allowSelection', 'showAddNewRowButton'].includes(param)
-    ? paramTypeDefinition[param] || getDefinitionForNewProps(param)
-    : paramTypeDefinition[param] || {};
-
+  const definition = paramTypeDefinition[param] || {};
   const meta = componentMeta[paramType][param];
 
   return (
