@@ -25,6 +25,9 @@ export const PageHandler = ({
   apps,
   pages,
   components,
+  isVersionReleased,
+  pinPagesPopover,
+  haveUserPinned,
 }) => {
   const isHomePage = page.id === homePageId;
   const isSelected = page.id === currentPageId;
@@ -151,7 +154,7 @@ export const PageHandler = ({
             )}
           </div>
           <div className="col-auto">
-            {(isHovered || isSelected) && (
+            {(isHovered || isSelected) && !isVersionReleased && (
               <PagehandlerMenu
                 page={page}
                 darkMode={darkMode}
@@ -173,13 +176,17 @@ export const PageHandler = ({
             <SettingsModal
               page={page}
               show={showSettingsModal}
-              handleClose={() => setShowSettingsModal(false)}
+              handleClose={() => {
+                setShowSettingsModal(false);
+                !haveUserPinned && pinPagesPopover(false);
+              }}
               darkMode={darkMode}
               updateOnPageLoadEvents={updateOnPageLoadEvents}
               currentState={currentState}
               apps={apps}
               pages={pages}
               components={components}
+              pinPagesPopover={pinPagesPopover}
             />
           </div>
         </div>

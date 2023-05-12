@@ -22,16 +22,16 @@ export const dashboardSelector = {
   changeButton: "[data-cy=change-button]",
   addToFolderTitle: "[data-cy=add-to-folder-title]",
   moveAppText: "[data-cy=move-selected-app-to-text]",
-  selectFolder: '[data-cy="select-folder"]>>>>.css-h380uj-Input',
+  selectFolder: '[data-cy="select-folder"]>.css-nwhe5y-container > .react-select__control > .react-select__value-container',
   addToFolderButton: "[data-cy=add-to-folder-button]",
   appTemplateRow: '[data-cy="app-template-row"]',
   homePageContent: '[data-cy="home-page-content"]',
   seeAllAppsTemplateButton: '[data-cy="see-all-app-template-buton"]',
   folderLabel: '[data-cy="folder-info"]',
-  dashboardAppsHeaderLabel:'[data-cy="app-header-label"]',
+  dashboardAppsHeaderLabel: '[data-cy="app-header-label"]',
   versionLabel: '[data-cy="version-label"]',
   dashboardAppCreateButton: '[data-cy="button-new-app-from-scratch"]',
-   
+
   appCardIcon: (iconName) => {
     return `[data-cy="app-card-${cyParamName(iconName)}-icon"]`;
   },
@@ -41,5 +41,4 @@ export const dashboardSelector = {
   folderName: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-name"]`;
   },
-
 };

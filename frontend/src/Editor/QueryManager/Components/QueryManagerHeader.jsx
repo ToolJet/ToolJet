@@ -28,6 +28,7 @@ export const QueryManagerHeader = forwardRef(
       editingVersionId,
       appId,
       editorRef,
+      isVersionReleased,
     },
     ref
   ) => {
@@ -112,7 +113,7 @@ export const QueryManagerHeader = forwardRef(
               {renamingQuery ? renderRenameInput() : queryName}
             </span>
             <span
-              className={cx('breadcrum-rename-query-icon', { 'd-none': renamingQuery })}
+              className={cx('breadcrum-rename-query-icon', { 'd-none': renamingQuery && isVersionReleased })}
               onClick={() => setRenamingQuery(true)}
             >
               <RenameIcon />
@@ -122,11 +123,11 @@ export const QueryManagerHeader = forwardRef(
       );
     };
 
-    const buttonLoadingState = (loading) => {
+    const buttonLoadingState = (loading, disabled = false) => {
       return cx(
         `${loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`,
         { 'theme-dark ': darkMode },
-        { disabled: !selectedDataSource }
+        { disabled: disabled || !selectedDataSource }
       );
     };
 
@@ -165,7 +166,10 @@ export const QueryManagerHeader = forwardRef(
     const renderSaveButton = () => {
       return (
         <button
-          className={`default-tertiary-button ${buttonLoadingState(isCreationInProcess || isUpdationInProcess)}`}
+          className={`default-tertiary-button ${buttonLoadingState(
+            isCreationInProcess || isUpdationInProcess,
+            isVersionReleased
+          )}`}
           onClick={() => createOrUpdateDataQuery(false)}
           disabled={buttonDisabled}
           data-cy={`query-${buttonText.toLowerCase()}-button`}
@@ -183,7 +187,10 @@ export const QueryManagerHeader = forwardRef(
       return (
         <button
           onClick={() => createOrUpdateDataQuery(true)}
-          className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(isLoading)}`}
+          className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(
+            isLoading,
+            isVersionReleased
+          )}`}
           data-cy="query-run-button"
         >
           <span

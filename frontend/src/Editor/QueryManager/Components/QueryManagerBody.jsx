@@ -38,6 +38,7 @@ export const QueryManagerBody = forwardRef(
       appDefinition,
       createDraftQuery,
       setOptions,
+      isVersionReleased,
     },
     ref
   ) => {
@@ -177,7 +178,11 @@ export const QueryManagerBody = forwardRef(
 
     const renderDataSources = (labelText, dataSourcesList, staticList = []) => {
       return (
-        <div className="datasource-picker">
+        <div
+          className={cx(`datasource-picker`, {
+            'disabled ': isVersionReleased,
+          })}
+        >
           <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
             {labelText}
           </label>
@@ -230,18 +235,24 @@ export const QueryManagerBody = forwardRef(
       return (
         <div style={{ padding: '0 32px' }}>
           <div>
-            <ElementToRender
-              pluginSchema={selectedDataSource?.plugin?.operationsFile?.data}
-              selectedDataSource={selectedDataSource}
-              options={options}
-              optionsChanged={optionsChanged}
-              optionchanged={optionchanged}
-              currentState={currentState}
-              darkMode={darkMode}
-              isEditMode={true} // Made TRUE always to avoid setting default options again
-              queryName={queryName}
-            />
-            {renderTransformation()}
+            <div
+              className={cx({
+                'disabled ': isVersionReleased,
+              })}
+            >
+              <ElementToRender
+                pluginSchema={selectedDataSource?.plugin?.operationsFile?.data}
+                selectedDataSource={selectedDataSource}
+                options={options}
+                optionsChanged={optionsChanged}
+                optionchanged={optionchanged}
+                currentState={currentState}
+                darkMode={darkMode}
+                isEditMode={true} // Made TRUE always to avoid setting default options again
+                queryName={queryName}
+              />
+              {renderTransformation()}
+            </div>
             <Preview
               previewPanelRef={ref}
               previewLoading={previewLoading}
@@ -299,7 +310,11 @@ export const QueryManagerBody = forwardRef(
 
     const renderQueryOptions = () => {
       return (
-        <div className="advanced-options-container font-weight-400 border-top query-manager-border-color">
+        <div
+          className={cx(`advanced-options-container font-weight-400 border-top query-manager-border-color`, {
+            'disabled ': isVersionReleased,
+          })}
+        >
           <div className="advance-options-input-form-container">
             {Object.keys(customToggles).map((toggle, index) => renderCustomToggle(customToggles[toggle], index))}
           </div>

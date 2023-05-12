@@ -31,6 +31,8 @@ export const LeftSidebarDataSources = ({
   toggleDataSourceManagerModal,
   showDataSourceManagerModal,
   popoverContentHeight,
+  isVersionReleased,
+  setReleasedVersionPopupState,
 }) => {
   const dataSources = useDataSources();
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
@@ -93,7 +95,15 @@ export const LeftSidebarDataSources = ({
     return DataSourceTypes.find((source) => source.kind === dataSource.kind);
   };
 
-  const RenderDataSource = ({ dataSource, idx, convertToGlobal, showDeleteIcon = true, enableEdit = true }) => {
+  const RenderDataSource = ({
+    dataSource,
+    idx,
+    convertToGlobal,
+    showDeleteIcon = true,
+    enableEdit = true,
+    setReleasedVersionPopupState,
+    isVersionReleased,
+  }) => {
     const [isConversionVisible, setConversionVisible] = React.useState(false);
     const sourceMeta = getSourceMetaData(dataSource);
 
@@ -149,7 +159,7 @@ export const LeftSidebarDataSources = ({
             {dataSource.name}
           </span>
         </div>
-        {showDeleteIcon && (
+        {showDeleteIcon && !isVersionReleased && (
           <div className="col-auto">
             <button className="btn btn-sm p-1 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
               <div>
@@ -158,7 +168,7 @@ export const LeftSidebarDataSources = ({
             </button>
           </div>
         )}
-        {convertToGlobal && admin && (
+        {convertToGlobal && admin && !isVersionReleased && (
           <div className="col-auto">
             <OverlayTrigger
               rootClose={false}
@@ -183,6 +193,8 @@ export const LeftSidebarDataSources = ({
       RenderDataSource={RenderDataSource}
       dataSources={dataSources}
       toggleDataSourceManagerModal={toggleDataSourceManagerModal}
+      isVersionReleased={isVersionReleased}
+      setReleasedVersionPopupState={setReleasedVersionPopupState}
     />
   );
 
@@ -228,12 +240,19 @@ export const LeftSidebarDataSources = ({
         dataSourcesChanged={dataSourcesChanged}
         globalDataSourcesChanged={globalDataSourcesChanged}
         selectedDataSource={selectedDataSource}
+        isVersionReleased={isVersionReleased}
       />
     </>
   );
 };
 
-const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [] }) => {
+const LeftSidebarDataSourcesContainer = ({
+  darkMode,
+  RenderDataSource,
+  dataSources = [],
+  isVersionReleased,
+  setReleasedVersionPopupState,
+}) => {
   const { t } = useTranslation();
   return (
     <div>
@@ -254,6 +273,8 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
                       idx={idx}
                       convertToGlobal={true}
                       showDeleteIcon={true}
+                      isVersionReleased={isVersionReleased}
+                      setReleasedVersionPopupState={setReleasedVersionPopupState}
                     />
                   ))}
                 </div>
@@ -262,13 +283,15 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
           </div>
         </div>
       </div>
-      <div className="add-datasource-btn w-100 p-3">
-        <Link to={getPrivateRoute('global_datasources')}>
-          <div className="p-2 color-primary cursor-pointer">
-            {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
-          </div>
-        </Link>
-      </div>
+      {!isVersionReleased && (
+        <div className="add-datasource-btn w-100 p-3">
+          <Link to={getPrivateRoute('global_datasources')}>
+            <div className="p-2 color-primary cursor-pointer">
+              {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
+            </div>
+          </Link>
+        </div>
+      )}
     </div>
   );
 };

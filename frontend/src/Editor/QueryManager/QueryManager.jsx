@@ -31,6 +31,7 @@ const QueryManager = ({
   editorRef,
   createDraftQuery,
   updateDraftQueryName,
+  isVersionReleased,
 }) => {
   const loadingDataSources = useLoadingDataSources();
   const dataSources = useDataSources();
@@ -97,6 +98,7 @@ const QueryManager = ({
         appId={appId}
         ref={previewPanelRef}
         editorRef={editorRef}
+        isVersionReleased={isVersionReleased}
       />
       <QueryManagerBody
         darkMode={darkMode}
@@ -111,6 +113,7 @@ const QueryManager = ({
         createDraftQuery={createDraftQuery}
         setOptions={setOptions}
         ref={previewPanelRef}
+        isVersionReleased={isVersionReleased}
       />
     </div>
   );

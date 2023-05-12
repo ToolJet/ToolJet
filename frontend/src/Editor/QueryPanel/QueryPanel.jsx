@@ -20,6 +20,7 @@ const QueryPanel = ({
   appDefinition,
   dataSourceModalHandler,
   editorRef,
+  isVersionReleased,
 }) => {
   const { setSelectedQuery, updateQueryPanelHeight, setUnSavedChanges, setSelectedDataSource } = useQueryPanelActions();
   const isUnsavedQueriesAvailable = useUnsavedChanges();
@@ -260,6 +261,7 @@ const QueryPanel = ({
                   createDraftQuery={createDraftQuery}
                   isUnsavedQueriesAvailable={isUnsavedQueriesAvailable}
                   updateDraftQueryName={updateDraftQueryName}
+                  isVersionReleased={isVersionReleased}
                 />
               </div>
             </div>
