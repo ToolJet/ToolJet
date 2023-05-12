@@ -1,7 +1,6 @@
 import { posthog } from 'posthog-js';
 
 export default function initPosthog(currentUser) {
-  console.log('inside', currentUser);
   if (currentUser) {
     posthog.init('1OhSAF2367nMhuGI3cLvE6m5D0PJPBEA5zR5JFTM-yw', {
       api_host: 'https://app.posthog.com',
