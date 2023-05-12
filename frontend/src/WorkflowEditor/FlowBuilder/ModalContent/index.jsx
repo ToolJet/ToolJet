@@ -12,7 +12,8 @@ function ModalContent({ node, darkMode }) {
     node.type === 'query' ? (
       <QueryNode data={node.data} id={node.id} />
     ) : (
-      <div className="d-flex justify-content-center">
+      <div className="if-condition-modal-content d-flex justify-content-center">
+        <span className="title">If condition</span>
         <CodeHinter
           currentState={{}}
           initialValue={node.data.code}
