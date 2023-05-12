@@ -16,6 +16,8 @@ import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
 import { buildURLWithQuery, retrieveWhiteLabelText, getSubpath } from '@/_helpers/utils';
 import OIDCSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
+import posthog from 'posthog-js';
+import initPosthog from '../_helpers/initPosthog';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -116,6 +118,16 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         password: password,
       })
       .then((user) => {
+        //posthog
+        const ssoType = localStorage.getItem('ph-sso-type');
+        const event = `signup_${
+          source === 'sso' ? (ssoType === 'google' ? 'google' : ssoType === 'openid' ? 'openid' : 'github') : 'email'
+        }`;
+        initPosthog(user);
+        posthog.capture(event, {
+          email: user.email,
+          workspace_id: user.organization_id || user.current_organization_id,
+        });
         authenticationService.deleteLoginOrganizationId();
         setIsLoading(false);
         window.location = getSubpath()
@@ -383,6 +395,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
           organizationToken={params?.organizationToken ?? ''}
           password={password}
           darkMode={darkMode}
+          source={source}
         />
       )}
 

@@ -13,8 +13,10 @@ import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
 import startsWith from 'lodash.startswith';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
+import posthog from 'posthog-js';
+import initPosthog from '../_helpers/initPosthog';
 
-function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
+function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode, source }) {
   const Logo = darkMode ? LogoDarkMode : LogoLightMode;
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -49,6 +51,17 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           phoneNumber: formData?.phoneNumber,
         })
         .then((data) => {
+          /* Posthog Event */
+          const ssoType = localStorage.getItem('ph-sso-type');
+          const event = `signup_${
+            source === 'sso' ? (ssoType === 'google' ? 'google' : ssoType === 'openid' ? 'openid' : 'github') : 'email'
+          }`;
+          initPosthog(data);
+          posthog.capture(event, {
+            email: data.email,
+            workspace_id: data.organization_id || data.current_organization_id,
+          });
+
           authenticationService.deleteLoginOrganizationId();
           setIsLoading(false);
           window.location = getSubpath()

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
-import { folderService } from '@/_services';
+import { folderService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
 import { ConfirmDialog } from '@/_components';
 import { useTranslation } from 'react-i18next';
 import Skeleton from 'react-loading-skeleton';
+import posthog from 'posthog-js';
 
 export const Folders = function Folders({
   folders,
@@ -42,12 +43,18 @@ export const Folders = function Folders({
       setCreationStatus(true);
       folderService
         .create(newFolderName)
-        .then(() => {
+        .then((data) => {
           toast.success('Folder created.');
           setCreationStatus(false);
           setShowForm(false);
           setNewFolderName('');
           foldersChanged();
+          posthog.capture('create_folder', {
+            workspace_id:
+              authenticationService?.currentUserValue?.organization_id ||
+              authenticationService?.currentSessionValue?.current_organization_id,
+            folder_id: data?.id,
+          });
         })
         .catch(({ error }) => {
           toast.error('Error creating folder: ' + error);
@@ -152,6 +159,11 @@ export const Folders = function Folders({
           <div
             className="folder-create-btn"
             onClick={() => {
+              posthog.capture('create_new_folder', {
+                workspace_id:
+                  authenticationService?.currentUserValue?.organization_id ||
+                  authenticationService?.currentSessionValue?.current_organization_id,
+              });
               setNewFolderName('');
               setShowForm(true);
             }}

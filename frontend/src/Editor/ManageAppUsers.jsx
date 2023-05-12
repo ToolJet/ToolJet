@@ -147,7 +147,7 @@ class ManageAppUsersComponent extends React.Component {
         <svg
           className="w-100 h-100 cursor-pointer icon"
           onClick={() => {
-            posthog.capture('click_share'); //posthog event
+            posthog.capture('click_share', { appId }); //posthog event
             this.setState({ showModal: true });
           }}
           width="33"

@@ -3,6 +3,7 @@ import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import posthog from 'posthog-js';
 import { appendWorkspaceId } from '../../_helpers/utils';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
@@ -21,6 +22,9 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     setIsCreating(true);
     organizationService.createOrganization(newOrgName).then(
       (data) => {
+        posthog.capture('create_workspace', {
+          workspace_id: data.organization_id || data.current_organization_id,
+        });
         setIsCreating(false);
         const newPath = appendWorkspaceId(data.current_organization_id, location.pathname, true);
         window.history.replaceState(null, null, newPath);

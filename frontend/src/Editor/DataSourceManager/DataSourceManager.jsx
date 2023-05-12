@@ -101,7 +101,7 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   selectDataSource = (source, type) => {
-    posthog.capture('choose_datasource', { dataSource: source.kind, category: type });
+    posthog.capture('choose_datasource', { dataSource: source.kind, category: type, appId: this.state.appId });
     this.setState({
       dataSourceMeta: source.manifestFile?.data?.source ?? source,
       selectedDataSource: source.manifestFile?.data?.source ?? source,
@@ -163,7 +163,7 @@ class DataSourceManagerComponent extends React.Component {
     const currentAppEnvironmentId = this.props.currentAppEnvironmentId ?? this.props.currentEnvironment?.id;
     const scope = this.state?.scope || selectedDataSource?.scope;
 
-    posthog.capture('save_connection_datasource', { dataSource: kind }); //posthog event
+    posthog.capture('save_connection_datasource', { dataSource: kind, appId: this.state.appId }); //posthog event
 
     const parsedOptions = Object.keys(options).map((key) => {
       const keyMeta = selectedDataSource.options[key];
@@ -819,6 +819,7 @@ class DataSourceManagerComponent extends React.Component {
                   options={options}
                   onConnectionTestFailed={this.onConnectionTestFailed}
                   darkMode={this.props.darkMode}
+                  appId={this.state.appId}
                 />
               </div>
               <div className="col-auto" data-cy="db-connection-save-button">

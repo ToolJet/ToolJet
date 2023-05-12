@@ -5,6 +5,7 @@ import { authenticationService } from '@/_services';
 import { EditOrganization } from './EditOrganization';
 import { CreateOrganization } from './CreateOrganization';
 import { useTranslation } from 'react-i18next';
+import posthog from 'posthog-js';
 
 const Menu = (props) => {
   const { t } = useTranslation();
@@ -40,7 +41,10 @@ const Menu = (props) => {
           <div
             className="cursor-pointer d-flex align-items-center"
             style={{ padding: '8px 12px', color: '#3E63DD' }}
-            onClick={props.selectProps.setShowCreateOrg}
+            onClick={() => {
+              posthog.capture('click_add_workspace');
+              props.selectProps.setShowCreateOrg(true);
+            }}
           >
             <svg
               className="me-2"

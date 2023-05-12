@@ -183,9 +183,9 @@ export const Container = ({
 
   const triggerPosthogEvent = () => {
     if (draggingState) {
-      posthog.capture('start_dragging_widget', { widget: draggingItem?.component?.component });
+      posthog.capture('start_dragging_widget', { widget: draggingItem?.component?.component, appId: router.query.id });
     } else if (!draggingState && draggingItem) {
-      posthog.capture('drop_widget', { widget: draggingItem?.component?.component });
+      posthog.capture('drop_widget', { widget: draggingItem?.component?.component, appId: router.query.id });
     }
   };
 
@@ -387,7 +387,7 @@ export const Container = ({
 
     // Update the list of threads on the current users page
     addNewThread(data);
-    posthog.capture('drop_comment'); //posthog event
+    posthog.capture('drop_comment', { appId: router.query.id }); //posthog event
   };
 
   const handleAddThreadOnComponent = async (_, __, e) => {
@@ -433,7 +433,7 @@ export const Container = ({
 
     // Update the list of threads on the current users page
     addNewThread(data);
-    posthog.capture('drop_comment'); //posthog event
+    posthog.capture('drop_comment', { appId: router.query.id }); //posthog event
   };
 
   if (showComments) {

@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Button, Container, Row, Col } from 'react-bootstrap';
 import Categories from './Categories';
 import AppList from './AppList';
-import { libraryAppService } from '@/_services';
+import { libraryAppService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import TemplateDisplay from './TemplateDisplay';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import posthog from 'posthog-js';
 import { getWorkspaceId } from '../../_helpers/utils';
 
 const identifyUniqueCategories = (templates) =>
@@ -30,6 +31,17 @@ export default function TemplateLibraryModal(props) {
     selectApp(filteredApps[0]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory]);
+
+  const selectApplication = (app) => {
+    posthog.capture('click_template_name', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      template_category_id: selectedCategory?.id,
+      template_name: app?.name,
+    });
+    selectApp(app);
+  };
 
   useEffect(() => {
     libraryAppService
@@ -54,6 +66,15 @@ export default function TemplateLibraryModal(props) {
     event.preventDefault();
     const id = selectedApp.id;
     setDeploying(true);
+    posthog.capture('create_application_from_template', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      template_category_id: selectedCategory?.id,
+      template_name: selectedApp?.name,
+      button_name: 'create_application_from_template',
+      previous_action_button_name: props.fromButton,
+    });
     libraryAppService
       .deploy(id)
       .then((data) => {
@@ -96,7 +117,7 @@ export default function TemplateLibraryModal(props) {
               <Container fluid>
                 <Row style={{ height: '90%' }}>
                   <Col className="template-list-column" xs={3} style={{ borderRight: '1px solid #D2DDEC' }}>
-                    <AppList apps={filteredApps} selectApp={selectApp} selectedApp={selectedApp} />
+                    <AppList apps={filteredApps} selectApp={selectApplication} selectedApp={selectedApp} />
                   </Col>
                   <Col xs={9} style={{}}>
                     <TemplateDisplay app={selectedApp} darkMode={props.darkMode} />

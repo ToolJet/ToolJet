@@ -3,8 +3,9 @@ import { toast } from 'react-hot-toast';
 import { retrieveWhiteLabelText, getWorkspaceId } from '@/_helpers/utils';
 import TemplateLibraryModal from './TemplateLibraryModal/';
 import { useTranslation } from 'react-i18next';
-import { libraryAppService } from '@/_services';
+import { libraryAppService, authenticationService } from '@/_services';
 import EmptyIllustration from '@assets/images/no-apps.svg';
+import posthog from 'posthog-js';
 import { useNavigate } from 'react-router-dom';
 
 export const BlankPage = function BlankPage({
@@ -78,7 +79,9 @@ export const BlankPage = function BlankPage({
                   <div className="row mt-4">
                     <div className="col">
                       <a
-                        onClick={createApp}
+                        onClick={() => {
+                          createApp('blank_page');
+                        }}
                         className={`btn btn-primary ${creatingApp ? 'btn-loading' : ''}`}
                         data-cy="create-new-application"
                       >
@@ -131,6 +134,15 @@ export const BlankPage = function BlankPage({
                             ref={fileInput}
                             style={{ display: 'none' }}
                             data-cy="import-option-input"
+                            onClick={() => {
+                              /* Posthog Event */
+                              posthog.capture('click_import_button', {
+                                workspace_id:
+                                  authenticationService?.currentUserValue?.organization_id ||
+                                  authenticationService?.currentSessionValue?.current_organization_id,
+                                button_name: 'click_import_an_application_button',
+                              });
+                            }}
                           />
                         </label>
                       </a>
@@ -147,7 +159,21 @@ export const BlankPage = function BlankPage({
               <div className="row" data-cy="app-template-row">
                 {staticTemplates.map(({ id, name }) => {
                   return (
-                    <div key={id} className="col-4" onClick={() => deployApp(id)}>
+                    <div
+                      key={id}
+                      className="col-4"
+                      onClick={() => {
+                        /* Posthog Event */
+                        posthog.capture('create_application_from_template', {
+                          workspace_id:
+                            authenticationService?.currentUserValue?.organization_id ||
+                            authenticationService?.currentSessionValue?.current_organization_id,
+                          template_name: name,
+                          button_name: 'create_application_from_template_card',
+                        });
+                        deployApp(id);
+                      }}
+                    >
                       <div
                         className="card cursor-pointer"
                         data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-card`}
@@ -173,7 +199,15 @@ export const BlankPage = function BlankPage({
               <div className="m-auto text-center mt-4">
                 <span
                   className="btn btn-link text-decoration-none"
-                  onClick={viewTemplateLibraryModal}
+                  onClick={() => {
+                    posthog.capture('click_import_from_template', {
+                      workspace_id:
+                        authenticationService?.currentUserValue?.organization_id ||
+                        authenticationService?.currentSessionValue?.current_organization_id,
+                      button_name: 'click_see_all_templates_button',
+                    });
+                    viewTemplateLibraryModal();
+                  }}
                   data-cy="see-all-apps-template-buton"
                 >
                   See all templates

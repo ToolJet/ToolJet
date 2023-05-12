@@ -36,7 +36,7 @@ import '@/_styles/theme.scss';
 import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 import { InstanceSettings } from '@/InstanceSettingsPage';
-import posthog from 'posthog-js';
+import initPosthog from '../_helpers/initPosthog';
 
 const AppWrapper = (props) => {
   return (
@@ -79,8 +79,8 @@ class AppComponent extends React.Component {
       'confirm-invite',
     ];
 
-    const pathnames = window.location.pathname.split('/')?.filter(path=> path!='');
-    return pathnames?.length > 0 ? existedPaths.find((path) =>  pathnames[0] === path ) : false;
+    const pathnames = window.location.pathname.split('/')?.filter((path) => path != '');
+    return pathnames?.length > 0 ? existedPaths.find((path) => pathnames[0] === path) : false;
   };
 
   setFaviconAndTitle() {
@@ -142,17 +142,7 @@ class AppComponent extends React.Component {
     } catch (e) {
       console.log(e);
     }
-
-    if (currentUser) {
-      posthog.init('1OhSAF2367nMhuGI3cLvE6m5D0PJPBEA5zR5JFTM-yw', {
-        api_host: 'https://app.posthog.com',
-        autocapture: false,
-      });
-      posthog.identify(
-        currentUser.email, // distinct_id, required
-        { name: `${currentUser.first_name} ${currentUser.last_name}` }
-      );
-    }
+    initPosthog(currentUser);
   }
 
   componentDidMount() {

@@ -11,6 +11,8 @@ import urlJoin from 'url-join';
 import { useTranslation } from 'react-i18next';
 import { getPrivateRoute } from '@/_helpers/routes';
 const { defaultIcon } = configs;
+import posthog from 'posthog-js';
+import { authenticationService } from '@/_services';
 
 export default function AppCard({
   app,
@@ -41,6 +43,14 @@ export default function AppCard({
   const appActionModalCallBack = useCallback(
     (action) => {
       appActionModal(app, currentFolder, action);
+      if (action === 'add-to-folder') {
+        posthog.capture('click_add_to_folder_option', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          app_id: app?.id,
+        });
+      }
     },
     [app, appActionModal, currentFolder]
   );
@@ -122,6 +132,15 @@ export default function AppCard({
                   to={getPrivateRoute('editor', {
                     id: app.id,
                   })}
+                  onClick={() => {
+                    posthog.capture('click_edit_button_on_card', {
+                      workspace_id:
+                        authenticationService?.currentUserValue?.organization_id ||
+                        authenticationService?.currentSessionValue?.current_organization_id,
+                      app_id: app?.id,
+                      folder_id: currentFolder?.id,
+                    });
+                  }}
                 >
                   <button
                     type="button"
@@ -161,6 +180,13 @@ export default function AppCard({
                   className={cx(`btn btn-sm w-100 btn-light rounded-2 launch-button`)}
                   disabled={app?.current_version_id === null || app?.is_maintenance_on}
                   onClick={() => {
+                    posthog.capture('click_launch_button_on_card', {
+                      workspace_id:
+                        authenticationService?.currentUserValue?.organization_id ||
+                        authenticationService?.currentSessionValue?.current_organization_id,
+                      app_id: app?.id,
+                      folder_id: currentFolder?.id,
+                    });
                     if (app?.current_version_id) {
                       window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
                     } else {

@@ -2,9 +2,10 @@ import React, { useContext, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import CreateColumnsForm from './ColumnsForm';
-import { tooljetDatabaseService } from '@/_services';
+import { tooljetDatabaseService, authenticationService } from '@/_services';
 import { TooljetDatabaseContext } from '../index';
 import { isEmpty } from 'lodash';
+import posthog from 'posthog-js';
 
 const TableForm = ({
   selectedTable = '',
@@ -58,6 +59,13 @@ const TableForm = ({
 
     toast.success(`${tableName} created successfully`);
     onCreate && onCreate(tableName);
+
+    posthog.capture('click_create_tooljet_table', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      datasource: 'tooljet_db',
+    });
   };
 
   const handleEdit = async () => {

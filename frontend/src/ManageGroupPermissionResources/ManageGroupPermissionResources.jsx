@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { groupPermissionService } from '@/_services';
+import { groupPermissionService, authenticationService } from '@/_services';
 import { MultiSelect, FilterPreview } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { withTranslation } from 'react-i18next';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { Loader } from '../ManageSSO/Loader';
 import Select from '@/_ui/Select';
+import posthog from 'posthog-js';
 
 class ManageGroupPermissionResourcesComponent extends React.Component {
   constructor(props) {
@@ -269,6 +270,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     groupPermissionService
       .update(groupPermissionId, updateParams)
       .then(() => {
+        posthog.capture('click_add_app_button', {
+          workspace_id:
+            authenticationService?.currentUserValue?.organization_id ||
+            authenticationService?.currentSessionValue?.current_organization_id,
+          group_id: groupPermissionId,
+        });
         this.setState({
           selectedAppIds: [],
           isLoadingApps: true,
@@ -360,6 +367,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     const updateParams = {
       add_users: selectedUsers.map((user) => user.value),
     };
+    posthog.capture('click_add_user_button', {
+      workspace_id:
+        authenticationService?.currentUserValue?.organization_id ||
+        authenticationService?.currentSessionValue?.current_organization_id,
+      group_id: groupPermissionId,
+    });
     groupPermissionService
       .update(groupPermissionId, updateParams)
       .then(() => {
