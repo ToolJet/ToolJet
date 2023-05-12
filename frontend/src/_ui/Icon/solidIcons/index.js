@@ -107,6 +107,7 @@ import UserRemove from './UserRemove.jsx';
 import UTurn from './UTurn.jsx';
 import Variable from './Variable.jsx';
 import Warning from './Warning.jsx';
+import Workflows from './Workflows.jsx';
 import ZoomIn from './ZoomIn.jsx';
 import ZoomOut from './ZoomOut.jsx';
 import ZoomOutRectangle from './ZoomOutRectangle.jsx';
@@ -338,6 +339,8 @@ const Icon = (props) => {
       return <Variable {...props} />;
     case 'warning':
       return <Warning {...props} />;
+    case 'workflows':
+      return <Workflows {...props} />;
     case 'zoomin':
       return <ZoomIn {...props} />;
     case 'zoomout':

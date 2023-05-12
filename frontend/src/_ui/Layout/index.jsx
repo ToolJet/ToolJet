@@ -51,26 +51,27 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     </Link>
                   </ToolTip>
                 </li>
-                <li className="text-center mt-2 cursor-pointer">
-                  <Link to={getPrivateRoute('workflows')}>
-                    <ToolTip message="Workflows" placement="right">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="icon icon-tabler icon-tabler-brand-tidal layout-sidebar-icon"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        stroke-width="2"
-                        stroke="#C0C8CC"
-                        fill="none"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                        <path d="M5.333 6l3.334 3.25l3.333 -3.25l3.333 3.25l3.334 -3.25l3.333 3.25l-3.333 3.25l-3.334 -3.25l-3.333 3.25l3.333 3.25l-3.333 3.25l-3.333 -3.25l3.333 -3.25l-3.333 -3.25l-3.334 3.25l-3.333 -3.25z"></path>
-                      </svg>
-                    </ToolTip>
-                  </Link>
+                <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
+                  <ToolTip message="Database" placement="right">
+                    <Link
+                      to={getPrivateRoute('workflows')}
+                      className={`tj-leftsidebar-icon-items  ${
+                        router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
+                      }`}
+                      data-cy="icon-database"
+                    >
+                      <SolidIcon
+                        name="workflows"
+                        fill={
+                          router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
+                            ? '#3E63DD'
+                            : darkMode
+                            ? '#4C5155'
+                            : '#C1C8CD'
+                        }
+                      />
+                    </Link>
+                  </ToolTip>
                 </li>
                 {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
                   <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
