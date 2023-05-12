@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import VariablesTable from './VariablesTable';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
+import _ from 'lodash';
 import ManageOrgVarsDrawer from './ManageOrgVarsDrawer';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 class ManageOrgVarsComponent extends React.Component {
@@ -73,8 +74,11 @@ class ManageOrgVarsComponent extends React.Component {
     });
 
     orgEnvironmentVariableService.getVariables().then((data) => {
+      const variables = _.cloneDeep(data.variables)?.filter(
+        ({ variable_name }) => !/copilot_api_key/.test(variable_name)
+      );
       this.setState({
-        variables: data.variables,
+        variables: variables,
         isLoading: false,
       });
     });
