@@ -264,7 +264,11 @@ export class WorkflowExecutionsService {
     const options = getQueryVariables(query.options, state);
     try {
       addLog(`${query.name}: Started execution`);
-      const result = await this.dataQueriesService.runQuery(user, query, options);
+
+      const result =
+        query.kind === 'runjs'
+          ? resolveCode(query.options?.code, state)
+          : await this.dataQueriesService.runQuery(user, query, options);
 
       const newState = {
         ...state,

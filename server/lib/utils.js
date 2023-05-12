@@ -51,14 +51,15 @@ export function resolveCode(code, state, customObjects = {}, withError = false, 
     try {
       const vm = new VM({
         sandbox: {
-          _,
-          moment,
           ...state,
           ...customObjects,
           ...Object.fromEntries(reservedKeyword.map((keyWord) => [keyWord, null])),
         },
+        timeout: 100,
       });
-      result = vm.run(code);
+      const functionEnvelopedCode = `const fn = () => {${code}}; fn()`;
+
+      result = vm.run(functionEnvelopedCode);
     } catch (err) {
       error = err;
       console.log('eval_error', err);
