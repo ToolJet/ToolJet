@@ -246,9 +246,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
       <Popover
         handleToggle={(open) => {
-          if (!open && !pinned) handleSelectedSidebarItem('');
+          if (!open && !pinned) {
+            handleSelectedSidebarItem('');
+          }
         }}
-        {...(pinned ? { open: true } : { open: !!selectedSidebarItem })}
+        open={pinned || !!selectedSidebarItem}
         popoverContentClassName="p-0 sidebar-h-100-popover"
         side="right"
         ref={elemRef}

@@ -4,6 +4,7 @@ import { Tooltip } from 'react-tooltip';
 import { QueryDataPane } from './QueryDataPane';
 import { Confirm } from '../Viewer/Confirm';
 
+import useWindowResize from '@/_hooks/useWindowResize';
 import { useQueryPanelActions, useUnsavedChanges, useSelectedQuery } from '@/_stores/queryPanelStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 
@@ -35,6 +36,7 @@ export const QueryPanel = ({
   const [draftQuery, setDraftQuery] = useState(null);
   const [selectedDataSource, setSelectedDataSource] = useState(null);
   const [editingQuery, setEditingQuery] = useState(dataQueries.length > 0);
+  const windowSize = useWindowResize();
 
   useEffect(() => {
     if (!editingQuery && selectedQuery !== null && selectedQuery?.id !== 'draftQuery') {
@@ -52,18 +54,11 @@ export const QueryPanel = ({
 
   useEffect(() => {
     onQueryPaneDragging(isDragging);
-    if (!isDragging && isExpanded) {
-      updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging]);
 
   useEffect(() => {
-    if (isExpanded === false) {
-      updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isExpanded]);
+    updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
+  }, [windowSize.height, isExpanded]);
 
   const createDraftQuery = useCallback((queryDetails, source = null) => {
     setSelectedQuery(queryDetails.id, queryDetails);
@@ -73,6 +68,9 @@ export const QueryPanel = ({
 
   const onMouseUp = () => {
     setDragging(false);
+
+    /* Updated queryPanelHeight here instead of using a useEffect on height to avoid continuous rerendering during window dragging which causes screen to act sluggish */
+    updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
   };
 
   const onMouseDown = () => {
