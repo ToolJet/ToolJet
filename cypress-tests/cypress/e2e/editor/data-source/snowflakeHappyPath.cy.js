@@ -2,7 +2,7 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { deleteDatasource } from "Support/utils/dataSource";
+import { closeDSModal,deleteDatasource } from "Support/utils/dataSource";
 
 import {
   addQuery,
@@ -22,7 +22,7 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-cy.reload();
+    closeDSModal();
     cy.get(commonSelectors.addNewDataSourceButton)
       .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
@@ -161,10 +161,12 @@ cy.reload();
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", "cypress-snowflake")
-      .find("button")
-      .invoke("show")
-      .should("be.visible");
+      cy.get(commonSelectors.globalDataSourceIcon).click();
+      cy.get('[data-cy="cypress-snowflake-button"]').verifyVisibleElement(
+        "have.text",
+        "cypress-snowflake"
+      );
+  
+      deleteDatasource("cypress-snowflake");
   });
 });
