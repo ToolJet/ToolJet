@@ -5,6 +5,12 @@ import IfIcon from '../../../../../assets/images/icons/if.svg';
 import './styles.scss';
 import DataSourceIcon from '../../DataSourceIcon';
 
+const kindToLabelMapping = {
+  restapi: 'REST API',
+  runjs: 'JavaScript',
+  tooljetdb: 'ToolJet DB',
+};
+
 function OptionLister(props) {
   const { sources, onOptionClick } = props;
 
@@ -16,12 +22,12 @@ function OptionLister(props) {
           <div
             className="option-source-card"
             key={`${source.id}-${source.kind}`}
-            onClick={() => onOptionClick(source.kind)}
+            onClick={() => onOptionClick(source.kind, source.id, source.plugin_id)}
           >
             <DataSourceIcon source={source} />
             <div data-cy={`${String(source.name).toLocaleLowerCase().replace(/\s+/g, '-')}-add-query-card`}>
               {' '}
-              {source.name}
+              {kindToLabelMapping[source.kind] ?? source.name}
             </div>
           </div>
         );

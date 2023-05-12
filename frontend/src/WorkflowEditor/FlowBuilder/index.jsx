@@ -92,7 +92,7 @@ function FlowBuilder(_props) {
   );
 
   const addNewNode = useCallback(
-    (kind) => {
+    (kind, dataSourceId, pluginId) => {
       const { x, y, startingNodeId, startingNodeHandleId } = showBlockOptions;
       setShowBlockOptions(null);
       if (kind === 'if') {
@@ -111,7 +111,7 @@ function FlowBuilder(_props) {
         addIfConditionNode(newNode);
         addEdge(newEdge);
       } else {
-        const queryId = addQuery(kind);
+        const queryId = addQuery(kind, {}, dataSourceId, pluginId);
 
         const newNode = {
           id: uuidv4(),
