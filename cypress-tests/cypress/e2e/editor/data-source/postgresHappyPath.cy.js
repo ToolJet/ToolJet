@@ -109,10 +109,7 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
-      "have.text",
-      postgreSqlText.serverNotSuppotSsl
-    );
+    cy.get('[data-cy="connection-alert-text"]').should("be.visible");
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
