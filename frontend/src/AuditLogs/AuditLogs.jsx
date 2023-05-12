@@ -376,8 +376,8 @@ class AuditLogs extends React.Component {
                     </h3>
                   </div>
                   <div className="card-body border-bottom py-3 overflow-auto" style={{ height: '75vh' }}>
-                    <div className="row">
-                      <div className="col-3" data-cy="select-users-dropdown">
+                    <div className="row align-items-center">
+                      <div className="col" data-cy="select-users-dropdown">
                         <MultiSelectUser
                           className={{
                             container: searchSelectClass,
@@ -405,7 +405,7 @@ class AuditLogs extends React.Component {
                           allowCustomRender={false}
                         />
                       </div>
-                      <div className="col-3" data-cy="select-apps-dropdown">
+                      <div className="col" data-cy="select-apps-dropdown">
                         <MultiSelectUser
                           className={{
                             container: searchSelectClass,

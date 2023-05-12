@@ -11,6 +11,7 @@ import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 import Multiselect from '@/_ui/Multiselect/Multiselect';
 import { FilterPreview, MultiSelectUser } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Select from '@/_ui/Select';
 
 class ManageGroupPermissionResourcesComponent extends React.Component {
   constructor(props) {
@@ -552,6 +553,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                     onClick={() => this.setState({ currentTab: 'datasources' })}
                     className={cx('nav-item nav-link', { active: currentTab === 'datasources' })}
                   >
+                    <SolidIcon
+                      className="manage-group-tab-icons"
+                      fill={currentTab === 'permissions' ? '#3E63DD' : '#C1C8CD'}
+                      name="datasource"
+                      width="16"
+                    ></SolidIcon>
                     Datasources
                   </a>
                 )}
@@ -576,7 +583,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                               ),
                             }}
                             setState={this.setState}
-                            selectedApps={this.state.selectedAppIds}
+                            selectedData={this.state.selectedAppIds}
                           />
                         </div>
 

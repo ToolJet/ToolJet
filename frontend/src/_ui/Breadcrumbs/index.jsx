@@ -36,4 +36,5 @@ const routes = [
   { path: '/workspace-settings', breadcrumb: 'Workspace settings' },
   { path: '/global-datasources', breadcrumb: 'Global Datasources' },
   { path: '/integrations', breadcrumb: 'Integrations / plugins', props: { beta: true } },
+  { path: '/instance-settings', breadcrumb: 'Instance settings' },
 ];

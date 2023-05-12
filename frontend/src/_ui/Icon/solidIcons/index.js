@@ -115,6 +115,8 @@ import Lock from './Lock.jsx';
 import Mail from './Mail.jsx';
 import Logs from './Logs.jsx';
 import Marketplace from './Marketplace.jsx';
+import AuditLogs from './AuditLog.jsx';
+import InstanceSettings from './InstanceSettings.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -348,6 +350,10 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
+    case 'auditlogs':
+      return <AuditLogs {...props} />;
+    case 'instancesettings':
+      return <InstanceSettings {...props} />;
     default:
       return <Apps {...props} />;
   }

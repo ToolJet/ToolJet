@@ -115,11 +115,6 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
                   {t('header.organization.menus.manageSSO.generalSettings.allowDefaultSso', `Allow default SSO`)}
                 </span>
               </label>
-              <div className="d-flex tick-cross-info mb-2" data-cy="default-sso-status-image">
-                {instanceSettings.google.enabled && ssoButtons('google')}
-                {instanceSettings.git.enabled && ssoButtons('git')}
-                {instanceSettings.openid.enabled && ssoButtons('openid')}
-              </div>
               <div className="help-text tj-text-xsm mt-1">
                 <div data-cy="allow-default-sso-helper-text" className="allow-default-sso-helper-text tj-text-xsm mt">
                   {t(

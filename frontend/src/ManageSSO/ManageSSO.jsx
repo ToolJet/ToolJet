@@ -17,7 +17,6 @@ export function ManageSSO({ darkMode }) {
     { id: 'google', label: 'Google' },
     { id: 'git', label: 'GitHub' },
     { id: 'openid', label: 'OpenID Connect' },
-    { id: 'form', label: 'Password Login' },
   ];
   const changePage = useCallback(
     (page) => {

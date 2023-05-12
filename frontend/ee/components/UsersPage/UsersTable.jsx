@@ -54,8 +54,12 @@ const UsersTable = ({
                   </th>
                 )}
                 <th className="w-1"></th>
-                <th className="w-1"></th>
-                <th className="w-1"></th>
+                {isLoadingAllUsers && (
+                  <>
+                    <th className="w-1"></th>
+                    <th className="w-1"></th>
+                  </>
+                )}
               </tr>
             </thead>
             {isLoading ? (

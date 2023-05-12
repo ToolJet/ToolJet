@@ -248,7 +248,7 @@ class ManageOrgUsersComponent extends React.Component {
     const { isLoading, uploadingUsers, users, archivingUser, unarchivingUser, meta } = this.state;
     return (
       <ErrorBoundary showFallback={true}>
-        <div className="wrapper org-users-page animation-fade">
+        <div className="org-wrapper org-users-page animation-fade">
           {this.state.isInviteUsersDrawerOpen && (
             <ManageOrgUsersDrawer
               isInviteUsersDrawerOpen={this.state.isInviteUsersDrawerOpen}
