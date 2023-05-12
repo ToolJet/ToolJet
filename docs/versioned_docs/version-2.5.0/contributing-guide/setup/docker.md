@@ -181,4 +181,4 @@ docker-compose run --rm server npm --prefix server run test <path-to-file>
 
 ## Troubleshooting
 
-Please open a new issue at https://github.com/ToolJet/ToolJet/issues or join our [Slack Community](https://tooljet.com/slack) if you encounter any issues when trying to run ToolJet locally.
+Please open a new issue at https://github.com/ToolJet/ToolJet/issues or Join our community on [Slack](https://tooljet.com/slack) if you encounter any issues when trying to run ToolJet locally.
