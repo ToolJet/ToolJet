@@ -38,6 +38,7 @@ import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
 import { TooljetDbModule } from './modules/tooljet_db/tooljet_db.module';
 import { PluginsModule } from './modules/plugins/plugins.module';
+import { CopilotModule } from './modules/copilot/copilot.module';
 import * as path from 'path';
 import * as fs from 'fs';
 import { AppEnvironmentsModule } from './modules/app_environments/app_environments.module';
@@ -97,6 +98,7 @@ const imports = [
   PluginsModule,
   EventsModule,
   AppEnvironmentsModule,
+  CopilotModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false') {

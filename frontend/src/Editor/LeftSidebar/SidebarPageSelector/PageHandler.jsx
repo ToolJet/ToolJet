@@ -25,6 +25,7 @@ export const PageHandler = ({
   apps,
   pages,
   components,
+  isVersionReleased,
   pinPagesPopover,
   haveUserPinned,
 }) => {
@@ -153,7 +154,7 @@ export const PageHandler = ({
             )}
           </div>
           <div className="col-auto">
-            {(isHovered || isSelected) && (
+            {(isHovered || isSelected) && !isVersionReleased && (
               <PagehandlerMenu
                 page={page}
                 darkMode={darkMode}

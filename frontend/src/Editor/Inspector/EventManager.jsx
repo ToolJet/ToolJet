@@ -697,6 +697,7 @@ export const EventManager = ({
                           enablePreview={true}
                           type={param?.type}
                           fieldMeta={{ options: param?.options }}
+                          cyLabel={param.displayName}
                         />
                       </div>
                     </div>
