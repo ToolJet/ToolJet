@@ -73,37 +73,35 @@ const MarketplacePage = ({ darkMode, switchDarkMode }) => {
   return (
     <Layout switchDarkMode={switchDarkMode} darkMode={darkMode}>
       <div className="wrapper">
-        <div className="page-wrapper">
-          <div className=" marketplace-body">
-            <div className="p-3">
-              <div className="row g-4">
-                <div style={{ width: '288px' }}>
-                  <div className="subheader mb-2">Plugins</div>
-                  <div className="list-group mb-3">
-                    {['Installed', 'Marketplace'].map((item, index) => (
-                      <FolderList
-                        key={index}
-                        action
-                        selectedItem={active === itemRender(item)}
-                        onClick={() => setActive(itemRender(item))}
-                      >
-                        {item}
-                      </FolderList>
-                    ))}
-                  </div>
+        <div className="marketplace-body">
+          <div className="p-3">
+            <div className="row g-4">
+              <div className="marketplace-page-sidebar  mt-3">
+                <div className="subheader mb-2">Plugins</div>
+                <div className="list-group mb-3">
+                  {['Installed', 'Marketplace'].map((item, index) => (
+                    <FolderList
+                      key={index}
+                      action
+                      selectedItem={active === itemRender(item)}
+                      onClick={() => setActive(itemRender(item))}
+                    >
+                      {item}
+                    </FolderList>
+                  ))}
                 </div>
-                {active === 'installed' ? (
-                  <InstalledPlugins
-                    allPlugins={marketplacePlugins}
-                    installedPlugins={installedPlugins}
-                    fetching={fetchingInstalledPlugins}
-                    fetchPlugins={fetchPlugins}
-                    ENABLE_MARKETPLACE_DEV_MODE={ENABLE_MARKETPLACE_DEV_MODE}
-                  />
-                ) : (
-                  <MarketplacePlugins allPlugins={marketplacePlugins} />
-                )}
               </div>
+              {active === 'installed' ? (
+                <InstalledPlugins
+                  allPlugins={marketplacePlugins}
+                  installedPlugins={installedPlugins}
+                  fetching={fetchingInstalledPlugins}
+                  fetchPlugins={fetchPlugins}
+                  ENABLE_MARKETPLACE_DEV_MODE={ENABLE_MARKETPLACE_DEV_MODE}
+                />
+              ) : (
+                <MarketplacePlugins allPlugins={marketplacePlugins} />
+              )}
             </div>
           </div>
         </div>
