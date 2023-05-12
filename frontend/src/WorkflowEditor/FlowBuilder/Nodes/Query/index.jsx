@@ -7,6 +7,7 @@ import { capitalize, isUndefined, find } from 'lodash';
 import { generateQueryName } from '../../../utils';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import EditIcon from '../../../../Editor/Icons/edit.svg';
+import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 
 import './styles.scss';
 
@@ -31,6 +32,7 @@ const staticDataSourceSchemas = {
 };
 
 export default function QueryNode(props) {
+  const { exposeToCodeHinter } = useContext(EditorContext) || {};
   const { editorSession, updateQuery } = useContext(WorkflowEditorContext);
   const { data: nodeData, id } = props;
   const queryData = find(editorSession.queries, { idOnDefinition: nodeData.idOnDefinition });
@@ -76,6 +78,12 @@ export default function QueryNode(props) {
   useEffect(() => {
     if (executionDetails?.executed) setShowResult(true);
   }, [executionDetails]);
+
+  const currentState = Object.fromEntries(editorSession.queries.map((query) => [query.name, {}]));
+
+  useEffect(() => {
+    exposeToCodeHinter((prevState) => ({ ...prevState, ...currentState }));
+  }, [JSON.stringify(currentState)]);
 
   return (
     <div className="query-node">
@@ -140,7 +148,7 @@ export default function QueryNode(props) {
                 isEditMode={true}
                 queryName={'RunJS'}
                 options={queryData.options}
-                currentState={{}}
+                currentState={currentState}
                 optionsChanged={(options) => updateQuery(queryData.idOnDefinition, { options })}
                 optionchanged={(key, value) =>
                   updateQuery(queryData.idOnDefinition, {
