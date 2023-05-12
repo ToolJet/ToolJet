@@ -205,7 +205,7 @@ function FlowBuilder(_props) {
       )}
       {
         <Modal className="show-node-modal" show={selectedNode} onHide={() => setSelectedNode(null)}>
-          <ModalContent node={selectedNode} />
+          <ModalContent node={selectedNode} onClose={() => setSelectedNode(null)} />
         </Modal>
       }
     </div>
