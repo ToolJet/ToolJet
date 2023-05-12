@@ -101,7 +101,7 @@ export class AppsService {
       const app = await manager.save(
         manager.create(App, {
           type,
-          name: 'Untitled app',
+          name: type === 'workflow' ? 'Untitled workflow' : 'Untitled app',
           createdAt: new Date(),
           updatedAt: new Date(),
           organizationId: user.organizationId,

@@ -595,7 +595,12 @@ class HomePageComponent extends React.Component {
                       data-cy="create-new-app-button"
                     >
                       {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
-                      {this.props.t('homePage.header.createNewApplication', 'Create new app')}
+                      {this.props.t(
+                        `${
+                          this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
+                        }.header.createNewApplication`,
+                        'Create new app'
+                      )}
                     </Button>
                     <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
                     <Dropdown.Menu className="import-lg-position new-app-dropdown">

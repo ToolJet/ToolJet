@@ -55,7 +55,7 @@ export const Folders = function Folders({
   }, [folders]);
 
   useEffect(() => {
-    updateSidebarNAV('All apps');
+    updateSidebarNAV(`All ${appType === 'workflow' ? 'workflows' : 'apps'}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -245,7 +245,10 @@ export const Folders = function Folders({
             onClick={() => handleFolderChange({})}
             data-cy="all-applications-link"
           >
-            {t('homePage.foldersSection.allApplications', 'All apps')}
+            {t(
+              `${appType === 'workflow' ? 'workflowsDashboard' : 'homePage'}.foldersSection.allApplications`,
+              'All apps'
+            )}
           </a>
         </div>
       )}

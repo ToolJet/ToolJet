@@ -390,7 +390,7 @@
             "importApplication": "Import an app"
         },
         "foldersSection": {
-            "allApplications": "All apps",
+            "allApplications": "All applications",
             "folders": "Folders",
             "createNewFolder": "+ Create new",
             "noFolders": "You haven't created any folders. Use folders to organize your apps",
@@ -437,7 +437,7 @@
             "importApplication": "Import an application"
         },
         "foldersSection": {
-            "allApplications": "All apps",
+            "allApplications": "All workflows",
             "folders": "Folders",
             "createNewFolder": "+ Create new",
             "noFolders": "You haven't created any folders. Use folders to organize your apps",
@@ -449,7 +449,7 @@
             "wishToDeleteFolder": "Are you sure you want to delete the folder? Apps within the folder will not be deleted."
         },
         "header": {
-            "createNewApplication": "Create new app",
+            "createNewApplication": "Create new workflow",
             "import": "Import",
             "chooseFromTemplate": "Choose from template"
         },
