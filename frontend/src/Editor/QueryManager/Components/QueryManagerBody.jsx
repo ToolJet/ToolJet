@@ -10,6 +10,8 @@ import { Transformation } from './Transformation';
 import Preview from './Preview';
 import { ChangeDataSource } from './ChangeDataSource';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
+import AddGlobalDataSourceButton from './AddGlobalDataSourceButton';
+import EmptyGlobalDataSources from './EmptyGlobalDataSources';
 import { EventManager } from '@/Editor/Inspector/EventManager';
 import { allOperations } from '@tooljet/plugins/client';
 import { staticDataSources, customToggles, mockDataQueryAsComponent, schemaUnavailableOptions } from '../constants';
@@ -176,7 +178,7 @@ export const QueryManagerBody = forwardRef(
       optionchanged(option, !currentValue);
     };
 
-    const renderDataSources = (labelText, dataSourcesList, staticList = []) => {
+    const renderDataSources = (labelText, dataSourcesList, staticList = [], isGlobalDataSource = false) => {
       return (
         <div
           className={cx(`datasource-picker`, {
@@ -186,15 +188,20 @@ export const QueryManagerBody = forwardRef(
           <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
             {labelText}
           </label>
-          <DataSourceLister
-            dataSources={dataSourcesList}
-            staticDataSources={staticList}
-            changeDataSource={changeDataSource}
-            handleBackButton={handleBackButton}
-            darkMode={darkMode}
-            showAddDatasourceBtn={false}
-            dataSourceModalHandler={dataSourceModalHandler}
-          />
+          {isGlobalDataSource && dataSourcesList?.length < 1 ? (
+            <EmptyGlobalDataSources darkMode={darkMode} />
+          ) : (
+            <DataSourceLister
+              dataSources={dataSourcesList}
+              staticDataSources={staticList}
+              changeDataSource={changeDataSource}
+              handleBackButton={handleBackButton}
+              darkMode={darkMode}
+              dataSourceModalHandler={dataSourceModalHandler}
+              showAddDatasourceBtn={isGlobalDataSource}
+              dataSourceBtnComponent={isGlobalDataSource ? <AddGlobalDataSourceButton /> : null}
+            />
+          )}
         </div>
       );
     };
@@ -208,7 +215,9 @@ export const QueryManagerBody = forwardRef(
         )}
         {renderDataSources(
           t('editor.queryManager.selectGlobalDatasource', 'Select Global Datasource'),
-          globalDataSources
+          globalDataSources,
+          [],
+          true
         )}
       </>
     );
