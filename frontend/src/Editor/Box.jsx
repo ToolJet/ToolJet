@@ -281,7 +281,11 @@ export const Box = function Box({
       }
     >
       <div
-        style={{ ...styles, backgroundColor, boxShadow: validatedGeneralStyles?.boxShadow }}
+        style={{
+          ...styles,
+          backgroundColor,
+          boxShadow: validatedGeneralStyles?.boxShadow,
+        }}
         role={preview ? 'BoxPreview' : 'Box'}
       >
         {inCanvas ? (

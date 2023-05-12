@@ -14,6 +14,7 @@ export const QueryPanel = ({
   editorRef,
   children,
   onQueryPaneDragging,
+  isVersionReleased,
 }) => {
   const { setSelectedQuery, updateQueryPanelHeight, setUnSavedChanges } = useQueryPanelActions();
   const isUnsavedQueriesAvailable = useUnsavedChanges();
@@ -236,6 +237,7 @@ export const QueryPanel = ({
             fetchDataQueries={fetchDataQueries}
             darkMode={darkMode}
             editorRef={editorRef}
+            isVersionReleased={isVersionReleased}
           />
           {children({
             toggleQueryEditor,

@@ -42,6 +42,7 @@ import EditorHeader from './Header';
 import { getWorkspaceId } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
+import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
 
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
@@ -138,6 +139,10 @@ class EditorComponent extends React.Component {
       pages: {},
       draftQuery: null,
       selectedDataSource: null,
+      queryPanelHeight: this.queryManagerPreferences?.isExpanded
+        ? this.queryManagerPreferences?.queryPanelHeight
+        : 95 ?? 70,
+      isUserEditingTheVersion: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -397,13 +402,16 @@ class EditorComponent extends React.Component {
         skipYmapUpdate: true,
         versionChanged: true,
       });
+      if (version?.id === this.state.app?.current_version_id) {
+        (this.canUndo = false), (this.canRedo = false);
+      }
       this.setState(
         {
           editingVersion: version,
           isSaving: false,
         },
         () => {
-          shouldWeEditVersion && this.saveEditingVersion();
+          shouldWeEditVersion && this.saveEditingVersion(true);
           this.fetchDataSources(this.state.editingVersion?.id);
           this.fetchDataQueries(this.state.editingVersion?.id, true);
           this.initComponentVersioning();
@@ -618,7 +626,7 @@ class EditorComponent extends React.Component {
       });
       this.handleInspectorView();
     } else if (this.isVersionReleased()) {
-      this.setState({ showCreateVersionModalPrompt: true });
+      this.setReleasedVersionPopupState();
     }
   };
 
@@ -660,11 +668,15 @@ class EditorComponent extends React.Component {
       });
       this.handleInspectorView();
     } else {
-      this.setState({ showCreateVersionModalPrompt: true });
+      this.setState({ isUserEditingTheVersion: true });
     }
   };
 
   componentDefinitionChanged = (componentDefinition) => {
+    if (this.isVersionReleased()) {
+      this.setReleasedVersionPopupState();
+      return;
+    }
     let _self = this;
     const currentPageId = this.state.currentPageId;
 
@@ -692,6 +704,10 @@ class EditorComponent extends React.Component {
         });
       });
     }
+  };
+
+  setReleasedVersionPopupState = () => {
+    this.setState({ isUserEditingTheVersion: true });
   };
 
   handleEditorEscapeKeyPress = () => {
@@ -735,11 +751,23 @@ class EditorComponent extends React.Component {
     this.appDefinitionChanged(appDefinition);
   };
 
-  cutComponents = () => cloneComponents(this, this.appDefinitionChanged, false, true);
+  cutComponents = () => {
+    if (this.isVersionReleased()) {
+      this.setReleasedVersionPopupState();
+      return;
+    }
+    cloneComponents(this, this.appDefinitionChanged, false, true);
+  };
 
   copyComponents = () => cloneComponents(this, this.appDefinitionChanged, false);
 
-  cloneComponents = () => cloneComponents(this, this.appDefinitionChanged, true);
+  cloneComponents = () => {
+    if (this.isVersionReleased()) {
+      this.setReleasedVersionPopupState();
+      return;
+    }
+    cloneComponents(this, this.appDefinitionChanged, true);
+  };
 
   decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
@@ -845,12 +873,17 @@ class EditorComponent extends React.Component {
 
   handleQueryPaneDragging = (isQueryPaneDragging) => this.setState({ isQueryPaneDragging });
 
-  saveEditingVersion = () => {
-    if (this.isVersionReleased()) {
-      this.setState({ isSaving: false, showCreateVersionModalPrompt: true });
+  saveEditingVersion = (isUserSwitchedVersion = false) => {
+    if (this.isVersionReleased() && !isUserSwitchedVersion) {
+      this.setState({ isSaving: false });
     } else if (!isEmpty(this.state.editingVersion)) {
       appVersionService
-        .save(this.state.appId, this.state.editingVersion.id, { definition: this.state.appDefinition })
+        .save(
+          this.state.appId,
+          this.state.editingVersion.id,
+          { definition: this.state.appDefinition },
+          isUserSwitchedVersion
+        )
         .then(() => {
           this.setState(
             {
@@ -1435,6 +1468,17 @@ class EditorComponent extends React.Component {
           onCancel={() => this.cancelDeletePageRequest()}
           darkMode={this.props.darkMode}
         />
+        {this.isVersionReleased() && (
+          <ReleasedVersionError
+            isUserEditingTheVersion={this.state.isUserEditingTheVersion}
+            changeBackTheState={() => {
+              this.state.isUserEditingTheVersion &&
+                this.setState({
+                  isUserEditingTheVersion: false,
+                });
+            }}
+          />
+        )}
         <EditorContextWrapper>
           <EditorHeader
             darkMode={this.props.darkMode}
@@ -1510,6 +1554,8 @@ class EditorComponent extends React.Component {
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
                 setEditorMarginLeft={this.handleEditorMarginLeftChange}
+                isVersionReleased={this.isVersionReleased()}
+                setReleasedVersionPopupState={this.setReleasedVersionPopupState}
               />
               {!showComments && (
                 <Selecto
@@ -1632,6 +1678,8 @@ class EditorComponent extends React.Component {
                           hoveredComponent={hoveredComponent}
                           sideBarDebugger={this.sideBarDebugger}
                           currentPageId={this.state.currentPageId}
+                          setReleasedVersionPopupState={this.setReleasedVersionPopupState}
+                          isVersionReleased={this.isVersionReleased()}
                         />
                         <CustomDragLayer
                           snapToGrid={true}
@@ -1647,6 +1695,7 @@ class EditorComponent extends React.Component {
                   dataQueriesChanged={this.dataQueriesChanged}
                   fetchDataQueries={this.fetchDataQueries}
                   darkMode={this.props.darkMode}
+                  isVersionReleased={this.isVersionReleased()}
                   editorRef={this}
                 >
                   {({
@@ -1692,6 +1741,7 @@ class EditorComponent extends React.Component {
                               clearDraftQuery={this.clearDraftQuery}
                               isUnsavedQueriesAvailable={isUnsavedQueriesAvailable}
                               updateDraftQueryName={updateDraftQueryName}
+                              isVersionReleased={this.isVersionReleased()}
                             />
                           </div>
                         </div>
@@ -1729,6 +1779,7 @@ class EditorComponent extends React.Component {
                         darkMode={this.props.darkMode}
                         appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
                         pages={this.getPagesWithIds()}
+                        isVersionReleased={this.isVersionReleased()}
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">
@@ -1744,6 +1795,7 @@ class EditorComponent extends React.Component {
                     zoomLevel={zoomLevel}
                     currentLayout={currentLayout}
                     darkMode={this.props.darkMode}
+                    isVersionReleased={this.isVersionReleased()}
                   ></WidgetManager>
                 )}
               </div>

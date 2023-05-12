@@ -5,7 +5,7 @@ import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import { QueryCard } from './QueryCard';
 import Fuse from 'fuse.js';
-
+import cx from 'classnames';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 
 export const QueryDataPane = ({
@@ -18,6 +18,7 @@ export const QueryDataPane = ({
   darkMode,
   fetchDataQueries,
   editorRef,
+  isVersionReleased,
 }) => {
   const { t } = useTranslation();
   const { loadingDataQueries } = useDataQueriesStore();
@@ -70,9 +71,14 @@ export const QueryDataPane = ({
           </div>
           <button
             data-cy={`button-add-new-queries`}
-            className={`col-auto d-flex align-items-center py-1 rounded default-secondary-button  ${
-              darkMode && 'theme-dark'
-            }`}
+            className={cx(
+              `col-auto d-flex align-items-center py-1 rounded default-secondary-button ${
+                isVersionReleased && 'disabled'
+              }`,
+              {
+                'theme-dark': darkMode,
+              }
+            )}
             onClick={handleAddNewQuery}
             data-tooltip-id="tooltip-for-add-query"
             data-tooltip-content="Add new query"
@@ -107,6 +113,7 @@ export const QueryDataPane = ({
                   setSelectedDataSource={setSelectedDataSource}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
+                  isVersionReleased={isVersionReleased}
                 />
               ) : (
                 ''
@@ -122,6 +129,7 @@ export const QueryDataPane = ({
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
                   editorRef={editorRef}
+                  isVersionReleased={isVersionReleased}
                 />
               ))}
             </div>

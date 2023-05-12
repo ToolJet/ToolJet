@@ -49,6 +49,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
     apps,
     clonePage,
     setEditorMarginLeft,
+    isVersionReleased,
+    setReleasedVersionPopupState,
   } = props;
   const queryPanelHeight = usePanelHeight();
   const [selectedSidebarItem, setSelectedSidebarItem] = useState(localStorage.getItem('selectedSidebarItem'));
@@ -189,6 +191,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
         popoverContentHeight={popoverContentHeight}
         setPinned={handlePin}
         pinned={pinned}
+        isVersionReleased={isVersionReleased}
+        setReleasedVersionPopupState={setReleasedVersionPopupState}
       />
     ),
     inspect: (
@@ -264,15 +268,19 @@ export const LeftSidebar = forwardRef((props, ref) => {
         toggleDataSourceManagerModal={toggleDataSourceManagerModal}
         showDataSourceManagerModal={showDataSourceManagerModal}
         popoverContentHeight={popoverContentHeight}
+        isVersionReleased={isVersionReleased}
+        setReleasedVersionPopupState={setReleasedVersionPopupState}
       />
 
       {config.COMMENT_FEATURE_ENABLE && (
-        <LeftSidebarComment
-          appVersionsId={appVersionsId}
-          selectedSidebarItem={showComments ? 'comments' : ''}
-          toggleComments={toggleComments}
-          currentPageId={currentPageId}
-        />
+        <div className={`${isVersionReleased && 'disabled'}`}>
+          <LeftSidebarComment
+            appVersionsId={appVersionsId}
+            selectedSidebarItem={showComments ? 'comments' : ''}
+            toggleComments={toggleComments}
+            currentPageId={currentPageId}
+          />
+        </div>
       )}
       <ConfirmDialog
         show={showLeaveDialog}
