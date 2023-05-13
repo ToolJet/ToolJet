@@ -8,10 +8,12 @@ import { Button } from '@/_ui/LeftSidebar';
 import { useLocalStorageState } from '@/_hooks/use-local-storage';
 
 export const CopilotSetting = () => {
-  const { current_organization_id } = authenticationService.currentSessionValue;
+  const { current_organization_id, current_organization_name } = authenticationService.currentSessionValue;
+  const currentOrgName = current_organization_name.replace(/\s/g, '').toLowerCase();
+
   const [copilotApiKey, setCopilotApiKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [state, setState] = useLocalStorageState(`copilotEnabled-${current_organization_id}`, false);
+  const [state, setState] = useLocalStorageState(`copilotEnabled-${currentOrgName}`, false);
   const [copilotWorkspaceVarId, set] = useState(null);
 
   const saveCopilotApiKey = async (apikey) => {
