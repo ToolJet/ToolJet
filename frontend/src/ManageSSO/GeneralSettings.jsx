@@ -133,6 +133,7 @@ export function GeneralSettings({ settings, updateData, instanceSettings, darkMo
                 <div className="d-flex sso-main-box">
                   {instanceSettings.google.enabled && ssoButtons('google')}
                   {instanceSettings.git.enabled && ssoButtons('git')}
+                  {instanceSettings.openid.enabled && ssoButtons('openid')}
                 </div>
               </div>
             </div>
