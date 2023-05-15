@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable, ForbiddenException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
@@ -22,6 +22,11 @@ export class FoldersService {
   ) {}
 
   async create(user: User, folderName): Promise<Folder> {
+    const existed = await this.foldersRepository.findOne({ name: folderName });
+    if (existed) {
+      throw new ConflictException('Folder name already exists.');
+    }
+
     return this.foldersRepository.save(
       this.foldersRepository.create({
         name: folderName,
@@ -33,6 +38,11 @@ export class FoldersService {
   }
 
   async update(folderId: string, folderName: string): Promise<UpdateResult> {
+    const existed = await this.foldersRepository.findOne({ name: folderName });
+    if (existed) {
+      throw new ConflictException('Folder name already exists.');
+    }
+
     return this.foldersRepository.update({ id: folderId }, { name: folderName });
   }
 

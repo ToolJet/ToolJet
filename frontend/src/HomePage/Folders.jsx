@@ -79,8 +79,6 @@ export const Folders = function Folders({
         .catch(({ error }) => {
           toast.error(error || 'Error while creating the folder');
           setCreationStatus(false);
-          setShowForm(false);
-          setNewFolderName('');
         });
     }
   }
@@ -157,7 +155,6 @@ export const Folders = function Folders({
         })
         .catch(({ error }) => {
           toast.error(error || 'Error while updating the folder');
-          setNewFolderName('');
           setUpdationStatus(false);
         });
     }
