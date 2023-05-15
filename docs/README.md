@@ -3,7 +3,7 @@
   <h1 align="center">ToolJet Documentation</h1>
 </p>
 
-This repository contains the ToolJet documentation website code and Markdown source files for [docs.tooljet.com](https://docs.tooljet.com)
+This directory(tooljet/docs/) contains the ToolJet documentation website code and markdown source files for [docs.tooljet.com](https://docs.tooljet.com)
 
 ## Index
 - [Feedback](#feedback)
@@ -15,10 +15,10 @@ This repository contains the ToolJet documentation website code and Markdown sou
 - [Local setup](#local-setup)
 
 ## Feedback
-If you want to give documentation feedback, please join our [Slack Community](https://tooljet.com/slack) and drop us a message.
+If you would like to provide feedback on the documentation, feel free to join our [Slack Community](https://tooljet.com/slack) and send us a message.
 
 ## Documentation Issues
-To enter documentation bugs or submit any feature request for documentation, please create a new [GitHub issue](https://github.com/ToolJet/ToolJet/issues/new?assignees=&labels=documentation&template=03_documentation_report.yml&title=%5Bdocs%5D%3A+). Please check if there is an existing issue first.
+If you encounter any issues with the documentation or have a feature request related to it, you can create a new [GitHub issue](https://github.com/ToolJet/ToolJet/issues/new?assignees=&labels=documentation&template=03_documentation_report.yml&title=%5Bdocs%5D%3A+) using the provided template. Please ensure that you check for existing issues before creating a new one.
 
 If you think the issue is with the ToolJet product itself, please choose the relevant issue template [here](https://github.com/ToolJet/ToolJet/issues/new/choose).
 
@@ -30,23 +30,39 @@ The content in this directory follows the organization of documentation at https
 
 This directory contains the following folders:
 
-\docs <br>
-|--\Enterprise <br>
-|--\actions <br>
-|--\contributing-guide <br>
-|--\data-sources <br>
-|--\how-to <br>
-|--\password-login <br>
-|--\setup <br>
-|--\sso <br>
-|--\tutorial <br>
-|--\widgets <br>
+```
+/tooljet/docs
+├── sidebars.json        # sidebar for the next(upcoming) docs version
+├── docs                 # docs directory for the next(upcoming) docs version
+│   ├── Enterprise
+│   │   └── multi-environment.md
+│   └── tooljet-database.md
+├── versions.json        # file to indicate what versions are available
+├── versioned_docs
+│   ├── version-x.x.x    # Current/latest version (set it on docusauras.config.js)
+│   │   ├── Enterprise
+│   │   │   └── multi-environment.md   # https://docs.tooljet.com/docs/Enterprise/multi-environment
+│   │   └── tooljet-database.md.       # https://docs.tooljet.com/docs/tooljet-database
+│   └── version-2.0.0
+│   │   ├── Enterprise
+│   │   │   └── multi-environment.md   # https://docs.tooljet.com/docs/2.0.0/Enterprise/multi-environment
+│   │   └── tooljet-database.md
+│   └── version-1.0.0
+│       ├── Enterprise
+│       │   └── multi-environment.md   # https://docs.tooljet.com/docs/1.0.0/Enterprise/multi-environment
+│       └── tooljet-database.md
+├── versioned_sidebars                 # includes sidebar for the specific versions
+│   ├── version-x.x.x-sidebars.json    
+│   └── version-1.0.0-sidebars.json
+└── src
+│   └── img                           # contains folders that references the images (such as screenshots) used in the \docs\topic
+├── docusaurus.config.js
+└── package.json
+```
 
-Within these folders, you'll find the Markdown files used for the content. 
+`\src` - contains the ToolJet documentation website code. The documentation website is built using [Docusaurus 2](https://docusaurus.io/).
 
-\src - contains the ToolJet documentation website code. The documentation website is built using [Docusaurus 2](https://docusaurus.io/).
-
-\static\img - contains folders that references the images (such as screenshots) used in the \docs\topic.
+`tooljet\docs\docs\` - This is the base directory and any changes in this directory will reflect on the `next` version the docs. Each of the folders inside it contains markdown files for the corresponding content. 
 
 ### Workflow
 The two suggested workflows are:
@@ -56,7 +72,7 @@ The two suggested workflows are:
 
 ### Conventions
 
-- The front matter for every markdown file should include the `id` and a `title`. `id` will be used to reference the file in `sidebar.js`
+- The front matter for every markdown file should include the `id` and a `title`. `id` will be used to reference the file in `sidebar.js` or `version-x.x.x-sidebars.json` for a specific version.
   ```yaml
   ---
   id: building-internal-tool
@@ -72,7 +88,7 @@ The two suggested workflows are:
 - Images are important to bring the product to life and clarify the written content. For images you're adding to the repo, store them in the `img` subfolder inside `static` folder. For every topic there needs to be a folder inside `\static\img\` section, for example: `static\img\how-to\bulk-update\query1.png`.
   When you link to an image, the path and filename are case-sensitive. The convention is for image filenames to be all lowercase and use dashes `-` for separators.
 
-  >Example code for adding an image in markdown file:
+  > Example code for adding an image in markdown file:
   ```
   <div style={{textAlign: 'center'}}>
 
@@ -82,10 +98,17 @@ The two suggested workflows are:
   ```
 
 ## Local setup
+
+### Requirements
+
+- **Node version 16.14**
+
 ### Installation
 ```console
 yarn install
 ```
+
+**Note:** Please note that if you make any changes that will be reflected in the upcoming version of the ToolJet documentation, you should set the **includeCurrentVersion** value to `true` in the docusaurus.config.js file. After making the necessary changes, be sure to set the value back to `false` and then commit the changes. Setting the value to `true` will load the `docs/docs/` base directory as the `next` version for local development, allowing you to preview the changes.
 
 ### Local Development
 ```console
