@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import * as csv from 'fast-csv';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -69,7 +69,7 @@ export class OrganizationsService {
       const ifWorkspaceNameExists = await manager.findOne(Organization, { name });
 
       if (ifWorkspaceNameExists) {
-        throw new BadRequestException('Workspace name already exists.');
+        throw new ConflictException('Workspace name already exists.');
       }
 
       organization = await manager.save(
@@ -463,7 +463,7 @@ export class OrganizationsService {
       const ifWorkspaceNameExists = await this.organizationsRepository.findOne({ name });
 
       if (ifWorkspaceNameExists) {
-        throw new BadRequestException('Workspace name already exists.');
+        throw new ConflictException('Workspace name already exists.');
       }
     }
 
