@@ -21,6 +21,10 @@ function Header() {
         return 'Profile settings';
       case 'integrations':
         return 'Integrations';
+      case 'instance-settings':
+        return 'Instance settings';
+      case 'audit-logs':
+        return 'Audit logs';
       default:
         return 'Applications';
     }
