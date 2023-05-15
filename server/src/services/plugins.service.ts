@@ -239,10 +239,11 @@ export class PluginsService {
 
     try {
       // validate manifest and operations as JSON files
+      const isMarketPlaceDev = process.env.ENABLE_MARKETPLACE_DEV_MODE === 'true';
       const validManifest = JSON.parse(manifest.toString()) ? manifest : null;
       const validOperations = JSON.parse(operations.toString()) ? operations : null;
 
-      if (validManifest && validOperations) {
+      if (isMarketPlaceDev && validManifest && validOperations) {
         shouldCreate = true;
       }
     } catch (error) {
