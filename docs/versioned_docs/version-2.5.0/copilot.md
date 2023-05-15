@@ -7,13 +7,18 @@ title: Copilot
 Tooljet Copilot is currently available in public beta for organizations.
 :::
 
-**ToolJet Copilot** helps you write your queries faster. It uses OpenAI's GPT-3.5 to suggest queries based on your data. 
+**ToolJet Copilot** helps you write your queries faster. It uses OpenAI to suggest queries based on your data. 
 
 ## Activating Copilot
 
 To activate Copilot for a ToolJet workspace, the administrator must go to the **workspace settings**, then the **Copilot** section, and toggle on the "**Enable Copilot**" option. Once Copilot is enabled, an **API key** must be provided in order to activate the feature.
 
 You can join the waitlist here: **https://tooljet.com/copilot**
+
+:::info
+- A **new API key** will be needed for each workspace, with *only one user (admin)* allowed per workspace.
+- Copilot can be used by users who have **permissions to edit** the app with a copilot setup.
+:::
 
 <div style={{textAlign: 'center'}}>
 
