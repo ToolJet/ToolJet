@@ -2,8 +2,10 @@ import HttpClient from '@/_helpers/http-client';
 
 const tooljetAdapter = new HttpClient();
 
-function findOne(organizationId, tableId, query = '') {
-  return tooljetAdapter.get(`/tooljet_db/organizations/${organizationId}/proxy/${tableId}?${query}`);
+function findOne(headers, tableId, query = '') {
+  tooljetAdapter.headers = { ...tooljetAdapter.headers, ...headers };
+  console.log(tooljetAdapter.headers);
+  return tooljetAdapter.get(`/tooljet_db/proxy/${tableId}?${query}`, headers);
 }
 
 function findAll(organizationId) {
@@ -21,8 +23,8 @@ function viewTable(organizationId, tableName) {
   return tooljetAdapter.get(`/tooljet_db/organizations/${organizationId}/table/${tableName}`);
 }
 
-function createRow(organizationId, tableId, data) {
-  return tooljetAdapter.post(`/tooljet_db/organizations/${organizationId}/proxy/${tableId}`, data);
+function createRow(headers, tableId, data) {
+  return tooljetAdapter.post(`/tooljet_db/proxy/${tableId}`, data, headers);
 }
 
 function createColumn(organizationId, tableId, columnName, dataType, defaultValue) {
@@ -51,12 +53,12 @@ function renameTable(organizationId, tableName, newTableName) {
   });
 }
 
-function updateRows(organizationId, tableId, data, query = '') {
-  return tooljetAdapter.patch(`/tooljet_db/organizations/${organizationId}/proxy/${tableId}?${query}`, data);
+function updateRows(headers, tableId, data, query = '') {
+  return tooljetAdapter.patch(`/tooljet_db/proxy/${tableId}?${query}`, data, headers);
 }
 
-function deleteRow(organizationId, tableId, query = '') {
-  return tooljetAdapter.delete(`/tooljet_db/organizations/${organizationId}/proxy/${tableId}?${query}`);
+function deleteRows(headers, tableId, query = '') {
+  return tooljetAdapter.delete(`/tooljet_db/proxy/${tableId}?${query}`, headers);
 }
 
 function deleteColumn(organizationId, tableName, columnName) {
@@ -76,7 +78,7 @@ export const tooljetDatabaseService = {
   createColumn,
   updateTable,
   updateRows,
-  deleteRow,
+  deleteRows,
   deleteColumn,
   deleteTable,
   renameTable,
