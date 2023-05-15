@@ -4,6 +4,7 @@ import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
+import { DropDown } from './Components/DropDown';
 import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
@@ -19,7 +20,6 @@ import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
-
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 
 export const Inspector = ({
@@ -509,6 +509,9 @@ const GetAccordion = React.memo(
 
       case 'Form':
         return <Form {...restProps} />;
+
+      case 'DropDown':
+        return <DropDown {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

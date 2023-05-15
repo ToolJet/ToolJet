@@ -2295,9 +2295,36 @@ export const widgets = [
           },
         },
       },
+      advanced: {
+        type: 'toggle',
+        displayName: 'Advanced',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      schema: {
+        type: 'code',
+        displayName: 'Schema',
+      },
       loadingState: {
         type: 'toggle',
         displayName: 'Options loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      placeholder: {
+        type: 'code',
+        displayName: 'Default placeholder',
+        validation: {
+          validation: {
+            schema: { type: 'string' },
+          },
+        },
+      },
+      visibility: {
+        type: 'toggle',
+        displayName: 'visibility',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -2376,11 +2403,19 @@ export const widgets = [
         customRule: { value: null },
       },
       properties: {
+        advanced: {
+          value: false,
+        },
+        schema: {
+          value:
+            "{{[\t{label: 'One',value: 1,disable: false,visible: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}\t]}}",
+        },
+
         label: { value: 'Select' },
         value: { value: '{{2}}' },
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
-        visible: { value: '{{true}}' },
+        visibility: { value: '{{true}}' },
         loadingState: { value: '{{false}}' },
       },
       events: [],
