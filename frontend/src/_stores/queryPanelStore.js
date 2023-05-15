@@ -14,28 +14,31 @@ const initialState = {
 };
 
 export const useQueryPanelStore = create(
-  zustandDevTools((set) => ({
-    ...initialState,
-    actions: {
-      updateQueryPanelHeight: (newHeight) => set(() => ({ queryPanelHeight: newHeight })),
-      setSelectedQuery: (queryId, dataQuery = {}) => {
-        set(() => {
-          if (queryId === null) {
-            return { selectedQuery: null };
-          } else if (queryId === 'draftQuery') {
-            return { selectedQuery: dataQuery };
-          }
-          const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
-          return { selectedQuery: query ? query : null };
-        });
+  zustandDevTools(
+    (set) => ({
+      ...initialState,
+      actions: {
+        updateQueryPanelHeight: (newHeight) => set(() => ({ queryPanelHeight: newHeight })),
+        setSelectedQuery: (queryId, dataQuery = {}) => {
+          set(() => {
+            if (queryId === null) {
+              return { selectedQuery: null };
+            } else if (queryId === 'draftQuery') {
+              return { selectedQuery: dataQuery };
+            }
+            const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
+            return { selectedQuery: query ? query : null };
+          });
+        },
+        setSelectedDataSource: (dataSource = null) => set({ selectedDataSource: dataSource }),
+        setUnSavedChanges: (value) => set({ isUnsavedChangesAvailable: value }),
+        setQueryToBeRun: (query) => set({ queryToBeRun: query }),
+        setPreviewLoading: (status) => set({ previewLoading: status }),
+        setPreviewData: (data) => set({ queryPreviewData: data }),
       },
-      setSelectedDataSource: (dataSource = null) => set({ selectedDataSource: dataSource }),
-      setUnSavedChanges: (value) => set({ isUnsavedChangesAvailable: value }),
-      setQueryToBeRun: (query) => set({ queryToBeRun: query }),
-      setPreviewLoading: (status) => set({ previewLoading: status }),
-      setPreviewData: (data) => set({ queryPreviewData: data }),
-    },
-  }))
+    }),
+    { name: 'Query Panel Store' }
+  )
 );
 
 export const usePanelHeight = () => useQueryPanelStore((state) => state.queryPanelHeight);
