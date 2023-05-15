@@ -1250,6 +1250,7 @@ $border-radius: 4px;
       border: 1px solid $color-light-slate-07  !important;
       border-radius: 0;
       border-radius: 6px 0 0 6px;
+      height: 32px;
 
       span {
         color: $color-light-slate-11;
@@ -1467,6 +1468,7 @@ $border-radius: 4px;
       border-style: solid;
       border-color: #cccccc;
       border-width: 1px 0 1px 1px !important;
+      height: 32px;
 
       span {
         color: $color-dark-slate-11;

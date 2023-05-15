@@ -3,26 +3,21 @@ import { postgreSqlText } from "Texts/postgreSql";
 import { bigqueryText } from "Texts/bigquery";
 import { firestoreText } from "Texts/firestore";
 import { commonSelectors } from "Selectors/common";
-import {
-  fillDataSourceTextField,
-  selectDataSource,
-} from "Support/utils/postgreSql";
+import {fillDataSourceTextField,selectDataSource} from "Support/utils/postgreSql";
+import { commonText } from "Texts/common";
+import { closeDSModal,deleteDatasource } from "Support/utils/dataSource";
 
 describe("Data source BigQuery", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
+    cy.intercept("GET", "/api/v2/data_sources");
   });
 
   it("Should verify elements on BigQuery connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal()
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
@@ -46,7 +41,7 @@ describe("Data source BigQuery", () => {
       bigqueryText.bigQuery
     );
     cy.get("[data-cy*='data-source-']")
-      .eq(0)
+      .eq(1)
       .should("contain", bigqueryText.bigQuery);
     cy.get('[data-cy="data-source-bigquery"]').click();
 
@@ -87,7 +82,7 @@ describe("Data source BigQuery", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
       "have.text",
       bigqueryText.errorInvalidEmailId
     );
@@ -119,12 +114,12 @@ describe("Data source BigQuery", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get("#radix-2").click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", bigqueryText.cypressBigQuery)
-      .find("button")
-      .invoke("show")
-      .should("be.visible");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get('[data-cy="cypress-bigquery-button"]').verifyVisibleElement(
+      "have.text",
+      bigqueryText.cypressBigQuery
+    );
+
+    deleteDatasource("cypress-bigquery");
   });
 });
