@@ -97,8 +97,10 @@ export const useDataQueriesStore = create(
         },
         createDataQuery: (appId, appVersionId, options, shouldRunQuery) => {
           set({ isCreatingQueryInProcess: true });
-          const { actions, selectedQuery } = useQueryPanelStore.getState();
-          const { name, kind, dataSourceId, pluginId } = selectedQuery;
+          const { actions, selectedQuery, selectedDataSource } = useQueryPanelStore.getState();
+          const { name, kind } = selectedQuery;
+          const dataSourceId = selectedDataSource?.id ?? null;
+          const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
           dataqueryService
             .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId)
             .then((data) => {

@@ -30,6 +30,7 @@ export const QueryManagerBody = forwardRef(
   (
     {
       darkMode,
+      mode,
       dataSourceModalHandler,
       options,
       currentState,
@@ -363,7 +364,9 @@ export const QueryManagerBody = forwardRef(
       >
         {selectedDataSource === null ? renderDataSourcesList() : renderQueryElement()}
         {selectedDataSource !== null ? renderQueryOptions() : null}
-        {selectedQuery?.data_source_id && selectedDataSource !== null ? renderChangeDataSource() : null}
+        {selectedQuery?.data_source_id && mode === 'edit' && selectedDataSource !== null
+          ? renderChangeDataSource()
+          : null}
       </div>
     );
   }

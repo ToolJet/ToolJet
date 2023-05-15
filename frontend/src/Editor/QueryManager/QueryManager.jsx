@@ -65,7 +65,7 @@ const QueryManager = ({
   }, [editorRef, queryToBeRun]);
 
   useEffect(() => {
-    if (selectedQuery && (dataSources.length > 0 || globalDataSources.length > 0)) {
+    if (selectedQuery) {
       if (selectedQuery?.kind in defaultSources && !selectedQuery?.data_source_id) {
         return setSelectedDataSource(defaultSources[selectedQuery?.kind]);
       }
@@ -102,6 +102,7 @@ const QueryManager = ({
       />
       <QueryManagerBody
         darkMode={darkMode}
+        mode={mode}
         dataSourceModalHandler={dataSourceModalHandler}
         options={options}
         currentState={currentState}
