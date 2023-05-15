@@ -10874,6 +10874,14 @@ tbody {
     .select-search__options {
       margin-left: -24px;
       margin-bottom: 0px;
+
+      .select-search__row {
+        button {
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          white-space: nowrap;
+        }
+      }
     }
   }
 
