@@ -168,20 +168,6 @@ class DropDown extends React.Component {
     });
 
     items.push({
-      title: 'Visibility',
-      children: renderElement(
-        component,
-        componentMeta,
-        paramUpdated,
-        dataQueries,
-        'visibility',
-        'properties',
-        currentState,
-        components,
-        this.props.darkMode
-      ),
-    });
-    items.push({
       title: 'Placeholder',
       children: renderElement(
         component,
