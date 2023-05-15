@@ -1573,6 +1573,35 @@ describe('apps controller', () => {
         await logoutUser(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
       });
 
+      it('should be able to update the current version without new definition changes, even it is a released versions', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+
+        const loggedUser = await authenticateUser(app, 'admin@tooljet.io');
+        const application = await createApplication(app, {
+          user: adminUserData.user,
+        });
+        const version = await createApplicationVersion(app, application);
+
+        let response = await request(app.getHttpServer())
+          .put(`/api/apps/${application.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser['tokenCookie'])
+          .send({ appName: 'new', current_version_id: version.id });
+
+        expect(response.statusCode).toBe(200);
+
+        response = await request(app.getHttpServer())
+          .put(`/api/apps/${application.id}/versions/${version.id}`)
+          .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+          .set('Cookie', loggedUser['tokenCookie'])
+          .send({ is_user_switched_version: true });
+
+        expect(response.statusCode).toBe(200);
+      });
+
       it('should not be able to update app version if no app create permission within same organization', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',

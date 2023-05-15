@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { TooljetDatabaseContext } from '../index';
@@ -19,6 +19,10 @@ const RowForm = ({ onCreate, onClose }) => {
     });
     return data;
   });
+
+  useEffect(() => {
+    toast.dismiss();
+  }, []);
 
   const handleInputChange = (columnName) => (e) => {
     setData({ ...data, [columnName]: e.target.value });

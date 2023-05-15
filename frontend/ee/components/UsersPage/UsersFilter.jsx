@@ -74,7 +74,7 @@ const UsersFilter = ({ filterList }) => {
           <div className="d-flex align-items-center cursor-pointer tj-app-input">
             <input
               type="text"
-              className="user-filter-search"
+              className="user-filter-search form-control"
               placeholder="Search users by name or email"
               onChange={(e) => {
                 setQueryVal(e.target.value);

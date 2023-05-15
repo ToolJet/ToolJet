@@ -569,6 +569,7 @@ class HomePageComponent extends React.Component {
                 <ButtonSolid
                   className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
                   onClick={this.changeIcon}
+                  data-cy="change-button"
                 >
                   {this.props.t('homePage.change', 'Change')}
                 </ButtonSolid>
@@ -637,6 +638,7 @@ class HomePageComponent extends React.Component {
                 canDeleteFolder={this.canDeleteFolder()}
                 canUpdateFolder={this.canUpdateFolder()}
                 darkMode={this.props.darkMode}
+                canCreateApp={this.canCreateApp()}
               />
               <OrganizationList />
             </div>

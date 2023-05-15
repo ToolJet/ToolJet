@@ -10,8 +10,11 @@ import { useMounted } from '@/_hooks/use-mount';
 const EditRowForm = ({ onEdit, onClose }) => {
   const { organizationId, selectedTable, columns, selectedTableData } = useContext(TooljetDatabaseContext);
   const [fetching, setFetching] = useState(false);
-
   const [selectedRow, setSelectedRow] = useState(null);
+
+  useEffect(() => {
+    toast.dismiss();
+  }, []);
   const handleOnSelect = (selectedOption) => {
     setSelectedRow(selectedOption);
   };
@@ -53,7 +56,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
       return;
     }
     setFetching(false);
-    toast.success(`Row created successfully`);
+    toast.success(`Row edited successfully`);
     onEdit && onEdit();
   };
 

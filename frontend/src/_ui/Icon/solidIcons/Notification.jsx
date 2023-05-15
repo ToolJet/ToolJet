@@ -8,6 +8,7 @@ const Notification = ({ fill = '#C1C8CD', width = '25', className = '', viewBox 
     viewBox={viewBox}
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
+    data-cy="notifications-icon"
   >
     <path
       fillRule="evenodd"

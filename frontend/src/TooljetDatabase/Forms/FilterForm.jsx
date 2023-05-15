@@ -84,7 +84,7 @@ export const FilterForm = ({ filters, setFilters, index, column = '', operator =
           </div>
         </div>
       </div>
-      <div className="col-1 cursor-pointer" onClick={handleDelete}>
+      <div className="col-1 cursor-pointer" data-cy="delete-icon" onClick={handleDelete}>
         <SolidIcon name="trash" fill="#E54D2E" width="14" />
       </div>
     </div>

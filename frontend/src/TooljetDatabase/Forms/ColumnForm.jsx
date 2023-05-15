@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import Select from '@/_ui/Select';
 import DrawerFooter from '@/_ui/Drawer/DrawerFooter';
 import { isEmpty } from 'lodash';
@@ -13,6 +13,10 @@ const ColumnForm = ({ onCreate, onClose }) => {
   const [dataType, setDataType] = useState();
   const [fetching, setFetching] = useState(false);
   const { organizationId, selectedTable } = useContext(TooljetDatabaseContext);
+
+  useEffect(() => {
+    toast.dismiss();
+  }, []);
 
   const handleTypeChange = (value) => {
     setDataType(value);

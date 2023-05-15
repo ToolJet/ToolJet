@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '@/_ui/Layout';
 import { globalDatasourceService, appEnvironmentService, authenticationService } from '@/_services';
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
+import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';
 
 export const GlobalDataSourcesContext = createContext({
@@ -24,14 +25,23 @@ export const GlobalDatasources = (props) => {
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
-    updateSidebarNAV('');
+    if (dataSources?.length == 0) updateSidebarNAV('');
+    else selectedDataSource ? updateSidebarNAV(selectedDataSource.name) : updateSidebarNAV(dataSources?.[0].name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource)]);
 
+  useEffect(() => {
     if (!admin) {
+      toast.error("You don't have access to GDS, contact your workspace admin to add datasources");
       navigate('/');
     }
     fetchEnvironments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [admin]);
+
+  function updateSelectedDatasource(source) {
+    updateSidebarNAV(source);
+  }
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     globalDatasourceService
@@ -107,7 +117,7 @@ export const GlobalDatasources = (props) => {
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <GlobalDataSourcesContext.Provider value={value}>
         <div className="page-wrapper">
-          <GlobalDataSourcesPage darkMode={props.darkMode} />
+          <GlobalDataSourcesPage darkMode={props.darkMode} updateSelectedDatasource={updateSelectedDatasource} />
         </div>
       </GlobalDataSourcesContext.Provider>
     </Layout>

@@ -8,6 +8,7 @@ const EditReactangle = ({ fill = '#C1C8CD', width = '25', className = '', viewBo
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
+    data-cy="edit-rectangle-icon"
   >
     <path
       fillRule="evenodd"

@@ -75,11 +75,13 @@ export function Google({ settings, updateData }) {
                 onChange={changeStatus}
                 data-cy="google-enable-toggle"
               />
-              <span className="sso-type-header">{t('header.organization.menus.manageSSO.google.title', 'Google')}</span>
+              <span className="sso-type-header" data-cy="card-title">
+                {t('header.organization.menus.manageSSO.google.title', 'Google')}
+              </span>
             </label>
           </div>
 
-          <div className="card-title" data-cy="card-title">
+          <div className="card-title">
             <span className={`tj-text-xsm ${enabled ? 'enabled-tag' : 'disabled-tag'}`} data-cy="status-label">
               {enabled
                 ? t('header.organization.menus.manageSSO.google.enabled', 'Enabled')
@@ -115,7 +117,7 @@ export function Google({ settings, updateData }) {
                   data-cy="redirect-url"
                   id="redirect-url"
                 >{`${window.public_config?.TOOLJET_HOST}/sso/google/${configId}`}</p>
-                <SolidIcon name="copy" width="16" data-cy="copy-icon" onClick={() => copyFunction('redirect-url')} />
+                <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
               </div>
             </div>
           )}

@@ -4,7 +4,6 @@ import { fake } from "Fixtures/fake";
 import { commonWidgetText } from "Texts/common";
 
 import { verifyControlComponentAction } from "Support/utils/button";
-import { selectEvent } from "Support/utils/events";
 import {
   launchModal,
   closeModal,
@@ -34,6 +33,11 @@ import {
   verifyPropertiesGeneralAccordion,
   verifyStylesGeneralAccordion,
 } from "Support/utils/commonWidget";
+import {
+  selectCSA,
+  selectEvent,
+  addSupportCSAData,
+} from "Support/utils/events";
 
 describe("Modal", () => {
   beforeEach(() => {
@@ -111,9 +115,11 @@ describe("Modal", () => {
     launchModal(data.widgetName);
 
     cy.realPress("Escape");
-    cy.get('[data-cy="modal-title"]')
-      .verifyVisibleElement("have.text", data.customTitle)
-      .click();
+    cy.get('[data-cy="modal-title"]').verifyVisibleElement(
+      "have.text",
+      data.customTitle
+    );
+
     closeModal(data.widgetName);
     launchModal(data.widgetName);
 
@@ -310,19 +316,21 @@ describe("Modal", () => {
       launchButton("modal1"),
       "color"
     );
-    cy.get("[data-cy='modal-header']").realClick();
 
+    closeModal("modal1");
+    launchModal("modal1");
     typeOnFx(
       commonWidgetText.parameterVisibility,
       "{{components.toggleswitch1.value"
     );
     cy.get("[data-cy='modal-header']").realClick();
+    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+
     typeOnFx(
       commonWidgetText.parameterDisable,
       "{{components.toggleswitch2.value"
     );
-    cy.get(".close-svg > path").click();
-    cy.get("[data-cy='modal-header']").realClick();
+    cy.get('[data-cy="sidebar-option-properties"]').click();
 
     typeOnFx("Loading State", "{{components.toggleswitch3.value");
     cy.get("[data-cy='modal-header']").realClick();
@@ -414,6 +422,27 @@ describe("Modal", () => {
       .find(".form-check-input")
       .click();
     launchModal("modal1");
+    cy.notVisible('[data-cy="modal-close-button"]');
+  });
+
+  it("should verify csa", () => {
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 200);
+    selectEvent("On click", "Control Component");
+    selectCSA("modal1", "open");
+
+    cy.get(commonWidgetSelector.draggableWidget("button1")).click();
+    cy.get('[data-cy="modal-title"]').verifyVisibleElement(
+      "have.text",
+      "This title can be changed"
+    );
+
+    cy.get(".close-svg > path").click();
+    cy.dragAndDropWidget("Button", 500, 300, "Button", "[id*=canvas]:eq(2)");
+    selectEvent("On click", "Control Component");
+    selectCSA("modal1", "close");
+    // cy.realPress("Escape");
+    cy.get(commonWidgetSelector.draggableWidget("button2")).click();
     cy.notVisible('[data-cy="modal-close-button"]');
   });
 });
