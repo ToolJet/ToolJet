@@ -2,27 +2,28 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { dynamoDbText } from "Texts/dynamodb";
 import { commonSelectors } from "Selectors/common";
+import { commonText } from "Texts/common";
+
 import {
   fillDataSourceTextField,
   selectDataSource,
 } from "Support/utils/postgreSql";
-import { verifyCouldnotConnectWithAlert } from "Support/utils/dataSource";
+import {
+  closeDSModal,
+  verifyCouldnotConnectWithAlert,
+  deleteDatasource,
+} from "Support/utils/dataSource";
 
 describe("Data source DynamoDB", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
   it("Should verify elements on DynamoDB connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
@@ -46,7 +47,7 @@ describe("Data source DynamoDB", () => {
       dynamoDbText.dynamoDb
     );
     cy.get("[data-cy*='data-source-']")
-      .eq(0)
+      .eq(1)
       .should("contain", dynamoDbText.dynamoDb);
     cy.get('[data-cy="data-source-dynamodb"]').click();
 
@@ -94,7 +95,7 @@ describe("Data source DynamoDB", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
       "have.text",
       dynamoDbText.errorMissingRegion
     );
@@ -158,9 +159,11 @@ describe("Data source DynamoDB", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("contains.text", dynamoDbText.cypressDynamoDb)
-      .should("be.visible");
+    cy.get('[data-cy="cypress-dynamodb-button"]').verifyVisibleElement(
+      "have.text",
+      dynamoDbText.cypressDynamoDb
+    );
+
+    deleteDatasource("cypress-dynamodb");
   });
 });

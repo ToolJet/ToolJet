@@ -130,6 +130,7 @@ export const commonText = {
   breadcrumbDatabaseTitle: "Databse",
   breadcrumbApplications: "Applications",
   breadcrumbSettings: "Settings",
+  addNewDataSourceButton: "Add new datasource",
 
   emailPageDescription: (email) => {
     return `We’ve sent an email to ${email} with a verification link. Please use that to verify your email address.`;
