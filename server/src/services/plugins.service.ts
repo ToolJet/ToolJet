@@ -235,16 +235,19 @@ export class PluginsService {
   async install(body: CreatePluginDto) {
     const { id, repo } = body;
     const [index, operations, icon, manifest, version] = await this.fetchPluginFiles(id, repo);
-    let shouldCreate = false;
+    const isMarketPlaceDev = process.env.ENABLE_MARKETPLACE_DEV_MODE === 'true';
+    let shouldCreate = isMarketPlaceDev ? false : true;
 
     try {
-      // validate manifest and operations as JSON files
-      const isMarketPlaceDev = process.env.ENABLE_MARKETPLACE_DEV_MODE === 'true';
-      const validManifest = JSON.parse(manifest.toString()) ? manifest : null;
-      const validOperations = JSON.parse(operations.toString()) ? operations : null;
+      // validate manifest and operations as JSON files if marketplace dev mode is enabled
 
-      if (isMarketPlaceDev && validManifest && validOperations) {
-        shouldCreate = true;
+      if (isMarketPlaceDev) {
+        const validManifest = JSON.parse(manifest.toString()) ? manifest : null;
+        const validOperations = JSON.parse(operations.toString()) ? operations : null;
+
+        if (validManifest && validOperations) {
+          shouldCreate = true;
+        }
       }
     } catch (error) {
       throw new InternalServerErrorException('Invalid plugin files');
