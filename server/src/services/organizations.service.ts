@@ -266,7 +266,7 @@ export class OrganizationsService {
     return query;
   }
 
-  async fetchUsers(user: User, page: number, options: UserFilterOptions): Promise<FetchUserResponse[]> {
+  async fetchUsers(user: User, page = 1, options: UserFilterOptions): Promise<FetchUserResponse[]> {
     const condition = options?.searchText ? 'and' : 'or';
     const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, condition)
       .orderBy('user.firstName', 'ASC')
