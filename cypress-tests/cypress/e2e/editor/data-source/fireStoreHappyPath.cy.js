@@ -2,6 +2,9 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { firestoreText } from "Texts/firestore";
 import { commonSelectors } from "Selectors/common";
+import { commonText } from "Texts/common";
+import { verifyCouldnotConnectWithAlert,deleteDatasource,closeDSModal } from "Support/utils/dataSource";
+
 import {
   fillDataSourceTextField,
   selectDataSource,
@@ -10,18 +13,13 @@ import {
 describe("Data source Firestore", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
   it("Should verify elements on Firestore connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
@@ -45,7 +43,7 @@ describe("Data source Firestore", () => {
       firestoreText.firestore
     );
     cy.get("[data-cy*='data-source-']")
-      .eq(0)
+      .eq(1)
       .should("contain", firestoreText.firestore);
     cy.get('[data-cy="data-source-firestore"]').click();
 
@@ -86,7 +84,7 @@ describe("Data source Firestore", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
       "have.text",
       firestoreText.errorGcpKeyCouldNotBeParsed
     );
@@ -118,11 +116,11 @@ describe("Data source Firestore", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("contain.text", firestoreText.cypressFirestore)
-      .find("button")
-      .invoke("show")
-      .should("be.visible");
+      cy.get('[data-cy="cypress-firestore-button"]').verifyVisibleElement(
+        "have.text",
+        firestoreText.cypressFirestore
+      );
+  
+      deleteDatasource("cypress-firestore");
   });
 });
