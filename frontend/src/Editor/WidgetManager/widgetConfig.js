@@ -2417,6 +2417,7 @@ export const widgets = [
         display_values: { value: '{{["one", "two", "three"]}}' },
         visibility: { value: '{{true}}' },
         loadingState: { value: '{{false}}' },
+        placeholder: { value: 'Select an option' },
       },
       events: [],
       styles: {
