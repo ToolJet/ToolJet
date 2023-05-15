@@ -59,7 +59,7 @@ class DropDown extends React.Component {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState } = this.state;
     const events = Object.keys(componentMeta.events);
     const validations = Object.keys(componentMeta.validation || {});
-    const advanced = resolveReferences(this.state.component.component.definition.properties.advanced.value);
+    const advanced = resolveReferences(this.state.component.component.definition.properties?.advanced?.value) ?? false;
 
     let items = [];
     items.push({

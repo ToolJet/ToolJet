@@ -2415,7 +2415,6 @@ export const widgets = [
         value: { value: '{{2}}' },
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
-        visibility: { value: '{{true}}' },
         loadingState: { value: '{{false}}' },
         placeholder: { value: 'Select an option' },
       },

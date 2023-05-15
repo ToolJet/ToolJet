@@ -17,8 +17,8 @@ export const DropDown = function DropDown({
   registerAction,
   dataCy,
 }) {
-  let { label, value, advanced, schema, placeholder, visibility } = properties;
-  const { selectedTextColor, borderRadius, disabledState, justifyContent } = styles;
+  let { label, value, advanced, schema, placeholder } = properties;
+  const { selectedTextColor, borderRadius, disabledState, justifyContent, visibility } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
   const [displayValues, setDisplayValues] = useState(advanced ? [] : properties.display_values);
   const [values, setValues] = useState(advanced ? [] : properties.values);
@@ -252,7 +252,7 @@ export const DropDown = function DropDown({
     <>
       <div
         className="dropdown-widget row g-0"
-        style={{ height, display: visibility && styles.visibility ? '' : 'none' }}
+        style={{ height, display: visibility ? '' : 'none' }}
         onMouseDown={(event) => {
           onComponentClick(id, component, event);
         }}
