@@ -63,6 +63,7 @@ const QueryPanel = ({
     setSelectedQuery(queryDetails.id, queryDetails);
     setDraftQuery(queryDetails);
     setSelectedDataSource(source);
+    setEditingQuery(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
