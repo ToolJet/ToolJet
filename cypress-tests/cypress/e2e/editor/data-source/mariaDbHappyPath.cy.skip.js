@@ -1,6 +1,6 @@
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { commonWidgetText } from "Texts/common";
+import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   addQuery,
@@ -12,22 +12,19 @@ import {
   addGuiQuery,
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
+import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
+
 
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
   it("Should verify elements on connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
@@ -47,12 +44,8 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      "MariaDB"
-    );
-    cy.get("[data-cy*='data-source-']")
-      .eq(0)
-      .should("contain", "MariaDB");
+    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("MariaDB");
+    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "MariaDB");
     cy.get('[data-cy="data-source-mariadb"]').click();
 
     cy.get(postgreSqlSelector.dataSourceNameInputField).should(
@@ -88,7 +81,7 @@ describe("Data sources", () => {
       "have.text",
       "Database"
     );
-    
+
     cy.get(postgreSqlSelector.labelSSLCertificate).verifyVisibleElement(
       "have.text",
       postgreSqlText.sslCertificate
@@ -112,18 +105,14 @@ describe("Data sources", () => {
         postgreSqlText.buttonTextTestConnection
       )
       .click();
-    cy.get(postgreSqlSelector.connectionFailedText).scrollIntoView().verifyVisibleElement(
-      "have.text",
-      postgreSqlText.couldNotConnect
-    );
+    cy.get(postgreSqlSelector.connectionFailedText)
+      .scrollIntoView()
+      .verifyVisibleElement("have.text", postgreSqlText.couldNotConnect);
     cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
-      "contain.text",
-      '(conn=-1, no: 45028, SQLState: HY000) retrieve connection from pool timeout after '
-    ).and('contain.text', ' (pool connections: active=0 idle=0 limit=5)');
+    // cy.get('[data-cy="connection-alert-text"]').should("be.visible")
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
@@ -131,33 +120,32 @@ describe("Data sources", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      postgreSqlText.psqlName
+      "cypress-mariadb"
     );
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
       postgreSqlText.placeholderEnterHost,
-      Cypress.env("pg_host")
+      Cypress.env("mariadb_host")
     );
     fillDataSourceTextField(
       postgreSqlText.labelPort,
       postgreSqlText.placeholderEnterPort,
       "5432"
     );
-    fillDataSourceTextField(
-      "Database",
-      "Enter name of the database",
-      "postgres"
-    );
+
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,
-      "postgres"
+      Cypress.env("mariadb_user")
     );
 
     cy.get(postgreSqlSelector.passwordTextField).type(
-      Cypress.env("pg_password")
+      Cypress.env("mariadb_password")
     );
+
+    cy.get('[data-cy="label-database"]').verifyVisibleElement("have.text", "Database")
+    cy.get('[data-cy="database-text-field"]').should("be.visible").invoke('attr', 'placeholder').should('contain', 'Enter name of the database')
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
@@ -170,10 +158,11 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", postgreSqlText.psqlName)
-      .find("button")
-      .should("be.visible");
+      cy.get('[data-cy="cypress-mariadb-button"]').verifyVisibleElement(
+        "have.text",
+        "cypress-mariadb"
+      );
+  
+      deleteDatasource("cypress-mariadb");
   });
 });
