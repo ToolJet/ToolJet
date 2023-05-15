@@ -41,7 +41,7 @@ export const commonSelectors = {
   createNewFolderButton: "[data-cy=create-new-folder-button]",
   folderNameInput: "[data-cy=folder-name-input]",
   createFolderButton: "[data-cy=create-folder-button]",
-  folderList: ".css-169zxdi-MenuList",
+  folderList: ".react-select__menu-list",
   empytyFolderImage: "[data-cy=empty-folder-image]",
   emptyFolderText: "[data-cy=empty-folder-text]",
   allApplicationsLink: "[data-cy=all-applications-link]",
@@ -164,6 +164,8 @@ export const commonSelectors = {
   inputFieldEmailAddress: '[data-cy="input-field-email"]',
   closeButton: '[data-cy="close-button"]',
   emptyAppCreateButton: "[data-cy='button-new-app-from-scratch']",
+  globalDataSourceIcon: '[data-cy="icon-global-datasources"]',
+  addNewDataSourceButton: '[data-cy="add-new-data-source-button"]',
 
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
@@ -200,14 +202,14 @@ export const commonSelectors = {
     return `[data-cy="${cyParamName(buttonText)}-button"]`;
   },
 
-  folderCardOptions:(folderName) =>{
-    return `[data-cy="${cyParamName(folderName)}-card-menu-icon"]`
+  folderCardOptions: (folderName) => {
+    return `[data-cy="${cyParamName(folderName)}-card-menu-icon"]`;
   },
-  deleteFolderOption: (folderName) =>{
-    return `[data-cy="${cyParamName(folderName)}-delete-folder-option"]`
+  deleteFolderOption: (folderName) => {
+    return `[data-cy="${cyParamName(folderName)}-delete-folder-option"]`;
   },
-  editFolderOption: (folderName) =>{
-    return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`
+  editFolderOption: (folderName) => {
+    return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`;
   },
 };
 
