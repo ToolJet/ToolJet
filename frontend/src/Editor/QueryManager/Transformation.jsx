@@ -292,7 +292,7 @@ return [row for row in data if row['amount'] > 1000]
                 styles={{ width: '100%', fontSize: '12px', fontWeight: 500, borderColor: darkMode && 'transparent' }}
                 disabled={!isCopilotEnabled}
               >
-                <Button.Content title={'Generate code ⌘+L'} />
+                <Button.Content title={'Generate code'} />
               </Button>
             </div>
 
@@ -318,6 +318,7 @@ return [row for row in data if row['amount'] > 1000]
             componentName={`transformation`}
             cyLabel={'transformation-input'}
             callgpt={handleCallToGPT}
+            isCopilotEnabled={isCopilotEnabled}
           />
         </div>
       )}
