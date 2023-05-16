@@ -46,7 +46,7 @@ function ModalContent({ node, darkMode, onClose }) {
     <div className="node-modal-content">
       {renderNode}
       <DeleteIcon
-        style={{ cursor: 'pointer', position: 'absolute', top: '12px', right: '12px' }}
+        style={{ cursor: 'pointer', position: 'absolute', top: '34px', right: '28px' }}
         onClick={onNodeDelete}
       />
     </div>
