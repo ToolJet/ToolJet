@@ -145,7 +145,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.update(app.id, appUpdateDto, user.organizationId);
+    const result = await this.appsService.update(app.id, appUpdateDto, app.organizationId);
     const response = decamelizeKeys(result);
 
     return response;

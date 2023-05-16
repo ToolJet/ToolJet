@@ -12,17 +12,22 @@ function EditAppName({ appId, appName, onNameChanged }) {
   }, [appName]);
 
   const saveAppName = async (name) => {
-    if (!name.trim()) {
+    const newName = name.trim();
+    if (!newName) {
       toast("App name can't be empty or whitespace", {
         icon: '🚨',
       });
       return;
     }
-    if (name === appName) return;
+    if (newName === appName) {
+      //will set back name without starting and ending spaces
+      setName(newName);
+      return;
+    }
     await appService
-      .saveApp(appId, { name })
+      .saveApp(appId, { name: newName })
       .then(() => {
-        onNameChanged(name);
+        onNameChanged(newName);
       })
       .catch(({ error }) => {
         toast(error || 'Something went wrong while editing app name', {

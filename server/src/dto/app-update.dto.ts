@@ -17,7 +17,10 @@ export class AppUpdateDto {
 
   @IsString()
   @IsOptional()
-  @Transform(({ value }) => sanitizeInput(value))
+  @Transform(({ value }) => {
+    const newValue = sanitizeInput(value);
+    return newValue.trim();
+  })
   @IsNotEmpty()
   @Matches('^[A-Za-z0-9 ]+$', '', { message: 'App name must only contain letters and numbers' })
   @MaxLength(40, { message: 'App name cannot be longer than 40 characters' })
