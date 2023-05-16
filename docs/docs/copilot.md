@@ -16,7 +16,7 @@ To access the Copilot, each user, including administrators, can sign up for the 
 You can join the waitlist here: **https://tooljet.com/copilot**
 
 :::info
-- Copilot can be used by users who have **permissions to edit** the app with a copilot setup.
+- Copilot can be used by users who have **permissions to edit** the app with the copilot setup.
 :::
 
 <div style={{textAlign: 'center'}}>
