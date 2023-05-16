@@ -138,3 +138,13 @@ Any property having `Fx` button next to its field can be **programmatically conf
 Use `{{listItem.key}}` to display data on the nested widgets. Example: For displaying the images we used `{{listItem.avatar}}` where **avatar** is one of the key in the objects from the query result.
 
 :::
+
+## Exposed Variables
+
+| Variables    | Description |
+| ----------- | ----------- |
+| data | This variable holds the data loaded onto the listview component. You can access the data of each row of the listview using `{{components.listview1.data["0"].text1.text}}` |
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.

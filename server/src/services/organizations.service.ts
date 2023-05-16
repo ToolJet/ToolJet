@@ -44,7 +44,7 @@ type FetchUserResponse = {
   accountSetupToken?: string;
 };
 
-type UserFilterOptions = { email?: string; firstName?: string; lastName?: string; status?: string };
+type UserFilterOptions = { searchText?: string; status?: string };
 
 interface UserCsvRow {
   first_name: string;
@@ -182,9 +182,7 @@ export class OrganizationsService {
       return [];
     }
     const options = {
-      email: searchInput,
-      firstName: searchInput,
-      lastName: searchInput,
+      searchText: searchInput,
     };
     const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'or', true)
       .distinctOn(['user.email'])
@@ -210,20 +208,25 @@ export class OrganizationsService {
     condition?: 'and' | 'or',
     getSuperAdmin?: boolean
   ) {
+    const defaultConditions = () => {
+      return new Brackets((qb) => {
+        if (options?.searchText)
+          qb.orWhere('lower(user.email) like :email', {
+            email: `%${options?.searchText.toLowerCase()}%`,
+          });
+        if (options?.searchText)
+          qb.orWhere('lower(user.firstName) like :firstName', {
+            firstName: `%${options?.searchText.toLowerCase()}%`,
+          });
+        if (options?.searchText)
+          qb.orWhere('lower(user.lastName) like :lastName', {
+            lastName: `%${options?.searchText.toLowerCase()}%`,
+          });
+      });
+    };
+
     const getOrConditions = () => {
       return new Brackets((qb) => {
-        if (options?.email)
-          qb.orWhere('lower(user.email) like :email', {
-            email: `%${options?.email.toLowerCase()}%`,
-          });
-        if (options?.firstName)
-          qb.orWhere('lower(user.firstName) like :firstName', {
-            firstName: `%${options?.firstName.toLowerCase()}%`,
-          });
-        if (options?.lastName)
-          qb.orWhere('lower(user.lastName) like :lastName', {
-            lastName: `%${options?.lastName.toLowerCase()}%`,
-          });
         if (options?.status)
           qb.orWhere('organization_user.status = :status', {
             status: `${options?.status}`,
@@ -232,18 +235,6 @@ export class OrganizationsService {
     };
     const getAndConditions = () => {
       return new Brackets((qb) => {
-        if (options?.email)
-          qb.andWhere('lower(user.email) like :email', {
-            email: `%${options?.email.toLowerCase()}%`,
-          });
-        if (options?.firstName)
-          qb.andWhere('lower(user.firstName) like :firstName', {
-            firstName: `%${options?.firstName.toLowerCase()}%`,
-          });
-        if (options?.lastName)
-          qb.andWhere('lower(user.lastName) like :lastName', {
-            lastName: `%${options?.lastName.toLowerCase()}%`,
-          });
         if (options?.status)
           qb.andWhere('organization_user.status = :status', {
             status: `${options?.status}`,
@@ -271,12 +262,13 @@ export class OrganizationsService {
       });
     }
 
-    query.andWhere(condition === 'and' ? getAndConditions() : getOrConditions());
+    query.andWhere(defaultConditions()).andWhere(condition === 'and' ? getAndConditions() : getOrConditions());
     return query;
   }
 
   async fetchUsers(user: User, page = 1, options: UserFilterOptions): Promise<FetchUserResponse[]> {
-    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, 'and')
+    const condition = options?.searchText ? 'and' : 'or';
+    const organizationUsers = await this.organizationUsersQuery(user.organizationId, options, condition)
       .orderBy('user.firstName', 'ASC')
       .take(10)
       .skip(10 * (page - 1))
@@ -302,7 +294,8 @@ export class OrganizationsService {
   }
 
   async usersCount(user: User, options: UserFilterOptions): Promise<number> {
-    return await this.organizationUsersQuery(user.organizationId, options, 'and').getCount();
+    const condition = options?.searchText ? 'and' : 'or';
+    return await this.organizationUsersQuery(user.organizationId, options, condition).getCount();
   }
 
   async fetchOrganizations(user: any): Promise<Organization[]> {

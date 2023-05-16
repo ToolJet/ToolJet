@@ -1,11 +1,11 @@
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors } from "Selectors/common"
 import { fake } from "Fixtures/fake";
+import { usersText } from "Texts/manageUsers"
 import { usersSelector } from "Selectors/manageUsers";
-import { usersText } from "Texts/manageUsers";
 import * as users from "Support/utils/manageUsers";
 import * as common from "Support/utils/common";
 import { path } from "Texts/common";
-import { dashboardSelector } from "../../../constants/selectors/dashboard";
+import { dashboardSelector } from "Selectors/dashboard";
 
 const data = {};
 data.firstName = fake.firstName;
@@ -21,106 +21,43 @@ describe("Manage Users for multiple workspace", () => {
     common.navigateToManageUsers();
     users.manageUsersElements();
 
-    cy.get(usersSelector.cancelButton).click();
-    cy.get(usersSelector.usersElements.nameTitile).should("be.visible");
-    cy.get(usersSelector.inviteUserButton).click();
+    cy.get(commonSelectors.cancelButton).click();
+    cy.get(usersSelector.usersPageTitle).should("be.visible");
+    cy.get(usersSelector.buttonAddUsers).click();
 
-    cy.get(usersSelector.createUserButton).click();
-    cy.get(usersSelector.fisrtNameError).verifyVisibleElement(
-      "have.text",
-      usersText.fieldRequired
-    );
-    cy.get(usersSelector.lastNameError).verifyVisibleElement(
-      "have.text",
-      usersText.fieldRequired
-    );
-    cy.get(usersSelector.emailError).verifyVisibleElement(
-      "have.text",
-      usersText.fieldRequired
-    );
+    cy.get(usersSelector.buttonInviteUsers).click();
+    cy.get(usersSelector.fullNameError).verifyVisibleElement("have.text",usersText.errorTextFieldRequired);
+    cy.get(usersSelector.emailError).verifyVisibleElement("have.text",usersText.errorTextFieldRequired);
 
-    cy.clearAndType(usersSelector.firstNameInput, data.firstName);
-    cy.get(usersSelector.lastNameInput).clear();
-    cy.get(usersSelector.emailInput).clear();
-    cy.get(usersSelector.createUserButton).click();
-    cy.get(usersSelector.lastNameError).verifyVisibleElement(
+    cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
+    cy.get(commonSelectors.inputFieldEmailAddress).clear();
+    cy.get(usersSelector.buttonInviteUsers).click();
+    cy.get(usersSelector.emailError).verifyVisibleElement("have.text",usersText.errorTextFieldRequired);
+
+    cy.get(commonSelectors.inputFieldFullName).clear();
+    cy.clearAndType(commonSelectors.inputFieldEmailAddress, data.email);
+    cy.get(usersSelector.buttonInviteUsers).click();
+    cy.get(usersSelector.fullNameError).verifyVisibleElement(
       "have.text",
-      usersText.fieldRequired
-    );
-    cy.get(usersSelector.emailError).verifyVisibleElement(
-      "have.text",
-      usersText.fieldRequired
+      usersText.errorTextFieldRequired
     );
 
-    cy.get(usersSelector.firstNameInput).clear();
-    cy.get(usersSelector.emailInput).clear();
-    cy.clearAndType(usersSelector.lastNameInput, data.lastName);
-    cy.get(usersSelector.createUserButton).click();
-    cy.get(usersSelector.fisrtNameError).verifyVisibleElement(
-      "have.text",
-      usersText.fieldRequired
-    );
-    cy.get(usersSelector.emailError).verifyVisibleElement(
-      "have.text",
-      usersText.fieldRequired
-    );
-
-    cy.get(usersSelector.firstNameInput).clear();
-    cy.get(usersSelector.lastNameInput).clear();
-    cy.clearAndType(usersSelector.emailInput, data.email);
-    cy.get(usersSelector.createUserButton).click();
-    cy.get(usersSelector.fisrtNameError).verifyVisibleElement(
-      "have.text",
-      usersText.fieldRequired
-    );
-    cy.get(usersSelector.lastNameError).verifyVisibleElement(
-      "have.text",
-      usersText.fieldRequired
-    );
-
-    cy.get(usersSelector.firstNameInput).clear();
-    cy.clearAndType(usersSelector.lastNameInput, data.lastName);
-    cy.clearAndType(usersSelector.emailInput, data.email);
-    cy.get(usersSelector.createUserButton).click();
-    cy.get(usersSelector.fisrtNameError).verifyVisibleElement(
-      "have.text",
-      usersText.fieldRequired
-    );
-
-    cy.get(usersSelector.lastNameInput).clear();
-    cy.clearAndType(usersSelector.firstNameInput, data.firstName);
-    cy.clearAndType(usersSelector.emailInput, data.email);
-    cy.get(usersSelector.createUserButton).click();
-    cy.get(usersSelector.lastNameError).verifyVisibleElement(
-      "have.text",
-      usersText.fieldRequired
-    );
-
-    cy.get(usersSelector.emailInput).clear();
-    cy.clearAndType(usersSelector.firstNameInput, data.firstName);
-    cy.clearAndType(usersSelector.lastNameInput, data.lastName);
-    cy.get(usersSelector.createUserButton).click();
-    cy.get(usersSelector.emailError).verifyVisibleElement(
-      "have.text",
-      usersText.fieldRequired
-    );
-
-    cy.clearAndType(usersSelector.firstNameInput, data.firstName);
-    cy.clearAndType(usersSelector.lastNameInput, data.lastName);
+    cy.clearAndType(commonSelectors.inputFieldFullName, data.firstName);
     cy.clearAndType(
-      usersSelector.emailInput,
+      commonSelectors.inputFieldEmailAddress,
       usersText.adminUserEmail
     );
-    cy.get(usersSelector.createUserButton).click();
+    cy.get(usersSelector.buttonInviteUsers).click();
+
     cy.verifyToastMessage(
-      commonSelectors.toastMessage,
+      commonSelectors.newToastMessage,
       usersText.exsitingEmail
     );
   });
 
   it("Should verify the confirm invite page and new user account", () => {
     common.navigateToManageUsers();
-    users.inviteUser(data.firstName, data.lastName, data.email);
+    users.inviteUser(data.firstName, data.email);
     users.confirmInviteElements();
 
     cy.clearAndType(commonSelectors.passwordInputField, "pass");
@@ -200,7 +137,7 @@ describe("Manage Users for multiple workspace", () => {
     cy.contains("td", data.email)
       .parent()
       .within(() => {
-        cy.get("td img").click();
+        cy.get(usersSelector.copyInvitationLink).click();
       });
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
@@ -219,7 +156,6 @@ describe("Manage Users for multiple workspace", () => {
     cy.get("@copyToClipboardPrompt").then((prompt) => {
       common.logout();
       cy.visit(prompt.args[0][1]);
-      cy.url().should("include", path.confirmInvite);
     });
 
     cy.get(usersSelector.acceptInvite).click();

@@ -139,6 +139,8 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.ejs',
+      favicon: './assets/images/logo.svg',
+      hash: environment === 'production',
     }),
     new CompressionPlugin({
       test: /\.js(\?.*)?$/i,

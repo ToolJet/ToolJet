@@ -111,6 +111,20 @@ export class DataQueriesController {
 
       if (dataSource.scope === DataSourceScopes.GLOBAL) {
         app = await this.appsService.findAppFromVersion(appVersionId);
+        const globalDataSourceAbility = await this.globalDataSourcesAbilityFactory.globalDataSourceActions(
+          user,
+          dataSource.id
+        );
+
+        if (
+          !(
+            globalDataSourceAbility.can('createGlobalDataSource', dataSource) ||
+            globalDataSourceAbility.can('readGlobalDataSource', dataSource) ||
+            globalDataSourceAbility.can('deleteGlobalDataSource', dataSource)
+          )
+        ) {
+          throw new ForbiddenException('You do not have permissions to perform this action');
+        }
       } else {
         app = await this.dataSourcesService.findApp(dataSource?.id || dataSourceId, manager);
       }
@@ -150,9 +164,12 @@ export class DataQueriesController {
     }
 
     if (
-      !globalDataSourceAbility.can('createGlobalDataSource', dataQuery.dataSource) &&
-      !globalDataSourceAbility.can('readGlobalDataSource', dataQuery.dataSource) &&
-      !globalDataSourceAbility.can('deleteGlobalDataSource', dataQuery.dataSource)
+      dataQuery.dataSource.scope === DataSourceScopes.GLOBAL &&
+      !(
+        globalDataSourceAbility.can('createGlobalDataSource', dataQuery.dataSource) ||
+        globalDataSourceAbility.can('readGlobalDataSource', dataQuery.dataSource) ||
+        globalDataSourceAbility.can('deleteGlobalDataSource', dataQuery.dataSource)
+      )
     ) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
@@ -176,9 +193,12 @@ export class DataQueriesController {
     }
 
     if (
-      !globalDataSourceAbility.can('createGlobalDataSource', dataQuery.dataSource) &&
-      !globalDataSourceAbility.can('readGlobalDataSource', dataQuery.dataSource) &&
-      !globalDataSourceAbility.can('deleteGlobalDataSource', dataQuery.dataSource)
+      dataQuery.dataSource.scope === DataSourceScopes.GLOBAL &&
+      !(
+        globalDataSourceAbility.can('createGlobalDataSource', dataQuery.dataSource) ||
+        globalDataSourceAbility.can('readGlobalDataSource', dataQuery.dataSource) ||
+        globalDataSourceAbility.can('deleteGlobalDataSource', dataQuery.dataSource)
+      )
     ) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }

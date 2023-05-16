@@ -96,22 +96,6 @@ class ManageInstanceSettingsComponent extends React.Component {
           <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
           <div className="page-wrapper">
-            <div className="container-xl">
-              <div className="page-header d-print-none">
-                <div className="row align-items-center">
-                  <div className="col">
-                    <div className="page-pretitle"></div>
-                    <h2 className="page-title" data-cy="users-page-title">
-                      {this.props.t(
-                        'header.organization.menus.manageInstanceSettings.manageInstanceSettings',
-                        'Manage Instance Settings'
-                      )}
-                    </h2>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <div className="page-body container-xl">
               <div className="card">
                 <div className="card-header">

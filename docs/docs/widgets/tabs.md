@@ -114,3 +114,17 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Exposed Variables
+
+| Variables    | Description |
+| ----------- | ----------- |
+| currentTab | This variable holds the id of the current tab selected on the tabs component. You can access the value dynamically using JS: `{{components.tabs1.currentTab}}`|
+
+## Component specific actions (CSA)
+
+Following actions of Tabs component can be controlled using the component specific actions(CSA):
+
+| Actions     | Description |
+| ----------- | ----------- |
+| setTab | Set the current tab of the tabs component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.tabs1.setTab(1)` |

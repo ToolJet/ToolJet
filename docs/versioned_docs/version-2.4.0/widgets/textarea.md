@@ -58,12 +58,21 @@ This is to control the visibility of the widget. If `{{false}}` the widget will 
 
 This property only accepts boolean values. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`.
 
-## Actions
 
-| Action      | Description | Properties |
-| ----------- | ----------- | ------------------ |
-| setText | Set the text. | `text` |
-| clear | Clear the text. |  |
+## Exposed Variables
+
+| Variables    | Description |
+| ----------- | ----------- |
+| value | This variable holds the value of the text area component. You can access the value dynamically using JS: `{{components.textarea1.value}}`|
+
+## Component specific actions (CSA)
+
+Following actions of color picker component can be controlled using the component specific actions(CSA):
+
+| Actions     | Description |
+| ----------- | ----------- |
+| setText | Set the text on the text area component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.textarea1.setText('this is a text')` |
+| clear | clear the value from the text area component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.text1.clear()` |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.

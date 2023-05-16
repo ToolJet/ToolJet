@@ -3,6 +3,8 @@ import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
 import { USER_TYPE } from './user_lifecycle';
+import { EncryptionService } from '@services/encryption.service';
+import { Credential } from 'src/entities/credential.entity';
 
 export function parseJson(jsonString: string, errorMessage?: string): object {
   try {
@@ -11,6 +13,7 @@ export function parseJson(jsonString: string, errorMessage?: string): object {
     throw new QueryError(errorMessage, err.message, {});
   }
 }
+const protobuf = require('protobufjs');
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -106,4 +109,72 @@ export async function dropForeignKey(tableName: string, columnName: string, quer
   const table = await queryRunner.getTable(tableName);
   const foreignKey = table.foreignKeys.find((fk) => fk.columnNames.indexOf(columnName) !== -1);
   await queryRunner.dropForeignKey(tableName, foreignKey);
+}
+
+function convertToArrayOfKeyValuePairs(options): Array<object> {
+  if (!options) return;
+  return Object.keys(options).map((key) => {
+    return {
+      key: key,
+      value: options[key]['value'],
+      encrypted: options[key]['encrypted'],
+      credential_id: options[key]['credential_id'],
+    };
+  });
+}
+
+export async function filterEncryptedFromOptions(
+  options: Array<object>,
+  encryptionService: EncryptionService,
+  entityManager: EntityManager
+) {
+  const kvOptions = convertToArrayOfKeyValuePairs(options);
+
+  if (!kvOptions) return;
+
+  const parsedOptions = {};
+
+  for (const option of kvOptions) {
+    if (option['encrypted']) {
+      const credential = await createCredential('', encryptionService, entityManager);
+
+      parsedOptions[option['key']] = {
+        credential_id: credential.id,
+        encrypted: option['encrypted'],
+      };
+    } else {
+      parsedOptions[option['key']] = {
+        value: option['value'],
+        encrypted: false,
+      };
+    }
+  }
+
+  return parsedOptions;
+}
+
+async function createCredential(
+  value: string,
+  encryptionService: EncryptionService,
+  entityManager: EntityManager
+): Promise<Credential> {
+  const credentialRepository = entityManager.getRepository(Credential);
+  const newCredential = credentialRepository.create({
+    valueCiphertext: await encryptionService.encryptColumnValue('credentials', 'value', value),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  const credential = await credentialRepository.save(newCredential);
+  return credential;
+}
+export async function getServiceAndRpcNames(protoDefinition) {
+  const root = protobuf.parse(protoDefinition).root;
+  const serviceNamesAndMethods = root.nestedArray
+    .filter((item) => item instanceof protobuf.Service)
+    .reduce((acc, service) => {
+      const rpcMethods = service.methodsArray.map((method) => method.name);
+      acc[service.name] = rpcMethods;
+      return acc;
+    }, {});
+  return serviceNamesAndMethods;
 }

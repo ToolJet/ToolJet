@@ -70,17 +70,10 @@ export const UpdateRows = React.memo(({ currentState, darkMode }) => {
   }
 
   const RenderFilterFields = ({ column, operator, value, id }) => {
-    const existingColumnOptions = Object.values(updateRowsOptions?.where_filters).map((f) => f.column);
     let displayColumns = columns.map(({ accessor }) => ({
       value: accessor,
       label: accessor,
     }));
-
-    if (existingColumnOptions.length > 0) {
-      displayColumns = displayColumns.filter(
-        ({ value }) => !existingColumnOptions.map((item) => item !== column && item).includes(value)
-      );
-    }
 
     const handleColumnChange = (selectedOption) => {
       updateFilterOptionsChanged({ ...updateRowsOptions?.where_filters[id], ...{ column: selectedOption } });

@@ -13,7 +13,7 @@ import EditColumnForm from '../Forms/ColumnForm';
 import TableFooter from './Footer';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 
-const Table = ({ openCreateRowDrawer }) => {
+const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
   const {
     organizationId,
     columns,
@@ -98,6 +98,21 @@ const Table = ({ openCreateRowDrawer }) => {
         : columns,
     [loading, columns]
   );
+
+  const checkDataType = (type) => {
+    switch (type) {
+      case 'integer':
+        return 'int';
+      case 'character varying':
+        return 'varchar';
+      case 'boolean':
+        return 'bool';
+      case 'double precision':
+        return 'float';
+      default:
+        return type;
+    }
+  };
 
   const {
     getTableProps,
@@ -206,9 +221,9 @@ const Table = ({ openCreateRowDrawer }) => {
       )}
       <div
         style={{
-          height: 'calc(100vh - 196px)', // 48px navbar + 96 for table bar +  52 px in footer
+          height: 'calc(100vh - 164px)', // 48px navbar + 96 for table bar +  52 px in footer
         }}
-        className={cx('table-responsive border-0 animation-fade tj-db-table ')}
+        className={cx('table-responsive border-0 tj-db-table animation-fade')}
       >
         <table
           {...getTableProps()}
@@ -216,7 +231,7 @@ const Table = ({ openCreateRowDrawer }) => {
         >
           <thead>
             {headerGroups.map((headerGroup, index) => (
-              <tr {...headerGroup.getHeaderGroupProps()} key={index}>
+              <tr className="tj-database-column-row" {...headerGroup.getHeaderGroupProps()} key={index}>
                 {headerGroup.headers.map((column, index) => (
                   <TablePopover
                     key={column.Header}
@@ -230,17 +245,23 @@ const Table = ({ openCreateRowDrawer }) => {
                     <th
                       width={index === 0 ? 66 : 230}
                       title={column?.Header || ''}
-                      className="table-header"
+                      className="table-header tj-database-column-header tj-text-xsm"
                       data-cy={`${String(column.Header).toLocaleLowerCase().replace(/\s+/g, '-')}-column-header`}
                       {...column.getHeaderProps()}
                     >
                       {column.render('Header')}
+                      <span className="tj-text-xsm tj-db-dataype text-lowercase">
+                        {column.Header == 'id' ? 'serial' : checkDataType(column?.dataType)}
+                      </span>
                     </th>
                   </TablePopover>
                 ))}
               </tr>
             ))}
           </thead>
+          <button onClick={() => openCreateColumnDrawer()} className="add-row-btn-database">
+            +
+          </button>
           <tbody
             className={cx({
               'bg-white': rows.length > 0 && !darkMode,
@@ -266,29 +287,33 @@ const Table = ({ openCreateRowDrawer }) => {
               rows.map((row, index) => {
                 prepareRow(row);
                 return (
-                  <tr {...row.getRowProps()} key={index}>
-                    {row.cells.map((cell, index) => {
-                      console.log('----qa-checking----', cell);
-                      const dataCy =
-                        cell.column.id === 'selection'
-                          ? `${cell.row.values?.id}-checkbox`
-                          : `id-${cell.row.values?.id}-column-${cell.column.id}`;
-                      return (
-                        <td
-                          key={`cell.value-${index}`}
-                          title={cell.value || ''}
-                          className="table-cell"
-                          data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
-                          {...cell.getCellProps()}
-                        >
-                          {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
-                        </td>
-                      );
-                    })}
-                  </tr>
+                  <>
+                    <tr {...row.getRowProps()} key={index}>
+                      {row.cells.map((cell, index) => {
+                        const dataCy =
+                          cell.column.id === 'selection'
+                            ? `${cell.row.values?.id}-checkbox`
+                            : `id-${cell.row.values?.id}-column-${cell.column.id}`;
+                        return (
+                          <td
+                            key={`cell.value-${index}`}
+                            title={cell.value || ''}
+                            className="table-cell"
+                            data-cy={`${dataCy.toLocaleLowerCase().replace(/\s+/g, '-')}-table-cell`}
+                            {...cell.getCellProps()}
+                          >
+                            {isBoolean(cell?.value) ? cell?.value?.toString() : cell.render('Cell')}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  </>
                 );
               })
             )}
+            <button onClick={() => openCreateRowDrawer()} className="add-col-btn-database">
+              +
+            </button>
           </tbody>
         </table>
 

@@ -150,9 +150,10 @@ class ManageAllUsersComponent extends React.Component {
   render() {
     const { isLoading, users, archivingUser, unarchivingUser, meta, showEditModal, updatingUser, isUpdatingUser } =
       this.state;
+
     return (
       <ErrorBoundary showFallback={true}>
-        <div className="wrapper org-users-page animation-fade">
+        <div className="org-wrapper org-users-page animation-fade instance-all-users">
           <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
           <OrganizationsModal
@@ -180,20 +181,14 @@ class ManageAllUsersComponent extends React.Component {
             updateUser={this.updateUser}
           />
 
-          <div className="page-wrapper">
-            <div className="container-xl">
-              <div className="page-header d-print-none">
-                <div className="row align-items-center">
-                  <div className="col">
-                    <div className="page-pretitle"></div>
-                    <h2 className="page-title" data-cy="users-page-title">
-                      {this.props.t('header.organization.menus.manageAllUsers.manageAllUsers', 'Manage All Users')}
-                    </h2>
-                  </div>
+          <div className="page-wrapper mt-1">
+            <div className="page-header workspace-page-header">
+              <div className="align-items-center d-flex">
+                <div className="tj-text-sm font-weight-500" data-cy="title-users-page">
+                  {meta?.total_count} users
                 </div>
               </div>
             </div>
-
             <div className="page-body">
               <UsersFilter
                 filterList={this.filterList}
