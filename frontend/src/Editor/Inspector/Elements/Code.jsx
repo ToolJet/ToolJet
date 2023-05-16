@@ -15,7 +15,7 @@ export const Code = ({
   component,
 }) => {
   const getDefinitionForNewProps = (param) => {
-    if (['allowSelection', 'showAddNewRowButton'].includes(param)) {
+    if (['showAddNewRowButton'].includes(param)) {
       return '{{true}}';
     } else {
       return '';
