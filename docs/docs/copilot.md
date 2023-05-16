@@ -16,7 +16,6 @@ To access the Copilot, each user, including administrators, can sign up for the 
 You can join the waitlist here: **https://tooljet.com/copilot**
 
 :::info
-- A **new API key** will be needed for each workspace, with *only one user (admin)* allowed per workspace.
 - Copilot can be used by users who have **permissions to edit** the app with a copilot setup.
 :::
 

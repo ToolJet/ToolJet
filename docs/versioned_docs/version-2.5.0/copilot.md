@@ -4,19 +4,18 @@ title: Copilot
 ---
 
 :::info BETA
-ToolJet Copilot is currently in public beta, making it accessible to users.
+Tooljet Copilot is currently available in public beta for all the users.
 :::
 
-**ToolJet Copilot** offers recommended code snippets for writing query transformations, based on the provided prompts.
+**ToolJet Copilot** helps you write your queries faster. It uses OpenAI to suggest queries based on your data. 
 
 ## Activating Copilot
 
-To activate Copilot for a ToolJet workspace, it is necessary to acquire an API key. Once the API key is obtained, Copilot can be enabled by the administrator via the workspace settings. Additionally, users with edit permissions for apps within the workspace can also utilize Copilot.
+To access the Copilot, each user, including administrators, can sign up for the waitlist program individually. After signing up, each user will receive a unique API key associated with their account. **Only administrators**, however, will have the privilege to enable Copilot within the workspace settings. Administrators can navigate to the Copilot section in the workspace settings and toggle on the "Enable Copilot" option using their respective API key.
 
 You can join the waitlist here: **https://tooljet.com/copilot**
 
 :::info
-- A **new API key** will be needed for each workspace, with *only one user (admin)* allowed per workspace.
 - Copilot can be used by users who have **permissions to edit** the app with a copilot setup.
 :::
 
@@ -30,7 +29,7 @@ You can join the waitlist here: **https://tooljet.com/copilot**
 
 Once activated, the Copilot feature can be accessed while editing any query within the transformations section in the query editor.
 
-In order for Copilot to function, a plain English prompt must be provided within comments. Copilot is capable of manipulating and accessing components, as well as generating code for component specific actions, as it has context of the current state of the application.
+For Copilot to operate, it requires a plain English prompt. Copilot possesses the ability to interact with and access components, along with generating code for specific actions related to those components. This capability is made possible by Copilot's awareness of the application's current state.
 
 ### Example: Generating a SQL statement 
 
