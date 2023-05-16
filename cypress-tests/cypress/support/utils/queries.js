@@ -29,5 +29,8 @@ export const renameQueryFromEditor = () => {
 };
 
 export const addInputOnQueryField = (field, data) => {
+  cy.get(`[data-cy="${field}-input-field"]`).clearAndTypeOnCodeMirror(
+    `{backSpace}`
+  );
   cy.get(`[data-cy="${field}-input-field"]`).clearAndTypeOnCodeMirror(data);
 };
