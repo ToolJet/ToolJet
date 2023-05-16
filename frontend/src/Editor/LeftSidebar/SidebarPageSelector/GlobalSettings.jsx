@@ -2,8 +2,18 @@ import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import MenuIcon from '@assets/images/icons/3dots-menu.svg';
 
-export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, showPageViwerPageNavitation }) => {
+export const GlobalSettings = ({
+  darkMode,
+  showHideViewerNavigationControls,
+  showPageViwerPageNavitation,
+  isVersionReleased,
+  setReleasedVersionPopupState,
+}) => {
   const onChange = () => {
+    if (isVersionReleased) {
+      setReleasedVersionPopupState();
+      return;
+    }
     showHideViewerNavigationControls();
   };
 

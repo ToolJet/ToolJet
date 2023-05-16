@@ -103,6 +103,8 @@ export function Table({
     hideColumnSelectorButton,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
+  const updatedDataReference = useRef([]);
+
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
     userSelect: 'none',
@@ -298,11 +300,13 @@ export function Table({
   }
 
   function handleChangesSaved() {
+    const clonedTableData = _.cloneDeep(tableData);
     Object.keys(changeSet).forEach((key) => {
-      tableData[key] = {
-        ..._.merge(tableData[key], changeSet[key]),
+      clonedTableData[key] = {
+        ..._.merge(clonedTableData[key], changeSet[key]),
       };
     });
+    updatedDataReference.current = _.cloneDeep(clonedTableData);
 
     setExposedVariables({
       changeSet: {},
@@ -427,6 +431,7 @@ export function Table({
 
   const data = useMemo(() => {
     if (!_.isEqual(properties.data, prevDataFromProps.current)) {
+      if (!_.isEmpty(updatedDataReference.current)) updatedDataReference.current = [];
       if (
         !_.isEmpty(exposedVariables.newRows) ||
         !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) ||
@@ -437,7 +442,7 @@ export function Table({
         });
       }
     }
-    return tableData;
+    return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
   }, [
     tableData.length,
     tableDetails.changeSet,
@@ -703,7 +708,10 @@ export function Table({
   };
   useEffect(() => {
     if (_.isEmpty(changeSet)) {
-      setExposedVariable('updatedData', tableData);
+      setExposedVariable(
+        'updatedData',
+        _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current
+      );
     }
   }, [JSON.stringify(changeSet)]);
 

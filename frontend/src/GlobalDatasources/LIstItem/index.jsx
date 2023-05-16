@@ -42,6 +42,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
           updateSelectedDatasource(dataSource?.name);
         }}
         className="col d-flex align-items-center"
+        data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-button`}
       >
         {icon}
         <span className="font-400 tj-text-xsm" style={{ paddingLeft: '6px' }}>
@@ -49,7 +50,11 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
         </span>
       </div>
       <div className="col-auto">
-        <button className="ds-delete-btn" onClick={() => onDelete(dataSource)}>
+        <button
+          className="ds-delete-btn"
+          onClick={() => onDelete(dataSource)}
+          data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-delete-button`}
+        >
           <div>
             <DeleteIcon width="14" height="14" />
           </div>

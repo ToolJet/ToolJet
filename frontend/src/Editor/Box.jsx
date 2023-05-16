@@ -145,7 +145,6 @@ export const Box = function Box({
   customResolvables,
   parentId,
   sideBarDebugger,
-  dataQueries,
   readOnly,
   childComponents,
 }) {
@@ -282,7 +281,11 @@ export const Box = function Box({
       }
     >
       <div
-        style={{ ...styles, backgroundColor, boxShadow: validatedGeneralStyles?.boxShadow }}
+        style={{
+          ...styles,
+          backgroundColor,
+          boxShadow: validatedGeneralStyles?.boxShadow,
+        }}
         role={preview ? 'BoxPreview' : 'Box'}
       >
         {inCanvas ? (
@@ -333,7 +336,6 @@ export const Box = function Box({
               validate={validate}
               parentId={parentId}
               customResolvables={customResolvables}
-              dataQueries={dataQueries}
               variablesExposedForPreview={variablesExposedForPreview}
               exposeToCodeHinter={exposeToCodeHinter}
               setProperty={(property, value) => {

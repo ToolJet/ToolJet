@@ -25,7 +25,7 @@ export const PageHandler = ({
   apps,
   pages,
   components,
-  dataQueries,
+  isVersionReleased,
   pinPagesPopover,
   haveUserPinned,
 }) => {
@@ -154,7 +154,7 @@ export const PageHandler = ({
             )}
           </div>
           <div className="col-auto">
-            {(isHovered || isSelected) && (
+            {(isHovered || isSelected) && !isVersionReleased && (
               <PagehandlerMenu
                 page={page}
                 darkMode={darkMode}
@@ -186,7 +186,6 @@ export const PageHandler = ({
               apps={apps}
               pages={pages}
               components={components}
-              dataQueries={dataQueries}
               pinPagesPopover={pinPagesPopover}
             />
           </div>

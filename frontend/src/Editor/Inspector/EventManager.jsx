@@ -13,12 +13,13 @@ import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 
+import { useDataQueries } from '@/_stores/dataQueriesStore';
+
 export const EventManager = ({
   component,
   componentMeta,
   currentState,
   components,
-  dataQueries,
   eventsChanged,
   apps,
   excludeEvents,
@@ -26,6 +27,7 @@ export const EventManager = ({
   popoverPlacement,
   pages,
 }) => {
+  const dataQueries = useDataQueries();
   const [events, setEvents] = useState(() => component.component.definition.events || []);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
@@ -528,6 +530,7 @@ export const EventManager = ({
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
+                      cyLabel={`key`}
                     />
                   </div>
                 </div>
@@ -540,6 +543,7 @@ export const EventManager = ({
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
                       enablePreview={true}
+                      cyLabel={`variable`}
                     />
                   </div>
                 </div>
@@ -572,6 +576,7 @@ export const EventManager = ({
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
+                      cyLabel={`key`}
                     />
                   </div>
                 </div>
@@ -584,6 +589,7 @@ export const EventManager = ({
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
                       enablePreview={true}
+                      cyLabel={`variable`}
                     />
                   </div>
                 </div>
@@ -600,6 +606,7 @@ export const EventManager = ({
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
+                      cyLabel={`key`}
                     />
                   </div>
                 </div>
@@ -695,6 +702,7 @@ export const EventManager = ({
                           enablePreview={true}
                           type={param?.type}
                           fieldMeta={{ options: param?.options }}
+                          cyLabel={param.displayName}
                         />
                       </div>
                     </div>

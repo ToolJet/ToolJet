@@ -164,6 +164,8 @@ export const commonSelectors = {
   inputFieldEmailAddress: '[data-cy="input-field-email"]',
   closeButton: '[data-cy="close-button"]',
   emptyAppCreateButton: "[data-cy='button-new-app-from-scratch']",
+  globalDataSourceIcon: '[data-cy="icon-global-datasources"]',
+  addNewDataSourceButton: '[data-cy="add-new-data-source-button"]',
 
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
