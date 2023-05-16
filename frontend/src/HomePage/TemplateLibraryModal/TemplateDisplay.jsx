@@ -34,7 +34,7 @@ export default function TemplateDisplay(props) {
                   >
                     {getSvgIcon(source.id, 14, 14)}
                   </div>
-                  <div className="d-flex flex-rows align-items-center ms-1">{source.name}</div>
+                  <div className="d-flex flex-rows align-items-center ms-1 template-source-name">{source.name}</div>
                 </div>
               </Badge>
             ))}

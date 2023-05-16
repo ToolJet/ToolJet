@@ -165,8 +165,14 @@ Use this property to modify the border radius of the filepicker widget. The fiel
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
 
-## Actions
+## Exposed Variables
 
-| Action  | Description | Properties |
-| ----------- | ----------- | ------------ |
-| `clearFiles()` | It will clear the selected files | None |
+| Variables      | Description |
+| ----------- | ----------- |
+| file | This variable holds the array of objects where each object represents the file loaded on the file picker component. Each object has the following keys: **name**, **type**, **content**, **dataURL**, **base64Data**, **parsedData**, **filePath**. The values can be accesed using `{{components.filepicker1.file[0].base64Data}}` |
+
+## Component specific actions (CSA)
+
+| Actions | Description |
+| -------- | ----------- |
+| clearFiles() | You can clear the selected files on the filepicker component via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.filepicker1.clearFiles()` |

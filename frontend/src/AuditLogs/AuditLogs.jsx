@@ -5,10 +5,11 @@ import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
 import { auditLogsService } from '../_services/auditLogsService';
 import { appService } from '../_services/app.service';
-import { Pagination, MultiSelect, FilterPreview, ToolTip } from '@/_components';
+import { Pagination, MultiSelectUser, FilterPreview, ToolTip } from '@/_components';
 import Layout from '@/_ui/Layout';
 import moment from 'moment';
 import { withRouter } from '@/_hoc/withRouter';
+import { BreadCrumbContext } from '@/App/App';
 class AuditLogs extends React.Component {
   constructor(props) {
     super(props);
@@ -364,293 +365,297 @@ class AuditLogs extends React.Component {
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
 
     return (
-      <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
-        <div className={`wrapper audit-log ${this.props.darkMode || 'bg-light-gray'}`}>
-          <div className="page-wrapper">
-            <div className="page-body">
-              <div className="container-xl">
-                <div className="card">
-                  <div className="card-header">
-                    <h3 className="card-title" data-cy="header-audit-logs">
-                      Audit Logs
-                    </h3>
-                  </div>
-                  <div className="card-body border-bottom py-3 overflow-auto" style={{ height: '75vh' }}>
-                    <div className="row">
-                      <div className="col-3" data-cy="select-users-dropdown">
-                        <MultiSelect
-                          className={{
-                            container: searchSelectClass,
-                            value: `${searchSelectClass}__value`,
-                            input: `${searchSelectClass}__input`,
-                            select: `${searchSelectClass}__select`,
-                            options: `${searchSelectClass}__options`,
-                            row: `${searchSelectClass}__row`,
-                            option: `${searchSelectClass}__option`,
-                            group: `${searchSelectClass}__group`,
-                            'group-header': `${searchSelectClass}__group-header`,
-                            'is-selected': 'is-selected',
-                            'is-highlighted': 'is-highlighted',
-                            'is-loading': 'is-loading',
-                            'is-multiple': 'is-multiple',
-                            'has-focus': 'has-focus',
-                            'not-found': `${searchSelectClass}__not-found`,
-                          }}
-                          onSelect={(value) => this.setSelectedSearchOptions({ users: value })}
-                          onSearch={this.searchUser}
-                          selectedValues={selectedSearchOptions.users}
-                          onReset={() => this.setSelectedSearchOptions({ users: [] })}
-                          placeholder="Select Users"
-                          searchLabel="Enter name or email"
-                        />
-                      </div>
-                      <div className="col-3" data-cy="select-apps-dropdown">
-                        <MultiSelect
-                          className={{
-                            container: searchSelectClass,
-                            value: `${searchSelectClass}__value`,
-                            input: `${searchSelectClass}__input`,
-                            select: `${searchSelectClass}__select`,
-                            options: `${searchSelectClass}__options`,
-                            row: `${searchSelectClass}__row`,
-                            option: `${searchSelectClass}__option`,
-                            group: `${searchSelectClass}__group`,
-                            'group-header': `${searchSelectClass}__group-header`,
-                            'is-selected': 'is-selected',
-                            'is-highlighted': 'is-highlighted',
-                            'is-loading': 'is-loading',
-                            'is-multiple': 'is-multiple',
-                            'has-focus': 'has-focus',
-                            'not-found': `${searchSelectClass}__not-found`,
-                          }}
-                          onSelect={(value) =>
-                            this.setSelectedSearchOptions({
-                              apps: value,
-                              resources: value.length ? [{ name: 'App', value: 'APP' }] : [],
-                              actions: [],
-                            })
-                          }
-                          selectedValues={selectedSearchOptions.apps}
-                          options={this.fetchAppsOptions()}
-                          onReset={() => this.setSelectedSearchOptions({ apps: [], resources: [], actions: [] })}
-                          placeholder="Select Apps"
-                          disabled={isLoadingApps}
-                        />
-                      </div>
-                      <div className="col" data-cy="select-resources-dropdown">
-                        <MultiSelect
-                          className={{
-                            container: searchSelectClass,
-                            value: `${searchSelectClass}__value`,
-                            input: `${searchSelectClass}__input`,
-                            select: `${searchSelectClass}__select`,
-                            options: `${searchSelectClass}__options`,
-                            row: `${searchSelectClass}__row`,
-                            option: `${searchSelectClass}__option`,
-                            group: `${searchSelectClass}__group`,
-                            'group-header': `${searchSelectClass}__group-header`,
-                            'is-selected': 'is-selected',
-                            'is-highlighted': 'is-highlighted',
-                            'is-loading': 'is-loading',
-                            'is-multiple': 'is-multiple',
-                            'has-focus': 'has-focus',
-                            'not-found': `${searchSelectClass}__not-found`,
-                          }}
-                          onSelect={(value) =>
-                            this.setSelectedSearchOptions({
-                              resources: value,
-                              actions: [],
-                            })
-                          }
-                          selectedValues={selectedSearchOptions.resources}
-                          options={this.resourceTypeOptions()}
-                          onReset={() => this.setSelectedSearchOptions({ actions: [], resources: [] })}
-                          placeholder="Select Resources"
-                          disabled={this.isLoading()}
-                        />
-                      </div>
-                      <div className="col" data-cy="select-actions-dropdown">
-                        <MultiSelect
-                          className={{
-                            container: searchSelectClass,
-                            value: `${searchSelectClass}__value`,
-                            input: `${searchSelectClass}__input`,
-                            select: `${searchSelectClass}__select`,
-                            options: `${searchSelectClass}__options`,
-                            row: `${searchSelectClass}__row`,
-                            option: `${searchSelectClass}__option`,
-                            group: `${searchSelectClass}__group`,
-                            'group-header': `${searchSelectClass}__group-header`,
-                            'is-selected': 'is-selected',
-                            'is-highlighted': 'is-highlighted',
-                            'is-loading': 'is-loading',
-                            'is-multiple': 'is-multiple',
-                            'has-focus': 'has-focus',
-                            'not-found': `${searchSelectClass}__not-found`,
-                          }}
-                          onSelect={(value) => this.setSelectedSearchOptions({ actions: value })}
-                          selectedValues={selectedSearchOptions.actions}
-                          options={this.fetchActionTypesOptionsForResource(selectedSearchOptions.resources)}
-                          onReset={() => this.setSelectedSearchOptions({ actions: [], resources: [] })}
-                          placeholder="Select Actions"
-                          disabled={this.isLoading()}
-                        />
-                      </div>
-
-                      <div className="col-auto" data-cy="search-button">
-                        <div
-                          className={`btn btn-primary w-100 ${isLoadingAuditLogs ? 'btn-loading' : ''}`}
-                          onClick={() => this.performSearch()}
-                        >
-                          Search
-                        </div>
-                      </div>
-                    </div>
-                    <br />
-                    <div className="row">
-                      <div className="col-auto" data-cy="from-date-inputfield">
-                        <label data-cy="from-date-label">
-                          From:
-                          <Datetime
-                            onChange={(value) => {
-                              this.setSelectedSearchOptions({
-                                timeFrom: value && [
-                                  {
-                                    value: value.toISOString(),
-                                    name: this.humanizeDate(value),
-                                    obj: value,
-                                  },
-                                ],
-                              });
+      <BreadCrumbContext.Provider value={''}>
+        <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
+          <div className={`wrapper audit-log ${this.props.darkMode || 'bg-light-gray'}`}>
+            <div className="page-wrapper">
+              <div className="page-body">
+                <div className="container-xl">
+                  <div className="card">
+                    <div className="card-body border-bottom py-3 overflow-auto" style={{ height: '75vh' }}>
+                      <div className="row align-items-center">
+                        <div className="col" data-cy="select-users-dropdown">
+                          <MultiSelectUser
+                            className={{
+                              container: searchSelectClass,
+                              value: `${searchSelectClass}__value`,
+                              input: `${searchSelectClass}__input`,
+                              select: `${searchSelectClass}__select`,
+                              options: `${searchSelectClass}__options`,
+                              row: `${searchSelectClass}__row`,
+                              option: `${searchSelectClass}__option`,
+                              group: `${searchSelectClass}__group`,
+                              'group-header': `${searchSelectClass}__group-header`,
+                              'is-selected': 'is-selected',
+                              'is-highlighted': 'is-highlighted',
+                              'is-loading': 'is-loading',
+                              'is-multiple': 'is-multiple',
+                              'has-focus': 'has-focus',
+                              'not-found': `${searchSelectClass}__not-found`,
                             }}
-                            timeFormat={true}
-                            closeOnSelect={true}
-                            value={selectedSearchOptions?.timeFrom?.[0]?.obj}
-                            renderInput={(props) => {
-                              return (
-                                <input
-                                  {...props}
-                                  value={selectedSearchOptions?.timeFrom?.[0]?.obj ? props.value : ''}
-                                />
-                              );
-                            }}
+                            onSelect={(value) => this.setSelectedSearchOptions({ users: value })}
+                            onSearch={this.searchUser}
+                            selectedValues={selectedSearchOptions.users}
+                            onReset={() => this.setSelectedSearchOptions({ users: [] })}
+                            placeholder="Select Users"
+                            searchLabel="Enter name or email"
+                            allowCustomRender={false}
                           />
-                        </label>
-                      </div>
-
-                      <div className="col-auto" data-cy="to-date-inputfield">
-                        <label data-cy="to-date-label">
-                          To:
-                          <Datetime
-                            onChange={(value) => {
+                        </div>
+                        <div className="col" data-cy="select-apps-dropdown">
+                          <MultiSelectUser
+                            className={{
+                              container: searchSelectClass,
+                              value: `${searchSelectClass}__value`,
+                              input: `${searchSelectClass}__input`,
+                              select: `${searchSelectClass}__select`,
+                              options: `${searchSelectClass}__options`,
+                              row: `${searchSelectClass}__row`,
+                              option: `${searchSelectClass}__option`,
+                              group: `${searchSelectClass}__group`,
+                              'group-header': `${searchSelectClass}__group-header`,
+                              'is-selected': 'is-selected',
+                              'is-highlighted': 'is-highlighted',
+                              'is-loading': 'is-loading',
+                              'is-multiple': 'is-multiple',
+                              'has-focus': 'has-focus',
+                              'not-found': `${searchSelectClass}__not-found`,
+                            }}
+                            onSelect={(value) =>
                               this.setSelectedSearchOptions({
-                                timeTo: value && [
-                                  {
-                                    value: value.toISOString(),
-                                    name: this.humanizeDate(value),
-                                    obj: value,
-                                  },
-                                ],
-                              });
-                            }}
-                            timeFormat={true}
-                            closeOnSelect={true}
-                            value={selectedSearchOptions?.timeTo?.[0]?.obj}
-                            renderInput={(props) => {
-                              return (
-                                <input {...props} value={selectedSearchOptions?.timeTo?.[0]?.obj ? props.value : ''} />
-                              );
-                            }}
+                                apps: value,
+                                resources: value.length ? [{ name: 'App', value: 'APP' }] : [],
+                                actions: [],
+                              })
+                            }
+                            selectedValues={selectedSearchOptions.apps}
+                            options={this.fetchAppsOptions()}
+                            onReset={() => this.setSelectedSearchOptions({ apps: [], resources: [], actions: [] })}
+                            placeholder="Select Apps"
+                            disabled={isLoadingApps}
+                            allowCustomRender={false}
                           />
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="row mt-2" data-cy="filter-by-section">
-                      <div className="filter-by-section">
-                        <div className="filter-by-text" data-cy="filter-by-label">
-                          Filter By:
                         </div>
-                        <div className="selected-section">
-                          {['users', 'apps', 'resources', 'actions', 'timeFrom', 'timeTo'].map((type) =>
-                            this.generateFilterBy(type)
-                          )}
+                        <div className="col" data-cy="select-resources-dropdown">
+                          <MultiSelectUser
+                            className={{
+                              container: searchSelectClass,
+                              value: `${searchSelectClass}__value`,
+                              input: `${searchSelectClass}__input`,
+                              select: `${searchSelectClass}__select`,
+                              options: `${searchSelectClass}__options`,
+                              row: `${searchSelectClass}__row`,
+                              option: `${searchSelectClass}__option`,
+                              group: `${searchSelectClass}__group`,
+                              'group-header': `${searchSelectClass}__group-header`,
+                              'is-selected': 'is-selected',
+                              'is-highlighted': 'is-highlighted',
+                              'is-loading': 'is-loading',
+                              'is-multiple': 'is-multiple',
+                              'has-focus': 'has-focus',
+                              'not-found': `${searchSelectClass}__not-found`,
+                            }}
+                            onSelect={(value) =>
+                              this.setSelectedSearchOptions({
+                                resources: value,
+                                actions: [],
+                              })
+                            }
+                            selectedValues={selectedSearchOptions.resources}
+                            options={this.resourceTypeOptions()}
+                            onReset={() => this.setSelectedSearchOptions({ actions: [], resources: [] })}
+                            placeholder="Select Resources"
+                            disabled={this.isLoading()}
+                            allowCustomRender={false}
+                          />
+                        </div>
+                        <div className="col" data-cy="select-actions-dropdown">
+                          <MultiSelectUser
+                            className={{
+                              container: searchSelectClass,
+                              value: `${searchSelectClass}__value`,
+                              input: `${searchSelectClass}__input`,
+                              select: `${searchSelectClass}__select`,
+                              options: `${searchSelectClass}__options`,
+                              row: `${searchSelectClass}__row`,
+                              option: `${searchSelectClass}__option`,
+                              group: `${searchSelectClass}__group`,
+                              'group-header': `${searchSelectClass}__group-header`,
+                              'is-selected': 'is-selected',
+                              'is-highlighted': 'is-highlighted',
+                              'is-loading': 'is-loading',
+                              'is-multiple': 'is-multiple',
+                              'has-focus': 'has-focus',
+                              'not-found': `${searchSelectClass}__not-found`,
+                            }}
+                            onSelect={(value) => this.setSelectedSearchOptions({ actions: value })}
+                            selectedValues={selectedSearchOptions.actions}
+                            options={this.fetchActionTypesOptionsForResource(selectedSearchOptions.resources)}
+                            onReset={() => this.setSelectedSearchOptions({ actions: [], resources: [] })}
+                            placeholder="Select Actions"
+                            disabled={this.isLoading()}
+                            allowCustomRender={false}
+                          />
+                        </div>
+
+                        <div className="col-auto" data-cy="search-button">
+                          <div
+                            className={`btn btn-primary w-100 ${isLoadingAuditLogs ? 'btn-loading' : ''}`}
+                            onClick={() => this.performSearch()}
+                          >
+                            Search
+                          </div>
                         </div>
                       </div>
-                    </div>
+                      <br />
+                      <div className="row">
+                        <div className="col-auto" data-cy="from-date-inputfield">
+                          <label data-cy="from-date-label">
+                            From:
+                            <Datetime
+                              onChange={(value) => {
+                                this.setSelectedSearchOptions({
+                                  timeFrom: value && [
+                                    {
+                                      value: value.toISOString(),
+                                      name: this.humanizeDate(value),
+                                      obj: value,
+                                    },
+                                  ],
+                                });
+                              }}
+                              timeFormat={true}
+                              closeOnSelect={true}
+                              value={selectedSearchOptions?.timeFrom?.[0]?.obj}
+                              renderInput={(props) => {
+                                return (
+                                  <input
+                                    {...props}
+                                    value={selectedSearchOptions?.timeFrom?.[0]?.obj ? props.value : ''}
+                                  />
+                                );
+                              }}
+                            />
+                          </label>
+                        </div>
 
-                    <div className="row mt-3">
-                      <div className="col-12">
-                        <div
-                          className="card-table table-responsive table-bordered overflow-auto"
-                          style={{ height: '55vh' }}
-                        >
-                          <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
-                            {this.isLoading() ? (
-                              <tbody className="w-100" style={{ minHeight: '300px' }}>
-                                {Array.from(Array(2)).map((index) => (
-                                  <tr key={index}>
-                                    <td className="col-auto">
-                                      <div className="row">
-                                        <div className="skeleton-line w-10 col mx-3"></div>
-                                      </div>
-                                    </td>
-                                    <td className="col-auto">
-                                      <div className="skeleton-line w-10"></div>
-                                    </td>
-                                    <td className="col-auto">
-                                      <div className="skeleton-line w-10"></div>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            ) : auditLogs?.length ? (
-                              <tbody>
-                                {auditLogs.map((auditLog, index) => (
-                                  <tr key={auditLog.id} data-cy={`audit-table-row-${index}`}>
-                                    <td>
-                                      {this.humanizeLog(auditLog)}
-                                      <ReactJson
-                                        src={auditLog}
-                                        theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
-                                        name={'log'}
-                                        style={{ fontSize: '0.7rem' }}
-                                        enableClipboard={false}
-                                        displayDataTypes={false}
-                                        collapsed={true}
-                                        displayObjectSize={false}
-                                        quotesOnKeys={false}
-                                        sortKeys={true}
-                                      />
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            ) : (
-                              <div className="text-center">No results found</div>
+                        <div className="col-auto" data-cy="to-date-inputfield">
+                          <label data-cy="to-date-label">
+                            To:
+                            <Datetime
+                              onChange={(value) => {
+                                this.setSelectedSearchOptions({
+                                  timeTo: value && [
+                                    {
+                                      value: value.toISOString(),
+                                      name: this.humanizeDate(value),
+                                      obj: value,
+                                    },
+                                  ],
+                                });
+                              }}
+                              timeFormat={true}
+                              closeOnSelect={true}
+                              value={selectedSearchOptions?.timeTo?.[0]?.obj}
+                              renderInput={(props) => {
+                                return (
+                                  <input
+                                    {...props}
+                                    value={selectedSearchOptions?.timeTo?.[0]?.obj ? props.value : ''}
+                                  />
+                                );
+                              }}
+                            />
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="row mt-2" data-cy="filter-by-section">
+                        <div className="filter-by-section">
+                          <div className="filter-by-text" data-cy="filter-by-label">
+                            Filter By:
+                          </div>
+                          <div className="selected-section">
+                            {['users', 'apps', 'resources', 'actions', 'timeFrom', 'timeTo'].map((type) =>
+                              this.generateFilterBy(type)
                             )}
-                          </table>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {!isLoadingAuditLogs && totalPages > 1 && (
-                      <Pagination
-                        currentPage={currentPage}
-                        count={totalCount}
-                        totalPages={totalPages}
-                        itemsPerPage={perPage}
-                        queryParams={selectedSearchOptions}
-                        pageChanged={(page, perPage, queryParams) => this.searchAuditLog(page, perPage, queryParams)}
-                      />
-                    )}
+                      <div className="row mt-3">
+                        <div className="col-12">
+                          <div
+                            className="card-table table-responsive table-bordered overflow-auto"
+                            style={{ height: '55vh' }}
+                          >
+                            <table data-testid="usersTable" className="table table-vcenter" disabled={true}>
+                              {this.isLoading() ? (
+                                <tbody className="w-100" style={{ minHeight: '300px' }}>
+                                  {Array.from(Array(2)).map((index) => (
+                                    <tr key={index}>
+                                      <td className="col-auto">
+                                        <div className="row">
+                                          <div className="skeleton-line w-10 col mx-3"></div>
+                                        </div>
+                                      </td>
+                                      <td className="col-auto">
+                                        <div className="skeleton-line w-10"></div>
+                                      </td>
+                                      <td className="col-auto">
+                                        <div className="skeleton-line w-10"></div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              ) : auditLogs?.length ? (
+                                <tbody>
+                                  {auditLogs.map((auditLog, index) => (
+                                    <tr key={auditLog.id} data-cy={`audit-table-row-${index}`}>
+                                      <td>
+                                        {this.humanizeLog(auditLog)}
+                                        <ReactJson
+                                          src={auditLog}
+                                          theme={this.props.darkMode ? 'shapeshifter' : 'rjv-default'}
+                                          name={'log'}
+                                          style={{ fontSize: '0.7rem' }}
+                                          enableClipboard={false}
+                                          displayDataTypes={false}
+                                          collapsed={true}
+                                          displayObjectSize={false}
+                                          quotesOnKeys={false}
+                                          sortKeys={true}
+                                        />
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              ) : (
+                                <div className="text-center">No results found</div>
+                              )}
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+
+                      {!isLoadingAuditLogs && totalPages > 1 && (
+                        <Pagination
+                          currentPage={currentPage}
+                          count={totalCount}
+                          totalPages={totalPages}
+                          itemsPerPage={perPage}
+                          queryParams={selectedSearchOptions}
+                          pageChanged={(page, perPage, queryParams) => this.searchAuditLog(page, perPage, queryParams)}
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </Layout>
+        </Layout>
+      </BreadCrumbContext.Provider>
     );
   }
 }

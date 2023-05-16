@@ -186,6 +186,7 @@ export class AppImportExportService {
     const appEnvironments = appParams?.appEnvironments || [];
     const dataSourceOptions = appParams?.dataSourceOptions || [];
     const newDataQueries = [];
+    let defaultAppEnvironmentId: string;
 
     if (!appVersions?.length) {
       // Old version without app version
@@ -307,6 +308,7 @@ export class AppImportExportService {
         relations: ['appEnvironments'],
       });
       envIdArray = [...organization.appEnvironments.map((env) => env.id)];
+      if (appEnvironments.length > 0) defaultAppEnvironmentId = appEnvironments.find((env: any) => env.isDefault)?.id;
 
       appDefaultEnvironmentMapping[appVersion.id] = envIdArray;
 
@@ -407,18 +409,31 @@ export class AppImportExportService {
           );
         }
 
-        for (const dataSourceOption of dataSourceOptions.filter((dso) => dso.dataSourceId === source.id)) {
+        const localDatasourceOptions = dataSourceOptions.filter((dso) => dso.dataSourceId === source.id);
+        //create the options for current datasource if the datasource doesn't have any environment ds-options
+        if (appEnvironments?.length !== appDefaultEnvironmentMapping[appVersion.id].length) {
+          const availableEnvironments = localDatasourceOptions.map(
+            (option: any) => appEnvironmentMapping[option.environmentId]
+          );
+          const otherEnvironmentsIds = appDefaultEnvironmentMapping[appVersion.id].filter(
+            (defaultEnv: any) => !availableEnvironments.includes(defaultEnv)
+          );
+          const defaultEnvDsOption = localDatasourceOptions.find(
+            (dso: any) => dso.environmentId === defaultAppEnvironmentId
+          );
+          for (const otherEnvironmentId of otherEnvironmentsIds) {
+            await this.createDatasourceOption(manager, defaultEnvDsOption.options, otherEnvironmentId, newSource.id);
+          }
+        }
+
+        for (const dataSourceOption of localDatasourceOptions) {
           if (dataSourceOption?.environmentId in appEnvironmentMapping) {
-            const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
-            const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
-            const dsOption = manager.create(DataSourceOptions, {
-              options: newOptions,
-              environmentId: appEnvironmentMapping[dataSourceOption.environmentId],
-              dataSourceId: newSource.id,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            });
-            await manager.save(dsOption);
+            await this.createDatasourceOption(
+              manager,
+              dataSourceOption.options,
+              appEnvironmentMapping[dataSourceOption.environmentId],
+              newSource.id
+            );
           }
         }
 
@@ -462,18 +477,31 @@ export class AppImportExportService {
         });
         await manager.save(newSource);
 
-        for (const dataSourceOption of dataSourceOptions.filter((dso) => dso.dataSourceId === source.id)) {
+        const globalDatasourceOptions = dataSourceOptions.filter((dso) => dso.dataSourceId === source.id);
+        //create the options for current datasource if the datasource doesn't have any environment ds-options
+        if (appEnvironments?.length !== appDefaultEnvironmentMapping[appVersion.id].length) {
+          const availableEnvironments = globalDatasourceOptions.map(
+            (option: any) => appEnvironmentMapping[option.environmentId]
+          );
+          const otherEnvironmentsIds = appDefaultEnvironmentMapping[appVersion.id].filter(
+            (defaultEnv: any) => !availableEnvironments.includes(defaultEnv)
+          );
+          const defaultEnvDsOption = globalDatasourceOptions.find(
+            (dso: any) => dso.environmentId === defaultAppEnvironmentId
+          );
+          for (const otherEnvironmentId of otherEnvironmentsIds) {
+            await this.createDatasourceOption(manager, defaultEnvDsOption.options, otherEnvironmentId, newSource.id);
+          }
+        }
+
+        for (const dataSourceOption of globalDatasourceOptions) {
           if (dataSourceOption?.environmentId in appEnvironmentMapping) {
-            const convertedOptions = this.convertToArrayOfKeyValuePairs(dataSourceOption.options);
-            const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
-            const dsOption = manager.create(DataSourceOptions, {
-              options: newOptions,
-              environmentId: appEnvironmentMapping[dataSourceOption.environmentId],
-              dataSourceId: newSource.id,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            });
-            await manager.save(dsOption);
+            await this.createDatasourceOption(
+              manager,
+              dataSourceOption.options,
+              appEnvironmentMapping[dataSourceOption.environmentId],
+              newSource.id
+            );
           }
         }
         for (const query of dataQueries.filter(
@@ -557,6 +585,19 @@ export class AppImportExportService {
 
       return await manager.save(AppGroupPermission, appGroupPermission);
     }
+  }
+
+  async createDatasourceOption(manager: EntityManager, options: any, environmentId: string, dataSourceId: string) {
+    const convertedOptions = this.convertToArrayOfKeyValuePairs(options);
+    const newOptions = await this.dataSourcesService.parseOptionsForCreate(convertedOptions, true, manager);
+    const dsOption = manager.create(DataSourceOptions, {
+      options: newOptions,
+      environmentId,
+      dataSourceId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    await manager.save(dsOption);
   }
 
   convertToArrayOfKeyValuePairs(options): Array<object> {

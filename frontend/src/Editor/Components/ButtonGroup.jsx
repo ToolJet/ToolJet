@@ -51,7 +51,8 @@ export const ButtonGroup = function Button({
     } else {
       setData(labels);
     }
-  }, [JSON.stringify(labels), JSON.stringify(values)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ labels, values })]);
 
   useEffect(() => {
     setDefaultActive(defaultSelected);

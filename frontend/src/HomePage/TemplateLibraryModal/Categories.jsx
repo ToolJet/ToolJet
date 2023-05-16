@@ -1,7 +1,7 @@
 import React from 'react';
-import { ListGroup } from 'react-bootstrap';
 import posthog from 'posthog-js';
 import { authenticationService } from '@/_services';
+import FolderList from '@/_ui/FolderList/FolderList';
 
 const categoryTitles = {
   all: 'All categories',
@@ -14,12 +14,10 @@ const categoryTitles = {
 export default function Categories(props) {
   const { categories, selectedCategory, selectCategory } = props;
   return (
-    <ListGroup className="mt-2 template-categories">
+    <div className="mt-2 template-categories">
       {categories.map((category) => (
-        <ListGroup.Item
-          action
-          active={category.id === selectedCategory.id}
-          key={category.id}
+        <FolderList
+          selectedItem={category.id === selectedCategory.id}
           onClick={() => {
             posthog.capture('click_template_category', {
               workspace_id:
@@ -29,12 +27,14 @@ export default function Categories(props) {
             });
             selectCategory(category);
           }}
-          className="d-flex justify-content-between align-items-start"
+          key={category.id}
         >
-          <span>{categoryTitles[category.id]}</span>
-          <span>{category.count}</span>
-        </ListGroup.Item>
+          <div className="d-flex template-list-items-wrap">
+            <p className="tj-text tj-text-sm">{categoryTitles[category.id]}</p>
+          </div>
+          <p className="tj-text tj-text-sm">{category.count}</p>
+        </FolderList>
       ))}
-    </ListGroup>
+    </div>
   );
 }
