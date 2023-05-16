@@ -530,6 +530,7 @@ export const EventManager = ({
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
+                      cyLabel={`key`}
                     />
                   </div>
                 </div>
@@ -542,6 +543,7 @@ export const EventManager = ({
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
                       enablePreview={true}
+                      cyLabel={`variable`}
                     />
                   </div>
                 </div>
@@ -574,6 +576,7 @@ export const EventManager = ({
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
+                      cyLabel={`key`}
                     />
                   </div>
                 </div>
@@ -586,6 +589,7 @@ export const EventManager = ({
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
                       enablePreview={true}
+                      cyLabel={`variable`}
                     />
                   </div>
                 </div>
@@ -602,6 +606,7 @@ export const EventManager = ({
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
+                      cyLabel={`key`}
                     />
                   </div>
                 </div>
