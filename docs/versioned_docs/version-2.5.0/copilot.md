@@ -7,7 +7,7 @@ title: Copilot
 ToolJet Copilot is currently in public beta, making it accessible to users.
 :::
 
-**ToolJet Copilot** helps you write your queries faster. It uses OpenAI to suggest queries based on your data. 
+**ToolJet Copilot** offers recommended code snippets for writing query transformations, based on the provided prompts.
 
 ## Activating Copilot
 
