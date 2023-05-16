@@ -277,6 +277,7 @@ export const Folders = function Folders({
                 deleteFolder={() => deleteFolder(folder)}
                 editFolder={() => updateFolder(folder)}
                 darkMode={darkMode}
+                dataCy={folder.name}
               />
             )}
           </a>

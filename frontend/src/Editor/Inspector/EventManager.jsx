@@ -13,12 +13,13 @@ import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 
+import { useDataQueries } from '@/_stores/dataQueriesStore';
+
 export const EventManager = ({
   component,
   componentMeta,
   currentState,
   components,
-  dataQueries,
   eventsChanged,
   apps,
   excludeEvents,
@@ -26,6 +27,7 @@ export const EventManager = ({
   popoverPlacement,
   pages,
 }) => {
+  const dataQueries = useDataQueries();
   const [events, setEvents] = useState(() => component.component.definition.events || []);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
@@ -33,6 +35,16 @@ export const EventManager = ({
   let actionOptions = ActionTypes.map((action) => {
     return { name: action.name, value: action.id };
   });
+
+  let checkIfClicksAreInsideOf = document.querySelector('#cm-complete-0');
+  // Listen for click events on body
+  if (checkIfClicksAreInsideOf) {
+    document.body.addEventListener('click', function (event) {
+      if (checkIfClicksAreInsideOf.contains(event.target)) {
+        event.stopPropagation();
+      }
+    });
+  }
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const styles = {
@@ -685,6 +697,7 @@ export const EventManager = ({
                           enablePreview={true}
                           type={param?.type}
                           fieldMeta={{ options: param?.options }}
+                          cyLabel={param.displayName}
                         />
                       </div>
                     </div>
@@ -741,7 +754,7 @@ export const EventManager = ({
                 const actionMeta = ActionTypes.find((action) => action.id === event.actionId);
                 const rowClassName = `card-body p-0 ${focusedEventIndex === index ? ' bg-azure-lt' : ''}`;
                 return (
-                  <Draggable key={`${event.eventId}-${index}`} draggableId={`${event.eventId}-${index}`} index={index}>
+                  <Draggable key={index} draggableId={`${event.eventId}-${index}`} index={index}>
                     {renderDraggable((provided, snapshot) => {
                       if (snapshot.isDragging && focusedEventIndex !== null) {
                         setFocusedEventIndex(null);
