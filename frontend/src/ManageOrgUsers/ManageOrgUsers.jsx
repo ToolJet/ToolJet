@@ -138,7 +138,7 @@ class ManageOrgUsersComponent extends React.Component {
           toast.success(res.message, {
             position: 'top-center',
           });
-          posthog.capture('create_bulk_users', {
+          posthog.capture('click_upload_users', {
             workspace_id:
               authenticationService?.currentUserValue?.organization_id ||
               authenticationService?.currentSessionValue?.current_organization_id,
@@ -198,7 +198,7 @@ class ManageOrgUsersComponent extends React.Component {
         )
         .then(() => {
           toast.success('User has been created');
-          posthog.capture('create_new_user', {
+          posthog.capture('click_invite_users', {
             workspace_id:
               authenticationService?.currentUserValue?.organization_id ||
               authenticationService?.currentSessionValue?.current_organization_id,
