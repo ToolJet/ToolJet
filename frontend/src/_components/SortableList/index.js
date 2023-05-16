@@ -37,6 +37,8 @@ const SortableComponent = ({ data, Element, ...restProps }) => {
             <Element page={page} {...restProps} />
           </SortableList.Item>
         )}
+        isVersionReleased={restProps.isVersionReleased}
+        setReleasedVersionPopupState={restProps.setReleasedVersionPopupState}
       />
     </div>
   );

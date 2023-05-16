@@ -1,4 +1,6 @@
 @import "./colors.scss";
+@import "./designtheme.scss";
+
 $border-radius: 4px;
 
 .query-manager {
@@ -1248,6 +1250,7 @@ $border-radius: 4px;
       border: 1px solid $color-light-slate-07  !important;
       border-radius: 0;
       border-radius: 6px 0 0 6px;
+      height: 32px;
 
       span {
         color: $color-light-slate-11;
@@ -1365,6 +1368,9 @@ $border-radius: 4px;
         height: 16px !important;
       }
     }
+    .add-gds-secondary-button {
+      margin: 0 !important;
+    }
   }
 
 }
@@ -1462,6 +1468,7 @@ $border-radius: 4px;
       border-style: solid;
       border-color: #cccccc;
       border-width: 1px 0 1px 1px !important;
+      height: 32px;
 
       span {
         color: $color-dark-slate-11;
@@ -1775,4 +1782,40 @@ $border-radius: 4px;
 
 .fit-content {
   max-width: fit-content;
+}
+
+.empty-gds-container {
+  .info-container {
+    display: flex;
+    align-items: center;
+    background-color: var(--slate3);
+    border-radius: $border-radius;
+    padding: 16px 32px;
+    font-size: 12px;
+    color: var(--slate11);
+    .info {
+      margin-left: 10px;
+    }
+  }
+}
+
+.add-gds-secondary-button {
+  background-color: var(--indigo3);
+  color: var(--indigo9);
+  max-height: 34px;
+  height: 34px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 16px;
+  gap: 6px;
+  font-weight: 500;
+  border: 0 !important;
+  transition: .4s;
+
+  &:hover {
+    background-color: var(--slate7);
+    color: var(--slate11);
+  }
 }
