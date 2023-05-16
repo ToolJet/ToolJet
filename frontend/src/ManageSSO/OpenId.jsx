@@ -162,20 +162,14 @@ export function OpenId({ settings, updateData }) {
           {configId && (
             <div className="form-group mb-3">
               <label className="form-label" data-cy="redirect-url-label">
-                {t('header.organization.menus.manageSSO.google.redirectUrl', 'Redirect URL')}
+                {t('header.organization.menus.manageSSO.openid.redirectUrl', 'Redirect URL')}
               </label>
-              <div className="d-flex justify-content-between form-control">
+              <div className="d-flex justify-content-between form-control align-items-center">
                 <p
                   data-cy="redirect-url"
                   id="redirect-url"
                 >{`${window.public_config?.TOOLJET_HOST}/sso/openid/${configId}`}</p>
-                <img
-                  onClick={() => copyFunction('redirect-url')}
-                  src={`assets/images/icons/copy-dark.svg`}
-                  width="22"
-                  height="22"
-                  className="sso-copy"
-                />
+                <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
               </div>
             </div>
           )}
