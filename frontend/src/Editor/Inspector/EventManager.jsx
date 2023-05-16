@@ -700,11 +700,7 @@ export const EventManager = ({
                       ) : (
                         <div
                           className={`${
-                            param?.type
-                              ? param.type == 'select'
-                                ? 'col'
-                                : 'col-7'
-                              : 'col-9 fx-container-eventmanager-code'
+                            param?.type ? 'col-7' : 'col-9 fx-container-eventmanager-code'
                           } fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
                           data-cy="action-options-text-input-field"
                         >
