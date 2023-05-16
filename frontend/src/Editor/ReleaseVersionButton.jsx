@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { appService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { Confirm } from './Viewer/Confirm';
+import { ConfirmDialog } from '@/_components/ConfirmDialog';
 
 export const ReleaseVersionButton = function DeployVersionButton({
   appId,
@@ -50,14 +50,14 @@ export const ReleaseVersionButton = function DeployVersionButton({
 
   return (
     <>
-      <Confirm
-        show={showPageDeletionConfirmation ?? false}
-        title={'Release Version'}
+      <ConfirmDialog
+        show={showPageDeletionConfirmation}
         message={`Are you sure you want to release this version of the app?`}
-        confirmButtonLoading={isReleasing}
         onConfirm={() => releaseVersion(editingVersion)}
         onCancel={() => cancelRelease()}
         darkMode={darkMode}
+        confirmButtonType="primary"
+        confirmButtonText="Release App"
       />
       <div>
         <button
