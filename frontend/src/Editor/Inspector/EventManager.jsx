@@ -212,6 +212,23 @@ export const EventManager = ({
     setEvents(newEvents);
     eventsChanged(newEvents);
   }
+
+  //following two are functions responsible for on change and value for the control specific actions
+  const onChangeHandlerForComponentSpecificActionHandle = (value, index, param, event) => {
+    const newParam = { ...param, value: value };
+    const params = event?.componentSpecificActionParams ?? [];
+    const newParams = params.map((paramOfParamList) =>
+      paramOfParamList.handle === param.handle ? newParam : paramOfParamList
+    );
+    return handlerChanged(index, 'componentSpecificActionParams', newParams);
+  };
+  const valueForComponentSpecificActionHandle = (event, param) => {
+    return (
+      event?.componentSpecificActionParams?.find((paramItem) => paramItem.handle === param.handle)?.value ??
+      param.defaultValue
+    );
+  };
+
   function eventPopover(event, index) {
     return (
       <Popover
@@ -677,19 +694,10 @@ export const EventManager = ({
                           <Select
                             className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                             options={param.options}
-                            value={
-                              event?.componentSpecificActionParams?.find(
-                                (paramItem) => paramItem.handle === param.handle
-                              )?.value ?? param.defaultValue
-                            }
+                            value={valueForComponentSpecificActionHandle(event, param)}
                             search={true}
                             onChange={(value) => {
-                              const newParam = { ...param, value: value };
-                              const params = event?.componentSpecificActionParams ?? [];
-                              const newParams = params.map((paramOfParamList) =>
-                                paramOfParamList.handle === param.handle ? newParam : paramOfParamList
-                              );
-                              handlerChanged(index, 'componentSpecificActionParams', newParams);
+                              onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
                             }}
                             placeholder={t('globals.select', 'Select') + '...'}
                             styles={styles}
@@ -708,18 +716,9 @@ export const EventManager = ({
                             theme={darkMode ? 'monokai' : 'default'}
                             currentState={currentState}
                             mode="javascript"
-                            initialValue={
-                              event?.componentSpecificActionParams?.find(
-                                (paramItem) => paramItem.handle === param.handle
-                              )?.value ?? param.defaultValue
-                            }
+                            initialValue={valueForComponentSpecificActionHandle(event, param)}
                             onChange={(value) => {
-                              const newParam = { ...param, value: value };
-                              const params = event?.componentSpecificActionParams ?? [];
-                              const newParams = params.map((paramOfParamList) =>
-                                paramOfParamList.handle === param.handle ? newParam : paramOfParamList
-                              );
-                              handlerChanged(index, 'componentSpecificActionParams', newParams);
+                              onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
                             }}
                             enablePreview={true}
                             type={param?.type}
