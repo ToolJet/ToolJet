@@ -38,6 +38,7 @@ function EditAppName({ appId, appName, onNameChanged }) {
         onBlur={(e) => saveAppName(e.target.value)}
         className="form-control-plaintext form-control-plaintext-sm"
         value={name}
+        maxLength={40}
         data-cy="app-name-input"
       />
       <span className="input-icon-addon">
