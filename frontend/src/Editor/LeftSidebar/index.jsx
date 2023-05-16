@@ -61,7 +61,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [errorLogs, setErrorLogs] = React.useState([]);
   const [errorHistory, setErrorHistory] = React.useState({ appLevel: [], pageLevel: [] });
   const [unReadErrorCount, setUnReadErrorCount] = React.useState({ read: 0, unread: 0 });
-  const elemRef = useRef();
+
+  const sideBarBtnRefs = useRef({});
 
   const open = !!selectedSidebarItem;
 
@@ -164,12 +165,25 @@ export const LeftSidebar = forwardRef((props, ref) => {
     setPinned(isPin);
   };
 
+  const handleInteractOutside = (ev) => {
+    const isBtnClicked = Object.values(sideBarBtnRefs.current).some((btnRef) => {
+      return btnRef.contains(ev.target);
+    });
+
+    if (!isBtnClicked && !pinned) {
+      setSelectedSidebarItem(null);
+    }
+  };
+
+  const setSideBarBtnRefs = (page) => (ref) => {
+    sideBarBtnRefs.current[page] = ref;
+  };
+
   const SELECTED_ITEMS = {
     page: (
       <LeftSidebarPageSelector
         darkMode={darkMode}
         selectedSidebarItem={selectedSidebarItem}
-        setSelectedSidebarItem={handleSelectedSidebarItem}
         appDefinition={appDefinition}
         currentPageId={currentPageId}
         addNewPage={addNewPage}
@@ -199,7 +213,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
       <LeftSidebarInspector
         darkMode={darkMode}
         selectedSidebarItem={selectedSidebarItem}
-        setSelectedSidebarItem={handleSelectedSidebarItem}
         currentState={currentState}
         appDefinition={appDefinition}
         setSelectedComponent={setSelectedComponent}
@@ -214,7 +227,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
       <LeftSidebarDebugger
         darkMode={darkMode}
         selectedSidebarItem={selectedSidebarItem}
-        setSelectedSidebarItem={handleSelectedSidebarItem}
         components={components}
         errors={errorLogs}
         debuggerActions={debuggerActions}
@@ -236,24 +248,23 @@ export const LeftSidebar = forwardRef((props, ref) => {
         icon="page"
         className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
         tip="Pages"
+        ref={setSideBarBtnRefs('page')}
       />
+
       <LeftSidebarItem
         selectedSidebarItem={selectedSidebarItem}
         onClick={() => handleSelectedSidebarItem('inspect')}
         icon="inspect"
         className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
         tip="Inspector"
+        ref={setSideBarBtnRefs('inspect')}
       />
+
       <Popover
-        handleToggle={(open) => {
-          if (!open && !pinned) {
-            handleSelectedSidebarItem('');
-          }
-        }}
+        onInteractOutside={handleInteractOutside}
         open={pinned || !!selectedSidebarItem}
         popoverContentClassName="p-0 sidebar-h-100-popover"
         side="right"
-        ref={elemRef}
         popoverContent={SELECTED_ITEMS[selectedSidebarItem]}
         popoverContentHeight={popoverContentHeight}
       />
@@ -281,6 +292,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
             selectedSidebarItem={showComments ? 'comments' : ''}
             toggleComments={toggleComments}
             currentPageId={currentPageId}
+            ref={setSideBarBtnRefs('comments')}
           />
         </div>
       )}
@@ -295,11 +307,12 @@ export const LeftSidebar = forwardRef((props, ref) => {
         <LeftSidebarItem
           icon="debugger"
           selectedSidebarItem={selectedSidebarItem}
-          onClick={() => handleSelectedSidebarItem('debugger')}
+          onClick={(e) => handleSelectedSidebarItem('debugger')}
           className={`left-sidebar-item  left-sidebar-layout`}
           badge={true}
           count={unReadErrorCount.unread}
           tip="Debugger"
+          ref={setSideBarBtnRefs('debugger')}
         />
 
         <div className="left-sidebar-item no-border">
