@@ -1,4 +1,5 @@
 import { Folder } from 'src/entities/folder.entity';
+import { Organization } from 'src/entities/organization.entity';
 import { EntityManager, MigrationInterface, QueryRunner, TableUnique } from 'typeorm';
 
 export class AddUniqueConstraintToFolderName1684145489093 implements MigrationInterface {
@@ -15,14 +16,23 @@ export class AddUniqueConstraintToFolderName1684145489093 implements MigrationIn
   }
 
   public async migrateFolderNames(entityManager: EntityManager) {
-    const folders = await entityManager.query(
-      'select sub_query.name from (select count(*) as name_count, name from folders group by name) sub_query where name_count > 1    '
-    );
-    for (const folder of folders) {
-      const { name } = folder;
-      const sameFolders = await entityManager.find(Folder, { name });
-      for (const folderToChange of sameFolders.slice(1)) {
-        await entityManager.update(Folder, { id: folderToChange.id }, { name: `${folderToChange.name}_${Date.now()}` });
+    const workspaces = await entityManager.find(Organization);
+    for (const workspace of workspaces) {
+      const { id: organizationId } = workspace;
+      const folders = await entityManager.query(
+        'select sub_query.name from (select count(*) as name_count, name from folders where organization_id=$1 group by name) sub_query where name_count > 1    ',
+        [organizationId]
+      );
+      for (const folder of folders) {
+        const { name } = folder;
+        const sameFolders = await entityManager.find(Folder, { where: { name, organizationId } });
+        for (const folderToChange of sameFolders.slice(1)) {
+          await entityManager.update(
+            Folder,
+            { id: folderToChange.id },
+            { name: `${folderToChange.name}_${Date.now()}` }
+          );
+        }
       }
     }
   }
