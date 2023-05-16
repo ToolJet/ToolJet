@@ -76,3 +76,12 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 :::info
 Circular progress bar widget uses [react-circular-progress](https://github.com/kevinsqi/react-circular-progressbar) package. Check the repo for further more details about properties and styles.
 :::
+
+
+## Exposed variables
+
+There are currently no exposed variables for the component.
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.

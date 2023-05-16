@@ -16,8 +16,8 @@ export const groupsSelector = {
   permissionsLink: "[data-cy=permissions-link]",
   searchBox: '[data-cy="select-search"]',
   appSearchBox:
-    "[data-cy=select-search] >>.css-1e1a1lx-control > .css-s59k37-ValueContainer",
-  searchBoxOptions: ".css-2kg7t4-MenuList",
+    "[data-cy=select-search]>>>>>.dropdown-heading-value > .gray",
+  searchBoxOptions: ".panel-content",
   appAddButton: "[data-cy=add-button]",
   addButton: '[data-cy="add-button"]',
   nameTableHeader: ".active [data-cy=name-header]",
@@ -50,14 +50,10 @@ export const groupsSelector = {
   deleteGroupLink: (groupname) => {
     return `[data-cy="${cyParamName(groupname)}-group-delete-link"]`;
   },
-  selectAddButton: (groupname) => {
-    return `[data-cy="${cyParamName(
-      groupname
-    )}-group-select-search-add-button"]`;
-  },
   mutiSelectAddButton: (groupname) => {
     return `[data-cy="${cyParamName(
       groupname
     )}-group-multi-select-search-add-button"]`;
   },
+  selectAddButton: '[data-cy="add-button"]'
 };

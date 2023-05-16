@@ -120,7 +120,7 @@
     "compression-webpack-plugin": "^10.0.0",
     "css-loader": "^6.7.3",
     "esbuild": "^0.17.8",
-    "eslint": "^8.34.0",
+    "eslint": "^8.37.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-import-resolver-webpack": "^0.13.2",
     "eslint-plugin-import": "^2.27.5",
@@ -180,10 +180,6 @@
   },
   "eslintConfig": {
     "extends": "react-app"
-  },
-  "browserslist": {
-    "production": [],
-    "development": []
   },
   "jest": {
     "transform": {

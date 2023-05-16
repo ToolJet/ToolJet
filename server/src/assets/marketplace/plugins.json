@@ -24,5 +24,14 @@
     "id": "github",
     "author": "Tooljet",
     "timestamp": "Thu, 02 Mar 2023 11:52:32 GMT"
+  },
+  {
+    "name": "openai",
+    "repo": "",
+    "description": "api plugin from openai",
+    "version": "1.0.0",
+    "id": "openai",
+    "author": "Tooljet",
+    "timestamp": "Mon, 10 Apr 2023 06:33:21 GMT"
   }
 ]

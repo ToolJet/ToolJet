@@ -29,6 +29,8 @@ type FetchInstanceUsersResponse = {
   organizationUsers: OrganizationUser[];
   totalOrganizations: number;
 };
+type UserFilterOptions = { searchText?: string; status?: string };
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -42,28 +44,49 @@ export class UsersService {
     private configService: ConfigService
   ) {}
 
-  usersQuery(options: any) {
-    return this.usersRepository
+  usersQuery(options: UserFilterOptions, condition?: 'and' | 'or') {
+    const defaultConditions = () => {
+      return new Brackets((qb) => {
+        if (options?.searchText) {
+          qb.orWhere('lower(user.email) like :email', {
+            email: `%${options?.searchText.toLowerCase()}%`,
+          })
+            .orWhere('lower(user.firstName) like :firstName', {
+              firstName: `%${options?.searchText.toLowerCase()}%`,
+            })
+            .orWhere('lower(user.lastName) like :lastName', {
+              lastName: `%${options?.searchText.toLowerCase()}%`,
+            });
+        }
+      });
+    };
+
+    const getOrConditions = () => {
+      return new Brackets((qb) => {
+        if (options?.status)
+          qb.orWhere('user.status = :status', {
+            status: `${options?.status}`,
+          });
+      });
+    };
+    const getAndConditions = () => {
+      return new Brackets((qb) => {
+        if (options?.status)
+          qb.andWhere('user.status = :status', {
+            status: `${options?.status}`,
+          });
+      });
+    };
+
+    const query = this.usersRepository
       .createQueryBuilder('user')
       .addSelect(['user.id, user.email, user.firstName, user.lastName, user.avatarId', 'user.status', 'user.userType'])
       .leftJoin('user.organizationUsers', 'organizationUsers')
       .addSelect(['organizationUsers.id', 'organizationUsers.status', 'organizationUsers.organizationId'])
       .leftJoin('organizationUsers.organization', 'organization')
-      .addSelect(['organization.name'])
-      .where((qb) => {
-        if (options?.email)
-          qb.andWhere('lower(user.email) like :email', {
-            email: `%${options?.email.toLowerCase()}%`,
-          });
-        if (options?.firstName)
-          qb.andWhere('lower(user.firstName) like :firstName', {
-            firstName: `%${options?.firstName.toLowerCase()}%`,
-          });
-        if (options?.lastName)
-          qb.andWhere('lower(user.lastName) like :lastName', {
-            lastName: `%${options?.lastName.toLowerCase()}%`,
-          });
-      });
+      .addSelect(['organization.name']);
+    query.andWhere(defaultConditions()).andWhere(condition === 'and' ? getAndConditions() : getOrConditions());
+    return query;
   }
 
   async findInstanceUsers(page = 1, options: any): Promise<FetchInstanceUsersResponse[]> {
@@ -90,7 +113,8 @@ export class UsersService {
   }
 
   async instanceUsersCount(options: any): Promise<number> {
-    return await this.usersQuery(options).getCount();
+    const condition = options?.searchText ? 'and' : 'or';
+    return await this.usersQuery(options, condition).getCount();
   }
 
   async findSuperAdmins(): Promise<User[]> {
@@ -530,8 +554,16 @@ export class UsersService {
     return !!app && app.organizationId === user.organizationId;
   }
 
-  async returnOrgIdOfAnApp(appId: string): Promise<any> {
-    const app = await this.appsRepository.findOne(appId);
+  async returnOrgIdOfAnApp(slug: string): Promise<any> {
+    let app: App;
+    try {
+      app = await this.appsRepository.findOneOrFail(slug);
+    } catch (error) {
+      app = await this.appsRepository.findOne({
+        slug,
+      });
+    }
+
     return app?.organizationId;
   }
 

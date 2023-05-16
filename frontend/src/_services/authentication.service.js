@@ -232,7 +232,7 @@ function resetPassword(params) {
   return fetch(`${config.apiUrl}/reset-password`, requestOptions).then(handleResponse);
 }
 
-function logout() {
+function logout(avoidRedirection = false) {
   const requestOptions = {
     method: 'GET',
     headers: authHeader(),
@@ -243,16 +243,20 @@ function logout() {
     .then(handleResponseWithoutValidation)
     .then(() => {
       const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
-      const pathname = window.public_config?.SUB_PATH
-        ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
-        : window.location.pathname;
-      window.location.href =
-        loginPath +
-        `?redirectTo=${
-          !['integrations', 'instance-settings'].find((subpath) => pathname.includes(subpath))
-            ? excludeWorkspaceIdFromURL(pathname)
-            : `${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`
-        }`;
+      if (avoidRedirection) {
+        window.location.href = loginPath;
+      } else {
+        const pathname = window.public_config?.SUB_PATH
+          ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
+          : window.location.pathname;
+        window.location.href =
+          loginPath +
+          `?redirectTo=${
+            !['integrations', 'instance-settings'].find((subpath) => pathname.includes(subpath))
+              ? excludeWorkspaceIdFromURL(pathname)
+              : `${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`
+          }`;
+      }
     })
     .catch(() => {
       authenticationService.updateCurrentSession({

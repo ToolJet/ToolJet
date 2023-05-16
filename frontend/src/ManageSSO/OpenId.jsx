@@ -3,6 +3,9 @@ import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Toggle from '@/_ui/Toggle/index';
 
 export function OpenId({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -82,22 +85,26 @@ export function OpenId({ settings, updateData }) {
   };
 
   return (
-    <div className="card">
+    <div className="sso-card-wrapper">
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
-          <div className="card-title">
-            OpenID Connect
-            <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`}>{enabled ? 'Enabled' : 'Disabled'}</span>
-          </div>
           <div>
-            <label className="form-check form-switch">
-              <input className="form-check-input" type="checkbox" checked={enabled} onChange={changeStatus} />
-            </label>
+            <Toggle
+              label={t('header.organization.menus.manageSSO.openid.title', 'OpenID Connect')}
+              onChange={changeStatus}
+              checked={enabled}
+              dataCy="openid"
+            />
+          </div>
+          <div className="card-title">
+            <span className={` tj-text-xsm ${enabled ? 'enabled-tag' : 'disabled-tag'}`} data-cy="status-label">
+              {enabled ? t('globals.enabled', 'Enabled') : t('globals.disabled', 'Disabled')}
+            </span>
           </div>
         </div>
       </div>
       <div className="card-body">
-        <form noValidate>
+        <form noValidate className="sso-form-wrap">
           <div className="form-group mb-3">
             <label className="form-label">Name</label>
             <div>
@@ -123,11 +130,11 @@ export function OpenId({ settings, updateData }) {
             </div>
           </div>
           <div className="form-group mb-3">
-            <label className="form-label">
-              Client Secret
-              <small className="text-green mx-2">
-                <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
-                Encrypted
+            <label className="form-label" data-cy="client-secret-label">
+              {t('header.organization.menus.manageSSO.github.clientSecret', 'Client Secret')}
+              <small className="git- mx-2" data-cy="encripted-label">
+                <SolidIcon name="lock" width="16" />
+                {t('header.organization.menus.manageSSO.github.encrypted', 'Encrypted')}
               </small>
             </label>
             <div>
@@ -155,37 +162,37 @@ export function OpenId({ settings, updateData }) {
           {configId && (
             <div className="form-group mb-3">
               <label className="form-label" data-cy="redirect-url-label">
-                {t('header.organization.menus.manageSSO.google.redirectUrl', 'Redirect URL')}
+                {t('header.organization.menus.manageSSO.openid.redirectUrl', 'Redirect URL')}
               </label>
-              <div className="d-flex justify-content-between form-control">
+              <div className="d-flex justify-content-between form-control align-items-center">
                 <p
                   data-cy="redirect-url"
                   id="redirect-url"
                 >{`${window.public_config?.TOOLJET_HOST}/sso/openid/${configId}`}</p>
-                <img
-                  onClick={() => copyFunction('redirect-url')}
-                  src={`assets/images/icons/copy-dark.svg`}
-                  width="22"
-                  height="22"
-                  className="sso-copy"
-                />
+                <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
               </div>
             </div>
           )}
-          <div className="form-footer">
-            <button type="button" className="btn btn-light mr-2" onClick={reset}>
-              Cancel
-            </button>
-            <button
-              type="button"
-              className={`btn mx-2 btn-primary ${isSaving ? 'btn-loading' : ''}`}
-              disabled={isSaving}
-              onClick={saveSettings}
-            >
-              Save
-            </button>
-          </div>
         </form>
+      </div>
+      <div className="form-footer sso-card-footer">
+        <ButtonSolid onClick={reset} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
+          {t('globals.cancel', 'Cancel')}
+        </ButtonSolid>
+
+        <ButtonSolid
+          disabled={isSaving}
+          isLoading={isSaving}
+          onClick={saveSettings}
+          data-cy="save-button"
+          variant="primary"
+          className="sso-footer-save-btn"
+          leftIcon="floppydisk"
+          fill="#fff"
+          iconWidth="20"
+        >
+          {t('globals.savechanges', 'Save changes')}
+        </ButtonSolid>
       </div>
     </div>
   );

@@ -166,6 +166,9 @@ class EditorComponent extends React.Component {
     document.title = name ? `${name} - ${retrieveWhiteLabelText()}` : `Untitled App - ${retrieveWhiteLabelText()}`;
   }
 
+  onVersionDelete = () => {
+    this.fetchApp(this.props.params.pageHandle);
+  };
   getCurrentOrganizationDetails() {
     const currentSession = authenticationService.currentSessionValue;
     const currentUser = {
@@ -982,6 +985,7 @@ class EditorComponent extends React.Component {
         return this.setState({
           draftQuery: { ...this.state.draftQuery, name: newName },
           renameQueryName: false,
+          selectedQuery: { ...this.state.selectedQuery, name: newName },
         });
       }
       dataqueryService
@@ -1429,12 +1433,13 @@ class EditorComponent extends React.Component {
     );
   };
 
-  deletePageRequest = (pageId, isHomePage = false) => {
+  deletePageRequest = (pageId, isHomePage = false, pageName = '') => {
     this.setState({
       showPageDeletionConfirmation: {
         isOpen: true,
         pageId,
         isHomePage,
+        pageName,
       },
     });
   };
@@ -1445,6 +1450,7 @@ class EditorComponent extends React.Component {
         isOpen: false,
         pageId: null,
         isHomePage: false,
+        pageName: null,
       },
     });
   };
@@ -1864,7 +1870,7 @@ class EditorComponent extends React.Component {
         <Confirm
           show={this.state.showPageDeletionConfirmation?.isOpen ?? false}
           title={'Delete Page'}
-          message={`Do you really want to delete this page?`}
+          message={`Do you really want to delete ${this.state.showPageDeletionConfirmation?.pageName || 'this'} page?`}
           confirmButtonLoading={this.state.isDeletingPage}
           onConfirm={() => this.executeDeletepageRequest()}
           onCancel={() => this.cancelDeletePageRequest()}
@@ -1900,6 +1906,7 @@ class EditorComponent extends React.Component {
             onVersionRelease={this.onVersionRelease}
             saveEditingVersion={this.saveEditingVersion}
             appEnvironmentChanged={this.appEnvironmentChanged}
+            onVersionDelete={this.onVersionDelete}
             currentUser={this.state.currentUser}
           />
           <DndProvider backend={HTML5Backend}>

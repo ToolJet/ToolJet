@@ -17,8 +17,8 @@ export const userService = {
 
 function getInstanceUsers(page, options) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  const { firstName, lastName, email } = options;
-  const query = queryString.stringify({ page, firstName, lastName, email });
+  const { status, searchText } = options;
+  const query = queryString.stringify({ page, status, searchText });
 
   return fetch(`${config.apiUrl}/users/all?${query}`, requestOptions).then(handleResponse);
 }

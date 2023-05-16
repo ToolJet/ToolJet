@@ -33,11 +33,10 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, SuperAdminGuard)
   @Get('all')
   async getAllUsers(@Query() query) {
-    const { page, email, firstName, lastName } = query;
+    const { page, searchText, status } = query;
     const filterOptions = {
-      ...(email && { email }),
-      ...(firstName && { firstName }),
-      ...(lastName && { lastName }),
+      ...(searchText && { searchText }),
+      ...(status && { status }),
     };
     const usersCount = await this.usersService.instanceUsersCount(filterOptions);
     let users = [];

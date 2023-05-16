@@ -167,6 +167,15 @@ class QueryManagerComponent extends React.Component {
       }
     );
   };
+  componentDidUpdate(prevState) {
+    if (this.state?.selectedQuery?.id == prevState?.selectedQuery?.id) {
+      if (prevState?.selectedQuery?.name !== this.state?.selectedQuery?.name) {
+        this.setState({
+          queryName: this.state.selectedQuery?.name,
+        });
+      }
+    }
+  }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.loadingDataSources) return;
@@ -231,7 +240,7 @@ class QueryManagerComponent extends React.Component {
   };
 
   changeDataSource = (source) => {
-    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'runpy', 'tooljetdb'].includes(source.kind);
+    const isSchemaUnavailable = ['restapi', 'stripe', 'runjs', 'runpy', 'tooljetdb', 'grpc'].includes(source.kind);
     const schemaUnavailableOptions = {
       restapi: {
         method: 'get',
@@ -250,6 +259,7 @@ class QueryManagerComponent extends React.Component {
         code: '',
       },
       runpy: {},
+      grpc: {},
     };
 
     let newOptions = {};
