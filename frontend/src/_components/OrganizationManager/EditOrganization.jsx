@@ -1,21 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
+export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
   const { t } = useTranslation();
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => setNewOrgName(currentValue?.name), currentValue);
 
   const editOrganization = () => {
     if (!(newOrgName && newOrgName.trim())) {
       toast.error('Workspace name can not be empty.');
       return;
     }
-
+    if (currentValue?.name === newOrgName) return;
     setIsCreating(true);
     organizationService.editOrganization({ name: newOrgName }).then(
       () => {

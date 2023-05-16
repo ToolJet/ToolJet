@@ -64,11 +64,12 @@ export const CustomSelect = ({ ...props }) => {
   const [showEditOrg, setShowEditOrg] = useState(false);
   const [showCreateOrg, setShowCreateOrg] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const currentValue = props?.options.find((option) => option?.value === props?.value);
 
   return (
     <>
       <CreateOrganization showCreateOrg={showCreateOrg} setShowCreateOrg={setShowCreateOrg} />
-      <EditOrganization showEditOrg={showEditOrg} setShowEditOrg={setShowEditOrg} />
+      <EditOrganization showEditOrg={showEditOrg} setShowEditOrg={setShowEditOrg} currentValue={currentValue} />
 
       <Select
         className={`react-select-container ${darkMode && 'dark-theme'}`}

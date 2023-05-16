@@ -25,7 +25,7 @@ export class AddUniqueConstraintToWorkspaceName1683136077244 implements Migratio
         await entityManager.update(
           Organization,
           { id: workspaceToChange.id },
-          { name: `${workspaceToChange.name}_${Date.now()}` }
+          { name: `${workspaceToChange.name} ${Date.now()}` }
         );
       }
     }
