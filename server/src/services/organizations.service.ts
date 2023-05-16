@@ -708,10 +708,13 @@ export class OrganizationsService {
             );
           }
 
-          this.inviteUserswrapper(users, currentUser).catch((error) => {
-            console.error(error);
-          });
-          res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
+          this.inviteUserswrapper(users, currentUser)
+            .then(() => {
+              res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
+            })
+            .catch((error) => {
+              console.error(error);
+            });
         } catch (error) {
           const { status, response } = error;
           res.status(status).send(response);
