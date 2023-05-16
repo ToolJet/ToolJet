@@ -104,7 +104,7 @@ export function OpenId({ settings, updateData }) {
         </div>
       </div>
       <div className="card-body">
-        <form noValidate>
+        <form noValidate className="sso-form-wrap">
           <div className="form-group mb-3">
             <label className="form-label">Name</label>
             <div>
