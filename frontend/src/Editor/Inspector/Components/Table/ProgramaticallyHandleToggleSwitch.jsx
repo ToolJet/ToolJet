@@ -15,29 +15,25 @@ export const ProgramaticallyHandleToggleSwitch = ({
   paramType,
 }) => {
   const getValueBasedOnProperty = (property, props) => {
-    let value = undefined;
     switch (property) {
       case 'isEditable':
-        value = props.isEditable;
-        break;
+        return props.isEditable;
+
       case 'disableActionButton':
-        value = props.disableActionButton;
-        break;
+        return props.disableActionButton;
+
       case 'columnVisibility':
-        value = props.columnVisibility;
-        break;
+        return props.columnVisibility;
       default:
-        break;
+        return;
     }
-    return value;
   };
 
   const getInitialValue = (property, definition) => {
     if (property === 'columnVisibility') {
       return definition?.value ?? `{{true}}`;
-    } else {
-      return definition?.value ?? `{{false}}`;
     }
+    return definition?.value ?? `{{false}}`;
   };
 
   const value = getValueBasedOnProperty(property, props);

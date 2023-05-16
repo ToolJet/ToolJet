@@ -368,11 +368,15 @@ export function Table({
     darkMode,
   });
 
-  columnData = columnData.filter((column) => {
-    if (resolveReferences(column.columnVisibility, currentState)) {
-      return column;
-    }
-  });
+  columnData = useMemo(
+    () =>
+      columnData.filter((column) => {
+        if (resolveReferences(column.columnVisibility, currentState)) {
+          return column;
+        }
+      }),
+    [columnData, currentState]
+  );
 
   const columnDataForAddNewRows = generateColumnsData({
     columnProperties: useDynamicColumn ? generatedColumn : component.definition.properties.columns.value,
