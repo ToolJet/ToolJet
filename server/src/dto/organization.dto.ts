@@ -5,7 +5,10 @@ import { sanitizeInput } from '../helpers/utils.helper';
 
 export class OrganizationCreateDto {
   @IsString()
-  @Transform(({ value }) => sanitizeInput(value))
+  @Transform(({ value }) => {
+    const newValue = sanitizeInput(value);
+    return newValue?.trim() || '';
+  })
   @IsNotEmpty()
   @Matches('^[A-Za-z0-9 ]+$', '', { message: 'Workspace name must contain only letters and numbers' })
   @MaxLength(40, { message: 'Workspace name cannot be longer than 40 characters' })
@@ -15,7 +18,10 @@ export class OrganizationCreateDto {
 export class OrganizationUpdateDto {
   @IsOptional()
   @IsString()
-  @Transform(({ value }) => sanitizeInput(value))
+  @Transform(({ value }) => {
+    const newValue = sanitizeInput(value);
+    return newValue?.trim() || '';
+  })
   @Matches('^[A-Za-z0-9 ]+$', '', { message: 'Workspace name must contain only letters and numbers' })
   @MaxLength(40, { message: 'Workspace name cannot be longer than 40 characters' })
   name?: string;

@@ -14,13 +14,14 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
   useEffect(() => setNewOrgName(currentValue?.name), currentValue);
 
   const editOrganization = () => {
-    if (!(newOrgName && newOrgName.trim())) {
+    const trimmedName = newOrgName?.trim();
+    if (!trimmedName) {
       toast.error('Workspace name can not be empty.');
       return;
     }
-    if (currentValue?.name === newOrgName) return;
+    if (currentValue?.name === trimmedName) return;
     setIsCreating(true);
-    organizationService.editOrganization({ name: newOrgName }).then(
+    organizationService.editOrganization({ name: trimmedName }).then(
       () => {
         toast.success('Workspace updated');
         window.location.reload();
