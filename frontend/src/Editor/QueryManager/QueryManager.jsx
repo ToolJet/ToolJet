@@ -83,7 +83,6 @@ const QueryManager = ({
       className={cx(`query-manager ${darkMode ? 'theme-dark' : ''}`, {
         'd-none': loadingDataSources,
       })}
-      key={selectedQuery ? selectedQuery?.id : ''}
     >
       <QueryManagerHeader
         darkMode={darkMode}

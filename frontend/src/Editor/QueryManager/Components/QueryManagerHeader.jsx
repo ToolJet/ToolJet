@@ -218,21 +218,19 @@ export const QueryManagerHeader = forwardRef(
 
     return (
       <div className="row header">
-        <>
-          <div className="col font-weight-500">{renderBreadcrumb()}</div>
-          <div className="query-header-buttons">
-            {renderButtons()}
-            <span
-              onClick={toggleQueryEditor}
-              className={`toggle-query-editor-svg m-3`}
-              data-tooltip-id="tooltip-for-hide-query-editor"
-              data-tooltip-content="Hide query editor"
-            >
-              <ToggleQueryEditorIcon />
-            </span>
-            <Tooltip id="tooltip-for-hide-query-editor" className="tooltip" />
-          </div>
-        </>
+        <div className="col font-weight-500">{renderBreadcrumb()}</div>
+        <div className="query-header-buttons">
+          {renderButtons()}
+          <span
+            onClick={toggleQueryEditor}
+            className={`toggle-query-editor-svg m-3`}
+            data-tooltip-id="tooltip-for-hide-query-editor"
+            data-tooltip-content="Hide query editor"
+          >
+            <ToggleQueryEditorIcon />
+          </span>
+          <Tooltip id="tooltip-for-hide-query-editor" className="tooltip" />
+        </div>
       </div>
     );
   }

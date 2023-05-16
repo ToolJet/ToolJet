@@ -350,7 +350,6 @@ export const QueryManagerBody = forwardRef(
             onChange={(newDataSource) => {
               changeDataQuery(newDataSource);
             }}
-            //   onChange={(selectedDataSource) => changeDataSourceQueryAssociation(selectedDataSource, selectedQuery)}
           />
         </div>
       );
