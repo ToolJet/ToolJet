@@ -30,7 +30,7 @@ export class AddUniqueConstraintToFolderName1684145489093 implements MigrationIn
           await entityManager.update(
             Folder,
             { id: folderToChange.id },
-            { name: `${folderToChange.name}_${Date.now()}` }
+            { name: `${folderToChange.name} ${Date.now()}` }
           );
         }
       }
