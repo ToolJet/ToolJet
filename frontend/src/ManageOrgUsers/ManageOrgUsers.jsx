@@ -286,7 +286,14 @@ class ManageOrgUsersComponent extends React.Component {
                     <ButtonSolid
                       data-cy="button-invite-new-user"
                       className="singleuser-btn"
-                      onClick={() => this.setState({ isInviteUsersDrawerOpen: true })}
+                      onClick={() => {
+                        posthog.capture('click_add_users', {
+                          workspace_id:
+                            authenticationService?.currentUserValue?.organization_id ||
+                            authenticationService?.currentSessionValue?.current_organization_id,
+                        });
+                        this.setState({ isInviteUsersDrawerOpen: true });
+                      }}
                       leftIcon="usergroup"
                       fill={'#FDFDFE'}
                     >

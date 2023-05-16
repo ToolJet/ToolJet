@@ -5,6 +5,8 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
 // import { useDropzone } from 'react-dropzone';
 import { FileDropzone } from './FileDropzone';
+import posthog from 'posthog-js';
+import { authenticationService } from '@/_services';
 
 function InviteUsersForm({
   onClose,
@@ -70,7 +72,14 @@ function InviteUsersForm({
               <div className="tj-drawer-tabs-container">
                 <button
                   className={`tj-drawer-tabs-btn tj-text-xsm ${activeTab == 1 && 'tj-drawer-tabs-btn-active'}`}
-                  onClick={() => setActiveTab(1)}
+                  onClick={() => {
+                    posthog.capture('click_invite_with_email', {
+                      workspace_id:
+                        authenticationService?.currentUserValue?.organization_id ||
+                        authenticationService?.currentSessionValue?.current_organization_id,
+                    });
+                    setActiveTab(1);
+                  }}
                   data-cy="button-invite-with-email"
                 >
                   <SolidIcon name="mail" width="14" fill={activeTab == 1 ? '#11181C' : '#687076'} />
@@ -78,7 +87,14 @@ function InviteUsersForm({
                 </button>
                 <button
                   className={`tj-drawer-tabs-btn  tj-text-xsm ${activeTab == 2 && 'tj-drawer-tabs-btn-active'}`}
-                  onClick={() => setActiveTab(2)}
+                  onClick={() => {
+                    posthog.capture('click_upload_csv_file', {
+                      workspace_id:
+                        authenticationService?.currentUserValue?.organization_id ||
+                        authenticationService?.currentSessionValue?.current_organization_id,
+                    });
+                    setActiveTab(2);
+                  }}
                   data-cy="button-upload-csv-file"
                 >
                   <SolidIcon name="fileupload" width="14" fill={activeTab == 2 ? '#11181C' : '#687076'} />
