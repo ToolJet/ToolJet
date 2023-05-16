@@ -18,13 +18,14 @@ function EditAppName({ appId, appName, onNameChanged }) {
       });
       return;
     }
+    if (name === appName) return;
     await appService
       .saveApp(appId, { name })
       .then(() => {
         onNameChanged(name);
       })
-      .catch(() => {
-        toast('Something went wrong while editing app name', {
+      .catch(({ error }) => {
+        toast(error || 'Something went wrong while editing app name', {
           icon: '🚨',
         });
       });

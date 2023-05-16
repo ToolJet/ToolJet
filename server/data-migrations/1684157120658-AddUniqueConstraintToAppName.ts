@@ -27,7 +27,7 @@ export class AddUniqueConstraintToAppName1684145489093 implements MigrationInter
         const { name } = app;
         const sameApps = await entityManager.find(App, { where: { name, organizationId } });
         for (const appToChange of sameApps.slice(1)) {
-          await entityManager.update(App, { id: appToChange.id }, { name: `${appToChange.name}_${Date.now()}` });
+          await entityManager.update(App, { id: appToChange.id }, { name: `${appToChange.name} ${Date.now()}` });
         }
       }
     }

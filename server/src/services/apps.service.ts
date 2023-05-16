@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { EntityManager, Repository } from 'typeorm';
@@ -100,7 +100,7 @@ export class AppsService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await manager.save(
         manager.create(App, {
-          name: 'Untitled app',
+          name: `Untitled app ${Date.now()}`,
           createdAt: new Date(),
           updatedAt: new Date(),
           organizationId: user.organizationId,
@@ -186,11 +186,18 @@ export class AppsService {
     return await viewableAppsQb.getMany();
   }
 
-  async update(appId: string, appUpdateDto: AppUpdateDto, manager?: EntityManager) {
+  async update(appId: string, appUpdateDto: AppUpdateDto, organizationId: string, manager?: EntityManager) {
     const currentVersionId = appUpdateDto.current_version_id;
     const isPublic = appUpdateDto.is_public;
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
     const { name, slug, icon } = appUpdateDto;
+
+    if (appUpdateDto.name) {
+      const existed = await this.appsRepository.findOne({ name, organizationId });
+      if (existed) {
+        throw new ConflictException('App name already exists.');
+      }
+    }
 
     const updatableParams = {
       name,
