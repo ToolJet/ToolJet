@@ -67,7 +67,7 @@ export const Folders = function Folders({
     if (validateName()) {
       setCreationStatus(true);
       folderService
-        .create(newFolderName)
+        .create(newFolderName.trim())
         .then(() => {
           toast.success('Folder created.');
           setCreationStatus(false);
@@ -128,15 +128,18 @@ export const Folders = function Folders({
   }
 
   function validateName() {
-    if (!newFolderName?.trim()) {
+    const trimmedName = newFolderName?.trim();
+    if (!trimmedName) {
       toast.error('Folder name cannot be empty.');
       return false;
     }
 
-    if (newFolderName?.trim().length > 40) {
+    if (trimmedName > 40) {
       toast.error('Folder name cannot be longer than 40 characters.');
       return false;
     }
+
+    if (trimmedName === updatingFolder?.name) return false;
     return true;
   }
 
@@ -144,7 +147,7 @@ export const Folders = function Folders({
     if (validateName()) {
       setUpdationStatus(true);
       folderService
-        .updateFolder(newFolderName, updatingFolder.id)
+        .updateFolder(newFolderName.trim(), updatingFolder.id)
         .then(() => {
           toast.success('Folder has been updated.');
           setUpdationStatus(false);
