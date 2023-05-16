@@ -312,7 +312,7 @@ export default function generateColumnsData({
                   fuzzySearch
                   placeholder={t('globals.select', 'Select') + '...'}
                   disabled={!isEditable}
-                  className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                  className="select-search"
                 />
                 <div className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>{validationError}</div>
               </div>
@@ -320,7 +320,7 @@ export default function generateColumnsData({
           }
           case 'multiselect': {
             return (
-              <div className="h-100 d-flex align-items-center">
+              <div className="h-100 d-flex align-items-center custom-select">
                 <SelectSearch
                   printOptions="on-focus"
                   multiple
@@ -332,7 +332,7 @@ export default function generateColumnsData({
                     handleCellValueChange(cell.row.index, column.key || column.name, value, cell.row.original);
                   }}
                   disabled={!isEditable}
-                  className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                  className={'select-search'}
                 />
               </div>
             );
