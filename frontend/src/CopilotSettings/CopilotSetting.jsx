@@ -63,7 +63,7 @@ export const CopilotSetting = () => {
   const validateApiKey = (apiKey) => {
     return new Promise((resolve, reject) => {
       copilotService
-        .validateCopilotAPIKey(apiKey)
+        .validateCopilotAPIKey(apiKey, current_organization_id)
         .then(({ status }) => {
           if (status === 'ok') {
             return resolve(true);
