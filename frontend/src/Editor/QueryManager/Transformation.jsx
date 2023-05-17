@@ -19,7 +19,8 @@ import { authenticationService } from '@/_services';
 
 export const Transformation = ({ changeOption, currentState, options, darkMode, queryId }) => {
   const { t } = useTranslation();
-  const { current_organization_id } = authenticationService.currentSessionValue;
+  const { current_organization_name } = authenticationService.currentSessionValue;
+  const currentOrgName = current_organization_name.replace(/\s/g, '').toLowerCase();
 
   const [lang, setLang] = React.useState(options?.transformationLanguage ?? 'javascript');
 
@@ -39,7 +40,7 @@ return [row for row in data if row['amount'] > 1000]
   const [state, setState] = useLocalStorageState('transformation', defaultValue);
 
   const [fetchingRecommendation, setFetchingRecommendation] = useState(false);
-  const isCopilotEnabled = localStorage.getItem(`copilotEnabled-${current_organization_id}`) === 'true';
+  const isCopilotEnabled = localStorage.getItem(`copilotEnabled-${currentOrgName}`) === 'true';
 
   const handleCallToGPT = async () => {
     setFetchingRecommendation(true);
@@ -291,7 +292,7 @@ return [row for row in data if row['amount'] > 1000]
                 styles={{ width: '100%', fontSize: '12px', fontWeight: 500, borderColor: darkMode && 'transparent' }}
                 disabled={!isCopilotEnabled}
               >
-                <Button.Content title={'Generate code ⌘+L'} />
+                <Button.Content title={'Generate code'} />
               </Button>
             </div>
 
@@ -317,6 +318,7 @@ return [row for row in data if row['amount'] > 1000]
             componentName={`transformation`}
             cyLabel={'transformation-input'}
             callgpt={handleCallToGPT}
+            isCopilotEnabled={isCopilotEnabled}
           />
         </div>
       )}
