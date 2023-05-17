@@ -38,6 +38,7 @@ const sidebars = {
       ]
     },
     'tooljet-database',
+    'tooljet-copilot',
     {
       'type': 'category',
       'label': 'Datasource Catalog',
