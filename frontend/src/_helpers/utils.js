@@ -796,7 +796,7 @@ export const validateName = (name, oldName, nameType, showError = false) => {
   }
 
   //check for alphanumeric
-  if (newName.match(/^[a-zA-Z0-9]+$/) === null) {
+  if (newName.match(/^[A-Za-z0-9 ]+$/) === null) {
     showError &&
       toast(`${nameType} must only contain letters and numbers`, {
         icon: '🚨',
