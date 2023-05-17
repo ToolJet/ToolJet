@@ -10438,3 +10438,14 @@ tbody {
     }
   }
 }
+
+.workspace-folder-modal {
+  .tj-app-input {
+    padding-bottom: 0px !important;
+  }
+
+  .tj-input-error {
+    height: 32px;
+    color: red;
+  }
+}

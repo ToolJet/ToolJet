@@ -40,7 +40,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       closeModal={() => setShowCreateOrg(false)}
       title={t('header.organization.createWorkspace', 'Create workspace')}
     >
-      <div className="row mb-3 workspace-modal">
+      <div className="row mb-3 workspace-folder-modal">
         <div className="col modal-main tj-app-input">
           <input
             type="text"
