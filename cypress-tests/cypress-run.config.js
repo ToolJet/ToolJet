@@ -98,5 +98,9 @@ module.exports = defineConfig({
     experimentalMemoryManagement: true,
     video: false,
     videoUploadOnPasses: false,
+    retries: {
+      runMode: 2,
+      openMode: 0,
+    },
   },
 });
