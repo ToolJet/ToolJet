@@ -62,7 +62,7 @@ This directory contains the following folders:
 
 `\src` - contains the ToolJet documentation website code. The documentation website is built using [Docusaurus 2](https://docusaurus.io/).
 
-`tooljet\docs\docs\` - This is the base directory and any changes in this directory will reflect on the `next` version the docs. Each of the folders inside it contains markdown files for the corresponding content. 
+`tooljet\docs\docs\` - This directory serves as the base directory for the documentation. Any modifications made within this directory will be reflected in the next version of the documentation. Each folder inside this directory corresponds to specific content and contains markdown files related to that content.
 
 ### Workflow
 The two suggested workflows are:
