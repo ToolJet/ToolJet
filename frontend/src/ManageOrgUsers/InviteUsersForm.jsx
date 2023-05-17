@@ -38,10 +38,6 @@ function InviteUsersForm({
     hiddenFileInput.current.click();
   };
 
-  React.useEffect(() => {
-    console.log('workspaces ==>', { selectedGroups });
-  }, [selectedGroups]);
-
   const onChangeHandler = (items) => {
     setSelectedGroups(items);
   };

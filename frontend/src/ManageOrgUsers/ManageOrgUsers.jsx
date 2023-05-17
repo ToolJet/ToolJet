@@ -166,8 +166,6 @@ class ManageOrgUsersComponent extends React.Component {
   };
 
   createUser = (selectedGroups) => {
-    console.log('selectedGroups ===> [workspaces]', { selectedGroups, field: this.state.fields });
-
     if (this.handleValidation()) {
       if (!this.state.fields.fullName?.trim()) {
         toast.error('Name should not be empty');
