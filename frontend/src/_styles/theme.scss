@@ -7549,6 +7549,11 @@ tbody {
   opacity: 0.5;
 }
 
+.canvas-area>.modal-backdrop {
+  width: 100% !important;
+  height: 100% !important;
+}
+
 .ds-delete-btn {
   display: none;
   border: none;
@@ -10247,7 +10252,7 @@ tbody {
       background-color: #121212;
       padding: 16px 18px 0px 16px;
       border-radius: 6px;
-  
+
       p {
         font-size: 14px;
         font-family: IBM Plex Sans;
@@ -10257,31 +10262,38 @@ tbody {
   }
 
   .error-shake {
-    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+    animation: shake 0.82s cubic-bezier(.36, .07, .19, .97) both;
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
     perspective: 10000px;
   }
-  
+
   @keyframes shake {
-    10%, 90% {
+
+    10%,
+    90% {
       transform: translate3d(-1px, 0, 0);
     }
-    
-    20%, 80% {
+
+    20%,
+    80% {
       transform: translate3d(2px, 0, 0);
     }
-  
-    30%, 50%, 70% {
+
+    30%,
+    50%,
+    70% {
       transform: translate3d(-4px, 0, 0);
     }
-  
-    40%, 60% {
+
+    40%,
+    60% {
       transform: translate3d(4px, 0, 0);
     }
   }
 
 }
+
 .profile-page-content-wrap {
   background-color: var(--slate2);
   padding-top: 40px;
@@ -10505,6 +10517,7 @@ tbody {
 .theme-dark .card-container {
   background-color: #121212 !important
 }
+
 .version-select {
   .react-select__menu {
     .react-select__menu-list {

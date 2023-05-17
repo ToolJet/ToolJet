@@ -1614,8 +1614,9 @@ class EditorComponent extends React.Component {
                        * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
                        * default canvas min width = calc(((screen width - width component editor side bar) - width of editor sidebar on left) - width of left sidebar popover)
                        **/
-                      minWidth: this.getCanvasMinWidth(),
+                      minWidth: this.state.editorMarginLeft ? this.getCanvasMinWidth() : 'auto',
                       backgroundColor: this.computeCanvasBackgroundColor(),
+                      transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
                     }}
                   >
                     {config.ENABLE_MULTIPLAYER_EDITING && (
