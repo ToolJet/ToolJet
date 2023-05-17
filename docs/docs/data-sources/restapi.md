@@ -64,7 +64,8 @@ Query results can be transformed using Transformation. For more information on t
 
 ## Response types
 
-REST APIs can return data in a variety of formats, including **JSON** and **Base64**. JSON is a common format used for data exchange in REST APIs, while Base64 is often used for encoding binary data, such as images or video, within a JSON response. 
+REST APIs can return data in a variety of formats, including **JSON** and **Base64**. JSON is a common format used for data exchange in REST APIs, while Base64 is often used for encoding binary data, such as images or video, within a JSON response.  
+When the response `content-type` is **image**, the response will be a `base64` string.
 
 ### Example JSON response
 
