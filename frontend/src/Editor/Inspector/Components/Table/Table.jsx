@@ -923,7 +923,9 @@ class TableComponent extends React.Component {
     const useDynamicColumn = component.component.definition.properties.useDynamicColumn?.value
       ? resolveReferences(component.component.definition.properties.useDynamicColumn?.value, currentState) ?? false
       : false;
-
+    const allowSelection = component.component.definition.properties?.allowSelection?.value
+      ? resolveReferences(component.component.definition.properties.allowSelection?.value, currentState)
+      : true;
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
     };
@@ -1076,8 +1078,9 @@ class TableComponent extends React.Component {
       'showFilterButton',
       ...(displayServerSideFilter ? ['serverSideFilter'] : []),
       'showBulkUpdateActions',
+      'allowSelection',
+      ...(allowSelection ? ['highlightSelectedRow'] : []),
       'showBulkSelector',
-      'highlightSelectedRow',
       'hideColumnSelectorButton',
     ];
 
