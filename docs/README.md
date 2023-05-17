@@ -20,7 +20,7 @@ We welcome your valuable feedback on the documentation! Please feel free to join
 ## Documentation Issues
 If you come across any issues with the documentation or have a feature request related explicitly to it, we encourage you to create a new [GitHub issue](https://github.com/ToolJet/ToolJet/issues/new?assignees=&labels=documentation&template=03_documentation_report.yml&title=%5Bdocs%5D%3A+) following the template. Before creating a new issue, we kindly request that you check for existing issues to avoid duplication. 
 
-If you think the issue is with the ToolJet product itself, please choose the relevant issue template [here](https://github.com/ToolJet/ToolJet/issues/new/choose).
+In case you encounter any issues with the ToolJet product, please select the relevant issue template from [here](https://github.com/ToolJet/ToolJet/issues/new/choose).
 
 ## Contributing
 To contribute to ToolJet documentation, you need to fork this repository and submit a pull request for the Markdown and/or image changes that you're proposing.
