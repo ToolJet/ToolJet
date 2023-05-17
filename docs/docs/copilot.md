@@ -35,7 +35,7 @@ Copilot's functionality relies on the provision of clear and concise plain Engli
 
 This example demonstrates the usage of copilot by generating a SQL query to fetch the order details from a PostgreSQL database based on the key provided in the REST API data.
 
-- Let's create a RESTAPI query using this mock api endpoint: https://fakestoreapi.com/users/1
+- Create a RESTAPI query using this mock api endpoint: https://fakestoreapi.com/users/1
 - Enable transformation on the query editor
 
 <div style={{textAlign: 'center'}}>
