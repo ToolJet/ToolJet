@@ -9,11 +9,12 @@ export const organizationUserService = {
   inviteBulkUsers,
 };
 
-function create(first_name, last_name, email) {
+function create(first_name, last_name, email, groupIds = []) {
   const body = {
     first_name,
     last_name,
     email,
+    groups: groupIds,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };

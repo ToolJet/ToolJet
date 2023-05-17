@@ -25,7 +25,7 @@ const Multiselect = (props) => {
       <MultiSelect
         options={optionData}
         placeholder={props.placeholder}
-        value={props.selectedApps}
+        value={props?.value || []}
         onChange={onChangeHandler}
         labelledBy="Select"
         overrideStrings={props.overrideStrings}

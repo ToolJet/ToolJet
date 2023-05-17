@@ -165,8 +165,8 @@ class ManageOrgUsersComponent extends React.Component {
     });
   };
 
-  createUser = (event) => {
-    event.preventDefault();
+  createUser = (selectedGroups) => {
+    console.log('selectedGroups ===> [workspaces]', { selectedGroups, field: this.state.fields });
 
     if (this.handleValidation()) {
       if (!this.state.fields.fullName?.trim()) {
@@ -184,12 +184,7 @@ class ManageOrgUsersComponent extends React.Component {
       });
 
       organizationUserService
-        .create(
-          this.state.fields.firstName,
-          this.state.fields.lastName,
-          this.state.fields.email,
-          this.state.fields.role
-        )
+        .create(this.state.fields.firstName, this.state.fields.lastName, this.state.fields.email, selectedGroups)
         .then(() => {
           toast.success('User has been created');
           this.fetchUsers();
