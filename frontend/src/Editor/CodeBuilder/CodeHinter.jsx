@@ -69,6 +69,7 @@ export function CodeHinter({
   popOverCallback,
   cyLabel = '',
   callgpt = () => null,
+  isCopilotEnabled = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -323,6 +324,7 @@ export function CodeHinter({
                 />
               )}
               <CodeHinter.Portal
+                isCopilotEnabled={isCopilotEnabled}
                 isOpen={isOpen}
                 callback={setIsOpen}
                 componentName={componentName}
