@@ -99,6 +99,7 @@ describe("App Version Functionality", () => {
     );
 
     cy.reload();
+    cy.wait(3000);
     releasedVersionAndVerify((currentVersion = "v3"));
     navigateToCreateNewVersionModal((currentVersion = "v3"));
     createNewVersion((newVersion = ["v6"]), (versionFrom = "v3"));
