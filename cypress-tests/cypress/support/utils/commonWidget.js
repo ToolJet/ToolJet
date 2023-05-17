@@ -263,7 +263,7 @@ export const verifyLoaderColor = (widgetName, color) => {
     .should("attr", "style")
     .and(
       "contains",
-      `--loader-color:rgba(${color[0]}, ${color[1]}, ${color[2]}, ${
+      `--loader-color: rgba(${color[0]}, ${color[1]}, ${color[2]}, ${
         color[3] / 100
       })`
     );
