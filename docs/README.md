@@ -3,7 +3,7 @@
   <h1 align="center">ToolJet Documentation</h1>
 </p>
 
-This directory(tooljet/docs/) contains the ToolJet documentation website code and markdown source files for [docs.tooljet.com](https://docs.tooljet.com)
+The directory "ToolJet/docs/" holds the code and markdown source files for the ToolJet documentation website, which is accessible at [docs.tooljet.com](docs.tooljet.com)
 
 ## Index
 - [Feedback](#feedback)
