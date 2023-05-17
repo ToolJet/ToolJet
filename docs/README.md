@@ -18,7 +18,7 @@ The directory "ToolJet/docs/" holds the code and markdown source files for the T
 We welcome your valuable feedback on the documentation! Please feel free to join our [Community on Slack](https://tooljet.com/slack) and send us a message. We would be delighted to hear from you and assist you with any queries or concerns you may have. 
 
 ## Documentation Issues
-If you encounter any issues with the documentation or have a feature request related to it, you can create a new [GitHub issue](https://github.com/ToolJet/ToolJet/issues/new?assignees=&labels=documentation&template=03_documentation_report.yml&title=%5Bdocs%5D%3A+) using the provided template. Please ensure that you check for existing issues before creating a new one.
+If you come across any issues with the documentation or have a feature request related explicitly to it, we encourage you to create a new [GitHub issue](https://github.com/ToolJet/ToolJet/issues/new?assignees=&labels=documentation&template=03_documentation_report.yml&title=%5Bdocs%5D%3A+) following the template. Before creating a new issue, we kindly request that you check for existing issues to avoid duplication. 
 
 If you think the issue is with the ToolJet product itself, please choose the relevant issue template [here](https://github.com/ToolJet/ToolJet/issues/new/choose).
 
