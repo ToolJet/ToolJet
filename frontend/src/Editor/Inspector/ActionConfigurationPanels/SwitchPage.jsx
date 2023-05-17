@@ -46,7 +46,7 @@ export function SwitchPage({ getPages, currentState, event, handlerChanged, even
   };
 
   return (
-    <div className="p-1 switch-page">
+    <div className="p-1 switch-page" data-cy={`switch-page-label-and-input`}>
       <label className="form-label mt-1">{t('globals.page', 'Page')}</label>
       <Select
         options={getPages()}
@@ -75,6 +75,7 @@ export function SwitchPage({ getPages, currentState, event, handlerChanged, even
                 mode="javascript"
                 className="form-control codehinter-query-editor-input"
                 height={30}
+                cyLabel={`query-param-key`}
               />
             </div>
             <div className="col">
@@ -85,6 +86,7 @@ export function SwitchPage({ getPages, currentState, event, handlerChanged, even
                 mode="javascript"
                 className="form-control codehinter-query-editor-input"
                 height={30}
+                cyLabel={`query-param-value`}
               />
             </div>
             <span className="btn-sm col-auto my-1" role="button" onClick={() => deleteQueryParam(index)}>
@@ -93,7 +95,11 @@ export function SwitchPage({ getPages, currentState, event, handlerChanged, even
           </div>
         ))}
 
-      <button className="btn btn-sm btn-outline-azure mt-2 mx-0 mb-0" onClick={addQueryParam}>
+      <button
+        className="btn btn-sm btn-outline-azure mt-2 mx-0 mb-0"
+        onClick={addQueryParam}
+        data-cy={`button-add-query-param`}
+      >
         +
       </button>
     </div>
