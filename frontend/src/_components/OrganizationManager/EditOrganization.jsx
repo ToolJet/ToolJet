@@ -4,10 +4,12 @@ import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { validateName } from '@/_helpers/utils';
 
 export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
+  const [errorText, setErrorText] = useState('');
   const { t } = useTranslation();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -15,21 +17,21 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
 
   const editOrganization = () => {
     const trimmedName = newOrgName?.trim();
-    if (!trimmedName) {
-      toast.error('Workspace name can not be empty.');
+    if (errorText) {
       return;
     }
-    if (currentValue?.name === trimmedName) return;
-    setIsCreating(true);
-    organizationService.editOrganization({ name: trimmedName }).then(
-      () => {
-        toast.success('Workspace updated');
-        window.location.reload();
-      },
-      (err) => {
-        toast.error(err?.data?.message || 'Error while editing workspace');
-      }
-    );
+    if (currentValue?.name !== trimmedName) {
+      setIsCreating(true);
+      organizationService.editOrganization({ name: trimmedName }).then(
+        () => {
+          toast.success('Workspace updated');
+          window.location.reload();
+        },
+        (err) => {
+          toast.error(err?.data?.message || 'Error while editing workspace');
+        }
+      );
+    }
     setIsCreating(false);
     setShowEditOrg(false);
   };
@@ -41,11 +43,18 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
       title={t('header.organization.editWorkspace', 'Edit workspace')}
       checkForBackground={false}
     >
-      <div className="row mb-3">
+      <div className="row mb-3 workspace-modal">
         <div className="col modal-main tj-app-input">
           <input
             type="text"
-            onChange={(e) => setNewOrgName(e.target.value)}
+            onChange={(e) => {
+              setErrorText('');
+              const error = validateName(e.target.value, currentValue.name, 'Workspace name');
+              if (!error.status) {
+                setErrorText(error.errorMsg);
+              }
+              setNewOrgName(e.target.value);
+            }}
             className="form-control"
             placeholder={t('header.organization.workspaceName', 'workspace name')}
             disabled={isCreating}
@@ -53,6 +62,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
             maxLength={40}
             autoFocus
           />
+          <label className="tj-input-error">{errorText || ''}</label>
         </div>
       </div>
       <div className="row">

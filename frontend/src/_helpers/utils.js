@@ -783,3 +783,51 @@ export function isExpectedDataType(data, expectedDataType) {
 
   return data;
 }
+
+export const validateName = (name, oldName, nameType, showError = false) => {
+  const newName = name.trim();
+  let errorMsg = '';
+  if (!newName) {
+    errorMsg = `${nameType} can't be empty`;
+    showError &&
+      toast(errorMsg, {
+        icon: '🚨',
+        id: '1',
+      });
+    return {
+      status: false,
+      errorMsg,
+    };
+  }
+
+  //check for alphanumeric
+  if (newName.match(/^[A-Za-z0-9 ]+$/) === null) {
+    errorMsg = `${nameType} must only contain letters and numbers`;
+    showError &&
+      toast(errorMsg, {
+        icon: '🚨',
+        id: '2',
+      });
+    return {
+      status: false,
+      errorMsg,
+    };
+  }
+
+  if (newName.length > 40) {
+    errorMsg = `${nameType} cannot be longer than 25 characters.`;
+    showError &&
+      toast.error(errorMsg, {
+        id: '3',
+      });
+    return {
+      status: false,
+      errorMsg,
+    };
+  }
+
+  return {
+    status: true,
+    errorMsg: '',
+  };
+};
