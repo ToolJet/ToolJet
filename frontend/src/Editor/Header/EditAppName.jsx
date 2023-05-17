@@ -2,6 +2,7 @@ import React from 'react';
 import EditIcon from '../Icons/edit.svg';
 import { appService } from '@/_services';
 import { toast } from 'react-hot-toast';
+import { validateName } from '../../_helpers/utils';
 
 function EditAppName({ appId, appName, onNameChanged }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -13,10 +14,7 @@ function EditAppName({ appId, appName, onNameChanged }) {
 
   const saveAppName = async (name) => {
     const newName = name.trim();
-    if (!newName) {
-      toast("App name can't be empty or whitespace", {
-        icon: '🚨',
-      });
+    if (!validateName(name, appName, 'App name')) {
       return;
     }
     if (newName === appName) {
@@ -40,7 +38,10 @@ function EditAppName({ appId, appName, onNameChanged }) {
     <div className={`app-name input-icon ${darkMode ? 'dark' : ''}`}>
       <input
         type="text"
-        onChange={(e) => setName(e.target.value)}
+        onChange={(e) => {
+          validateName(e.target.value, appName, 'App name', true);
+          setName(e.target.value);
+        }}
         onBlur={(e) => saveAppName(e.target.value)}
         className="form-control-plaintext form-control-plaintext-sm"
         value={name}
