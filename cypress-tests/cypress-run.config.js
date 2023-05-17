@@ -88,10 +88,10 @@ module.exports = defineConfig({
       "cypress/e2e/editor/multipage/*.cy.js",
     ],
     numTestsKeptInMemory: 1,
-    redirectionLimit: 10,
+    redirectionLimit: 7,
     experimentalRunAllSpecs: true,
     experimentalMemoryManagement: true,
-    video: true,
+    video: false,
     videoUploadOnPasses: false,
   },
 });
