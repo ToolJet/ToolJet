@@ -12,6 +12,7 @@ import { BreadCrumbContext } from '@/App/App';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';
+import { validateName } from '@/_helpers/utils';
 
 export const Folders = function Folders({
   folders,
@@ -38,6 +39,7 @@ export const Folders = function Folders({
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [activeFolder, setActiveFolder] = useState(currentFolder || {});
   const [filteredData, setFilteredData] = useState(folders);
+  const [errorText, setErrorText] = useState('');
 
   const { t } = useTranslation();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
@@ -64,7 +66,7 @@ export const Folders = function Folders({
   };
 
   function saveFolder() {
-    if (validateName()) {
+    if (!errorText) {
       setCreationStatus(true);
       folderService
         .create(newFolderName.trim())
@@ -127,27 +129,17 @@ export const Folders = function Folders({
     setDeletingFolder(null);
   }
 
-  function validateName() {
-    const trimmedName = newFolderName?.trim();
-    if (!trimmedName) {
-      toast.error('Folder name cannot be empty.');
-      return false;
-    }
-
-    if (trimmedName > 40) {
-      toast.error('Folder name cannot be longer than 40 characters.');
-      return false;
-    }
-
-    if (trimmedName === updatingFolder?.name) return false;
-    return true;
-  }
-
   function executeEditFolder() {
-    if (validateName()) {
+    const folderName = newFolderName.trim();
+    if (folderName === updatingFolder?.name) {
+      setUpdationStatus(false);
+      setShowUpdateForm(false);
+      return;
+    }
+    if (!errorText) {
       setUpdationStatus(true);
       folderService
-        .updateFolder(newFolderName.trim(), updatingFolder.id)
+        .updateFolder(folderName, updatingFolder.id)
         .then(() => {
           toast.success('Folder has been updated.');
           setUpdationStatus(false);
@@ -292,11 +284,18 @@ export const Folders = function Folders({
             : t('homePage.foldersSection.createFolder', 'Create folder')
         }
       >
-        <div className="row">
+        <div className="row workspace-folder-modal">
           <div className="col modal-main tj-app-input">
             <input
               type="text"
-              onChange={(e) => setNewFolderName(e.target.value)}
+              onChange={(e) => {
+                setErrorText('');
+                const error = validateName(e.target.value, '', 'Folder name');
+                if (!error.status) {
+                  setErrorText(error.errorMsg);
+                }
+                setNewFolderName(e.target.value);
+              }}
               className="form-control"
               placeholder={t('homePage.foldersSection.folderName', 'folder name')}
               disabled={isCreating || isUpdating}
@@ -305,6 +304,7 @@ export const Folders = function Folders({
               data-cy="folder-name-input"
               autoFocus
             />
+            <label className="tj-input-error">{errorText || ''}</label>
           </div>
         </div>
         <div className="row">
