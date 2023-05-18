@@ -48,6 +48,7 @@ function WorkflowEditor(props) {
         const versionId = appData.editing_version.id;
         const organizationId = appData.organizationId;
         const name = appData.name;
+        const isMaintenanceOn = appData.is_maintenance_on;
         editorSessionActions.setAppVersionId(versionId);
         editorSessionActions.setAppName(name);
         document.title = `${name} - ToolJet`;

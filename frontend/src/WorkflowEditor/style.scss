@@ -32,11 +32,18 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
+        align-items: center;
+        width: 'fit-content';
+        margin-right: 24px;
 
         .app-name {
           position: relative;
           left: 0;
           top:0;
+          width: fit-content;
+          .form-control-plaintext {
+            width: fit-content;
+          }
         }
       }
 

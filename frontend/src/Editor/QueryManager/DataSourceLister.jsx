@@ -6,6 +6,7 @@ import RunpyIcon from '../Icons/runpy.svg';
 import AddIcon from '../../../assets/images/icons/add-source.svg';
 import { useTranslation } from 'react-i18next';
 import { getSvgIcon } from '@/_helpers/appUtils';
+import Beta from '@/_ui/Beta';
 
 function DataSourceLister({
   dataSources,
@@ -66,6 +67,15 @@ function DataSourceLister({
               {' '}
               {source.name}
             </p>
+            {source.kind === 'workflows' && (
+              <Beta
+                style={{
+                  fontSize: '12px',
+                  width: '46px',
+                  height: '24px',
+                }}
+              />
+            )}
           </div>
         );
       })}
