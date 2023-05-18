@@ -254,6 +254,7 @@ export function Page3({ formData, setFormData, setPage, page, setCompleted, isLo
   return (
     <div className="onboarding-pages-wrapper">
       <PhoneInput
+        country={'us'}
         inputProps={{
           autoFocus: true,
         }}
