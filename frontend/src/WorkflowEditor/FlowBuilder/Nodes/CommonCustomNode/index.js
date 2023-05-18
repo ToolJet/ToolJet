@@ -7,9 +7,10 @@ import WorkflowEditorContext from '../../../context';
 import DataSourceIcon from '../../DataSourceIcon';
 
 function CommonCustomNode(props) {
-  const { editorSession, updateQuery } = useContext(WorkflowEditorContext);
-  const { width, height, id, data: nodeData } = props;
+  const { editorSession } = useContext(WorkflowEditorContext);
+  const { data: nodeData } = props;
   const queryData = find(editorSession.queries, { idOnDefinition: nodeData.idOnDefinition });
+  if (!queryData) return null;
   const sourceData = find(editorSession.dataSources, { kind: queryData.kind });
 
   return (

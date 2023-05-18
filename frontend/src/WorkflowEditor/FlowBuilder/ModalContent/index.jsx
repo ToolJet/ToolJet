@@ -4,20 +4,27 @@ import QueryNode from '../Nodes/Query';
 import { CodeHinter } from '../../../Editor/CodeBuilder/CodeHinter';
 import WorkflowEditorContext from '../../context';
 import DeleteIcon from '@assets/images/icons/delete.svg';
+import { dataqueryService } from '@/_services';
 
 function ModalContent({ node, darkMode, onClose }) {
   const { editorSession, editorSessionActions } = useContext(WorkflowEditorContext);
-  const { updateFlow } = editorSessionActions;
+  const { updateFlow, setQueries } = editorSessionActions;
   if (!node) return null;
   const { id } = node;
 
   const onNodeDelete = () => {
-    const node = find(editorSession.app.flow.nodes, { id: id });
     const edges = editorSession.app.flow.edges.filter((edge) => edge.source !== node.id && edge.target !== node.id);
     updateFlow({
       nodes: editorSession.app.flow.nodes.filter((node) => node.id !== id),
       edges,
     });
+    const queryIdToDelete = editorSession.queries.find(
+      (query) => query.idOnDefinition === node.data.idOnDefinition
+    )?.id;
+    // delete the query on the backend.
+    dataqueryService.del(queryIdToDelete);
+    // update the new queries in the editor session/redux store
+    setQueries(editorSession.queries.filter((query) => query.idOnDefinition !== node.data.idOnDefinition));
     onClose && onClose();
   };
 
@@ -46,7 +53,7 @@ function ModalContent({ node, darkMode, onClose }) {
     <div className="node-modal-content">
       {renderNode}
       <DeleteIcon
-        style={{ cursor: 'pointer', position: 'absolute', top: '12px', right: '12px' }}
+        style={{ cursor: 'pointer', position: 'absolute', top: '34px', right: '28px' }}
         onClick={onNodeDelete}
       />
     </div>

@@ -54,8 +54,13 @@
     .grid {
       width: 100%;
 
-      .row {
+      .content-section {
+        margin-top: 8px;
         margin-bottom: 5px;
+
+        .query-hinter {
+          height: 250px !important;
+        }
       }
     }
 
@@ -67,6 +72,7 @@
       display: flex;
       justify-content: space-around;
       align-items: center;
+      width: 95%;
       gap: 8px;
     }
   }

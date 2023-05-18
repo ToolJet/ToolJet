@@ -108,7 +108,7 @@ export default function QueryNode(props) {
               onChange={onQueryTypeChange}
             />
           </div>
-          <div className="row">
+          <div className="row content-section">
             <QueryBuilder
               pluginSchema={schema}
               isEditMode={true}
@@ -126,7 +126,7 @@ export default function QueryNode(props) {
             />
             <div className="result-section">
               <label className="result-label">Results</label>
-              <div style={{ width: '100%', height: '400px', overflow: 'scroll' }}>
+              <div style={{ width: '100%', height: '300px', overflow: 'scroll' }}>
                 <JSONTreeViewer
                   data={executionDetails.result}
                   useIcons={false}
