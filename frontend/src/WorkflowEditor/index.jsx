@@ -49,8 +49,10 @@ function WorkflowEditor(props) {
         const organizationId = appData.organizationId;
         const name = appData.name;
         const isMaintenanceOn = appData.is_maintenance_on;
+        // TODO: could we map all app data setup in action/reducer?
         editorSessionActions.setAppVersionId(versionId);
         editorSessionActions.setAppName(name);
+        editorSessionActions.setMaintenanceStatus(isMaintenanceOn);
         document.title = `${name} - ToolJet`;
 
         if (appData.definition) {

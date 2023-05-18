@@ -78,6 +78,9 @@ export const reducer = (state = initialState(), { payload, type }) => {
     case 'SET_APP_NAME': {
       return { ...state, app: { ...state.app, name: payload.name } };
     }
+    case 'SET_MAINTENANCE_STATUS': {
+      return { ...state, maintenance: payload.status };
+    }
     case 'SET_DATA_SOURCES': {
       return { ...state, dataSources: [...state.dataSources, ...payload.dataSources] };
     }

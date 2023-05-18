@@ -10,10 +10,11 @@ import Beta from '../../_ui/Beta';
 
 const Header = (props) => {
   const { executeWorkflow, editorSession, editorSessionActions, saveAppName } = props;
-  const [value, setValue] = useState(false);
+  const value = editorSession.maintenance;
 
   const onEnableChange = () => {
     appService.setMaintenance(editorSession.app.id, !value);
+    editorSessionActions.setMaintenanceStatus(!value);
   };
 
   return (
