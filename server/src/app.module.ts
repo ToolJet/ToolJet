@@ -113,17 +113,13 @@ if (process.env.SERVE_CLIENT !== 'false') {
       newValue = fileName === 'index.html' ? '/' : '';
     }
 
-    fs.readFile(file, 'utf8', function (err, data) {
-      if (err) {
-        return console.log(err);
-      }
-      const result = data
-        .replace(/__REPLACE_SUB_PATH__\/api/g, path.join(newValue, '/api'))
-        .replace(/__REPLACE_SUB_PATH__/g, newValue);
-      fs.writeFile(file, result, 'utf8', function (err) {
-        if (err) return console.log(err);
-      });
-    });
+    const data = fs.readFileSync(file, { encoding: 'utf8' });
+
+    const result = data
+      .replace(/__REPLACE_SUB_PATH__\/api/g, path.join(newValue, '/api'))
+      .replace(/__REPLACE_SUB_PATH__/g, newValue);
+
+    fs.writeFileSync(file, result, { encoding: 'utf8' });
   }
 
   imports.unshift(
