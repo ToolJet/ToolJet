@@ -185,10 +185,10 @@ export const createNewColumnAndVerify = (
     createNewColumnText.defaultValueLabel
   );
   cy.clearAndType(createNewColumnSelectors.columnNameInputField, columnName);
-  cy.get(createNewColumnSelectors.dataTypeDropdown) .within(() => {
+  cy.get(createNewColumnSelectors.dataTypeDropdown).within(() => {
     cy.contains(`Select data type`).click();
-  cy.contains(`[id*="react-select-"]`, columnDataType).click();
-  })
+    cy.contains(`[id*="react-select-"]`, columnDataType).click();
+  });
   if (defaultValue) {
     cy.clearAndType(
       createNewColumnSelectors.defaultValueInputField,
@@ -481,7 +481,7 @@ export const editRowAndVerify = (
     .realClick();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
-    createNewRowText.rowCreatedSuccessfullyToast
+    editRowText.rowEditedSuccessfullyToast
   );
   verifyRowData(rowNumber, columnName, rowFieldData);
 };

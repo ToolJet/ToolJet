@@ -2,6 +2,8 @@ import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonText } from "Texts/common";
+import { closeDSModal,deleteDatasource } from "Support/utils/dataSource";
 import {
   addQuery,
   fillDataSourceTextField,
@@ -16,20 +18,14 @@ import {
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
   it("Should verify elements on connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
-      .click();
-
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal()
+    cy.get(commonSelectors.addNewDataSourceButton)
+    .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
+    .click();
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -48,7 +44,7 @@ describe("Data sources", () => {
     );
 
     cy.get(postgreSqlSelector.dataSourceSearchInputField).type("CosmosDB");
-    cy.get("[data-cy*='data-source-']").eq(0).should("contain", "CosmosDB");
+    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "CosmosDB");
     cy.get('[data-cy="data-source-cosmosdb"]').click();
 
     cy.get(postgreSqlSelector.dataSourceNameInputField).should(
@@ -88,7 +84,7 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
       "have.text",
       "Invalid URL"
     );
@@ -96,7 +92,6 @@ describe("Data sources", () => {
 
   it("Should verify the functionality of CosmosDB connection form.", () => {
     selectDataSource("CosmosDB");
-
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
       "cypress-cosmosdb"
@@ -104,12 +99,12 @@ describe("Data sources", () => {
 
     fillDataSourceTextField(
       "End point",
-      'https://your-account.documents.azure.com',
+      "https://your-account.documents.azure.com",
       Cypress.env("cosmosdb_end_point")
     );
     fillDataSourceTextField(
-      'Key',
-      'Enter your key',
+      "Key",
+      "Enter your key",
       Cypress.env("cosmosdb_key")
     );
 
@@ -124,11 +119,10 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", "cypress-cosmosdb")
-      .find("button")
-      .invoke('show')
-      .should("be.visible");
+    cy.get('[data-cy="cypress-cosmosdb-button"]').verifyVisibleElement(
+      "have.text",
+      "cypress-cosmosdb"
+    );
+    deleteDatasource("cypress-cosmosdb");
   });
 });

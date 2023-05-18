@@ -183,9 +183,7 @@ export const passwordPageElements = () => {
         commonSelectors.toastMessage,
         ssoText.passwordEnabledToast
       );
-
     } else {
-
       cy.get(ssoSelector.passwordEnableToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
