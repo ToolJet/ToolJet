@@ -69,6 +69,7 @@ export const QueryManagerBody = forwardRef(
           ? selectedQuery?.manifestFile?.data?.source
           : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind)
       );
+      defaultOptions.current = selectedQuery?.options;
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedQuery?.id]);
 

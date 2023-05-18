@@ -1278,11 +1278,11 @@ $border-radius: 4px;
     .CodeMirror-gutters {
       background-color: $color-light-slate-02;
     }
+  }
 
-    .query-hinter {
-      textarea:first-of-type {
-        opacity: 0.1; // Added to avoid displaying textarea while switching from one RunJS Query to another
-      }
+  .code-hinter, .query-hinter {
+    textarea:first-of-type {
+      opacity: 0.1; // Added to avoid displaying textarea while switching from one Query to another
     }
   }
 
