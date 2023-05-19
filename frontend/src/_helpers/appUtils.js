@@ -777,10 +777,19 @@ export function getQueryVariables(options, state) {
   switch (optionsType) {
     case 'string': {
       options = options.replace(/\n/g, ' ');
-      const dynamicVariables = getDynamicVariables(options) || [];
-      dynamicVariables.forEach((variable) => {
-        queryVariables[variable] = resolveReferences(variable, state);
-      });
+      // check if {{var}} and %%var%% are present in the string
+
+      if (options.includes('{{') && options.includes('%%')) {
+        const vars = resolveReferences(options, state);
+        console.log('queryVariables', { options, vars });
+        queryVariables[options] = vars;
+      } else {
+        const dynamicVariables = getDynamicVariables(options) || [];
+        dynamicVariables.forEach((variable) => {
+          queryVariables[variable] = resolveReferences(variable, state);
+        });
+      }
+
       break;
     }
 
@@ -800,11 +809,14 @@ export function getQueryVariables(options, state) {
     default:
       break;
   }
+  console.log('queryVariables --', { queryVariables });
   return queryVariables;
 }
 
 export function previewQuery(_ref, query, editorState, calledFromQuery = false) {
   const options = getQueryVariables(query.options, _ref.props.currentState);
+
+  console.log('previewQuery queryVariables', { query, options });
 
   _ref.setState({ previewLoading: true });
 
