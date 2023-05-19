@@ -11,11 +11,36 @@ import { AllExceptionsFilter } from './all-exceptions-filter';
 import { RequestMethod, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
+import * as path from 'path';
 import { join } from 'path';
 
 const fs = require('fs');
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
+
+function replaceSubpathPlaceHodersInStaticAssets() {
+  {
+    const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
+
+    for (const fileName of filesToReplaceAssetPath) {
+      const file = join(__dirname, '../../../', 'frontend/build', fileName);
+
+      let newValue = process.env.SUB_PATH;
+
+      if (process.env.SUB_PATH === undefined) {
+        newValue = fileName === 'index.html' ? '/' : '';
+      }
+
+      const data = fs.readFileSync(file, { encoding: 'utf8' });
+
+      const result = data
+        .replace(/__REPLACE_SUB_PATH__\/api/g, path.join(newValue, '/api'))
+        .replace(/__REPLACE_SUB_PATH__/g, newValue);
+
+      fs.writeFileSync(file, result, { encoding: 'utf8' });
+    }
+  }
+}
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -99,6 +124,10 @@ async function bootstrap() {
 
   const port = parseInt(process.env.PORT) || 3000;
 
+  if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
+    replaceSubpathPlaceHodersInStaticAssets();
+  }
+
   await app.listen(port, '0.0.0.0', function () {
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
     console.log(`Ready to use at ${tooljetHost} 🚀`);
@@ -110,5 +139,6 @@ if (process.env.TOOLJET_HTTP_PROXY) {
   process.env['GLOBAL_AGENT_HTTP_PROXY'] = process.env.TOOLJET_HTTP_PROXY;
   globalAgentBootstrap();
 }
+
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();
