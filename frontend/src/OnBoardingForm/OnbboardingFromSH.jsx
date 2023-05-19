@@ -28,7 +28,7 @@ function OnbboardingFromSH({ darkMode }) {
     email: '',
     password: '',
     workspace: '',
-    phoneNumber: '',
+    phoneNumber: '+1',
   });
 
   const pageProps = {

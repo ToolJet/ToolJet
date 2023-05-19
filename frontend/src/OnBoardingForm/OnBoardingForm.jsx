@@ -22,7 +22,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     companyName: '',
     role: '',
     companySize: '',
-    phoneNumber: '',
+    phoneNumber: '+1',
   });
 
   const pageProps = {
