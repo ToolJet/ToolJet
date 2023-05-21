@@ -19,7 +19,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.264.0",
     "@aws-sdk/credential-providers": "^3.266.1",
-    "@aws-sdk/s3-request-presigner": "^3.264.0",
+    "@aws-sdk/s3-request-presigner": "^3.321.1",
     "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"
