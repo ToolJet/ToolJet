@@ -129,7 +129,7 @@ async function bootstrap() {
 
   const port = parseInt(process.env.PORT) || 3000;
 
-  if (process.env.SERVE_CLIENT !== 'false') {
+  if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
     replaceSubpathPlaceHoldersInStaticAssets();
   }
 
