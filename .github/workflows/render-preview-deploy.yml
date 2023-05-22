@@ -242,16 +242,25 @@ jobs:
               console.log(e)
             }
 
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt update
+          sudo apt install postgresql-client -y
+
       - name: Drop PostgreSQL PR database
         env:
           PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
           PGPORT: 5432
           PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
-          PGPASSWORD: ${{ secrets.RENDER_DS_PG_PASS }}
           PGDATABASE: ${{ env.PR_NUMBER }}
         run: |
-          psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "DROP DATABASE $PGDATABASE;" 
+          PGPASSWORD: ${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "DROP DATABASE $PGDATABASE;" 
 
+      - name: Uninstall PostgreSQL client
+        run: |
+          sudo apt update
+          sudo apt remove postgresql-client -y
+          
   suspend-review-app:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-app' }}
     runs-on: ubuntu-latest
