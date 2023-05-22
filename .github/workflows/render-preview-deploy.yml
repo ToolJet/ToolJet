@@ -244,10 +244,10 @@ jobs:
 
       - name: Drop PostgreSQL PR database
         env:
-          PGHOST: ${{ secrets.RENDER_PG_HOST }}
+          PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
           PGPORT: 5432
-          PGUSER: ${{ secrets.RENDER_PG_PASS }}
-          PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
+          PGPASSWORD: ${{ secrets.RENDER_DS_PG_PASS }}
           PGDATABASE: ${{ env.PR_NUMBER }}
         run: |
           psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "DROP DATABASE $PGDATABASE;" 
