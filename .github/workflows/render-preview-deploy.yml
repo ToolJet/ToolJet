@@ -5,6 +5,7 @@ on:
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  MARKETPLACE_TAG: ${{ contains(github.event.pull_request.labels.*.name, 'marketplace') }}
 
 permissions:
   pull-requests: write
@@ -12,7 +13,7 @@ permissions:
 
 jobs:
   create-review-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'create-review-app' }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'create-review-app' && !env.MARKETPLACE_TAG }}
     runs-on: ubuntu-latest
 
     steps:
@@ -128,6 +129,10 @@ jobs:
               {
                 "key": "SMTP_PASSWORD",
                 "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"
+              },
+              {
+                "key": "ENABLE_MARKETPLACE_FEATURE",
+                "value": "${{ env.MARKETPLACE_TAG }}"
               }
             ],
             "serviceDetails": {
