@@ -244,9 +244,9 @@ jobs:
 
       - name: Drop PostgreSQL PR database
         env:
-          PGHOST: dpg-cf4metg2i3mtiflq3dvg-a.oregon-postgres.render.com
+          PGHOST: ${{ secrets.RENDER_PG_HOST }}
           PGPORT: 5432
-          PGUSER: preview_env_db_user
+          PGUSER: ${{ secrets.RENDER_PG_PASS }}
           PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           PGDATABASE: ${{ env.PR_NUMBER }}
         run: |
