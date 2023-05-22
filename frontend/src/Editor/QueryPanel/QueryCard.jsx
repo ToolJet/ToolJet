@@ -132,7 +132,7 @@ export const QueryCard = ({
               overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
             >
               <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
-                {dataQuery.name} {dataQuery.status === 'draft' && <small className="ms-2 text-secondary">draft</small>}
+                {dataQuery.name} {dataQuery.status === 'draft' && <small className="ms-2 text-secondary">Draft</small>}
               </div>
             </OverlayTrigger>
           )}
