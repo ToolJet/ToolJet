@@ -18,27 +18,32 @@ const fs = require('fs');
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
 
-function replaceSubpathPlaceHodersInStaticAssets() {
-  {
-    const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
+function replaceSubpathPlaceHoldersInStaticAssets() {
+  const pathToBuild = join(__dirname, '../../../', 'frontend/build');
+  const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
 
-    for (const fileName of filesToReplaceAssetPath) {
-      const file = join(__dirname, '../../../', 'frontend/build', fileName);
+  const fileNameWithHash = fs
+    .readdirSync(pathToBuild)
+    .filter((file) => filesToReplaceAssetPath.some((fileName) => file.startsWith(`${fileName}?`)));
 
-      let newValue = process.env.SUB_PATH;
+  console.log('Front end build hashed files', fileNameWithHash.join());
 
-      if (process.env.SUB_PATH === undefined) {
-        newValue = fileName === 'index.html' ? '/' : '';
-      }
+  for (const fileName of fileNameWithHash) {
+    const file = join(__dirname, '../../../', 'frontend/build', fileName);
 
-      const data = fs.readFileSync(file, { encoding: 'utf8' });
+    let newValue = process.env.SUB_PATH;
 
-      const result = data
-        .replace(/__REPLACE_SUB_PATH__\/api/g, path.join(newValue, '/api'))
-        .replace(/__REPLACE_SUB_PATH__/g, newValue);
-
-      fs.writeFileSync(file, result, { encoding: 'utf8' });
+    if (process.env.SUB_PATH === undefined) {
+      newValue = fileName.startsWith('index.html?') ? '/' : '';
     }
+
+    const data = fs.readFileSync(file, { encoding: 'utf8' });
+
+    const result = data
+      .replace(/__REPLACE_SUB_PATH__\/api/g, path.join(newValue, '/api'))
+      .replace(/__REPLACE_SUB_PATH__/g, newValue);
+
+    fs.writeFileSync(file, result, { encoding: 'utf8' });
   }
 }
 
@@ -124,8 +129,8 @@ async function bootstrap() {
 
   const port = parseInt(process.env.PORT) || 3000;
 
-  if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
-    replaceSubpathPlaceHodersInStaticAssets();
+  if (process.env.SERVE_CLIENT !== 'false') {
+    replaceSubpathPlaceHoldersInStaticAssets();
   }
 
   await app.listen(port, '0.0.0.0', function () {
