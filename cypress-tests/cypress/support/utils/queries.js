@@ -22,10 +22,11 @@ export const changeQueryToggles = (option) => {
   cy.get(`[data-cy="${option}-toggle-switch"]`).click();
 };
 
-export const renameQueryFromEditor = () => {
-  cy.get('[data-cy="query-name-label"]').realHower();
+export const renameQueryFromEditor = (name) => {
+  cy.get('[data-cy="query-name-label"]').realHover();
   cy.get('[class="breadcrum-rename-query-icon false"]').click();
-  cy.realType(`${name}{enter}`);
+  cy.get('[data-cy="query-rename-input"]').clear().type(`${name}{enter}`);
+  // cy.realType(`{selectAll}{backspace}${name}{enter}`);
 };
 
 export const addInputOnQueryField = (field, data) => {
