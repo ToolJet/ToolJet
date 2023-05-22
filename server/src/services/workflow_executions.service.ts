@@ -146,7 +146,9 @@ export class WorkflowExecutionsService {
   }
 
   async execute(workflowExecution: WorkflowExecution, params: object = {}): Promise<object> {
-    const appVersion = await this.appVersionsRepository.findOne(workflowExecution.appVersionId);
+    const appVersion = await this.appVersionsRepository.findOne(workflowExecution.appVersionId, {
+      relations: ['app'],
+    });
 
     workflowExecution = await this.workflowExecutionRepository.findOne({
       where: {
@@ -155,16 +157,17 @@ export class WorkflowExecutionsService {
       relations: ['startNode', 'user', 'nodes', 'edges'],
     });
 
-    const queue = [];
-
-    queue.push(
-      ...this.computeNodesToBeExecuted(workflowExecution.startNode, workflowExecution.nodes, workflowExecution.edges)
-    );
-
     let finalResult = {};
     const logs = [];
-
+    const queue = [];
     const addLog = (log: string) => logs.push(`[${moment().utc().format('YYYY-MM-DD HH:mm:ss.SSS')} UTC] ${log}`);
+    if (appVersion.app.isMaintenanceOn) {
+      queue.push(
+        ...this.computeNodesToBeExecuted(workflowExecution.startNode, workflowExecution.nodes, workflowExecution.edges)
+      );
+    } else {
+      addLog('Workflow is disabled.');
+    }
 
     while (queue.length !== 0) {
       const currentTime = moment();
@@ -197,7 +200,7 @@ export class WorkflowExecutionsService {
             const code = currentNode.definition?.code ?? '';
 
             const result = resolveCode(code, state);
-
+            addLog('If condition evaluated to ' + result);
             const sourceHandleToBeSkipped = result ? 'false' : 'true';
 
             await this.completeNodeExecution(currentNode, JSON.stringify(result), {});

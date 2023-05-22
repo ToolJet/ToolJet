@@ -42,7 +42,7 @@ const Header = (props) => {
             </div>
             <div className="run-button">
               <div className="button-container">
-                <ToolTip message="Enable/Disable workflow in app." placement="left">
+                <ToolTip message="Enable/Disable workflow in app." placement="bottom">
                   <Toggle value={value} onChange={onEnableChange} />
                 </ToolTip>
                 <button
