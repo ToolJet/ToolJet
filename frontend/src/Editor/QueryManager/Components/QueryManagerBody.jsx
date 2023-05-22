@@ -60,7 +60,7 @@ export const QueryManagerBody = forwardRef(
 
     const [dataSourceMeta, setDataSourceMeta] = useState(null);
 
-    const autoUpdateDataQuery = debounce(updateDataQuery, 3000);
+    const autoUpdateDataQuery = debounce(updateDataQuery, 1000);
 
     const queryName = selectedQuery?.name ?? '';
     const sourcecomponentName = selectedDataSource?.kind.charAt(0).toUpperCase() + selectedDataSource?.kind.slice(1);

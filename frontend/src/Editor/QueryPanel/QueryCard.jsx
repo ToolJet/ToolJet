@@ -10,6 +10,7 @@ import { toast } from 'react-hot-toast';
 
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions, useSelectedQuery, useUnsavedChanges } from '@/_stores/queryPanelStore';
+import { Badge } from 'react-bootstrap';
 
 export const QueryCard = ({
   dataQuery,
@@ -131,7 +132,7 @@ export const QueryCard = ({
               overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
             >
               <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
-                {dataQuery.name}
+                {dataQuery.name} {dataQuery.status === 'draft' && <small className="ms-2 text-secondary">draft</small>}
               </div>
             </OverlayTrigger>
           )}
