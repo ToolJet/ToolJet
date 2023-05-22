@@ -9,6 +9,7 @@ export const dataqueryService = {
   del,
   preview,
   changeQueryDataSource,
+  updateStatus,
 };
 
 function getAll(appVersionId) {
@@ -40,6 +41,15 @@ function update(id, name, options) {
 
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/data_queries/${id}`, requestOptions).then(handleResponse);
+}
+
+function updateStatus(id, status) {
+  const body = {
+    status,
+  };
+
+  const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/data_queries/${id}/status`, requestOptions).then(handleResponse);
 }
 
 function del(id) {

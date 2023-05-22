@@ -29,6 +29,7 @@ const DynamicForm = ({
   optionsChanged,
   queryName,
   computeSelectStyles = false,
+  onBlur,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
 
@@ -147,7 +148,8 @@ const DynamicForm = ({
           value: options?.[key]?.value,
           ...(type === 'textarea' && { rows: rows }),
           ...(helpText && { helpText }),
-          onChange: (e) => optionchanged(key, e.target.value),
+          onChange: (e) => optionchanged(key, e.target.value, true), //shouldNotAutoSave is true because autosave should occur during onBlur, not after each character change (in optionchanged).
+          onblur: () => onBlur(),
         };
       case 'toggle':
         return {

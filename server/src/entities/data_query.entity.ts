@@ -33,6 +33,14 @@ export class DataQuery extends BaseEntity {
   @Column({ name: 'app_version_id' })
   appVersionId: string;
 
+  @Column({
+    type: 'enum',
+    name: 'status',
+    enum: ['draft', 'published'],
+    default: 'draft',
+  })
+  status: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

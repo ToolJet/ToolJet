@@ -151,6 +151,30 @@ export const useDataQueriesStore = create(
               });
             });
         },
+        updateDataQueryStatus: (status) => {
+          set({ isUpdatingQueryInProcess: true });
+          const { selectedQuery } = useQueryPanelStore.getState();
+          dataqueryService
+            .updateStatus(selectedQuery?.id, status)
+            .then((data) => {
+              toast.success('Query Published');
+              set((state) => ({
+                isUpdatingQueryInProcess: false,
+                dataQueries: state.dataQueries.map((query) => {
+                  if (query.id === data.id) {
+                    return { ...query, status: data.status };
+                  }
+                  return query;
+                }),
+              }));
+            })
+            .catch(({ error }) => {
+              toast.error(error);
+              set({
+                isUpdatingQueryInProcess: false,
+              });
+            });
+        },
       },
     }),
     { name: 'Data Queries Store' }

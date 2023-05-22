@@ -32,7 +32,7 @@ export const QueryManagerHeader = forwardRef(
     },
     ref
   ) => {
-    const { renameQuery, updateDataQuery, createDataQuery } = useDataQueriesActions();
+    const { renameQuery, updateDataQuery, createDataQuery, updateDataQueryStatus } = useDataQueriesActions();
     const selectedQuery = useSelectedQuery();
     const isCreationInProcess = useQueryCreationLoading();
     const isUpdationInProcess = useQueryUpdationLoading();
@@ -42,7 +42,7 @@ export const QueryManagerHeader = forwardRef(
     const queryName = selectedQuery?.name ?? '';
     const [renamingQuery, setRenamingQuery] = useState(false);
 
-    const buttonText = mode === 'edit' ? 'Save' : 'Create';
+    const buttonText = mode === 'edit' ? 'Publish' : 'Publish';
     const buttonDisabled = isUpdationInProcess || isCreationInProcess;
 
     const executeQueryNameUpdation = (newName) => {
@@ -170,7 +170,8 @@ export const QueryManagerHeader = forwardRef(
             isCreationInProcess || isUpdationInProcess,
             isVersionReleased
           )}`}
-          onClick={() => createOrUpdateDataQuery(false)}
+          // onClick={() => createOrUpdateDataQuery(false)}
+          onClick={() => updateDataQueryStatus('published')}
           disabled={buttonDisabled}
           data-cy={`query-${buttonText.toLowerCase()}-button`}
         >
@@ -186,7 +187,7 @@ export const QueryManagerHeader = forwardRef(
       const { isLoading } = currentState?.queries[selectedQuery?.name] ?? false;
       return (
         <button
-          onClick={() => createOrUpdateDataQuery(true)}
+          onClick={() => updateDataQueryStatus('published')}
           className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(
             isLoading,
             isVersionReleased

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
-import { capitalize, isEqual } from 'lodash';
+import { capitalize, isEqual, debounce } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
@@ -25,6 +25,7 @@ import {
   useSelectedDataSource,
   useQueryPanelActions,
 } from '@/_stores/queryPanelStore';
+import useDebounce from '../../../_hooks/useDebounce';
 
 export const QueryManagerBody = forwardRef(
   (
@@ -42,6 +43,8 @@ export const QueryManagerBody = forwardRef(
       createDraftQuery,
       setOptions,
       isVersionReleased,
+      appId,
+      editingVersionId,
     },
     ref
   ) => {
@@ -53,9 +56,11 @@ export const QueryManagerBody = forwardRef(
     const isUnsavedQueriesAvailable = useUnsavedChanges();
     const selectedDataSource = useSelectedDataSource();
     const { setSelectedDataSource, setUnSavedChanges, setPreviewData } = useQueryPanelActions();
-    const { changeDataQuery } = useDataQueriesActions();
+    const { changeDataQuery, updateDataQuery, createDataQuery } = useDataQueriesActions();
 
     const [dataSourceMeta, setDataSourceMeta] = useState(null);
+
+    const autoUpdateDataQuery = debounce(updateDataQuery, 3000);
 
     const queryName = selectedQuery?.name ?? '';
     const sourcecomponentName = selectedDataSource?.kind.charAt(0).toUpperCase() + selectedDataSource?.kind.slice(1);
@@ -121,6 +126,7 @@ export const QueryManagerBody = forwardRef(
         { ...source, data_source_id: source.id, name: newQueryName, id: 'draftQuery', options: { ...newOptions } },
         source
       );
+      createDataQuery(appId, editingVersionId, options, false);
     };
 
     // Clear the focus field value from options
@@ -140,7 +146,7 @@ export const QueryManagerBody = forwardRef(
       return options;
     };
 
-    const validateNewOptions = (newOptions) => {
+    const validateNewOptions = (newOptions, shouldNotAutoSave) => {
       const headersChanged = newOptions.arrayValuesChanged ?? false;
       const updatedOptions = cleanFocusedFields(newOptions);
       let isFieldsChanged = false;
@@ -155,12 +161,17 @@ export const QueryManagerBody = forwardRef(
         }
       }
       setOptions((options) => ({ ...options, ...updatedOptions }));
-      if (isFieldsChanged !== isUnsavedQueriesAvailable) setUnSavedChanges(isFieldsChanged);
+      if (isFieldsChanged !== isUnsavedQueriesAvailable) {
+        setUnSavedChanges(isFieldsChanged);
+        if (!shouldNotAutoSave) {
+          autoUpdateDataQuery({ ...options, ...updatedOptions });
+        }
+      }
     };
 
-    const optionchanged = (option, value) => {
+    const optionchanged = (option, value, shouldNotAutoSave) => {
       const newOptions = { ...options, [option]: value };
-      validateNewOptions(newOptions);
+      validateNewOptions(newOptions, shouldNotAutoSave);
     };
 
     const optionsChanged = (newOptions) => {
@@ -242,6 +253,10 @@ export const QueryManagerBody = forwardRef(
       );
     };
 
+    const handleBlur = () => {
+      autoUpdateDataQuery(options);
+    };
+
     const renderQueryElement = () => {
       return (
         <div style={{ padding: '0 32px' }}>
@@ -261,6 +276,7 @@ export const QueryManagerBody = forwardRef(
                 darkMode={darkMode}
                 isEditMode={true} // Made TRUE always to avoid setting default options again
                 queryName={queryName}
+                onBlur={handleBlur} // Applies only to textarea, text box, etc. where `optionchanged` is triggered for every character change.
               />
               {renderTransformation()}
             </div>

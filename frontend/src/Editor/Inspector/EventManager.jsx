@@ -386,9 +386,12 @@ export const EventManager = ({
                 <div className="col-9" data-cy="query-selection-field">
                   <Select
                     className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                    options={dataQueries.map((query) => {
-                      return { name: query.name, value: query.id };
-                    })}
+                    options={dataQueries
+                      .filter((query) => query.status === 'published')
+                      .map((query) => {
+                        console.log({ name: query.name, value: query.id });
+                        return { name: query.name, value: query.id };
+                      })}
                     value={event.queryId}
                     search={true}
                     onChange={(value) => {
