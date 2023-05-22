@@ -121,7 +121,7 @@ const QueryPanel = ({
     };
 
     if (isUnsavedQueriesAvailable) {
-      setSaveConfirmation(true);
+      // setSaveConfirmation(true);
       setCancelData(stateToBeUpdated);
     } else {
       setSelectedDataSource(null);
@@ -162,7 +162,7 @@ const QueryPanel = ({
 
   return (
     <>
-      <Confirm
+      {/* <Confirm
         show={showSaveConfirmation}
         message={`Query ${selectedQuery?.name} has unsaved changes`}
         onConfirm={() => {
@@ -183,7 +183,7 @@ const QueryPanel = ({
         callCancelFnOnConfirm={false}
         queryCancelData={queryCancelData}
         darkMode={darkMode}
-      />
+      /> */}
       <div
         className="query-pane"
         style={{
