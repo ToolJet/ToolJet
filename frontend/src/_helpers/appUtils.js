@@ -891,7 +891,7 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
 }
 
 export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit') {
-  const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
+  const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   let dataQuery = {};
 
   if (query) {
