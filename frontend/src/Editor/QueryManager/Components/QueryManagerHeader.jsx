@@ -29,6 +29,7 @@ export const QueryManagerHeader = forwardRef(
       appId,
       editorRef,
       isVersionReleased,
+      status,
     },
     ref
   ) => {
@@ -211,7 +212,7 @@ export const QueryManagerHeader = forwardRef(
       return (
         <>
           {renderPreviewButton()}
-          {renderSaveButton()}
+          {status === 'draft' && renderSaveButton()}
           {renderRunButton()}
         </>
       );

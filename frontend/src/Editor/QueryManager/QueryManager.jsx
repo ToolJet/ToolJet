@@ -98,6 +98,7 @@ const QueryManager = ({
         ref={previewPanelRef}
         editorRef={editorRef}
         isVersionReleased={isVersionReleased}
+        status={selectedQuery?.status}
       />
       <QueryManagerBody
         darkMode={darkMode}
