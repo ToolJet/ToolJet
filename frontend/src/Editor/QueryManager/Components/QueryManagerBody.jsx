@@ -267,9 +267,10 @@ export const QueryManagerBody = forwardRef(
               })}
             >
               <ElementToRender
+                key={selectedQuery?.id}
                 pluginSchema={selectedDataSource?.plugin?.operationsFile?.data}
                 selectedDataSource={selectedDataSource}
-                options={options}
+                options={selectedQuery?.options}
                 optionsChanged={optionsChanged}
                 optionchanged={optionchanged}
                 currentState={currentState}

@@ -54,7 +54,10 @@ class Restapi extends React.Component {
     const newOptions = { ...options, [option]: [...options[option], ['', '']] };
 
     this.setState({ options: newOptions }, () => {
-      this.props.optionsChanged(newOptions);
+      //these values are set to empty array so that user can type in directly without adding new entry, hence no need to pass to parent state
+      if (!['headers', 'url_params', 'body'].includes(option)) {
+        this.props.optionsChanged(newOptions);
+      }
     });
   };
 
@@ -88,7 +91,9 @@ class Restapi extends React.Component {
 
   handleChange = (key, keyIndex, idx) => (value) => {
     const lastPair = this.state.options[key][idx];
-    if (this.state.options[key].length - 1 === idx && (lastPair[0] || lastPair[1])) this.addNewKeyValuePair(key);
+    if (this.state.options[key].length - 1 === idx && (lastPair[0] || lastPair[1])) {
+      this.addNewKeyValuePair(key);
+    }
     this.keyValuePairValueChanged(value, keyIndex, key, idx);
   };
 

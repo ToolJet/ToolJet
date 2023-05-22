@@ -128,7 +128,7 @@ export class DataQueriesController {
         appVersionId,
         manager
       );
-      return decamelizeKeys(dataQuery);
+      return decamelizeKeys({ ...dataQuery, kind });
     });
   }
 
@@ -145,7 +145,7 @@ export class DataQueriesController {
     }
 
     const result = await this.dataQueriesService.update(dataQueryId, name, options);
-    return decamelizeKeys(result);
+    return decamelizeKeys({ ...dataQuery, ...result });
   }
 
   @UseGuards(JwtAuthGuard)

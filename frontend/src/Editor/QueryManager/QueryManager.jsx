@@ -66,7 +66,7 @@ const QueryManager = ({
 
   useEffect(() => {
     if (selectedQuery) {
-      if (selectedQuery?.kind in defaultSources && !selectedQuery?.data_source_id) {
+      if (selectedQuery?.kind in defaultSources) {
         return setSelectedDataSource(defaultSources[selectedQuery?.kind]);
       }
       mode === 'edit' &&
@@ -75,7 +75,9 @@ const QueryManager = ({
             (datasource) => datasource.id === selectedQuery?.data_source_id
           ) || null
         );
-    } else if (selectedQuery === null) setSelectedDataSource(null);
+    } else if (selectedQuery === null) {
+      setSelectedDataSource(null);
+    }
   }, [selectedQuery, dataSources, globalDataSources, setSelectedDataSource, mode]);
 
   return (

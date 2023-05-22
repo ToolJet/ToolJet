@@ -119,7 +119,6 @@ const QueryPanel = ({
       isSourceSelected: false,
       draftQuery: null,
     };
-
     if (isUnsavedQueriesAvailable) {
       // setSaveConfirmation(true);
       setCancelData(stateToBeUpdated);

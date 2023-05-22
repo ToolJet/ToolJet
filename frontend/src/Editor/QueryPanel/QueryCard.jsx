@@ -26,7 +26,7 @@ export const QueryCard = ({
   const isUnsavedChangesAvailable = useUnsavedChanges();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
   const { deleteDataQueries, renameQuery } = useDataQueriesActions();
-  const { setSelectedQuery, setSelectedDataSource, setUnSavedChanges } = useQueryPanelActions();
+  const { setSelectedQuery, setSelectedDataSource, setUnSavedChanges, setPreviewData } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [renamingQuery, setRenamingQuery] = useState(false);
 
@@ -105,6 +105,7 @@ export const QueryCard = ({
           } else {
             setSelectedQuery(dataQuery?.id);
             setDraftQuery(null);
+            setPreviewData(null);
           }
         }}
         role="button"

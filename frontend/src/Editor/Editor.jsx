@@ -259,7 +259,7 @@ class EditorComponent extends React.Component {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
       if (data === 'versionReleased') this.fetchApp();
       else if (data === 'dataQueriesChanged') {
-        this.fetchDataQueries(this.state.editingVersion?.id);
+        // this.fetchDataQueries(this.state.editingVersion?.id);
       } else if (data === 'dataSourcesChanged') {
         this.fetchDataSources(this.state.editingVersion?.id);
       }
