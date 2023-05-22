@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { redisText } from "Texts/redis";
@@ -7,7 +8,14 @@ import {
   fillDataSourceTextField,
   selectDataSource,
 } from "Support/utils/postgreSql";
-import { verifyCouldnotConnectWithAlert ,deleteDatasource, closeDSModal } from "Support/utils/dataSource";
+import {
+  verifyCouldnotConnectWithAlert,
+  deleteDatasource,
+  closeDSModal,
+} from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source Redis", () => {
   beforeEach(() => {
@@ -16,7 +24,7 @@ describe("Data source Redis", () => {
 
   it("Should verify elements on connecti Redison form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal()
+    closeDSModal();
     cy.get(commonSelectors.addNewDataSourceButton)
       .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
@@ -92,14 +100,17 @@ describe("Data source Redis", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get('[data-cy="connection-alert-text"]').should("have.text",redisText.errorMaxRetries);
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      redisText.errorMaxRetries
+    );
   });
   it("Should verify the functionality of Redis connection form.", () => {
     selectDataSource(redisText.redis);
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      redisText.cypressRedis
+      `cypress-${data.lastName}-redis`
     );
 
     fillDataSourceTextField(
@@ -113,7 +124,6 @@ describe("Data source Redis", () => {
       Cypress.env("redis_port")
     );
 
-     
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,
@@ -124,7 +134,10 @@ describe("Data source Redis", () => {
     );
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get('[data-cy="connection-alert-text"]').should("have.text", "WRONGPASS invalid username-password pair or user is disabled.");
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      "WRONGPASS invalid username-password pair or user is disabled."
+    );
     fillDataSourceTextField(
       postgreSqlText.labelHost,
       postgreSqlText.placeholderEnterHost,
@@ -136,7 +149,10 @@ describe("Data source Redis", () => {
       "108299"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get('[data-cy="connection-alert-text"]').should("have.text", redisText.errorPort);
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      redisText.errorPort
+    );
 
     fillDataSourceTextField(
       postgreSqlText.labelPort,
@@ -147,7 +163,10 @@ describe("Data source Redis", () => {
       `{selectAll}{backspace}"redis_password"`
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get('[data-cy="connection-alert-text"]').should("have.text", "WRONGPASS invalid username-password pair or user is disabled.");
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      "WRONGPASS invalid username-password pair or user is disabled."
+    );
 
     cy.get(postgreSqlSelector.passwordTextField).type(
       `{selectAll}{backspace}${Cypress.env("redis_password")}`
@@ -158,7 +177,10 @@ describe("Data source Redis", () => {
       "redis"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    cy.get('[data-cy="connection-alert-text"]').should("have.text", "WRONGPASS invalid username-password pair or user is disabled.");
+    cy.get('[data-cy="connection-alert-text"]').should(
+      "have.text",
+      "WRONGPASS invalid username-password pair or user is disabled."
+    );
 
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
@@ -176,12 +198,11 @@ describe("Data source Redis", () => {
       postgreSqlText.toastDSAdded
     );
 
-      cy.get(commonSelectors.globalDataSourceIcon).click();
-      cy.get('[data-cy="cypress-redis-button"]').verifyVisibleElement(
-        "have.text",
-        redisText.cypressRedis
-      );
-  
-      deleteDatasource("cypress-redis");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-redis-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-redis`);
+
+    deleteDatasource(`cypress-${data.lastName}-redis`);
   });
 });
