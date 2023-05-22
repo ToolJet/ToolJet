@@ -27,11 +27,22 @@ export default function autogenerateColumns(
 
   const firstRow = tableData?.[0] ?? {};
 
-  const firstRowWithoutNestedElements = Object.fromEntries(
-    Object.entries(firstRow).filter(([_key, value]) => typeof value != 'object')
-  );
-
-  const keysOfTableData = Object.keys(firstRowWithoutNestedElements);
+  // mapping the keys of first row with one level of nested elements.
+  const keysOfTableData = Object.entries(firstRow).reduce((accumulator, currentValue) => {
+    if (typeof currentValue[1] === 'object') {
+      accumulator.push(
+        ...Object.entries(currentValue[1]).reduce((acc, cv) => {
+          if (typeof cv[1] !== 'object') {
+            acc.push(`${currentValue[0]}.${cv[0]}`);
+          }
+          return acc;
+        }, [])
+      );
+      return accumulator;
+    }
+    accumulator.push(currentValue[0]);
+    return accumulator;
+  }, []);
 
   const keysOfExistingColumns = existingColumns.map((column) => column.key || column.name);
 
