@@ -164,7 +164,11 @@ body {
 }
 
 strong {
-  color: #4d72fa;
+  color: #000000;
+}
+
+[data-theme='dark'] strong {
+  color: #ffffff;
 }
 
 .alert a {
