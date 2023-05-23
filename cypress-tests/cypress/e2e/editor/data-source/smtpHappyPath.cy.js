@@ -1,26 +1,27 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonSelectors } from "Selectors/common";
+import { commonText } from "Texts/common";
 import {
   fillDataSourceTextField,
   selectDataSource,
 } from "Support/utils/postgreSql";
+import { deleteDatasource, closeDSModal } from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source SMTP", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
   it("Should verify elements on  SMTP connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
@@ -41,7 +42,7 @@ describe("Data source SMTP", () => {
     );
 
     cy.get(postgreSqlSelector.dataSourceSearchInputField).type("SMTP");
-    cy.get("[data-cy*='data-source-']").eq(0).should("contain", "SMTP");
+    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "SMTP");
     cy.get('[data-cy="data-source-smtp"]').click();
 
     cy.get(postgreSqlSelector.dataSourceNameInputField).should(
@@ -89,7 +90,7 @@ describe("Data source SMTP", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+    cy.get('[data-cy="connection-alert-text"]').should(
       "have.text",
       "Invalid credentials"
     );
@@ -100,7 +101,7 @@ describe("Data source SMTP", () => {
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
-      "cypress-smtp"
+      `cypress-${data.lastName}-smtp`
     );
 
     fillDataSourceTextField(
@@ -137,9 +138,10 @@ describe("Data source SMTP", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", "cypress-smtp")
-      .should("be.visible");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-smtp-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-smtp`);
+    deleteDatasource(`cypress-${data.lastName}-smtp`);
   });
 });

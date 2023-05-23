@@ -24,6 +24,11 @@ import {
   addFilter,
 } from "Support/utils/table";
 import {
+  selectCSA,
+  selectEvent,
+  addSupportCSAData,
+} from "Support/utils/events";
+import {
   openAccordion,
   verifyAndModifyParameter,
   openEditorSidebar,
@@ -937,5 +942,59 @@ describe("Table", () => {
     ]);
   });
 
-  it("should verify table preview", () => {});
+  it("should verify table CSA", () => {
+    cy.get('[data-cy="column-id"]').click();
+    cy.get('[data-cy="make-editable-toggle-button"]').click();
+
+    cy.get(
+      '[data-cy="number-of-rows-per-page-input-field"]'
+    ).clearAndTypeOnCodeMirror("{{2");
+    verifyAndModifyToggleFx("Highlight selected row", "{{false}}", true);
+
+    cy.get('[data-cy="real-canvas"]').click("topRight");
+    cy.dragAndDropWidget("Button", 870, 50);
+    selectEvent("On click", "Control Component");
+    selectCSA("table1", "Set page");
+    addSupportCSAData("Page", "{{2");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight");
+    cy.dragAndDropWidget("Button", 870, 100);
+    selectEvent("On click", "Control Component");
+    selectCSA("table1", "Select row");
+    addSupportCSAData("Key", "name");
+    addSupportCSAData("Value", "Lisa");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight");
+    cy.dragAndDropWidget("Button", 870, 150);
+    selectEvent("On click", "Control Component");
+    selectCSA("table1", "Deselect row");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight");
+    cy.dragAndDropWidget("Button", 870, 200);
+    selectEvent("On click", "Control Component");
+    selectCSA("table1", "Discard Changes");
+
+    cy.get(commonWidgetSelector.draggableWidget("button2")).click();
+    cy.get('[role="row"]').eq(2).should("have.class", "selected");
+
+    cy.get(commonWidgetSelector.draggableWidget("button3")).click();
+    cy.get('[role="row"]').eq(2).should("not.have.class", "selected");
+
+    cy.get(commonWidgetSelector.draggableWidget("button1")).click();
+    cy.get('[data-cy*="-cell-1"] ').eq(1).should("have.text", "Jon");
+    cy.get('[data-cy="page-index-details"]').should("have.text", "2 of 2");
+
+    cy.get('[data-cy="3-cell-0"]')
+      .click()
+      .find("input")
+      .clear()
+      .type("test123");
+
+    cy.get('[data-cy*="-cell-0"]')
+      .eq(0)
+      .find("input")
+      .should("have.value", "test123");
+    cy.get(commonWidgetSelector.draggableWidget("button4")).click();
+    cy.get('[data-cy*="-cell-0"]').eq(0).should("have.text", "3");
+  });
 });

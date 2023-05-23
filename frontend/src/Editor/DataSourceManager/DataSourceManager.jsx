@@ -813,7 +813,7 @@ class DataSourceManagerComponent extends React.Component {
               <div className="col-auto" data-cy="db-connection-save-button">
                 <ButtonSolid
                   className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
-                  isLoading={isSaving}
+                  isLoading={isSaving || this.props.isVersionReleased}
                   disabled={isSaving}
                   variant="primary"
                   onClick={this.createDataSource}
@@ -844,7 +844,7 @@ class DataSourceManagerComponent extends React.Component {
                   leftIcon="floppydisk"
                   fill={'#FDFDFE'}
                   className="m-2"
-                  disabled={isSaving}
+                  disabled={isSaving || this.props.isVersionReleased}
                   variant="primary"
                   onClick={this.createDataSource}
                 >
