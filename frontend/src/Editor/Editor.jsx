@@ -130,7 +130,7 @@ class EditorComponent extends React.Component {
       queryConfirmationList: [],
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
-      isSaving: false,
+      // isSaving: false,
       isUnsavedQueriesAvailable: false,
       selectionInProgress: false,
       scrollOptions: {},
@@ -197,6 +197,12 @@ class EditorComponent extends React.Component {
         threshold: 0,
       },
     });
+
+    useAppDataStore.subscribe(({ isSaving }) => {
+      if (isSaving !== this.state.isSaving) {
+        this.setState({ isSaving });
+      }
+    });
   }
 
   /**
@@ -251,7 +257,11 @@ class EditorComponent extends React.Component {
   };
 
   closeCreateVersionModalPrompt = () => {
-    this.setState({ isSaving: false, showCreateVersionModalPrompt: false });
+    useAppDataStore.getState().actions.setIsSaving(false);
+    this.setState({
+      // isSaving: false,
+      showCreateVersionModalPrompt: false,
+    });
   };
 
   initEventListeners() {
@@ -259,7 +269,7 @@ class EditorComponent extends React.Component {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
       if (data === 'versionReleased') this.fetchApp();
       else if (data === 'dataQueriesChanged') {
-        // this.fetchDataQueries(this.state.editingVersion?.id);
+        this.fetchDataQueries(this.state.editingVersion?.id);
       } else if (data === 'dataSourcesChanged') {
         this.fetchDataSources(this.state.editingVersion?.id);
       }
@@ -396,10 +406,11 @@ class EditorComponent extends React.Component {
       if (version?.id === this.state.app?.current_version_id) {
         (this.canUndo = false), (this.canRedo = false);
       }
+      useAppDataStore.getState().actions.setIsSaving(false);
       this.setState(
         {
           editingVersion: version,
-          isSaving: false,
+          // isSaving: false,
         },
         () => {
           shouldWeEditVersion && this.saveEditingVersion(true);
@@ -503,10 +514,11 @@ class EditorComponent extends React.Component {
       this.currentVersion[this.state.currentPageId] = currentVersion - 1;
 
       if (!appDefinition) return;
+      useAppDataStore.getState().actions.setIsSaving(true);
       this.setState(
         {
           appDefinition,
-          isSaving: true,
+          // isSaving: true,
         },
         () => {
           this.props.ymap?.set('appDef', {
@@ -534,10 +546,11 @@ class EditorComponent extends React.Component {
       this.currentVersion[this.state.currentPageId] = currentVersion + 1;
 
       if (!appDefinition) return;
+      useAppDataStore.getState().actions.setIsSaving(true);
       this.setState(
         {
           appDefinition,
-          isSaving: true,
+          // isSaving: true,
         },
         () => {
           this.props.ymap?.set('appDef', {
@@ -560,10 +573,10 @@ class EditorComponent extends React.Component {
 
     if (opts?.versionChanged) {
       currentPageId = newDefinition.homePageId;
-
+      useAppDataStore.getState().actions.setIsSaving(true);
       this.setState(
         {
-          isSaving: true,
+          // isSaving: true,
           currentPageId: currentPageId,
           appDefinition: newDefinition,
           appDefinitionLocalVersion: uuid(),
@@ -583,9 +596,17 @@ class EditorComponent extends React.Component {
       },
       this.handleAddPatch
     );
-    this.setState({ isSaving: true, appDefinition: newDefinition, appDefinitionLocalVersion: uuid() }, () => {
-      if (!opts.skipAutoSave) this.autoSave();
-    });
+    useAppDataStore.getState().actions.setIsSaving(true);
+    this.setState(
+      {
+        // isSaving: true,
+        appDefinition: newDefinition,
+        appDefinitionLocalVersion: uuid(),
+      },
+      () => {
+        if (!opts.skipAutoSave) this.autoSave();
+      }
+    );
   };
 
   handleInspectorView = () => {
@@ -687,7 +708,8 @@ class EditorComponent extends React.Component {
       );
       setStateAsync(_self, newDefinition).then(() => {
         computeComponentState(_self, _self.state.appDefinition.pages[currentPageId].components);
-        this.setState({ isSaving: true, appDefinitionLocalVersion: uuid() });
+        useAppDataStore.getState().actions.setIsSaving(true);
+        this.setState({ /* isSaving: true, */ appDefinitionLocalVersion: uuid() });
         this.autoSave();
         this.props.ymap?.set('appDef', {
           newDefinition: newDefinition.appDefinition,
@@ -769,9 +791,10 @@ class EditorComponent extends React.Component {
       const hexCode = `${value?.[0]}${this.decimalToHex(value?.[1]?.a)}`;
       appDefinition.globalSettings[key] = hexCode;
     }
+    useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        isSaving: true,
+        // isSaving: true,
         appDefinition,
       },
       () => {
@@ -858,7 +881,8 @@ class EditorComponent extends React.Component {
 
   saveEditingVersion = (isUserSwitchedVersion = false) => {
     if (this.isVersionReleased() && !isUserSwitchedVersion) {
-      this.setState({ isSaving: false });
+      useAppDataStore.getState().actions.setIsSaving(false);
+      // this.setState({ isSaving: false });
     } else if (!isEmpty(this.state.editingVersion)) {
       appVersionService
         .save(
@@ -877,14 +901,14 @@ class EditorComponent extends React.Component {
               },
             },
             () => {
-              this.setState({
-                isSaving: false,
-              });
+              useAppDataStore.getState().actions.setIsSaving(false);
+              // this.setState({ isSaving: false, });
             }
           );
         })
         .catch(() => {
-          this.setState({ saveError: true, isSaving: false }, () => {
+          useAppDataStore.getState().actions.setIsSaving(false);
+          this.setState({ saveError: true /* , isSaving: false */ }, () => {
             toast.error('App could not save.');
           });
         });
@@ -1017,9 +1041,10 @@ class EditorComponent extends React.Component {
       },
     };
 
+    useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        isSaving: true,
+        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },
@@ -1076,10 +1101,11 @@ class EditorComponent extends React.Component {
       ? Object.keys(this.state.appDefinition.pages)[0]
       : this.state.appDefinition.homePageId;
 
+    useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
         currentPageId: newCurrentPageId,
-        isSaving: true,
+        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
         isDeletingPage: false,
@@ -1094,9 +1120,10 @@ class EditorComponent extends React.Component {
   };
 
   updateHomePage = (pageId) => {
+    useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        isSaving: true,
+        // isSaving: true,
         appDefinition: {
           ...this.state.appDefinition,
           homePageId: pageId,
@@ -1135,9 +1162,10 @@ class EditorComponent extends React.Component {
       },
     };
 
+    useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        isSaving: true,
+        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },
@@ -1160,9 +1188,10 @@ class EditorComponent extends React.Component {
       return;
     }
 
+    useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        isSaving: true,
+        // isSaving: true,
         appDefinition: {
           ...this.state.appDefinition,
           pages: {
@@ -1184,9 +1213,10 @@ class EditorComponent extends React.Component {
   };
 
   updateOnPageLoadEvents = (pageId, events) => {
+    useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        isSaving: true,
+        // isSaving: true,
         appDefinition: {
           ...this.state.appDefinition,
           pages: {
@@ -1211,9 +1241,10 @@ class EditorComponent extends React.Component {
       showViewerNavigation: !this.state.appDefinition.showViewerNavigation,
     };
 
+    useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        isSaving: true,
+        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },
@@ -1238,9 +1269,10 @@ class EditorComponent extends React.Component {
       },
     };
 
+    useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        isSaving: true,
+        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },
@@ -1262,9 +1294,10 @@ class EditorComponent extends React.Component {
       },
     };
 
+    useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        isSaving: true,
+        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },
@@ -1286,9 +1319,10 @@ class EditorComponent extends React.Component {
       },
     };
 
+    useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        isSaving: true,
+        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },
@@ -1364,9 +1398,10 @@ class EditorComponent extends React.Component {
       pages: pagesObj,
     };
 
+    useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        isSaving: true,
+        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },

@@ -43,7 +43,6 @@ export const QueryManagerHeader = forwardRef(
     const queryName = selectedQuery?.name ?? '';
     const [renamingQuery, setRenamingQuery] = useState(false);
 
-    const buttonText = mode === 'edit' ? 'Publish' : 'Publish';
     const buttonDisabled = isUpdationInProcess || isCreationInProcess;
 
     const executeQueryNameUpdation = (newName) => {
@@ -174,12 +173,12 @@ export const QueryManagerHeader = forwardRef(
           // onClick={() => createOrUpdateDataQuery(false)}
           onClick={() => updateDataQueryStatus('published')}
           disabled={buttonDisabled}
-          data-cy={`query-${buttonText.toLowerCase()}-button`}
+          data-cy={`query-publish-button`}
         >
           <span className="d-flex query-create-run-svg query-icon-wrapper">
             <CreateIcon />
           </span>
-          <span>{buttonText}</span>
+          <span>Publish</span>
         </button>
       );
     };
@@ -211,8 +210,8 @@ export const QueryManagerHeader = forwardRef(
       if (selectedQuery === null) return;
       return (
         <>
-          {renderPreviewButton()}
           {status === 'draft' && renderSaveButton()}
+          {renderPreviewButton()}
           {renderRunButton()}
         </>
       );
