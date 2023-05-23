@@ -81,10 +81,13 @@ export const useDataQueriesStore = create(
               set((state) => ({
                 isUpdatingQueryInProcess: false,
                 dataQueries: state.dataQueries.map((query) => {
-                  if (query.id === data.id) return data;
+                  if (query.id === data.id) {
+                    return { ...query, ...data };
+                  }
                   return query;
                 }),
               }));
+              actions.setSelectedQuery(data.id);
               if (shouldRunQuery) actions.setQueryToBeRun(data);
             })
             .catch(({ error }) => {
@@ -109,9 +112,9 @@ export const useDataQueriesStore = create(
               toast.success('Query Added');
               set((state) => ({
                 isCreatingQueryInProcess: false,
-                dataQueries: [data, ...state.dataQueries],
+                dataQueries: [{ ...selectedQuery, ...data }, ...state.dataQueries],
               }));
-              actions.setSelectedQuery(data.id, data);
+              actions.setSelectedQuery(data.id, { ...selectedQuery, id: data.id });
               if (shouldRunQuery) actions.setQueryToBeRun(data);
             })
             .catch((error) => {
