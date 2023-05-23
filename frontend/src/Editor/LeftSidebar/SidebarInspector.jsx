@@ -7,6 +7,8 @@ import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import Popover from '@/_ui/Popover';
 
+import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
+import { useDataQueries } from '@/_stores/dataQueriesStore';
 const staticDataSources = [
   { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
   { kind: 'restapi', id: 'null', name: 'REST API' },
@@ -23,12 +25,12 @@ export const LeftSidebarInspector = ({
   setSelectedComponent,
   removeComponent,
   runQuery,
-  dataSources,
   popoverContentHeight,
 }) => {
+  const dataSources = useGlobalDataSources();
+  const dataQueries = useDataQueries();
   const [pinned, setPinned] = useState(false);
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
-  const queryDefinitions = appDefinition['queries'];
   const selectedComponent = React.useMemo(() => {
     return {
       id: appDefinition['selectedComponent']?.id,
@@ -39,8 +41,8 @@ export const LeftSidebarInspector = ({
 
   const queries = {};
 
-  if (!_.isEmpty(queryDefinitions)) {
-    queryDefinitions.forEach((query) => {
+  if (!_.isEmpty(dataQueries)) {
+    dataQueries.forEach((query) => {
       queries[query.name] = { id: query.id };
     });
   }

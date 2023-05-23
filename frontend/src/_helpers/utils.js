@@ -7,6 +7,8 @@ import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');
@@ -453,9 +455,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
     ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
     : {};
   const runQuery = (queryName = '') => {
-    const query = isPreview
-      ? _ref.state.dataQueries.find((query) => query.name === queryName)
-      : _ref.state.app.data_queries.find((query) => query.name === queryName);
+    const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
 
     if (_.isEmpty(query) || queryId === query?.id) {
       const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
