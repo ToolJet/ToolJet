@@ -199,7 +199,7 @@ export class WorkflowExecutionsService {
           case 'if-condition': {
             const code = currentNode.definition?.code ?? '';
 
-            const result = resolveCode(code, state);
+            const result = resolveCode({ code, state, isIfCondition: true, addLog });
             addLog('If condition evaluated to ' + result);
             const sourceHandleToBeSkipped = result ? 'false' : 'true';
 
@@ -225,7 +225,14 @@ export class WorkflowExecutionsService {
           }
 
           case 'output': {
-            finalResult = { ...state };
+            const resultReceivedNodes = await this.incomingNodes(currentNode);
+            // console.log('resultReceivedNodes', resultReceivedNodes);
+
+            const result = resultReceivedNodes.map((node) => node.result);
+            finalResult = {
+              ...state,
+              result,
+            };
             break;
           }
         }
@@ -267,10 +274,9 @@ export class WorkflowExecutionsService {
     const options = getQueryVariables(query.options, state);
     try {
       addLog(`${query.name}: Started execution`);
-
       const result =
         query.kind === 'runjs'
-          ? resolveCode(query.options?.code, state)
+          ? resolveCode({ code: query.options?.code, state, addLog })
           : await this.dataQueriesService.runQuery(user, query, options);
 
       const newState = {
@@ -383,5 +389,27 @@ export class WorkflowExecutionsService {
     );
 
     return forwardNodes;
+  }
+
+  async incomingNodes(startNode: WorkflowExecutionNode): Promise<WorkflowExecutionNode[]> {
+    const incomingEdges = await this.workflowExecutionEdgeRepository.find({
+      where: {
+        targetWorkflowExecutionNode: startNode,
+      },
+    });
+
+    const incomingNodeIds = incomingEdges.map((edge) => edge.sourceWorkflowExecutionNodeId);
+
+    const receivedNodes = Promise.all(
+      incomingNodeIds.map((id) =>
+        this.workflowExecutionNodeRepository.findOne({
+          where: {
+            id,
+          },
+        })
+      )
+    );
+
+    return receivedNodes;
   }
 }

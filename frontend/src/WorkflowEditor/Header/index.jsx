@@ -17,6 +17,8 @@ const Header = (props) => {
     editorSessionActions.setMaintenanceStatus(!value);
   };
 
+  const isRunnable = editorSession.queries && editorSession.queries.length > 0;
+
   return (
     <div className="header">
       <div className="grid">
@@ -50,7 +52,7 @@ const Header = (props) => {
                   type="button"
                   className="btn btn-primary run-button"
                   style={{ height: '30px', marginRight: 6 }}
-                  disabled={editorSession.mode === Modes.Running}
+                  disabled={editorSession.mode === Modes.Running || !isRunnable}
                 >
                   {editorSession.mode === Modes.Running ? 'Running' : 'Run'}
                 </button>

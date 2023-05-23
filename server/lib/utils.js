@@ -40,10 +40,26 @@ export function resolve(data, state) {
   }
 }
 
-export function resolveCode(code, state, customObjects = {}, withError = false, reservedKeyword = [], isJsCode = true) {
+const getFunctionWrappedCode = (code, state, isIfCondition) => {
+  if (isIfCondition) {
+    return code;
+  }
+  return `const fn = () => {${code}}; fn()`;
+};
+
+export function resolveCode(codeContext) {
+  const {
+    code,
+    state,
+    isIfCondition = false,
+    customObjects = {},
+    withError = false,
+    reservedKeyword = [],
+    addLog,
+    // isJsCode = true,
+  } = codeContext;
   let result = '';
   let error;
-
   // dont resolve if code starts with "queries." and ends with "run()"
   if (code.startsWith('queries.') && code.endsWith('run()')) {
     error = `Cannot resolve function call ${code}`;
@@ -57,12 +73,20 @@ export function resolveCode(code, state, customObjects = {}, withError = false, 
         },
         timeout: 100,
       });
-      const functionEnvelopedCode = `const fn = () => {${code}}; fn()`;
+      console.log('code to be evaluated', code);
+      let functionEnvelopedCode = getFunctionWrappedCode(code, state, isIfCondition);
 
       result = vm.run(functionEnvelopedCode);
     } catch (err) {
       error = err;
       console.log('eval_error', err);
+      addLog(
+        JSON.stringify({
+          message: err.message,
+          stack: err.stack,
+          name: err.name,
+        })
+      );
     }
   }
 
