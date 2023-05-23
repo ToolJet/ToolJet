@@ -1,4 +1,5 @@
 import React from 'react';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
 
 export const CustomToggleSwitch = ({
   isChecked,
@@ -7,9 +8,14 @@ export const CustomToggleSwitch = ({
   darkMode = false,
   label = '',
   dataCy = '',
+  disabled = false,
 }) => {
   return (
-    <div className={`custom-toggle-switch d-flex col gap-2 align-items-center ${darkMode && 'theme-dark'}`}>
+    <div
+      data-tooltip-id="tooltip-for-active-copilot"
+      data-tooltip-content="Only workspace admins can enable or disable Copilot."
+      className={`custom-toggle-switch d-flex col gap-2 align-items-center ${darkMode && 'theme-dark'}`}
+    >
       <label className="switch">
         <input
           type="checkbox"
@@ -23,6 +29,7 @@ export const CustomToggleSwitch = ({
             }
           }}
           data-cy={`${dataCy}-toggle-switch`}
+          disabled={disabled}
         />
         <label htmlFor={action} className="slider round"></label>
       </label>
@@ -30,6 +37,13 @@ export const CustomToggleSwitch = ({
         <span className={`${darkMode ? 'color-white' : 'color-light-slate-12'}`} data-cy={`${dataCy}-toggle-label`}>
           {label}
         </span>
+      )}
+      {disabled && dataCy === 'copilot' && (
+        <ReactTooltip
+          id="tooltip-for-active-copilot"
+          className="tooltip"
+          style={{ backgroundColor: '#e6eefe', color: '#222' }}
+        />
       )}
     </div>
   );
