@@ -228,7 +228,21 @@ export class WorkflowExecutionsService {
             const resultReceivedNodes = await this.incomingNodes(currentNode);
             // console.log('resultReceivedNodes', resultReceivedNodes);
 
-            const result = resultReceivedNodes.map((node) => node.result);
+            const result = Object.fromEntries(
+              await Promise.all(
+                resultReceivedNodes
+                  .filter((node) => node.type === 'query')
+                  .map(async (node) => {
+                    const queryId = find(appVersion.definition.queries, {
+                      idOnDefinition: node.definition.idOnDefinition,
+                    }).id;
+
+                    const query = await this.dataQueriesService.findOne(queryId);
+                    return [query.name, JSON.parse(node.result)];
+                  })
+              )
+            );
+
             finalResult = {
               ...state,
               result,
