@@ -111,11 +111,13 @@ export const useDataQueriesStore = create(
                 isCreatingQueryInProcess: false,
                 dataQueries: [data, ...state.dataQueries],
               }));
+              actions.setSelectedQuery(data.id, data);
               if (shouldRunQuery) actions.setQueryToBeRun(data);
             })
-            .catch(({ error }) => {
+            .catch((error) => {
+              console.error('error', error);
               actions.setUnSavedChanges(false);
-              toast.error(error);
+              toast.error(error.message);
               set({
                 isCreatingQueryInProcess: false,
               });
