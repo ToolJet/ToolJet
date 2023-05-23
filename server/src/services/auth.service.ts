@@ -193,6 +193,7 @@ export class AuthService {
         await this.usersService.updateUser(user.id, { defaultOrganizationId: user.organizationId }, manager);
 
       return decamelizeKeys({
+        currentOrganizationId: user.organizationId,
         admin: await this.usersService.hasGroup(user, 'admin', null, manager),
         groupPermissions: await this.usersService.groupPermissions(user, manager),
         appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),

@@ -1,6 +1,7 @@
 import { getWorkspaceIdFromURL } from '@/_helpers/utils';
 import { authenticationService } from '@/_services/authentication.service';
 
+//TODO: test dashboard menu items
 export const getPrivateRoute = (page, params = {}) => {
   const routes = {
     dashboard: '/',

@@ -285,11 +285,13 @@ function signInViaOAuth(configId, ssoType, ssoResponse) {
     });
 }
 
-function authorize() {
+function authorize(workspaceName) {
   const requestOptions = {
     method: 'GET',
-    headers: authHeader(),
     credentials: 'include',
+    ...(!workspaceName && { headers: authHeader() }),
   };
-  return fetch(`${config.apiUrl}/authorize`, requestOptions).then(handleResponseWithoutValidation);
+  return fetch(`${config.apiUrl}/authorize${`?workspace_name=${workspaceName}` ?? ''}`, requestOptions).then(
+    handleResponseWithoutValidation
+  );
 }

@@ -674,20 +674,25 @@ export const pathnameWithoutSubpath = (path) => {
   return path;
 };
 
-// will replace or append workspace-id in a path
-export const appendWorkspaceId = (workspaceId, path, replaceId = false) => {
+export const removeSpaceFromWorkspace = (name) => {
+  return name?.replace(' ', '-') || '';
+};
+
+export const appendWorkspaceId = (workspaceName, path, replaceId = false) => {
   const subpath = getSubpath();
   path = pathnameWithoutSubpath(path);
 
+  workspaceName = removeSpaceFromWorkspace(workspaceName);
+
   let newPath = path;
   if (path === '/:workspaceId' || path.split('/').length === 2) {
-    newPath = `/${workspaceId}`;
+    newPath = `/${workspaceName}`;
   } else {
     const paths = path.split('/').filter((path) => path !== '');
     if (replaceId) {
-      paths[0] = workspaceId;
+      paths[0] = workspaceName;
     } else {
-      paths.unshift(workspaceId);
+      paths.unshift(workspaceName);
     }
     newPath = `/${paths.join('/')}`;
   }

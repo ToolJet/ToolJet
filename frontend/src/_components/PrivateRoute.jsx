@@ -14,9 +14,9 @@ export const PrivateRoute = ({ children }) => {
     () => subject.unsubscribe();
   }, []);
 
-  const wid = session?.current_organization_id;
-  const path = appendWorkspaceId(wid, location.pathname, true);
-  if (location.pathname === '/:workspaceId' && wid) window.history.replaceState(null, null, path);
+  const workspace_name = session?.current_organization_name;
+  const path = appendWorkspaceId(workspace_name, location.pathname, true);
+  if (location.pathname === '/:workspaceId' && workspace_name) window.history.replaceState(null, null, path);
 
   // authorised so return component
   if (
