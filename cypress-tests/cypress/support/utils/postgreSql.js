@@ -7,6 +7,8 @@ import { commonWidgetText } from "Texts/common";
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
+import { closeDSModal} from "Support/utils/dataSource";
+
 
 export const addQuery = (queryName, query, dbName) => {
   cy.get(postgreSqlSelector.buttonAddNewQueries).click();
@@ -44,8 +46,9 @@ export const addQueryOnGui = (queryName, query) => {
   );
 };
 export const selectDataSource = (dataSource) => {
-  cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-  cy.get(postgreSqlSelector.addDatasourceLink).click();
+  cy.get(commonSelectors.globalDataSourceIcon).click();
+  closeDSModal()
+  cy.get(commonSelectors.addNewDataSourceButton).click();
   cy.get(postgreSqlSelector.dataSourceSearchInputField).type(dataSource);
   cy.get(`[data-cy='data-source-${dataSource.toLowerCase()}']`).click();
 };

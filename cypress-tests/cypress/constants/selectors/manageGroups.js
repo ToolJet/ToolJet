@@ -6,7 +6,7 @@ export const groupsSelector = {
   createNewGroupButton: "[data-cy=create-new-group-button]",
   tableHeader: "[data-cy=table-header]",
   groupName: "[data-cy=group-name]",
-  cardTitle: "[data-cy=card-title]",
+  addNewGroupModalTitle: '[data-cy="add-new-group-title"]',
   groupNameInput: "[data-cy=group-name-input]",
   cancelButton: "[data-cy=cancel-button]",
   createGroupButton: "[data-cy=create-group-button]",
@@ -15,8 +15,7 @@ export const groupsSelector = {
   usersLink: "[data-cy=users-link]",
   permissionsLink: "[data-cy=permissions-link]",
   searchBox: '[data-cy="select-search"]',
-  appSearchBox:
-    "[data-cy=select-search]>>>>>.dropdown-heading-value > .gray",
+  appSearchBox: "[data-cy=select-search]>>>>>.dropdown-heading-value > .gray",
   searchBoxOptions: ".panel-content",
   appAddButton: "[data-cy=add-button]",
   addButton: '[data-cy="add-button"]',
@@ -41,19 +40,28 @@ export const groupsSelector = {
   multiSelectSearchInput:
     '[data-cy="multi-select-search"]>>>>.select-search__input',
   workspaceVarCreateLabel: '[data-cy="workspace-variable-create-label"]',
+  selectAddButton: '[data-cy="add-button"]',
+  textDefaultGroup: '[data-cy="text-default-group"]',
+  helperTextNoAppsAdded: '[data-cy="helper-text-no-apps-added"]',
+  helperTextPermissions: '[data-cy="helper-text-user-groups-permissions"]',
+  helperTextAllUsersIncluded: '[data-cy="helper-text-all-user-included"]',
+  helperTextAdminAppAccess: '[data-cy="helper-text-admin-app-access"]',
+  helperTextAdminPermissions: '[data-cy="helper-text-admin-permissions"]',
+  updateGroupNameModalTitle: '[data-cy="update-group-title"]',
   groupLink: (groupname) => {
-    return `[data-cy="${cyParamName(groupname)}-group-link"]`;
+    return `[data-cy="${cyParamName(groupname)}-list-item"]`;
   },
   updateGroupNameLink: (groupname) => {
-    return `[data-cy="${cyParamName(groupname)}-group-update-link"]`;
+    return `[data-cy="${cyParamName(groupname)}-group-name-update-link"]`;
   },
   deleteGroupLink: (groupname) => {
     return `[data-cy="${cyParamName(groupname)}-group-delete-link"]`;
   },
   mutiSelectAddButton: (groupname) => {
-    return `[data-cy="${cyParamName(
-      groupname
-    )}-group-multi-select-search-add-button"]`;
+    return `[data-cy="${cyParamName(groupname)}-group-add-button"]`;
   },
-  selectAddButton: '[data-cy="add-button"]'
+
+  groupPageTitle: (groupname) => {
+    return `[data-cy="${cyParamName(groupname)}-title"]`;
+  },
 };

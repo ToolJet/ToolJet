@@ -6,7 +6,7 @@ import { SortableContext, arrayMove, sortableKeyboardCoordinates } from '@dnd-ki
 
 import { SortableItem } from './components';
 
-export function SortableList({ items, onChange, renderItem }) {
+export function SortableList({ items, onChange, renderItem, isVersionReleased, setReleasedVersionPopupState }) {
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -18,6 +18,10 @@ export function SortableList({ items, onChange, renderItem }) {
     <DndContext
       sensors={sensors}
       onDragEnd={({ active, over }) => {
+        if (isVersionReleased) {
+          setReleasedVersionPopupState();
+          return;
+        }
         if (over) {
           const activeIndex = items.findIndex(({ id }) => id === active.id);
           const overIndex = items.findIndex(({ id }) => id === over.id);

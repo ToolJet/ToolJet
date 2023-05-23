@@ -34,8 +34,6 @@ export const commonSelectors = {
   appNameInput: "[data-cy=app-name-input]",
   launchButton: "[data-cy=launch-button]",
   folderNameInput: "[data-cy=folder-name-input]",
-  deleteFolderOption: "[data-cy=delete-folder-card-option]",
-  editFolderOption: "[data-cy=edit-folder-card-option]",
   deleteAppOption: "[data-cy=delete-app-card-option]",
   cancelButton: "[data-cy=cancel-button]",
   modalComponent: "[data-cy=modal-component]",
@@ -43,7 +41,7 @@ export const commonSelectors = {
   createNewFolderButton: "[data-cy=create-new-folder-button]",
   folderNameInput: "[data-cy=folder-name-input]",
   createFolderButton: "[data-cy=create-folder-button]",
-  folderList: ".css-169zxdi-MenuList",
+  folderList: ".react-select__menu-list",
   empytyFolderImage: "[data-cy=empty-folder-image]",
   emptyFolderText: "[data-cy=empty-folder-text]",
   allApplicationsLink: "[data-cy=all-applications-link]",
@@ -158,7 +156,7 @@ export const commonSelectors = {
   resetPasswordButton: '[data-cy="reset-password-button"]',
   resetPasswordPageDescription: '[data-cy="reset-password-page-description"]',
   backToLoginButton: '[data-cy="back-to-login-button"]',
-  breadcrumbTitle: '[data-cy="breadcrumb-title"]',
+  breadcrumbTitle: '[data-cy="app-header-label"]>>',
   breadcrumbPageTitle: '[data-cy="breadcrumb-page-title"]',
   labelFullNameInput: '[data-cy="label-full-name-input-field"]',
   inputFieldFullName: '[data-cy="input-field-full-name"]',
@@ -166,6 +164,8 @@ export const commonSelectors = {
   inputFieldEmailAddress: '[data-cy="input-field-email"]',
   closeButton: '[data-cy="close-button"]',
   emptyAppCreateButton: "[data-cy='button-new-app-from-scratch']",
+  globalDataSourceIcon: '[data-cy="icon-global-datasources"]',
+  addNewDataSourceButton: '[data-cy="add-new-data-source-button"]',
 
   onboardingRadioButton: (radioButtonText) => {
     return `[data-cy="${cyParamName(radioButtonText)}-radio-button"]`;
@@ -202,10 +202,15 @@ export const commonSelectors = {
     return `[data-cy="${cyParamName(buttonText)}-button"]`;
   },
 
-  folderCardOptions: (folderName)=>{
-    return `[data-cy="${cyParamName(folderName)}-list-card"]>[data-cy="folder-card-menu-icon"]>svg`
+  folderCardOptions: (folderName) => {
+    return `[data-cy="${cyParamName(folderName)}-card-menu-icon"]`;
   },
-
+  deleteFolderOption: (folderName) => {
+    return `[data-cy="${cyParamName(folderName)}-delete-folder-option"]`;
+  },
+  editFolderOption: (folderName) => {
+    return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`;
+  },
 };
 
 export const commonWidgetSelector = {
