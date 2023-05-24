@@ -17,7 +17,6 @@ export const Modal = function Modal({
   registerAction,
   fireEvent,
   dataCy,
-  modalHeight,
 }) {
   const [showModal, setShowModal] = useState(false);
   const {
@@ -29,6 +28,7 @@ export const Modal = function Modal({
     useDefaultButton,
     triggerButtonLabel,
     height,
+    modalHeight,
   } = properties;
   const {
     headerBackgroundColor,
