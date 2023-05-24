@@ -106,6 +106,7 @@ export class AppsService {
           updatedAt: new Date(),
           organizationId: user.organizationId,
           userId: user.id,
+          isMaintenanceOn: type === 'workflow' ? true : false,
         })
       );
 

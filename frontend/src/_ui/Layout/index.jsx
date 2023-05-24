@@ -9,6 +9,9 @@ import Header from '../Header';
 import { authenticationService } from '@/_services';
 import SolidIcon from '../Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
+import Beta from '../Beta';
+
+import './styles.scss';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
@@ -52,13 +55,20 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </ToolTip>
                 </li>
                 <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
-                  <ToolTip message="Database" placement="right">
+                  <ToolTip message="Workflows" placement="right">
                     <Link
                       to={getPrivateRoute('workflows')}
                       className={`tj-leftsidebar-icon-items  ${
                         router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
                       }`}
                       data-cy="icon-database"
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        height: 'fit-content',
+                        gap: '4px',
+                        padding: '8px',
+                      }}
                     >
                       <SolidIcon
                         name="workflows"
@@ -70,6 +80,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                             : '#C1C8CD'
                         }
                       />
+                      <Beta className="workflows-beta-tag" />
                     </Link>
                   </ToolTip>
                 </li>

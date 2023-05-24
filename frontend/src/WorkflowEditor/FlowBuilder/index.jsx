@@ -191,6 +191,9 @@ function FlowBuilder(_props) {
         onMove={() => setShowBlockOptions(null)}
         onNodeClick={onNodeClick}
         onMouseDownCapture={editorSessionActions.hideLeftDrawer}
+        proOptions={{
+          hideAttribution: true,
+        }}
       >
         <Background />
       </ReactFlow>

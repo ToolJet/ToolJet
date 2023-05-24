@@ -146,7 +146,9 @@ export class WorkflowExecutionsService {
   }
 
   async execute(workflowExecution: WorkflowExecution, params: object = {}): Promise<object> {
-    const appVersion = await this.appVersionsRepository.findOne(workflowExecution.appVersionId);
+    const appVersion = await this.appVersionsRepository.findOne(workflowExecution.appVersionId, {
+      relations: ['app'],
+    });
 
     workflowExecution = await this.workflowExecutionRepository.findOne({
       where: {
@@ -155,16 +157,17 @@ export class WorkflowExecutionsService {
       relations: ['startNode', 'user', 'nodes', 'edges'],
     });
 
-    const queue = [];
-
-    queue.push(
-      ...this.computeNodesToBeExecuted(workflowExecution.startNode, workflowExecution.nodes, workflowExecution.edges)
-    );
-
     let finalResult = {};
     const logs = [];
-
+    const queue = [];
     const addLog = (log: string) => logs.push(`[${moment().utc().format('YYYY-MM-DD HH:mm:ss.SSS')} UTC] ${log}`);
+    if (appVersion.app.isMaintenanceOn) {
+      queue.push(
+        ...this.computeNodesToBeExecuted(workflowExecution.startNode, workflowExecution.nodes, workflowExecution.edges)
+      );
+    } else {
+      addLog('Workflow is disabled.');
+    }
 
     while (queue.length !== 0) {
       const currentTime = moment();
@@ -196,8 +199,8 @@ export class WorkflowExecutionsService {
           case 'if-condition': {
             const code = currentNode.definition?.code ?? '';
 
-            const result = resolveCode(code, state);
-
+            const result = resolveCode({ code, state, isIfCondition: true, addLog });
+            addLog('If condition evaluated to ' + result);
             const sourceHandleToBeSkipped = result ? 'false' : 'true';
 
             await this.completeNodeExecution(currentNode, JSON.stringify(result), {});
@@ -222,7 +225,28 @@ export class WorkflowExecutionsService {
           }
 
           case 'output': {
-            finalResult = { ...state };
+            const resultReceivedNodes = await this.incomingNodes(currentNode);
+            // console.log('resultReceivedNodes', resultReceivedNodes);
+
+            const result = Object.fromEntries(
+              await Promise.all(
+                resultReceivedNodes
+                  .filter((node) => node.type === 'query')
+                  .map(async (node) => {
+                    const queryId = find(appVersion.definition.queries, {
+                      idOnDefinition: node.definition.idOnDefinition,
+                    }).id;
+
+                    const query = await this.dataQueriesService.findOne(queryId);
+                    return [query.name, JSON.parse(node.result)];
+                  })
+              )
+            );
+
+            finalResult = {
+              ...state,
+              result,
+            };
             break;
           }
         }
@@ -264,10 +288,9 @@ export class WorkflowExecutionsService {
     const options = getQueryVariables(query.options, state);
     try {
       addLog(`${query.name}: Started execution`);
-
       const result =
         query.kind === 'runjs'
-          ? resolveCode(query.options?.code, state)
+          ? resolveCode({ code: query.options?.code, state, addLog })
           : await this.dataQueriesService.runQuery(user, query, options);
 
       const newState = {
@@ -380,5 +403,27 @@ export class WorkflowExecutionsService {
     );
 
     return forwardNodes;
+  }
+
+  async incomingNodes(startNode: WorkflowExecutionNode): Promise<WorkflowExecutionNode[]> {
+    const incomingEdges = await this.workflowExecutionEdgeRepository.find({
+      where: {
+        targetWorkflowExecutionNode: startNode,
+      },
+    });
+
+    const incomingNodeIds = incomingEdges.map((edge) => edge.sourceWorkflowExecutionNodeId);
+
+    const receivedNodes = Promise.all(
+      incomingNodeIds.map((id) =>
+        this.workflowExecutionNodeRepository.findOne({
+          where: {
+            id,
+          },
+        })
+      )
+    );
+
+    return receivedNodes;
   }
 }

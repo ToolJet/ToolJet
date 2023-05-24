@@ -12,6 +12,7 @@ export default function generateActions(dispatch) {
     updateNodeData: (id, data, rest = {}) => dispatch({ type: 'UPDATE_NODE', payload: { id, data, rest } }),
     addEdge: (edge) => dispatch({ type: 'ADD_NEW_EDGE', payload: { edge } }),
     removeEdge: (edge) => dispatch({ type: 'REMOVE_EDGE', payload: { edge } }),
+    setMaintenanceStatus: (status) => dispatch({ type: 'SET_MAINTENANCE_STATUS', payload: { status } }),
     setEditingActivity: (editingActivity) =>
       dispatch({ type: 'SET_FLOW_BUILDER_EDITING_ACTIVITY', payload: { editingActivity } }),
     setAppSavingStatus: (status) => dispatch({ type: 'SET_APP_SAVING_STATUS', payload: { status } }),
