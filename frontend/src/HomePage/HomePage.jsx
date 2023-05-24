@@ -669,6 +669,7 @@ class HomePageComponent extends React.Component {
                     showTemplateLibraryModal={this.state.showTemplateLibraryModal}
                     viewTemplateLibraryModal={this.showTemplateLibraryModal}
                     hideTemplateLibraryModal={this.hideTemplateLibraryModal}
+                    appType={this.props.appType}
                   />
                 )}
                 {!isLoading && meta.total_count === 0 && appSearchKey && (
