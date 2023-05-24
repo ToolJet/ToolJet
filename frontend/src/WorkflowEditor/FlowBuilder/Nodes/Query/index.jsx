@@ -126,7 +126,7 @@ export default function QueryNode(props) {
             />
             <div className="result-section">
               <label className="result-label">Results</label>
-              <div style={{ width: '100%', height: '300px', overflow: 'scroll' }}>
+              <div style={{ width: '100%', height: '300px' }}>
                 <JSONTreeViewer
                   data={executionDetails.result}
                   useIcons={false}
