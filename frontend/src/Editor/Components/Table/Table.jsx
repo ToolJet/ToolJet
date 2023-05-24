@@ -523,12 +523,17 @@ export function Table({
       disableSortBy: !enabledSort,
       manualSortBy: serverSideSort,
       stateReducer: (newState, action, prevState) => {
-        if (allowSelection && !highlightSelectedRow && !showBulkSelector && action.type === 'toggleRowSelected') {
+        const newStateWithPrevSelectedRows = showBulkSelector
+          ? { ...newState, selectedRowId: { ...prevState.selectedRowIds, ...newState.selectedRowIds } }
+          : { ...newState.selectedRowId };
+        if (action.type === 'toggleRowSelected') {
           prevState.selectedRowIds[action.id]
             ? (newState.selectedRowIds = {
+                ...newStateWithPrevSelectedRows.selectedRowIds,
                 [action.id]: false,
               })
             : (newState.selectedRowIds = {
+                ...newStateWithPrevSelectedRows.selectedRowIds,
                 [action.id]: true,
               });
         }
@@ -666,17 +671,13 @@ export function Table({
       JSON.stringify(tableDetails.addNewRowsDetails.newRowsDataUpdates),
     ]
   );
-
   useEffect(() => {
     if (showBulkSelector) {
       const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
       const selectedRowsId = selectedFlatRows.map((row) => row.id);
       setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId });
     } else {
-      const selectedRow = selectedFlatRows.reduce((accumulator, row) => {
-        accumulator = { ...row.original };
-        return accumulator;
-      }, {});
+      const selectedRow = selectedFlatRows?.[0]?.original ?? {};
       const selectedRowId = selectedFlatRows?.[0]?.id ?? null;
       setExposedVariables({ selectedRow, selectedRowId });
     }
@@ -1027,37 +1028,30 @@ export function Table({
                   <tr
                     key={index}
                     className={`table-row ${
-                      highlightSelectedRow && row.id === tableDetails.selectedRowId ? 'selected' : ''
+                      highlightSelectedRow && row.isSelected && row.id === tableDetails.selectedRowId ? 'selected' : ''
                     } ${
                       highlightSelectedRow &&
                       showBulkSelector &&
+                      row.isSelected &&
                       tableDetails?.selectedRowsDetails?.some((singleRow) => singleRow.selectedRowId === row.id) &&
                       'selected'
                     }`}
                     {...row.getRowProps()}
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
-                      const selectedRowDetails = { selectedRowId: row.id, selectedRow: row.original };
-                      if (highlightSelectedRow && showBulkSelector) {
-                        const selectedRowsDetails = tableDetails?.selectedRowsDetails ?? [];
-                        if (
-                          _.isEmpty(selectedRowsDetails) ||
-                          (selectedRowsDetails.length >= 1 &&
-                            !selectedRowsDetails.some((row) => row.selectedRowId === selectedRowDetails.selectedRowId))
-                        ) {
-                          selectedRowsDetails.push(selectedRowDetails);
-                          setExposedVariables({
-                            selectedRows: selectedRowsDetails.map((row) => row.selectedRow),
-                            selectedRowsId: selectedRowsDetails.map((row) => row.selectedRowId),
-                          }).then(() => {
-                            mergeToTableDetails({ selectedRowsDetails });
-                          });
-                        }
-                      } else {
-                        toggleRowSelected(row.id, true);
+                      // toggleRowSelected will triggered useRededcuer function in useTable and in result will get the selectedFlatRows consisting row which are selected
+                      await toggleRowSelected(row.id);
+                      if (showBulkSelector) {
+                        const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
+                          accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
+                          return accumulator;
+                        }, []);
+                        mergeToTableDetails({ selectedRowsDetails });
                       }
-                      setExposedVariables(selectedRowDetails).then(() => {
-                        mergeToTableDetails(selectedRowDetails);
+                      const selectedRow = row.original;
+                      const selectedRowId = row.id;
+                      setExposedVariables({ selectedRow, selectedRowId }).then(() => {
+                        mergeToTableDetails({ selectedRow, selectedRowId });
                         fireEvent('onRowClicked');
                       });
                     }}
