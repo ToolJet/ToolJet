@@ -13,7 +13,11 @@ export const NumberInput = function NumberInput({
 
   const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
 
-  const [value, setValue] = React.useState(parseInt(properties.value));
+  const [value, setValue] = React.useState(parseInt(properties.value).toFixed(properties.decimalPlaces));
+
+  useEffect(() => {
+    setValue(parseInt(properties.value).toFixed(properties.decimalPlaces));
+  }, [properties.decimalPlaces, properties.value]);
 
   const handleChange = (e) => {
     if (
@@ -21,20 +25,16 @@ export const NumberInput = function NumberInput({
       !isNaN(parseInt(properties.maxValue)) &&
       parseInt(properties.minValue) > parseInt(properties.maxValue)
     ) {
-      setValue(parseInt(properties.maxValue));
+      setValue(parseInt(properties.maxValue).toFixed(properties.decimalPlaces));
     } else if (!isNaN(parseInt(properties.maxValue)) && parseInt(e.target.value) > parseInt(properties.maxValue)) {
-      setValue(parseInt(properties.maxValue));
+      setValue(parseInt(properties.maxValue).toFixed(properties.decimalPlaces));
     } else if (!isNaN(parseInt(properties.minValue)) && parseInt(e.target.value) < parseInt(properties.minValue)) {
-      setValue(parseInt(properties.minValue));
+      setValue(parseInt(properties.minValue).toFixed(properties.decimalPlaces));
     } else {
-      setValue(parseInt(e.target.value));
+      setValue(parseInt(e.target.value).toFixed(properties.decimalPlaces));
     }
     fireEvent('onChange');
   };
-
-  useEffect(() => {
-    setValue(parseInt(properties.value));
-  }, [properties.value]);
 
   useEffect(() => {
     if (!isNaN(value)) {
@@ -53,15 +53,26 @@ export const NumberInput = function NumberInput({
   };
 
   return (
-    <input
-      disabled={styles.disabledState}
-      onChange={handleChange}
-      type="number"
-      className="form-control"
-      placeholder={properties.placeholder}
-      style={computedStyles}
-      value={value}
-      data-cy={dataCy}
-    />
+    <>
+      {!properties.loadingState && (
+        <input
+          disabled={styles.disabledState}
+          onChange={handleChange}
+          type="number"
+          className="form-control"
+          placeholder={properties.placeholder}
+          style={computedStyles}
+          value={value}
+          data-cy={dataCy}
+        />
+      )}
+      {properties.loadingState === true && (
+        <div style={{ width: '100%' }}>
+          <center>
+            <div className="spinner-border" role="status"></div>
+          </center>
+        </div>
+      )}
+    </>
   );
 };
