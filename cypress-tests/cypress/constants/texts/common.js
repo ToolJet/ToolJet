@@ -159,6 +159,15 @@ export const commonText = {
     ThousandPlus: "1000+",
   },
   selfHostSignUpTermsHelperText: "By continuing you are agreeing to the",
+
+  shareModalElements: {
+    modalHeader: "Share",
+    makePublicAppToggleLabel: "Make application public?",
+    shareableAppLink: "Get shareable link for this application",
+    copyAppLinkButton: "copy",
+    iframeLinkLabel: "Get embeddable link for this application",
+    ifameLinkCopyButton: "copy",
+  },
 };
 
 export const commonWidgetText = {
