@@ -51,6 +51,7 @@ ENV TOOLJET_HOST=http://localhost \
     PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
     ORM_LOGGING=true \
     DEPLOYMENT_PLATFORM=docker:local \
+    HOME=/home/appuser \
     TERM=xterm
 
 # Prepare DB and start application
