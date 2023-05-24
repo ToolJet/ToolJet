@@ -4,7 +4,6 @@ import { componentTypes } from '../WidgetManager/components';
 import { Table } from './Components/Table/Table.jsx';
 import { Chart } from './Components/Chart';
 import { Form } from './Components/Form';
-import { DropDown } from './Components/DropDown';
 import { renderElement } from './Utils';
 import { toast } from 'react-hot-toast';
 import { validateQueryName, convertToKebabCase, resolveReferences } from '@/_helpers/utils';
@@ -509,9 +508,6 @@ const GetAccordion = React.memo(
 
       case 'Form':
         return <Form {...restProps} />;
-
-      case 'DropDown':
-        return <DropDown {...restProps} />;
 
       default: {
         return <DefaultComponent {...restProps} />;

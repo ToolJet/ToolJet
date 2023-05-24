@@ -2305,6 +2305,10 @@ export const widgets = [
       schema: {
         type: 'code',
         displayName: 'Schema',
+        conditionallyRender: {
+          key: 'advanced',
+          value: true,
+        },
       },
       loadingState: {
         type: 'toggle',
@@ -2403,9 +2407,7 @@ export const widgets = [
         customRule: { value: null },
       },
       properties: {
-        advanced: {
-          value: false,
-        },
+        advanced: { value: `{{false}}` },
         schema: {
           value:
             "{{[\t{label: 'One',value: 1,disable: false,visible: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}\t]}}",
