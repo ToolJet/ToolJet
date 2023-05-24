@@ -72,10 +72,11 @@ export const Modal = function Modal({
     setShowModal(false);
     setExposedVariable('show', false).then(() => fireEvent('onClose'));
   }
+  const backwardCompatibilityCheck = height == '30' || modalHeight != undefined ? true : false;
 
   const customStyles = {
     modalBody: {
-      height: height ?? modalHeight,
+      height: backwardCompatibilityCheck ? modalHeight : height,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
       overflowX: 'hidden',
