@@ -790,8 +790,7 @@ export const validateName = (name, oldName, nameType, showError = false) => {
   if (!newName) {
     errorMsg = `${nameType} can't be empty`;
     showError &&
-      toast(errorMsg, {
-        icon: '🚨',
+      toast.error(errorMsg, {
         id: '1',
       });
     return {
@@ -801,11 +800,10 @@ export const validateName = (name, oldName, nameType, showError = false) => {
   }
 
   //check for alphanumeric
-  if (newName.match(/^[A-Za-z0-9 ]+$/) === null) {
-    errorMsg = `${nameType} must only contain letters and numbers`;
+  if (newName.match(/^[A-Za-z0-9 _-]+$/) === null) {
+    errorMsg = `Special characters are not accepted.`;
     showError &&
-      toast(errorMsg, {
-        icon: '🚨',
+      toast.error(errorMsg, {
         id: '2',
       });
     return {
@@ -815,7 +813,7 @@ export const validateName = (name, oldName, nameType, showError = false) => {
   }
 
   if (newName.length > 40) {
-    errorMsg = `${nameType} cannot be longer than 25 characters.`;
+    errorMsg = `Maximum length has been reached.`;
     showError &&
       toast.error(errorMsg, {
         id: '3',
@@ -830,4 +828,18 @@ export const validateName = (name, oldName, nameType, showError = false) => {
     status: true,
     errorMsg: '',
   };
+};
+
+export const handleErrConnections = (error, service_name, custom_message) => {
+  if (
+    error?.message === 'Failed to fetch' ||
+    (['127.0.0.1', 'localhost'].includes(location.hostname) && !window.navigator.onLine)
+  ) {
+    toast.error(
+      `Something went wrong on our end and this ${service_name} could not be created. Please try again or contact our support team if the \n problem persists.` ||
+        custom_message
+    );
+    return;
+  }
+  toast.error('Something went wrong. Please try again.');
 };

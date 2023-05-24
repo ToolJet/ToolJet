@@ -10,8 +10,8 @@ export class OrganizationCreateDto {
     return newValue?.trim() || '';
   })
   @IsNotEmpty()
-  @Matches('^[A-Za-z0-9 ]+$', '', { message: 'Workspace name must contain only letters and numbers' })
-  @MaxLength(40, { message: 'Workspace name cannot be longer than 40 characters' })
+  @Matches('^[A-Za-z0-9 _-]+$', '', { message: 'Special characters are not accepted.' })
+  @MaxLength(40, { message: 'Maximum length has been reached.' })
   name: string;
 }
 
@@ -22,8 +22,8 @@ export class OrganizationUpdateDto {
     const newValue = sanitizeInput(value);
     return newValue?.trim() || '';
   })
-  @Matches('^[A-Za-z0-9 ]+$', '', { message: 'Workspace name must contain only letters and numbers' })
-  @MaxLength(40, { message: 'Workspace name cannot be longer than 40 characters' })
+  @Matches('^[A-Za-z0-9 _-]+$', '', { message: 'Special characters are not accepted.' })
+  @MaxLength(40, { message: 'Maximum length has been reached.' })
   name?: string;
 
   @IsOptional()

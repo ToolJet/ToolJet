@@ -463,7 +463,7 @@ export class OrganizationsService {
       const ifWorkspaceNameExists = await this.organizationsRepository.findOne({ name });
 
       if (ifWorkspaceNameExists) {
-        throw new ConflictException('Workspace name already exists.');
+        throw new ConflictException('This workspace name is already taken');
       }
     }
 

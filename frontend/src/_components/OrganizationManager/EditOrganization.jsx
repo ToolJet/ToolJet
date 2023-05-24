@@ -4,7 +4,7 @@ import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { validateName } from '@/_helpers/utils';
+import { validateName, handleErrConnections } from '@/_helpers/utils';
 
 export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -25,15 +25,16 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
       organizationService.editOrganization({ name: trimmedName }).then(
         () => {
           toast.success('Workspace updated');
+          setIsCreating(false);
+          setShowEditOrg(false);
           window.location.reload();
         },
-        (err) => {
-          toast.error(err?.data?.message || 'Error while editing workspace');
+        (error) => {
+          handleErrConnections(error, 'Workspace');
+          setIsCreating(false);
         }
       );
     }
-    setIsCreating(false);
-    setShowEditOrg(false);
   };
 
   return (
