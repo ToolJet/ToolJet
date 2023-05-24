@@ -1196,7 +1196,7 @@ export const widgets = [
         maxValue: { value: '' },
         minValue: { value: '' },
         placeholder: { value: '0' },
-        decimalPlaces: { value: 2 },
+        decimalPlaces: { value: '{{2}}' },
         loadingState: { value: '{{false}}' },
       },
       events: [],
