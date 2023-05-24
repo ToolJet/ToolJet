@@ -10,6 +10,11 @@ env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true  
+
 jobs:
   Run-Cypress:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress' }}
@@ -33,22 +38,14 @@ jobs:
           sleep 1
           done
 
-      - name: create-json
-        id: create-json
-        uses: jsdaniell/create-json@v1.2.2
-        with:
-          name: "cypress.env.json"
-          json: ${{ secrets.CYPRESS_SECRETS }}
-
       - name: Cypress integration test
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
           config-file: cypress-run.config.js
-        #   env: true
-        # env: 
-        #   CYPRESS_SECRETS: ${{ secrets.CYPRESS_SECRETS }}
+        env:
+          CYPRESS_SECRETS: ${{ secrets.CYPRESS_SECRETS }}
 
       - name: Capturing screenshots
         uses: actions/upload-artifact@v3
