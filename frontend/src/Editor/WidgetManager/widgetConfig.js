@@ -5475,6 +5475,14 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           schema: { type: 'boolean' },
         },
       },
+      JSONSchema: {
+        type: 'code',
+        displayName: 'JSON Schema',
+      },
+      advanced: {
+        type: 'toggle',
+        displayName: 'Advanced',
+      },
     },
     events: {
       onSubmit: { displayName: 'On submit' },
@@ -5541,6 +5549,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       properties: {
         loadingState: { value: '{{false}}' },
+        advanced: { value: '{{false}}' },
+        JSONSchema: {
+          value:
+            "{{[\t { type: 'Text', text: 'Admin Details', styles: { backgroundColor: '', textColor: 'black', fontSize: '22px' } },{ type: 'Text', text: 'Sugar hanged', styles: { backgroundColor: '', textColor: 'red' } },{ type: 'Button',text: 'submit',styles: {backgroundColor: '#38b290',textColor: 'white',borderRadius: '6px',borderColor: '#79807e',loaderColor: '#ddd', },},{ type: 'Button', text: 'yes', styles: { backgroundColor: '#7938b2', textColor: 'white' } },{ type: 'TextInput', placeholder: 'Enter your name',value:'ToolJet user' ,styles: { backgroundColor: '', textColor: 'black', fontSize: '14px'},},\t]}}",
+        },
       },
       events: [],
       styles: {

@@ -1635,6 +1635,7 @@ class EditorComponent extends React.Component {
                           currentPageId={this.state.currentPageId}
                           setReleasedVersionPopupState={this.setReleasedVersionPopupState}
                           isVersionReleased={this.isVersionReleased()}
+                          allComponents={appDefinition.pages[this.state.currentPageId]?.components ?? {}}
                         />
                         <CustomDragLayer
                           snapToGrid={true}
