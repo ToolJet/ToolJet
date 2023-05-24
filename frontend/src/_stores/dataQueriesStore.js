@@ -135,15 +135,25 @@ export const useDataQueriesStore = create(
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
         renameQuery: (id, newName, editorRef) => {
+          useAppDataStore.getState().actions.setIsSaving(true);
           dataqueryService
             .update(id, newName)
             .then(() => {
-              toast.success('Query Name Updated');
-              get().actions.fetchDataQueries(useAppDataStore.getState().editingVersion?.id, false, false, editorRef);
+              // toast.success('Query Name Updated');
+              // get().actions.fetchDataQueries(useAppDataStore.getState().editingVersion?.id, false, false, editorRef);
+              set((state) => ({
+                dataQueries: state.dataQueries.map((query) => {
+                  if (query.id === id) {
+                    return { ...query, name: newName };
+                  }
+                  return query;
+                }),
+              }));
             })
             .catch(({ error }) => {
-              toast.error(error);
-            });
+              // toast.error(error);
+            })
+            .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
         changeDataQuery: (newDataSource) => {
           const { selectedQuery } = useQueryPanelStore.getState();
