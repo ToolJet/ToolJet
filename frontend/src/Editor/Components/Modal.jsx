@@ -17,6 +17,7 @@ export const Modal = function Modal({
   registerAction,
   fireEvent,
   dataCy,
+  modalHeight,
 }) {
   const [showModal, setShowModal] = useState(false);
   const {
@@ -74,7 +75,7 @@ export const Modal = function Modal({
 
   const customStyles = {
     modalBody: {
-      height: height ?? '100vw',
+      height: height ?? modalHeight,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
       overflowX: 'hidden',

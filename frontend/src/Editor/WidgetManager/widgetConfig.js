@@ -853,9 +853,9 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
-      height: {
+      modalHeight: {
         type: 'code',
-        displayName: 'Height',
+        displayName: 'Modal Height',
         validation: {
           schema: { type: 'string' },
         },
@@ -947,7 +947,7 @@ export const widgets = [
         hideCloseButton: { value: '{{false}}' },
         hideOnEsc: { value: '{{true}}' },
         closeOnClickingOutside: { value: '{{false}}' },
-        height: { value: '400px' },
+        modalHeight: { value: '400px' },
       },
       events: [],
       styles: {
