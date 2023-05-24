@@ -1,5 +1,6 @@
 FROM tooljet/tooljet-ce:latest
-
+# Switch to root user
+USER root
 # copy postgrest executable
 COPY --from=postgrest/postgrest:v10.1.1.20221215 /bin/postgrest /bin
 
@@ -11,7 +12,6 @@ RUN apt update && apt -y install postgresql-13 postgresql-client-13 supervisor
 USER postgres
 RUN service postgresql start && \
     psql -c "create role tooljet with login superuser password 'postgres';"
-USER root
 
 RUN echo "[supervisord] \n" \
     "nodaemon=true \n" \
@@ -33,6 +33,7 @@ RUN echo "[supervisord] \n" \
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
     PORT=80 \
+    NODE_ENV=production \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \
     PG_DB=tooljet_production \
