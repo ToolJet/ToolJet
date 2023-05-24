@@ -1,6 +1,7 @@
 import React from 'react';
 import { Code } from './Elements/Code';
 import { QuerySelector } from './QuerySelector';
+import { resolveReferences } from '@/_helpers/utils';
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
@@ -28,9 +29,20 @@ export function renderElement(
   components = {},
   darkMode = false
 ) {
-  const componentDefinition = component.component.definition;
+  const componentConfig = component.component;
+  const componentDefinition = componentConfig.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
+
+  const paramTypeConfig = componentConfig[paramType] || {};
+  const paramConfig = paramTypeConfig[param] || {};
+  const { conditionallyRender = null } = paramConfig;
+
+  if (conditionallyRender) {
+    const { key, value } = conditionallyRender;
+    const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
+    if (resolvedValue.value !== value) return;
+  }
 
   const meta = componentMeta[paramType][param];
 
