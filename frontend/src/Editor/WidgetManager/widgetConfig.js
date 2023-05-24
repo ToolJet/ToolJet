@@ -562,7 +562,9 @@ export const widgets = [
         },
       },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      ButtonText: 'Button',
+    },
     actions: [
       {
         handle: 'click',
