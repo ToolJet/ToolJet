@@ -800,7 +800,7 @@ export const validateName = (name, oldName, nameType, showError = false) => {
   }
 
   //check for alphanumeric
-  if (newName.match(/^[A-Za-z0-9 _-]+$/) === null) {
+  if (newName.match(/^[A-Za-z0-9 -]+$/) === null) {
     errorMsg = `Special characters are not accepted.`;
     showError &&
       toast.error(errorMsg, {
