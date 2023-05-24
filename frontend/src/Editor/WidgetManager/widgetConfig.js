@@ -2023,7 +2023,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '' },
+        backgroundColor: { value: '#fff00000' },
         textColor: { value: '#000000' },
         textSize: { value: 14 },
         textAlign: { value: 'left' },
