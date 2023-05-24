@@ -1,11 +1,18 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { bigqueryText } from "Texts/bigquery";
 import { firestoreText } from "Texts/firestore";
 import { commonSelectors } from "Selectors/common";
-import {fillDataSourceTextField,selectDataSource} from "Support/utils/postgreSql";
+import {
+  fillDataSourceTextField,
+  selectDataSource,
+} from "Support/utils/postgreSql";
 import { commonText } from "Texts/common";
-import { closeDSModal,deleteDatasource } from "Support/utils/dataSource";
+import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source BigQuery", () => {
   beforeEach(() => {
@@ -15,7 +22,7 @@ describe("Data source BigQuery", () => {
 
   it("Should verify elements on BigQuery connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal()
+    closeDSModal();
     cy.get(commonSelectors.addNewDataSourceButton)
       .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
@@ -93,7 +100,7 @@ describe("Data source BigQuery", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      bigqueryText.cypressBigQuery
+      `cypress-${data.lastName}-bigquery`
     );
 
     fillDataSourceTextField(
@@ -115,11 +122,10 @@ describe("Data source BigQuery", () => {
     );
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.get('[data-cy="cypress-bigquery-button"]').verifyVisibleElement(
-      "have.text",
-      bigqueryText.cypressBigQuery
-    );
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-bigquery-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-bigquery`);
 
-    deleteDatasource("cypress-bigquery");
+    deleteDatasource(`cypress-${data.lastName}-bigquery`);
   });
 });
