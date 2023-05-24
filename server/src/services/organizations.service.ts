@@ -5,7 +5,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { cleanObject, dbTransactionWrap, isPlural } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap, generateName, isPlural } from 'src/helpers/utils.helper';
 import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
@@ -560,7 +560,7 @@ export class OrganizationsService {
         // User not exist
         shouldSendWelcomeMail = true;
         // Create default organization if user not exist
-        defaultOrganization = await this.create('Untitled workspace', null, manager);
+        defaultOrganization = await this.create(generateName('workspace', userParams.firstName), null, manager);
       } else if (user.invitationToken) {
         // User not setup
         shouldSendWelcomeMail = true;

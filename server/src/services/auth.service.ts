@@ -21,7 +21,7 @@ import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, generateName } from 'src/helpers/utils.helper';
 import {
   getUserErrorMessages,
   getUserStatusAndSource,
@@ -257,7 +257,8 @@ export class AuthService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Create default organization
-      organization = await this.organizationsService.create('Untitled workspace', null, manager);
+      //TODO: check if there any case available that the firstname will be nil
+      organization = await this.organizationsService.create(generateName('workspace', names?.firstName), null, manager);
       const user = await this.usersService.create(
         {
           email,
