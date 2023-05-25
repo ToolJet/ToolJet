@@ -92,10 +92,7 @@ export class DataQueriesService {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions, organization_id);
     const service = await this.pluginsHelper.getService(dataSource.pluginId, dataSource.kind);
-    console.log('dataQueriesService', {
-      sourceOptions,
-      parsedQueryOptions,
-    });
+
     return { service, sourceOptions, parsedQueryOptions };
   }
 
