@@ -46,5 +46,5 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          docker buildx build --platform=linux/amd64 -f docker/try-tooljet.Dockerfile . -t tooljet/tj-osv:test
-          docker push tooljet/tj-osv:test
+          docker buildx build --platform=linux/amd64 -f docker/try-tooljet.Dockerfile . -t tooljet/tooljet:latest
+          docker push tooljet/tj-osv:latest
