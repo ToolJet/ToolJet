@@ -639,10 +639,12 @@ class HomePageComponent extends React.Component {
               data-cy="home-page-content"
             >
               <div className="w-100 mb-5 container home-page-content-container">
-                <>
-                  <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
-                  <div className="liner"></div>
-                </>
+                {(meta?.total_count > 0 || appSearchKey || currentFolder?.id) && (
+                  <>
+                    <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />
+                    <div className="liner"></div>
+                  </>
+                )}
                 {!isLoading && meta?.total_count === 0 && !currentFolder.id && !appSearchKey && (
                   <BlankPage
                     createApp={this.createApp}
