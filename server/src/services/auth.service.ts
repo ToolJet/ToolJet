@@ -407,12 +407,6 @@ export class AuthService {
 
         // Activate default workspace
         await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
-
-        if (companyName) {
-          await manager.update(Organization, user.defaultOrganizationId, {
-            name: companyName,
-          });
-        }
       } else {
         throw new BadRequestException('Invalid invitation link');
       }

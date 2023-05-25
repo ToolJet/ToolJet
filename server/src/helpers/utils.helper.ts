@@ -109,4 +109,5 @@ export async function getServiceAndRpcNames(protoDefinition) {
   return serviceNamesAndMethods;
 }
 
-export const generateName = (serviceName: string, firstName: string) => `${firstName}'s ${serviceName}${randomInt(4)}`;
+export const generateName = (serviceName: string, firstName: string) =>
+  `${firstName}'s ${serviceName}${randomInt(1000, 10000)}`;
