@@ -177,10 +177,18 @@ class QueryManagerComponent extends React.Component {
       }
     );
   };
+  componentDidUpdate(prevState) {
+    if (this.state?.selectedQuery?.id == prevState?.selectedQuery?.id) {
+      if (prevState?.selectedQuery?.name !== this.state?.selectedQuery?.name) {
+        this.setState({
+          queryName: this.state.selectedQuery?.name,
+        });
+      }
+    }
+  }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (useDataSourcesStore.getState().loadingDataSources) return;
-    if (nextProps.loadingDataSources) return;
     if (this.props.showQueryConfirmation && !nextProps.showQueryConfirmation) {
       if (this.state.isUpdating) {
         this.setState({
