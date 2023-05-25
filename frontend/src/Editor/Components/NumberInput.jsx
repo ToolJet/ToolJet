@@ -13,25 +13,31 @@ export const NumberInput = function NumberInput({
 
   const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
 
-  const [value, setValue] = React.useState(parseInt(properties.value).toFixed(properties.decimalPlaces));
+  const [value, setValue] = React.useState(parseFloat(properties.value).toFixed(properties.decimalPlaces));
 
   useEffect(() => {
-    setValue(parseInt(properties.value).toFixed(properties.decimalPlaces));
+    setValue(parseFloat(properties.value).toFixed(properties.decimalPlaces));
   }, [properties.decimalPlaces, properties.value]);
 
   const handleChange = (e) => {
     if (
-      !isNaN(parseInt(properties.minValue)) &&
-      !isNaN(parseInt(properties.maxValue)) &&
-      parseInt(properties.minValue) > parseInt(properties.maxValue)
+      !isNaN(parseFloat(properties.minValue)) &&
+      !isNaN(parseFloat(properties.maxValue)) &&
+      parseFloat(properties.minValue) > parseFloat(properties.maxValue)
     ) {
-      setValue(parseInt(properties.maxValue).toFixed(properties.decimalPlaces));
-    } else if (!isNaN(parseInt(properties.maxValue)) && parseInt(e.target.value) > parseInt(properties.maxValue)) {
-      setValue(parseInt(properties.maxValue).toFixed(properties.decimalPlaces));
-    } else if (!isNaN(parseInt(properties.minValue)) && parseInt(e.target.value) < parseInt(properties.minValue)) {
-      setValue(parseInt(properties.minValue).toFixed(properties.decimalPlaces));
+      setValue(parseFloat(properties.maxValue).toFixed(properties.decimalPlaces));
+    } else if (
+      !isNaN(parseFloat(properties.maxValue)) &&
+      parseFloat(e.target.value) > parseFloat(properties.maxValue)
+    ) {
+      setValue(parseFloat(properties.maxValue).toFixed(properties.decimalPlaces));
+    } else if (
+      !isNaN(parseFloat(properties.minValue)) &&
+      parseFloat(e.target.value) < parseFloat(properties.minValue)
+    ) {
+      setValue(parseFloat(properties.minValue).toFixed(properties.decimalPlaces));
     } else {
-      setValue(parseInt(e.target.value).toFixed(properties.decimalPlaces));
+      setValue(parseFloat(e.target.value).toFixed(properties.decimalPlaces));
     }
     fireEvent('onChange');
   };
