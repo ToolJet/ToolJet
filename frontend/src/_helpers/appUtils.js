@@ -809,14 +809,12 @@ export function getQueryVariables(options, state) {
     default:
       break;
   }
-  console.log('queryVariables --', { queryVariables });
+
   return queryVariables;
 }
 
 export function previewQuery(_ref, query, editorState, calledFromQuery = false) {
   const options = getQueryVariables(query.options, _ref.props.currentState);
-
-  console.log('previewQuery queryVariables', { query, options });
 
   _ref.setState({ previewLoading: true });
 
