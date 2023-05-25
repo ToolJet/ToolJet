@@ -14,6 +14,7 @@ export const AppMenu = function AppMenu({
   openAppActionModal,
   darkMode,
   currentFolder,
+  appType,
 }) {
   const { t } = useTranslation();
   const Field = ({ text, onClick, customClass }) => {
@@ -66,8 +67,12 @@ export const AppMenu = function AppMenu({
                         onClick={() => openAppActionModal('remove-app-from-folder')}
                       />
                     )}
-                    <Field text={t('homePage.appCard.cloneApp', 'Clone app')} onClick={cloneApp} />
-                    <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
+                    {appType !== 'workflow' && (
+                      <Field text={t('homePage.appCard.cloneApp', 'Clone app')} onClick={cloneApp} />
+                    )}
+                    {appType !== 'workflow' && (
+                      <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
+                    )}
                   </>
                 )}
                 {canDeleteApp && (

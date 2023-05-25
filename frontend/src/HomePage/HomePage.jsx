@@ -695,6 +695,7 @@ class HomePageComponent extends React.Component {
                       darkMode={this.props.darkMode}
                       appActionModal={this.appActionModal}
                       removeAppFromFolder={this.removeAppFromFolder}
+                      appType={this.props.appType}
                     />
                   ))}
               </div>
