@@ -860,3 +860,37 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
     }
   }
 };
+
+export const sessionStorageOperations = (action, key, values) => {
+  switch (action) {
+    case 'set': {
+      if (!_.isEmpty(values)) {
+        Object.keys(values).map((key) => {
+          sessionStorage.setItem(key, JSON.stringify(values[key]));
+          return;
+        });
+      }
+      break;
+    }
+    case 'remove': {
+      if (key) {
+        try {
+          return sessionStorage.removeItem(key);
+        } catch {
+          return;
+        }
+      }
+      break;
+    }
+    default: {
+      if (key) {
+        try {
+          return JSON.parse(sessionStorage.getItem(key));
+        } catch {
+          return;
+        }
+      }
+      break;
+    }
+  }
+};
