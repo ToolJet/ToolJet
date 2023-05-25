@@ -10,14 +10,15 @@ Workspace Variables are the variables with some value(usually tokens/secret keys
 Suppose there is an `API key` or a value that you want to use in the queries or widgets in the multiple apps of the same Workspace then the Workspace admin or the user with permissions can add an environment variable.
 
 #### Adding the environment variable
-
 - Go to the ToolJet Dashboard, and click on the dropdown on the navigation bar to show `Workspace` options
 - Select `Manage Environment Variables`
 - Click on `Add New Variable` button
 - Give a `Name` to the variable, set the value, choose `Type`, toggle `Encryption`, and click **Add Variable** button
 - Now this variable can be used inside any application of this Workspace
 
+
 <img className="screenshot-full" src="/img/tutorial/use-env-org-vars/add-variable.gif" alt="add variable" />
+
 
 ### Types of variables
 
@@ -28,6 +29,7 @@ Suppose there is an `API key` or a value that you want to use in the queries or 
 :::info
 Variable Type cannot be changed once it has been created.
 :::
+
 
 <img className="screenshot-full" src="/img/tutorial/use-env-org-vars/variable-type.png" alt="variable-type" />
 
@@ -43,7 +45,9 @@ So, the syntax for using the variable that we created before will be `%%client.p
 
 **Example for client variable usage:**
 
+
 <img className="screenshot-full" src="/img/tutorial/use-env-org-vars/variable-usage.png" alt="variable-usage" />
+
 
 **Example for server variable usage:**
 
