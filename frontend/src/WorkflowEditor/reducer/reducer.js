@@ -127,6 +127,8 @@ export const reducer = (state = initialState(), { payload, type }) => {
       const newNode = {
         ...(type === 'query' ? defaultQueryNode : defaultIfConditionNode),
         ...node,
+        // disable to delete by keyboard
+        deletable: false,
       };
 
       return {
