@@ -400,6 +400,8 @@ class EditorComponent extends React.Component {
       if (version?.id === this.state.app?.current_version_id) {
         (this.canUndo = false), (this.canRedo = false);
       }
+      useAppDataStore.getState().actions.updateEditingVersion(version);
+
       this.setState(
         {
           editingVersion: version,

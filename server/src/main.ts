@@ -97,9 +97,10 @@ async function bootstrap() {
     defaultVersion: VERSION_NEUTRAL,
   });
 
+  const listen_addr = process.env.LISTEN_ADDR || "::";
   const port = parseInt(process.env.PORT) || 3000;
 
-  await app.listen(port, '0.0.0.0', function () {
+  await app.listen(port, listen_addr, function () {
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
     console.log(`Ready to use at ${tooljetHost} 🚀`);
   });
