@@ -42,6 +42,7 @@ const AppList = (props) => {
                     cloneApp={props.cloneApp}
                     exportApp={props.exportApp}
                     appActionModal={props.appActionModal}
+                    appType={props.appType}
                   />
                 </div>
               );
