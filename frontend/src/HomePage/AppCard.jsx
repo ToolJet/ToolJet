@@ -104,6 +104,8 @@ export default function AppCard({
     </div>
   );
 
+  const editButtonStyle = appType === 'workflow' ? { width: '100%' } : {};
+
   return (
     <div className="card homepage-app-card animation-fade">
       <div key={app.id} ref={hoverRef} data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
@@ -159,14 +161,19 @@ export default function AppCard({
         </div>
         <div className="appcard-buttons-wrap">
           {canUpdate && (
-            <div>
+            <div style={editButtonStyle}>
               <ToolTip message="Open in app builder">
                 <Link
                   to={getPrivateRoute('editor', {
                     id: app.id,
                   })}
                 >
-                  <button type="button" className="tj-primary-btn edit-button tj-text-xsm" data-cy="edit-button">
+                  <button
+                    type="button"
+                    className="tj-primary-btn edit-button tj-text-xsm"
+                    data-cy="edit-button"
+                    style={editButtonStyle}
+                  >
                     <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#11181C' : '#FDFDFE'} />
                     &nbsp;{t('globals.edit', 'Edit')}
                   </button>
