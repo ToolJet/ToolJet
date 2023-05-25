@@ -8,6 +8,7 @@ import {
   applyNodeChanges,
   applyEdgeChanges,
   addEdge as addReactFlowEdge,
+  Controls,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import ifConditionNode from './Nodes/ifCondition';
@@ -196,6 +197,7 @@ function FlowBuilder(_props) {
         }}
       >
         <Background />
+        <Controls />
       </ReactFlow>
       {showBlockOptions && (
         <BlockOptions
