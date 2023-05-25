@@ -1,0 +1,44 @@
+
+name: Try-Tooljet Docker Image
+
+on:
+  release:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Wait for Docker image
+        id: wait-for-image
+        run: |
+          retries=0
+          max_retries=10
+          while [[ "$(docker images -q tooljet/tooljet-ce:${{ github.event.release.tag_name }})" == "" ]]; do
+            retries=$((retries+1))
+            if [[ $retries -gt $max_retries ]]; then
+              echo "Docker image not found. Maximum retries exceeded. Stopping workflow execution."
+              exit 1
+            fi
+            sleep 5
+          done
+
+      - name: Set DOCKER_CLI_EXPERIMENTAL
+        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and Push Docker image
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          docker buildx build --platform=linux/amd64 -f docker/try-tooljet.Dockerfile . -t tooljet/try:lastest
+          docker push tooljet/try:lastest
