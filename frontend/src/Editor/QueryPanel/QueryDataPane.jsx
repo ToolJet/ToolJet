@@ -18,6 +18,7 @@ export const QueryDataPane = ({
   fetchDataQueries,
   editorRef,
   isVersionReleased,
+  appId,
 }) => {
   const { t } = useTranslation();
   const { loadingDataQueries } = useDataQueriesStore();
@@ -124,6 +125,7 @@ export const QueryDataPane = ({
                   darkMode={darkMode}
                   editorRef={editorRef}
                   isVersionReleased={isVersionReleased}
+                  appId={appId}
                 />
               ))}
             </div>

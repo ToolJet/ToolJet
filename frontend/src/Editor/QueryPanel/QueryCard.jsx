@@ -11,6 +11,7 @@ import { toast } from 'react-hot-toast';
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions, useSelectedQuery, useUnsavedChanges } from '@/_stores/queryPanelStore';
 import { Badge } from 'react-bootstrap';
+import Copy from '../../_ui/Icon/solidIcons/Copy';
 
 export const QueryCard = ({
   dataQuery,
@@ -18,14 +19,14 @@ export const QueryCard = ({
   setCancelData,
   setDraftQuery,
   darkMode = false,
-  fetchDataQueries,
   editorRef,
   isVersionReleased,
+  appId,
 }) => {
   const selectedQuery = useSelectedQuery();
   const isUnsavedChangesAvailable = useUnsavedChanges();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
-  const { deleteDataQueries, renameQuery } = useDataQueriesActions();
+  const { deleteDataQueries, renameQuery, duplicateQuery } = useDataQueriesActions();
   const { setSelectedQuery, setSelectedDataSource, setUnSavedChanges, setPreviewData } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [renamingQuery, setRenamingQuery] = useState(false);
@@ -161,6 +162,11 @@ export const QueryCard = ({
                     fill="#11181C"
                   />
                 </svg>
+              </span>
+            </div>
+            <div className={`col-auto rename-query`} onClick={() => duplicateQuery(dataQuery?.id, appId)}>
+              <span className="d-flex">
+                <Copy height={16} width={16} viewBox="0 5 20 20" />
               </span>
             </div>
             <div className="col-auto">

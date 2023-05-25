@@ -93,7 +93,7 @@ export const useDataQueriesStore = create(
                 }),
               }));
               actions.setSelectedQuery(data.id);
-              if (shouldRunQuery) actions.setQueryToBeRun(data);
+              // if (shouldRunQuery) actions.setQueryToBeRun(data);
             })
             .catch(({ error }) => {
               actions.setUnSavedChanges(false);
@@ -121,7 +121,7 @@ export const useDataQueriesStore = create(
                 isCreatingQueryInProcess: false,
                 dataQueries: [{ ...selectedQuery, ...data }, ...state.dataQueries],
               }));
-              actions.setSelectedQuery(data.id, { ...selectedQuery, id: data.id });
+              actions.setSelectedQuery(data.id, data);
               if (shouldRunQuery) actions.setQueryToBeRun(data);
             })
             .catch((error) => {
@@ -160,20 +160,29 @@ export const useDataQueriesStore = create(
           set({
             isUpdatingQueryInProcess: true,
           });
+          useAppDataStore.getState().actions.setIsSaving(true);
           dataqueryService
             .changeQueryDataSource(selectedQuery?.id, newDataSource.id)
             .then(() => {
-              set({
+              set((state) => ({
                 isUpdatingQueryInProcess: false,
-              });
-              toast.success('Data source changed');
+                dataQueries: state.dataQueries.map((query) => {
+                  if (query?.id === selectedQuery?.id) {
+                    return { ...query, dataSourceId: newDataSource?.id };
+                  }
+                  return query;
+                }),
+              }));
+              useQueryPanelStore.getState().actions.setSelectedDataSource(newDataSource);
+              // toast.success('Data source changed');
             })
             .catch((error) => {
-              toast.error(error);
+              // toast.error(error);
               set({
                 isUpdatingQueryInProcess: false,
               });
-            });
+            })
+            .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
         updateDataQueryStatus: (status) => {
           set({ isUpdatingQueryInProcess: true });
@@ -197,6 +206,51 @@ export const useDataQueriesStore = create(
               // toast.error(error);
               set({
                 isUpdatingQueryInProcess: false,
+              });
+            })
+            .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
+        },
+        duplicateQuery: (id, appId) => {
+          set({ isCreatingQueryInProcess: true });
+          const { actions } = useQueryPanelStore.getState();
+          const { dataQueries } = useDataQueriesStore.getState();
+          const queryToClone = { ...dataQueries.find((query) => query.id === id) };
+          let newName = queryToClone.name + '_copy';
+          const names = dataQueries.map(({ name }) => name);
+          let count = 0;
+          while (names.includes(newName)) {
+            count++;
+            newName = queryToClone.name + '_copy' + count.toString();
+          }
+          queryToClone.name = newName;
+          delete queryToClone.id;
+          useAppDataStore.getState().actions.setIsSaving(true);
+          dataqueryService
+            .create(
+              appId,
+              queryToClone.app_version_id,
+              queryToClone.name,
+              queryToClone.kind,
+              queryToClone.options,
+              queryToClone.data_source_id,
+              queryToClone.pluginId
+            )
+            .then((data) => {
+              actions.setUnSavedChanges(false);
+              // toast.success('Query Added');
+              set((state) => ({
+                isCreatingQueryInProcess: false,
+                dataQueries: [{ ...data }, ...state.dataQueries],
+              }));
+              actions.setSelectedQuery(data.id, { ...data });
+              // if (shouldRunQuery) actions.setQueryToBeRun(data);
+            })
+            .catch((error) => {
+              console.error('error', error);
+              actions.setUnSavedChanges(false);
+              // toast.error(error.message);
+              set({
+                isCreatingQueryInProcess: false,
               });
             })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
