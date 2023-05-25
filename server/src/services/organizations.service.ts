@@ -69,7 +69,7 @@ export class OrganizationsService {
       const ifWorkspaceNameExists = await manager.findOne(Organization, { name });
 
       if (ifWorkspaceNameExists) {
-        throw new ConflictException('Workspace name already exists.');
+        throw new ConflictException('Workspace name is already taken.');
       }
 
       organization = await manager.save(

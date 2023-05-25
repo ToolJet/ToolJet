@@ -833,13 +833,30 @@ export const validateName = (name, oldName, nameType, showError = false) => {
 export const handleErrConnections = (error, service_name, custom_message) => {
   if (
     error?.message === 'Failed to fetch' ||
-    (['127.0.0.1', 'localhost'].includes(location.hostname) && !window.navigator.onLine)
+    (!['127.0.0.1', 'localhost'].includes(location.hostname) && !window.navigator.onLine)
   ) {
     toast.error(
-      `Something went wrong on our end and this ${service_name} could not be created. Please try again or contact our support team if the \n problem persists.` ||
+      `We weren't able to connect to our servers to complete this request. Please check your internet connection and try again.` ||
         custom_message
     );
     return;
   }
   toast.error('Something went wrong. Please try again.');
+};
+
+export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => {
+  switch (statusCode) {
+    case 500: {
+      toast.error(
+        `Something went wrong on our end and this ${feature_name} could not be created. Please try \n again or contact our support team if the \n problem persists.`
+      );
+      break;
+    }
+    default: {
+      toast.error(error ? error : 'Something went wrong. please try again.', {
+        position: 'top-center',
+      });
+      break;
+    }
+  }
 };

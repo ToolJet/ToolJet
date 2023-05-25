@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
-import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { appendWorkspaceId, validateName } from '@/_helpers/utils';
+import { appendWorkspaceId, validateName, handleHttpErrorMessages } from '@/_helpers/utils';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -27,9 +26,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       },
       (error) => {
         setIsCreating(false);
-        toast.error(error?.error ? error.error : 'Error while creating workspace', {
-          position: 'top-center',
-        });
+        handleHttpErrorMessages(error, 'workspace');
       }
     );
   };
