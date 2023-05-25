@@ -316,11 +316,13 @@ export function CodeHinter({
               data-cy={`${cyLabel}-input-field`}
             >
               {usePortalEditor && (
-                <CodeHinter.PopupIcon
-                  callback={handleToggle}
-                  icon="portal-open"
-                  tip="Pop out code editor into a new window"
-                />
+                <div className="codehinter-portal-icon">
+                  <CodeHinter.PopupIcon
+                    callback={handleToggle}
+                    icon="portal-open"
+                    tip="Pop out code editor into a new window"
+                  />
+                </div>
               )}
               <CodeHinter.Portal
                 isOpen={isOpen}
