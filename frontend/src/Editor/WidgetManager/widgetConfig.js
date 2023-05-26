@@ -5573,6 +5573,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           schema: { type: 'string' },
         },
       },
+      json: {
+        type: 'code',
+        displayName: 'JSON',
+      },
       selector: {
         type: 'select',
         displayName: 'Selector',
@@ -5624,6 +5628,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
+        json: {
+          value:
+            "{{[\t{type: 'RECTANGLE',width: 40,height:24, x:41,y:62,text:'Car'},{type: 'RECTANGLE',width: 40,height:24, x:41,y:12,text:'Tree'}\t]}}",
+        },
         imageUrl: {
           value: `https://burst.shopifycdn.com/photos/three-cars-are-parked-on-stone-paved-street.jpg?width=746&format=pjpg&exif=1&iptc=1`,
         },

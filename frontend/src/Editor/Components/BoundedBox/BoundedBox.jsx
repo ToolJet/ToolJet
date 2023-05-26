@@ -6,6 +6,7 @@ import { RenderSelector } from './RenderSelector';
 import { RenderEditor } from './RenderEditor';
 import { RenderHighlight } from './RenderHighlight';
 import _ from 'lodash';
+import { v4 as uuid } from 'uuid';
 
 export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles }) => {
   const [annotationState, setAnnotation] = useState({});
@@ -34,7 +35,36 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
     setType(selector);
   }, [properties.selector]);
 
+  const jsonAnnotation = [];
+
+  console.log('ann', annotationState, annotationsState);
+
+  useEffect(() => {
+    // jsonAnnotation.push(...annotationsState);
+    properties.json.map((item, index) => {
+      let annotationData = {
+        geometry: {},
+        data: {},
+      };
+      annotationData.geometry['type'] = item.type;
+      annotationData.geometry['x'] = item.x;
+      annotationData.geometry['y'] = item.y;
+      annotationData.geometry['width'] = item.width;
+      annotationData.geometry['height'] = item.height;
+      annotationData.data['text'] = item.text;
+      annotationData.data['id'] = uuid();
+      jsonAnnotation.push(annotationData);
+    });
+    console.log(jsonAnnotation, 'jsonAnnotation');
+    setAnnotations(jsonAnnotation);
+  }, [JSON.stringify(properties.json)]);
+
+  useEffect(() => {
+    setExposedVariable('annotations', getExposedAnnotations(annotationsState));
+  }, [annotationsState]);
+
   const onChange = (annotation) => {
+    console.log('annotation', annotation);
     setAnnotation(annotation);
   };
 
