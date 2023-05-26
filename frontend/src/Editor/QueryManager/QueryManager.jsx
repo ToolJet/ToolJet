@@ -409,7 +409,7 @@ class QueryManagerComponent extends React.Component {
 
   // Clear the focus field value from options
   cleanFocusedFields = (newOptions) => {
-    const diffFields = diff(newOptions, this.defaultOptions.current);
+    const diffFields = diff(newOptions, this.defaultOptions.current ?? {});
     const updatedOptions = { ...newOptions };
     Object.keys(diffFields).forEach((key) => {
       if (newOptions[key] === '' && this.defaultOptions.current[key] === undefined) {
