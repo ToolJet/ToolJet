@@ -9,6 +9,11 @@
         display: none;
     }
 
+    .code-hinter-wrapper {
+        // to disable the dark mode for sometime.
+        background-color: #ffffff !important;
+      }
+
     .if-condition-modal-content {
         padding: 30px 24px;
         flex-direction: column;

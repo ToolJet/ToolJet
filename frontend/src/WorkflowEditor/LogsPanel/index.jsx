@@ -3,11 +3,13 @@ import UpIcon from './up.svg';
 import DownIcon from './down.svg';
 import { find } from 'lodash';
 
+import './styles.scss';
+
 export default function LogsPanel({ editorSession, editorSessionActions }) {
   const logs = editorSession.logsConsole.logs;
 
   return (
-    <div className="logs-panel">
+    <div className="logs-panel workflow-logs-panel">
       <div className="header" onClick={editorSessionActions.toggleLogsConsole}>
         <span>Logs</span>
         <div className="up-icon">{editorSession.logsConsole.display ? <DownIcon /> : <UpIcon />}</div>
