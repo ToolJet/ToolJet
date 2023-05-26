@@ -19,7 +19,7 @@ export const query = (action) => {
 };
 
 export const changeQueryToggles = (option) => {
-  cy.get(`[data-cy="${option}-toggle-switch"]`).click();
+  cy.get(`[data-cy="${option}-toggle-switch"]`).parent().click();
 };
 
 export const renameQueryFromEditor = (name) => {

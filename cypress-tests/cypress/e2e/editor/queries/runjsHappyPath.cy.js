@@ -229,7 +229,7 @@ describe("RunJS", () => {
     );
   });
 
-  it.only("should verify action by button", () => {
+  it("should verify action by button", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -260,6 +260,58 @@ describe("RunJS", () => {
       commonSelectors.toastMessage,
       "Query (newrunjs) completed."
     );
+    cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
+  });
+
+  it("should verify runjs toggle options", () => {
+    const data = {};
+    data.customText = randomString(12);
+
+    selectQuery("Run JavaScript code");
+    addInputOnQueryField(
+      "runjs",
+      "actions.showAlert('success', 'alert from runjs');"
+    );
+    query("create");
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Query Added");
+    changeQueryToggles("run-on-app-load");
+    query("save");
+    cy.reload();
+    cy.wait(3000);
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "Query (runjs1) completed."
+    );
+    cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
+
+    changeQueryToggles("confirmation-before-run");
+    query("save");
+    cy.reload();
+    cy.wait(3000);
+    cy.get('[data-cy="modal-message"]').verifyVisibleElement(
+      "have.text",
+      "Do you want to run this query - runjs1?"
+    );
+    cy.get('[data-cy="modal-confirm-button"]').realClick();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "Query (runjs1) completed."
+    );
+    cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
+
+    changeQueryToggles("notification-on-success");
+    cy.get('[data-cy="success-message-input-field"]').clearAndTypeOnCodeMirror(
+      "Success alert"
+    );
+    query("save");
+    cy.reload();
+    cy.wait(3000);
+    cy.get('[data-cy="modal-confirm-button"]').realClick();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "Query (runjs1) completed."
+    );
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Success alert");
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
   });
 });
