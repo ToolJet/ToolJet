@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 export const NumberInput = function NumberInput({
   height,
@@ -14,10 +14,32 @@ export const NumberInput = function NumberInput({
   const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
 
   const [value, setValue] = React.useState(parseFloat(properties.value).toFixed(properties.decimalPlaces));
+  const inputRef = useRef(null);
+  const [isClickedOutside, setIsClickedOutside] = useState(false);
+
+  useEffect(() => {
+    setValue(parseFloat(value).toFixed(properties.decimalPlaces));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isClickedOutside, properties.decimalPlaces]);
 
   useEffect(() => {
     setValue(parseFloat(properties.value).toFixed(properties.decimalPlaces));
-  }, [properties.decimalPlaces, properties.value]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.value]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (inputRef.current && !inputRef.current.contains(event.target)) {
+        setIsClickedOutside(true);
+      } else {
+        setIsClickedOutside(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleChange = (e) => {
     if (
@@ -25,19 +47,19 @@ export const NumberInput = function NumberInput({
       !isNaN(parseFloat(properties.maxValue)) &&
       parseFloat(properties.minValue) > parseFloat(properties.maxValue)
     ) {
-      setValue(parseFloat(properties.maxValue).toFixed(properties.decimalPlaces));
+      setValue(parseFloat(properties.maxValue));
     } else if (
       !isNaN(parseFloat(properties.maxValue)) &&
       parseFloat(e.target.value) > parseFloat(properties.maxValue)
     ) {
-      setValue(parseFloat(properties.maxValue).toFixed(properties.decimalPlaces));
+      setValue(parseFloat(properties.maxValue));
     } else if (
       !isNaN(parseFloat(properties.minValue)) &&
       parseFloat(e.target.value) < parseFloat(properties.minValue)
     ) {
-      setValue(parseFloat(properties.minValue).toFixed(properties.decimalPlaces));
+      setValue(parseFloat(properties.minValue));
     } else {
-      setValue(parseFloat(e.target.value).toFixed(properties.decimalPlaces));
+      setValue(parseFloat(e.target.value));
     }
     fireEvent('onChange');
   };
@@ -62,6 +84,7 @@ export const NumberInput = function NumberInput({
     <>
       {!properties.loadingState && (
         <input
+          ref={inputRef}
           disabled={styles.disabledState}
           onChange={handleChange}
           type="number"
