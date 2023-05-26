@@ -34,6 +34,8 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
           setIsCreating(false);
         }
       );
+    } else {
+      setShowEditOrg(false);
     }
   };
 
