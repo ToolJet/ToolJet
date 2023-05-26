@@ -2,10 +2,12 @@ import React from 'react';
 import HistoryIcon from './icons/history.svg';
 import RunItem from './RunItem';
 
+import './styles.scss';
+
 export default function LeftSidebar(props) {
   const { editorSession, editorSessionActions } = props;
   return (
-    <div className="left-sidebar-container">
+    <div className="left-sidebar-container workflow-sidebar">
       <div className="left-sidebar">
         <div className="icon" onClick={() => editorSessionActions.toggleLeftDrawer((prevValue) => !prevValue)}>
           <HistoryIcon className={editorSession.leftDrawer?.display ? 'active' : ''} />

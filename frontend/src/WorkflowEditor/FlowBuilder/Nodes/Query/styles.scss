@@ -8,6 +8,11 @@
     width: 20px;
   }
 
+  .code-hinter-wrapper {
+    // to disable the dark mode for sometime.
+    background-color: #ffffff !important;
+  }
+
   .body {
     width: auto;
     height: auto;
@@ -74,6 +79,7 @@
       align-items: center;
       width: 95%;
       gap: 8px;
+      margin-bottom: 8px;
     }
   }
 }

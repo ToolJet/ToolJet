@@ -8,6 +8,8 @@ import { appService } from '@/_services';
 import { ToolTip } from '@/_components/ToolTip';
 import Beta from '../../_ui/Beta';
 
+import './styles.scss';
+
 const Header = (props) => {
   const { executeWorkflow, editorSession, editorSessionActions, saveAppName } = props;
   const value = editorSession.maintenance;
@@ -20,7 +22,7 @@ const Header = (props) => {
   const isRunnable = editorSession.queries && editorSession.queries.length > 0;
 
   return (
-    <div className="header">
+    <div className="header workflow-header">
       <div className="grid">
         <div className="row" style={{ height: '40px' }}>
           <div className="items">
@@ -29,7 +31,7 @@ const Header = (props) => {
                 <AppLogo isLoadingFromHeader={true} />
               </Link>
             </div>
-            <div className="name-editor" style={{ display: 'flex', flexDirection: 'row' }}>
+            <div className="name-editor workflow-edit-app-name" style={{ display: 'flex', flexDirection: 'row' }}>
               <EditAppName
                 appId={editorSession.app.id}
                 appName={editorSession.app.name}
