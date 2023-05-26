@@ -177,15 +177,6 @@ class QueryManagerComponent extends React.Component {
       }
     );
   };
-  componentDidUpdate(prevState) {
-    if (this.state?.selectedQuery?.id == prevState?.selectedQuery?.id) {
-      if (prevState?.selectedQuery?.name !== this.state?.selectedQuery?.name) {
-        this.setState({
-          queryName: this.state.selectedQuery?.name,
-        });
-      }
-    }
-  }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (useDataSourcesStore.getState().loadingDataSources) return;
@@ -232,6 +223,10 @@ class QueryManagerComponent extends React.Component {
       (!this.props.isUnsavedQueriesAvailable && nextProps.isUnsavedQueriesAvailable)
     ) {
       return;
+    }
+
+    if (Object.keys(diffProps).length === 1 && nextProps.mode === 'create' && diffProps?.selectedQuery?.name) {
+      return this.setState({ queryName: nextProps.selectedQuery?.name });
     }
 
     this.setStateFromProps(nextProps);
