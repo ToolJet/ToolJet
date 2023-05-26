@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { mongoDbText } from "Texts/mongoDb";
@@ -21,6 +22,9 @@ import {
   verifypreview,
   addInput,
 } from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source MongoDB", () => {
   beforeEach(() => {
@@ -162,7 +166,7 @@ describe("Data source MongoDB", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      mongoDbText.cypressMongoDb
+      `cypress-${data.lastName}-mongodb`
     );
 
     cy.get('[data-cy="query-select-dropdown"]').type(
@@ -187,20 +191,12 @@ describe("Data source MongoDB", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", mongoDbText.cypressMongoDb)
-      .find("button")
-      .invoke("show")
-      .should("be.visible");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-mongodb-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-mongodb`);
 
-
-      cy.get(commonSelectors.globalDataSourceIcon).click();
-      cy.get('[data-cy="cypress-mongodb-button"]').verifyVisibleElement(
-        "have.text",
-        mongoDbText.cypressMongoDb
-      );
-  
-      deleteDatasource("cypress-mongodb");
+    deleteDatasource(`cypress-${data.lastName}-mongodb`);
   });
 
   it.skip("Should verify the queries of MongoDB.", () => {

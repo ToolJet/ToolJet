@@ -313,6 +313,7 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     openEditorSidebar(data.widgetName);
     verifyAndModifyParameter("Row height", "99");
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
 
     openEditorSidebar(data.widgetName);
     cy.forceClickOnCanvas();
