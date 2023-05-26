@@ -408,9 +408,8 @@ class ViewerComponent extends React.Component {
 
   findPageIdFromHandle(handle) {
     return (
-      Object.entries(this.state.appDefinition.pages).filter(
-        ([_id, page]) => page.handle === handle && !page.hidden
-      )?.[0]?.[0] ?? this.state.appDefinition.homePageId
+      Object.entries(this.state.appDefinition.pages).filter(([_id, page]) => page.handle === handle)?.[0]?.[0] ??
+      this.state.appDefinition.homePageId
     );
   }
 
@@ -532,6 +531,21 @@ class ViewerComponent extends React.Component {
         if (errorDetails) {
           this.handleError(errorDetails, errorAppId, errorVersionId);
         }
+
+        // debugger;
+        const pageArray = Object.values(this.state.appDefinition?.pages || {});
+        if (
+          pageArray.find((page) => page.handle === this.props.params.pageHandle)?.hidden &&
+          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
+        ) {
+          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
+          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/${homeHandle}`;
+          if (this.state.slug) {
+            url = `/applications/${this.state.slug}/${homeHandle}}`;
+          }
+          return <Navigate to={url} replace />;
+        }
+
         return (
           <div className="viewer wrapper">
             <Confirm
