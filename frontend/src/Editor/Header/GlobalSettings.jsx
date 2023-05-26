@@ -226,7 +226,10 @@ export const GlobalSettings = ({
       <Popover
         handleToggle={(show) => {
           if (show) setShow('settings');
-          else setShow('');
+          else {
+            setShow('');
+            setShowPicker(false);
+          }
         }}
         popoverContentClassName="p-0 sidebar-h-100-popover global-settings-popover-content"
         side="bottom"
