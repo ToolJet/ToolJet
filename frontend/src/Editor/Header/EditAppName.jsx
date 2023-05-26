@@ -1,8 +1,7 @@
 import React from 'react';
 import EditIcon from '../Icons/edit.svg';
 import { appService } from '@/_services';
-import { toast } from 'react-hot-toast';
-import { validateName } from '../../_helpers/utils';
+import { handleHttpErrorMessages, validateName } from '../../_helpers/utils';
 
 function EditAppName({ appId, appName, onNameChanged }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -14,7 +13,7 @@ function EditAppName({ appId, appName, onNameChanged }) {
 
   const saveAppName = async (name) => {
     const newName = name.trim();
-    if (!validateName(name, appName, 'App name')) {
+    if (!validateName(name, 'App name').status) {
       return;
     }
     if (newName === appName) {
@@ -27,10 +26,8 @@ function EditAppName({ appId, appName, onNameChanged }) {
       .then(() => {
         onNameChanged(newName);
       })
-      .catch(({ error }) => {
-        toast(error || 'Something went wrong while editing app name', {
-          icon: '🚨',
-        });
+      .catch((error) => {
+        handleHttpErrorMessages(error, 'app');
       });
   };
 
@@ -39,7 +36,7 @@ function EditAppName({ appId, appName, onNameChanged }) {
       <input
         type="text"
         onChange={(e) => {
-          validateName(e.target.value, appName, 'App name', true);
+          validateName(e.target.value, 'App name', true);
           setName(e.target.value);
         }}
         onBlur={(e) => saveAppName(e.target.value)}

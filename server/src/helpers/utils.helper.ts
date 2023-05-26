@@ -2,6 +2,7 @@ import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
+import { randomInt } from 'crypto';
 const protobuf = require('protobufjs');
 
 export function maybeSetSubPath(path) {
@@ -107,3 +108,6 @@ export async function getServiceAndRpcNames(protoDefinition) {
     }, {});
   return serviceNamesAndMethods;
 }
+
+export const generateName = (serviceName: string, firstName: string) =>
+  `${firstName}'s ${serviceName}${randomInt(1000, 10000)}`;

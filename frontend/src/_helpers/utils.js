@@ -784,34 +784,79 @@ export function isExpectedDataType(data, expectedDataType) {
   return data;
 }
 
-export const validateName = (name, oldName, nameType, showError = false) => {
+export const validateName = (name, nameType, showError = false) => {
   const newName = name.trim();
+  let errorMsg = '';
   if (!newName) {
+    errorMsg = `${nameType} can't be empty`;
     showError &&
-      toast(`${nameType} can't be empty`, {
-        icon: '🚨',
+      toast.error(errorMsg, {
         id: '1',
       });
-    return false;
+    return {
+      status: false,
+      errorMsg,
+    };
   }
 
   //check for alphanumeric
-  if (newName.match(/^[A-Za-z0-9 ]+$/) === null) {
+  if (newName.match(/^[A-Za-z0-9 '-]+$/) === null) {
+    errorMsg = `Special characters are not accepted.`;
     showError &&
-      toast(`${nameType} must only contain letters and numbers`, {
-        icon: '🚨',
+      toast.error(errorMsg, {
         id: '2',
       });
-    return false;
+    return {
+      status: false,
+      errorMsg,
+    };
   }
 
   if (newName.length > 40) {
+    errorMsg = `Maximum length has been reached.`;
     showError &&
-      toast.error(`${nameType} cannot be longer than 25 characters.`, {
+      toast.error(errorMsg, {
         id: '3',
       });
-    return false;
+    return {
+      status: false,
+      errorMsg,
+    };
   }
 
-  return true;
+  return {
+    status: true,
+    errorMsg: '',
+  };
+};
+
+export const handleErrConnections = (error, service_name, custom_message) => {
+  if (
+    error?.message === 'Failed to fetch' ||
+    (!['127.0.0.1', 'localhost'].includes(location.hostname) && !window.navigator.onLine)
+  ) {
+    toast.error(
+      `We weren't able to connect to our servers to complete this request. Please check your internet connection and try again.` ||
+        custom_message
+    );
+    return;
+  }
+  toast.error('Something went wrong. Please try again.');
+};
+
+export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => {
+  switch (statusCode) {
+    case 500: {
+      toast.error(
+        `Something went wrong on our end and this ${feature_name} could not be created. Please try \n again or contact our support team if the \n problem persists.`
+      );
+      break;
+    }
+    default: {
+      toast.error(error ? error : 'Something went wrong. please try again.', {
+        position: 'top-center',
+      });
+      break;
+    }
+  }
 };

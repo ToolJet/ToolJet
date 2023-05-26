@@ -12,7 +12,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import { cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap, defaultAppEnvironments, generateName } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 import { VersionEditDto } from '@dto/version-edit.dto';
@@ -100,7 +100,7 @@ export class AppsService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await manager.save(
         manager.create(App, {
-          name: `Untitled app ${Date.now()}`,
+          name: generateName('app', user.firstName),
           createdAt: new Date(),
           updatedAt: new Date(),
           organizationId: user.organizationId,

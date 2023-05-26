@@ -22,8 +22,8 @@ export class AppUpdateDto {
     return newValue.trim();
   })
   @IsNotEmpty()
-  @Matches('^[A-Za-z0-9 ]+$', '', { message: 'App name must only contain letters and numbers' })
-  @MaxLength(40, { message: 'App name cannot be longer than 40 characters' })
+  @Matches("^[A-Za-z0-9 '-]+$", '', { message: 'Special characters are not accepted.' })
+  @MaxLength(40, { message: 'Maximum length has been reached.' })
   name: string;
 
   @IsString()
