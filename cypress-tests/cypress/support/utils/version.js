@@ -131,18 +131,9 @@ export const releasedVersionAndVerify = (currentVersion) => {
     releasedVersionText.releasedToastMessage(currentVersion)
   );
   cy.forceClickOnCanvas();
-  cy.wait(2000);
-  verifyModal(
-    appVersionText.createNewVersion,
-    appVersionText.createNewVersion,
-    appVersionSelectors.versionNameInputField
-  );
-  cy.contains(releasedVersionText.releasedModalText).should("be.visible");
-  cy.wait(500);
-  closeModal(commonText.closeButton);
-  cy.get(appVersionSelectors.currentVersionField(currentVersion)).should(
-    "have.class",
-    "color-light-green"
+  cy.get(".released-version-popup-cover").verifyVisibleElement(
+    "have.text",
+    releasedVersionText.releasedAppText
   );
 };
 

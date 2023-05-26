@@ -56,7 +56,7 @@ const EditRowForm = ({ onEdit, onClose }) => {
       return;
     }
     setFetching(false);
-    toast.success(`Row created successfully`);
+    toast.success(`Row edited successfully`);
     onEdit && onEdit();
   };
 
