@@ -714,11 +714,11 @@ export const getWorkspaceIdFromURL = () => {
     'integrations',
   ];
 
-  if (pathname.includes('login')) {
+  const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
+  if (workspaceId === 'login') {
     return subpath ? pathnameArray[subpathArray.length + 1] : pathnameArray[1];
   }
 
-  const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
   return !existedPaths.includes(workspaceId) ? workspaceId : '';
 };
 

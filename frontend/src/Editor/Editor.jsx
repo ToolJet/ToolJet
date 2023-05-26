@@ -397,6 +397,7 @@ class EditorComponent extends React.Component {
         (this.canUndo = false), (this.canRedo = false);
       }
       useAppDataStore.getState().actions.updateEditingVersion(version);
+
       this.setState(
         {
           editingVersion: version,

@@ -79,6 +79,10 @@ spec:
                   key: tj_host
             - name: DEPLOYMENT_PLATFORM
               value: "openshift"
+            # Need to define missed HOME directory on openshift platform
+            # for npm commands to work with aribitrary user
+            - name: HOME
+              value: "/home/appuser"
             # Set the env values below for Tooljet Database
             # - name: ENABLE_TOOLJET_DB
             #   value: "true"
