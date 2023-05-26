@@ -1,27 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { appendWorkspaceId, validateName, handleHttpErrorMessages, sessionStorageOperations } from '@/_helpers/utils';
+import { appendWorkspaceId, validateName, handleHttpErrorMessages } from '@/_helpers/utils';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
   const [errorText, setErrorText] = useState('');
   const { t } = useTranslation();
-
-  useEffect(() => {
-    const sessionStorageData = sessionStorageOperations('get', 'new_workspace_modal');
-    if (sessionStorageData) {
-      const { value, visibility } = sessionStorageData;
-      if (visibility) {
-        setShowCreateOrg(true);
-        setNewOrgName(value);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const createOrganization = () => {
     if (errorText) {
@@ -32,7 +20,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     organizationService.createOrganization(newOrgName.trim()).then(
       (data) => {
         setIsCreating(false);
-        sessionStorageOperations('remove', 'new_workspace_modal');
         const newPath = appendWorkspaceId(data.current_organization_id, location.pathname, true);
         window.history.replaceState(null, null, newPath);
         window.location.reload();
@@ -47,7 +34,6 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const handleInputChange = (e) => {
     const value = e.target.value;
     setErrorText('');
-    sessionStorageOperations('set', null, { new_workspace_modal: { value, visibility: true } });
     const error = validateName(value, '', 'Workspace name', false);
     if (!error.status) {
       setErrorText(error.errorMsg);
@@ -58,17 +44,13 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   return (
     <AlertDialog
       show={showCreateOrg}
-      closeModal={() => {
-        sessionStorageOperations('remove', 'new_workspace_modal');
-        setShowCreateOrg(false);
-      }}
+      closeModal={() => setShowCreateOrg(false)}
       title={t('header.organization.createWorkspace', 'Create workspace')}
     >
       <div className="row mb-3 workspace-folder-modal">
         <div className="col modal-main tj-app-input">
           <input
             type="text"
-            value={newOrgName}
             onChange={handleInputChange}
             className="form-control"
             placeholder={t('header.organization.workspaceName', 'workspace name')}
