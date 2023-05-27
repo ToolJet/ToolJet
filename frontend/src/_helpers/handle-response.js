@@ -34,7 +34,7 @@ export const handleErrConnections = (error) => {
     error?.message === 'Failed to fetch' ||
     (!['127.0.0.1', 'localhost'].includes(location.hostname) && !window.navigator.onLine)
   ) {
-    return Promise.reject({ statusCode: 503, error });
+    return Promise.reject({ statusCode: 503, error: error?.message });
   }
   return Promise.reject(error);
 };

@@ -130,7 +130,7 @@ export const Folders = function Folders({
   }
 
   function executeEditFolder() {
-    const folderName = newFolderName.trim();
+    const folderName = newFolderName?.trim();
     if (folderName === updatingFolder?.name) {
       setUpdationStatus(false);
       setShowUpdateForm(false);
