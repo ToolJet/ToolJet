@@ -41,10 +41,15 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     setNewOrgName(value);
   };
 
+  const closeModal = () => {
+    setErrorText('');
+    setShowCreateOrg(false);
+  };
+
   return (
     <AlertDialog
       show={showCreateOrg}
-      closeModal={() => setShowCreateOrg(false)}
+      closeModal={closeModal}
       title={t('header.organization.createWorkspace', 'Create workspace')}
     >
       <div className="row mb-3 workspace-folder-modal">
@@ -64,7 +69,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
       </div>
       <div className="row">
         <div className="col d-flex justify-content-end gap-2">
-          <ButtonSolid variant="tertiary" onClick={() => setShowCreateOrg(false)} data-cy="cancel-button">
+          <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button">
             {t('globals.cancel', 'Cancel')}
           </ButtonSolid>
           <ButtonSolid

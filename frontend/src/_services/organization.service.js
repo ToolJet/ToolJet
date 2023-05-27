@@ -1,6 +1,7 @@
 import config from 'config';
 import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
 import queryString from 'query-string';
+import { handleErrConnections } from '@/_helpers/utils';
 
 export const organizationService = {
   getUsers,
@@ -35,7 +36,7 @@ function createOrganization(name) {
     credentials: 'include',
     body: JSON.stringify({ name }),
   };
-  return fetch(`${config.apiUrl}/organizations`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/organizations`, requestOptions).then(handleResponse).catch(handleErrConnections);
 }
 
 function editOrganization(params) {
@@ -45,7 +46,7 @@ function editOrganization(params) {
     credentials: 'include',
     body: JSON.stringify(params),
   };
-  return fetch(`${config.apiUrl}/organizations/`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/organizations/`, requestOptions).then(handleResponse).catch(handleErrConnections);
 }
 
 function getOrganizations() {

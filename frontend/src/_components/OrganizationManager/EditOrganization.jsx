@@ -4,7 +4,7 @@ import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { validateName, handleErrConnections } from '@/_helpers/utils';
+import { validateName, handleHttpErrorMessages } from '@/_helpers/utils';
 
 export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) => {
   const [isCreating, setIsCreating] = useState(false);
@@ -30,7 +30,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
           window.location.reload();
         },
         (error) => {
-          handleErrConnections(error, 'Workspace');
+          handleHttpErrorMessages(error, 'Workspace');
           setIsCreating(false);
         }
       );
@@ -39,10 +39,16 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     }
   };
 
+  const closeModal = () => {
+    setShowEditOrg(false);
+    setErrorText('');
+    setNewOrgName(currentValue.name);
+  };
+
   return (
     <AlertDialog
       show={showEditOrg}
-      closeModal={() => setShowEditOrg(false)}
+      closeModal={closeModal}
       title={t('header.organization.editWorkspace', 'Edit workspace')}
       checkForBackground={false}
     >
@@ -70,7 +76,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
       </div>
       <div className="row">
         <div className="col d-flex justify-content-end gap-2">
-          <ButtonSolid variant="tertiary" onClick={() => setShowEditOrg(false)}>
+          <ButtonSolid variant="tertiary" onClick={closeModal}>
             {t('globals.cancel', 'Cancel')}
           </ButtonSolid>
           <ButtonSolid isLoading={isCreating} onClick={editOrganization}>

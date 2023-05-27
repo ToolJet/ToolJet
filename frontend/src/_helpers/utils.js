@@ -888,7 +888,7 @@ export const validateName = (name, oldName, nameType, showError = false) => {
   };
 };
 
-export const handleErrConnections = (error, service_name, custom_message) => {
+export const handleErrConnections = (error, custom_message) => {
   if (
     error?.message === 'Failed to fetch' ||
     (!['127.0.0.1', 'localhost'].includes(location.hostname) && !window.navigator.onLine)
@@ -899,7 +899,7 @@ export const handleErrConnections = (error, service_name, custom_message) => {
     );
     return;
   }
-  toast.error('Something went wrong. Please try again.');
+  return Promise.reject(error);
 };
 
 export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => {
