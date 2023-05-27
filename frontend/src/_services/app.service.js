@@ -1,6 +1,5 @@
 import config from 'config';
-import { authHeader, handleResponse } from '@/_helpers';
-import { handleErrConnections } from '../_helpers/utils';
+import { authHeader, handleResponse, handleErrConnections } from '@/_helpers';
 
 export const appService = {
   getConfig,
