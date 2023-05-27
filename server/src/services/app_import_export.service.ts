@@ -8,7 +8,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { DataSourcesService } from './data_sources.service';
-import { dbTransactionWrap, defaultAppEnvironments, generateName } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { isEmpty } from 'lodash';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
@@ -16,6 +16,7 @@ import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { Organization } from 'src/entities/organization.entity';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class AppImportExportService {
@@ -159,7 +160,7 @@ export class AppImportExportService {
 
   async createImportedAppForUser(manager: EntityManager, appParams: any, user: User): Promise<App> {
     const importedApp = manager.create(App, {
-      name: generateName('app', user.firstName),
+      name: appParams.name + randomInt(1000, 10000),
       organizationId: user.organizationId,
       userId: user.id,
       slug: null, // Prevent db unique constraint error.
