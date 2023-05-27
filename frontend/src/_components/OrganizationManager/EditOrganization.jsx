@@ -39,6 +39,15 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     }
   };
 
+  const handleInputChange = (e) => {
+    setErrorText('');
+    const error = validateName(e.target.value, 'Workspace name');
+    if (!error.status) {
+      setErrorText(error.errorMsg);
+    }
+    setNewOrgName(e.target.value);
+  };
+
   const closeModal = () => {
     setShowEditOrg(false);
     setErrorText('');
@@ -56,14 +65,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
         <div className="col modal-main tj-app-input">
           <input
             type="text"
-            onChange={(e) => {
-              setErrorText('');
-              const error = validateName(e.target.value, currentValue.name, 'Workspace name');
-              if (!error.status) {
-                setErrorText(error.errorMsg);
-              }
-              setNewOrgName(e.target.value);
-            }}
+            onChange={handleInputChange}
             className="form-control"
             placeholder={t('header.organization.workspaceName', 'workspace name')}
             disabled={isCreating}

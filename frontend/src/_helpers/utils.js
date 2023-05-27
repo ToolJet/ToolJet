@@ -842,7 +842,7 @@ export function isExpectedDataType(data, expectedDataType) {
   return data;
 }
 
-export const validateName = (name, oldName, nameType, showError = false) => {
+export const validateName = (name, nameType, showError = false) => {
   const newName = name.trim();
   let errorMsg = '';
   if (!newName) {

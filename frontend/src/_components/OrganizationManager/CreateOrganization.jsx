@@ -34,7 +34,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const handleInputChange = (e) => {
     const value = e.target.value;
     setErrorText('');
-    const error = validateName(value, '', 'Workspace name', false);
+    const error = validateName(value, 'Workspace name');
     if (!error.status) {
       setErrorText(error.errorMsg);
     }
