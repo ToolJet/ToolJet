@@ -10,7 +10,7 @@ export class OrganizationCreateDto {
     return newValue?.trim() || '';
   })
   @IsNotEmpty()
-  @Matches('^[A-Za-z0-9 -]+$', '', { message: 'Special characters are not accepted.' })
+  @Matches("^[A-Za-z0-9 '-]+$", '', { message: 'Special characters are not accepted.' })
   @MaxLength(40, { message: 'Maximum length has been reached.' })
   name: string;
 }
@@ -22,7 +22,7 @@ export class OrganizationUpdateDto {
     const newValue = sanitizeInput(value);
     return newValue?.trim() || '';
   })
-  @Matches('^[A-Za-z0-9 -]+$', '', { message: 'Special characters are not accepted.' })
+  @Matches("^[A-Za-z0-9 '-]+$", '', { message: 'Special characters are not accepted.' })
   @MaxLength(40, { message: 'Maximum length has been reached.' })
   name?: string;
 

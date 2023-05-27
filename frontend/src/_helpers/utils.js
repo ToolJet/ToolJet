@@ -858,7 +858,7 @@ export const validateName = (name, nameType, showError = false) => {
   }
 
   //check for alphanumeric
-  if (newName.match(/^[A-Za-z0-9 -]+$/) === null) {
+  if (newName.match(/^[A-Za-z0-9 '-]+$/) === null) {
     errorMsg = `Special characters are not accepted.`;
     showError &&
       toast.error(errorMsg, {
@@ -888,24 +888,17 @@ export const validateName = (name, nameType, showError = false) => {
   };
 };
 
-export const handleErrConnections = (error) => {
-  if (
-    error?.message === 'Failed to fetch' ||
-    (!['127.0.0.1', 'localhost'].includes(location.hostname) && !window.navigator.onLine)
-  ) {
-    toast.error(
-      `We weren't able to connect to our servers to complete this request. Please check your internet connection and try again.`
-    );
-    return;
-  }
-  return Promise.reject(error);
-};
-
 export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => {
   switch (statusCode) {
     case 500: {
       toast.error(
         `Something went wrong on our end and this ${feature_name} could not be created. Please try \n again or contact our support team if the \n problem persists.`
+      );
+      break;
+    }
+    case 503: {
+      toast.error(
+        `We weren't able to connect to our servers to complete this request. Please check your \n internet connection and try again.`
       );
       break;
     }

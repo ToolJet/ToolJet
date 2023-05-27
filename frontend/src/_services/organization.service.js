@@ -1,7 +1,6 @@
 import config from 'config';
-import { authHeader, handleResponse, handleResponseWithoutValidation } from '@/_helpers';
+import { authHeader, handleResponse, handleResponseWithoutValidation, handleErrConnections } from '@/_helpers';
 import queryString from 'query-string';
-import { handleErrConnections } from '@/_helpers/utils';
 
 export const organizationService = {
   getUsers,
