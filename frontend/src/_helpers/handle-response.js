@@ -1,5 +1,4 @@
 import { authenticationService } from '@/_services';
-import toast from 'react-hot-toast';
 
 export function handleResponse(response) {
   return response.text().then((text) => {

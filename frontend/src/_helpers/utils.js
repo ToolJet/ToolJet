@@ -888,14 +888,13 @@ export const validateName = (name, oldName, nameType, showError = false) => {
   };
 };
 
-export const handleErrConnections = (error, custom_message) => {
+export const handleErrConnections = (error) => {
   if (
     error?.message === 'Failed to fetch' ||
     (!['127.0.0.1', 'localhost'].includes(location.hostname) && !window.navigator.onLine)
   ) {
     toast.error(
-      `We weren't able to connect to our servers to complete this request. Please check your internet connection and try again.` ||
-        custom_message
+      `We weren't able to connect to our servers to complete this request. Please check your internet connection and try again.`
     );
     return;
   }
