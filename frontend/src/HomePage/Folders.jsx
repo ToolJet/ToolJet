@@ -12,7 +12,7 @@ import { BreadCrumbContext } from '@/App/App';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { SearchBox } from '@/_components/SearchBox';
 import _ from 'lodash';
-import { validateName } from '@/_helpers/utils';
+import { validateName, handleHttpErrorMessages } from '@/_helpers/utils';
 
 export const Folders = function Folders({
   folders,
@@ -78,8 +78,8 @@ export const Folders = function Folders({
           handleFolderChange({});
           foldersChanged();
         })
-        .catch(({ error }) => {
-          toast.error(error || 'Error while creating the folder');
+        .catch((error) => {
+          handleHttpErrorMessages(error, 'folder');
           setCreationStatus(false);
         });
     }
@@ -148,12 +148,26 @@ export const Folders = function Folders({
           updateSidebarNAV(newFolderName);
           foldersChanged();
         })
-        .catch(({ error }) => {
-          toast.error(error || 'Error while updating the folder');
+        .catch((error) => {
+          handleHttpErrorMessages(error, 'folder');
           setUpdationStatus(false);
         });
     }
   }
+
+  const handleInputChange = (e) => {
+    setErrorText('');
+    const error = validateName(e.target.value, 'Folder name');
+    if (!error.status) {
+      setErrorText(error.errorMsg);
+    }
+    setNewFolderName(e.target.value);
+  };
+
+  const closeModal = () => {
+    setErrorText('');
+    showUpdateForm ? setShowUpdateForm(false) : setShowForm(false);
+  };
 
   function handleClose() {
     setShowInput(false);
@@ -277,7 +291,7 @@ export const Folders = function Folders({
 
       <Modal
         show={showForm || showUpdateForm}
-        closeModal={() => (showUpdateForm ? setShowUpdateForm(false) : setShowForm(false))}
+        closeModal={closeModal}
         title={
           showUpdateForm
             ? t('homePage.foldersSection.updateFolder', 'Update Folder')
@@ -288,14 +302,7 @@ export const Folders = function Folders({
           <div className="col modal-main tj-app-input">
             <input
               type="text"
-              onChange={(e) => {
-                setErrorText('');
-                const error = validateName(e.target.value, '', 'Folder name');
-                if (!error.status) {
-                  setErrorText(error.errorMsg);
-                }
-                setNewFolderName(e.target.value);
-              }}
+              onChange={handleInputChange}
               className="form-control"
               placeholder={t('homePage.foldersSection.folderName', 'folder name')}
               disabled={isCreating || isUpdating}
@@ -309,11 +316,7 @@ export const Folders = function Folders({
         </div>
         <div className="row">
           <div className="col d-flex modal-footer-btn">
-            <ButtonSolid
-              variant="tertiary"
-              onClick={() => (showUpdateForm ? setShowUpdateForm(false) : setShowForm(false))}
-              data-cy="cancel-button"
-            >
+            <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button">
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>
             <ButtonSolid

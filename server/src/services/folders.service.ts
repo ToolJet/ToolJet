@@ -24,7 +24,7 @@ export class FoldersService {
   async create(user: User, folderName): Promise<Folder> {
     const existed = await this.foldersRepository.findOne({ name: folderName });
     if (existed) {
-      throw new ConflictException('Folder name already exists.');
+      throw new ConflictException('Workspace name is already taken.');
     }
 
     return this.foldersRepository.save(
@@ -40,7 +40,7 @@ export class FoldersService {
   async update(folderId: string, folderName: string): Promise<UpdateResult> {
     const existed = await this.foldersRepository.findOne({ name: folderName });
     if (existed) {
-      throw new ConflictException('Folder name already exists.');
+      throw new ConflictException('Workspace name is already taken.');
     }
 
     return this.foldersRepository.update({ id: folderId }, { name: folderName });

@@ -1,5 +1,5 @@
 import config from 'config';
-import { authHeader, handleResponse } from '@/_helpers';
+import { authHeader, handleResponse, handleErrConnections } from '@/_helpers';
 
 export const folderService = {
   create,
@@ -26,7 +26,7 @@ function create(name) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/folders`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/folders`, requestOptions).then(handleResponse).catch(handleErrConnections);
 }
 
 function updateFolder(name, id) {
@@ -40,7 +40,7 @@ function updateFolder(name, id) {
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/folders/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/folders/${id}`, requestOptions).then(handleResponse).catch(handleErrConnections);
 }
 
 function deleteFolder(id) {

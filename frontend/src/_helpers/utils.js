@@ -784,14 +784,13 @@ export function isExpectedDataType(data, expectedDataType) {
   return data;
 }
 
-export const validateName = (name, oldName, nameType, showError = false) => {
+export const validateName = (name, nameType, showError = false) => {
   const newName = name.trim();
   let errorMsg = '';
   if (!newName) {
     errorMsg = `${nameType} can't be empty`;
     showError &&
-      toast(errorMsg, {
-        icon: '🚨',
+      toast.error(errorMsg, {
         id: '1',
       });
     return {
@@ -801,11 +800,10 @@ export const validateName = (name, oldName, nameType, showError = false) => {
   }
 
   //check for alphanumeric
-  if (newName.match(/^[A-Za-z0-9 ]+$/) === null) {
-    errorMsg = `${nameType} must only contain letters and numbers`;
+  if (newName.match(/^[A-Za-z0-9 '-]+$/) === null) {
+    errorMsg = `Special characters are not accepted.`;
     showError &&
-      toast(errorMsg, {
-        icon: '🚨',
+      toast.error(errorMsg, {
         id: '2',
       });
     return {
@@ -815,7 +813,7 @@ export const validateName = (name, oldName, nameType, showError = false) => {
   }
 
   if (newName.length > 40) {
-    errorMsg = `${nameType} cannot be longer than 25 characters.`;
+    errorMsg = `Maximum length has been reached.`;
     showError &&
       toast.error(errorMsg, {
         id: '3',
@@ -830,4 +828,27 @@ export const validateName = (name, oldName, nameType, showError = false) => {
     status: true,
     errorMsg: '',
   };
+};
+
+export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => {
+  switch (statusCode) {
+    case 500: {
+      toast.error(
+        `Something went wrong on our end and this ${feature_name} could not be created. Please try \n again or contact our support team if the \n problem persists.`
+      );
+      break;
+    }
+    case 503: {
+      toast.error(
+        `We weren't able to connect to our servers to complete this request. Please check your internet connection and try again.`
+      );
+      break;
+    }
+    default: {
+      toast.error(error ? error : 'Something went wrong. please try again.', {
+        position: 'top-center',
+      });
+      break;
+    }
+  }
 };
