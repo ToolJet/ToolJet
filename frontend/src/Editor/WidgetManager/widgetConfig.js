@@ -2630,6 +2630,7 @@ export const widgets = [
     },
     exposedVariables: {
       values: {},
+      searchText: '',
     },
     definition: {
       others: {
