@@ -78,6 +78,7 @@ class ViewerComponent extends React.Component {
       errorVersionId: null,
       errorDetails: null,
       pages: {},
+      intervals: [],
     };
   }
 
@@ -194,11 +195,28 @@ class ViewerComponent extends React.Component {
   };
 
   runQueries = (data_queries) => {
+    let intervals = [];
     data_queries.forEach((query) => {
       if (query.options.runOnPageLoad) {
         runQuery(this, query.id, query.name, undefined, 'view');
       }
+
+      if (query.options.runOnInterval) {
+        let intervalSeconds = query.options.runOnIntervalSeconds;
+
+        // If intervalSeconds is not a number or is less than 3, default to 30 seconds
+        if (isNaN(intervalSeconds) || intervalSeconds < 3) {
+          intervalSeconds = 30;
+        }
+
+        intervals.push(
+          setInterval(() => {
+            runQuery(this, query.id, query.name, undefined, 'view');
+          }, intervalSeconds * 1000) // convert seconds to milliseconds
+        );
+      }
     });
+    this.setState({ intervals: intervals });
   };
 
   fetchOrgEnvironmentVariables = async (slug, isPublic) => {
@@ -481,6 +499,9 @@ class ViewerComponent extends React.Component {
 
   componentWillUnmount() {
     this.subscription && this.subscription.unsubscribe();
+    this.state.intervals.forEach((interval) => {
+      clearInterval(interval);
+    });
   }
 
   render() {
@@ -521,7 +542,14 @@ class ViewerComponent extends React.Component {
         return (
           <div className="maintenance_container">
             <div className="card">
-              <div className="card-body" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div
+                className="card-body"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
                 <h3>{this.props.t('viewer', 'Sorry!. This app is under maintenance')}</h3>
               </div>
             </div>
