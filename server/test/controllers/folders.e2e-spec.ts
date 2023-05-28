@@ -14,6 +14,7 @@ import { getManager } from 'typeorm';
 import { Folder } from 'src/entities/folder.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
+import { randomInt } from 'crypto';
 
 describe('folders controller', () => {
   let nestApp: INestApplication;
@@ -353,16 +354,17 @@ describe('folders controller', () => {
       });
 
       for (const userData of [adminUserData, developerUserData]) {
+        const name = `folder ${randomInt(10)}`;
         await request(nestApp.getHttpServer())
           .put(`/api/folders/${folder.id}`)
           .set('tj-workspace-id', userData.user.defaultOrganizationId)
           .set('Cookie', userData['tokenCookie'])
-          .send({ name: 'My folder' })
+          .send({ name })
           .expect(200);
 
         const updatedFolder = await getManager().findOne(Folder, folder.id);
 
-        expect(updatedFolder.name).toEqual('My folder');
+        expect(updatedFolder.name).toEqual(name);
       }
 
       await request(nestApp.getHttpServer())
