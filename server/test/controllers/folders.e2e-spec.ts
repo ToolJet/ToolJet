@@ -14,7 +14,6 @@ import { getManager } from 'typeorm';
 import { Folder } from 'src/entities/folder.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
-import { randomInt } from 'crypto';
 
 describe('folders controller', () => {
   let nestApp: INestApplication;
@@ -353,8 +352,8 @@ describe('folders controller', () => {
         organizationId: adminUserData.organization.id,
       });
 
-      for (const userData of [adminUserData, developerUserData]) {
-        const name = `folder ${randomInt(10)}`;
+      for (const [i, userData] of [adminUserData, developerUserData].entries()) {
+        const name = `folder ${i}`;
         await request(nestApp.getHttpServer())
           .put(`/api/folders/${folder.id}`)
           .set('tj-workspace-id', userData.user.defaultOrganizationId)
