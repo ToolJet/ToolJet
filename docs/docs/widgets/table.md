@@ -57,6 +57,10 @@ The table data can be downloaded in various file formats, including:
 
 You have the option to **[hide the download button](/docs/widgets/table#show-download-button)** in the table properties.
 
+:::tip
+You can utilize **[Component Specific Actions](#component-specific-actions-csa)** to retrieve the table data in the mentioned formats from the event handlers across the application.
+:::
+
 ### Column selector button
 
 You can choose which columns to display or hide in the table by clicking on this button. You also have the option to **[hide the column selector button](/docs/widgets/table#show-column-selector-button)** in the table properties.
@@ -471,19 +475,6 @@ This event is triggered when filter is added, removed, or updated from the filte
 
 This event is triggered when the **Save** button is clicked from the **Add new row** modal on the table. 
 
-## Exposed variables
-
-| variable      | description |
-| ----------- | ----------- |
-| currentData      | Data that is currently being displayed by the table ( including edits if any ) |
-| currentPageData  | Data that is displayed on the current page if pagination is enabled ( including edits if any )      |
-| pageIndex | Index of the current page, starting from 1
-| changeSet | Object with row number as the key and object of edited fields and their values as the value |
-| dataUpdates | Just like changeSet but includes the data of the entire row |
-| selectedRow | The data of the row that was last clicked. `selectedRow` also changes when an action button is clicked |
-| searchText | The value of the search field if server-side pagination is enabled |
-| newRows| The newRows variable stores an array of objects, each containing data for a row that was added to the table using the "Add new row" button. When the user clicks either the "Save" or "Discard" button in the modal, this data is cleared.|
-
 ## Styles
 
 | Style      | Description |
@@ -500,6 +491,19 @@ This event is triggered when the **Save** button is clicked from the **Add new r
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
 
+## Exposed variables
+
+| variable      | description |
+| ----------- | ----------- |
+| currentData      | Data that is currently being displayed by the table ( including edits if any ) |
+| currentPageData  | Data that is displayed on the current page if pagination is enabled ( including edits if any )      |
+| pageIndex | Index of the current page, starting from 1
+| changeSet | Object with row number as the key and object of edited fields and their values as the value |
+| dataUpdates | Just like changeSet but includes the data of the entire row |
+| selectedRow | The data of the row that was last clicked. `selectedRow` also changes when an action button is clicked |
+| searchText | The value of the search field if server-side pagination is enabled |
+| newRows| The newRows variable stores an array of objects, each containing data for a row that was added to the table using the "Add new row" button. When the user clicks either the "Save" or "Discard" button in the modal, this data is cleared.|
+
 ## Component specific actions (CSA)
 
 Following actions of color picker component can be controlled using the component specific actions(CSA):
@@ -511,3 +515,4 @@ Following actions of color picker component can be controlled using the componen
 | deselectRow | Deselect the row on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.deselectRow()` |
 | discardChanges | Discard the changes from the table when a cell is edited via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.discardChanges()` |
 | discardNewlyAddedRows | Discard the newly added rows from the add new row popup on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.discardNewlyAddedRows()` |
+| downloadTableData | Retrieve the data from the table in the PDF, CSV, or Excel sheet by using a component-specific action within an event handler. Furthermore, you have the choice to utilize a RunJS query to execute component-specific actions. For downloading the table data as a PDF, you can use the following code: `await components.table1.downloadTableData('pdf')`. Similarly, for downloading as a CSV: `await components.table1.downloadTableData('csv')`, and for downloading as an Excel sheet: `await components.table1.downloadTableData('xlsx')`. |
