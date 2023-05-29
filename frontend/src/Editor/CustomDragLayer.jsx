@@ -45,7 +45,8 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
 
   [x, y] = snapToGrid(canvasWidth, x, y);
 
-  x += realCanvasDelta;
+  // commented to fix issue that caused the dragged element to be out of position with mouse pointer
+  // x += realCanvasDelta;
 
   const transform = `translate(${x}px, ${y}px)`;
   return {
