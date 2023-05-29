@@ -162,7 +162,7 @@ export default function AppCard({
         <div className="appcard-buttons-wrap">
           {canUpdate && (
             <div style={editButtonStyle}>
-              <ToolTip message="Open in app builder">
+              <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                 <Link
                   to={getPrivateRoute('editor', {
                     id: app.id,
