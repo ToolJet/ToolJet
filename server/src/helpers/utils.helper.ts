@@ -3,6 +3,8 @@ import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
 import { randomInt } from 'crypto';
+import { ConflictException } from '@nestjs/common';
+import { DataBaseConstraints } from './db_constraints.constants';
 const protobuf = require('protobufjs');
 
 export function maybeSetSubPath(path) {
@@ -76,6 +78,21 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
     return await getManager().transaction(async (manager) => {
       return await operation(manager);
     });
+  }
+}
+
+export async function catchDbException(
+  operation: () => any,
+  dbConstraint: DataBaseConstraints,
+  errorMessage: string
+): Promise<any> {
+  try {
+    return await operation();
+  } catch (err) {
+    if (err?.message?.includes(dbConstraint)) {
+      throw new ConflictException(errorMessage);
+    }
+    throw err;
   }
 }
 
