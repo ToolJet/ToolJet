@@ -142,6 +142,7 @@ export const BlankPage = function BlankPage({
                   className="see-all-temlplates-link tj-text-sm font-weight-600"
                   onClick={viewTemplateLibraryModal}
                   data-cy="see-all-apps-template-buton"
+                  role="button"
                 >
                   See all templates
                 </span>
