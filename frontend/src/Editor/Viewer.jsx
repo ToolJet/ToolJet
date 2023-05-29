@@ -541,7 +541,7 @@ class ViewerComponent extends React.Component {
           const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
           let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/${homeHandle}`;
           if (this.state.slug) {
-            url = `/applications/${this.state.slug}/${homeHandle}}`;
+            url = `/applications/${this.state.slug}/${homeHandle}`;
           }
           return <Navigate to={url} replace />;
         }
@@ -554,7 +554,7 @@ class ViewerComponent extends React.Component {
           const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
           let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/${homeHandle}`;
           if (this.state.slug) {
-            url = `/applications/${this.state.slug}/${homeHandle}}`;
+            url = `/applications/${this.state.slug}/${homeHandle}`;
           }
           return <Navigate to={url} replace />;
         }
