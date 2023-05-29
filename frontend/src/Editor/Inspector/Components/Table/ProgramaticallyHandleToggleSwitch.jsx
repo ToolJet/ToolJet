@@ -4,6 +4,7 @@ import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 export const ProgramaticallyHandleToggleSwitch = ({
   currentState,
   darkMode,
+  // eslint-disable-next-line no-unused-vars
   label,
   index,
   callbackFunction,
@@ -18,28 +19,29 @@ export const ProgramaticallyHandleToggleSwitch = ({
   const param = { name: property };
   const definition = { value, fxActive: props.fxActive };
   const initialValue = definition?.value ?? `{{false}}`;
-
   const options = {};
   return (
-    <CodeHinter
-      enablePreview={true}
-      currentState={currentState}
-      initialValue={initialValue}
-      mode={options.mode}
-      theme={darkMode ? 'monokai' : options.theme}
-      lineWrapping={true}
-      onChange={(value) => callbackFunction(index, property, value)}
-      componentName={`widget/${component.name}::${label}`}
-      type={paramMeta.type}
-      paramName={param.name}
-      paramLabel={paramMeta.displayName}
-      fieldMeta={paramMeta}
-      onFxPress={(active) => {
-        callbackFunction(index, 'fxActive', active);
-      }}
-      fxActive={props?.fxActive ?? false}
-      component={component}
-      className="codehinter-default-input"
-    />
+    <div className={`mb-2 field ${options.className}`} onClick={(e) => e.stopPropagation()}>
+      <CodeHinter
+        enablePreview={true}
+        currentState={currentState}
+        initialValue={initialValue}
+        mode={options.mode}
+        theme={darkMode ? 'monokai' : options.theme}
+        lineWrapping={true}
+        onChange={(value) => callbackFunction(index, property, value)}
+        componentName={`widget/${component?.component?.name}::${param.name}`}
+        type={paramMeta.type}
+        paramName={param.name}
+        paramLabel={paramMeta.displayName}
+        fieldMeta={paramMeta}
+        onFxPress={(active) => {
+          callbackFunction(index, 'fxActive', active);
+        }}
+        fxActive={props?.fxActive ?? false}
+        component={component.component}
+        className={options.className}
+      />
+    </div>
   );
 };
