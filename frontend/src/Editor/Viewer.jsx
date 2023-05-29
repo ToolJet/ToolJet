@@ -154,8 +154,8 @@ class ViewerComponent extends React.Component {
           this.state.currentLayout === 'desktop'
             ? '100%'
             : mobileLayoutHasWidgets
-              ? `${this.state.deviceWindowWidth}px`
-              : '1292px',
+            ? `${this.state.deviceWindowWidth}px`
+            : '1292px',
         selectedComponent: null,
         currentState: {
           queries: queryState,
