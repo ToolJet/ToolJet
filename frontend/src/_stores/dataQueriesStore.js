@@ -72,20 +72,22 @@ export const useDataQueriesStore = create(
         updateDataQuery: (options, shouldRunQuery) => {
           set({ isUpdatingQueryInProcess: true });
           const { actions, selectedQuery } = useQueryPanelStore.getState();
+          const { name, id, kind } = selectedQuery;
           dataqueryService
-            .update(selectedQuery?.id, selectedQuery?.name, options)
+            .update(id, name, options)
             .then((data) => {
+              const updatedData = { ...data, kind };
               actions.setUnSavedChanges(false);
               localStorage.removeItem('transformation');
               toast.success('Query Saved');
               set((state) => ({
                 isUpdatingQueryInProcess: false,
                 dataQueries: state.dataQueries.map((query) => {
-                  if (query.id === data.id) return data;
+                  if (query.id === data.id) return updatedData;
                   return query;
                 }),
               }));
-              if (shouldRunQuery) actions.setQueryToBeRun(data);
+              if (shouldRunQuery) actions.setQueryToBeRun(updatedData);
             })
             .catch(({ error }) => {
               actions.setUnSavedChanges(false);
@@ -104,13 +106,14 @@ export const useDataQueriesStore = create(
           dataqueryService
             .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId)
             .then((data) => {
+              const query = { ...data, kind };
               actions.setUnSavedChanges(false);
               toast.success('Query Added');
               set((state) => ({
                 isCreatingQueryInProcess: false,
-                dataQueries: [data, ...state.dataQueries],
+                dataQueries: [query, ...state.dataQueries],
               }));
-              if (shouldRunQuery) actions.setQueryToBeRun(data);
+              if (shouldRunQuery) actions.setQueryToBeRun(query);
             })
             .catch(({ error }) => {
               actions.setUnSavedChanges(false);
