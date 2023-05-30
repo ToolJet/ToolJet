@@ -35,36 +35,35 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
     setType(selector);
   }, [properties.selector]);
 
-  const jsonAnnotation = [];
-
-  console.log('ann', annotationState, annotationsState);
-
   useEffect(() => {
-    // jsonAnnotation.push(...annotationsState);
-    properties.json.map((item, index) => {
-      let annotationData = {
-        geometry: {},
-        data: {},
-      };
-      annotationData.geometry['type'] = item.type;
-      annotationData.geometry['x'] = item.x;
-      annotationData.geometry['y'] = item.y;
-      annotationData.geometry['width'] = item.width;
-      annotationData.geometry['height'] = item.height;
-      annotationData.data['text'] = item.text;
-      annotationData.data['id'] = uuid();
-      jsonAnnotation.push(annotationData);
-    });
-    console.log(jsonAnnotation, 'jsonAnnotation');
-    setAnnotations(jsonAnnotation);
-  }, [JSON.stringify(properties.json)]);
+    if (properties.advanced) {
+      if (Array.isArray(properties?.json) && properties?.json?.length > 0 && typeof properties?.json[0] === 'object') {
+        const jsonAnnotation = properties?.json?.map((item) => ({
+          geometry: {
+            type: item.type,
+            x: item.x,
+            y: item.y,
+            width: item.width,
+            height: item.height,
+          },
+          data: {
+            text: item.text,
+            id: uuid(),
+          },
+        }));
+
+        setAnnotations(jsonAnnotation || []);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(properties?.json), properties.advanced]);
 
   useEffect(() => {
     setExposedVariable('annotations', getExposedAnnotations(annotationsState));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [annotationsState]);
 
   const onChange = (annotation) => {
-    console.log('annotation', annotation);
     setAnnotation(annotation);
   };
 
