@@ -390,6 +390,10 @@ The column selector button on the table header is visible by default. You can ch
 
 The filter button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the filter button by clicking on the **Fx** button.
 
+### Show add new row button
+
+The Add new row button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the Add new row button by clicking on the **Fx** button.
+
 ### Show update buttons
 
 It's enabled by default. Table footer will show two update buttons **Save changes** & **Discard changes** whenever a cell is edited. Toggle `off` to hide update buttons.
