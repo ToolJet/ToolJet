@@ -59,10 +59,12 @@ export const CreateVersion = ({
     <AlertDialog
       show={showCreateAppVersion || showCreateVersionModalPrompt}
       closeModal={() => {
+        setVersionName('');
         closeCreateVersionModalPrompt();
         setShowCreateAppVersion(false);
       }}
       title={t('editor.appVersionManager.createVersion', 'Create new version')}
+      checkForBackground={true}
     >
       <form
         onSubmit={(e) => {
@@ -90,20 +92,21 @@ export const CreateVersion = ({
           </div>
         </div>
 
-        <div className="mb-4 pb-2">
+        <div className="mb-4 pb-2 version-select">
           <label className="form-label" data-cy="create-version-from-label">
             {t('editor.appVersionManager.createVersionFrom', 'Create version from')}
           </label>
           <div className="ts-control" data-cy="create-version-from-input-field">
             <Select
               options={options}
-              defaultValue={options[options.length - 1]}
+              defaultValue={options.find((option) => option?.value?.id === editingVersion?.id)}
               onChange={(version) => {
                 setAppDefinitionFromVersion(version, false);
               }}
               useMenuPortal={false}
               width="100%"
               maxMenuHeight={100}
+              customWrap={true}
             />
           </div>
         </div>
@@ -138,6 +141,7 @@ export const CreateVersion = ({
               className="btn mx-2"
               data-cy="cancel-button"
               onClick={() => {
+                setVersionName('');
                 closeCreateVersionModalPrompt();
                 setShowCreateAppVersion(false);
               }}

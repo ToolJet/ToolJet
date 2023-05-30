@@ -2,10 +2,12 @@ import React from 'react';
 import { authenticationService, orgEnvironmentVariableService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
-import VariableForm from './VariableForm';
 import VariablesTable from './VariablesTable';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
+import _ from 'lodash';
+import ManageOrgVarsDrawer from './ManageOrgVarsDrawer';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 class ManageOrgVarsComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -22,6 +24,7 @@ class ManageOrgVarsComponent extends React.Component {
       },
       errors: {},
       showVariableDeleteConfirmation: false,
+      isManageVarDrawerOpen: false,
     };
 
     this.tableRef = React.createRef(null);
@@ -34,6 +37,7 @@ class ManageOrgVarsComponent extends React.Component {
   onEditBtnClicked = (variable) => {
     this.setState({
       showVariableForm: true,
+      isManageVarDrawerOpen: true,
       errors: {},
       fields: {
         ...variable,
@@ -50,6 +54,7 @@ class ManageOrgVarsComponent extends React.Component {
   onCancelBtnClicked = () => {
     this.setState({
       showVariableForm: false,
+      isManageVarDrawerOpen: false,
       newVariable: {},
       fields: { encryption: false, variable_type: 'client' },
       selectedVariableId: null,
@@ -69,8 +74,9 @@ class ManageOrgVarsComponent extends React.Component {
     });
 
     orgEnvironmentVariableService.getVariables().then((data) => {
+      const variables = _.cloneDeep(data.variables)?.filter(({ variable_name }) => !/copilot_/.test(variable_name));
       this.setState({
-        variables: data.variables,
+        variables: variables,
         isLoading: false,
       });
     });
@@ -135,6 +141,7 @@ class ManageOrgVarsComponent extends React.Component {
             this.setState({
               addingVar: false,
               showVariableForm: false,
+              isManageVarDrawerOpen: false,
               fields: fields,
               selectedVariableId: null,
             });
@@ -159,6 +166,7 @@ class ManageOrgVarsComponent extends React.Component {
             this.setState({
               addingVar: false,
               showVariableForm: false,
+              isManageVarDrawerOpen: false,
               fields: fields,
               selectedVariableId: null,
             });
@@ -169,7 +177,7 @@ class ManageOrgVarsComponent extends React.Component {
           });
       }
     } else {
-      this.setState({ addingVar: false, showVariableForm: true });
+      this.setState({ addingVar: false, showVariableForm: true, isManageVarDrawerOpen: true });
     }
   };
 
@@ -239,9 +247,12 @@ class ManageOrgVarsComponent extends React.Component {
       authenticationService.currentSessionValue.group_permissions
     );
   };
+  setIsManageVarDrawerOpen = (val) => {
+    this.setState({ isManageVarDrawerOpen: val });
+  };
 
   render() {
-    const { isLoading, showVariableForm, addingVar, variables } = this.state;
+    const { isLoading, addingVar, variables, isManageVarDrawerOpen } = this.state;
     return (
       <div className="wrapper org-variables-page animation-fade">
         <ConfirmDialog
@@ -264,26 +275,21 @@ class ManageOrgVarsComponent extends React.Component {
 
         <div className="page-wrapper">
           <div className="container-xl">
-            <div className="page-header d-print-none">
-              <div className="row align-items-center">
-                <div className="col">
-                  <div className="page-pretitle"></div>
-                  <h2 className="page-title" data-cy="page-title">
-                    {this.props.t('globals.environmentVar', 'Workspace Variables')}
-                  </h2>
-                </div>
-                <div className="col-auto ms-auto d-print-none">
-                  {!showVariableForm && this.canCreateVariable() && (
-                    <div
-                      className="btn btn-primary"
-                      onClick={() => this.setState({ showVariableForm: true, errors: {} })}
+            <div>
+              <div className="row align-items-center ">
+                <div className="workspace-variable-header">
+                  {!isManageVarDrawerOpen && this.canCreateVariable() && (
+                    <ButtonSolid
                       data-cy="add-new-variables-button"
+                      vaiant="primary"
+                      onClick={() => this.setState({ isManageVarDrawerOpen: true, errors: {} })}
+                      className="add-new-variables-button"
                     >
                       {this.props.t(
                         'header.organization.menus.manageSSO.environmentVar.addNewVariable',
                         'Add new variable'
                       )}
-                    </div>
+                    </ButtonSolid>
                   )}
                 </div>
               </div>
@@ -291,8 +297,10 @@ class ManageOrgVarsComponent extends React.Component {
           </div>
 
           <div className="workspace-variable-container-wrap">
-            {showVariableForm ? (
-              <VariableForm
+            {isManageVarDrawerOpen ? (
+              <ManageOrgVarsDrawer
+                isManageVarDrawerOpen={this.state.isManageVarDrawerOpen}
+                setIsManageVarDrawerOpen={this.setIsManageVarDrawerOpen}
                 fields={this.state.fields}
                 errors={this.state.errors}
                 selectedVariableId={this.state.selectedVariableId}

@@ -10,11 +10,16 @@ env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true  
+
 jobs:
   Run-Cypress:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress' }}
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -39,6 +44,8 @@ jobs:
           working-directory: ./cypress-tests
           config: "baseUrl=https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
           config-file: cypress-run.config.js
+        env:
+          CYPRESS_SECRETS: ${{ secrets.CYPRESS_SECRETS }}
 
       - name: Capturing screenshots
         uses: actions/upload-artifact@v3
@@ -46,3 +53,10 @@ jobs:
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
+
+      - name: Capturing downloads
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: screenshots
+          path: cypress-tests/cypress/downloads

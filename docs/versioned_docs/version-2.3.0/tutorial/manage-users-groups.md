@@ -120,7 +120,7 @@ Admins and Super Admins can set granular permission for the users added in that 
 - **Create** and **Delete** Apps
 - **Create**, **Update**, and **Delete** Folders
 - **Create**, **Update**, and **Delete** [Workspace Variables](/docs/tutorial/workspace-variables)
-- **Create** and **Delete** [Global Datasources](/docs/widgets/overview)
+- **Create** and **Delete** [Global Datasources](/docs/data-sources/overview)
 
 <div style={{textAlign: 'center'}}>
     

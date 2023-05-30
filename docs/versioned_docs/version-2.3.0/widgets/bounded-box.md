@@ -98,3 +98,23 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+
+## Exposed variables
+
+| variable    | Description |
+| ----------- | ----------- | 
+| annotations | This variable is an array of objects, where each object represents an annotation added to an image. The object contains the following keys: type, x, y, width, height, text, and id |
+| annotations.`type` | There are two types of annotations: Rectangle and Point |
+| annotations.`x` | coordinates on x axis  |
+| annotations.`y` | coordinates on y axis |
+| annotations.`width` | width of annotation |
+| annotations.`height` | height of annotation |
+| annotations.`text` | label selected for the annotation |
+| annotations.`id` | unique id of the annotation (system generated) |
+
+The values can be accessed dynamically using `{{components.boundedbox1.annotations[0].text}}` or `{{components.boundedbox1.annotations[1].width}}`
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the bounding box component.

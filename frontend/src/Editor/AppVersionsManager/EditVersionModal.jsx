@@ -16,6 +16,10 @@ export const EditVersion = ({
   const [versionName, setVersionName] = useState(editingVersion?.name || '');
   const { t } = useTranslation();
 
+  React.useEffect(() => {
+    setVersionName(editingVersion?.name);
+  }, [editingVersion?.name]);
+
   const editVersion = () => {
     if (versionName.trim() === '') {
       toast.error('Version name should not be empty');
@@ -43,8 +47,12 @@ export const EditVersion = ({
   return (
     <AlertDialog
       show={showEditAppVersion}
-      closeModal={() => setShowEditAppVersion(false)}
+      closeModal={() => {
+        setVersionName(editingVersion?.name || '');
+        setShowEditAppVersion(false);
+      }}
       title={t('editor.appVersionManager.editVersion', 'Edit Version')}
+      checkForBackground={true}
     >
       <form
         onSubmit={(e) => {
@@ -71,7 +79,10 @@ export const EditVersion = ({
             <button
               className="btn mx-2"
               data-cy="cancel-button"
-              onClick={() => setShowEditAppVersion(false)}
+              onClick={() => {
+                setVersionName(editingVersion?.name || '');
+                setShowEditAppVersion(false);
+              }}
               type="button"
             >
               {t('globals.cancel', 'Cancel')}

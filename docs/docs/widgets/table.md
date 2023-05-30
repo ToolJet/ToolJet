@@ -8,11 +8,64 @@ Tables can be used for both displaying and editing data.
 
 <iframe height="500" src="https://www.youtube.com/embed/hTrdkUtz3aA" title="ToolJet Table Widget" frameborder="0" allowfullscreen width="100%"></iframe>
 
+## Table UI
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/UI.png" alt="ToolJet - Widget Reference - Table" width="900" />
+
+</div>
+
+### Search
+
+At the top-left corner of the table component, there is a search box that allows users to input keywords and search for rows within the table data. You can also **[show/hide the search box](/docs/widgets/table#show-search-box)** from the table from the table properties.
+
+### Add new row
+
+When users click on this button, a popup modal appears which enables them to insert new rows. The modal will have a single row initially, and the columns will have the same column type as those on the table. If the user inputs data into the row, it will be stored on the **[`newRows` variable](/docs/widgets/table#exposed-variables)** of the table. If the user selects the **Discard** button, the data in the variable will be cleared. However, if the user closes the popup without taking any action (neither Save nor Discard), the data will still be retained, and a green indicator will appear on the **Add new row** button. The table has an **[Add new rows event handler](/docs//widgets/table#add-new-rows)** that can be utilized to execute queries that store the data into the datasource whenever the **Save** button is clicked.
+
+:::info
+At present, it is not possible to include columns of type Image when adding a new row to the table.
+:::
+
+### Filters
+
+The table data can be filtered by clicking on this button. You have the option to choose from various filters, such as:
+
+- **contains**
+- **does not contain**
+- **matches**
+- **does not match**
+- **equals**
+- **does not equal**
+- **is empty**
+- **is not empty**
+- **greater than**
+- **greater than or equal to**
+- **less than**
+- **less than or equal to**
+
+You have the option to **[hide the filter button](/docs/widgets/table#show-filter-button)** in the table properties.
+
+### Download
+
+The table data can be downloaded in various file formats, including:
+
+- **CSV**
+- **Excel**
+- **PDF**
+
+You have the option to **[hide the download button](/docs/widgets/table#show-download-button)** in the table properties.
+
+### Column selector button
+
+You can choose which columns to display or hide in the table by clicking on this button. You also have the option to **[hide the column selector button](/docs/widgets/table#show-column-selector-button)** in the table properties.
+
 ## Table data
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/data.png" alt="ToolJet - Widget Reference - Table" width="400" />
+<img className="screenshot-full" src="/img/widgets/table/data.png" alt="ToolJet - Widget Reference - Table" width="350" />
 
 </div>
 
@@ -26,30 +79,156 @@ The table component will **auto-generate all the columns** as soon as the expect
 
 ## Columns
 
+Whenever data is loaded into a table, the columns are automatically generated. You can add, remove, or modify columns by accessing the table properties under the column section.
+
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/columns2.png" alt="ToolJet - Widget Reference - Table" width="400" />
+<img className="screenshot-full" src="/img/widgets/table/columntypes.png" alt="ToolJet - Widget Reference - Table" />
 
 </div>
 
-### Cell data types
+### Types of Columns
 
-You can define the cell types as per your table's data source using the following:
+The table provides different column types based on the data being displayed:
 
-- <b>String | Default</b>: It is used to render the data for cell types: <i>text or textarea</i>,
-- <b>Number</b>: This cell type will only expect the <b>numerical</b> values and can be sorted in ascending or descending order
-- <b>Badge</b>: It is a labeling component used to display data with badges for e.g <b><i>status of a shipment</i></b>
-- <b>Multiple badges</b>: Similar to badge, used to display multiple data badges in the form of array of objects,
-- <b>Tags</b>: Used to display an array of objects in the form of tags, e.g <b><i>status, levels, steps</i></b>
-- <b>Dropdown</b>: When data is in the form of an array of options to be selected, e.g <b><i>select priority</i></b>
-- <b>Radio</b>: Used to make a selection from a group of options, e.g <b><i>select your salary-range</i></b>
-- <b>Multiselect</b>: Similar to dropdown but to collect multiple user inputs from a list of options,
-- <b>Toggle switch</b>: Allows a user to change a setting between two states, e.g <b><i>select between Yes/No</i></b>,
-- <b>Date picker</b>: Allowing users to display and select dates, e.g <b><i>delivery date</i></b>
-- <b>Image</b>: This cell type expects the URL of image and will display the image in the cell. It also has the option to style the image.
+- [String | Default](#string--default)
+- [Number](#number)
+- [Badge](#badge)
+- [Multiple Badges](#multiple-badges)
+- [Tags](#tags)
+- [Dropdown](#dropdown)
+- [Radio](#radio)
+- [Multiselect](#multiselect)
+- [Toggle switch](#toggle-switch)
+- [Date Picker](#date-picker)
+- [Image](#image)
+
+#### String | Default
+
+This column type is selected by default when a column is added or when data is auto-populated in the table.
+
+#### Number
+
+Selecting the column type as "Number" will only load numerical data in the column cells.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/numbertype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Badge
+
+The "Badge" column type is used to display labels on the columns using the column data. The "Badge values" and "Badge labels" should be provided as an array.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/badgetype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Multiple Badges
+
+Similar to the "Badge" column type, this type is used to display multiple badges in the column cell. The "Values" and "Labels" should be provided as arrays.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/multibadgetype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Tags
+
+The "Tags" column type is used to show tags in the column cells using the column data. The "key" provided should have values in an array.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/tagtype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Dropdown
+
+The "Dropdown" column type is used to show a dropdown in the column cells using the column data. The "Values" and "Labels" should be provided as arrays.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/droptype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Radio
+
+The "Radio" column type is used to show radio buttons in the column cells using the column data. The "Values" and "Labels" should be provided as arrays.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/radiotype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Multiselect
+
+The "Multiselect" column type is used to show a multiselect dropdown in the column cells using the column data. The "Values" and "Labels" should be provided as arrays.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/multiselecttype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Toggle Switch
+
+The "Toggle Switch" column type is used to show a toggle switch in the column cells using the column data. The "key" provided should be a boolean value, either true or false.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/toggletype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Date Picker
+
+The "Date Picker" column type is used to show a date picker in the column cells using the column data.
+
+The "key" provided should be a date value.
+
+The "Date Display Format" determines how the date should be displayed in the table.
+
+The "Date Parse Format" is the format in which the date is stored in the database.
+
+The "Parse in timezone" is the timezone of the time stored in the database.
+
+The "Display in timezone" is the timezone in which the date should be displayed.
+
+"Parse in timezone" and "Display in timezone" are only required when the "Show time" option is enabled for the column.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/datetype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Image
+
+The "Image" column type is used to display images in the column cells using the column data. The cell value of this column should be a URL of the image, and it will be displayed in the cell.
+
+By default, when an image is loaded in the column, its width is set to 100%. The border radius, width, and height of the image can be adjusted in the column properties.
+
+The "Object fit" option allows you to choose how the image should be fitted within its container. The options are:
+
+- "Cover": maintains the aspect ratio of the image but may crop or clip parts of it to cover the container's width.
+- "Contain": maintains the aspect ratio and resizes the image to fit within the given dimensions while displaying the entire image.
+- "Fill": stretches the image to cover 100% of the width.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/imagetype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
 
 :::info
-Check this **[how-to guide](/docs/how-to/access-cellvalue-rowdata)** on dynamically change the color of text in a row and column in the table.
+For a guide on dynamically changing the color of text in a row and column in the table, refer to this **[how-to guide](/docs/how-to/access-cellvalue-rowdata)**.
 :::
 
 ### Displaying Data
@@ -197,28 +376,15 @@ If server-side search is enabled, `on search` event is fired after the content o
 
 ### Show download button
 
-Show or hide download button at the Table footer.
+The download button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the download button by clicking on the **Fx** button.
 
-### Hide/Show columns
+### Show column selector button
 
-Table header has an option(Eye icon) to show/hide one or many columns on the table. 
+The column selector button on the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the column selector button by clicking on the **Fx** button.
 
 ### Show filter button
 
-Show or hide filter button at the Table header. The following filters are available:
-- **contains**
-- **does not contain**
-- **matches**
-- **does not match**
-- **equals**
-- **does not equal to**
-- **is empty**
-- **is not empty**
-- **greater than**
-- **greater than or equal to**
-- **less than**
-- **less than or equal to**
-
+The filter button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the filter button by clicking on the **Fx** button.
 
 ### Show update buttons
 
@@ -263,6 +429,7 @@ Loading state shows a loading skeleton for the table. This property can be used 
 - **[Sort applied](#sort-applied)**
 - **[Cell value changed](#cell-value-changed)**
 - **[Filter changed](#filter-changed)**
+- **[Add new rows](#add-new-rows)**
 
 ### Row hovered
 
@@ -300,6 +467,10 @@ If any cell of the table is edited, the `cell value changed` event is triggered.
 
 This event is triggered when filter is added, removed, or updated from the filter section of the table. `filters` property of the table is updated to reflect the status of filters applied. The objects will have properties: `condition`, `value`, and `column`. 
 
+### Add new rows
+
+This event is triggered when the **Save** button is clicked from the **Add new row** modal on the table. 
+
 ## Exposed variables
 
 | variable      | description |
@@ -311,6 +482,7 @@ This event is triggered when filter is added, removed, or updated from the filte
 | dataUpdates | Just like changeSet but includes the data of the entire row |
 | selectedRow | The data of the row that was last clicked. `selectedRow` also changes when an action button is clicked |
 | searchText | The value of the search field if server-side pagination is enabled |
+| newRows| The newRows variable stores an array of objects, each containing data for a row that was added to the table using the "Add new row" button. When the user clicks either the "Save" or "Discard" button in the modal, this data is cleared.|
 
 ## Styles
 
@@ -327,3 +499,15 @@ This event is triggered when filter is added, removed, or updated from the filte
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Component specific actions (CSA)
+
+Following actions of color picker component can be controlled using the component specific actions(CSA):
+
+| Actions     | Description |
+| ----------- | ----------- |
+| setPage | Set the page on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.setPage(2)` |
+| selectRow | Select the row on the table using via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.selectRow('id','11')` |
+| deselectRow | Deselect the row on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.deselectRow()` |
+| discardChanges | Discard the changes from the table when a cell is edited via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.discardChanges()` |
+| discardNewlyAddedRows | Discard the newly added rows from the add new row popup on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.discardNewlyAddedRows()` |

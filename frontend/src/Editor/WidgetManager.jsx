@@ -4,7 +4,13 @@ import Fuse from 'fuse.js';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, currentLayout, darkMode }) {
+export const WidgetManager = function WidgetManager({
+  componentTypes,
+  zoomLevel,
+  currentLayout,
+  darkMode,
+  isVersionReleased,
+}) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
   const [searchQuery, setSearchQuery] = useState('');
   const { t } = useTranslation();
@@ -126,7 +132,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   }
 
   return (
-    <div className="components-container mx-3">
+    <div className={`components-container mx-3 ${isVersionReleased && 'disabled'}`}>
       <div className="input-icon">
         <input
           type="text"

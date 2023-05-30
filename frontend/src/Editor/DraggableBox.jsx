@@ -97,7 +97,6 @@ export const DraggableBox = function DraggableBox({
   onComponentHover,
   sideBarDebugger,
   isMultipleComponentsSelected,
-  dataQueries,
   childComponents = null,
 }) {
   const [isResizing, setResizing] = useState(false);
@@ -176,7 +175,6 @@ export const DraggableBox = function DraggableBox({
   };
 
   const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
-
   const gridWidth = canvasWidth / 43;
   const width = (canvasWidth * layoutData.width) / 43;
 
@@ -292,7 +290,6 @@ export const DraggableBox = function DraggableBox({
                   parentId={parentId}
                   allComponents={allComponents}
                   sideBarDebugger={sideBarDebugger}
-                  dataQueries={dataQueries}
                   childComponents={childComponents}
                 />
               </ErrorBoundary>

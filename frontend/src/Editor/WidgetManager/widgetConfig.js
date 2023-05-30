@@ -285,7 +285,7 @@ export const widgets = [
     },
     defaultSize: {
       width: 20,
-      height: 300,
+      height: 358,
     },
     events: {
       onRowHovered: { displayName: 'Row hovered' },
@@ -297,6 +297,7 @@ export const widgets = [
       onSort: { displayName: 'Sort applied' },
       onCellValueChanged: { displayName: 'Cell value changed' },
       onFilterChanged: { displayName: 'Filter changed' },
+      onNewRowsAdded: { displayName: 'Add new rows' },
     },
     styles: {
       textColor: {
@@ -396,6 +397,27 @@ export const widgets = [
       {
         handle: 'discardChanges',
         displayName: 'Discard Changes',
+      },
+      {
+        handle: 'discardNewlyAddedRows',
+        displayName: 'Discard newly added rows',
+      },
+      {
+        displayName: 'Download table data',
+        handle: 'downloadTableData',
+        params: [
+          {
+            handle: 'type',
+            displayName: 'Type',
+            options: [
+              { name: 'Download as Excel', value: 'xlsx' },
+              { name: 'Download as CSV', value: 'csv' },
+              { name: 'Download as PDF', value: 'pdf' },
+            ],
+            defaultValue: `{{Download as Excel}}`,
+            type: 'select',
+          },
+        ],
       },
     ],
     definition: {
@@ -1165,7 +1187,7 @@ export const widgets = [
       },
     },
     exposedVariables: {
-      value: 0,
+      value: 99,
     },
     definition: {
       others: {
@@ -2010,7 +2032,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '' },
+        backgroundColor: { value: '#fff00000' },
         textColor: { value: '#000000' },
         textSize: { value: 14 },
         textAlign: { value: 'left' },
@@ -2353,6 +2375,7 @@ export const widgets = [
       searchText: '',
       label: 'Select',
       optionLabels: ['one', 'two', 'three'],
+      selectedOptionLabel: 'two',
     },
     actions: [
       {
