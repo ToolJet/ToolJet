@@ -27,4 +27,6 @@ export const tableText = {
   email: "email",
   name: "name",
   optionEquals: "equals",
+
+  labelDynamicColumn: "Use dynamic column",
 };
