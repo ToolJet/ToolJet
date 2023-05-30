@@ -182,7 +182,10 @@ export const Folders = function Folders({
         show={showDeleteConfirmation}
         message={t(
           'homePage.foldersSection.wishToDeleteFolder',
-          `Are you sure you want to delete the folder? Apps within the folder will not be deleted.`
+          `Are you sure you want to delete the folder {{folderName}}? Apps within the folder will not be deleted.`,
+          {
+            folderName: deletingFolder?.name,
+          }
         )}
         confirmButtonLoading={isDeleting}
         onConfirm={() => executeDeletion()}
