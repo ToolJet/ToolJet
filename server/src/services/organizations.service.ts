@@ -708,6 +708,14 @@ export class OrganizationsService {
             );
           }
 
+          if (users.length === 0) {
+            throw new BadRequestException('No users were uploaded');
+          }
+
+          if (users.length > 250) {
+            throw new BadRequestException(`You can only invite 250 users at a time`);
+          }
+
           this.inviteUserswrapper(users, currentUser)
             .then(() => {
               res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
