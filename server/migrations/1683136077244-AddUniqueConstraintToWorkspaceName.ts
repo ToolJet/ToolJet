@@ -1,4 +1,5 @@
 import { Organization } from 'src/entities/organization.entity';
+import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { EntityManager, MigrationInterface, QueryRunner, TableUnique } from 'typeorm';
 
 export class AddUniqueConstraintToWorkspaceName1683136077244 implements MigrationInterface {
@@ -8,7 +9,7 @@ export class AddUniqueConstraintToWorkspaceName1683136077244 implements Migratio
     await queryRunner.createUniqueConstraint(
       'organizations',
       new TableUnique({
-        name: 'name_organizations_unique',
+        name: DataBaseConstraints.WORKSPACE_NAME_UNIQUE,
         columnNames: ['name'],
       })
     );

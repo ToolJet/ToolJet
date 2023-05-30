@@ -5,7 +5,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { cleanObject, dbTransactionWrap, generateName, isPlural } from 'src/helpers/utils.helper';
+import { catchDbException, cleanObject, dbTransactionWrap, generateName, isPlural } from 'src/helpers/utils.helper';
 import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
@@ -25,6 +25,7 @@ import {
 import { decamelize } from 'humps';
 import { Response } from 'express';
 import { AppEnvironmentService } from './app_environments.service';
+import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 
 const MAX_ROW_COUNT = 500;
 
@@ -66,24 +67,24 @@ export class OrganizationsService {
   async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
     let organization: Organization;
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const ifWorkspaceNameExists = await manager.findOne(Organization, { name });
-
-      if (ifWorkspaceNameExists) {
-        throw new ConflictException('Workspace name is already taken.');
-      }
-
-      organization = await manager.save(
-        manager.create(Organization, {
-          ssoConfigs: [
-            {
-              sso: 'form',
-              enabled: true,
-            },
-          ],
-          name,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
+      organization = await catchDbException(
+        async () => {
+          return await manager.save(
+            manager.create(Organization, {
+              ssoConfigs: [
+                {
+                  sso: 'form',
+                  enabled: true,
+                },
+              ],
+              name,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            })
+          );
+        },
+        DataBaseConstraints.WORKSPACE_NAME_UNIQUE,
+        'Workspace name is already taken.'
       );
 
       await this.appEnvironmentService.createDefaultEnvironments(organization.id, manager);
