@@ -1,6 +1,34 @@
 import { Transform } from 'class-transformer';
-import { IsString, IsNotEmpty, MaxLength, Matches } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  MaxLength,
+  Validate,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
 import { sanitizeInput } from 'src/helpers/utils.helper';
+
+@ValidatorConstraint({ name: 'AllowedCharactersValidator', async: false })
+class AllowedCharactersValidator implements ValidatorConstraintInterface {
+  private errorMsg: string;
+
+  validate(value: string) {
+    if (value.match(/^[a-z0-9 -]+$/) === null) {
+      if (/[A-Z]/.test(value)) {
+        this.errorMsg = 'Only lowercase letters are accepted.';
+      } else {
+        this.errorMsg = 'Special characters are not accepted.';
+      }
+      return false;
+    }
+    return true;
+  }
+
+  defaultMessage() {
+    return this.errorMsg;
+  }
+}
 
 export class CreateFolderDto {
   @IsString()
@@ -9,7 +37,7 @@ export class CreateFolderDto {
     const newValue = sanitizeInput(value);
     return newValue.trim();
   })
-  @Matches("^[A-Za-z0-9 '-]+$", '', { message: 'Special characters are not accepted.' })
-  @MaxLength(40, { message: 'Maximum length has been reached.' })
+  @Validate(AllowedCharactersValidator)
+  @MaxLength(50, { message: 'Maximum length has been reached.' })
   name: string;
 }

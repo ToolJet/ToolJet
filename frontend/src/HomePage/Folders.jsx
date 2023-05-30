@@ -157,7 +157,7 @@ export const Folders = function Folders({
 
   const handleInputChange = (e) => {
     setErrorText('');
-    const error = validateName(e.target.value, 'Folder name');
+    const error = validateName(e.target.value, 'Folder name', false, false);
     if (!error.status) {
       setErrorText(error.errorMsg);
     }
@@ -310,7 +310,7 @@ export const Folders = function Folders({
               placeholder={t('homePage.foldersSection.folderName', 'folder name')}
               disabled={isCreating || isUpdating}
               value={newFolderName}
-              maxLength={40}
+              maxLength={50}
               data-cy="folder-name-input"
               autoFocus
             />

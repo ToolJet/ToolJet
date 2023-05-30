@@ -842,7 +842,7 @@ export function isExpectedDataType(data, expectedDataType) {
   return data;
 }
 
-export const validateName = (name, nameType, showError = false) => {
+export const validateName = (name, nameType, showError = false, allowSpecialChars = true) => {
   const newName = name.trim();
   let errorMsg = '';
   if (!newName) {
@@ -858,8 +858,12 @@ export const validateName = (name, nameType, showError = false) => {
   }
 
   //check for alphanumeric
-  if (newName.match(/^[A-Za-z0-9 '-]+$/) === null) {
-    errorMsg = `Special characters are not accepted.`;
+  if (!allowSpecialChars && newName.match(/^[a-z0-9 -]+$/) === null) {
+    if (/[A-Z]/.test(newName)) {
+      errorMsg = 'Only lowercase letters are accepted.';
+    } else {
+      errorMsg = `Special characters are not accepted.`;
+    }
     showError &&
       toast.error(errorMsg, {
         id: '2',
