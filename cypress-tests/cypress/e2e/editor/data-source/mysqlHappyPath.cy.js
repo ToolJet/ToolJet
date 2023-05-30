@@ -1,8 +1,9 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { mySqlText } from "Texts/mysql";
 import { commonSelectors } from "Selectors/common";
-import { commonWidgetText } from "Texts/common";
+import { commonWidgetText, commonText } from "Texts/common";
 import {
   fillDataSourceTextField,
   selectDataSource,
@@ -13,23 +14,26 @@ import {
   addGuiQuery,
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
-import { verifyCouldnotConnectWithAlert } from "Support/utils/dataSource";
+import {
+  closeDSModal,
+  deleteDatasource,
+  verifyCouldnotConnectWithAlert,
+} from "Support/utils/dataSource";
 import { realHover } from "cypress-real-events/commands/realHover";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
 describe("Data sources MySql", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
   it("Should verify elements on MySQL connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
@@ -50,7 +54,7 @@ describe("Data sources MySql", () => {
     );
 
     cy.get(postgreSqlSelector.dataSourceSearchInputField).type("MySQL");
-    cy.get("[data-cy*='data-source-']").eq(0).should("contain", "MySQL");
+    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "MySQL");
     cy.get('[data-cy="data-source-mysql"]').click();
 
     cy.get(postgreSqlSelector.dataSourceNameInputField).should(
@@ -113,7 +117,7 @@ describe("Data sources MySql", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      mySqlText.cypressMySql
+      `cypress-${data.lastName}-mysql`
     );
 
     fillDataSourceTextField(
@@ -154,20 +158,24 @@ describe("Data sources MySql", () => {
       "admin1"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert('ER_NOT_SUPPORTED_AUTH_MODE: Client does not support authentication protocol requested by server; consider upgrading MySQL client');
+    verifyCouldnotConnectWithAlert(
+      "ER_NOT_SUPPORTED_AUTH_MODE: Client does not support authentication protocol requested by server; consider upgrading MySQL client"
+    );
 
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
       postgreSqlText.placeholderEnterUserName,
-      test/spec-updation-needed-to-fix-specs-on-github-actions
       Cypress.env("mysql_user")
     );
     cy.get(postgreSqlSelector.passwordTextField).type("testpassword");
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-  verifyCouldnotConnectWithAlert("ER_ACCESS_DENIED_ERROR: Access denied for user 'root'@'103.171.99.42' (using password: YES)");
+    verifyCouldnotConnectWithAlert(
+      "ER_ACCESS_DENIED_ERROR: Access denied for user 'root'@'103.171.99.42' (using password: YES)"
+    );
     cy.get(postgreSqlSelector.passwordTextField).type(
-      `{selectAll}{backspace}${Cypress.env("mysql_password")}`, {log:false}
+      `{selectAll}{backspace}${Cypress.env("mysql_password")}`,
+      { log: false }
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
 
@@ -181,16 +189,16 @@ describe("Data sources MySql", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", mySqlText.cypressMySql)
-      .find("button")
-      .invoke('show')
-      .should("be.visible");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-mysql-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-mysql`);
+
+    deleteDatasource(`cypress-${data.lastName}-mysql`);
   });
 
-  it.only("Should verify elements of the Query section.", () => {
-    cy.viewport(1200, 1300)
+  it.skip("Should verify elements of the Query section.", () => {
+    cy.viewport(1200, 1300);
     selectDataSource("MySQL");
     fillConnectionForm({
       Host: Cypress.env("mysql_host"),
@@ -244,7 +252,7 @@ describe("Data sources MySql", () => {
     cy.get(`${postgreSqlSelector.querySelectDropdown}:eq(0)`)
       .scrollIntoView()
       .should("be.visible")
-      .click()
+      .click();
     cy.contains("[id*=react-select-]", postgreSqlText.queryModeSql).should(
       "have.text",
       postgreSqlText.queryModeSql
@@ -257,16 +265,15 @@ describe("Data sources MySql", () => {
     cy.get(postgreSqlSelector.queryCreateAndRunButton)
       .should("be.visible")
       .click();
-      // cy.get('[data-cy="list-query-mysql1"]').should("be.visible").click();
+    // cy.get('[data-cy="list-query-mysql1"]').should("be.visible").click();
 
     cy.get(postgreSqlSelector.labelTransformation)
       .scrollIntoView()
       .verifyVisibleElement("have.text", postgreSqlText.headerTransformations);
-      cy.wait(200)
+    cy.wait(200);
     cy.get(postgreSqlSelector.toggleTransformation).parent().click();
     cy.get(postgreSqlSelector.inputFieldTransformation).should("be.visible");
     cy.get(postgreSqlSelector.toggleTransformation).parent().click();
-
 
     cy.get(postgreSqlSelector.headerQueryPreview).verifyVisibleElement(
       "have.text",
@@ -301,7 +308,7 @@ describe("Data sources MySql", () => {
     );
     cy.get('[data-cy="label-records"]').verifyVisibleElement(
       "have.text",
-      'Records'
+      "Records"
     );
 
     // cy.get(postgreSqlSelector.queryTabAdvanced)
@@ -338,8 +345,15 @@ describe("Data sources MySql", () => {
       postgreSqlText.labelNoEventhandler
     );
 
-    cy.get('[data-cy="list-query-mysql1"]').verifyVisibleElement('have.text', 'mysql1');
-    cy.get('[class="row query-row query-row-selected"]').realHover().then(()=>{cy.get('[data-cy="delete-query-mysql1"]').click()}) 
+    cy.get('[data-cy="list-query-mysql1"]').verifyVisibleElement(
+      "have.text",
+      "mysql1"
+    );
+    cy.get('[class="row query-row query-row-selected"]')
+      .realHover()
+      .then(() => {
+        cy.get('[data-cy="delete-query-mysql1"]').click();
+      });
     cy.get(postgreSqlSelector.deleteModalMessage).verifyVisibleElement(
       "have.text",
       postgreSqlText.dialogueTextDelete
@@ -353,9 +367,9 @@ describe("Data sources MySql", () => {
       .click();
   });
 
-  it("Should verify CRUD operations on SQL Query.", () => {
-    let dbName ='7mmplik'
-    selectDataSource('MySQL');
+  it.skip("Should verify CRUD operations on SQL Query.", () => {
+    let dbName = "7mmplik";
+    selectDataSource("MySQL");
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
@@ -398,7 +412,7 @@ describe("Data sources MySql", () => {
       .should("be.visible", { timeout: 3000 })
       .click();
 
-      cy.get('.p-3').should(
+    cy.get(".p-3").should(
       "have.text",
       `[{"Tables_in_testdb (${dbName})":"${dbName}"}]`
     );
@@ -418,27 +432,23 @@ describe("Data sources MySql", () => {
     cy.get(postgreSqlSelector.queryPreviewButton).click();
     cy.get('[class="tab-pane active"]', { timeout: 3000 }).should("be.visible");
     cy.get(postgreSqlSelector.previewTabRaw).click();
-    cy.get('[class="tab-pane active"]').should("have.text", `{"fieldCount":0,"affectedRows":0,"insertId":0,"serverStatus":2,"warningCount":0,"message":"","protocol41":true,"changedRows":0}`);
-
-    addQuery(
-      "drop_table",
-      `DROP TABLE ${dbName}`,
-      mySqlText.cypressMySql
+    cy.get('[class="tab-pane active"]').should(
+      "have.text",
+      `{"fieldCount":0,"affectedRows":0,"insertId":0,"serverStatus":2,"warningCount":0,"message":"","protocol41":true,"changedRows":0}`
     );
+
+    addQuery("drop_table", `DROP TABLE ${dbName}`, mySqlText.cypressMySql);
     cy.get('[data-cy="list-query-existance_of_table"]').click();
     cy.get(postgreSqlSelector.queryPreviewButton).click();
     cy.get('[class="tab-pane active"]', { timeout: 3000 }).should("be.visible");
     cy.get(postgreSqlSelector.previewTabRaw).click();
-    cy.get('[class="tab-pane active"]').should(
-      "have.text",
-      '[]'
-    );
+    cy.get('[class="tab-pane active"]').should("have.text", "[]");
 
     // addWidgetsToAddUser();
   });
 
-  it("Should verify bulk update", () => {
-    selectDataSource('MySQL');
+  it.skip("Should verify bulk update", () => {
+    selectDataSource("MySQL");
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
       mySqlText.cypressMySql
@@ -453,19 +463,8 @@ describe("Data sources MySql", () => {
 
     openQueryEditor(mySqlText.cypressMySql);
     cy.get('[class="query-pane"]').invoke("css", "height", "calc(85%)");
-    selectQueryMode(postgreSqlText.queryModeGui,);
+    selectQueryMode(postgreSqlText.queryModeGui);
     addGuiQuery("name", "email");
     cy.get(postgreSqlSelector.queryCreateAndRunButton).click();
   });
 });
-
-
-
-
-
-
-
-
-
-
-

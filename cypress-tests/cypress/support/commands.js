@@ -29,6 +29,7 @@ Cypress.Commands.add("verifyToastMessage", (selector, message) => {
   cy.get("body").then(($body) => {
     if ($body.find(commonSelectors.toastCloseButton).length > 0) {
       cy.closeToastMessage();
+      cy.wait(200);
     }
   });
 });
@@ -111,7 +112,13 @@ Cypress.Commands.add("createApp", (appName) => {
 
 Cypress.Commands.add(
   "dragAndDropWidget",
-  (widgetName, positionX = 190, positionY = 80, widgetName2 = widgetName) => {
+  (
+    widgetName,
+    positionX = 190,
+    positionY = 80,
+    widgetName2 = widgetName,
+    canvas = commonSelectors.canvas
+  ) => {
     const dataTransfer = new DataTransfer();
 
     cy.clearAndType(commonSelectors.searchField, widgetName);
@@ -120,7 +127,7 @@ Cypress.Commands.add(
       { dataTransfer },
       { force: true }
     );
-    cy.get(commonSelectors.canvas).trigger("drop", positionX, positionY, {
+    cy.get(canvas).trigger("drop", positionX, positionY, {
       dataTransfer,
       force: true,
     });

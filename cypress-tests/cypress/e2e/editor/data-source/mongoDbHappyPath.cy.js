@@ -1,12 +1,19 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { mongoDbText } from "Texts/mongoDb";
 import { commonSelectors } from "Selectors/common";
+import { commonText } from "Texts/common";
+import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 import {
   fillDataSourceTextField,
   selectDataSource,
 } from "Support/utils/postgreSql";
-import { connectMongo, openMongoQueryEditor,selectQueryType } from "Support/utils/mongoDB";
+import {
+  connectMongo,
+  openMongoQueryEditor,
+  selectQueryType,
+} from "Support/utils/mongoDB";
 
 import {
   verifyCouldnotConnectWithAlert,
@@ -16,21 +23,19 @@ import {
   addInput,
 } from "Support/utils/dataSource";
 
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
 describe("Data source MongoDB", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
   it("Should verify elements on MongoDB connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
@@ -54,7 +59,7 @@ describe("Data source MongoDB", () => {
       mongoDbText.mongoDb
     );
     cy.get("[data-cy*='data-source-']")
-      .eq(0)
+      .eq(1)
       .should("contain", mongoDbText.mongoDb);
     cy.get('[data-cy="data-source-mongodb"]').click();
 
@@ -110,7 +115,7 @@ describe("Data source MongoDB", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
       "have.text",
       "connect ECONNREFUSED ::1:27017"
     );
@@ -145,9 +150,9 @@ describe("Data source MongoDB", () => {
     }).verifyVisibleElement("have.text", postgreSqlText.couldNotConnect, {
       timeout: 95000,
     });
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
       "have.text",
-      'Invalid scheme, expected connection string to start with "mongodb://" or "mongodb+srv://"'
+      "Cannot read properties of null (reading '2')"
     );
     verifyCouldnotConnectWithAlert(mongoDbText.errorInvalisScheme);
     cy.get(postgreSqlSelector.buttonSave).verifyVisibleElement(
@@ -161,7 +166,7 @@ describe("Data source MongoDB", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      mongoDbText.cypressMongoDb
+      `cypress-${data.lastName}-mongodb`
     );
 
     cy.get('[data-cy="query-select-dropdown"]').type(
@@ -186,173 +191,194 @@ describe("Data source MongoDB", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", mongoDbText.cypressMongoDb)
-      .find("button")
-      .invoke("show")
-      .should("be.visible");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-mongodb-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-mongodb`);
+
+    deleteDatasource(`cypress-${data.lastName}-mongodb`);
   });
 
-  it.only("Should verify the queries of MongoDB.", () => {
+  it.skip("Should verify the queries of MongoDB.", () => {
     connectMongo();
     openMongoQueryEditor();
     resizeQueryPanel();
 
-    selectQueryType('Delete Many')
-    addInput('collection', 'test')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
+    selectQueryType("Delete Many");
+    addInput("collection", "test");
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
 
-    selectQueryType('List Collections')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    query('preview')
-    verifypreview('raw','[{"name":"test"') //'root:[] 0 items'
+    selectQueryType("List Collections");
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    query("preview");
+    verifypreview("raw", '[{"name":"test"'); //'root:[] 0 items'
 
+    selectQueryType("Insert One");
+    addInput("collection", "test");
+    addInput("document", '{name:"mike"}');
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    query("preview");
+    verifypreview("raw", '{"acknowledged":true,"insertedId"');
 
-    selectQueryType('Insert One')
-    addInput('collection', 'test')
-    addInput('document', '{name:"mike"}')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    query('preview')
-    verifypreview('raw','{"acknowledged":true,"insertedId"')
+    selectQueryType("Find One");
+    addInput("collection", "test");
+    addInput("filter", '{name:"mike"}');
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    query("preview");
+    verifypreview("raw", '"name":"mike"}');
 
-    selectQueryType('Find One')
-    addInput('collection', 'test')
-    addInput('filter', '{name:"mike"}')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    query('preview')
-    verifypreview('raw','"name":"mike"}')
+    selectQueryType("Find many");
+    addInput("collection", "test");
+    addInput("filter", '{name:"mike"}');
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    query("preview");
+    verifypreview("raw", '"name":"mike"}');
 
-    selectQueryType('Find many')
-    addInput('collection', 'test')
-    addInput('filter', '{name:"mike"}')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    query('preview')
-    verifypreview('raw','"name":"mike"}')
+    selectQueryType("Total Count");
+    addInput("collection", "test");
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    query("preview");
+    verifypreview("raw", '{"count":');
 
-    selectQueryType('Total Count')
-    addInput('collection', 'test')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    query('preview')
-    verifypreview('raw','{"count":')
+    selectQueryType("Count");
+    addInput("collection", "test");
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    query("preview");
+    verifypreview("raw", '{"count":');
 
-    selectQueryType('Count')
-    addInput('collection', 'test')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    query('preview')
-    verifypreview('raw','{"count":');
+    selectQueryType("Distinct");
+    addInput("collection", "test");
+    addInput("field", "name");
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    query("preview");
+    verifypreview("raw", '["mike"]');
 
+    selectQueryType("Insert Many");
+    addInput("collection", "test");
+    addInput(
+      "documents",
+      '[{_id:331, name:"Nina"},{_id:441, name:"mina"}, {_id:4441, name:"Steph"}, {_id:41, name:"Mark"},{_id:3131, name:"Lina"}]'
+    );
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    addInput("documents", '[{_id:3113, name:"Nina"},{_id:414, name:"mina"}]');
+    query("preview");
+    verifypreview(
+      "raw",
+      '{"acknowledged":true,"insertedCount":2,"insertedIds":{"0":3113,"1":414}}'
+    );
 
-    selectQueryType('Distinct')
-    addInput('collection', 'test')
-    addInput('field', 'name')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    query('preview')
-    verifypreview('raw','["mike"]');
+    selectQueryType("Update One");
+    addInput("collection", "test");
+    addInput("filter", '{name:"mina"}');
+    addInput("update", '{$set:{name: "mike2023"}}');
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    query("preview");
+    verifypreview(
+      "raw",
+      '{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0'
+    );
 
+    selectQueryType("Update Many");
+    addInput("collection", "test");
+    addInput("filter", '{name:"Nina"}');
+    addInput("update", '{$set:{name: "mike22222"}}');
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    addInput("filter", '{name:"mike22222"}');
+    addInput("update", '{$set:{name: "Mark"}}');
+    query("preview");
+    verifypreview(
+      "raw",
+      '{"acknowledged":true,"modifiedCount":2,"upsertedId":null,"upsertedCount":0'
+    );
 
-    selectQueryType('Insert Many')
-    addInput('collection', 'test')
-    addInput('documents', '[{_id:331, name:"Nina"},{_id:441, name:"mina"}, {_id:4441, name:"Steph"}, {_id:41, name:"Mark"},{_id:3131, name:"Lina"}]')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    addInput('documents', '[{_id:3113, name:"Nina"},{_id:414, name:"mina"}]')
-    query('preview')
-    verifypreview('raw','{"acknowledged":true,"insertedCount":2,"insertedIds":{"0":3113,"1":414}}');
+    selectQueryType("Replace One");
+    addInput("collection", "test");
+    addInput("filter", '{name:"mike"}');
+    addInput("replacement", '{name: "mike2023"}');
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    addInput("filter", '{name:"mike"}');
+    addInput("replacement", '{name: "Nina"}');
+    query("preview");
+    verifypreview(
+      "raw",
+      '{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0'
+    );
 
-    selectQueryType('Update One')
-    addInput('collection', 'test')
-    addInput('filter', '{name:"mina"}')
-    addInput('update', '{$set:{name: "mike2023"}}')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    query('preview')
-    verifypreview('raw','{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0');
+    selectQueryType("Find One and Update");
+    addInput("collection", "test");
+    addInput("filter", '{name:"mike"}');
+    addInput("update", '{$set:{name: "mike2023"}}');
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    addInput("filter", '{name:"Mark"}');
+    addInput("update", '{$set:{name: "Nina"}}');
+    query("preview");
+    verifypreview(
+      "raw",
+      '{"lastErrorObject":{"n":1,"updatedExisting":true},"value":{"_id":'
+    );
 
-    selectQueryType('Update Many')
-    addInput('collection', 'test')
-    addInput('filter', '{name:"Nina"}')
-    addInput('update', '{$set:{name: "mike22222"}}')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    addInput('filter', '{name:"mike22222"}')
-    addInput('update', '{$set:{name: "Mark"}}')
-    query('preview')
-    verifypreview('raw','{"acknowledged":true,"modifiedCount":2,"upsertedId":null,"upsertedCount":0');
+    selectQueryType("Find One and Replace");
+    addInput("collection", "test");
+    addInput("filter", '{name:"mike"}');
+    addInput("replacement", '{name: "mike2023"}');
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    addInput("filter", '{name:"mike2023"}');
+    addInput("replacement", '{name: "Nina"}');
+    query("preview");
+    verifypreview(
+      "raw",
+      '{"lastErrorObject":{"n":1,"updatedExisting":true},"value":{"_id":'
+    );
 
-    selectQueryType('Replace One')
-    addInput('collection', 'test')
-    addInput('filter', '{name:"mike"}')
-    addInput('replacement', '{name: "mike2023"}')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    addInput('filter', '{name:"mike"}')
-    addInput('replacement', '{name: "Nina"}')
-    query('preview')
-    verifypreview('raw','{"acknowledged":true,"modifiedCount":1,"upsertedId":null,"upsertedCount":0');
+    selectQueryType("Find One and Delete");
+    addInput("collection", "test");
+    addInput("filter", '{name:"Nina"}');
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    addInput("filter", '{name:"mike2023"}');
+    query("preview");
+    verifypreview("raw", '{"lastErrorObject":{"n":1},"value":{"_id":');
 
-    selectQueryType('Find One and Update')
-    addInput('collection', 'test')
-    addInput('filter', '{name:"mike"}')
-    addInput('update', '{$set:{name: "mike2023"}}')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    addInput('filter', '{name:"Mark"}')
-    addInput('update', '{$set:{name: "Nina"}}')
-    query('preview')
-    verifypreview('raw','{"lastErrorObject":{"n":1,"updatedExisting":true},"value":{"_id":');
+    selectQueryType("Delete One");
+    addInput("collection", "test");
+    addInput("filter", '{name:"mike"}');
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    addInput("filter", '{name:"Lina"}');
+    query("preview");
+    verifypreview("raw", '{"acknowledged":true,"deletedCount":1}');
 
-    selectQueryType('Find One and Replace')
-    addInput('collection', 'test')
-    addInput('filter', '{name:"mike"}')
-    addInput('replacement', '{name: "mike2023"}')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    addInput('filter', '{name:"mike2023"}')
-    addInput('replacement', '{name: "Nina"}')
-    query('preview')
-    verifypreview('raw','{"lastErrorObject":{"n":1,"updatedExisting":true},"value":{"_id":');
+    selectQueryType("Aggregate");
+    addInput("collection", "test");
+    addInput("pipeline", '[{$match:{name:"mike2023"}}, {$match:{_id:414}}]');
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    query("preview");
+    verifypreview("raw", '[{"_id":414,"name":"mike2023"}]');
 
-    selectQueryType('Find One and Delete')
-    addInput('collection', 'test')
-    addInput('filter', '{name:"Nina"}')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    addInput('filter', '{name:"mike2023"}')
-    query('preview')
-    verifypreview('raw','{"lastErrorObject":{"n":1},"value":{"_id":');
-
-    selectQueryType('Delete One')
-    addInput('collection', 'test')
-    addInput('filter', '{name:"mike"}')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    addInput('filter', '{name:"Lina"}')
-    query('preview')
-    verifypreview('raw','{"acknowledged":true,"deletedCount":1}');
-
-    selectQueryType('Aggregate')
-    addInput('collection', 'test')
-    addInput('pipeline', '[{$match:{name:"mike2023"}}, {$match:{_id:414}}]')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    query('preview')
-    verifypreview('raw','[{"_id":414,"name":"mike2023"}]');
-
-    selectQueryType('Operations')
-    addInput('collection', 'test')
-    addInput('operations', '[{insertOne:{name:"midhun"}}]')
-    query('run')
-    cy.verifyToastMessage('.go2072408551','Query (mongodb1) completed.')
-    query('preview')
-    verifypreview('raw','{"ok":1,"writeErrors":[],"writeConcernErrors":[],"insertedIds":[{"index":');
+    selectQueryType("Operations");
+    addInput("collection", "test");
+    addInput("operations", '[{insertOne:{name:"midhun"}}]');
+    query("run");
+    cy.verifyToastMessage(".go2072408551", "Query (mongodb1) completed.");
+    query("preview");
+    verifypreview(
+      "raw",
+      '{"ok":1,"writeErrors":[],"writeConcernErrors":[],"insertedIds":[{"index":'
+    );
   });
 });

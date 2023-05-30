@@ -522,7 +522,7 @@ export class AppsService {
   }
 
   async updateVersion(version: AppVersion, body: VersionEditDto) {
-    if (version.id === version.app.currentVersionId)
+    if (version.id === version.app.currentVersionId && !body?.is_user_switched_version)
       throw new BadRequestException('You cannot update a released version');
 
     const editableParams = {};
