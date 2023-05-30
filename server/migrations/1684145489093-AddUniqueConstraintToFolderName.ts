@@ -1,6 +1,7 @@
 import { Folder } from 'src/entities/folder.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { EntityManager, MigrationInterface, QueryRunner, TableUnique } from 'typeorm';
+import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 
 export class AddUniqueConstraintToFolderName1684145489093 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -9,7 +10,7 @@ export class AddUniqueConstraintToFolderName1684145489093 implements MigrationIn
     await queryRunner.createUniqueConstraint(
       'folders',
       new TableUnique({
-        name: 'folder_name_organization_id_unique',
+        name: DataBaseConstraints.FOLDER_NAME_UNIQUE,
         columnNames: ['name', 'organization_id'],
       })
     );
