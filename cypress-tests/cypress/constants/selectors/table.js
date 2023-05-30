@@ -39,6 +39,21 @@ export const tableSelector = {
   buttonCloseFilters: '[data-cy="button-close-filters"]',
 
   labelColumn: '[data-cy="label-filter-column"]:eq(0)',
+  labelDynamicColumn: '[data-cy="label-use-dynamic-column"]',
+  dynamicColumnInputField: '[data-cy="use-dynamic-column-input-field"]',
+
+  fxButton: (action) => {
+    return `[data-cy="${String(action)
+      .toLowerCase()
+      .replace(/\s+/g, "-")}-fx-button"]`;
+  },
+
+  toggleButton: (action) => {
+    return `[data-cy="${String(action)
+      .toLowerCase()
+      .replace(/\s+/g, "-")}-toggle-button"]`;
+  },
+
   labelAnd: (index = 1) => {
     return `[data-cy="label-filter-column"]:eq(${index})`;
   },
@@ -56,4 +71,6 @@ export const tableSelector = {
   filterClose: (index) => {
     return `[data-cy="button-close-filter-${index}"]`;
   },
+
+  addNewRowTooltip: '[data-tooltip-id="tooltip-for-add-new-row"]',
 };

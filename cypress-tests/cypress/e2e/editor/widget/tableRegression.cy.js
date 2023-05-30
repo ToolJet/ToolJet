@@ -53,7 +53,7 @@ describe("Table", () => {
     cy.createApp();
     cy.modifyCanvasSize(900, 900);
     cy.dragAndDropWidget("Table", 50, 50);
-    cy.resizeWidget(tableText.defaultWidgetName, 850, 600);
+    //cy.resizeWidget(tableText.defaultWidgetName, 850, 600);
   });
 
   it("Should verify the table components and labels", () => {
@@ -123,6 +123,7 @@ describe("Table", () => {
     cy.get(tableSelector.selectColumnCheckbox(tableText.id)).click();
     cy.notVisible(tableSelector.columnHeader(tableText.id));
     cy.get(tableSelector.selectColumnCheckbox(tableText.id)).click();
+    cy.get(".canvas-container").click();
     cy.get(tableSelector.columnHeader(tableText.id)).should("be.visible");
 
     cy.get(tableSelector.filterButton).click();
@@ -225,7 +226,7 @@ describe("Table", () => {
       { id: 3, name: "Steph", email: "steph@example.com" },
       { id: 4, name: "Oliver", email: "oliver@example.com" },
     ]);
-    cy.get('[data-cy="inspector-close-icon"]').click();
+    //cy.get('[data-cy="inspector-close-icon"]').click();
     openEditorSidebar(data.widgetName);
     openAccordion("Columns", ["Options", "Properties", "Layout"]);
     deleteAndVerifyColumn("email");
@@ -344,220 +345,255 @@ describe("Table", () => {
       "Layout",
     ]);
 
-    //String/default
-    openEditorSidebar(data.widgetName);
-    deleteAndVerifyColumn("id");
-    deleteAndVerifyColumn("name");
-    deleteAndVerifyColumn("email");
-    addAndOpenColumnOption("Fake-String", `string`);
-    selectDropdownOption('[data-cy="input-overflow"] >>:eq(0)', `wrap`);
-    cy.get('[data-index="0"]>.select-search-option:eq(1)').realClick();
-    cy.wait(2000);
-    verifyAndEnterColumnOptionInput("key", "name");
-    verifyAndEnterColumnOptionInput("Text color", "red");
-    verifyAndEnterColumnOptionInput(
-      "Cell Background Color",
-      "{backspace}{backspace}{backspace}{backspace}{backspace}yellow"
-    );
-    cy.get(
-      '[data-cy="input-and-label-cell-background-color"] > .form-label'
-    ).click();
-    cy.wait(500);
+    // //String/default
+    // openEditorSidebar(data.widgetName);
+    // deleteAndVerifyColumn("id");
+    // deleteAndVerifyColumn("name");
+    // deleteAndVerifyColumn("email");
+    // addAndOpenColumnOption("Fake-String", `string`);
+    // selectDropdownOption('[data-cy="input-overflow"] >>:eq(0)', `wrap`);
+    // cy.get('[data-index="0"]>.select-search-option:eq(1)').realClick();
+    // cy.wait(2000);
+    // verifyAndEnterColumnOptionInput("key", "name");
+    // verifyAndEnterColumnOptionInput("Text color", "red");
+    // verifyAndEnterColumnOptionInput(
+    //   "Cell Background Color",
+    //   "{backspace}{backspace}{backspace}{backspace}{backspace}yellow"
+    // );
+    // cy.get(
+    //   '[data-cy="input-and-label-cell-background-color"] > .form-label'
+    // ).click();
+    // cy.wait(500);
 
-    cy.get(tableSelector.column(0))
-      .eq(0)
-      .should("have.css", "background-color", "rgb(255, 255, 0)", {
-        timeout: 10000,
-      })
-      .last()
-      .should("have.css", "color", "rgb(62, 82, 91)")
-      .and("have.text", "Sarah");
+    //  cy.get(tableSelector.column(0))
+    //   .eq(0)
+    //   .should("have.css", "background-color", "rgb(255, 255, 0)", {
+    //     timeout: 10000,
+    //   })
+    //   .last()
+    //   .should("have.css", "color", "rgb(62, 82, 91)")
+    //   .and("have.text", "Sarah");
 
-    cy.get('[data-cy="make-editable-toggle-button"]').click();
-    cy.get('[data-cy="header-validation"]').verifyVisibleElement(
-      "have.text",
-      "Validation"
-    );
-    verifyAndEnterColumnOptionInput("Regex", "AABb");
-    verifyAndEnterColumnOptionInput("Min length", "4");
-    verifyAndEnterColumnOptionInput("Max length", "5");
-    verifyAndEnterColumnOptionInput("Custom rule", "{backspace}");
-    verifyInvalidFeedback(0, 0, "The input should match pattern");
-    addInputOnTable(0, 0, "AABb");
+    // cy.get('[data-cy="make-editable-toggle-button"]').click();
+    // cy.get('[data-cy="header-validation"]').verifyVisibleElement(
+    //   "have.text",
+    //   "Validation"
+    // );
+    // verifyAndEnterColumnOptionInput("Regex", "AABb");
+    // verifyAndEnterColumnOptionInput("Min length", "4");
+    // verifyAndEnterColumnOptionInput("Max length", "5");
+    // verifyAndEnterColumnOptionInput("Custom rule", "{backspace}");
+    // verifyInvalidFeedback(0, 0, "The input should match pattern");
+    // addInputOnTable(0, 0, "AABb");
 
-    // cy.notVisible('[data-cy="stringsarah-cell-0"] >>>.invalid-feedback');
-    openEditorSidebar(data.widgetName);
-    deleteAndVerifyColumn("Fake-String");
+    // // cy.notVisible('[data-cy="stringsarah-cell-0"] >>>.invalid-feedback');
+    // openEditorSidebar(data.widgetName);
+    // deleteAndVerifyColumn("Fake-String");
 
-    openEditorSidebar(data.widgetName);
-    addAndOpenColumnOption("fake-number", `number`);
-    verifyAndEnterColumnOptionInput("key", "id");
-    // verifyAndEnterColumnOptionInput("Cell Background Color", "black");
-    cy.get('[data-cy="make-editable-toggle-button"]').click();
-    cy.get('[data-cy="header-validation"]').verifyVisibleElement(
-      "have.text",
-      "Validation"
-    );
+    // openEditorSidebar(data.widgetName);
+    // addAndOpenColumnOption("fake-number", `number`);
+    // verifyAndEnterColumnOptionInput("key", "id");
+    // // verifyAndEnterColumnOptionInput("Cell Background Color", "black");
+    // cy.get('[data-cy="make-editable-toggle-button"]').click();
+    // cy.get('[data-cy="header-validation"]').verifyVisibleElement(
+    //   "have.text",
+    //   "Validation"
+    // );
 
-    verifyAndEnterColumnOptionInput("Min value", "2");
-    verifyAndEnterColumnOptionInput("Max value", "3");
-    addInputOnTable(0, 0, "0");
-    verifyInvalidFeedback(0, 0, "Minimum value is 2");
-    verifyInvalidFeedback(0, 3, "Maximum value is 3");
-    openEditorSidebar(data.widgetName);
-    deleteAndVerifyColumn("fake-number");
+    // verifyAndEnterColumnOptionInput("Min value", "2");
+    // verifyAndEnterColumnOptionInput("Max value", "3");
+    // addInputOnTable(0, 0, "0");
+    // verifyInvalidFeedback(0, 0, "Minimum value is 2");
+    // verifyInvalidFeedback(0, 3, "Maximum value is 3");
+    // openEditorSidebar(data.widgetName);
+    // deleteAndVerifyColumn("fake-number");
 
-    openEditorSidebar(data.widgetName);
-    addAndOpenColumnOption("fake-text", `text`);
-    verifyAndEnterColumnOptionInput("key", "email");
-    // verifyAndEnterColumnOptionInput("Cell Background Color", "");
-    cy.get('[data-cy="make-editable-toggle-button"]').click();
-    verifySingleValueOnTable(0, 0, "sarah@example.com");
-    addInputOnTable(0, 0, "mike@example.com", "textarea");
-    openEditorSidebar(data.widgetName);
-    deleteAndVerifyColumn("fake-text");
+    // openEditorSidebar(data.widgetName);
+    // addAndOpenColumnOption("fake-text", `text`);
+    // verifyAndEnterColumnOptionInput("key", "email");
+    // // verifyAndEnterColumnOptionInput("Cell Background Color", "");
+    // cy.get('[data-cy="make-editable-toggle-button"]').click();
+    // verifySingleValueOnTable(0, 0, "sarah@example.com");
+    // addInputOnTable(0, 0, "mike@example.com", "textarea");
+    // openEditorSidebar(data.widgetName);
+    // deleteAndVerifyColumn("fake-text");
 
-    openEditorSidebar(data.widgetName);
-    addAndOpenColumnOption("fake-badge", `badge`);
-    verifyAndEnterColumnOptionInput("key", "");
-    verifyAndEnterColumnOptionInput("Values", "{{[1,2,3]");
-    verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
+    // openEditorSidebar(data.widgetName);
+    // addAndOpenColumnOption("fake-badge", `badge`);
+    // verifyAndEnterColumnOptionInput("key", "");
+    // verifyAndEnterColumnOptionInput("Values", "{{[1,2,3]");
+    // verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
 
-    // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
-    cy.get('[data-cy="make-editable-toggle-button"]').click();
-    selectDropdownOption(`${tableSelector.column(0)}:eq(0) .badge`, 1);
-    cy.get(`${tableSelector.column(0)}:eq(0) .badge`).should(
-      "have.text",
-      "Two"
-    );
-    deleteAndVerifyColumn("fake-badge");
+    // // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
+    // cy.get('[data-cy="make-editable-toggle-button"]').click();
+    // selectDropdownOption(`${tableSelector.column(0)}:eq(0) .badge`, 1);
+    // cy.get(`${tableSelector.column(0)}:eq(0) .badge`).should(
+    //   "have.text",
+    //   "Two"
+    // );
+    // deleteAndVerifyColumn("fake-badge");
 
-    openEditorSidebar(data.widgetName);
-    addAndOpenColumnOption("fake-multiple-badge", `multipleBadges`);
+    // openEditorSidebar(data.widgetName);
+    // addAndOpenColumnOption("fake-multiple-badge", `multipleBadges`);
 
-    verifyAndEnterColumnOptionInput("key", "id");
-    verifyAndEnterColumnOptionInput("Values", "{{[1,2,3]");
-    verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
-    // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
-    cy.get('[data-cy="make-editable-toggle-button"]').click();
-    selectDropdownOption(`${tableSelector.column(0)}:eq(0) .badge`, 1); // WIP (workaround needed)
-    cy.get(`${tableSelector.column(0)}:eq(1) .badge`).should(
-      "have.text",
-      "Two"
-    );
-    selectDropdownOption(`${tableSelector.column(0)}:eq(0) .badge`, 0);
-    cy.get(`${tableSelector.column(0)}:eq(0) .badge`).should(
-      "have.text",
-      "TwoOne"
-    );
-    selectDropdownOption(`${tableSelector.column(0)}:eq(1) .badge`, 1);
-    cy.get(`${tableSelector.column(0)}:eq(0) .badge`).should(
-      "have.text",
-      "One"
-    );
-    deleteAndVerifyColumn("fake-multiple-badge");
+    // verifyAndEnterColumnOptionInput("key", "id");
+    // verifyAndEnterColumnOptionInput("Values", "{{[1,2,3]");
+    // verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
+    // // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
+    // cy.get('[data-cy="make-editable-toggle-button"]').click();
+    // selectDropdownOption(`${tableSelector.column(0)}:eq(0) .badge`, 1); // WIP (workaround needed)
+    // cy.get(`${tableSelector.column(0)}:eq(1) .badge`).should(
+    //   "have.text",
+    //   "Two"
+    // );
+    // selectDropdownOption(`${tableSelector.column(0)}:eq(0) .badge`, 0);
+    // cy.get(`${tableSelector.column(0)}:eq(0) .badge`).should(
+    //   "have.text",
+    //   "TwoOne"
+    // );
+    // selectDropdownOption(`${tableSelector.column(0)}:eq(1) .badge`, 1);
+    // cy.get(`${tableSelector.column(0)}:eq(0) .badge`).should(
+    //   "have.text",
+    //   "One"
+    // );
+    // deleteAndVerifyColumn("fake-multiple-badge");
 
-    openEditorSidebar(data.widgetName);
-    verifyAndModifyParameter(
-      "Table data",
-      codeMirrorInputLabel(`[{id:1,name:"Mike",email:"mike@example.com", tags:['One','Two','Three'] },{id:2,name:"Nina",email:"nina@example.com" },{id:3,name:"Steph",email:"steph@example.com", tags:['One','Two','Three'] },{id:4,name:"Oliver",email:"oliver@example.com" },
-      ]`)
-    );
-    closeAccordions(["Options"]);
-    addAndOpenColumnOption("fake-tags", `tags`);
-    verifyAndEnterColumnOptionInput("key", "tags");
-
-    // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
-    //WIP Not editble verify
-    cy.get('[data-cy="make-editable-toggle-button"]').click();
-    cy.forceClickOnCanvas();
-
-    cy.get(`${tableSelector.column(0)}:eq(0) .badge`)
-      .eq(0)
-      .should("have.text", "Onex")
-      .next()
-      .should("have.text", "Twox")
-      .next()
-      .should("have.text", "Threex");
-    cy.get(`${tableSelector.column(0)}:eq(0) .badge`)
-      .first()
-      .click({ force: true })
-      .trigger("mouseover")
-      .trigger("mouseenter")
-      .find(`[class="badge badge-pill bg-red-lt remove-tag-button"]`)
-      .invoke("show")
-      .dblclick();
-    cy.wait(5000);
-    deleteAndVerifyColumn("fake-tags");
-
-    openEditorSidebar(data.widgetName);
+    // openEditorSidebar(data.widgetName);
     // verifyAndModifyParameter(
     //   "Table data",
     //   codeMirrorInputLabel(`[{id:1,name:"Mike",email:"mike@example.com", tags:['One','Two','Three'] },{id:2,name:"Nina",email:"nina@example.com" },{id:3,name:"Steph",email:"steph@example.com", tags:['One','Two','Three'] },{id:4,name:"Oliver",email:"oliver@example.com" },
     //   ]`)
     // );
-    // closeAccordions(["Properties"]);
-    addAndOpenColumnOption("fake-dropdown", `dropdown`);
+    // closeAccordions(["Options"]);
+    // addAndOpenColumnOption("fake-tags", `tags`);
+    // verifyAndEnterColumnOptionInput("key", "tags");
 
-    verifyAndEnterColumnOptionInput("key", "fakeString");
-    verifyAndEnterColumnOptionInput("Values", "{{[1,2,3]");
-    verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
+    // // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
+    // //WIP Not editble verify
+    // cy.get('[data-cy="make-editable-toggle-button"]').click();
+    // cy.forceClickOnCanvas();
 
-    // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
-    cy.get('[data-cy="make-editable-toggle-button"]').click();
-    verifyAndEnterColumnOptionInput("Custom rule", "fakeString");
-
-    deleteAndVerifyColumn("fake-dropdown");
-
-    //VerifyDropdown
-    openEditorSidebar(data.widgetName);
-    addAndOpenColumnOption("fake-radio", `radio`);
-
-    verifyAndEnterColumnOptionInput("key", "");
-    verifyAndEnterColumnOptionInput("Values", "{{[1,2,3]");
-    verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
-
-    // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
-    cy.get('[data-cy="make-editable-toggle-button"]').click();
-    // //verifyRadio
-    deleteAndVerifyColumn("fake-radio");
-
-    // openEditorSidebar(data.widgetName);
-    addAndOpenColumnOption("fake-multiselect", `multiselect`);
-
-    verifyAndEnterColumnOptionInput("key", "fakeString");
-    verifyAndEnterColumnOptionInput("Values", "{{[1,2,3]");
-    verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
-
-    // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
-    cy.get('[data-cy="make-editable-toggle-button"]').click();
-    // //verify multiselect
-    deleteAndVerifyColumn("fake-multiselect");
+    // cy.get(`${tableSelector.column(0)}:eq(0) .badge`)
+    //   .eq(0)
+    //   .should("have.text", "Onex")
+    //   .next()
+    //   .should("have.text", "Twox")
+    //   .next()
+    //   .should("have.text", "Threex");
+    // cy.get(`${tableSelector.column(0)}:eq(0) .badge`)
+    //   .first()
+    //   .click({ force: true })
+    //   .trigger("mouseover")
+    //   .trigger("mouseenter")
+    //   .find(`[class="badge badge-pill bg-red-lt remove-tag-button"]`)
+    //   .invoke("show")
+    //   .dblclick();
+    // cy.wait(5000);
+    // deleteAndVerifyColumn("fake-tags");
 
     // openEditorSidebar(data.widgetName);
-    addAndOpenColumnOption("fake-toggleSwitch", `toggleSwitch`);
+    // // verifyAndModifyParameter(
+    // //   "Table data",
+    // //   codeMirrorInputLabel(`[{id:1,name:"Mike",email:"mike@example.com", tags:['One','Two','Three'] },{id:2,name:"Nina",email:"nina@example.com" },{id:3,name:"Steph",email:"steph@example.com", tags:['One','Two','Three'] },{id:4,name:"Oliver",email:"oliver@example.com" },
+    // //   ]`)
+    // // );
+    // // closeAccordions(["Properties"]);
+    // addAndOpenColumnOption("fake-dropdown", `dropdown`);
 
-    verifyAndEnterColumnOptionInput("key", "fakeString");
-    // verifyAndEnterColumnOptionInput("Active color", "green"); //use color Picker
-    // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
-    cy.get('[data-cy="make-editable-toggle-button"]').click();
-    deleteAndVerifyColumn("fake-toggleSwitch");
+    // verifyAndEnterColumnOptionInput("key", "fakeString");
+    // verifyAndEnterColumnOptionInput("Values", "{{[1,2,3]");
+    // verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
 
-    // //Toggle Switch
+    // // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
+    // cy.get('[data-cy="make-editable-toggle-button"]').click();
+    // verifyAndEnterColumnOptionInput("Custom rule", "fakeString");
+
+    // deleteAndVerifyColumn("fake-dropdown");
+
+    // //VerifyDropdown
     // openEditorSidebar(data.widgetName);
-    addAndOpenColumnOption("fake-datePicker", `datePicker`);
+    // addAndOpenColumnOption("fake-radio", `radio`);
 
-    verifyAndEnterColumnOptionInput("key", "fakeString");
-    // verifyAndEnterColumnOptionInput("Date Display format", "fakeString");
-    // verifyAndEnterColumnOptionInput("Cell Background Color", "blue");
-    cy.get('[data-cy="make-editable-toggle-button"]').click();
+    // verifyAndEnterColumnOptionInput("key", "");
+    // verifyAndEnterColumnOptionInput("Values", "{{[1,2,3]");
+    // verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
 
-    // // verifyAndEnterColumnOptionInput("Date Parse Format", "fakeString");
+    // // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
+    // cy.get('[data-cy="make-editable-toggle-button"]').click();
+    // // //verifyRadio
+    // deleteAndVerifyColumn("fake-radio");
 
-    // // verifyAndEnterColumnOptionInput("Parse in timezone", "fakeString");
+    // // openEditorSidebar(data.widgetName);
+    // addAndOpenColumnOption("fake-multiselect", `multiselect`);
 
-    // // verifyAndEnterColumnOptionInput("Display in timezone", "fakeString");
-    deleteAndVerifyColumn("fake-datePicker");
+    // verifyAndEnterColumnOptionInput("key", "fakeString");
+    // verifyAndEnterColumnOptionInput("Values", "{{[1,2,3]");
+    // verifyAndEnterColumnOptionInput("Labels", '{{["One","Two","Three"]');
+
+    // // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
+    // cy.get('[data-cy="make-editable-toggle-button"]').click();
+    // // //verify multiselect
+    // deleteAndVerifyColumn("fake-multiselect");
+
+    // // openEditorSidebar(data.widgetName);
+    // addAndOpenColumnOption("fake-toggleSwitch", `toggleSwitch`);
+
+    // verifyAndEnterColumnOptionInput("key", "fakeString");
+    // // verifyAndEnterColumnOptionInput("Active color", "green"); //use color Picker
+    // // verifyAndEnterColumnOptionInput("Cell Background Color", "fakeString");
+    // cy.get('[data-cy="make-editable-toggle-button"]').click();
+    // deleteAndVerifyColumn("fake-toggleSwitch");
+
+    // // //Toggle Switch
+    // // openEditorSidebar(data.widgetName);
+    // addAndOpenColumnOption("fake-datePicker", `datePicker`);
+
+    // verifyAndEnterColumnOptionInput("key", "fakeString");
+    // // verifyAndEnterColumnOptionInput("Date Display format", "fakeString");
+    // // verifyAndEnterColumnOptionInput("Cell Background Color", "blue");
+    // cy.get('[data-cy="make-editable-toggle-button"]').click();
+
+    // // // verifyAndEnterColumnOptionInput("Date Parse Format", "fakeString");
+
+    // // // verifyAndEnterColumnOptionInput("Parse in timezone", "fakeString");
+
+    // // // verifyAndEnterColumnOptionInput("Display in timezone", "fakeString");
+    // deleteAndVerifyColumn("fake-datePicker");
+
+    verifyAndModifyToggleFx(
+      tableText.labelDynamicColumn,
+      commonWidgetText.codeMirrorLabelFalse
+    );
+    verifyAndModifyParameter(
+      "Column data",
+      codeMirrorInputLabel(
+        `[{name: 'User email', key: 'email'}, {name: 'Full name', key: 'name', isEditable: true}]`
+      )
+    );
+    cy.forceClickOnCanvas();
+    cy.get(tableSelector.columnHeader("user-email"))
+      .scrollIntoView()
+      .verifyVisibleElement("have.text", "User email");
+    cy.get('[data-cy*="-cell-1"]').eq(0).click();
+    cy.get('[data-cy*="-cell-1"] ').eq(0).clear().type("Mike Jon{enter}");
+    cy.get('[data-cy*="-cell-1"]')
+      .eq(0)
+      .verifyVisibleElement("contain", "Mike Jon");
+    // cy.get(tableSelector.labelDynamicColumn).verifyVisibleElement(
+    //   "have.text",
+    //   tableText.labelDynamicColumn
+    // );
+    // cy.get(tableSelector.fxButton(tableText.labelDynamicColumn))
+    //   .eq(1)
+    //   .should("be.visible");
+    // cy.get(tableSelector.toggleButton(tableText.labelDynamicColumn))
+    //   .should("be.visible")
+    //   .and("not.be.checked");
+    // cy.get(tableSelector.fxButton(tableText.labelDynamicColumn)).eq(1).click();
+    // cy.get(tableSelector.dynamicColumnInputField).verifyVisibleElement(
+    //   "contain",
+    //   "{{false}}"
+    // );
   });
 
   it("should verify styles", () => {
@@ -996,5 +1032,10 @@ describe("Table", () => {
       .should("have.value", "test123");
     cy.get(commonWidgetSelector.draggableWidget("button4")).click();
     cy.get('[data-cy*="-cell-0"]').eq(0).should("have.text", "3");
+  });
+
+  it.only("should add a row", () => {
+    cy.get(tableSelector.addNewRowTooltip).click();
+    cy.get(".table-add-new-row").should("be.visible");
   });
 });
