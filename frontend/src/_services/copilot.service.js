@@ -20,9 +20,10 @@ async function getCopilotRecommendations(options) {
   return data || {};
 }
 
-function validateCopilotAPIKey(key) {
+function validateCopilotAPIKey(key, organizationId) {
   const body = {
     secretKey: key,
+    organizationId,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };

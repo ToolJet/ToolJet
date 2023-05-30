@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText, commonText } from "Texts/common";
@@ -14,6 +15,9 @@ import {
   addGuiQuery,
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
@@ -106,7 +110,7 @@ describe("Data sources", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      "cypress-typesense"
+      `cypress-${data.lastName}-typesense`
     );
 
     fillDataSourceTextField(
@@ -120,7 +124,11 @@ describe("Data sources", () => {
       postgreSqlText.placeholderEnterPort,
       Cypress.env("typesense_port")
     );
-    fillDataSourceTextField("API Key", "Enter API key", Cypress.env("typesense_api_key"));
+    fillDataSourceTextField(
+      "API Key",
+      "Enter API key",
+      Cypress.env("typesense_api_key")
+    );
     //dropdown
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
@@ -134,11 +142,10 @@ describe("Data sources", () => {
     );
 
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    cy.get('[data-cy="cypress-typesense-button"]').verifyVisibleElement(
-      "have.text",
-      "cypress-typesense"
-    );
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-typesense-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-typesense`);
 
-    deleteDatasource("cypress-typesense");
+    deleteDatasource(`cypress-${data.lastName}-typesense`);
   });
 });

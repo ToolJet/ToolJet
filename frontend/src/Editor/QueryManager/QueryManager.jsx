@@ -180,7 +180,6 @@ class QueryManagerComponent extends React.Component {
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (useDataSourcesStore.getState().loadingDataSources) return;
-    if (nextProps.loadingDataSources) return;
     if (this.props.showQueryConfirmation && !nextProps.showQueryConfirmation) {
       if (this.state.isUpdating) {
         this.setState({
@@ -224,6 +223,10 @@ class QueryManagerComponent extends React.Component {
       (!this.props.isUnsavedQueriesAvailable && nextProps.isUnsavedQueriesAvailable)
     ) {
       return;
+    }
+
+    if (Object.keys(diffProps).length === 1 && nextProps.mode === 'create' && diffProps?.selectedQuery?.name) {
+      return this.setState({ queryName: nextProps.selectedQuery?.name });
     }
 
     this.setStateFromProps(nextProps);
@@ -401,7 +404,7 @@ class QueryManagerComponent extends React.Component {
 
   // Clear the focus field value from options
   cleanFocusedFields = (newOptions) => {
-    const diffFields = diff(newOptions, this.defaultOptions.current);
+    const diffFields = diff(newOptions, this.defaultOptions.current ?? {});
     const updatedOptions = { ...newOptions };
     Object.keys(diffFields).forEach((key) => {
       if (newOptions[key] === '' && this.defaultOptions.current[key] === undefined) {

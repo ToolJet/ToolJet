@@ -307,4 +307,19 @@ export const commonWidgetSelector = {
   boxShadowColorPicker: "[data-cy='box-shadow-picker']",
   textInputWidget: '[data-cy="draggable-widget-textinput1"]',
   previewButton: `[data-cy="preview-link-button"]`,
+
+  shareAppButton: '[data-cy="share-button-link"]',
+  shareModalElements: {
+    modalHeader: '[data-cy="modal-header"]',
+    makePublicAppToggleLabel:'[data-cy="make-public-app-label"]',
+    shareableAppLink:'[data-cy="shareable-app-link-label"]',
+    copyAppLinkButton:'[data-cy="copy-app-link-button"]',
+    iframeLinkLabel: '[data-cy="iframe-link-label"]',
+    ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
+  },
+  makePublicAppToggle:'[data-cy="make-public-app-toggle"]',
+  appLink: '[data-cy="app-link"]',
+  appNameSlugInput: '[data-cy="app-name-slug-input"]',
+  iframeLink :'[data-cy="iframe-link"]',
+  modalCloseButton: '[data-cy="modal-close-button"]',
 };
