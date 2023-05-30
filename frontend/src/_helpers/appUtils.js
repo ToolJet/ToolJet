@@ -393,8 +393,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'run-query': {
-        const { queryId, queryName } = event;
-        return runQuery(_ref, queryId, queryName, undefined, mode);
+        const { queryId } = event;
+        const { name } = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
+        return runQuery(_ref, queryId, name, undefined, mode);
       }
       case 'logout': {
         return logoutAction(_ref);
