@@ -52,19 +52,6 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Send Slack Notification
-        uses: slackapi/slack-github-action@v1.24.0
-        if: ${{ always() }}
-        with:
-          status: ${{ job.status }}
-          text: "Job Status: ${{ job.status }}"
-          channel: private-release
-          color_good: "#36A64F"
-          color_warning: "#FFA500"
-          color_danger: "#FF0000"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
 
   building-try-tooljet-image:
     runs-on: ubuntu-latest
@@ -116,20 +103,6 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
-
-      - name: Send Slack Notification
-        uses: slackapi/slack-github-action@v1.24.0
-        if: ${{ always() }}
-        with:
-          status: ${{ job.status }}
-          text: "Job Status: ${{ job.status }}"
-          channel: private-release
-          color_good: "#36A64F"
-          color_warning: "#FFA500"
-          color_danger: "#FF0000"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
 
 #Below code helps to trigger the workflow separately
