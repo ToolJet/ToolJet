@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import * as csv from 'fast-csv';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GroupPermission } from 'src/entities/group_permission.entity';
@@ -84,7 +84,7 @@ export class OrganizationsService {
           );
         },
         DataBaseConstraints.WORKSPACE_NAME_UNIQUE,
-        'Workspace name is already taken.'
+        'This workspace name is already taken.'
       );
 
       await this.appEnvironmentService.createDefaultEnvironments(organization.id, manager);
@@ -460,14 +460,6 @@ export class OrganizationsService {
   async updateOrganization(organizationId: string, params) {
     const { name, domain, enableSignUp, inheritSSO } = params;
 
-    if (name) {
-      const ifWorkspaceNameExists = await this.organizationsRepository.findOne({ name });
-
-      if (ifWorkspaceNameExists) {
-        throw new ConflictException('This workspace name is already taken');
-      }
-    }
-
     const updatableParams = {
       name,
       domain,
@@ -478,7 +470,13 @@ export class OrganizationsService {
     // removing keys with undefined values
     cleanObject(updatableParams);
 
-    return await this.organizationsRepository.update(organizationId, updatableParams);
+    return await catchDbException(
+      async () => {
+        return await this.organizationsRepository.update(organizationId, updatableParams);
+      },
+      DataBaseConstraints.WORKSPACE_NAME_UNIQUE,
+      'This workspace name is already taken.'
+    );
   }
 
   async updateOrganizationConfigs(organizationId: string, params: any) {
