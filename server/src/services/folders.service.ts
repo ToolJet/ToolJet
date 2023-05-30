@@ -36,7 +36,7 @@ export class FoldersService {
         );
       },
       DataBaseConstraints.FOLDER_NAME_UNIQUE,
-      'Folder name is already taken.'
+      'This folder name is already taken.'
     );
   }
 
@@ -46,7 +46,7 @@ export class FoldersService {
         return await this.foldersRepository.update({ id: folderId }, { name: folderName });
       },
       DataBaseConstraints.FOLDER_NAME_UNIQUE,
-      'Folder name is already taken.'
+      'This folder name is already taken.'
     );
   }
 
