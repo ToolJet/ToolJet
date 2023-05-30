@@ -91,8 +91,62 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
   if (withError) return [result, error];
   return result;
 }
+export function resolveString(str, state, customObjects, reservedKeyword, withError, forPreviewBox) {
+  let resolvedStr = str;
 
-export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
+  // Resolve {{object}}
+  const codeRegex = /(\{\{.+?\}\})/g;
+  const codeMatches = resolvedStr.match(codeRegex);
+
+  if (codeMatches) {
+    codeMatches.forEach((codeMatch) => {
+      const code = codeMatch.replace('{{', '').replace('}}', '');
+
+      if (reservedKeyword.includes(code)) {
+        resolvedStr = resolvedStr.replace(codeMatch, '');
+      } else {
+        const resolvedCode = resolveCode(code, state, customObjects, withError, reservedKeyword, true);
+        if (forPreviewBox) {
+          resolvedStr = resolvedStr.replace(codeMatch, resolvedCode[0]);
+        } else {
+          resolvedStr = resolvedStr.replace(codeMatch, resolvedCode);
+        }
+      }
+    });
+  }
+
+  // Resolve %%object%%
+  const serverRegex = /(%%.+?%%)/g;
+  const serverMatches = resolvedStr.match(serverRegex);
+
+  if (serverMatches) {
+    serverMatches.forEach((serverMatch) => {
+      const code = serverMatch.replace(/%%/g, '');
+
+      if (code.includes('server.') && !/^server\.[A-Za-z0-9]+$/.test(code)) {
+        resolvedStr = resolvedStr.replace(serverMatch, '');
+      } else {
+        const resolvedCode = resolveCode(code, state, customObjects, withError, reservedKeyword, false);
+        if (forPreviewBox) {
+          resolvedStr = resolvedStr.replace(serverMatch, resolvedCode[0]);
+        } else {
+          resolvedStr = resolvedStr.replace(serverMatch, resolvedCode);
+        }
+      }
+    });
+  }
+
+  return resolvedStr;
+}
+
+export function resolveReferences(
+  object,
+  state,
+  defaultValue,
+  customObjects = {},
+  withError = false,
+  forPreviewBox = false
+) {
   if (object === '{{{}}}') return '';
   const reservedKeyword = ['app']; //Keywords that slows down the app
   object = _.clone(object);
@@ -100,6 +154,10 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
   let error;
   switch (objectType) {
     case 'string': {
+      if (object.includes('{{') && object.includes('}}') && object.includes('%%') && object.includes('%%')) {
+        object = resolveString(object, state, customObjects, reservedKeyword, withError, forPreviewBox);
+      }
+
       if (object.startsWith('{{') && object.endsWith('}}')) {
         const code = object.replace('{{', '').replace('}}', '');
 
@@ -646,7 +704,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
 
 export const loadPyodide = async () => {
   try {
-    const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.22.0/full/' });
+    const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.2/full/' });
     return pyodide;
   } catch (error) {
     console.log('loadPyodide error', error);
@@ -715,11 +773,11 @@ export const getWorkspaceIdFromURL = () => {
     'integrations',
   ];
 
-  if (pathname.includes('login')) {
+  const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
+  if (workspaceId === 'login') {
     return subpath ? pathnameArray[subpathArray.length + 1] : pathnameArray[1];
   }
 
-  const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
   return !existedPaths.includes(workspaceId) ? workspaceId : '';
 };
 
