@@ -177,15 +177,6 @@ class QueryManagerComponent extends React.Component {
       }
     );
   };
-  componentDidUpdate(prevState) {
-    if (this.state?.selectedQuery?.id == prevState?.selectedQuery?.id) {
-      if (prevState?.selectedQuery?.name !== this.state?.selectedQuery?.name) {
-        this.setState({
-          queryName: this.state.selectedQuery?.name,
-        });
-      }
-    }
-  }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (useDataSourcesStore.getState().loadingDataSources) return;
@@ -232,6 +223,10 @@ class QueryManagerComponent extends React.Component {
       (!this.props.isUnsavedQueriesAvailable && nextProps.isUnsavedQueriesAvailable)
     ) {
       return;
+    }
+
+    if (Object.keys(diffProps).length === 1 && nextProps.mode === 'create' && diffProps?.selectedQuery?.name) {
+      return this.setState({ queryName: nextProps.selectedQuery?.name });
     }
 
     this.setStateFromProps(nextProps);
@@ -409,7 +404,7 @@ class QueryManagerComponent extends React.Component {
 
   // Clear the focus field value from options
   cleanFocusedFields = (newOptions) => {
-    const diffFields = diff(newOptions, this.defaultOptions.current);
+    const diffFields = diff(newOptions, this.defaultOptions.current ?? {});
     const updatedOptions = { ...newOptions };
     Object.keys(diffFields).forEach((key) => {
       if (newOptions[key] === '' && this.defaultOptions.current[key] === undefined) {
