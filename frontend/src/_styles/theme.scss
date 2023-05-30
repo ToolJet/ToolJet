@@ -10494,7 +10494,16 @@ tbody {
     }
   }
 }
-
+.table-editor-component-row{
+  .rdt.cell-type-datepicker{
+    margin-top: 0;
+  }
+  .has-multiselect{
+    .select-search-input{
+      margin-bottom: 0;
+    }
+  }
+}
 .theme-dark .card-container {
   background-color: #121212 !important
 }
