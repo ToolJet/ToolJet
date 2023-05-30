@@ -1,6 +1,7 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { commonWidgetText } from "Texts/common";
+import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   addQuery,
@@ -12,22 +13,25 @@ import {
   addGuiQuery,
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
+import {
+  verifyCouldnotConnectWithAlert,
+  deleteDatasource,
+  closeDSModal,
+} from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
   it("Should verify elements on connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
@@ -47,12 +51,8 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      "InfluxDB"
-    );
-    cy.get("[data-cy*='data-source-']")
-      .eq(0)
-      .should("contain", "InfluxDB");
+    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("InfluxDB");
+    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "InfluxDB");
     cy.get('[data-cy="data-source-influxdb"]').click();
 
     cy.get(postgreSqlSelector.dataSourceNameInputField).should(
@@ -102,9 +102,9 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
       "have.text",
-      'Invalid URL'
+      "Invalid URL"
     );
   });
 
@@ -113,20 +113,21 @@ describe("Data sources", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      postgreSqlText.psqlName
+      `cypress-${data.lastName}-influxdb`
+    );
+
+    cy.clearAndType(
+      '[data-cy="api-token-text-field"]',
+      Cypress.env("influxdb_token")
     );
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
-      '',
+      "",
       Cypress.env("influxdb_host")
     );
-    fillDataSourceTextField(
-      postgreSqlText.labelPort,
-      '8086 ',
-      "8086"
-    );
-    cy.get('.css-1e1a1lx-control > .css-s59k37-ValueContainer').click().type('HTTP{enter}')
+    fillDataSourceTextField(postgreSqlText.labelPort, "8086 ", "8086");
+    cy.get(".react-select__input-container").click().type("HTTP{enter}");
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
@@ -139,11 +140,10 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", postgreSqlText.psqlName)
-      .find("button")
-      .invoke('show')
-      .should("be.visible");
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-influxdb-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-influxdb`);
+
+    deleteDatasource(`cypress-${data.lastName}-influxdb`);
   });
 });

@@ -46,7 +46,7 @@ When you're building an internal tool, there are a lot of tools and frameworks a
 
 2. **Build queries:** ToolJet comes with query builders for all supported data sources. You can also write **[Javascript](/docs/data-sources/run-js)** or **[Python](/docs/data-sources/run-py)** queries or use **[Transformations](/docs/tutorial/transformations)** to transform the query response.
 
-3. **Build User Interface:** ToolJet's visual **[App Builder](/docs/app-builder/overview)** allows you to drag and drop components ( Eg: tables, charts, forms, etc ) to quickly build the user-interface of the apps. Components have events such as `on click`, `on row selected`, `on page changed`, etc. ToolJet apps can be used in light and dark mode.
+3. **Build User Interface:** ToolJet's visual **[App Builder](/docs/app-builder/overview)** allows you to drag and drop components ( Eg: tables, charts, forms, etc ) to quickly build the user-interface of the apps. Components have events such as `on click`, `on row selected`, `on page changed`, etc. ToolJet apps can be used in both light and dark modes.
 
     :::tip
     ToolJet binds together the datasources, queries and components to convert business logic into custom applications. You can also secure your ToolJet apps with **[Group & Permissions](/docs/org-management/permissions)** and **[Audit Logging](/docs/Enterprise/audit_logs)**.
@@ -56,9 +56,8 @@ When you're building an internal tool, there are a lot of tools and frameworks a
 There are a few different ways to set up ToolJet depending on how you intend to use it:
 
 - **[ToolJet Cloud](https://www.tooljet.com)**: hosted solution, just sign-up for free and start building apps in seconds.
-- **[Deploy on premise](/docs/setup/)**: recommended method for production or customized use cases. You'll find Server setup guides for popular platforms (AWS, GCP, Kubernetes etc) and one-click deployment guides (Heroku, DigitalOcean etc).
-- **[Try ToolJet on local machine](/docs/setup/try-tooljet/)**: the fastest way to try out ToolJet on your computer using docker.
-
+- **[Deploy on-premises](/docs/setup/)**:  the recommended method for production or customized use cases. You'll find Server setup guides for popular platforms (AWS, GCP, Kubernetes etc) and one-click deployment guides (Heroku, DigitalOcean etc).
+- **[Try ToolJet on your local machine](/docs/setup/try-tooljet/)**: the fastest way to try out ToolJet on your computer using Docker.
 :::info
 - Data security is top priority at ToolJet, read about our **[data security here](/docs/security)**.
 :::
@@ -131,7 +130,7 @@ Learn more about the **[ToolJet Database here](/docs/tooljet-database)**
 1. Let's build the UI of the application by dragging and dropping the components on the canvas.
 2. To build the UI, we will use:
     1. **Table** for displaying the customers data 
-    2. **Text** components for the Title and description of the app as the header
+    2. **Text**  components for the title and description of the app as the header
     3. **Text Input** component for getting product name input from the user
     4. **Number Input** component for getting product quantity and price input from the user
     5. **Button** component that will be used to trigger the query for inserting a row in the database using the button's **OnClick** event handler
@@ -143,7 +142,7 @@ Learn more about the **[ToolJet Database here](/docs/tooljet-database)**
     </div>
 
 :::info
-ToolJet application's User interface is constructed using Components like Tables, Forms, Charts, or Buttons etc. Check **[Components Catalog](/docs/widgets/overview)** to learn more.
+ToolJet applications' user interface is constructed using components such as tables, forms, charts, or buttons, etc. Check **[Components Catalog](/docs/widgets/overview)** to learn more.
 :::
 
 ### Build queries and bind data to UI

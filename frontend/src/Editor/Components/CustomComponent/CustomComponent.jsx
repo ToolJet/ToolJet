@@ -2,9 +2,11 @@ import React, { useEffect, useState, useRef } from 'react';
 import { isEqual } from 'lodash';
 import iframeContent from './iframe.html';
 
+import { useDataQueries } from '@/_stores/dataQueriesStore';
+
 export const CustomComponent = (props) => {
-  const { height, properties, styles, id, setExposedVariable, exposedVariables, fireEvent, dataQueries, dataCy } =
-    props;
+  const dataQueries = useDataQueries();
+  const { height, properties, styles, id, setExposedVariable, exposedVariables, fireEvent, dataCy } = props;
   const { visibility } = styles;
   const { code, data } = properties;
   const [customProps, setCustomProps] = useState(data);

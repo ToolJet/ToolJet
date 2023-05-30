@@ -1,2 +1,2 @@
 export * from './QueryManager';
-export * from './QueryPanel';
+export * from '../QueryPanel/QueryPanel';

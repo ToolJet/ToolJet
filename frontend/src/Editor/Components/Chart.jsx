@@ -78,6 +78,7 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
       t: padding,
     },
     barmode: barmode,
+    hoverlabel: { namelength: -1 },
   };
 
   const computeChartData = (data, dataString) => {
