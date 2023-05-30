@@ -74,12 +74,4 @@ jobs:
         if: always()
         with:
           name: screenshots
-          path: cypress-tests/cypress/screenshots
-
-      - name: Capture Downloads
-        uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: downloads
-          path: cypress-tests/cypress/downloads
-          
+          path: cypress-tests/cypress/screenshots          
