@@ -66,6 +66,7 @@ export const QueryCard = ({
       if (id === 'draftQuery') {
         toast.success('Query Name Updated');
         setDraftQuery((query) => ({ ...query, name: newName }));
+        setSelectedQuery('draftQuery', { ...dataQuery, name: newName });
       } else {
         renameQuery(dataQuery?.id, newName, fetchDataQueries);
       }
