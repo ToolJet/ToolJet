@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   Run-Cypress:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress' || github.event.label.name == 'run-cypress-app-builder'}}
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress' || github.event.label.name == 'run-cypress-app-builder'|| github.event.label.name == 'run-cypress-workspace')}}
 
     runs-on: ubuntu-22.04
     steps:
@@ -26,48 +26,60 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Setup node 18.3.0
+      - name: Setup Node.js 18.3.0
         uses: actions/setup-node@v3
         with:
           node-version: 18.3.0
 
-      - name: Checking the PR URL
-        run: |
-          while true; do
-          curl --silent --fail https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com && break
-          sleep 1
-          done
+      # - name: Checking the PR URL
+      #   run: |
+      #     until curl --silent --fail https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com; do
+      #       sleep 1
+      #     done
 
-      - name: Create cypress env
-        id: create-json
-        uses: jsdaniell/create-json@1.1.2
-        with:
-          name: "cypress.env.json"
-          json: ${{ secrets.CYPRESS_SECRETS }}
-          dir: './cypress-tests'
+      # - name: Create Cypress environment file
+      #   id: create-json
+      #   uses: jsdaniell/create-json@1.1.2
+      #   with:
+      #     name: "cypress.env.json"
+      #     json: ${{ secrets.CYPRESS_SECRETS }}
+      #     dir: './cypress-tests'
 
-      - name: Cypress integration test
+      - name: Cypress Integration Test
+        if: ${{ github.event.label.name == 'run-cypress' }}
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
-          if: ${{github.event.label.name == 'run-cypress'}}
-            config-file: cypress-run.config.js
-          if: ${{github.event.label.name == 'run-cypress-app-builder'}}
-            config-file: cypress-app-builder.config.js
-          if: ${{github.event.label.name == 'run-cypress-workspace'}}
-            config-file: cypress-workspace.config.js
+          config-file: cypress-run.config.js
 
-      - name: Capturing screenshots
+      - name: Cypress Integration Test (App Builder)
+        if: ${{ github.event.label.name == 'run-cypress-app-builder' }}
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: ./cypress-tests
+          config: "baseUrl=https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
+          config-file: cypress-app-builder.config.js
+
+      - name: Cypress Integration Test (Workspace)
+        if: ${{ github.event.label.name == 'run-cypress-workspace' }}
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: ./cypress-tests
+          config: "baseUrl=https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
+          config-file: cypress-workspace.config.js
+
+      - name: Capture Screenshots
         uses: actions/upload-artifact@v3
         if: always()
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
-      - name: Capturing downloads
+      - name: Capture Downloads
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: screenshots
+          name: downloads
           path: cypress-tests/cypress/downloads
+          
