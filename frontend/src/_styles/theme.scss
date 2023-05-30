@@ -1194,7 +1194,7 @@ button {
     .col{
       display: flex;
     }
-  }  
+  }
 }
 
 .fx-container-eventmanager *.fx-common {
@@ -4376,7 +4376,8 @@ input[type="text"] {
   }
 
   input:focus {
-    width: 300px;
+    width: 200px;
+    background-color: var(--base);
   }
 
   .input-icon .input-icon-addon {
@@ -10082,7 +10083,7 @@ tbody {
   border-radius: 0px !important;
 }
 
-// custom styles for users multiselect in manage users 
+// custom styles for users multiselect in manage users
 .manage-groups-users-multiselect {
   gap: 17px;
   width: 440px;
@@ -10271,7 +10272,7 @@ tbody {
       background-color: #121212;
       padding: 16px 18px 0px 16px;
       border-radius: 6px;
-  
+
       p {
         font-size: 14px;
         font-family: IBM Plex Sans;
@@ -10286,20 +10287,20 @@ tbody {
     backface-visibility: hidden;
     perspective: 10000px;
   }
-  
+
   @keyframes shake {
     10%, 90% {
       transform: translate3d(-1px, 0, 0);
     }
-    
+
     20%, 80% {
       transform: translate3d(2px, 0, 0);
     }
-  
+
     30%, 50%, 70% {
       transform: translate3d(-4px, 0, 0);
     }
-  
+
     40%, 60% {
       transform: translate3d(4px, 0, 0);
     }
