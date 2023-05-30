@@ -456,7 +456,7 @@ class EditorComponent extends React.Component {
         })
       );
     } else {
-      this.fetchDataQueries(this.state.editingVersion?.id);
+      // this.fetchDataQueries(this.state.editingVersion?.id);
     }
   };
 
