@@ -13,6 +13,8 @@ function ModalContent({ node, darkMode, onClose }) {
   const { id } = node;
 
   const onNodeDelete = () => {
+    const shouldDelete = window.confirm('Are you sure you want to delete this node?');
+    if (!shouldDelete) return;
     const edges = editorSession.app.flow.edges.filter((edge) => edge.source !== node.id && edge.target !== node.id);
     updateFlow({
       nodes: editorSession.app.flow.nodes.filter((node) => node.id !== id),

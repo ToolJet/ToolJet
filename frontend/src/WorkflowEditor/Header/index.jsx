@@ -54,7 +54,7 @@ const Header = (props) => {
                   type="button"
                   className="btn btn-primary run-button"
                   style={{ height: '30px', marginRight: 6 }}
-                  disabled={editorSession.mode === Modes.Running || !isRunnable}
+                  disabled={editorSession.mode === Modes.Running || !isRunnable || !editorSession.maintenance}
                 >
                   {editorSession.mode === Modes.Running ? 'Running' : 'Run'}
                 </button>
