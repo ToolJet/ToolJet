@@ -91,13 +91,6 @@ export const useDataQueriesStore = create(
                     return {
                       ...query,
                       ...data,
-                      options: {
-                        //TODO: this also adds same data with same similar variable (but snakecase). Need to remove them.
-                        ...data.options,
-                        runOnPageLoad: data?.options?.run_on_page_load,
-                        requestConfirmation: data?.options?.request_confirmation,
-                        showSuccessNotification: data?.options?.show_success_notification,
-                      },
                     };
                   }
                   return query;

@@ -96,7 +96,7 @@ export const QueryCard = ({
   return (
     <>
       <div
-        className={'row query-row' + (isSeletedQuery ? ' query-row-selected' : '')}
+        className={'row query-row pe-2' + (isSeletedQuery ? ' query-row-selected' : '')}
         key={dataQuery.id}
         onClick={() => {
           if (selectedQuery?.id === dataQuery?.id) return;
@@ -123,6 +123,12 @@ export const QueryCard = ({
               type="text"
               defaultValue={dataQuery.name}
               autoFocus={true}
+              onKeyDown={({ target, key }) => {
+                console.log(key);
+                if (key === 'Enter') {
+                  updateQueryName(selectedQuery, target.value);
+                }
+              }}
               onBlur={({ target }) => {
                 updateQueryName(selectedQuery, target.value);
               }}
@@ -135,7 +141,8 @@ export const QueryCard = ({
               overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
             >
               <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
-                {dataQuery.name} {dataQuery.status === 'draft' && <small className="ms-2 text-secondary">Draft</small>}
+                <span className="text-truncate">{dataQuery.name}</span>{' '}
+                {dataQuery.status === 'draft' && <small className="mx-2 text-secondary">Draft</small>}
               </div>
             </OverlayTrigger>
           )}

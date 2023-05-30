@@ -75,7 +75,7 @@ export const QueryManagerBody = forwardRef(
       );
       defaultOptions.current = selectedQuery?.options;
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedQuery?.id]);
+    }, [selectedQuery]);
 
     const computeQueryName = (kind) => {
       const currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
@@ -186,7 +186,7 @@ export const QueryManagerBody = forwardRef(
     };
 
     const toggleOption = (option) => {
-      const currentValue = options[option] ? options[option] : false;
+      const currentValue = selectedQuery?.options?.[option] ?? false;
       optionchanged(option, !currentValue);
     };
 
@@ -343,7 +343,16 @@ export const QueryManagerBody = forwardRef(
           })}
         >
           <div className="advance-options-input-form-container">
-            {Object.keys(customToggles).map((toggle, index) => renderCustomToggle(customToggles[toggle], index))}
+            {Object.keys(customToggles).map((toggle, index) => (
+              <CustomToggleFlag
+                {...customToggles[toggle]}
+                toggleOption={toggleOption}
+                value={selectedQuery?.options?.[customToggles[toggle]?.action]}
+                index={index}
+                key={toggle}
+              />
+            ))}
+            {/* <CustomToggleFlags options={selectedQuery?.options} darkMode={darkMode} toggleOption={toggleOption} /> */}
           </div>
           {renderEventManager()}
         </div>
@@ -387,3 +396,29 @@ export const QueryManagerBody = forwardRef(
     );
   }
 );
+
+const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, value, toggleOption, darkMode, index }) => {
+  const [flag, setFlag] = useState(false);
+
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    setFlag(value);
+  }, [value]);
+
+  return (
+    <div className={cx('mx-4', { 'pb-3 pt-3': index === 1 })}>
+      <CustomToggleSwitch
+        dataCy={dataCy}
+        isChecked={flag}
+        toggleSwitchFunction={(flag) => {
+          setFlag((state) => !state);
+          toggleOption(flag);
+        }}
+        action={action}
+        darkMode={darkMode}
+        label={t(translatedLabel, label)}
+      />
+    </div>
+  );
+};
