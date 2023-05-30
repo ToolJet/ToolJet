@@ -30,6 +30,11 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
     setShowEditOrg(false);
   };
 
+  const cancelEditOrganization = () => {
+    setNewOrgName('');
+    setShowEditOrg(false);
+  };
+
   return (
     <AlertDialog
       show={showEditOrg}
@@ -53,7 +58,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
       </div>
       <div className="row">
         <div className="col d-flex justify-content-end gap-2">
-          <ButtonSolid variant="tertiary" onClick={() => setShowEditOrg(false)}>
+          <ButtonSolid variant="tertiary" onClick={cancelEditOrganization}>
             {t('globals.cancel', 'Cancel')}
           </ButtonSolid>
           <ButtonSolid isLoading={isCreating} onClick={editOrganization}>
