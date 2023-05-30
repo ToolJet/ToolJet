@@ -40,7 +40,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-    Math.random() * (endDate.getTime() - startDate.getTime())
+      Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -78,12 +78,12 @@ export const navigateToAppEditor = (appName) => {
     .trigger("mousehover")
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
-    .click({force:true});
+    .click({ force: true });
   //cy.wait("@appEditor");
 };
 
 export const viewAppCardOptions = (appName) => {
-    cy.contains("div", appName)
+  cy.contains("div", appName)
     .parent()
     .within(() => {
       cy.get(commonSelectors.appCardOptionsButton).invoke("click");
@@ -94,7 +94,7 @@ export const viewFolderCardOptions = (folderName) => {
   cy.get(commonSelectors.folderListcard(folderName))
     .parent()
     .within(() => {
-      cy.get(commonSelectors.folderCardOptions(folderName)).invoke('click');
+      cy.get(commonSelectors.folderCardOptions(folderName)).invoke("click");
     });
 };
 
@@ -158,7 +158,7 @@ export const searchUser = (email) => {
 };
 
 export const createWorkspace = (workspaceName) => {
-  cy.get('[data-cy="workspace-name"]').click();
+  cy.get(commonSelectors.workspaceName).click();
   cy.get(commonSelectors.addWorkspaceButton).click();
   cy.clearAndType(commonSelectors.workspaceNameInput, workspaceName);
   cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");

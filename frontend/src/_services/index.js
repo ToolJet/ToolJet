@@ -19,3 +19,4 @@ export * from './marketplace.service';
 export * from './tooljetDatabase.service';
 export * from './globalDatasource.service';
 export * from './app_environment.service';
+export * from './copilot.service';
