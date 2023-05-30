@@ -122,7 +122,7 @@ const PageHandleField = ({ page, updatePageHandle }) => {
 
   const content = () => {
     return (
-      <div className="col">
+      <div className="col text-truncate pe-3">
         <span style={{ color: '#889096' }}>.../</span>
         <span data-cy={`page-handle-text`}>{page.handle}</span>
       </div>
