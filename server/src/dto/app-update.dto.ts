@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '../helpers/utils.helper';
 
@@ -22,8 +22,7 @@ export class AppUpdateDto {
     return newValue.trim();
   })
   @IsNotEmpty()
-  @Matches("^[A-Za-z0-9 '-]+$", '', { message: 'Special characters are not accepted.' })
-  @MaxLength(40, { message: 'Maximum length has been reached.' })
+  @MaxLength(50, { message: 'Maximum length has been reached.' })
   name: string;
 
   @IsString()

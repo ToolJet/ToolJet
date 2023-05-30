@@ -1,8 +1,9 @@
 import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
-import { EntityManager, getManager } from 'typeorm';
+import { EntityManager, EntityTarget, getManager, Like } from 'typeorm';
 import { isEmpty } from 'lodash';
-import { randomInt } from 'crypto';
+import { DataBaseConstraints } from './db_constraints.constants';
+import { ConflictException } from '@nestjs/common';
 const protobuf = require('protobufjs');
 
 export function maybeSetSubPath(path) {
@@ -79,6 +80,21 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
   }
 }
 
+export async function catchDbException(
+  operation: () => any,
+  dbConstraint: DataBaseConstraints,
+  errorMessage: string
+): Promise<any> {
+  try {
+    return await operation();
+  } catch (err) {
+    if (err?.message?.includes(dbConstraint)) {
+      throw new ConflictException(errorMessage);
+    }
+    throw err;
+  }
+}
+
 export const defaultAppEnvironments = [{ name: 'production', isDefault: true }];
 
 export function isPlural(data: Array<any>) {
@@ -109,5 +125,25 @@ export async function getServiceAndRpcNames(protoDefinition) {
   return serviceNamesAndMethods;
 }
 
-export const generateName = (serviceName: string, firstName: string) =>
-  `${firstName}'s ${serviceName}${randomInt(1000, 10000)}`;
+export const generateNextName = async (
+  firstWord: string,
+  entityClass: EntityTarget<unknown>,
+  options = {},
+  manager: EntityManager
+) => {
+  const count = await manager.count(entityClass, {
+    where: {
+      ...options,
+      name: Like(`%${firstWord}%`),
+    },
+  });
+  return `${firstWord} ${count == 0 ? 1 : count + 1}`;
+};
+
+export const truncateAndReplace = (name) => {
+  const secondsSinceEpoch = Date.now();
+  if (name.length > 35) {
+    return name.replace(name.substring(35, 50), secondsSinceEpoch);
+  }
+  return name + secondsSinceEpoch;
+};

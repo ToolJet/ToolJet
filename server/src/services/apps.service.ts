@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { EntityManager, Repository } from 'typeorm';
@@ -12,7 +12,13 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import { cleanObject, dbTransactionWrap, defaultAppEnvironments, generateName } from 'src/helpers/utils.helper';
+import {
+  catchDbException,
+  cleanObject,
+  dbTransactionWrap,
+  defaultAppEnvironments,
+  generateNextName,
+} from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 import { VersionEditDto } from '@dto/version-edit.dto';
@@ -21,6 +27,7 @@ import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { AppEnvironmentService } from './app_environments.service';
 import { decode } from 'js-base64';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
+import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 
 @Injectable()
 export class AppsService {
@@ -98,9 +105,10 @@ export class AppsService {
 
   async create(user: User, manager: EntityManager): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const name = await generateNextName('Untitled app', App, { organizationId: user.organizationId }, manager);
       const app = await manager.save(
         manager.create(App, {
-          name: generateName('app', user.firstName),
+          name,
           createdAt: new Date(),
           updatedAt: new Date(),
           organizationId: user.organizationId,
@@ -192,13 +200,6 @@ export class AppsService {
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
     const { name, slug, icon } = appUpdateDto;
 
-    if (appUpdateDto.name) {
-      const existed = await this.appsRepository.findOne({ name, organizationId });
-      if (existed) {
-        throw new ConflictException('App name already exists.');
-      }
-    }
-
     const updatableParams = {
       name,
       slug,
@@ -211,7 +212,13 @@ export class AppsService {
     // removing keys with undefined values
     cleanObject(updatableParams);
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.update(App, appId, updatableParams);
+      return await catchDbException(
+        async () => {
+          return await manager.update(App, appId, updatableParams);
+        },
+        DataBaseConstraints.APP_NAME_UNIQUE,
+        'This app name is already taken.'
+      );
     }, manager);
   }
 

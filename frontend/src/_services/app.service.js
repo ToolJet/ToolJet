@@ -1,5 +1,5 @@
 import config from 'config';
-import { authHeader, handleResponse, handleErrConnections } from '@/_helpers';
+import { authHeader, handleResponse } from '@/_helpers';
 
 export const appService = {
   getConfig,
@@ -105,7 +105,7 @@ function saveApp(id, attributes) {
     credentials: 'include',
     body: JSON.stringify({ app: attributes }),
   };
-  return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse).catch(handleErrConnections);
+  return fetch(`${config.apiUrl}/apps/${id}`, requestOptions).then(handleResponse);
 }
 
 function getAppUsers(id) {

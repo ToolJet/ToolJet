@@ -1,5 +1,6 @@
 import { App } from 'src/entities/app.entity';
 import { Organization } from 'src/entities/organization.entity';
+import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { MigrationInterface, QueryRunner, TableUnique, EntityManager } from 'typeorm';
 
 export class AddUniqueConstraintToAppName1684145489093 implements MigrationInterface {
@@ -9,7 +10,7 @@ export class AddUniqueConstraintToAppName1684145489093 implements MigrationInter
     await queryRunner.createUniqueConstraint(
       'apps',
       new TableUnique({
-        name: 'app_name_organization_id_unique',
+        name: DataBaseConstraints.APP_NAME_UNIQUE,
         columnNames: ['name', 'organization_id'],
       })
     );
