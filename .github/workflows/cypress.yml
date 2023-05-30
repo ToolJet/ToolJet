@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   Run-Cypress:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress' }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress' || github.event.label.name == 'run-cypress-app-builder'}}
 
     runs-on: ubuntu-22.04
     steps:
@@ -38,7 +38,7 @@ jobs:
           sleep 1
           done
 
-      - name: create-json
+      - name: Create cypress env
         id: create-json
         uses: jsdaniell/create-json@1.1.2
         with:
@@ -51,9 +51,12 @@ jobs:
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
-          config-file: cypress-run.config.js
-        # env:
-        #   CYPRESS_SECRETS: ${{ secrets.CYPRESS_SECRETS }}
+          if: ${{github.event.label.name == 'run-cypress'}}
+            config-file: cypress-run.config.js
+          if: ${{github.event.label.name == 'run-cypress-app-builder'}}
+            config-file: cypress-app-builder.config.js
+          if: ${{github.event.label.name == 'run-cypress-workspace'}}
+            config-file: cypress-workspace.config.js
 
       - name: Capturing screenshots
         uses: actions/upload-artifact@v3
