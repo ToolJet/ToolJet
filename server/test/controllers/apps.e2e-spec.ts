@@ -95,7 +95,7 @@ describe('apps controller', () => {
           .set('Cookie', adminUserData['tokenCookie']);
 
         expect(response.statusCode).toBe(201);
-        expect(response.body.name).toContain(adminUserData.user.firstName);
+        expect(response.body.name).toContain('Untitled app');
 
         await logoutUser(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
         await logoutUser(app, viewerUserData['tokenCookie'], viewerUserData.user.defaultOrganizationId);
@@ -117,12 +117,12 @@ describe('apps controller', () => {
         .set('Cookie', loggedUser.tokenCookie);
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.name).toContain(adminUserData.user.firstName);
+      expect(response.body.name).toContain('Untitled app');
 
       const appId = response.body.id;
       const application = await App.findOneOrFail({ where: { id: appId } });
 
-      expect(application.name).toContain(adminUserData.user.firstName);
+      expect(application.name).toContain('Untitled app');
       expect(application.id).toBe(application.slug);
 
       // await logoutUser(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
