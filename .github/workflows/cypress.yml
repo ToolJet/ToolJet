@@ -31,19 +31,19 @@ jobs:
         with:
           node-version: 18.3.0
 
-      # - name: Checking the PR URL
-      #   run: |
-      #     until curl --silent --fail https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com; do
-      #       sleep 1
-      #     done
+      - name: Checking the PR URL
+        run: |
+          until curl --silent --fail https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com; do
+            sleep 1
+          done
 
-      # - name: Create Cypress environment file
-      #   id: create-json
-      #   uses: jsdaniell/create-json@1.1.2
-      #   with:
-      #     name: "cypress.env.json"
-      #     json: ${{ secrets.CYPRESS_SECRETS }}
-      #     dir: './cypress-tests'
+      - name: Create Cypress environment file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: './cypress-tests'
 
       - name: Cypress Integration Test
         if: ${{ github.event.label.name == 'run-cypress' }}
