@@ -13,7 +13,7 @@ export const Button = function Button(props) {
 
   useEffect(() => {
     setLabel(properties.text);
-    setExposedVariable('ButtonText', properties.text);
+    setExposedVariable('buttonText', properties.text);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.text]);
 
@@ -58,7 +58,7 @@ export const Button = function Button(props) {
     'setText',
     async function (text) {
       setLabel(text);
-      setExposedVariable('ButtonText', text);
+      setExposedVariable('buttonText', text);
     },
     [setLabel]
   );

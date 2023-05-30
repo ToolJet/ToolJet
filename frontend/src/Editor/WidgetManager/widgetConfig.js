@@ -563,7 +563,7 @@ export const widgets = [
       },
     },
     exposedVariables: {
-      ButtonText: 'Button',
+      buttonText: 'Button',
     },
     actions: [
       {
