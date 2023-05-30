@@ -60,7 +60,7 @@ jobs:
             message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ce:${{ github.event.release.tag_name }}"
           fi
 
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.WEBHOOK }}         
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}         
 
 
   building-try-tooljet-image:
@@ -122,7 +122,7 @@ jobs:
             message="Job '${{ env.JOB_NAME }}' failed! tooljet/try:${{ github.event.release.tag_name }}"
           fi
 
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.WEBHOOK }}          
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}          
 
 
 #Below code helps to trigger the workflow separately
@@ -168,7 +168,7 @@ jobs:
             message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ce:${{ github.event.inputs.image }}"
           fi
 
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.WEBHOOK }}
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
   try-tooljet:
     runs-on: ubuntu-latest
@@ -212,4 +212,4 @@ jobs:
             message="Job '${{ env.JOB_NAME }}' failed! tooljet/try:${{ github.event.inputs.image }}"
           fi
 
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.WEBHOOK }}
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
