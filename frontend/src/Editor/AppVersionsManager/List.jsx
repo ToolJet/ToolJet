@@ -3,13 +3,13 @@ import cx from 'classnames';
 import { appVersionService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 import { toast } from 'react-hot-toast';
+import { useShowCreateVersionModalPrompt } from '@/_stores/appVersionsManagerStore';
 
 export const AppVersionsManager = function ({
   appId,
   editingVersion,
   releasedVersionId,
   setAppDefinitionFromVersion,
-  showCreateVersionModalPrompt,
   closeCreateVersionModalPrompt,
   onVersionDelete,
 }) {
@@ -20,6 +20,7 @@ export const AppVersionsManager = function ({
     versionName: '',
     showModal: false,
   });
+  const showCreateVersionModalPrompt = useShowCreateVersionModalPrompt();
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {

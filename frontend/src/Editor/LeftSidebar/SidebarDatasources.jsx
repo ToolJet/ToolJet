@@ -16,12 +16,11 @@ import { Popover as PopoverBS, OverlayTrigger } from 'react-bootstrap';
 import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
 import VerticalIcon from '@assets/images/icons/vertical-menu.svg';
 import { getPrivateRoute } from '@/_helpers/routes';
-
 import { useDataSources } from '@/_stores/dataSourcesStore';
+import { useEditingVersionId } from '@/_stores/appVersionsManagerStore';
 
 export const LeftSidebarDataSources = ({
   appId,
-  editingVersionId,
   selectedSidebarItem,
   setSelectedSidebarItem,
   darkMode,
@@ -35,6 +34,7 @@ export const LeftSidebarDataSources = ({
   setReleasedVersionPopupState,
 }) => {
   const dataSources = useDataSources();
+  const editingVersionId = useEditingVersionId();
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);

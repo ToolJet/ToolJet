@@ -21,7 +21,6 @@ export default function EditorHeader({
   appDefinition,
   toggleAppMaintenance,
   editingVersion,
-  showCreateVersionModalPrompt,
   app,
   appVersionPreviewLink,
   slug,
@@ -123,7 +122,6 @@ export default function EditorHeader({
                       editingVersion={editingVersion}
                       releasedVersionId={app.current_version_id}
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-                      showCreateVersionModalPrompt={showCreateVersionModalPrompt}
                       closeCreateVersionModalPrompt={closeCreateVersionModalPrompt}
                       onVersionDelete={onVersionDelete}
                     />

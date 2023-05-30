@@ -1,16 +1,14 @@
 import '@/_styles/editor/comment-notifications.scss';
 import cx from 'classnames';
 import React from 'react';
-
 import { commentsService } from '@/_services';
-
+import { useEditingVersionId } from '@/_stores/appVersionsManagerStore';
 import TabContent from './Content';
-
 import useRouter from '@/_hooks/use-router';
 
-const CommentNotifications = ({ socket, toggleComments, appVersionsId, pageId }) => {
+const CommentNotifications = ({ socket, toggleComments, pageId }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
+  const appVersionsId = useEditingVersionId();
   const [notifications, setNotifications] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [key, setKey] = React.useState('active');

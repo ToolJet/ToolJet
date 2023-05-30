@@ -6,12 +6,13 @@ import { xorWith, isEqual } from 'lodash';
 import { Cursor } from './Cursor';
 import { USER_COLORS } from '@/_helpers/constants';
 import { userService, authenticationService } from '@/_services';
+import { useEditingVersionId } from '@/_stores/appVersionsManagerStore';
 
-const RealtimeCursors = ({ editingVersionId, editingPageId }) => {
+const RealtimeCursors = ({ editingPageId }) => {
   const others = useOthers();
-
   const unavailableColors = others.map((other) => other?.presence?.color);
   const availableColors = xorWith(USER_COLORS, unavailableColors, isEqual);
+  const editingVersionId = useEditingVersionId();
 
   const self = useSelf();
   const updatePresence = useUpdatePresence();

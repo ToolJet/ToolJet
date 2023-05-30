@@ -43,10 +43,9 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
-
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { useAppDataStore } from '@/_stores/appDataStore';
+import { useAppVersionManagerStore } from '@/_stores/appVersionsManagerStore';
 import { resetAllStores } from '@/_stores/utils';
 
 setAutoFreeze(false);
@@ -103,7 +102,7 @@ class EditorComponent extends React.Component {
       isLoading: true,
       users: null,
       appId,
-      editingVersion: null,
+      // editingVersion: null,
       showLeftSidebar: true,
       showComments: false,
       zoomLevel: 1.0,
@@ -128,7 +127,6 @@ class EditorComponent extends React.Component {
       },
       apps: [],
       queryConfirmationList: [],
-      showCreateVersionModalPrompt: false,
       isSourceSelected: false,
       isSaving: false,
       isUnsavedQueriesAvailable: false,
@@ -213,7 +211,13 @@ class EditorComponent extends React.Component {
     if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
 
     this.props.ymap?.observe(() => {
-      if (!isEqual(this.state.editingVersion?.id, this.props.ymap?.get('appDef').editingVersionId)) return;
+      if (
+        !isEqual(
+          useAppVersionManagerStore?.getState()?.editingVersion?.id,
+          this.props.ymap?.get('appDef').editingVersionId
+        )
+      )
+        return;
       if (isEqual(this.state.appDefinition, this.props.ymap?.get('appDef').newDefinition)) return;
 
       this.realtimeSave(this.props.ymap?.get('appDef').newDefinition, { skipAutoSave: true, skipYmapUpdate: true });
@@ -247,7 +251,7 @@ class EditorComponent extends React.Component {
     }
   }
 
-  isVersionReleased = (version = this.state.editingVersion) => {
+  isVersionReleased = (version = useAppVersionManagerStore?.getState()?.editingVersion) => {
     if (isEmpty(version)) {
       return false;
     }
@@ -255,7 +259,8 @@ class EditorComponent extends React.Component {
   };
 
   closeCreateVersionModalPrompt = () => {
-    this.setState({ isSaving: false, showCreateVersionModalPrompt: false });
+    this.setState({ isSaving: false });
+    useAppVersionManagerStore?.getState()?.actions.closeCreateVersionModalPrompt();
   };
 
   initEventListeners() {
@@ -263,9 +268,9 @@ class EditorComponent extends React.Component {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
       if (data === 'versionReleased') this.fetchApp();
       else if (data === 'dataQueriesChanged') {
-        this.fetchDataQueries(this.state.editingVersion?.id);
+        this.fetchDataQueries(useAppVersionManagerStore?.getState()?.editingVersion?.id);
       } else if (data === 'dataSourcesChanged') {
-        this.fetchDataSources(this.state.editingVersion?.id);
+        this.fetchDataSources(useAppVersionManagerStore?.getState()?.editingVersion?.id);
       }
     });
   }
@@ -341,7 +346,7 @@ class EditorComponent extends React.Component {
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
       const homePageId = startingPageId ?? dataDefinition.homePageId;
 
-      useAppDataStore.getState().actions.updateEditingVersion(data.editing_version);
+      useAppVersionManagerStore.getState().actions.updateEditingVersion(data.editing_version);
 
       this.setState(
         {
@@ -391,7 +396,7 @@ class EditorComponent extends React.Component {
   };
 
   setAppDefinitionFromVersion = (version, shouldWeEditVersion = true) => {
-    if (version?.id !== this.state.editingVersion?.id) {
+    if (version?.id !== useAppVersionManagerStore?.getState()?.editingVersion?.id) {
       this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), {
         skipAutoSave: true,
         skipYmapUpdate: true,
@@ -400,6 +405,8 @@ class EditorComponent extends React.Component {
       if (version?.id === this.state.app?.current_version_id) {
         (this.canUndo = false), (this.canRedo = false);
       }
+      useAppVersionManagerStore.getState().actions.updateEditingVersion(version);
+
       this.setState(
         {
           editingVersion: version,
@@ -407,8 +414,8 @@ class EditorComponent extends React.Component {
         },
         () => {
           shouldWeEditVersion && this.saveEditingVersion(true);
-          this.fetchDataSources(this.state.editingVersion?.id);
-          this.fetchDataQueries(this.state.editingVersion?.id, true);
+          this.fetchDataSources(useAppVersionManagerStore?.getState()?.editingVersion?.id);
+          this.fetchDataQueries(useAppVersionManagerStore?.getState()?.editingVersion?.id, true);
           this.initComponentVersioning();
         }
       );
@@ -427,7 +434,7 @@ class EditorComponent extends React.Component {
         })
       );
     } else {
-      this.fetchDataSources(this.state.editingVersion?.id);
+      this.fetchDataSources(useAppVersionManagerStore?.getState()?.editingVersion?.id);
     }
   };
 
@@ -447,7 +454,7 @@ class EditorComponent extends React.Component {
         })
       );
     } else {
-      this.fetchDataQueries(this.state.editingVersion?.id);
+      this.fetchDataQueries(useAppVersionManagerStore?.getState()?.editingVersion?.id);
     }
   };
 
@@ -515,7 +522,7 @@ class EditorComponent extends React.Component {
         () => {
           this.props.ymap?.set('appDef', {
             newDefinition: appDefinition,
-            editingVersionId: this.state.editingVersion?.id,
+            editingVersionId: useAppVersionManagerStore?.getState()?.editingVersion?.id,
           });
 
           this.autoSave();
@@ -546,7 +553,7 @@ class EditorComponent extends React.Component {
         () => {
           this.props.ymap?.set('appDef', {
             newDefinition: appDefinition,
-            editingVersionId: this.state.editingVersion?.id,
+            editingVersionId: useAppVersionManagerStore?.getState()?.editingVersion?.id,
           });
 
           this.autoSave();
@@ -559,7 +566,10 @@ class EditorComponent extends React.Component {
     let currentPageId = this.state.currentPageId;
     if (isEqual(this.state.appDefinition, newDefinition)) return;
     if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
-      this.props.ymap?.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
+      this.props.ymap?.set('appDef', {
+        newDefinition,
+        editingVersionId: useAppVersionManagerStore?.getState()?.editingVersion?.id,
+      });
     }
 
     if (opts?.versionChanged) {
@@ -695,7 +705,7 @@ class EditorComponent extends React.Component {
         this.autoSave();
         this.props.ymap?.set('appDef', {
           newDefinition: newDefinition.appDefinition,
-          editingVersionId: this.state.editingVersion?.id,
+          editingVersionId: useAppVersionManagerStore?.getState()?.editingVersion?.id,
         });
       });
     }
@@ -781,7 +791,7 @@ class EditorComponent extends React.Component {
       () => {
         this.props.ymap?.set('appDef', {
           newDefinition: appDefinition,
-          editingVersionId: this.state.editingVersion?.id,
+          editingVersionId: useAppVersionManagerStore?.getState()?.editingVersion?.id,
         });
         this.autoSave();
       }
@@ -863,22 +873,24 @@ class EditorComponent extends React.Component {
   saveEditingVersion = (isUserSwitchedVersion = false) => {
     if (this.isVersionReleased() && !isUserSwitchedVersion) {
       this.setState({ isSaving: false });
-    } else if (!isEmpty(this.state.editingVersion)) {
+    } else if (!isEmpty(useAppVersionManagerStore?.getState()?.editingVersion)) {
       appVersionService
         .save(
           this.state.appId,
-          this.state.editingVersion.id,
+          useAppVersionManagerStore?.getState()?.editingVersion?.id,
           { definition: this.state.appDefinition },
           isUserSwitchedVersion
         )
         .then(() => {
+          const _editingVersion = {
+            ...useAppVersionManagerStore?.getState()?.editingVersion,
+            ...{ definition: this.state.appDefinition },
+          };
+          useAppVersionManagerStore.getState().actions.updateEditingVersion(_editingVersion);
           this.setState(
             {
               saveError: false,
-              editingVersion: {
-                ...this.state.editingVersion,
-                ...{ definition: this.state.appDefinition },
-              },
+              editingVersion: _editingVersion,
             },
             () => {
               this.setState({
@@ -1408,7 +1420,6 @@ class EditorComponent extends React.Component {
       defaultComponentStateComputed,
       showComments,
       editingVersion,
-      showCreateVersionModalPrompt,
       hoveredComponent,
       queryConfirmationList,
     } = this.state;
@@ -1457,7 +1468,6 @@ class EditorComponent extends React.Component {
             appDefinition={appDefinition}
             toggleAppMaintenance={this.toggleAppMaintenance}
             editingVersion={editingVersion}
-            showCreateVersionModalPrompt={showCreateVersionModalPrompt}
             app={app}
             appVersionPreviewLink={appVersionPreviewLink}
             slug={slug}
@@ -1482,7 +1492,6 @@ class EditorComponent extends React.Component {
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
               <LeftSidebar
-                appVersionsId={this.state?.editingVersion?.id}
                 showComments={showComments}
                 errorLogs={currentState.errors}
                 components={currentState.components}
@@ -1571,12 +1580,7 @@ class EditorComponent extends React.Component {
                       backgroundColor: this.computeCanvasBackgroundColor(),
                     }}
                   >
-                    {config.ENABLE_MULTIPLAYER_EDITING && (
-                      <RealtimeCursors
-                        editingVersionId={this.state?.editingVersion?.id}
-                        editingPageId={this.state.currentPageId}
-                      />
-                    )}
+                    {config.ENABLE_MULTIPLAYER_EDITING && <RealtimeCursors editingPageId={this.state.currentPageId} />}
                     {isLoading && (
                       <div className="apploader">
                         <div className="col col-* editor-center-wrapper">
@@ -1607,7 +1611,6 @@ class EditorComponent extends React.Component {
                           canvasHeight={this.getCanvasHeight()}
                           socket={this.socket}
                           showComments={showComments}
-                          appVersionsId={this.state?.editingVersion?.id}
                           appDefinition={appDefinition}
                           appDefinitionChanged={this.appDefinitionChanged}
                           snapToGrid={true}
@@ -1675,7 +1678,6 @@ class EditorComponent extends React.Component {
                               selectedDataSource={selectedDataSource}
                               dataQueriesChanged={updateDataQueries}
                               appId={appId}
-                              editingVersionId={editingVersion?.id}
                               addingQuery={!editingQuery || dataQueries?.length === 0}
                               editingQuery={editingQuery}
                               currentState={currentState}
@@ -1754,7 +1756,6 @@ class EditorComponent extends React.Component {
               {config.COMMENT_FEATURE_ENABLE && showComments && (
                 <CommentNotifications
                   socket={this.socket}
-                  appVersionsId={this.state?.editingVersion?.id}
                   toggleComments={this.toggleComments}
                   pageId={this.state.currentPageId}
                 />

@@ -21,9 +21,9 @@ import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { ChangeDataSource } from './ChangeDataSource';
 import EmptyGlobalDataSources from './EmptyGlobalDataSources';
 import AddGlobalDataSourceButton from './AddGlobalDataSourceButton';
-
 import { useDataSourcesStore, useLoadingDataSources } from '@/_stores/dataSourcesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
+import { useAppVersionManagerStore } from '@/_stores/appVersionsManagerStore';
 
 const queryNameRegex = new RegExp('^[A-Za-z0-9_-]*$');
 
@@ -336,7 +336,7 @@ class QueryManagerComponent extends React.Component {
 
   createOrUpdateDataQuery = () => {
     const { appId, options, selectedDataSource, mode, queryName, shouldRunQuery } = this.state;
-    const appVersionId = this.props.editingVersionId;
+    const appVersionId = useAppVersionManagerStore?.getState()?.editingVersion?.id;
     const kind = selectedDataSource.kind;
     const dataSourceId = selectedDataSource.id === 'null' ? null : selectedDataSource.id;
     const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;

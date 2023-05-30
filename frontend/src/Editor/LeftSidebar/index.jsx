@@ -25,7 +25,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     globalDataSourcesChanged,
     dataQueriesChanged,
     errorLogs,
-    appVersionsId,
     debuggerActions,
     currentState,
     appDefinition,
@@ -117,7 +116,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         selectedSidebarItem={selectedSidebarItem}
         setSelectedSidebarItem={handleSelectedSidebarItem}
         appId={appId}
-        editingVersionId={appVersionsId}
         dataSourcesChanged={dataSourcesChanged}
         globalDataSourcesChanged={globalDataSourcesChanged}
         dataQueriesChanged={dataQueriesChanged}
@@ -130,7 +128,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
       {config.COMMENT_FEATURE_ENABLE && (
         <div className={`${isVersionReleased && 'disabled'}`}>
           <LeftSidebarComment
-            appVersionsId={appVersionsId}
             selectedSidebarItem={showComments ? 'comments' : ''}
             toggleComments={toggleComments}
             currentPageId={currentPageId}
