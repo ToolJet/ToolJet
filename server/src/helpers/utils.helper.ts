@@ -1,8 +1,7 @@
 import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
-import { EntityManager, getManager } from 'typeorm';
+import { EntityManager, EntityTarget, getManager, Like } from 'typeorm';
 import { isEmpty } from 'lodash';
-import { randomInt } from 'crypto';
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
 const protobuf = require('protobufjs');
@@ -126,5 +125,17 @@ export async function getServiceAndRpcNames(protoDefinition) {
   return serviceNamesAndMethods;
 }
 
-export const generateName = (serviceName: string, firstName: string) =>
-  `${firstName}'s ${serviceName}${randomInt(1000, 10000)}`;
+export const generateNextName = async (
+  firstWord: string,
+  entityClass: EntityTarget<unknown>,
+  options = {},
+  manager: EntityManager
+) => {
+  const count = await manager.count(entityClass, {
+    where: {
+      ...options,
+      name: Like(`%${firstWord}%`),
+    },
+  });
+  return `${firstWord} ${count == 0 ? 1 : count + 1}`;
+};

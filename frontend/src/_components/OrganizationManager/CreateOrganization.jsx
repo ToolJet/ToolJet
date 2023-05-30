@@ -60,7 +60,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             className="form-control"
             placeholder={t('header.organization.workspaceName', 'workspace name')}
             disabled={isCreating}
-            maxLength={40}
+            maxLength={50}
             data-cy="workspace-name-input-field"
             autoFocus
           />

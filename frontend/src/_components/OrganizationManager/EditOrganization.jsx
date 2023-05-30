@@ -70,7 +70,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
             placeholder={t('header.organization.workspaceName', 'workspace name')}
             disabled={isCreating}
             value={newOrgName}
-            maxLength={40}
+            maxLength={50}
             autoFocus
           />
           <label className="tj-input-error">{errorText || ''}</label>
