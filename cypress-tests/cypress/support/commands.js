@@ -29,6 +29,7 @@ Cypress.Commands.add("verifyToastMessage", (selector, message) => {
   cy.get("body").then(($body) => {
     if ($body.find(commonSelectors.toastCloseButton).length > 0) {
       cy.closeToastMessage();
+      cy.wait(200);
     }
   });
 });
