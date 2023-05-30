@@ -145,7 +145,9 @@ export class DataQueriesController {
     }
 
     const result = await this.dataQueriesService.update(dataQueryId, name, options);
-    return decamelizeKeys({ ...dataQuery, ...result });
+    const decamelizedQuery = decamelizeKeys({ ...dataQuery, ...result });
+    decamelizedQuery['options'] = result.options;
+    return decamelizedQuery;
   }
 
   @UseGuards(JwtAuthGuard)
