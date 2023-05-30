@@ -52,6 +52,7 @@ describe("Text Input", () => {
     selectCSA("text1", "Set text", "500");
     addSupportCSAData("Text", "{{components.textinput1.value");
 
+    cy.get('[data-cy="real-canvas"]').click("topLeft", { force: true });
     cy.clearAndType(
       commonWidgetSelector.draggableWidget("textinput1"),
       data.customText

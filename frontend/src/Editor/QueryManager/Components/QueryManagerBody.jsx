@@ -326,7 +326,7 @@ export const QueryManagerBody = forwardRef(
       <div className={cx('mx-4', { 'pb-3 pt-3': index === 1 })}>
         <CustomToggleSwitch
           dataCy={dataCy}
-          isChecked={options && options[action]}
+          isChecked={selectedQuery?.options?.[action]}
           toggleSwitchFunction={toggleOption}
           action={action}
           darkMode={darkMode}

@@ -87,7 +87,17 @@ export const useDataQueriesStore = create(
                 isUpdatingQueryInProcess: false,
                 dataQueries: state.dataQueries.map((query) => {
                   if (query.id === data.id) {
-                    return { ...query, ...data };
+                    return {
+                      ...query,
+                      ...data,
+                      options: {
+                        //TODO: this also adds same data with same similar variable (but snakecase). Need to remove them.
+                        ...data.options,
+                        runOnPageLoad: data?.options?.run_on_page_load,
+                        requestConfirmation: data?.options?.request_confirmation,
+                        showSuccessNotification: data?.options?.show_success_notification,
+                      },
+                    };
                   }
                   return query;
                 }),
@@ -108,8 +118,7 @@ export const useDataQueriesStore = create(
           set({ isCreatingQueryInProcess: true });
           const { actions, selectedQuery, selectedDataSource } = useQueryPanelStore.getState();
           const { name, kind } = selectedQuery;
-          const dataSourceId =
-            selectedDataSource?.id && selectedDataSource?.id !== 'null' ? selectedDataSource?.id : null;
+          const dataSourceId = selectedDataSource?.id !== 'null' ? selectedDataSource?.id : null;
           const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
           useAppDataStore.getState().actions.setIsSaving(true);
           dataqueryService

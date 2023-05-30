@@ -552,12 +552,12 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const component = Object.values(_ref.state.currentState?.components ?? {}).filter(
           (component) => component.id === event.componentId
         )[0];
-        const action = component[event.componentSpecificActionHandle];
+        const action = component?.[event.componentSpecificActionHandle];
         const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
           ...param,
           value: resolveReferences(param.value, _ref.state.currentState, undefined, customVariables),
         }));
-        const actionPromise = action(...actionArguments.map((argument) => argument.value));
+        const actionPromise = actionArguments?.length && action(...actionArguments.map((argument) => argument.value));
         return actionPromise ?? Promise.resolve();
       }
 
@@ -778,10 +778,19 @@ export function getQueryVariables(options, state) {
   switch (optionsType) {
     case 'string': {
       options = options.replace(/\n/g, ' ');
-      const dynamicVariables = getDynamicVariables(options) || [];
-      dynamicVariables.forEach((variable) => {
-        queryVariables[variable] = resolveReferences(variable, state);
-      });
+      // check if {{var}} and %%var%% are present in the string
+
+      if (options.includes('{{') && options.includes('%%')) {
+        const vars = resolveReferences(options, state);
+        console.log('queryVariables', { options, vars });
+        queryVariables[options] = vars;
+      } else {
+        const dynamicVariables = getDynamicVariables(options) || [];
+        dynamicVariables.forEach((variable) => {
+          queryVariables[variable] = resolveReferences(variable, state);
+        });
+      }
+
       break;
     }
 
@@ -801,6 +810,7 @@ export function getQueryVariables(options, state) {
     default:
       break;
   }
+
   return queryVariables;
 }
 
@@ -891,7 +901,7 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
 }
 
 export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit') {
-  const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
+  const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   let dataQuery = {};
 
   if (query) {

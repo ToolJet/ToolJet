@@ -175,7 +175,7 @@ export function CodeHinter({
   const getPreview = () => {
     if (!enablePreview) return;
     const customResolvables = getCustomResolvables();
-    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true);
+    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
 
     if (error) {
