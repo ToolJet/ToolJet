@@ -38,12 +38,13 @@ export function renderElement(
   const paramConfig = paramTypeConfig[param] || {};
   const { conditionallyRender = null } = paramConfig;
 
-  if (conditionallyRender) {
-    const { key, value } = conditionallyRender;
-    const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
-    if (resolvedValue?.value !== value) return;
+  if (componentConfig.component == 'DropDown') {
+    if (conditionallyRender) {
+      const { key, value } = conditionallyRender;
+      const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
+      if (resolvedValue?.value !== value) return;
+    }
   }
-
   const meta = componentMeta[paramType][param];
 
   return (

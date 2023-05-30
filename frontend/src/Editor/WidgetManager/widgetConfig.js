@@ -2326,13 +2326,6 @@ export const widgets = [
           },
         },
       },
-      visibility: {
-        type: 'toggle',
-        displayName: 'visibility',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
     },
     events: {
       onSelect: { displayName: 'On select' },
