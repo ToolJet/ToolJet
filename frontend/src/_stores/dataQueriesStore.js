@@ -51,6 +51,7 @@ export const useDataQueriesStore = create(
               const { actions, selectedQuery } = useQueryPanelStore.getState();
               if (queryId === selectedQuery?.id) {
                 actions.setUnSavedChanges(false);
+                actions.setSelectedDataSource(null);
                 actions.setSelectedQuery(null);
               }
               set((state) => ({
@@ -158,6 +159,7 @@ export const useDataQueriesStore = create(
                   return query;
                 }),
               }));
+              useQueryPanelStore.getState().actions.setSelectedQuery(id);
             })
             .catch(({ error }) => {
               // toast.error(error);
@@ -210,6 +212,7 @@ export const useDataQueriesStore = create(
                   return query;
                 }),
               }));
+              useQueryPanelStore.getState().actions.setSelectedQuery(data.id);
             })
             .catch(({ error }) => {
               // toast.error(error);

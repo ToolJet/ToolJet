@@ -166,10 +166,7 @@ export const QueryManagerHeader = forwardRef(
     const renderSaveButton = () => {
       return (
         <button
-          className={`default-tertiary-button ${buttonLoadingState(
-            isCreationInProcess || isUpdationInProcess,
-            isVersionReleased
-          )}`}
+          className={`default-tertiary-button ${buttonLoadingState(false, isVersionReleased)}`}
           // onClick={() => createOrUpdateDataQuery(false)}
           onClick={() => updateDataQueryStatus('published')}
           disabled={buttonDisabled}
@@ -210,7 +207,7 @@ export const QueryManagerHeader = forwardRef(
       if (selectedQuery === null) return;
       return (
         <>
-          {status === 'draft' && renderSaveButton()}
+          {selectedQuery?.status === 'draft' && renderSaveButton()}
           {renderPreviewButton()}
           {renderRunButton()}
         </>
