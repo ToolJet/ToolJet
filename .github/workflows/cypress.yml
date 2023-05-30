@@ -42,9 +42,9 @@ jobs:
         id: create-json
         uses: jsdaniell/create-json@1.1.2
         with:
-          working-directory: ./cypress-tests
           name: "cypress.env.json"
           json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: './cypress-tests'
 
       - name: Cypress integration test
         uses: cypress-io/github-action@v5
