@@ -1170,6 +1170,33 @@ button {
   width: 184px !important;
 }
 
+.component-action-select {
+  .css-zz6spl-container{
+    width: inherit;
+  }
+  &.fx-container-eventmanager{
+    .fx-common {
+      right: 0;
+    }
+    .custom-row{
+      width:100%
+    }
+  }
+  .codeShow-active{
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    .custom-row{
+      width: 75%;
+    }
+  }
+  .row.fx-container{
+    .col{
+      display: flex;
+    }
+  }  
+}
+
 .fx-container-eventmanager *.fx-common {
   top: 6px !important;
   right: -34px;
@@ -10494,7 +10521,16 @@ tbody {
     }
   }
 }
-
+.table-editor-component-row{
+  .rdt.cell-type-datepicker{
+    margin-top: 0;
+  }
+  .has-multiselect{
+    .select-search-input{
+      margin-bottom: 0;
+    }
+  }
+}
 .theme-dark .card-container {
   background-color: #121212 !important
 }
