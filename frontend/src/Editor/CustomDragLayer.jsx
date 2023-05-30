@@ -52,6 +52,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
   return {
     transform,
     WebkitTransform: transform,
+    width: 'fit-content',
   };
 }
 export const CustomDragLayer = ({ canvasWidth, currentLayout }) => {
