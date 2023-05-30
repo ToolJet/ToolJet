@@ -42,6 +42,7 @@ jobs:
         id: create-json
         uses: jsdaniell/create-json@1.1.2
         with:
+          working-directory: ./cypress-tests
           name: "cypress.env.json"
           json: ${{ secrets.CYPRESS_SECRETS }}
 
