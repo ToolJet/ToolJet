@@ -52,6 +52,16 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Send Slack Notification
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            message="Job '${{ env.JOB_NAME }}' succeeded!"
+          else
+            message="Job '${{ env.JOB_NAME }}' failed!"
+          fi
+
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.WEBHOOK }}         
+
 
   building-try-tooljet-image:
     runs-on: ubuntu-latest
@@ -104,6 +114,16 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Send Slack Notification
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            message="Job '${{ env.JOB_NAME }}' succeeded!"
+          else
+            message="Job '${{ env.JOB_NAME }}' failed!"
+          fi
+
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.WEBHOOK }}          
+
 
 #Below code helps to trigger the workflow separately
 
@@ -140,6 +160,15 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Send Slack Notification
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            message="Job '${{ env.JOB_NAME }}' succeeded!"
+          else
+            message="Job '${{ env.JOB_NAME }}' failed!"
+          fi
+
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.WEBHOOK }}
 
   try-tooljet:
     runs-on: ubuntu-latest
@@ -174,3 +203,13 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Send Slack Notification
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            message="Job '${{ env.JOB_NAME }}' succeeded!"
+          else
+            message="Job '${{ env.JOB_NAME }}' failed!"
+          fi
+
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.WEBHOOK }}
