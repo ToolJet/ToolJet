@@ -1,5 +1,5 @@
 import React from 'react';
-import EditIcon from '../Icons/edit.svg';
+import { ToolTip } from '@/_components';
 import { appService } from '@/_services';
 import { handleHttpErrorMessages, validateName } from '../../_helpers/utils';
 
@@ -32,20 +32,22 @@ function EditAppName({ appId, appName, onNameChanged }) {
   };
 
   return (
-    <div className={`app-name input-icon ${darkMode ? 'dark' : ''}`}>
-      <input
-        type="text"
-        onChange={(e) => {
-          validateName(e.target.value, 'App name', true);
-          setName(e.target.value);
-        }}
-        onBlur={(e) => saveAppName(e.target.value)}
-        className="form-control-plaintext form-control-plaintext-sm"
-        value={name}
-        maxLength={50}
-        data-cy="app-name-input"
-      />
-    </div>
+    <ToolTip message={name} placement="bottom">
+      <div className={`app-name input-icon ${darkMode ? 'dark' : ''}`}>
+        <input
+          type="text"
+          onChange={(e) => {
+            validateName(e.target.value, 'App name', true);
+            setName(e.target.value);
+          }}
+          onBlur={(e) => saveAppName(e.target.value)}
+          className="form-control-plaintext form-control-plaintext-sm"
+          value={name}
+          maxLength={50}
+          data-cy="app-name-input"
+        />
+      </div>
+    </ToolTip>
   );
 }
 
