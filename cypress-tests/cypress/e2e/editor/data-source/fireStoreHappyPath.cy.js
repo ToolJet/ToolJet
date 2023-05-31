@@ -1,14 +1,20 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { firestoreText } from "Texts/firestore";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
-import { verifyCouldnotConnectWithAlert,deleteDatasource,closeDSModal } from "Support/utils/dataSource";
-
+import {
+  verifyCouldnotConnectWithAlert,
+  deleteDatasource,
+  closeDSModal,
+} from "Support/utils/dataSource";
 import {
   fillDataSourceTextField,
   selectDataSource,
 } from "Support/utils/postgreSql";
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source Firestore", () => {
   beforeEach(() => {
@@ -95,7 +101,7 @@ describe("Data source Firestore", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      firestoreText.cypressFirestore
+      `cypress-${data.lastName}-firestore`
     );
 
     fillDataSourceTextField(
@@ -116,11 +122,10 @@ describe("Data source Firestore", () => {
       postgreSqlText.toastDSAdded
     );
 
-      cy.get('[data-cy="cypress-firestore-button"]').verifyVisibleElement(
-        "have.text",
-        firestoreText.cypressFirestore
-      );
-  
-      deleteDatasource("cypress-firestore");
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-firestore-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-firestore`);
+
+    deleteDatasource(`cypress-${data.lastName}-firestore`);
   });
 });
