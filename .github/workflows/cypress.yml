@@ -38,14 +38,22 @@ jobs:
           sleep 1
           done
 
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: './cypress-tests'
+
       - name: Cypress integration test
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
           config-file: cypress-run.config.js
-        env:
-          CYPRESS_SECRETS: ${{ secrets.CYPRESS_SECRETS }}
+        # env:
+        #   CYPRESS_SECRETS: ${{ secrets.CYPRESS_SECRETS }}
 
       - name: Capturing screenshots
         uses: actions/upload-artifact@v3
