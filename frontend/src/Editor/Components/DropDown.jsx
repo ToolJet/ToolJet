@@ -37,15 +37,13 @@ export const DropDown = function DropDown({
   }, [advanced, properties.values, properties.displayValues]);
 
   useEffect(() => {
-    if (advanced) {
-      schema?.length > 0 &&
-        Array.isArray(schema) &&
-        schema?.map((item) => {
-          displayValuesCopy.push(item.label);
-          valuesCopy.push(item.value);
-          disabledItemsCopy.push(item.disable);
-          visibleItemCopy.push(item.visible);
-        });
+    if (advanced && schema?.length > 0 && Array.isArray(schema)) {
+      schema?.map((item) => {
+        displayValuesCopy.push(item.label);
+        valuesCopy.push(item.value);
+        disabledItemsCopy.push(item.disable);
+        visibleItemCopy.push(item.visible);
+      });
 
       setDisplayValues(displayValuesCopy);
       setValues(valuesCopy);
