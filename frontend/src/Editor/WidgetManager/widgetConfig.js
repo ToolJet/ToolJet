@@ -5595,10 +5595,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         type: 'code',
         displayName: 'Default value',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } }],
-          },
+          schema: { type: 'array', element: { type: 'object' } },
         },
       },
       selector: {
