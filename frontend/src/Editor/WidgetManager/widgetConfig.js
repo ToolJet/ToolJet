@@ -278,6 +278,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      defaultSelctedRow: {
+        type: 'code',
+        displayName: 'Default selected row',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
@@ -475,6 +482,7 @@ export const widgets = [
         actions: { value: [] },
         enabledSort: { value: '{{true}}' },
         hideColumnSelectorButton: { value: '{{false}}' },
+        defaultSelctedRow: { value: '{{1}}' },
       },
       events: [],
       styles: {

@@ -56,6 +56,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
       actionButtonRadius,
     };
   });
+  const defaultSelctedRow = properties?.defaultSelctedRow;
 
   return {
     color,
@@ -85,5 +86,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     rowsPerPage,
     enabledSort,
     hideColumnSelectorButton,
+    defaultSelctedRow,
   };
 }

@@ -101,6 +101,7 @@ export function Table({
     rowsPerPage,
     enabledSort,
     hideColumnSelectorButton,
+    defaultSelctedRow,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
@@ -668,11 +669,14 @@ export function Table({
 
   useEffect(() => {
     const pageData = page.map((row) => row.original);
+    const selectedRowDetails = rows.find((row) => row.id === String(defaultSelctedRow));
+    const selectedRow = selectedRowDetails?.original ?? {};
+    const selectedRowId = selectedRowDetails?.id ?? null;
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
       ['currentData', data],
-      ['selectedRow', []],
-      ['selectedRowId', null],
+      ['selectedRow', selectedRow],
+      ['selectedRowId', selectedRowId],
     ]);
   }, [tableData.length, tableDetails.changeSet, page, data]);
 
@@ -721,6 +725,15 @@ export function Table({
       );
     }
   }, [JSON.stringify(changeSet)]);
+
+  useEffect(() => {
+    const selectedRowDetails = rows.find((row) => row.id === String(defaultSelctedRow));
+    const selectedRow = selectedRowDetails?.original;
+    const selectedRowId = selectedRowDetails?.id;
+    setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId }).then(() => {
+      mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
+    });
+  }, []);
 
   function downlaodPopover() {
     return (
