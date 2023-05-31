@@ -32,7 +32,7 @@ class AllowedCharactersValidator implements ValidatorConstraintInterface {
 
 export class CreateFolderDto {
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: "Folder name can't be empty" })
   @Transform(({ value }) => {
     const newValue = sanitizeInput(value);
     return newValue.trim();
