@@ -12,7 +12,9 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const { t } = useTranslation();
 
   const createOrganization = () => {
-    if (errorText) {
+    const error = validateName(newOrgName, 'Workspace name');
+    if (!error.status) {
+      setErrorText(error.errorMsg);
       return;
     }
 

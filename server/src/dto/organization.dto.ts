@@ -9,7 +9,9 @@ export class OrganizationCreateDto {
     const newValue = sanitizeInput(value);
     return newValue?.trim() || '';
   })
-  @IsNotEmpty()
+  @IsNotEmpty({
+    message: "Workspace name can't be empty",
+  })
   @MaxLength(50, { message: 'Maximum length has been reached.' })
   name: string;
 }

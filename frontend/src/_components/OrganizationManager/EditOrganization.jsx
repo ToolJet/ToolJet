@@ -17,7 +17,9 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
 
   const editOrganization = () => {
     const trimmedName = newOrgName?.trim();
-    if (errorText) {
+    const error = validateName(newOrgName, 'Workspace name');
+    if (!error.status) {
+      setErrorText(error.errorMsg);
       return;
     }
     if (currentValue?.name !== trimmedName) {
