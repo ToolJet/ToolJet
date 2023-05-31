@@ -49,7 +49,6 @@ function buildPostgrestQuery(filters) {
       }
     }
   });
-
   return postgrestQueryBuilder.url.toString();
 }
 
