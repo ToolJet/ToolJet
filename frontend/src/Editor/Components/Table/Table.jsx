@@ -505,6 +505,7 @@ export function Table({
     globalFilteredRows,
     getToggleHideAllColumnsProps,
     toggleRowSelected,
+    toggleAllRowsSelected,
   } = useTable(
     {
       autoResetPage: false,
@@ -686,6 +687,7 @@ export function Table({
   useEffect(() => {
     setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null }).then(() => {
       mergeToTableDetails({ selectedRowsDetails: [], selectedRow: {}, selectedRowId: null });
+      toggleAllRowsSelected(false);
     });
   }, [showBulkSelector, highlightSelectedRow, allowSelection]);
 
