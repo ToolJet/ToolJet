@@ -43,6 +43,7 @@ describe("Editor- Codehinder", () => {
       .click();
     cy.wait(200);
 
+    cy.get('[data-cy="codehinder-popup-badge"]').should("have.text", "Runjs");
     addInputOnQueryField(
       "codehinder-popup",
       `setTimeout(() => {
@@ -65,6 +66,7 @@ describe("Editor- Codehinder", () => {
       .find('[class="svg-icon m-2 popup-btn"]')
       .click();
 
+    cy.get('[data-cy="codehinder-popup-badge"]').should("have.text", "Editor");
     addInputOnQueryField("codehinder-popup", `Message from codehinder`);
     cy.get('[data-cy="codehinder-popup-close-option-icon"]').click();
     cy.get('[data-cy="success-message-input-field"]')
