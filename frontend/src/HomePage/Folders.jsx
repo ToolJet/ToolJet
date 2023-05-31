@@ -66,10 +66,15 @@ export const Folders = function Folders({
   };
 
   function saveFolder() {
+    const newName = newFolderName?.trim();
+    if (!newName) {
+      setErrorText("Folder name can't be empty");
+      return;
+    }
     if (!errorText) {
       setCreationStatus(true);
       folderService
-        .create(newFolderName.trim())
+        .create(newName)
         .then(() => {
           toast.success('Folder created.');
           setCreationStatus(false);
