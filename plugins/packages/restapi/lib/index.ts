@@ -11,6 +11,7 @@ import {
   getCurrentToken,
   OAuthUnauthorizedClientError,
 } from '@tooljet-plugins/common';
+const FormData = require('form-data');
 const JSON5 = require('json5');
 import got, { Headers, HTTPError, OptionsOfTextResponseBody } from 'got';
 import { SourceOptions } from './types';
@@ -22,6 +23,19 @@ function isEmpty(value: number | null | undefined | string) {
     !isNaN(value as number) ||
     (typeof value === 'object' && Object.keys(value).length === 0) ||
     (typeof value === 'string' && value.trim().length === 0)
+  );
+}
+
+function isFileObject(value) {
+  return (
+    typeof value === 'object' &&
+    Object.keys(value).length > 0 &&
+    Object.keys(value).includes('name') && // example.zip
+    Object.keys(value).includes('type') && // application/zip
+    Object.keys(value).includes('content') && // raw bytes
+    Object.keys(value).includes('dataURL') && // data url version
+    Object.keys(value).includes('base64Data') && // data
+    Object.keys(value).includes('filePath')
   );
 }
 
@@ -169,8 +183,33 @@ export default class RestapiQueryService implements QueryService {
         ...paramsFromUrl,
         ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
       },
-      ...(isUrlEncoded ? { form: json } : { json }),
     };
+
+    const hasFiles = Object.values(json || {}).some((item) => {
+      return isFileObject(item);
+    });
+
+    if (isUrlEncoded) {
+      requestOptions.form = json;
+    } else if (hasFiles) {
+      const form = new FormData();
+      for (const key in json) {
+        if (isFileObject(json[key])) {
+          const fileBuffer = Buffer.from(json[key].base64Data, 'base64');
+          form.append(key, fileBuffer, {
+            filename: json[key].name,
+            contentType: json[key].type,
+            knownLength: fileBuffer.length,
+          });
+        } else {
+          form.append(key, json[key]);
+        }
+      }
+
+      requestOptions.body = form;
+    } else {
+      requestOptions.json = json;
+    }
 
     if (authType === 'basic') {
       requestOptions.username = sourceOptions.username;
