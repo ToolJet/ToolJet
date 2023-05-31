@@ -18,6 +18,19 @@ const ManageOrgUsersDrawer = ({
 }) => {
   const [groups, setGroups] = useState([]);
 
+  const humanizeifDefaultGroupName = (groupName) => {
+    switch (groupName) {
+      case 'all_users':
+        return 'All Users';
+
+      case 'admin':
+        return 'Admin';
+
+      default:
+        return groupName;
+    }
+  };
+
   const fetchOrganizations = () => {
     const { current_organization_id } = authenticationService.currentSessionValue;
 
@@ -27,7 +40,7 @@ const ManageOrgUsersDrawer = ({
         const orgGroups = group_permissions
           .filter((group) => group.organization_id === current_organization_id)
           .map(({ group }) => ({
-            name: group,
+            name: humanizeifDefaultGroupName(group),
             value: group,
           }));
         setGroups(orgGroups);
