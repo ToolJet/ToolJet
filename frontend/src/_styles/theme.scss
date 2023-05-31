@@ -8023,6 +8023,10 @@ tbody {
   font-size: .765625rem !important;
 }
 
+.tooltip {
+  z-index: 10000;
+}
+
 .add-new-workspace-icon-wrap {
   display: flex;
   flex-direction: row;
