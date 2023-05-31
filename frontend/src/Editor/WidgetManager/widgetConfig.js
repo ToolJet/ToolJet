@@ -149,10 +149,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Number of rows per page',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       serverSidePagination: {
@@ -194,10 +191,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Total records server side',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       clientSidePagination: {
@@ -317,10 +311,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Action Button Radius',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'boolean' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'boolean' }] },
         },
       },
       tableType: {
@@ -352,10 +343,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border Radius',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       visibility: {
@@ -413,6 +401,23 @@ export const widgets = [
       {
         handle: 'discardNewlyAddedRows',
         displayName: 'Discard newly added rows',
+      },
+      {
+        displayName: 'Download table data',
+        handle: 'downloadTableData',
+        params: [
+          {
+            handle: 'type',
+            displayName: 'Type',
+            options: [
+              { name: 'Download as Excel', value: 'xlsx' },
+              { name: 'Download as CSV', value: 'csv' },
+              { name: 'Download as PDF', value: 'pdf' },
+            ],
+            defaultValue: `{{Download as Excel}}`,
+            type: 'select',
+          },
+        ],
       },
     ],
     definition: {
@@ -588,38 +593,17 @@ export const widgets = [
       {
         handle: 'disable',
         displayName: 'Disable',
-        params: [
-          {
-            handle: 'disable',
-            displayName: 'Value',
-            defaultValue: `{{false}}`,
-            type: 'toggle',
-          },
-        ],
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
       {
         handle: 'visibility',
         displayName: 'Visibility',
-        params: [
-          {
-            handle: 'visible',
-            displayName: 'Value',
-            defaultValue: `{{false}}`,
-            type: 'toggle',
-          },
-        ],
+        params: [{ handle: 'visible', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
       {
         handle: 'loading',
         displayName: 'Loading',
-        params: [
-          {
-            handle: 'loading',
-            displayName: 'Value',
-            defaultValue: `{{false}}`,
-            type: 'toggle',
-          },
-        ],
+        params: [{ handle: 'loading', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
     ],
     definition: {
@@ -670,10 +654,7 @@ export const widgets = [
         type: 'json',
         displayName: 'Data',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'array' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'array' }] },
         },
       },
       loadingState: {
@@ -875,10 +856,7 @@ export const widgets = [
       hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
       hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
       hideOnEsc: { type: 'toggle', displayName: 'Close on escape key' },
-      closeOnClickingOutside: {
-        type: 'toggle',
-        displayName: 'Close on clicking outside',
-      },
+      closeOnClickingOutside: { type: 'toggle', displayName: 'Close on clicking outside' },
 
       size: {
         type: 'select',
@@ -1059,23 +1037,10 @@ export const widgets = [
       borderRadius: {
         type: 'code',
         displayName: 'Border radius',
-        validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
-        },
+        validation: { schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
       },
-      visibility: {
-        type: 'toggle',
-        displayName: 'Visibility',
-        validation: { schema: { type: 'boolean' } },
-      },
-      disabledState: {
-        type: 'toggle',
-        displayName: 'Disable',
-        validation: { schema: { type: 'boolean' } },
-      },
+      visibility: { type: 'toggle', displayName: 'Visibility', validation: { schema: { type: 'boolean' } } },
+      disabledState: { type: 'toggle', displayName: 'Disable', validation: { schema: { type: 'boolean' } } },
     },
     exposedVariables: {
       value: '',
@@ -1101,26 +1066,12 @@ export const widgets = [
       {
         handle: 'disable',
         displayName: 'Disable',
-        params: [
-          {
-            handle: 'disable',
-            displayName: 'Value',
-            defaultValue: '{{false}}',
-            type: 'toggle',
-          },
-        ],
+        params: [{ handle: 'disable', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
       {
         handle: 'visibility',
         displayName: 'Visibility',
-        params: [
-          {
-            handle: 'visibility',
-            displayName: 'Value',
-            defaultValue: '{{false}}',
-            type: 'toggle',
-          },
-        ],
+        params: [{ handle: 'visibility', displayName: 'Value', defaultValue: '{{false}}', type: 'toggle' }],
       },
     ],
     definition: {
@@ -1168,30 +1119,21 @@ export const widgets = [
         type: 'code',
         displayName: 'Default value',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       minValue: {
         type: 'code',
         displayName: 'Minimum value',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       maxValue: {
         type: 'code',
         displayName: 'Maximum value',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       placeholder: {
@@ -1224,10 +1166,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       backgroundColor: {
@@ -1322,10 +1261,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       backgroundColor: {
@@ -1439,10 +1375,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
     },
@@ -1588,10 +1521,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Default value',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
         },
       },
       values: {
@@ -1600,10 +1530,7 @@ export const widgets = [
         validation: {
           schema: {
             type: 'array',
-            element: {
-              type: 'union',
-              schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
-            },
+            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
           },
         },
       },
@@ -1611,13 +1538,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Option labels',
         validation: {
-          schema: {
-            type: 'array',
-            element: {
-              type: 'union',
-              schemas: [{ type: 'string' }, { type: 'number' }],
-            },
-          },
+          schema: { type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         },
       },
     },
@@ -1820,10 +1741,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
     },
@@ -1974,10 +1892,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Text',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       loadingState: {
@@ -2103,14 +2018,7 @@ export const widgets = [
       {
         handle: 'visibility',
         displayName: 'Set Visibility',
-        params: [
-          {
-            handle: 'visibility',
-            displayName: 'Value',
-            defaultValue: `{{false}}`,
-            type: 'toggle',
-          },
-        ],
+        params: [{ handle: 'visibility', displayName: 'Value', defaultValue: `{{false}}`, type: 'toggle' }],
       },
     ],
     definition: {
@@ -2220,10 +2128,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Padding',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       visibility: {
@@ -2393,10 +2298,7 @@ export const widgets = [
         validation: {
           schema: {
             type: 'array',
-            element: {
-              type: 'union',
-              schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
-            },
+            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
           },
         },
       },
@@ -2406,10 +2308,7 @@ export const widgets = [
         validation: {
           schema: {
             type: 'array',
-            element: {
-              type: 'union',
-              schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
-            },
+            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
           },
         },
       },
@@ -2561,26 +2460,14 @@ export const widgets = [
         type: 'code',
         displayName: 'Default value',
         validation: {
-          schema: {
-            type: 'array',
-            element: {
-              type: 'union',
-              schemas: [{ type: 'string' }, { type: 'number' }],
-            },
-          },
+          schema: { type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         },
       },
       values: {
         type: 'code',
         displayName: 'Option values',
         validation: {
-          schema: {
-            type: 'array',
-            element: {
-              type: 'union',
-              schemas: [{ type: 'string' }, { type: 'number' }],
-            },
-          },
+          schema: { type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         },
       },
       display_values: {
@@ -2607,10 +2494,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       visibility: {
@@ -2921,20 +2805,14 @@ export const widgets = [
         type: 'code',
         displayName: 'Number of stars',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       defaultSelected: {
         type: 'code',
         displayName: 'Default no of selected stars',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       allowHalfStar: {
@@ -2948,13 +2826,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Tooltips',
         validation: {
-          schema: {
-            type: 'array',
-            element: {
-              type: 'union',
-              schemas: [{ type: 'string' }, { type: 'number' }],
-            },
-          },
+          schema: { type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } },
         },
       },
     },
@@ -3223,9 +3095,7 @@ export const widgets = [
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        instructionText: {
-          value: 'Drag and Drop some files here, or click to select files',
-        },
+        instructionText: { value: 'Drag and Drop some files here, or click to select files' },
         enableDropzone: { value: '{{true}}' },
         enablePicker: { value: '{{true}}' },
         maxFileCount: { value: '{{2}}' },
@@ -3467,10 +3337,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Border radius',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
     },
@@ -3818,10 +3685,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Row height',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       showBorder: {
@@ -3882,10 +3746,7 @@ export const widgets = [
         type: 'number',
         displayName: 'Border radius',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
     },
@@ -3945,11 +3806,7 @@ export const widgets = [
             type: 'array',
             element: {
               type: 'object',
-              object: {
-                title: { type: 'string' },
-                color: { type: 'string' },
-                textColor: { type: 'string' },
-              },
+              object: { title: { type: 'string' }, color: { type: 'string' }, textColor: { type: 'string' } },
             },
           },
         },
@@ -4082,10 +3939,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Progress',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
     },
@@ -4109,20 +3963,14 @@ export const widgets = [
         type: 'code',
         displayName: 'Text Size',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       strokeWidth: {
         type: 'code',
         displayName: 'Stroke Width',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       counterClockwise: {
@@ -4136,10 +3984,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Circle Ratio',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       visibility: {
@@ -4252,11 +4097,7 @@ export const widgets = [
         displayName: 'Primary value label',
         validation: { schema: { type: 'string' } },
       },
-      primaryValue: {
-        type: 'code',
-        displayName: 'Primary value',
-        validation: { schema: { type: 'string' } },
-      },
+      primaryValue: { type: 'code', displayName: 'Primary value', validation: { schema: { type: 'string' } } },
       hideSecondary: {
         type: 'toggle',
         displayName: 'Hide secondary value',
@@ -4267,22 +4108,14 @@ export const widgets = [
         displayName: 'Secondary value label',
         validation: { schema: { type: 'string' } },
       },
-      secondaryValue: {
-        type: 'code',
-        displayName: 'Secondary value',
-        validation: { schema: { type: 'string' } },
-      },
+      secondaryValue: { type: 'code', displayName: 'Secondary value', validation: { schema: { type: 'string' } } },
       secondarySignDisplay: {
         type: 'code',
         displayName: 'Secondary sign display',
 
         validation: { schema: { type: 'string' } },
       },
-      loadingState: {
-        type: 'toggle',
-        displayName: 'Loading State',
-        validation: { schema: { type: 'boolean' } },
-      },
+      loadingState: { type: 'toggle', displayName: 'Loading State', validation: { schema: { type: 'boolean' } } },
     },
     events: {},
     styles: {
@@ -4367,10 +4200,7 @@ export const widgets = [
         type: 'code',
         displayName: 'Value',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
       enableTwoHandle: {
@@ -4656,11 +4486,7 @@ export const widgets = [
     description: 'Visual representation of a sequence of events',
     component: 'CustomComponent',
     properties: {
-      data: {
-        type: 'code',
-        displayName: 'Data',
-        validation: { schema: { type: 'object' } },
-      },
+      data: { type: 'code', displayName: 'Data', validation: { schema: { type: 'object' } } },
       code: { type: 'code', displayName: 'Code' },
     },
     defaultSize: {
@@ -4738,15 +4564,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         validation: {
           schema: {
             type: 'union',
-            schemas: [
-              {
-                type: 'array',
-                element: {
-                  type: 'union',
-                  schemas: [{ type: 'string' }, { type: 'number' }],
-                },
-              },
-            ],
+            schemas: [{ type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } }],
           },
         },
       },
@@ -4756,15 +4574,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         validation: {
           schema: {
             type: 'union',
-            schemas: [
-              {
-                type: 'array',
-                element: {
-                  type: 'union',
-                  schemas: [{ type: 'string' }, { type: 'number' }],
-                },
-              },
-            ],
+            schemas: [{ type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } }],
           },
         },
       },
@@ -4774,15 +4584,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         validation: {
           schema: {
             type: 'union',
-            schemas: [
-              {
-                type: 'array',
-                element: {
-                  type: 'union',
-                  schemas: [{ type: 'string' }, { type: 'number' }],
-                },
-              },
-            ],
+            schemas: [{ type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } }],
           },
         },
       },
@@ -4891,21 +4693,9 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
     description: 'Embed PDF file',
     component: 'PDF',
     properties: {
-      url: {
-        type: 'code',
-        displayName: 'File URL',
-        validation: { schema: { type: 'string' } },
-      },
-      scale: {
-        type: 'toggle',
-        displayName: 'Scale page to width',
-        validation: { schema: { type: 'boolean' } },
-      },
-      pageControls: {
-        type: 'toggle',
-        displayName: 'Show page controls',
-        validation: { schema: { type: 'boolean' } },
-      },
+      url: { type: 'code', displayName: 'File URL', validation: { schema: { type: 'string' } } },
+      scale: { type: 'toggle', displayName: 'Scale page to width', validation: { schema: { type: 'boolean' } } },
+      pageControls: { type: 'toggle', displayName: 'Show page controls', validation: { schema: { type: 'boolean' } } },
       showDownloadOption: {
         type: 'toggle',
         displayName: 'Show the Download',
@@ -5220,38 +5010,22 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         handle: 'deleteCard',
         displayName: 'Delete Card',
         params: [
-          {
-            handle: 'id',
-            displayName: 'Card Id',
-            defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}`,
-          },
+          { handle: 'id', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
         ],
       },
       {
         handle: 'moveCard',
         displayName: 'Move Card',
         params: [
-          {
-            handle: 'cardId',
-            displayName: 'Card Id',
-            defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}`,
-          },
-          {
-            handle: 'columnId',
-            displayName: 'Destination Column Id',
-            defaultValue: '',
-          },
+          { handle: 'cardId', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
+          { handle: 'columnId', displayName: 'Destination Column Id', defaultValue: '' },
         ],
       },
       {
         handle: 'updateCardData',
         displayName: 'Update Card Data',
         params: [
-          {
-            handle: 'id',
-            displayName: 'Card Id',
-            defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}`,
-          },
+          { handle: 'id', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
           {
             handle: 'value',
             displayName: 'Value',
@@ -5320,14 +5094,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       {
         displayName: 'Set Color',
         handle: 'setColor',
-        params: [
-          {
-            handle: 'color',
-            displayName: 'color',
-            defaultValue: '#ffffff',
-            type: 'color',
-          },
-        ],
+        params: [{ handle: 'color', displayName: 'color', defaultValue: '#ffffff', type: 'color' }],
       },
     ],
     others: {
@@ -5596,14 +5363,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       {
         displayName: 'Set Visibility',
         handle: 'setVisibility',
-        params: [
-          {
-            handle: 'value',
-            displayName: 'Value',
-            defaultValue: '{{true}}',
-            type: 'toggle',
-          },
-        ],
+        params: [{ handle: 'value', displayName: 'Value', defaultValue: '{{true}}', type: 'toggle' }],
       },
     ],
     definition: {
@@ -5848,10 +5608,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         displayName: 'List of labels',
         validation: {
           schema: { type: 'array' },
-          element: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }],
-          },
+          element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
         },
       },
     },
