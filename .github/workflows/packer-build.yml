@@ -70,4 +70,4 @@ jobs:
             message="Job '${{ env.JOB_NAME }}' failed! AMI = tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal"
           fi
 
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.WEBHOOK }} 
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }} 
