@@ -25,10 +25,6 @@ export const DropDown = function DropDown({
   const [disabledItems, setDisabledItems] = useState([]);
   const [visibleItems, setVisibleItems] = useState([]);
   const { value: exposedValue } = exposedVariables;
-  let displayValuesCopy = [];
-  let valuesCopy = [];
-  let disabledItemsCopy = [];
-  let visibleItemCopy = [];
 
   useEffect(() => {
     setValues(advanced ? [] : properties.values);
@@ -38,20 +34,14 @@ export const DropDown = function DropDown({
 
   useEffect(() => {
     if (advanced && schema?.length > 0 && Array.isArray(schema)) {
-      schema?.map((item) => {
-        displayValuesCopy.push(item.label);
-        valuesCopy.push(item.value);
-        disabledItemsCopy.push(item.disable);
-        visibleItemCopy.push(item.visible);
-      });
-
-      setDisplayValues(displayValuesCopy);
-      setValues(valuesCopy);
-      setDisabledItems(disabledItemsCopy);
-      setVisibleItems(visibleItemCopy);
+      setDisplayValues(schema.map((item) => item.label));
+      setValues(schema.map((item) => item.value));
+      setDisabledItems(schema.map((item) => item.disable));
+      setVisibleItems(schema.map((item) => item.visible));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [schema]);
+  }, [advanced, schema]);
+
   if (!_.isArray(values)) {
     setValues([]);
   }
