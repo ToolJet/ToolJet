@@ -36,27 +36,32 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   }, [properties.selector]);
 
   useEffect(() => {
-    if (properties.advanced) {
-      if (Array.isArray(properties?.json) && properties?.json?.length > 0 && typeof properties?.json[0] === 'object') {
-        const jsonAnnotation = properties?.json?.map((item) => ({
-          geometry: {
-            type: item.type,
-            x: item.x,
-            y: item.y,
-            width: item.width,
-            height: item.height,
-          },
-          data: {
-            text: item.text,
-            id: uuid(),
-          },
-        }));
+    if (properties?.defaultValue.length === 0) {
+      setAnnotations([]);
+    } else if (
+      Array.isArray(properties?.defaultValue) &&
+      properties?.defaultValue?.length > 0 &&
+      typeof properties?.defaultValue[0] === 'object'
+    ) {
+      const defaultValueAnnotation = properties?.defaultValue?.map((item) => ({
+        geometry: {
+          type: item.type,
+          x: item.x,
+          y: item.y,
+          width: item.width,
+          height: item.height,
+        },
+        data: {
+          text: item.text,
+          id: uuid(),
+        },
+      }));
 
-        setAnnotations(jsonAnnotation || []);
-      }
+      setAnnotations(defaultValueAnnotation || []);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(properties?.json), properties.advanced]);
+  }, [JSON.stringify(properties?.defaultValue)]);
 
   useEffect(() => {
     setExposedVariable('annotations', getExposedAnnotations(annotationsState));

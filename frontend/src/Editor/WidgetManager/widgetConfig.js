@@ -5590,19 +5590,15 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           schema: { type: 'string' },
         },
       },
-      advanced: {
-        type: 'toggle',
-        displayName: 'Advanced',
-        validation: {
-          schema: { type: 'boolean' },
-        },
-      },
-      json: {
+
+      defaultValue: {
         type: 'code',
-        displayName: 'JSON',
-        conditionallyRender: {
-          key: 'advanced',
-          value: true,
+        displayName: 'Default value',
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'array', element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] } }],
+          },
         },
       },
       selector: {
@@ -5656,8 +5652,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
-        advanced: { value: `{{false}}` },
-        json: {
+        defaultValue: {
           value:
             "{{[\t{type: 'RECTANGLE',width: 40,height:24, x:41,y:62,text:'Car'},{type: 'RECTANGLE',width: 40,height:24, x:41,y:12,text:'Tree'}\t]}}",
         },
