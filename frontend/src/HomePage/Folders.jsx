@@ -4,7 +4,7 @@ import { folderService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import Modal from './Modal';
 import { FolderMenu } from './FolderMenu';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog, ToolTip } from '@/_components';
 import { useTranslation } from 'react-i18next';
 import Skeleton from 'react-loading-skeleton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
@@ -278,12 +278,14 @@ export const Folders = function Folders({
             onClick={() => handleFolderChange(folder)}
             data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-list-card`}
           >
-            <div
-              className="flex-grow-1 tj-folder-list tj-text-xsm"
-              data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}
-            >
-              {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
-            </div>
+            <ToolTip message={folder.name}>
+              <div
+                className="flex-grow-1 tj-folder-list tj-text-xsm"
+                data-cy={`${folder.name.toLowerCase().replace(/\s+/g, '-')}-name`}
+              >
+                {`${folder.name}${folder.count > 0 ? ` (${folder.count})` : ''}`}
+              </div>
+            </ToolTip>
             {(canDeleteFolder || canUpdateFolder) && (
               <FolderMenu
                 canDeleteFolder={canDeleteFolder}
