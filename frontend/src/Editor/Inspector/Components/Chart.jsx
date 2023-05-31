@@ -97,20 +97,20 @@ class Chart extends React.Component {
         currentState
       ),
     });
-    {
-      resolveReferences(plotFromJson) &&
-        items.push({
-          title: 'Bar mode',
-          children: renderElement(
-            component,
-            componentMeta,
-            paramUpdated,
-            dataQueries,
-            'barmode',
-            'properties',
-            currentState
-          ),
-        });
+
+    if (plotFromJson) {
+      items.push({
+        title: 'Bar mode',
+        children: renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          'barmode',
+          'properties',
+          currentState
+        ),
+      });
     }
 
     if (plotFromJson) {
