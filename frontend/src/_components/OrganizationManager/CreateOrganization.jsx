@@ -12,25 +12,27 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const { t } = useTranslation();
 
   const createOrganization = () => {
-    const error = validateName(newOrgName, 'Workspace name');
-    if (!error.status) {
-      setErrorText(error.errorMsg);
+    const newName = newOrgName?.trim();
+    if (!newName) {
+      setErrorText("Workspace name can't be empty");
       return;
     }
 
-    setIsCreating(true);
-    organizationService.createOrganization(newOrgName.trim()).then(
-      (data) => {
-        setIsCreating(false);
-        const newPath = appendWorkspaceId(data.current_organization_id, location.pathname, true);
-        window.history.replaceState(null, null, newPath);
-        window.location.reload();
-      },
-      (error) => {
-        setIsCreating(false);
-        handleHttpErrorMessages(error, 'workspace');
-      }
-    );
+    if (!errorText) {
+      setIsCreating(true);
+      organizationService.createOrganization(newName).then(
+        (data) => {
+          setIsCreating(false);
+          const newPath = appendWorkspaceId(data.current_organization_id, location.pathname, true);
+          window.history.replaceState(null, null, newPath);
+          window.location.reload();
+        },
+        (error) => {
+          setIsCreating(false);
+          handleHttpErrorMessages(error, 'workspace');
+        }
+      );
+    }
   };
 
   const handleInputChange = (e) => {
@@ -45,6 +47,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
 
   const closeModal = () => {
     setErrorText('');
+    setNewOrgName('');
     setShowCreateOrg(false);
   };
 
