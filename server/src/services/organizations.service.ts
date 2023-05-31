@@ -716,13 +716,8 @@ export class OrganizationsService {
             throw new BadRequestException(`You can only invite 250 users at a time`);
           }
 
-          this.inviteUserswrapper(users, currentUser)
-            .then(() => {
-              res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
-            })
-            .catch((error) => {
-              console.error(error);
-            });
+          await this.inviteUserswrapper(users, currentUser);
+          res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
         } catch (error) {
           const { status, response } = error;
           res.status(status).send(response);
