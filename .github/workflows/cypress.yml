@@ -33,9 +33,10 @@ jobs:
 
       - name: Checking the PR URL
         run: |
-          until curl --silent --fail https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com; do
-            sleep 1
-          done
+          timeout 1560 bash -c '
+          until curl --silent --fail https://tooljet-pr-${PR_NUMBER}.onrender.com; do
+            sleep 180
+          done'
 
       - name: Create Cypress environment file
         id: create-json
