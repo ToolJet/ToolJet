@@ -9,6 +9,7 @@ import SortableList from '@/_components/SortableList';
 import Popover from '@/_ui/Popover';
 // eslint-disable-next-line import/no-unresolved
 import EmptyIllustration from '@assets/images/no-results.svg';
+import { useAppVersionsManagerActions } from '@/_stores/appVersionsManagerStore';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -34,14 +35,13 @@ const LeftSidebarPageSelector = ({
   apps,
   popoverContentHeight,
   isVersionReleased,
-  setReleasedVersionPopupState,
 }) => {
   const [allpages, setPages] = useState(pages);
   const [pinned, setPinned] = useState(false);
   const [haveUserPinned, setHaveUserPinned] = useState(false);
-
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const { enableReleasedVersionPopupState } = useAppVersionsManagerActions();
 
   const filterPages = (value) => {
     if (!value || value.length === 0) return clearSearch();
@@ -81,7 +81,6 @@ const LeftSidebarPageSelector = ({
                 showHideViewerNavigationControls={showHideViewerNavigationControls}
                 showPageViwerPageNavitation={appDefinition?.showViewerNavigation || false}
                 isVersionReleased={isVersionReleased}
-                setReleasedVersionPopupState={setReleasedVersionPopupState}
               />
             }
           >
@@ -90,7 +89,7 @@ const LeftSidebarPageSelector = ({
                 title={'Add Page'}
                 onClick={() => {
                   if (isVersionReleased) {
-                    setReleasedVersionPopupState();
+                    enableReleasedVersionPopupState();
                     return;
                   }
                   setNewPageBeingCreated(true);
@@ -164,7 +163,7 @@ const LeftSidebarPageSelector = ({
                 allpages={pages}
                 components={appDefinition?.components ?? {}}
                 isVersionReleased={isVersionReleased}
-                setReleasedVersionPopupState={setReleasedVersionPopupState}
+                setReleasedVersionPopupState={enableReleasedVersionPopupState}
                 pinPagesPopover={pinPagesPopover}
                 haveUserPinned={haveUserPinned}
               />

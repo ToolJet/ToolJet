@@ -11,6 +11,7 @@ import LeftSidebarPageSelector from './SidebarPageSelector';
 import { ConfirmDialog } from '@/_components';
 import config from 'config';
 import { usePanelHeight } from '@/_stores/queryPanelStore';
+import { useAppVersionsManagerActions } from '@/_stores/appVersionsManagerStore';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -46,13 +47,14 @@ export const LeftSidebar = forwardRef((props, ref) => {
     apps,
     clonePage,
     isVersionReleased,
-    setReleasedVersionPopupState,
   } = props;
   const queryPanelHeight = usePanelHeight();
   const [selectedSidebarItem, setSelectedSidebarItem] = useState();
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
+  const { enableReleasedVersionPopupState } = useAppVersionsManagerActions();
+
   useEffect(() => {
     popoverContentHeight !== queryPanelHeight && setPopoverContentHeight(queryPanelHeight);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -98,7 +100,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         apps={apps}
         popoverContentHeight={popoverContentHeight}
         isVersionReleased={isVersionReleased}
-        setReleasedVersionPopupState={setReleasedVersionPopupState}
       />
       <LeftSidebarInspector
         darkMode={darkMode}
@@ -123,7 +124,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         showDataSourceManagerModal={showDataSourceManagerModal}
         popoverContentHeight={popoverContentHeight}
         isVersionReleased={isVersionReleased}
-        setReleasedVersionPopupState={setReleasedVersionPopupState}
+        setReleasedVersionPopupState={enableReleasedVersionPopupState}
       />
       {config.COMMENT_FEATURE_ENABLE && (
         <div className={`${isVersionReleased && 'disabled'}`}>

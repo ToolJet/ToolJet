@@ -1,7 +1,7 @@
 import { create, zustandDevTools } from './utils';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { useAppVersionManagerStore } from '@/_stores/useAppVersionsManagerStore';
+import { useAppVersionManagerStore } from '@/_stores/appVersionsManagerStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { runQueries, computeQueryState } from '@/_helpers/appUtils';
 

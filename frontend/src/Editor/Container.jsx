@@ -15,7 +15,7 @@ import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
-import { useEditingVersionId } from '@/_stores/appVersionsManagerStore';
+import { useEditingVersionId, useAppVersionsManagerActions } from '@/_stores/appVersionsManagerStore';
 
 export const Container = ({
   canvasWidth,
@@ -46,7 +46,6 @@ export const Container = ({
   sideBarDebugger,
   currentPageId,
   isVersionReleased,
-  setReleasedVersionPopupState,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -68,6 +67,7 @@ export const Container = ({
   const router = useRouter();
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
+  const { enableReleasedVersionPopupState } = useAppVersionsManagerActions();
 
   useHotkeys('meta+z, control+z', () => handleUndo());
   useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
@@ -90,7 +90,7 @@ export const Container = ({
           }
         });
       }
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
     },
     [isContainerFocused, appDefinition, focusedParentIdRef]
   );
@@ -238,7 +238,7 @@ export const Container = ({
 
   function onDragStop(e, componentId, direction, currentLayout) {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
     // const id = componentId ? componentId : uuidv4();
@@ -276,7 +276,7 @@ export const Container = ({
 
   function onResizeStop(id, e, direction, ref, d, position) {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
     const deltaWidth = d.width;
@@ -557,7 +557,7 @@ export const Container = ({
                 currentPageId,
                 childComponents,
                 isVersionReleased,
-                setReleasedVersionPopupState,
+                enableReleasedVersionPopupState,
               }}
               isVersionReleased={isVersionReleased}
             />

@@ -102,7 +102,6 @@ class EditorComponent extends React.Component {
       isLoading: true,
       users: null,
       appId,
-      // editingVersion: null,
       showLeftSidebar: true,
       showComments: false,
       zoomLevel: 1.0,
@@ -139,7 +138,6 @@ class EditorComponent extends React.Component {
       queryPanelHeight: this.queryManagerPreferences?.isExpanded
         ? this.queryManagerPreferences?.queryPanelHeight
         : 95 ?? 70,
-      isUserEditingTheVersion: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -352,7 +350,6 @@ class EditorComponent extends React.Component {
         {
           app: data,
           isLoading: false,
-          editingVersion: data.editing_version,
           appDefinition: dataDefinition,
           slug: data.slug,
           currentPageId: homePageId,
@@ -409,7 +406,6 @@ class EditorComponent extends React.Component {
 
       this.setState(
         {
-          editingVersion: version,
           isSaving: false,
         },
         () => {
@@ -631,7 +627,7 @@ class EditorComponent extends React.Component {
       });
       this.handleInspectorView();
     } else if (this.isVersionReleased()) {
-      this.setReleasedVersionPopupState();
+      useAppVersionManagerStore.getStates().actions.enableReleasedVersionPopupState();
     }
   };
 
@@ -673,13 +669,13 @@ class EditorComponent extends React.Component {
       });
       this.handleInspectorView();
     } else {
-      this.setState({ isUserEditingTheVersion: true });
+      useAppVersionManagerStore.getStates().actions.enableReleasedVersionPopupState();
     }
   };
 
   componentDefinitionChanged = (componentDefinition) => {
     if (this.isVersionReleased()) {
-      this.setReleasedVersionPopupState();
+      useAppVersionManagerStore.getStates().actions.enableReleasedVersionPopupState();
       return;
     }
     let _self = this;
@@ -709,10 +705,6 @@ class EditorComponent extends React.Component {
         });
       });
     }
-  };
-
-  setReleasedVersionPopupState = () => {
-    this.setState({ isUserEditingTheVersion: true });
   };
 
   handleEditorEscapeKeyPress = () => {
@@ -758,7 +750,8 @@ class EditorComponent extends React.Component {
 
   cutComponents = () => {
     if (this.isVersionReleased()) {
-      this.setReleasedVersionPopupState();
+      useAppVersionManagerStore.getStates().actions.enableReleasedVersionPopupState();
+
       return;
     }
     cloneComponents(this, this.appDefinitionChanged, false, true);
@@ -768,7 +761,7 @@ class EditorComponent extends React.Component {
 
   cloneComponents = () => {
     if (this.isVersionReleased()) {
-      this.setReleasedVersionPopupState();
+      useAppVersionManagerStore.getStates().actions.enableReleasedVersionPopupState();
       return;
     }
     cloneComponents(this, this.appDefinitionChanged, true);
@@ -890,7 +883,6 @@ class EditorComponent extends React.Component {
           this.setState(
             {
               saveError: false,
-              editingVersion: _editingVersion,
             },
             () => {
               this.setState({
@@ -1419,11 +1411,10 @@ class EditorComponent extends React.Component {
       apps,
       defaultComponentStateComputed,
       showComments,
-      editingVersion,
       hoveredComponent,
       queryConfirmationList,
     } = this.state;
-
+    const editingVersion = useAppVersionManagerStore?.getState()?.editingVersion;
     const appVersionPreviewLink = editingVersion
       ? `/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
       : '';
@@ -1532,7 +1523,6 @@ class EditorComponent extends React.Component {
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
                 isVersionReleased={this.isVersionReleased()}
-                setReleasedVersionPopupState={this.setReleasedVersionPopupState}
               />
               {!showComments && (
                 <Selecto
@@ -1634,7 +1624,6 @@ class EditorComponent extends React.Component {
                           hoveredComponent={hoveredComponent}
                           sideBarDebugger={this.sideBarDebugger}
                           currentPageId={this.state.currentPageId}
-                          setReleasedVersionPopupState={this.setReleasedVersionPopupState}
                           isVersionReleased={this.isVersionReleased()}
                         />
                         <CustomDragLayer
