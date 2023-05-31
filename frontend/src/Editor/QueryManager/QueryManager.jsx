@@ -42,7 +42,7 @@ const QueryManager = ({
   const previewLoading = usePreviewLoading();
   const queryPreviewData = usePreviewData();
   const selectedQuery = useSelectedQuery();
-  const { setSelectedDataSource } = useQueryPanelActions();
+  const { setSelectedDataSource, setQueryToBeRun } = useQueryPanelActions();
 
   const [options, setOptions] = useState({});
   const mounted = useRef(false);
@@ -61,7 +61,10 @@ const QueryManager = ({
   }, [selectedQuery?.options]);
 
   useEffect(() => {
-    if (queryToBeRun !== null) runQuery(editorRef, queryToBeRun.id, queryToBeRun.name);
+    if (queryToBeRun !== null) {
+      runQuery(editorRef, queryToBeRun.id, queryToBeRun.name);
+      setQueryToBeRun(null);
+    }
   }, [editorRef, queryToBeRun]);
 
   useEffect(() => {

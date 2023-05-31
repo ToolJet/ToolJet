@@ -76,7 +76,7 @@ export const useDataQueriesStore = create(
           dataqueryService
             .update(id, name, options)
             .then((data) => {
-              const updatedData = { ...data, kind };
+              const updatedData = { ...data, kind, options };
               actions.setUnSavedChanges(false);
               localStorage.removeItem('transformation');
               toast.success('Query Saved');
@@ -106,7 +106,7 @@ export const useDataQueriesStore = create(
           dataqueryService
             .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId)
             .then((data) => {
-              const query = { ...data, kind };
+              const query = { ...data, kind, options };
               actions.setUnSavedChanges(false);
               toast.success('Query Added');
               set((state) => ({
