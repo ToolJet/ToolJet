@@ -683,6 +683,13 @@ export function Table({
       setExposedVariables({ selectedRow, selectedRowId });
     }
   }, [selectedFlatRows.length, selectedFlatRows, _.toString(selectedFlatRows)]);
+  registerAction(
+    'downloadTableData',
+    async function (format) {
+      exportData(format, true);
+    },
+    [_.toString(globalFilteredRows), columns]
+  );
 
   useEffect(() => {
     setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null }).then(() => {
@@ -1029,7 +1036,7 @@ export function Table({
                 return (
                   <tr
                     key={index}
-                    className={`table-row ${
+                    className={`table-row table-editor-component-row ${
                       highlightSelectedRow && row.isSelected && row.id === tableDetails.selectedRowId ? 'selected' : ''
                     } ${
                       highlightSelectedRow &&
@@ -1134,7 +1141,9 @@ export function Table({
                           <div
                             className={`td-container ${
                               cell.column.columnType === 'image' && 'jet-table-image-column'
-                            } ${cell.column.columnType !== 'image' && 'w-100 h-100'}`}
+                            } ${
+                              cell.column.columnType !== 'image' && `w-100 ${_.isEmpty(actionButtonsArray) && 'h-100'}`
+                            }`}
                           >
                             <GenerateEachCellValue
                               cellValue={cellValue}
