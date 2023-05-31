@@ -44,7 +44,7 @@ export const NumberInput = function NumberInput({
     ) {
       setValue(Number(parseFloat(properties.minValue)).toFixed(properties.decimalPlaces));
     } else {
-      setValue(Number(parseFloat(e.target.value).toString()));
+      setValue(Number(parseFloat(e.target.value)));
     }
     fireEvent('onChange');
   };
