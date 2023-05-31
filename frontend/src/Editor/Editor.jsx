@@ -1580,7 +1580,9 @@ class EditorComponent extends React.Component {
                 />
               )}
               <div
-                className={`main main-editor-canvas ${this.state.isQueryPaneDragging ? 'hide-scrollbar' : ''}`}
+                className={`main main-editor-canvas ${
+                  this.state.isQueryPaneDragging || this.state.isDragging ? 'hide-scrollbar' : ''
+                }`}
                 id="main-editor-canvas"
                 style={{ backgroundColor: this.computeCanvasBackgroundColor() }}
               >
@@ -1688,6 +1690,7 @@ class EditorComponent extends React.Component {
                           snapToGrid={true}
                           currentLayout={currentLayout}
                           canvasWidth={this.getCanvasWidth()}
+                          onDragging={(isDragging) => this.setState({ isDragging })}
                         />
                       </>
                     )}
