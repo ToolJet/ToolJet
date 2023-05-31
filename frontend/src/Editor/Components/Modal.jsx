@@ -67,12 +67,18 @@ export const Modal = function Modal({
     fireEvent(canShowModal ? 'onOpen' : 'onClose');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
+  useEffect(() => {
+    const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
+    if (showModal && modalBackdropEl) {
+      modalBackdropEl.style.height = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
+    }
+  }, [showModal, containerProps.appDefinition.globalSettings.canvasMaxHeight]);
 
   function hideModal() {
     setShowModal(false);
     setExposedVariable('show', false).then(() => fireEvent('onClose'));
   }
-  const backwardCompatibilityCheck = height == '30' || modalHeight != undefined ? true : false;
+  const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
 
   const customStyles = {
     modalBody: {
