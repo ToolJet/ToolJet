@@ -200,7 +200,11 @@ class ManageOrgUsersComponent extends React.Component {
           });
         })
         .catch(({ error }) => {
-          toast.error(error);
+          toast.error(error, {
+            style: {
+              maxWidth: '700px',
+            },
+          });
           this.setState({ creatingUser: false });
         });
     } else {

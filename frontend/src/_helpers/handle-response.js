@@ -13,14 +13,19 @@ export function handleResponse(response) {
         // location.reload(true);
       } else if ([451].indexOf(response.status) !== -1) {
         // a popup will show when the response meet the following conditions
-        const paths = ['apps', 'organization_users', 'license_terms', 'license-terms', 'oidc'];
+        const paths = ['apps', 'organization_users', 'license_terms', 'license-terms', 'oidc', 'library_apps'];
         const url = response.url;
         const lastSegment = url.substring(url.lastIndexOf('/') + 1);
-
         if (paths.includes(lastSegment)) {
           let message;
           let feature;
-          if (url.includes('apps')) {
+          if (data?.message?.includes('expired')) {
+            message = 'Oops! Your current plan has expired.  Please update your license key to use this feature.';
+          } else if (url.includes('apps')) {
+            message =
+              'Oops! Your current plan has exceeded its apps limit.  Please upgrade your plan now to create a new app.';
+            feature = 'Apps count';
+          } else if (url.includes('library_apps')) {
             message =
               'Oops! Your current plan has exceeded its apps limit.  Please upgrade your plan now to create a new app.';
             feature = 'Apps count';

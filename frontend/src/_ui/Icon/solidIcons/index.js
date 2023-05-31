@@ -32,6 +32,7 @@ import Datasource from './Datasource.jsx';
 import Diamond from './Diamond.jsx';
 import DownArrow from './DownArrow.jsx';
 import EditRectangle from './EditRectangle.jsx';
+import Enterprise from './Enterprise.jsx';
 import Eye from './Eye.jsx';
 import Eye1 from './Eye1.jsx';
 import EyeDisable from './EyeDisable.jsx';
@@ -144,6 +145,8 @@ const Icon = (props) => {
       return <ArrowTransfer {...props} />;
     case 'arrowup':
       return <ArrowUp {...props} />;
+    case 'auditlogs':
+      return <AuditLogs {...props} />;
     case 'booksearch':
       return <BookSearch {...props} />;
     case 'branch':
@@ -186,6 +189,8 @@ const Icon = (props) => {
       return <DownArrow {...props} />;
     case 'editrectangle':
       return <EditRectangle {...props} />;
+    case 'enterprise':
+      return <Enterprise {...props} />;
     case 'eye':
       return <Eye {...props} />;
     case 'eye1':
@@ -220,6 +225,8 @@ const Icon = (props) => {
       return <Information {...props} />;
     case 'inrectangle':
       return <InRectangle {...props} />;
+    case 'instancesettings':
+      return <InstanceSettings {...props} />;
     case 'interactive':
       return <Interactive {...props} />;
     case 'layers':
@@ -350,10 +357,6 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
-    case 'auditlogs':
-      return <AuditLogs {...props} />;
-    case 'instancesettings':
-      return <InstanceSettings {...props} />;
     default:
       return <Apps {...props} />;
   }

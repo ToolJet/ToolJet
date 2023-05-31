@@ -55,9 +55,27 @@ class LoginPageComponent extends React.Component {
         ) {
           // redirect to home if already logged in
           // set redirect path for sso login
+          // redirect to instance settings if license expired
           const path = this.eraseRedirectUrl();
           const redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
-          window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+          authenticationService
+            .validateLicense()
+            .then(() => {
+              window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+            })
+            .catch((e) => {
+              if (newSession?.super_admin) {
+                window.location = getSubpath()
+                  ? `${getSubpath()}/instance-settings?error=license`
+                  : '/instance-settings?error=license';
+              } else {
+                toast.error('You cannot login now. Please contact your administrator for support.', {
+                  style: {
+                    maxWidth: '700px',
+                  },
+                });
+              }
+            });
         }
       }
     });
@@ -177,13 +195,15 @@ class LoginPageComponent extends React.Component {
     const redirectPath = from.pathname === '/confirm' ? '/' : from.pathname;
     this.setState({ isLoading: false });
     this.eraseRedirectUrl();
-    window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
   };
 
   authFailureHandler = (res) => {
     toast.error(res.error || 'Invalid email or password', {
       id: 'toast-login-auth-error',
       position: 'top-center',
+      style: {
+        maxWidth: '700px',
+      },
     });
     this.setState({ isLoading: false });
   };

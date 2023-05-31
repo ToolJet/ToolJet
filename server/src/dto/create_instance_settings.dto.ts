@@ -13,7 +13,32 @@ export class CreateInstanceSettingsDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
+  label: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
   value: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  labelKey: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  helperText: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  helperTextKey: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  dataType: string;
 }
 
 export class UpdateInstanceSettingsDto extends PartialType(CreateInstanceSettingsDto) {}

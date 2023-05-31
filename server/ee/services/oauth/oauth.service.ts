@@ -23,9 +23,10 @@ import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
 import UserResponse from './models/user_response';
-import License from '@ee/licensing/configs/License';
 import { InstanceSettingsService } from '@services/instance_settings.service';
 import { Response } from 'express';
+import { LicenseService } from '@services/license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 
 @Injectable()
 export class OauthService {
@@ -38,6 +39,7 @@ export class OauthService {
     private readonly gitOAuthService: GitOAuthService,
     private readonly oidcOAuthService: OidcOAuthService,
     private readonly instanceSettingsService: InstanceSettingsService,
+    private readonly licenseService: LicenseService,
     private configService: ConfigService
   ) {}
 
@@ -165,7 +167,6 @@ export class OauthService {
     let organization: DeepPartial<Organization>;
     const isInstanceSSOLogin = !!(!configId && ssoType && !organizationId);
     const isInstanceSSOOrganizationLogin = !!(!configId && ssoType && organizationId);
-
     if (configId) {
       // SSO under an organization
       ssoConfigs = await this.organizationService.getConfigs(configId);
@@ -206,7 +207,7 @@ export class OauthService {
         break;
 
       case 'openid':
-        if (!License.Instance.oidc) {
+        if (!(await this.licenseService.getLicenseTerms(LICENSE_FIELD.OIDC))) {
           throw new UnauthorizedException('OIDC login disabled');
         }
         userResponse = await this.oidcOAuthService.signIn(token, {

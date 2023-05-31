@@ -21,3 +21,4 @@ export * from './tooljetDatabase.service';
 export * from './auditLogsService.js';
 export * from './globalDatasource.service';
 export * from './app_environment.service';
+export * from './license.service';

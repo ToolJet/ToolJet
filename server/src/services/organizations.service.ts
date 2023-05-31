@@ -17,7 +17,6 @@ import { InviteNewUserDto } from '@dto/invite-new-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { AuditLoggerService } from './audit_logger.service';
-import License from '@ee/licensing/configs/License';
 import {
   getUserErrorMessages,
   getUserStatusAndSource,
@@ -30,6 +29,8 @@ import { InstanceSettingsService } from './instance_settings.service';
 import { decamelize } from 'humps';
 import { Response } from 'express';
 import { AppEnvironmentService } from './app_environments.service';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 
 const MAX_ROW_COUNT = 500;
 
@@ -67,7 +68,8 @@ export class OrganizationsService {
     private emailService: EmailService,
     private instanceSettingsService: InstanceSettingsService,
     private configService: ConfigService,
-    private auditLoggerService: AuditLoggerService
+    private auditLoggerService: AuditLoggerService,
+    private licenseService: LicenseService
   ) {}
 
   async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
@@ -452,7 +454,10 @@ export class OrganizationsService {
     }
 
     // filter oidc configs
-    if (result?.ssoConfigs?.some((sso) => sso.sso === 'openid') && !License.Instance.oidc) {
+    if (
+      result?.ssoConfigs?.some((sso) => sso.sso === 'openid') &&
+      !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.AUDIT_LOGS))
+    ) {
       result.ssoConfigs = result.ssoConfigs.filter((sso) => sso.sso !== 'openid');
     }
 
@@ -545,7 +550,7 @@ export class OrganizationsService {
       throw new BadRequestException();
     }
 
-    if (type === 'openid' && !License.Instance.oidc) {
+    if (type === 'openid' && !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.AUDIT_LOGS))) {
       throw new HttpException('OIDC disabled', 451);
     }
 

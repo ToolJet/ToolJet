@@ -11,12 +11,11 @@ import { AllExceptionsFilter } from './all-exceptions-filter';
 import { RequestMethod, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
-import License from '@ee/licensing/configs/License';
-import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
 import { custom } from 'openid-client';
 import { join } from 'path';
+import { LicenseService } from '@services/license.service';
+import License from '@ee/licensing/configs/License';
 
-const license = License.Instance;
 const fs = require('fs');
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
@@ -59,7 +58,6 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  app.useGlobalGuards(new LicenseExpiryGuard());
   app.useWebSocketAdapter(new WsAdapter(app));
 
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -135,9 +133,13 @@ async function bootstrap() {
     replaceSubpathPlaceHoldersInStaticAssets();
   }
 
-  await app.listen(port, '0.0.0.0', function () {
+  await app.listen(port, '0.0.0.0', async function () {
+    const licenseService = app.get<LicenseService>(LicenseService);
+    await licenseService.init();
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
-    console.log(`License Terms : ${JSON.stringify(license.terms)} 🚀`);
+    console.log(
+      `License valid : ${License.Instance().isValid} License Terms : ${JSON.stringify(License.Instance().terms)} 🚀`
+    );
     console.log(`Ready to use at ${tooljetHost} 🚀`);
   });
 }

@@ -730,6 +730,7 @@ export const getWorkspaceIdFromURL = () => {
     'applications',
     'integrations',
     'instance-settings',
+    'license',
   ];
 
   if (pathname.includes('login')) {

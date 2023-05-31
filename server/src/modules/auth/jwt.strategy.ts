@@ -7,13 +7,16 @@ import { User } from 'src/entities/user.entity';
 import { WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { Request } from 'express';
 import { SessionService } from '@services/session.service';
+import { LicenseService } from '@services/license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private usersService: UsersService,
     private configService: ConfigService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private licenseService: LicenseService
   ) {
     super({
       jwtFromRequest: (request) => {
@@ -66,6 +69,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       user.isPasswordLogin = payload.isPasswordLogin;
       user.isSSOLogin = payload.isSSOLogin;
       user.sessionId = payload.sessionId;
+
+      // check for user logout if license expired
+      if (user.userType !== 'instance' && !(await this.licenseService.getLicenseTerms(LICENSE_FIELD.VALID))) {
+        return false;
+      }
 
       return user;
     }

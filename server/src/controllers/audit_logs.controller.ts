@@ -8,12 +8,13 @@ import { AuditLogsQueryService } from '@services/audit_logs_query.service';
 import { decamelizeKeys } from 'humps';
 import { AuditLogGuard } from '@ee/licensing/guards/auditLog.guard';
 import { User } from 'src/decorators/user.decorator';
+import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
 
 @Controller('audit_logs')
 export class AuditLogsController {
   constructor(private auditLogsQueryService: AuditLogsQueryService) {}
 
-  @UseGuards(JwtAuthGuard, PoliciesGuard)
+  @UseGuards(JwtAuthGuard, LicenseExpiryGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('accessAuditLogs', UserEntity))
   @Get()
   async index(@User() user, @Query() query): Promise<object> {
@@ -32,7 +33,7 @@ export class AuditLogsController {
     return decamelizeKeys({ auditLogs, meta });
   }
 
-  @UseGuards(JwtAuthGuard, AuditLogGuard)
+  @UseGuards(JwtAuthGuard, LicenseExpiryGuard, AuditLogGuard)
   @Get('license_terms')
   async getAuditLog() {
     return;

@@ -57,11 +57,30 @@ function OnbboardingFromSH({ darkMode }) {
         })
         .then((user) => {
           authenticationService.deleteLoginOrganizationId();
-          setIsLoading(false);
-          window.location = getSubpath()
+          const redirectPath = getSubpath()
             ? `${getSubpath()}/${user?.current_organization_id}`
             : `/${user?.current_organization_id}`;
-          setCompleted(false);
+
+          authenticationService
+            .validateLicense()
+            .then(() => {
+              setIsLoading(false);
+              setCompleted(false);
+              window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+            })
+            .catch(() => {
+              if (user?.super_admin) {
+                window.location = getSubpath()
+                  ? `${getSubpath()}/instance-settings?error=license`
+                  : '/instance-settings?error=license';
+              } else {
+                toast.error('You cannot login now. Please contact your administrator for support.', {
+                  style: {
+                    maxWidth: '700px',
+                  },
+                });
+              }
+            });
         })
         .catch((res) => {
           setIsLoading(false);

@@ -43,6 +43,7 @@ import { PluginsModule } from './modules/plugins/plugins.module';
 import { AppEnvironmentsModule } from './modules/app_environments/app_environments.module';
 import { RequestContextModule } from './modules/request_context/request-context.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { LicenseModule } from './modules/license/license.module';
 
 const imports = [
   ScheduleModule.forRoot(),
@@ -99,6 +100,7 @@ const imports = [
   EventsModule,
   AppEnvironmentsModule,
   InstanceSettingsModule,
+  LicenseModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {

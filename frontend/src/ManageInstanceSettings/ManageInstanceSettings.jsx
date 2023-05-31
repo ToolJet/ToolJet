@@ -39,20 +39,9 @@ class ManageInstanceSettingsComponent extends React.Component {
   };
 
   setInitialValues = (data) => {
-    const allow_personal_workspace = data.settings?.find((setting) => setting.key === 'ALLOW_PERSONAL_WORKSPACE');
-    //const allow_plugin_integration = data.settings?.find((setting) => setting.key === 'ALLOW_PLUGIN_INTEGRATION');
     this.setState({
       settings: data,
-      options: {
-        allow_personal_workspace: {
-          value: allow_personal_workspace.value,
-          id: allow_personal_workspace.id,
-        },
-        // allow_plugin_integration: {
-        //   value: allow_plugin_integration.value,
-        //   id: allow_plugin_integration.id,
-        // },
-      },
+      options: data.settings,
     });
   };
 
@@ -80,11 +69,12 @@ class ManageInstanceSettingsComponent extends React.Component {
   returnBooleanValue = (value) => (value === 'true' ? true : false);
 
   optionsChanged = (key) => {
-    const options = this.state.options;
-    const newValue = !this.returnBooleanValue(options[`${key}`]?.value);
-    options[`${key}`].value = newValue.toString();
+    const index = this.state.options.findIndex((option) => option.key === key);
+    const newOptions = [...this.state.options];
+    const newValue = !this.returnBooleanValue(newOptions[index]?.value);
+    newOptions[index].value = newValue.toString();
     this.setState({
-      options,
+      options: [...newOptions],
     });
   };
 
@@ -109,31 +99,29 @@ class ManageInstanceSettingsComponent extends React.Component {
                 <div className="card-body">
                   {Object.entries(options) != 0 ? (
                     <form noValidate>
-                      <div className="form-group mb-3">
-                        <label className="form-check form-switch">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            onChange={() => this.optionsChanged('allow_personal_workspace')}
-                            checked={options.allow_personal_workspace.value === 'true'}
-                            data-cy="form-check-input"
-                          />
-                          <span className="form-check-label" data-cy="form-check-label">
-                            {this.props.t(
-                              'header.organization.menus.manageSSO.generalSettings.allowPersonalWorkspace',
-                              'Allow Personal Workspace'
-                            )}
-                          </span>
-                        </label>
-                        <div className="help-text">
-                          <div data-cy="instance-settings-help-text">
-                            {this.props.t(
-                              'header.organization.menus.manageSSO.generalSettings.allowPersonalWorkspaceDetails',
-                              `This feature will enable users to create their own workspace`
-                            )}
+                      {options.map((option) => (
+                        <div key={option?.key} className="form-group mb-3">
+                          {option && (
+                            <label className="form-check form-switch">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                onChange={() => this.optionsChanged(option?.key)}
+                                checked={option.value === 'true'}
+                                data-cy="form-check-input"
+                              />
+                              <span className="form-check-label" data-cy="form-check-label">
+                                {this.props.t(option?.label_key, option?.label)}
+                              </span>
+                            </label>
+                          )}
+                          <div className="help-text">
+                            <div data-cy="instance-settings-help-text">
+                              {this.props.t(option?.helper_text_key, option?.helper_text)}
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      ))}
 
                       {/* <div className="form-group mb-3">
                       <label className="form-check form-switch">
