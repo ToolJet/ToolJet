@@ -98,7 +98,7 @@ class Chart extends React.Component {
       ),
     });
     {
-      resolveReferences(this.state.component.component.definition.properties.plotFromJson?.value, currentState) &&
+      resolveReferences(plotFromJson) &&
         items.push({
           title: 'Bar mode',
           children: renderElement(
