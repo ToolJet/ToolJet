@@ -1,7 +1,7 @@
 name: Tooljet develop docker image build
 
 on:
-  pull_request:
+  push:
     branches:
       - develop
 
