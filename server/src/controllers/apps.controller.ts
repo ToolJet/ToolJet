@@ -51,7 +51,7 @@ export class AppsController {
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.slug = app.id;
       appUpdateDto.icon = icon;
-      await this.appsService.update(app.id, appUpdateDto, null, manager);
+      await this.appsService.update(app.id, appUpdateDto, manager);
 
       return decamelizeKeys(app);
     });
@@ -145,7 +145,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.update(app.id, appUpdateDto, app.organizationId);
+    const result = await this.appsService.update(app.id, appUpdateDto);
     const response = decamelizeKeys(result);
 
     return response;
@@ -351,7 +351,7 @@ export class AppsController {
 
     const appUpdateDto = new AppUpdateDto();
     appUpdateDto.icon = icon;
-    const appUser = await this.appsService.update(app.id, appUpdateDto, null);
+    const appUser = await this.appsService.update(app.id, appUpdateDto);
     return decamelizeKeys(appUser);
   }
 }

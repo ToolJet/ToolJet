@@ -194,7 +194,7 @@ export class AppsService {
     return await viewableAppsQb.getMany();
   }
 
-  async update(appId: string, appUpdateDto: AppUpdateDto, organizationId: string, manager?: EntityManager) {
+  async update(appId: string, appUpdateDto: AppUpdateDto, manager?: EntityManager) {
     const currentVersionId = appUpdateDto.current_version_id;
     const isPublic = appUpdateDto.is_public;
     const isMaintenanceOn = appUpdateDto.is_maintenance_on;
