@@ -68,11 +68,53 @@ export const Modal = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
   useEffect(() => {
-    const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
-    if (showModal && modalBackdropEl) {
-      modalBackdropEl.style.height = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
+    const handleModalOpen = () => {
+      const canvasElement = document.getElementsByClassName('canvas-area')[0];
+      const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
+      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+
+      if (canvasElement && modalBackdropEl) {
+        canvasElement.style.height = '100vh';
+        canvasElement.style.maxHeight = '100vh';
+        canvasElement.style.minHeight = '100vh';
+        canvasElement.style.height = '100vh';
+
+        realCanvasEl.style.height = '100vh';
+
+        canvasElement?.classList?.add('freeze-scroll');
+        modalBackdropEl.style.height = '100vh';
+        modalBackdropEl.style.minHeight = '100vh';
+        modalBackdropEl.style.minHeight = '100vh';
+      }
+    };
+
+    const handleModalClose = () => {
+      const canvasElement = document.getElementsByClassName('canvas-area')[0];
+      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+
+      if (canvasElement) {
+        canvasElement.style.height = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
+        canvasElement.style.minHeight = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
+        canvasElement.style.maxHeight = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
+
+        realCanvasEl.style.maxHeight = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
+
+        canvasElement?.classList?.remove('freeze-scroll');
+      }
+    };
+
+    if (showModal) {
+      handleModalOpen();
+    } else {
+      handleModalClose();
     }
-  }, [showModal, containerProps.appDefinition.globalSettings.canvasMaxHeight]);
+
+    // Cleanup the effect
+    return () => {
+      handleModalClose();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal]);
 
   function hideModal() {
     setShowModal(false);
