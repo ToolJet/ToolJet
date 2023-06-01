@@ -16,8 +16,9 @@ export const DropDown = function DropDown({
   registerAction,
   dataCy,
 }) {
-  let { label, advanced, schema, placeholder, display_values, values } = properties;
+  let { label, advanced, schema, placeholder, values } = properties;
   const [value, setValue] = useState(advanced ? findDefaultItem(schema) : properties.value);
+  const [displayValues, setDisplayValues] = useState(advanced ? [] : properties.display_values);
 
   function findDefaultItem(items) {
     const foundItem = items?.find((item) => item.default === true);
@@ -31,6 +32,13 @@ export const DropDown = function DropDown({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(schema), advanced, properties.value]);
 
+  useEffect(() => {
+    if (advanced && schema?.length > 0 && Array.isArray(schema)) {
+      setDisplayValues(schema.map((item) => item.label));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanced, JSON.stringify(schema)]);
+
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
 
@@ -39,7 +47,7 @@ export const DropDown = function DropDown({
   if (!_.isArray(values)) {
     if (advanced) {
       values = schema?.map((item) => item.value);
-      display_values = schema?.map((item) => item.label);
+      setDisplayValues(schema?.map((item) => item.label));
     } else if (!_.isArray(values)) {
       values = [];
     }
@@ -60,7 +68,7 @@ export const DropDown = function DropDown({
         ]
       : [
           ...values.map((value, index) => {
-            return { label: display_values[index], value: value };
+            return { label: displayValues[index], value: value };
           }),
         ];
   } catch (err) {
@@ -70,7 +78,7 @@ export const DropDown = function DropDown({
   const setExposedItem = (value, index, onSelectFired = false) => {
     setCurrentValue(value);
     onSelectFired ? setExposedVariable('value', value).then(fireEvent('onSelect')) : setExposedVariable('value', value);
-    setExposedVariable('selectedOptionLabel', index === undefined ? undefined : display_values?.[index]);
+    setExposedVariable('selectedOptionLabel', index === undefined ? undefined : displayValues?.[index]);
   };
 
   function selectOption(value) {
@@ -89,7 +97,7 @@ export const DropDown = function DropDown({
     async function (value) {
       selectOption(value);
     },
-    [JSON.stringify(values), setCurrentValue, JSON.stringify(display_values)]
+    [JSON.stringify(values), setCurrentValue, JSON.stringify(displayValues)]
   );
 
   const validationData = validate(value);
@@ -110,17 +118,18 @@ export const DropDown = function DropDown({
     setExposedItem(newValue, index);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, JSON.stringify(display_values)]);
+  }, [value, JSON.stringify(displayValues)]);
 
   useEffect(() => {
     let index = null;
+    console.log('displayValues', displayValues, schema);
     if (exposedValue !== currentValue) {
       setExposedVariable('value', currentValue);
       index = values.indexOf(currentValue);
-      setExposedVariable('selectedOptionLabel', display_values?.[index]);
+      setExposedVariable('selectedOptionLabel', displayValues?.[index]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue]);
+  }, [currentValue, JSON.stringify(schema)]);
 
   useEffect(() => {
     let newValue = undefined;
@@ -139,13 +148,13 @@ export const DropDown = function DropDown({
   }, [label]);
 
   useEffect(() => {
-    const schema_display_values = schema?.map((item) => item.label);
+    const schema_displayValues = schema?.map((item) => item.label);
 
     advanced
-      ? setExposedVariable('optionLabels', schema_display_values)
-      : setExposedVariable('optionLabels', display_values);
+      ? setExposedVariable('optionLabels', schema_displayValues)
+      : setExposedVariable('optionLabels', displayValues);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(display_values), advanced, JSON.stringify(schema)]);
+  }, [JSON.stringify(displayValues), advanced, JSON.stringify(schema)]);
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
