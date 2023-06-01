@@ -1,14 +1,19 @@
 import React from 'react';
 import cx from 'classnames';
-import { useIsUserEditingTheVersion } from '@/_stores/appVersionsManagerStore';
+import { useIsUserEditingTheVersion, useAppVersionsManagerActions } from '@/_stores/appVersionsManagerStore';
 
-export const ReleasedVersionError = ({ changeBackTheState }) => {
+export const ReleasedVersionError = () => {
+  const isUserEditingTheVersion = useIsUserEditingTheVersion();
+  const { disableReleasedVersionPopupState } = useAppVersionsManagerActions();
+
+  const changeBackTheState = () => {
+    isUserEditingTheVersion && disableReleasedVersionPopupState();
+  };
+
   React.useState(() => {
     const intervalId = setInterval(() => changeBackTheState(), 2000);
     return () => intervalId && clearInterval(intervalId);
   }, [isUserEditingTheVersion]);
-
-  const isUserEditingTheVersion = useIsUserEditingTheVersion();
 
   return (
     <div className="released-version-popup-container">

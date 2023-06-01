@@ -2,8 +2,9 @@ import React from 'react';
 import { DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { SortableItem } from './components';
-import { useAppVersionsManagerActions } from '@/_stores/appVersionsManagerStore';
-export function SortableList({ items, onChange, renderItem, isVersionReleased }) {
+import { useAppVersionsManagerActions, useIsVersionReleased } from '@/_stores/appVersionsManagerStore';
+
+export function SortableList({ items, onChange, renderItem }) {
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -11,7 +12,7 @@ export function SortableList({ items, onChange, renderItem, isVersionReleased })
     })
   );
   const { enableReleasedVersionPopupState } = useAppVersionsManagerActions();
-
+  const isVersionReleased = useIsVersionReleased();
   return (
     <DndContext
       sensors={sensors}

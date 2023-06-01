@@ -15,7 +15,11 @@ import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
-import { useEditingVersionId, useAppVersionsManagerActions } from '@/_stores/appVersionsManagerStore';
+import {
+  useEditingVersionId,
+  useAppVersionsManagerActions,
+  useIsVersionReleased,
+} from '@/_stores/appVersionsManagerStore';
 
 export const Container = ({
   canvasWidth,
@@ -45,7 +49,6 @@ export const Container = ({
   hoveredComponent,
   sideBarDebugger,
   currentPageId,
-  isVersionReleased,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -68,7 +71,7 @@ export const Container = ({
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
   const { enableReleasedVersionPopupState } = useAppVersionsManagerActions();
-
+  const isVersionReleased = useIsVersionReleased();
   useHotkeys('meta+z, control+z', () => handleUndo());
   useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
 
@@ -559,7 +562,6 @@ export const Container = ({
                 isVersionReleased,
                 enableReleasedVersionPopupState,
               }}
-              isVersionReleased={isVersionReleased}
             />
           );
         }

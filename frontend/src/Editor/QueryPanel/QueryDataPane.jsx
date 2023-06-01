@@ -7,6 +7,7 @@ import { QueryCard } from './QueryCard';
 import Fuse from 'fuse.js';
 import cx from 'classnames';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
+import { useIsVersionReleased } from '@/_stores/appVersionsManagerStore';
 
 export const QueryDataPane = ({
   setSaveConfirmation,
@@ -18,12 +19,12 @@ export const QueryDataPane = ({
   darkMode,
   fetchDataQueries,
   editorRef,
-  isVersionReleased,
 }) => {
   const { t } = useTranslation();
   const { loadingDataQueries } = useDataQueriesStore();
   const dataQueries = useDataQueries();
   const [filteredQueries, setFilteredQueries] = useState(dataQueries);
+  const isVersionReleased = useIsVersionReleased();
 
   useEffect(() => {
     setFilteredQueries(dataQueries);
@@ -113,7 +114,6 @@ export const QueryDataPane = ({
                   setSelectedDataSource={setSelectedDataSource}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
-                  isVersionReleased={isVersionReleased}
                 />
               ) : (
                 ''
@@ -129,7 +129,6 @@ export const QueryDataPane = ({
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
                   editorRef={editorRef}
-                  isVersionReleased={isVersionReleased}
                 />
               ))}
             </div>

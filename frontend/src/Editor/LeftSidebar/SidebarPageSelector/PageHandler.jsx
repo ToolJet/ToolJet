@@ -6,6 +6,7 @@ import { SettingsModal } from './SettingsModal';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 import { toast } from 'react-hot-toast';
+import { useIsVersionReleased } from '@/_stores/appVersionsManagerStore';
 
 export const PageHandler = ({
   darkMode,
@@ -25,7 +26,6 @@ export const PageHandler = ({
   apps,
   pages,
   components,
-  isVersionReleased,
   pinPagesPopover,
   haveUserPinned,
 }) => {
@@ -38,6 +38,7 @@ export const PageHandler = ({
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const isVersionReleased = useIsVersionReleased();
 
   const handleClose = () => {
     setShowEditModal(false);

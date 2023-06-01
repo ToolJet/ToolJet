@@ -3,8 +3,8 @@ import { create, zustandDevTools } from './utils';
 const initialState = {
   editingVersion: null,
   showCreateVersionModalPrompt: false,
-  isCreatingOrEditingVersion: false,
   isUserEditingTheVersion: false,
+  releasedVersionId: null,
 };
 
 export const useAppVersionManagerStore = create(
@@ -16,6 +16,8 @@ export const useAppVersionManagerStore = create(
         set(() => ({ showCreateVersionModalPrompt: false }));
       },
       enableReleasedVersionPopupState: () => set(() => ({ isUserEditingTheVersion: true })),
+      disableReleasedVersionPopupState: () => set(() => ({ isUserEditingTheVersion: false })),
+      updateReleasedVersionId: (versionId) => set(() => ({ releasedVersionId: versionId })),
     },
   }))
 );
@@ -26,3 +28,5 @@ export const useAppVersionsManagerActions = () => useAppVersionManagerStore((sta
 export const useShowCreateVersionModalPrompt = () =>
   useAppVersionManagerStore((state) => state.showCreateVersionModalPrompt);
 export const useIsUserEditingTheVersion = () => useAppVersionManagerStore((state) => state.isUserEditingTheVersion);
+export const useIsVersionReleased = () =>
+  useAppVersionManagerStore((state) => state.releasedVersionId === state.editingVersion?.id);

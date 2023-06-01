@@ -345,7 +345,7 @@ class EditorComponent extends React.Component {
       const homePageId = startingPageId ?? dataDefinition.homePageId;
 
       useAppVersionManagerStore.getState().actions.updateEditingVersion(data.editing_version);
-
+      useAppVersionManagerStore.getState().actions.updateReleasedVersionId(data.current_version_id);
       this.setState(
         {
           app: data,
@@ -1418,7 +1418,6 @@ class EditorComponent extends React.Component {
     const appVersionPreviewLink = editingVersion
       ? `/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
       : '';
-
     return (
       <div className="editor wrapper">
         <Confirm
@@ -1439,17 +1438,7 @@ class EditorComponent extends React.Component {
           onCancel={() => this.cancelDeletePageRequest()}
           darkMode={this.props.darkMode}
         />
-        {this.isVersionReleased() && (
-          <ReleasedVersionError
-            isUserEditingTheVersion={this.state.isUserEditingTheVersion}
-            changeBackTheState={() => {
-              this.state.isUserEditingTheVersion &&
-                this.setState({
-                  isUserEditingTheVersion: false,
-                });
-            }}
-          />
-        )}
+        {this.isVersionReleased() && <ReleasedVersionError />}
         <EditorContextWrapper>
           <EditorHeader
             darkMode={this.props.darkMode}
@@ -1470,7 +1459,6 @@ class EditorComponent extends React.Component {
             toggleCurrentLayout={this.toggleCurrentLayout}
             isSaving={this.state.isSaving}
             saveError={this.state.saveError}
-            isVersionReleased={this.isVersionReleased}
             onNameChanged={this.onNameChanged}
             setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
             closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
@@ -1522,7 +1510,6 @@ class EditorComponent extends React.Component {
                 showHideViewerNavigationControls={this.showHideViewerNavigation}
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
-                isVersionReleased={this.isVersionReleased()}
               />
               {!showComments && (
                 <Selecto
@@ -1624,7 +1611,6 @@ class EditorComponent extends React.Component {
                           hoveredComponent={hoveredComponent}
                           sideBarDebugger={this.sideBarDebugger}
                           currentPageId={this.state.currentPageId}
-                          isVersionReleased={this.isVersionReleased()}
                         />
                         <CustomDragLayer
                           snapToGrid={true}
@@ -1639,7 +1625,6 @@ class EditorComponent extends React.Component {
                   dataQueriesChanged={this.dataQueriesChanged}
                   fetchDataQueries={this.fetchDataQueries}
                   darkMode={this.props.darkMode}
-                  isVersionReleased={this.isVersionReleased()}
                   editorRef={this}
                 >
                   {({
@@ -1722,7 +1707,6 @@ class EditorComponent extends React.Component {
                         darkMode={this.props.darkMode}
                         appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
                         pages={this.getPagesWithIds()}
-                        isVersionReleased={this.isVersionReleased()}
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">
@@ -1738,7 +1722,6 @@ class EditorComponent extends React.Component {
                     zoomLevel={zoomLevel}
                     currentLayout={currentLayout}
                     darkMode={this.props.darkMode}
-                    isVersionReleased={this.isVersionReleased()}
                   ></WidgetManager>
                 )}
               </div>

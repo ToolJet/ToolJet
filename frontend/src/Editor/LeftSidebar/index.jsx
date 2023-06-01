@@ -11,7 +11,7 @@ import LeftSidebarPageSelector from './SidebarPageSelector';
 import { ConfirmDialog } from '@/_components';
 import config from 'config';
 import { usePanelHeight } from '@/_stores/queryPanelStore';
-import { useAppVersionsManagerActions } from '@/_stores/appVersionsManagerStore';
+import { useAppVersionsManagerActions, useIsVersionReleased } from '@/_stores/appVersionsManagerStore';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -46,7 +46,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     updateOnPageLoadEvents,
     apps,
     clonePage,
-    isVersionReleased,
   } = props;
   const queryPanelHeight = usePanelHeight();
   const [selectedSidebarItem, setSelectedSidebarItem] = useState();
@@ -54,6 +53,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const { enableReleasedVersionPopupState } = useAppVersionsManagerActions();
+  const isVersionReleased = useIsVersionReleased();
 
   useEffect(() => {
     popoverContentHeight !== queryPanelHeight && setPopoverContentHeight(queryPanelHeight);
@@ -99,7 +99,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         currentState={currentState}
         apps={apps}
         popoverContentHeight={popoverContentHeight}
-        isVersionReleased={isVersionReleased}
       />
       <LeftSidebarInspector
         darkMode={darkMode}

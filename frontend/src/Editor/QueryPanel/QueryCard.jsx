@@ -7,9 +7,9 @@ import { getSvgIcon, checkExistingQueryName } from '@/_helpers/appUtils';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
-
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions, useSelectedQuery, useUnsavedChanges } from '@/_stores/queryPanelStore';
+import { useIsVersionReleased } from '@/_stores/appVersionsManagerStore';
 
 export const QueryCard = ({
   dataQuery,
@@ -20,7 +20,6 @@ export const QueryCard = ({
   darkMode = false,
   fetchDataQueries,
   editorRef,
-  isVersionReleased,
 }) => {
   const selectedQuery = useSelectedQuery();
   const isUnsavedChangesAvailable = useUnsavedChanges();
@@ -28,6 +27,7 @@ export const QueryCard = ({
   const { deleteDataQueries, renameQuery } = useDataQueriesActions();
   const { setSelectedQuery, setUnSavedChanges } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const isVersionReleased = useIsVersionReleased();
   const [renamingQuery, setRenamingQuery] = useState(false);
 
   const getSourceMetaData = (dataSource) => {

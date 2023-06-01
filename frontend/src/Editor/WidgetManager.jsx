@@ -3,17 +3,13 @@ import { DraggableBox } from './DraggableBox';
 import Fuse from 'fuse.js';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useIsVersionReleased } from '@/_stores/appVersionsManagerStore';
 
-export const WidgetManager = function WidgetManager({
-  componentTypes,
-  zoomLevel,
-  currentLayout,
-  darkMode,
-  isVersionReleased,
-}) {
+export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, currentLayout, darkMode }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
   const [searchQuery, setSearchQuery] = useState('');
   const { t } = useTranslation();
+  const isVersionReleased = useIsVersionReleased();
 
   function handleSearchQueryChange(e) {
     const { value } = e.target;

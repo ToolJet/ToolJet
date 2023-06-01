@@ -12,6 +12,7 @@ import cx from 'classnames';
 import config from 'config';
 // eslint-disable-next-line import/no-unresolved
 import { useUpdatePresence } from '@y-presence/react';
+import { useIsVersionReleased } from '@/_stores/appVersionsManagerStore';
 
 export default function EditorHeader({
   darkMode,
@@ -32,7 +33,6 @@ export default function EditorHeader({
   toggleCurrentLayout,
   isSaving,
   saveError,
-  isVersionReleased,
   onNameChanged,
   setAppDefinitionFromVersion,
   closeCreateVersionModalPrompt,
@@ -43,7 +43,7 @@ export default function EditorHeader({
   currentUser,
 }) {
   const { is_maintenance_on } = app;
-
+  const isVersionReleased = useIsVersionReleased();
   const updatePresence = useUpdatePresence();
   useEffect(() => {
     const initialPresence = {
@@ -104,7 +104,7 @@ export default function EditorHeader({
                         className={cx('autosave-indicator', {
                           'autosave-indicator-saving': isSaving,
                           'text-danger': saveError,
-                          'd-none': isVersionReleased(),
+                          'd-none': isVersionReleased,
                         })}
                         data-cy="autosave-indicator"
                       >
@@ -171,7 +171,6 @@ export default function EditorHeader({
                 <div className="nav-item dropdown">
                   {app.id && (
                     <ReleaseVersionButton
-                      isVersionReleased={isVersionReleased()}
                       appId={app.id}
                       appName={app.name}
                       onVersionRelease={onVersionRelease}

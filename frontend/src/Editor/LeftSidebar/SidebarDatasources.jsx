@@ -17,7 +17,7 @@ import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
 import VerticalIcon from '@assets/images/icons/vertical-menu.svg';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { useDataSources } from '@/_stores/dataSourcesStore';
-import { useEditingVersionId } from '@/_stores/appVersionsManagerStore';
+import { useIsVersionReleased } from '@/_stores/appVersionsManagerStore';
 
 export const LeftSidebarDataSources = ({
   appId,
@@ -30,15 +30,12 @@ export const LeftSidebarDataSources = ({
   toggleDataSourceManagerModal,
   showDataSourceManagerModal,
   popoverContentHeight,
-  isVersionReleased,
-  setReleasedVersionPopupState,
 }) => {
   const dataSources = useDataSources();
-  const editingVersionId = useEditingVersionId();
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
-
+  const isVersionReleased = useIsVersionReleased();
   const { admin } = authenticationService.currentSessionValue;
 
   const deleteDataSource = (selectedSource) => {
@@ -95,15 +92,7 @@ export const LeftSidebarDataSources = ({
     return DataSourceTypes.find((source) => source.kind === dataSource.kind);
   };
 
-  const RenderDataSource = ({
-    dataSource,
-    idx,
-    convertToGlobal,
-    showDeleteIcon = true,
-    enableEdit = true,
-    setReleasedVersionPopupState,
-    isVersionReleased,
-  }) => {
+  const RenderDataSource = ({ dataSource, idx, convertToGlobal, showDeleteIcon = true, enableEdit = true }) => {
     const [isConversionVisible, setConversionVisible] = React.useState(false);
     const sourceMeta = getSourceMetaData(dataSource);
 
@@ -193,8 +182,6 @@ export const LeftSidebarDataSources = ({
       RenderDataSource={RenderDataSource}
       dataSources={dataSources}
       toggleDataSourceManagerModal={toggleDataSourceManagerModal}
-      isVersionReleased={isVersionReleased}
-      setReleasedVersionPopupState={setReleasedVersionPopupState}
     />
   );
 
@@ -236,7 +223,6 @@ export const LeftSidebarDataSources = ({
           setSelectedDataSource(null);
           toggleDataSourceManagerModal(false);
         }}
-        editingVersionId={editingVersionId}
         dataSourcesChanged={dataSourcesChanged}
         globalDataSourcesChanged={globalDataSourcesChanged}
         selectedDataSource={selectedDataSource}
@@ -246,14 +232,9 @@ export const LeftSidebarDataSources = ({
   );
 };
 
-const LeftSidebarDataSourcesContainer = ({
-  darkMode,
-  RenderDataSource,
-  dataSources = [],
-  isVersionReleased,
-  setReleasedVersionPopupState,
-}) => {
+const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [] }) => {
   const { t } = useTranslation();
+  const isVersionReleased = useIsVersionReleased();
   return (
     <div>
       <HeaderSection darkMode={darkMode}>
@@ -273,8 +254,6 @@ const LeftSidebarDataSourcesContainer = ({
                       idx={idx}
                       convertToGlobal={true}
                       showDeleteIcon={true}
-                      isVersionReleased={isVersionReleased}
-                      setReleasedVersionPopupState={setReleasedVersionPopupState}
                     />
                   ))}
                 </div>
