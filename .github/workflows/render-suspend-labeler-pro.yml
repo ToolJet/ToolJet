@@ -1,4 +1,4 @@
-name: Label for stale render deploys
+name: Label for stale render cypress app deploy
 on:
   workflow_dispatch:
   schedule:
