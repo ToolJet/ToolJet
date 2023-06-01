@@ -1,4 +1,4 @@
-name: Tooljet-develop
+name: Tooljet-develop Docker Image
 
 on:
   pull_request:
