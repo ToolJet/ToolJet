@@ -1,4 +1,4 @@
-name: Tooljet-lastest Docker Image
+name: Tooljet-latest Docker Image
 
 on:
   pull_request:

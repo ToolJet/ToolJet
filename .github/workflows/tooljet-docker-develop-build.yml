@@ -45,5 +45,5 @@ jobs:
       - name: Send Slack Notification on Failure
         if: failure()
         run: |
-          message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ce:latest"
+          message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ce:develop"
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL_OPS_CHANNEL }}
