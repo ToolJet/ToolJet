@@ -2,8 +2,8 @@ import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, EntityTarget, getManager, Like } from 'typeorm';
 import { isEmpty } from 'lodash';
-import { DataBaseConstraints } from './db_constraints.constants';
 import { ConflictException } from '@nestjs/common';
+import { DataBaseConstraints } from './db_constraints.constants';
 const protobuf = require('protobufjs');
 
 export function maybeSetSubPath(path) {

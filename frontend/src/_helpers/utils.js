@@ -902,7 +902,7 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
     }
     case 503: {
       toast.error(
-        `We weren't able to connect to our servers to complete this request. Please check your internet connection and try again.`
+        `We weren't able to connect to our servers to complete this request. Please check your \n internet connection and try again.`
       );
       break;
     }

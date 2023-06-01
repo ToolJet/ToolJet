@@ -21,7 +21,7 @@ import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, generateNextName } from 'src/helpers/utils.helper';
 import {
   getUserErrorMessages,
   getUserStatusAndSource,
@@ -257,7 +257,10 @@ export class AuthService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Create default organization
-      organization = await this.organizationsService.create('Untitled workspace', null, manager);
+      //TODO: check if there any case available that the firstname will be nil
+
+      const organizationName = await generateNextName('Untitled workspace', Organization, {}, manager);
+      organization = await this.organizationsService.create(organizationName, null, manager);
       const user = await this.usersService.create(
         {
           email,
@@ -406,12 +409,6 @@ export class AuthService {
 
         // Activate default workspace
         await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
-
-        if (companyName) {
-          await manager.update(Organization, user.defaultOrganizationId, {
-            name: companyName,
-          });
-        }
       } else {
         throw new BadRequestException('Invalid invitation link');
       }
