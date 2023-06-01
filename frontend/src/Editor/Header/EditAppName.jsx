@@ -37,6 +37,10 @@ function EditAppName({ appId, appName, onNameChanged }) {
         <input
           type="text"
           onChange={(e) => {
+            //this was quick fix. replace this with actual tooltip props and state later
+            if (document.getElementsByClassName('tooltip').length) {
+              document.getElementsByClassName('tooltip')[0].style.display = 'none';
+            }
             validateName(e.target.value, 'App name', true);
             setName(e.target.value);
           }}
