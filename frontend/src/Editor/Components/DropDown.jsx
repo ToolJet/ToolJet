@@ -122,7 +122,6 @@ export const DropDown = function DropDown({
 
   useEffect(() => {
     let index = null;
-    console.log('displayValues', displayValues, schema);
     if (exposedValue !== currentValue) {
       setExposedVariable('value', currentValue);
       index = values.indexOf(currentValue);
