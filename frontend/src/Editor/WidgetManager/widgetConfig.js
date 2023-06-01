@@ -2282,33 +2282,12 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
-      value: {
+      placeholder: {
         type: 'code',
-        displayName: 'Default value',
+        displayName: 'Placeholder',
         validation: {
-          schema: {
-            type: 'union',
-            schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
-          },
-        },
-      },
-      values: {
-        type: 'code',
-        displayName: 'Option values',
-        validation: {
-          schema: {
-            type: 'array',
-            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
-          },
-        },
-      },
-      display_values: {
-        type: 'code',
-        displayName: 'Option labels',
-        validation: {
-          schema: {
-            type: 'array',
-            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
+          validation: {
+            schema: { type: 'string' },
           },
         },
       },
@@ -2319,6 +2298,49 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      value: {
+        type: 'code',
+        displayName: 'Default value',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
+        validation: {
+          schema: {
+            type: 'union',
+            schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
+          },
+        },
+      },
+      values: {
+        type: 'code',
+        displayName: 'Option values',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
+        validation: {
+          schema: {
+            type: 'array',
+            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
+          },
+        },
+      },
+      display_values: {
+        type: 'code',
+        displayName: 'Option labels',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
+        validation: {
+          schema: {
+            type: 'array',
+            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
+          },
+        },
+      },
+
       schema: {
         type: 'code',
         displayName: 'Schema',
@@ -2332,15 +2354,6 @@ export const widgets = [
         displayName: 'Options loading state',
         validation: {
           schema: { type: 'boolean' },
-        },
-      },
-      placeholder: {
-        type: 'code',
-        displayName: 'Default placeholder',
-        validation: {
-          validation: {
-            schema: { type: 'string' },
-          },
         },
       },
     },
@@ -2420,7 +2433,7 @@ export const widgets = [
         advanced: { value: `{{false}}` },
         schema: {
           value:
-            "{{[\t{label: 'One',value: 1,disable: false,visible: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}\t]}}",
+            "{{[\t{label: 'One',value: 1,disable: false,visible: true,default: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}\t]}}",
         },
 
         label: { value: 'Select' },
