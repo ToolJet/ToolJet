@@ -35,7 +35,7 @@ export const DropDown = function DropDown({
   useEffect(() => {
     if (advanced && schema?.length > 0 && Array.isArray(schema)) {
       setDisplayValues(schema.map((item) => item.label));
-    }
+    } else setDisplayValues(properties.display_values);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, JSON.stringify(schema)]);
 
