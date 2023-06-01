@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:  
-  building-tooljet-latest-image:
+  tooljet-latest-image:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
 
@@ -42,12 +42,8 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Send Slack Notification
+      - name: Send Slack Notification on Failure
+        if: failure()
         run: |
-          if [[ "${{ job.status }}" == "success" ]]; then
-            message="Job '${{ env.JOB_NAME }}' succeeded! tooljet/tooljet-ce:latest"
-          else
-            message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ce:latest"
-          fi
-
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL_OPS_CHANNEL }} 
+          message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ce:latest"
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL_OPS_CHANNEL }}
