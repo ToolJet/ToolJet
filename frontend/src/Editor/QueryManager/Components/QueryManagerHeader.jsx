@@ -69,7 +69,8 @@ export const QueryManagerHeader = forwardRef(
 
     const createOrUpdateDataQuery = (shouldRunQuery = false) => {
       if (selectedQuery?.id === 'draftQuery') return createDataQuery(appId, editingVersionId, options, shouldRunQuery);
-      updateDataQuery(options, shouldRunQuery);
+      if (isUnsavedQueriesAvailable) return updateDataQuery(options, shouldRunQuery);
+      shouldRunQuery && runQuery(editorRef, selectedQuery?.id, selectedQuery?.name);
     };
 
     const renderRenameInput = () => (

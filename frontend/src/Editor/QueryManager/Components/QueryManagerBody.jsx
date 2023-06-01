@@ -12,6 +12,7 @@ import { ChangeDataSource } from './ChangeDataSource';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import AddGlobalDataSourceButton from './AddGlobalDataSourceButton';
 import EmptyGlobalDataSources from './EmptyGlobalDataSources';
+import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { EventManager } from '@/Editor/Inspector/EventManager';
 import { allOperations } from '@tooljet/plugins/client';
 import { staticDataSources, customToggles, mockDataQueryAsComponent, schemaUnavailableOptions } from '../constants';
@@ -306,6 +307,47 @@ export const QueryManagerBody = forwardRef(
       );
     };
 
+    const renderSuccessNotification = () => (
+      <div className="mx-4" style={{ paddingLeft: '100px', paddingTop: '12px' }}>
+        <div className="row mt-1">
+          <div className="col-auto" style={{ width: '200px' }}>
+            <label className="form-label p-2 font-size-12" data-cy={'label-success-message-input'}>
+              {t('editor.queryManager.successMessage', 'Success Message')}
+            </label>
+          </div>
+          <div className="col">
+            <CodeHinter
+              currentState={currentState}
+              initialValue={options.successMessage}
+              height="36px"
+              theme={darkMode ? 'monokai' : 'default'}
+              onChange={(value) => optionchanged('successMessage', value)}
+              placeholder={t('editor.queryManager.queryRanSuccessfully', 'Query ran successfully')}
+              cyLabel={'success-message'}
+            />
+          </div>
+        </div>
+        <div className="row mt-3">
+          <div className="col-auto" style={{ width: '200px' }}>
+            <label className="form-label p-2 font-size-12" data-cy={'label-notification-duration-input'}>
+              {t('editor.queryManager.notificationDuration', 'Notification duration (s)')}
+            </label>
+          </div>
+          <div className="col query-manager-input-elem">
+            <input
+              type="number"
+              disabled={!options.showSuccessNotification}
+              onChange={(e) => optionchanged('notificationDuration', e.target.value)}
+              placeholder={5}
+              className="form-control"
+              value={options.notificationDuration}
+              data-cy={'notification-duration-input-field'}
+            />
+          </div>
+        </div>
+      </div>
+    );
+
     const renderCustomToggle = ({ dataCy, action, translatedLabel, label }, index) => (
       <div className={cx('mx-4', { 'pb-3 pt-3': index === 1 })}>
         <CustomToggleSwitch
@@ -328,6 +370,7 @@ export const QueryManagerBody = forwardRef(
         >
           <div className="advance-options-input-form-container">
             {Object.keys(customToggles).map((toggle, index) => renderCustomToggle(customToggles[toggle], index))}
+            {options?.showSuccessNotification && renderSuccessNotification()}
           </div>
           {renderEventManager()}
         </div>
