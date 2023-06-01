@@ -189,10 +189,10 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-review-app']
+              labels: ['active-review-cypress-app']
             })
 
-  destroy-review-app:
+  destroy-review-cypress-app:
     if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-review-app') || github.event.action == 'closed' }}
     runs-on: ubuntu-latest
 
@@ -260,7 +260,7 @@ jobs:
         run: |
           PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c DROP DATABASE "$PGDATABASE";
 
-  suspend-review-app:
+  suspend-review-cypress-app:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-app' }}
     runs-on: ubuntu-latest
 
@@ -292,7 +292,7 @@ jobs:
               console.log(e)
             }
 
-  resume-review-app:
+  resume-review-cypress-app:
     if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-review-app' }}
     runs-on: ubuntu-latest
 
