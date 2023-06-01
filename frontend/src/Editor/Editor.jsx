@@ -1411,10 +1411,13 @@ class EditorComponent extends React.Component {
      * default canvas min width = calc((total view width - width component editor side bar) - width of editor sidebar on left)
      **/
     const defaultCanvasMinWidth = `calc((100vw - 300px) - 48px)`;
-    const userSetMaxWidth = `${
-      +this.state.appDefinition.globalSettings.canvasMaxWidth +
-      this.state.appDefinition.globalSettings.canvasMaxWidthType
-    }`;
+    const userSetMaxWidth =
+      this.state.currentLayout === 'desktop'
+        ? `${
+            +this.state.appDefinition.globalSettings.canvasMaxWidth +
+            this.state.appDefinition.globalSettings.canvasMaxWidthType
+          }`
+        : '450px';
     if (this.state.appDefinition.globalSettings.canvasMaxWidth) {
       return `min(${defaultCanvasMinWidth}, ${userSetMaxWidth})`;
     } else {
