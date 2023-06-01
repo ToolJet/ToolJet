@@ -1,4 +1,4 @@
-name: Render review deploy
+name: Render cypress app deploy
 on:
   pull_request_target:
     types: [labeled, unlabeled, closed]
