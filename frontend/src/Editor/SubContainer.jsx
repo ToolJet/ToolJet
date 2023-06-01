@@ -48,6 +48,7 @@ export const SubContainer = ({
   childComponents = null,
   isVersionReleased,
   setReleasedVersionPopupState,
+  parentModal = false,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -472,7 +473,9 @@ export const SubContainer = ({
       ref={drop}
       style={styles}
       id={`canvas-${parent}`}
-      className={`real-canvas ${(isDragging || isResizing) && !readOnly ? 'show-grid' : ''}`}
+      className={`real-canvas ${parentModal && 'modal-canvas'}${
+        (isDragging || isResizing) && !readOnly ? 'show-grid' : ''
+      }`}
     >
       {checkParentVisibility() &&
         Object.keys(childWidgets).map((key) => {

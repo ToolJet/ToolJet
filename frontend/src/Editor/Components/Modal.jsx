@@ -72,12 +72,14 @@ export const Modal = function Modal({
       const canvasElement = document.getElementsByClassName('canvas-area')[0];
       const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
       const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+      const modalCanvasEl = document.getElementsByClassName('modal-canvas')[0];
 
       if (canvasElement && modalBackdropEl) {
         canvasElement.style.height = '100vh';
         canvasElement.style.maxHeight = '100vh';
         canvasElement.style.minHeight = '100vh';
         canvasElement.style.height = '100vh';
+        modalCanvasEl.style.height = modalHeight;
 
         realCanvasEl.style.height = '100vh';
 
@@ -114,7 +116,7 @@ export const Modal = function Modal({
       handleModalClose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal]);
+  }, [showModal, modalHeight]);
 
   function hideModal() {
     setShowModal(false);
@@ -208,7 +210,7 @@ export const Modal = function Modal({
       >
         {!loadingState ? (
           <>
-            <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
+            <SubContainer parent={id} {...containerProps} parentRef={parentRef} parentModal={true} />
             <SubCustomDragLayer
               snapToGrid={true}
               parentRef={parentRef}
