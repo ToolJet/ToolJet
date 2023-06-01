@@ -179,7 +179,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'create-review-app'
+                name: 'create-review-cypress-app'
               })
             } catch (e) {
               console.log(e)
@@ -193,7 +193,7 @@ jobs:
             })
 
   destroy-review-cypress-app:
-    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-review-app') || github.event.action == 'closed' }}
+    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-create-review-app') || github.event.action == 'closed' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -218,7 +218,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'destroy-review-app'
+                name: 'destroy-create-review-app'
               })
             } catch (e) {
               console.log(e)
@@ -229,7 +229,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'suspend-review-app'
+                name: 'suspend-create-review-app'
               })
             } catch (e) {
               console.log(e)
@@ -240,7 +240,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-review-app'
+                name: 'active-create-review-app'
               })
             } catch (e) {
               console.log(e)
@@ -261,7 +261,7 @@ jobs:
           PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c DROP DATABASE "$PGDATABASE";
 
   suspend-review-cypress-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-app' }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-create-review-app' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -286,14 +286,14 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-review-app'
+                name: 'active-review-cypress-app'
               })
             } catch (e) {
               console.log(e)
             }
 
   resume-review-cypress-app:
-    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-review-app' }}
+    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-review-cypress-app' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -317,7 +317,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-review-app']
+              labels: ['active-create-review-app']
             })
 
             try {
@@ -325,7 +325,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'suspend-review-app'
+                name: 'suspend-create-review-app'
               })
             } catch (e) {
               console.log(e)

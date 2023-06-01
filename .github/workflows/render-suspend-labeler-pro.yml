@@ -40,6 +40,6 @@ jobs:
               issue_number: prNumber,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['suspend-review-app']
+              labels: ['suspend-review-cypress-app']
             })
           }
