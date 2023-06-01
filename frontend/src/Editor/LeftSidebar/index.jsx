@@ -118,16 +118,17 @@ export const LeftSidebar = forwardRef((props, ref) => {
   }, [JSON.stringify({ errors })]);
 
   React.useEffect(() => {
-    const unReadErrors = open ? 0 : errorLogs.length - unReadErrorCount.read;
+    if (open) {
+      setUnReadErrorCount((prev) => ({ read: errorLogs.length, unread: 0 }));
+    }
+  }, [open]);
+
+  React.useEffect(() => {
+    const unReadErrors = errorLogs.length - unReadErrorCount.read;
     setUnReadErrorCount((prev) => {
-      if (open) {
-        return { read: errorLogs.length, unread: 0 };
-      }
       return { ...prev, unread: unReadErrors };
     });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [errorLogs.length, open]);
+  }, [errorLogs.length]);
 
   useEffect(() => {
     setPopoverContentHeight(((window.innerHeight - queryPanelHeight - 45) / window.innerHeight) * 100);
