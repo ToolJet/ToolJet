@@ -16,7 +16,18 @@ export const DropDown = function DropDown({
   registerAction,
   dataCy,
 }) {
-  let { label, value, advanced, schema, placeholder, display_values, values } = properties;
+  let { label, advanced, schema, placeholder, display_values, values } = properties;
+  const [value, setValue] = useState(advanced ? findDefaultItem(schema) : properties.value);
+
+  function findDefaultItem(items) {
+    const foundItem = items.find((item) => item.default === true);
+    return foundItem ? foundItem.value : null;
+  }
+
+  useEffect(() => {
+    setValue(findDefaultItem(schema));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(schema)]);
 
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
@@ -126,9 +137,13 @@ export const DropDown = function DropDown({
   }, [label]);
 
   useEffect(() => {
-    setExposedVariable('optionLabels', display_values);
+    const schema_display_values = schema.map((item) => item.label);
+
+    advanced
+      ? setExposedVariable('optionLabels', schema_display_values)
+      : setExposedVariable('optionLabels', display_values);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(display_values)]);
+  }, [JSON.stringify(display_values), advanced, JSON.stringify(schema)]);
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
