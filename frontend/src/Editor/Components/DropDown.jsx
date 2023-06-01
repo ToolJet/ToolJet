@@ -20,14 +20,16 @@ export const DropDown = function DropDown({
   const [value, setValue] = useState(advanced ? findDefaultItem(schema) : properties.value);
 
   function findDefaultItem(items) {
-    const foundItem = items.find((item) => item.default === true);
+    const foundItem = items?.find((item) => item.default === true);
     return foundItem ? foundItem.value : null;
   }
 
   useEffect(() => {
-    setValue(findDefaultItem(schema));
+    if (advanced) {
+      setValue(findDefaultItem(schema));
+    } else setValue(properties.value);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(schema)]);
+  }, [JSON.stringify(schema), advanced, properties.value]);
 
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
   const [currentValue, setCurrentValue] = useState(() => value);
@@ -36,8 +38,8 @@ export const DropDown = function DropDown({
 
   if (!_.isArray(values)) {
     if (advanced) {
-      values = schema.map((item) => item.value);
-      display_values = schema.map((item) => item.label);
+      values = schema?.map((item) => item.value);
+      display_values = schema?.map((item) => item.label);
     } else if (!_.isArray(values)) {
       values = [];
     }
@@ -137,7 +139,7 @@ export const DropDown = function DropDown({
   }, [label]);
 
   useEffect(() => {
-    const schema_display_values = schema.map((item) => item.label);
+    const schema_display_values = schema?.map((item) => item.label);
 
     advanced
       ? setExposedVariable('optionLabels', schema_display_values)
