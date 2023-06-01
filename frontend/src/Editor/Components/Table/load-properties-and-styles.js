@@ -57,7 +57,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     };
   });
 
-  const allowSelection = properties.allowSelection ?? true;
+  const allowSelection = properties?.allowSelection ?? (showBulkSelector || highlightSelectedRow) ? true : false;
 
   return {
     color,

@@ -925,7 +925,8 @@ class TableComponent extends React.Component {
       : false;
     const allowSelection = component.component.definition.properties?.allowSelection?.value
       ? resolveReferences(component.component.definition.properties.allowSelection?.value, currentState)
-      : true;
+      : resolveReferences(component.component.definition.properties.highlightSelectedRow.value, currentState) ||
+        resolveReferences(component.component.definition.properties.showBulkSelector.value, currentState);
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
     };
@@ -1079,8 +1080,7 @@ class TableComponent extends React.Component {
       ...(displayServerSideFilter ? ['serverSideFilter'] : []),
       'showBulkUpdateActions',
       'allowSelection',
-      ...(allowSelection ? ['highlightSelectedRow'] : []),
-      'showBulkSelector',
+      ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector'] : []),
       'hideColumnSelectorButton',
     ];
 

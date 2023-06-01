@@ -551,9 +551,8 @@ export function Table({
     useExportData,
     useRowSelect,
     (hooks) => {
-      ((showBulkSelector && !highlightSelectedRow) ||
-        (allowSelection && !highlightSelectedRow) ||
-        (showBulkSelector && !allowSelection)) &&
+      allowSelection &&
+        !highlightSelectedRow &&
         hooks.visibleColumns.push((columns) => [
           {
             id: 'selection',
@@ -617,8 +616,9 @@ export function Table({
       const row = rows.find((item, index) => item.original[key] == value);
       if (row != undefined) {
         const selectedRowDetails = { selectedRow: item[0], selectedRowId: row.id };
-        mergeToTableDetails(selectedRowDetails);
         setExposedVariables(selectedRowDetails).then(() => {
+          if (allowSelection && !highlightSelectedRow) toggleRowSelected(row.id);
+          mergeToTableDetails(selectedRowDetails);
           fireEvent('onRowClicked');
         });
       }
@@ -630,8 +630,10 @@ export function Table({
     async function () {
       if (!_.isEmpty(tableDetails.selectedRow)) {
         const selectedRowDetails = { selectedRow: {}, selectedRowId: {} };
-        mergeToTableDetails(selectedRowDetails);
-        setExposedVariables(selectedRowDetails);
+        setExposedVariables(selectedRowDetails).then(() => {
+          if (allowSelection && !highlightSelectedRow) toggleRowSelected(tableDetails.selectedRowId, false);
+          mergeToTableDetails(selectedRowDetails);
+        });
       }
       return;
     },
@@ -1037,13 +1039,15 @@ export function Table({
                   <tr
                     key={index}
                     className={`table-row table-editor-component-row ${
-                      highlightSelectedRow && row.isSelected && row.id === tableDetails.selectedRowId ? 'selected' : ''
-                    } ${
+                      allowSelection &&
                       highlightSelectedRow &&
-                      showBulkSelector &&
-                      row.isSelected &&
-                      tableDetails?.selectedRowsDetails?.some((singleRow) => singleRow.selectedRowId === row.id) &&
-                      'selected'
+                      ((row.isSelected && row.id === tableDetails.selectedRowId) ||
+                        (showBulkSelector &&
+                          row.isSelected &&
+                          tableDetails?.selectedRowsDetails?.some((singleRow) => singleRow.selectedRowId === row.id)) ||
+                        row.id === tableDetails.selectedRowId)
+                        ? 'selected'
+                        : ''
                     }`}
                     {...row.getRowProps()}
                     onClick={async (e) => {
