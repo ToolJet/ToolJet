@@ -55,7 +55,7 @@ jobs:
               },
               {
                 "key": "PG_DB",
-                "value": "${{ env.PR_NUMBER }}"
+                "value": "${{ env.PR_NUMBER }}_cypress"
               },
               {
                 "key": "ENABLE_TOOLJET_DB",
@@ -63,7 +63,7 @@ jobs:
               },
               {
                 "key": "TOOLJET_DB",
-                "value": "${{ env.PR_NUMBER }}"
+                "value": "${{ env.PR_NUMBER }}_cypress"
               },
               {
                 "key": "TOOLJET_DB_HOST",
@@ -256,9 +256,9 @@ jobs:
           PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
           PGPORT: 5432
           PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
-          PGDATABASE: ${{ env.PR_NUMBER }}
+          PGDATABASE: ${{ env.PR_NUMBER }}_cypress
         run: |
-          PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c DROP DATABASE "$PGDATABASE";
+          PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
 
   suspend-review-cypress-app:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-create-review-app' }}
