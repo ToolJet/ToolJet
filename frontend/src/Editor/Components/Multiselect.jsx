@@ -132,8 +132,8 @@ export const Multiselect = function Multiselect({
     setSearched(filter);
 
     if (searched !== filter) {
-      fireEvent('onSearchTextChanged');
       setExposedVariable('searchText', filter);
+      fireEvent('onSearchTextChanged');
     }
 
     return options.filter(
