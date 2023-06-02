@@ -72,7 +72,6 @@ export const Modal = function Modal({
       const canvasElement = document.getElementsByClassName('canvas-area')[0];
       const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
       const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-      console.log('xx', `canvas-${id}`);
       const modalCanvasEl = document.getElementById(`canvas-${id}`);
 
       if (canvasElement && modalBackdropEl) {
