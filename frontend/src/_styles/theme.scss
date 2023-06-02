@@ -8023,6 +8023,10 @@ tbody {
   font-size: .765625rem !important;
 }
 
+.tooltip {
+  z-index: 10000;
+}
+
 .add-new-workspace-icon-wrap {
   display: flex;
   flex-direction: row;
@@ -10521,6 +10525,22 @@ tbody {
     }
   }
 }
+
+.workspace-folder-modal {
+  .tj-app-input {
+    padding-bottom: 0px !important;
+  }
+
+  .tj-input-error {
+    height: 32px;
+    color: #ED5F00;
+    font-weight: 400;
+    font-size: 10px;
+    height: 0px;
+    padding: 4px 0px 20px 0px;
+  }
+}
+
 .table-editor-component-row{
   .rdt.cell-type-datepicker{
     margin-top: 0;
@@ -10534,6 +10554,7 @@ tbody {
 .theme-dark .card-container {
   background-color: #121212 !important
 }
+
 .version-select {
   .react-select__menu {
     .react-select__menu-list {
