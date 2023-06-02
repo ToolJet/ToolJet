@@ -1,9 +1,12 @@
 import { fake } from "Fixtures/fake";
+import { tableSelector } from "Selectors/table";
 
 import {
   verifyMultipleComponentValuesFromInspector,
   verifyComponentValueFromInspector,
   openEditorSidebar,
+  openAccordion,
+  verifyBoxShadowCss,
 } from "Support/utils/commonWidget";
 import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
@@ -33,8 +36,27 @@ import {
   verifypreview,
   addInput,
 } from "Support/utils/dataSource";
-import { addPropertiesFromCodeHinderPopup } from "Support/utils/codehinder";
+import {
+  addPropertiesFromCodeHinderPopup,
+  addFromCodeHinderPopup,
+} from "Support/utils/codehinder";
 import { tableText } from "Texts/table";
+import {
+  searchOnTable,
+  verifyTableElements,
+  selectDropdownOption,
+  deleteAndVerifyColumn,
+  addAndOpenColumnOption,
+  verifyAndEnterColumnOptionInput,
+  verifyInvalidFeedback,
+  addInputOnTable,
+  verifySingleValueOnTable,
+  verifyAndModifyToggleFx,
+  selectFromSidebarDropdown,
+  dataPdfAssertionHelper,
+  dataCsvAssertionHelper,
+  addFilter,
+} from "Support/utils/table";
 
 describe("Editor- Codehinder", () => {
   beforeEach(() => {
@@ -124,188 +146,122 @@ describe("Editor- Codehinder", () => {
       "{{false",
       "widget/table1::visibility"
     );
-    // verifyAndModifyToggleFx(
-    //   commonWidgetText.parameterVisibility,
-    //   commonWidgetText.codeMirrorLabelTrue
-    // );
-    // cy.get(
-    //   commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
-    // ).should("not.be.visible");
-    // cy.get(
-    //   commonWidgetSelector.parameterTogglebutton(
-    //     commonWidgetText.parameterVisibility
-    //   )
-    // ).click();
-    // verifyAndModifyToggleFx(
-    //   commonWidgetText.parameterDisable,
-    //   commonWidgetText.codeMirrorLabelFalse
-    // );
-    // cy.waitForAutoSave();
-    // cy.get(
-    //   commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
-    // ).should("have.attr", "data-disabled", "true");
-    // cy.get("[data-cy='disable-toggle-button']").click();
+    cy.get(
+      commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
+    ).should("not.be.visible");
+    cy.get("[data-cy='visibility-fx-button']").click();
+    cy.get(
+      commonWidgetSelector.parameterTogglebutton(
+        commonWidgetText.parameterVisibility
+      )
+    ).click();
+    addPropertiesFromCodeHinderPopup(
+      commonWidgetText.parameterDisable,
+      "{{true",
+      "widget/table1::disabledState"
+    );
+    cy.waitForAutoSave();
+    cy.get(
+      commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
+    ).should("have.attr", "data-disabled", "true");
+    cy.get("[data-cy='disable-fx-button']").click();
+    cy.get("[data-cy='disable-toggle-button']").click();
 
     // // cy.get("[data-cy='border-radius-fx-button']:eq(1)").click();
-    // verifyAndModifyParameter(
-    //   "Action Button Radius",
-    //   commonWidgetText.borderRadiusInput
-    // );
+    addFromCodeHinderPopup(
+      "Action Button Radius",
+      commonWidgetText.borderRadiusInput,
+      "widget/table1::actionButtonRadius"
+    );
 
-    // cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
-    // openEditorSidebar(tableText.defaultWidgetName);
-    // openAccordion("Columns", ["Options", "Properties", "Layout"]);
-    // deleteAndVerifyColumn("email");
-    // openEditorSidebar(tableText.defaultWidgetName);
-    // openAccordion("Action buttons", [
-    //   "Options",
-    //   "Properties",
-    //   "Columns",
-    //   "Layout",
-    // ]);
-    // cy.get('[data-cy="button-add-new-action-button"]').click();
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    openEditorSidebar(tableText.defaultWidgetName);
+    openAccordion("Columns", ["Options", "Properties", "Layout"]);
+    deleteAndVerifyColumn("email");
+    openEditorSidebar(tableText.defaultWidgetName);
+    openAccordion("Action buttons", [
+      "Options",
+      "Properties",
+      "Columns",
+      "Layout",
+    ]);
+    cy.get('[data-cy="button-add-new-action-button"]').click();
 
-    // cy.get('[data-cy="rightActions-cell-2"]')
-    //   .eq(0)
-    //   .find("button")
-    //   .should("have.css", "border-radius", "20px");
+    cy.get('[data-cy="rightActions-cell-2"]')
+      .eq(0)
+      .find("button")
+      .should("have.css", "border-radius", "20px");
 
-    // openEditorSidebar(tableText.defaultWidgetName);
-    // cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+    openEditorSidebar(tableText.defaultWidgetName);
+    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
-    // verifyAndModifyParameter(
-    //   "Border Radius",
-    //   commonWidgetText.borderRadiusInput
-    // );
-    // cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
+    addFromCodeHinderPopup(
+      "Border Radius",
+      commonWidgetText.borderRadiusInput,
+      "widget/table1::borderRadius"
+    );
+    cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
 
-    // cy.get(
-    //   commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
-    // ).should("have.css", "border-radius", "20px");
+    cy.get(
+      commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
+    ).should("have.css", "border-radius", "20px");
 
-    // openEditorSidebar(tableText.defaultWidgetName);
-    // cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    // openAccordion(commonWidgetText.accordionGenaral, []);
+    openEditorSidebar(tableText.defaultWidgetName);
+    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+    openAccordion(commonWidgetText.accordionGenaral, []);
 
-    // verifyAndModifyToggleFx(
-    //   commonWidgetText.parameterBoxShadow,
-    //   commonWidgetText.boxShadowDefaultValue,
-    //   false
-    // );
+    addPropertiesFromCodeHinderPopup(
+      commonWidgetText.parameterBoxShadow,
+      "10px 10px 10px 10px #a81313ff",
+      "widget/table1::boxShadow"
+    );
 
-    // cy.get(commonWidgetSelector.boxShadowColorPicker).click();
+    addPropertiesFromCodeHinderPopup(
+      "Table type",
+      "randomText",
+      "widget/table1::tableType"
+    );
 
-    // fillBoxShadowParams(
-    //   commonWidgetSelector.boxShadowDefaultParam,
-    //   data.boxShadowParam
-    // );
+    cy.forceClickOnCanvas();
+    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName))
+      .find("table")
+      .invoke("attr", "class")
+      .and("contain", "randomText");
 
-    // selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.color);
-    // verifyBoxShadowCss(
-    //   tableText.defaultWidgetName,
-    //   data.color,
-    //   data.boxShadowParam
-    // );
-    // cy.get(
-    //   commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
-    // ).click();
-    // cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+    openEditorSidebar(tableText.defaultWidgetName);
+    cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
 
-    // cy.get('[data-cy="label-table-type"]').verifyVisibleElement(
-    //   "have.text",
-    //   "Table type"
-    // );
-    // cy.get(
-    //   '[data-cy="table-type-fx-button"][class*="fx-button  unselectable"]'
-    // ).click();
-    // cy.get('[data-cy="table-type-input-field"]').clearAndTypeOnCodeMirror(
-    //   `randomText`
-    // );
-    // cy.forceClickOnCanvas();
-    // cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName))
-    //   .find("table")
-    //   .invoke("attr", "class")
-    //   .and("contain", "randomText");
-    // cy.get(
-    //   commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
-    // ).click();
-    // cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
+    addPropertiesFromCodeHinderPopup(
+      "Cell size",
+      "randomText",
+      "widget/table1::cellSize"
+    );
 
-    // cy.get('[data-cy="table-type-fx-button"]').click();
-    // cy.get('[data-cy="dropdown-table-type"]').click();
-    // selectFromSidebarDropdown('[data-cy="dropdown-table-type"]', "Classic");
-    // cy.forceClickOnCanvas();
-    // cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName))
-    //   .click()
-    //   .find("table")
-    //   .invoke("attr", "class")
-    //   .and("contain", "classic");
+    addPropertiesFromCodeHinderPopup(
+      "Text color",
+      `rgba(${data.color[0]}, ${data.color[1]}, ${data.color[2]}, ${
+        data.color[3] / 100
+      })`,
+      "widget/table1::textColor"
+    );
 
-    // cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    // selectFromSidebarDropdown(
-    //   '[data-cy="dropdown-table-type"]',
-    //   "Striped & bordered"
-    // );
-    // cy.forceClickOnCanvas();
-    // cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName))
-    //   .click()
-    //   .find("table")
-    //   .invoke("attr", "class")
-    //   .and("contain", "table-striped table-bordered ");
-
-    // cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    // cy.get('[data-cy="label-cell-size"]').verifyVisibleElement(
-    //   "have.text",
-    //   "Cell size"
-    // );
-    // cy.get(
-    //   '[data-cy="cell-size-fx-button"][class*="fx-button  unselectable"]'
-    // ).click();
-
-    // cy.get('[data-cy="cell-size-input-field"]').clearAndTypeOnCodeMirror(
-    //   `randomText`
-    // );
-    // cy.forceClickOnCanvas();
-    // cy.get(
-    //   commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
-    // ).click();
-    // cy.get(tableSelector.column(0))
-    //   .eq(0)
-    //   .invoke("attr", "class")
-    //   .and("contain", "randomText");
-
-    // cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-
-    // cy.get('[data-cy="cell-size-fx-button"]').click();
-    // selectFromSidebarDropdown('[data-cy="dropdown-cell-size"]', "Spacious");
-    // cy.forceClickOnCanvas();
-    // cy.get(
-    //   commonWidgetSelector.draggableWidget(tableText.defaultWidgetName)
-    // ).click();
-
-    // cy.get(tableSelector.column(0))
-    //   .eq(0)
-    //   .invoke("attr", "class")
-    //   .and("contain", "spacious");
-
-    // cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    // cy.get('[data-cy="label-text-color"]').verifyVisibleElement(
-    //   "have.text",
-    //   "Text color"
-    // );
+    cy.get(tableSelector.column(0))
+      .eq(0)
+      .invoke("attr", "class")
+      .and("contain", "randomText");
 
     // selectColourFromColourPicker(`Text color`, data.color);
-    // cy.forceClickOnCanvas();
-    // cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName))
-    //   .click()
-    //   .find("tbody")
-    //   .should(
-    //     "have.css",
-    //     "color",
-    //     `rgba(${data.color[0]}, ${data.color[1]}, ${data.color[2]}, ${
-    //       data.color[3] / 100
-    //     })`
-    //   );
+    cy.forceClickOnCanvas();
+    cy.get(commonWidgetSelector.draggableWidget(tableText.defaultWidgetName))
+      .click()
+      .find("tbody")
+      .should(
+        "have.css",
+        "color",
+        `rgba(${data.color[0]}, ${data.color[1]}, ${data.color[2]}, ${
+          data.color[3] / 100
+        })`
+      );
   });
 
   it("should verify component specific codehinder", () => {});

@@ -1,8 +1,12 @@
 import { commonWidgetSelector } from "Selectors/common";
 import { addInputOnQueryField } from "Support/utils/queries";
 
-export const addPropertiesFromCodeHinderPopup = (fx, data, header) => {
-  cy.get(commonWidgetSelector.parameterFxButton(fx)).eq(1).realClick();
+export const addPropertiesFromCodeHinderPopup = (fx, data, header, i = 1) => {
+  cy.get(commonWidgetSelector.parameterFxButton(fx)).eq(i).realClick();
+  addFromCodeHinderPopup(fx, data, header);
+};
+
+export const addFromCodeHinderPopup = (fx, data, header) => {
   cy.get(commonWidgetSelector.parameterInputField(fx))
     .click()
     .realHover()
