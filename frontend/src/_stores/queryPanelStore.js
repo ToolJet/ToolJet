@@ -1,3 +1,4 @@
+import { cloneDeep } from 'lodash';
 import { create, zustandDevTools } from './utils';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
@@ -20,14 +21,14 @@ export const useQueryPanelStore = create(
       actions: {
         updateQueryPanelHeight: (newHeight) => set(() => ({ queryPanelHeight: newHeight })),
         setSelectedQuery: (queryId, dataQuery = {}) => {
-          set(() => {
+          set((state) => {
             if (queryId === null) {
               return { selectedQuery: null };
             } else if (queryId === 'draftQuery') {
               return { selectedQuery: dataQuery };
             }
             const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
-            return { selectedQuery: query ? query : null };
+            return { selectedQuery: query ? cloneDeep(query) : null };
           });
         },
         setSelectedDataSource: (dataSource = null) => set({ selectedDataSource: dataSource }),

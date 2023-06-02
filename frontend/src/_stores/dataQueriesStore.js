@@ -1,7 +1,8 @@
 import { create, zustandDevTools } from './utils';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
-
+import debounce from 'lodash/debounce';
+import isEqual from 'lodash/isEqual';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { runQueries, computeQueryState } from '@/_helpers/appUtils';
@@ -78,35 +79,48 @@ export const useDataQueriesStore = create(
           set({ isUpdatingQueryInProcess: true });
           const { actions, selectedQuery } = useQueryPanelStore.getState();
           useAppDataStore.getState().actions.setIsSaving(true);
-          dataqueryService
-            .update(selectedQuery?.id, selectedQuery?.name, options)
-            .then((data) => {
-              actions.setUnSavedChanges(false);
-              localStorage.removeItem('transformation');
-              // toast.success('Query Saved');
-              set((state) => ({
-                isUpdatingQueryInProcess: false,
-                dataQueries: state.dataQueries.map((query) => {
-                  if (query.id === data.id) {
-                    return {
-                      ...query,
-                      ...data,
-                    };
-                  }
-                  return query;
-                }),
-              }));
-              actions.setSelectedQuery(data.id);
-              // if (shouldRunQuery) actions.setQueryToBeRun(data);
-            })
-            .catch(({ error }) => {
-              actions.setUnSavedChanges(false);
-              // toast.error(error);
-              set({
-                isUpdatingQueryInProcess: false,
-              });
-            })
-            .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
+          set((state) => ({
+            isUpdatingQueryInProcess: false,
+            dataQueries: state.dataQueries.map((query) => {
+              if (query.id === selectedQuery.id) {
+                return {
+                  ...query,
+                  options: { ...options },
+                };
+              }
+              return query;
+            }),
+          }));
+          actions.setSelectedQuery(selectedQuery.id);
+          // dataqueryService
+          //   .update(selectedQuery?.id, selectedQuery?.name, options)
+          //   .then((data) => {
+          //     actions.setUnSavedChanges(false);
+          //     localStorage.removeItem('transformation');
+          //     // toast.success('Query Saved');
+          //     set((state) => ({
+          //       isUpdatingQueryInProcess: false,
+          //       dataQueries: state.dataQueries.map((query) => {
+          //         if (query.id === data.id) {
+          //           return {
+          //             ...query,
+          //             ...data,
+          //           };
+          //         }
+          //         return query;
+          //       }),
+          //     }));
+          //     actions.setSelectedQuery(data.id);
+          //     // if (shouldRunQuery) actions.setQueryToBeRun(data);
+          //   })
+          //   .catch(({ error }) => {
+          //     actions.setUnSavedChanges(false);
+          //     // toast.error(error);
+          //     set({
+          //       isUpdatingQueryInProcess: false,
+          //     });
+          //   })
+          //   .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
         createDataQuery: (appId, appVersionId, options, shouldRunQuery) => {
           set({ isCreatingQueryInProcess: true });
@@ -260,11 +274,49 @@ export const useDataQueriesStore = create(
             })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
+        saveData: debounce((newValues) => {
+          set({ isUpdatingQueryInProcess: true });
+          const { actions } = useQueryPanelStore.getState();
+          dataqueryService
+            .update(newValues?.id, newValues?.name, newValues?.options)
+            .then((data) => {
+              actions.setUnSavedChanges(false);
+              localStorage.removeItem('transformation');
+              // toast.success('Query Saved');
+              set((state) => ({
+                isUpdatingQueryInProcess: false,
+              }));
+              // actions.setSelectedQuery(data.id);
+              // if (shouldRunQuery) actions.setQueryToBeRun(data);
+            })
+            .catch(({ error }) => {
+              actions.setUnSavedChanges(false);
+              // toast.error(error);
+              set({
+                isUpdatingQueryInProcess: false,
+              });
+            })
+            .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
+        }, 1000),
       },
     }),
     { name: 'Data Queries Store' }
   )
 );
+
+useQueryPanelStore.subscribe(({ selectedQuery }, prevState) => {
+  console.log(
+    'CHANGES ->',
+    isEqual(selectedQuery, prevState?.selectedQuery),
+    selectedQuery?.options,
+    prevState?.selectedQuery?.options
+  );
+  if (!isEqual(selectedQuery, prevState?.selectedQuery)) {
+    useDataQueriesStore.getState().actions.saveData(selectedQuery);
+  } else {
+    useAppDataStore.getState().actions.setIsSaving(false);
+  }
+});
 
 export const useDataQueries = () => useDataQueriesStore((state) => state.dataQueries);
 export const useDataQueriesActions = () => useDataQueriesStore((state) => state.actions);

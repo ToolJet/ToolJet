@@ -162,12 +162,13 @@ export const QueryManagerBody = forwardRef(
         }
       }
       setOptions((options) => ({ ...options, ...updatedOptions }));
-      if (isFieldsChanged !== isUnsavedQueriesAvailable) {
-        setUnSavedChanges(isFieldsChanged);
-        if (!shouldNotAutoSave) {
-          autoUpdateDataQuery({ ...options, ...updatedOptions });
-        }
-      }
+      updateDataQuery({ ...options, ...updatedOptions });
+      // if (isFieldsChanged !== isUnsavedQueriesAvailable) {
+      //   setUnSavedChanges(isFieldsChanged);
+      //   if (!shouldNotAutoSave) {
+      //     updateDataQuery({ ...options, ...updatedOptions });
+      //   }
+      // }
     };
 
     const optionchanged = (option, value, shouldNotAutoSave) => {
@@ -277,7 +278,7 @@ export const QueryManagerBody = forwardRef(
     };
 
     const handleBlur = () => {
-      autoUpdateDataQuery(options);
+      updateDataQuery(options);
     };
 
     const renderQueryElement = () => {
@@ -387,7 +388,7 @@ export const QueryManagerBody = forwardRef(
       return (
         <div className="mt-2 pb-4 row">
           <div
-            className={`query-manager-border-color px-4 hr-text-left py-2 col-md-3 ${
+            className={`border-top query-manager-border-color px-4 hr-text-left py-2 ${
               darkMode ? 'color-white' : 'color-light-slate-12'
             }`}
           >
