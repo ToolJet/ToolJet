@@ -34,15 +34,17 @@ export function renderElement(
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
 
-  const paramTypeConfig = componentMeta[paramType] || {};
-  const paramConfig = paramTypeConfig[param] || {};
-  const { conditionallyRender = null } = paramConfig;
-
   if (componentConfig.component == 'DropDown') {
+    const paramTypeConfig = componentMeta[paramType] || {};
+    const paramConfig = paramTypeConfig[param] || {};
+    const { conditionallyRender = null } = paramConfig;
+
     if (conditionallyRender) {
       const { key, value } = conditionallyRender;
-      const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
-      if (resolvedValue?.value !== value) return;
+      if (paramTypeDefinition?.[key]) {
+        const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
+        if (resolvedValue?.value !== value) return;
+      }
     }
   }
   const meta = componentMeta[paramType][param];
