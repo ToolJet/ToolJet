@@ -138,13 +138,13 @@ export const BlankPage = function BlankPage({
                 })}
               </div>
               <div className="m-auto text-center mt-4">
-                <span
-                  className="see-all-temlplates-link tj-text-sm font-weight-600"
+                <button
+                  className="see-all-temlplates-link tj-text-sm font-weight-600 bg-transparent border-0"
                   onClick={viewTemplateLibraryModal}
                   data-cy="see-all-apps-template-buton"
                 >
                   See all templates
-                </span>
+                </button>
               </div>
             </div>
           </div>
