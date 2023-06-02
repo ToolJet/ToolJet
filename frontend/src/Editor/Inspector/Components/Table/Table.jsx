@@ -923,6 +923,7 @@ class TableComponent extends React.Component {
     const useDynamicColumn = component.component.definition.properties.useDynamicColumn?.value
       ? resolveReferences(component.component.definition.properties.useDynamicColumn?.value, currentState) ?? false
       : false;
+    //from app definition values are of string data type if defined or else,undefined
     const allowSelection = component.component.definition.properties?.allowSelection?.value
       ? resolveReferences(component.component.definition.properties.allowSelection?.value, currentState)
       : resolveReferences(component.component.definition.properties.highlightSelectedRow.value, currentState) ||

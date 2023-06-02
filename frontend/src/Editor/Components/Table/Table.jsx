@@ -685,6 +685,7 @@ export function Table({
       setExposedVariables({ selectedRow, selectedRowId });
     }
   }, [selectedFlatRows.length, selectedFlatRows, _.toString(selectedFlatRows)]);
+
   registerAction(
     'downloadTableData',
     async function (format) {
@@ -1053,13 +1054,15 @@ export function Table({
                     onClick={async (e) => {
                       e.stopPropagation();
                       // toggleRowSelected will triggered useRededcuer function in useTable and in result will get the selectedFlatRows consisting row which are selected
-                      await toggleRowSelected(row.id);
-                      if (showBulkSelector) {
-                        const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
-                          accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
-                          return accumulator;
-                        }, []);
-                        mergeToTableDetails({ selectedRowsDetails });
+                      if (allowSelection) {
+                        await toggleRowSelected(row.id);
+                        if (showBulkSelector) {
+                          const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
+                            accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
+                            return accumulator;
+                          }, []);
+                          mergeToTableDetails({ selectedRowsDetails });
+                        }
                       }
                       const selectedRow = row.original;
                       const selectedRowId = row.id;
