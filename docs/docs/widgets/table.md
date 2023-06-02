@@ -462,7 +462,7 @@ If server-side search is enabled, `on search` event is fired after the content o
 
 The download button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the download button by clicking on the **Fx** button.
 
-### Show column selector button
+### Hide column selector button
 
 The column selector button on the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the column selector button by clicking on the **Fx** button.
 
@@ -478,13 +478,17 @@ The Add new row button in the table header is visible by default. You can choose
 
 It's enabled by default. Table footer will show two update buttons **Save changes** & **Discard changes** whenever a cell is edited. Toggle `off` to hide update buttons.
 
-### Bulk selection
+### Allow selection
 
-To let the user select one or more rows from the current page of a table, enable 'Bulk selection' from the inspector. The values of selected rows will be exposed as `selectedRows`.
+This option is active by default. **Enabling** this functionality allows users to choose a row in the table by utilizing `checkboxes` placed next to each row. If this option is **disabled**, the ability to highlight selected rows and perform bulk selection will not be accessible.
 
 ### Highlight selected row
 
-Enable this option to have the last selected(clicked on) row to be highlighted.
+Activate this option to visually emphasize the last clicked row. **Enabling** this feature will alter the row selection appearance of the table from a `checkbox`-based theme to a `highlighting`-based theme.
+
+### Bulk selection
+
+To enable the selection of one or more rows from the current page of a table, you can activate the 'Bulk selection' setting in the inspector. The values of the selected rows will be exposed as '**selectedRows**'.
 
 ### Disable sorting
 
