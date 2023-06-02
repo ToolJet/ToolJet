@@ -6,6 +6,7 @@ import { capitalize, isEqual, debounce } from 'lodash';
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
 import DataSourceLister from './DataSourceLister';
+import DataSourceListerV2 from './DataSourceListerV2';
 import { Transformation } from './Transformation';
 import Preview from './Preview';
 import { ChangeDataSource } from './ChangeDataSource';
@@ -63,6 +64,7 @@ export const QueryManagerBody = forwardRef(
 
     const queryName = selectedQuery?.name ?? '';
     const sourcecomponentName = selectedDataSource?.kind.charAt(0).toUpperCase() + selectedDataSource?.kind.slice(1);
+
     const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
 
     const defaultOptions = useRef({});
@@ -190,48 +192,70 @@ export const QueryManagerBody = forwardRef(
       optionchanged(option, !currentValue);
     };
 
-    const renderDataSources = (labelText, dataSourcesList, staticList = [], isGlobalDataSource = false) => {
-      return (
-        <div
-          className={cx(`datasource-picker`, {
-            'disabled ': isVersionReleased,
-          })}
-        >
-          <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
-            {labelText}
-          </label>
-          {isGlobalDataSource && dataSourcesList?.length < 1 ? (
-            <EmptyGlobalDataSources darkMode={darkMode} />
-          ) : (
-            <DataSourceLister
-              dataSources={dataSourcesList}
-              staticDataSources={staticList}
-              changeDataSource={changeDataSource}
-              handleBackButton={handleBackButton}
-              darkMode={darkMode}
-              dataSourceModalHandler={dataSourceModalHandler}
-              showAddDatasourceBtn={isGlobalDataSource}
-              dataSourceBtnComponent={isGlobalDataSource ? <AddGlobalDataSourceButton /> : null}
-            />
-          )}
-        </div>
-      );
-    };
+    // const renderDataSources = (labelText, dataSourcesList, staticList = [], isGlobalDataSource = false) => {
+    //   return (
+    //     <div
+    //       className={cx(`datasource-picker`, {
+    //         'disabled ': isVersionReleased,
+    //       })}
+    //     >
+    //       <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
+    //         {labelText}
+    //       </label>
+    //       {isGlobalDataSource && dataSourcesList?.length < 1 ? (
+    //         <EmptyGlobalDataSources darkMode={darkMode} />
+    //       ) : (
+    //         <DataSourceLister
+    //           dataSources={dataSourcesList}
+    //           staticDataSources={staticList}
+    //           changeDataSource={changeDataSource}
+    //           handleBackButton={handleBackButton}
+    //           darkMode={darkMode}
+    //           dataSourceModalHandler={dataSourceModalHandler}
+    //           showAddDatasourceBtn={isGlobalDataSource}
+    //           dataSourceBtnComponent={isGlobalDataSource ? <AddGlobalDataSourceButton /> : null}
+    //         />
+    //       )}
+    //     </div>
+    //   );
+    // };
 
     const renderDataSourcesList = () => (
-      <>
-        {renderDataSources(
-          t('editor.queryManager.selectDatasource', 'Select Datasource'),
-          dataSources,
-          staticDataSources
-        )}
-        {renderDataSources(
-          t('editor.queryManager.selectGlobalDatasource', 'Select Global Datasource'),
-          globalDataSources,
-          [],
-          true
-        )}
-      </>
+      // <>
+      //   {renderDataSources(
+      //     t('editor.queryManager.selectDatasource', 'Select Datasource'),
+      //     dataSources,
+      //     staticDataSources
+      //   )}
+      //   {renderDataSources(
+      //     t('editor.queryManager.selectGlobalDatasource', 'Select Global Datasource'),
+      //     globalDataSources,
+      //     [],
+      //     true
+      //   )}
+      // </>
+
+      <div
+        className={cx(`datasource-picker`, {
+          'disabled ': isVersionReleased,
+        })}
+      >
+        <label className="form-label col-md-3" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
+          Datasource
+        </label>
+
+        <DataSourceListerV2
+          dataSources={dataSources}
+          staticDataSources={staticDataSources}
+          globalDataSources={globalDataSources}
+          changeDataSource={changeDataSource}
+          handleBackButton={handleBackButton}
+          darkMode={darkMode}
+          dataSourceModalHandler={dataSourceModalHandler}
+          // showAddDatasourceBtn={isGlobalDataSource}
+          // dataSourceBtnComponent={isGlobalDataSource ? <AddGlobalDataSourceButton /> : null}
+        />
+      </div>
     );
 
     const renderTransformation = () => {
@@ -361,22 +385,24 @@ export const QueryManagerBody = forwardRef(
 
     const renderChangeDataSource = () => {
       return (
-        <div className="mt-2 pb-4">
+        <div className="mt-2 pb-4 row">
           <div
-            className={`border-top query-manager-border-color px-4 hr-text-left py-2 ${
+            className={`query-manager-border-color px-4 hr-text-left py-2 col-md-3 ${
               darkMode ? 'color-white' : 'color-light-slate-12'
             }`}
           >
             Change Datasource
           </div>
-          <ChangeDataSource
-            dataSources={[...globalDataSources, ...dataSources]}
-            value={selectedDataSource}
-            selectedQuery={selectedQuery}
-            onChange={(newDataSource) => {
-              changeDataQuery(newDataSource);
-            }}
-          />
+          <div className="col-md-9">
+            <ChangeDataSource
+              dataSources={[...globalDataSources, ...dataSources]}
+              value={selectedDataSource}
+              selectedQuery={selectedQuery}
+              onChange={(newDataSource) => {
+                changeDataQuery(newDataSource);
+              }}
+            />
+          </div>
         </div>
       );
     };
@@ -387,11 +413,12 @@ export const QueryManagerBody = forwardRef(
           selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''
         }`}
       >
-        {selectedDataSource === null ? renderDataSourcesList() : renderQueryElement()}
-        {selectedDataSource !== null ? renderQueryOptions() : null}
         {selectedQuery?.data_source_id && mode === 'edit' && selectedDataSource !== null
           ? renderChangeDataSource()
           : null}
+
+        {selectedDataSource === null ? renderDataSourcesList() : renderQueryElement()}
+        {selectedDataSource !== null ? renderQueryOptions() : null}
       </div>
     );
   }

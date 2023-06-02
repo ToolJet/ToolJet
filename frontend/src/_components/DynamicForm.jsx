@@ -288,6 +288,8 @@ const DynamicForm = ({
     if (isEmpty(obj)) return null;
     const flipComponentDropdown = isFlipComponentDropdown(obj);
 
+    console.log('flipComponentDropdown', flipComponentDropdown);
+
     if (flipComponentDropdown) {
       return flipComponentDropdown;
     }
@@ -382,13 +384,13 @@ const DynamicForm = ({
             {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
             <div
               className={cx('my-2', {
-                'col-md-12': !flipComponentDropdown.className,
+                'col-md-12 row': !flipComponentDropdown.className,
                 [flipComponentDropdown.className]: !!flipComponentDropdown.className,
               })}
             >
               {flipComponentDropdown.label && (
                 <label
-                  className="form-label"
+                  className="form-label col-md-3"
                   data-cy={`${String(flipComponentDropdown.label)
                     .toLocaleLowerCase()
                     .replace(/\s+/g, '-')}-dropdown-label`}
@@ -396,7 +398,7 @@ const DynamicForm = ({
                   {flipComponentDropdown.label}
                 </label>
               )}
-              <div data-cy={'query-select-dropdown'}>
+              <div data-cy={'query-select-dropdown'} className="col-md-9">
                 <Select
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
