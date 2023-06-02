@@ -841,3 +841,76 @@ export function isExpectedDataType(data, expectedDataType) {
 
   return data;
 }
+
+export const validateName = (name, nameType, showError = false, allowSpecialChars = true) => {
+  const newName = name.trim();
+  let errorMsg = '';
+  if (!newName) {
+    errorMsg = `${nameType} can't be empty`;
+    showError &&
+      toast.error(errorMsg, {
+        id: '1',
+      });
+    return {
+      status: false,
+      errorMsg,
+    };
+  }
+
+  //check for alphanumeric
+  if (!allowSpecialChars && newName.match(/^[a-z0-9 -]+$/) === null) {
+    if (/[A-Z]/.test(newName)) {
+      errorMsg = 'Only lowercase letters are accepted.';
+    } else {
+      errorMsg = `Special characters are not accepted.`;
+    }
+    showError &&
+      toast.error(errorMsg, {
+        id: '2',
+      });
+    return {
+      status: false,
+      errorMsg,
+    };
+  }
+
+  if (newName.length > 50) {
+    errorMsg = `Maximum length has been reached.`;
+    showError &&
+      toast.error(errorMsg, {
+        id: '3',
+      });
+    return {
+      status: false,
+      errorMsg,
+    };
+  }
+
+  return {
+    status: true,
+    errorMsg: '',
+  };
+};
+
+export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => {
+  switch (statusCode) {
+    case 500: {
+      toast.error(
+        `Something went wrong on our end and this ${feature_name} could not be created. Please try \n again or contact our support team if the \n problem persists.`
+      );
+      break;
+    }
+    case 503: {
+      toast.error(
+        `We weren't able to connect to our servers to complete this request. Please check your \n internet connection and try again.`
+      );
+      break;
+    }
+    default: {
+      toast.error(error ? error : 'Something went wrong. please try again.', {
+        position: 'top-center',
+      });
+      break;
+    }
+  }
+};
