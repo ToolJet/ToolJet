@@ -1,4 +1,4 @@
-name: Tooljet-CE & Try-Tooljet Docker Image
+name: Tooljet release docker images build
 
 on:
   release: 
@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
     inputs:
       job-to-run:
-        description: Enter the job name (tooljet-ce/try-tooljet)
-        options: ['tooljet-ce', 'try-tooljet']
+        description: Enter the job name (tooljet-ce/tooljet-server-ce/try-tooljet)
+        options: ['tooljet-ce', 'try-tooljet', 'tooljet-server-ce']
         required: true
       image:
         description: 'Enter the latest image tag'
@@ -18,7 +18,7 @@ on:
 
 jobs:
 
-  building-tooljet-ce-image:
+  build-tooljet-ce-image:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'release' && contains(github.event.types, 'published') }}
 
@@ -46,7 +46,7 @@ jobs:
           context: .
           file: docker/production.Dockerfile
           push: true
-          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }}
+          tags: tooljet/tooljet-ce:${{ github.event.release.tag_name }},tooljet/tooljet-ce:latest
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -63,7 +63,7 @@ jobs:
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}         
 
 
-  building-try-tooljet-image:
+  try-tooljet-image-build:
     runs-on: ubuntu-latest
     needs: building-tooljet-ce-image
     if: ${{ needs.building-tooljet-ce-image.result == 'success' }}
@@ -108,7 +108,7 @@ jobs:
           context: .
           file: docker/try-tooljet.Dockerfile
           push: true
-          tags: tooljet/try:${{ github.event.release.tag_name }}
+          tags: tooljet/try:${{ github.event.release.tag_name }},tooljet/try:latest
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -123,6 +123,51 @@ jobs:
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}          
+
+
+  building-tooljet-server-ce-image:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'release' && contains(github.event.types, 'published') }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: refs/heads/main
+
+      - name: Set DOCKER_CLI_EXPERIMENTAL
+        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/server.Dockerfile
+          push: true
+          tags: tooljet/tooljet-server-ce:${{ github.event.release.tag_name }},tooljet/tooljet-server-ce:latest
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Send Slack Notification
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            message="Job '${{ env.JOB_NAME }}' succeeded! tooljet/tooljet-ce:${{ github.event.release.tag_name }}"
+          else
+            message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ce:${{ github.event.release.tag_name }}"
+          fi
+
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
 
 
 #Below code helps to trigger the workflow separately
@@ -154,7 +199,7 @@ jobs:
           context: .
           file: docker/production.Dockerfile
           push: true
-          tags: tooljet/tooljet-ce:${{ github.event.inputs.image }}
+          tags: tooljet/tooljet-ce:${{ github.event.inputs.image }},tooljet/tooljet-ce:latest
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -169,6 +214,51 @@ jobs:
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  tooljet-server-ce:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.job-to-run == 'tooljet-server-ce' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: refs/heads/main
+
+      - name: Set DOCKER_CLI_EXPERIMENTAL
+        run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/server.Dockerfile
+          push: true
+          tags: tooljet/tooljet-server-ce:${{ github.event.inputs.image }},tooljet/tooljet-server-ce:latest
+          platforms: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Send Slack Notification
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            message="Job '${{ env.JOB_NAME }}' succeeded! tooljet/tooljet-ce:${{ github.event.release.tag_name }}"
+          else
+            message="Job '${{ env.JOB_NAME }}' failed! tooljet/tooljet-ce:${{ github.event.release.tag_name }}"
+          fi
+
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+
 
   try-tooljet:
     runs-on: ubuntu-latest
@@ -198,7 +288,7 @@ jobs:
           context: .
           file: docker/try-tooljet.Dockerfile
           push: true
-          tags: tooljet/try:${{ github.event.inputs.image }}
+          tags: tooljet/try:${{ github.event.inputs.image }},tooljet/try:latest
           platforms: linux/amd64
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
