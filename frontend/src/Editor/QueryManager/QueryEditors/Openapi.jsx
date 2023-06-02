@@ -212,9 +212,9 @@ class OpenapiComponent extends React.Component {
       queryParams = this.resolveParameters('query');
       headerParams = this.resolveParameters('header');
 
-      if (selectedOperation.request_body) {
-        const requestType = Object.keys(selectedOperation.request_body.content)[0];
-        requestBody = selectedOperation.request_body.content[requestType];
+      if (selectedOperation.requestBody) {
+        const requestType = Object.keys(selectedOperation.requestBody.content)[0];
+        requestBody = selectedOperation.requestBody.content[requestType];
       }
     }
 
