@@ -67,17 +67,25 @@ export default class OracledbQueryService implements QueryService {
 
   initOracleClient(clientPathType: string, customPath: string) {
     try {
+      let clientOpts = {};
+
       if (clientPathType === 'custom') {
-        if (process.platform === 'darwin') {
-          oracledb.initOracleClient({ libDir: process.env.HOME + customPath });
+        if (process.platform === 'darwin' && process.arch === 'x64') {
+          // macOS Intel
+          clientOpts = { libDir: process.env.HOME + customPath };
         } else if (process.platform === 'win32') {
-          oracledb.initOracleClient({
-            libDir: customPath,
-          }); // note the double backslashes
+          // Windows
+          // If you use backslashes in the libDir string, you will
+          // need to double them.
+          // clientOpts = { libDir: 'C:\\oracle\\instantclient_19_19' };
+          clientOpts =  { libDir: customPath }; 
         }
-      } else {
-        oracledb.initOracleClient();
-      }
+      } 
+      // else on other platforms like Linux the system library search path MUST always be
+      // set before Node.js is started, for example with ldconfig or LD_LIBRARY_PATH.
+
+      // enable node-oracledb Thick mode
+      oracledb.initOracleClient(clientOpts);
     } catch (err) {
       console.error(err);
       throw err;
