@@ -177,6 +177,7 @@ export const Calendar = function ({
       />
       <CalendarEventPopover
         calendarWidgetId={id}
+        darkMode={darkMode}
         show={eventPopoverOptions.show}
         offset={eventPopoverOptions.offset}
         containerProps={containerProps}
