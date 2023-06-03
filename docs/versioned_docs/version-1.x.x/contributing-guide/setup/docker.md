@@ -31,7 +31,7 @@ docker-compose version 1.26.2, build eefe0d31
 
 ## Setting up
 
-:::tip
+:::WARNING
 If you are setting up on a Windows machine, we advise you to setup Docker desktop with WSL2.
 Please find more information [here](https://docs.docker.com/desktop/windows/wsl/).
 :::
