@@ -29,7 +29,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
             <div>
               <ul className="sidebar-inner nav nav-vertical">
                 <li className="text-center cursor-pointer">
-                  <ToolTip message="Dashboard" placement="right">
+                  <ToolTip message="Applications" placement="right">
                     <Link
                       to="/"
                       className={`tj-leftsidebar-icon-items  ${
@@ -79,7 +79,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 {/* DATASOURCES */}
                 {admin && (
                   <li className="text-center cursor-pointer">
-                    <ToolTip message="Global Datasources" placement="right">
+                    <ToolTip message="Datasources" placement="right">
                       <Link
                         to={getPrivateRoute('global_datasources')}
                         className={`tj-leftsidebar-icon-items  ${
@@ -103,7 +103,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 )}
                 {marketplaceEnabled && (
                   <li className="text-center d-flex flex-column">
-                    <ToolTip message="Marketplace (Beta)" placement="right">
+                    <ToolTip message="Integrations" placement="right">
                       <Link
                         to="/integrations"
                         className={`tj-leftsidebar-icon-items  ${
