@@ -108,6 +108,7 @@ export const DropDown = function DropDown({
     if (exposedValue !== currentValue) {
       setExposedVariable('value', currentValue);
       index = values?.indexOf(currentValue);
+      console.log('xxx', index, currentValue, display_values);
       setExposedVariable('selectedOptionLabel', display_values?.[index]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -130,9 +131,12 @@ export const DropDown = function DropDown({
   }, [label]);
 
   useEffect(() => {
-    setExposedVariable('optionLabels', display_values);
+    setExposedVariable(
+      'optionLabels',
+      schema?.filter((item) => item.visible)?.map((item) => item.label)
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(display_values)]);
+  }, [JSON.stringify(schema)]);
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
