@@ -1,17 +1,17 @@
 import '@/_styles/editor/comments.scss';
-
+import { shallow } from 'zustand/shallow';
 import React from 'react';
 import { isEmpty } from 'lodash';
-
 import Comment from './Comment';
 import { commentsService } from '@/_services';
-import { useEditingVersionId } from '@/_stores/appVersionsManagerStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import useRouter from '@/_hooks/use-router';
 
 const Comments = ({ newThread = {}, socket, canvasWidth, currentPageId }) => {
   const [threads, setThreads] = React.useState([]);
   const router = useRouter();
-  const appVersionsId = useEditingVersionId();
+  const { appVersionsId } = useAppVersionStore((state) => ({ appVersionsId: state?.editingVersion?.id }), shallow);
+
   async function fetchData() {
     const { data } = await commentsService.getThreads(router.query.id, appVersionsId);
     setThreads(data);

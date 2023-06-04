@@ -45,7 +45,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { useAppVersionManagerStore } from '@/_stores/appVersionsManagerStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { resetAllStores } from '@/_stores/utils';
 
 setAutoFreeze(false);
@@ -209,12 +209,7 @@ class EditorComponent extends React.Component {
     if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
 
     this.props.ymap?.observe(() => {
-      if (
-        !isEqual(
-          useAppVersionManagerStore?.getState()?.editingVersion?.id,
-          this.props.ymap?.get('appDef').editingVersionId
-        )
-      )
+      if (!isEqual(useAppVersionStore?.getState()?.editingVersion?.id, this.props.ymap?.get('appDef').editingVersionId))
         return;
       if (isEqual(this.state.appDefinition, this.props.ymap?.get('appDef').newDefinition)) return;
 
@@ -249,7 +244,7 @@ class EditorComponent extends React.Component {
     }
   }
 
-  isVersionReleased = (version = useAppVersionManagerStore?.getState()?.editingVersion) => {
+  isVersionReleased = (version = useAppVersionStore?.getState()?.editingVersion) => {
     if (isEmpty(version)) {
       return false;
     }
@@ -258,7 +253,7 @@ class EditorComponent extends React.Component {
 
   closeCreateVersionModalPrompt = () => {
     this.setState({ isSaving: false });
-    useAppVersionManagerStore?.getState()?.actions.closeCreateVersionModalPrompt();
+    useAppVersionStore?.getState()?.actions.closeCreateVersionModalPrompt();
   };
 
   initEventListeners() {
@@ -266,9 +261,9 @@ class EditorComponent extends React.Component {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
       if (data === 'versionReleased') this.fetchApp();
       else if (data === 'dataQueriesChanged') {
-        this.fetchDataQueries(useAppVersionManagerStore?.getState()?.editingVersion?.id);
+        this.fetchDataQueries(useAppVersionStore?.getState()?.editingVersion?.id);
       } else if (data === 'dataSourcesChanged') {
-        this.fetchDataSources(useAppVersionManagerStore?.getState()?.editingVersion?.id);
+        this.fetchDataSources(useAppVersionStore?.getState()?.editingVersion?.id);
       }
     });
   }
@@ -344,8 +339,8 @@ class EditorComponent extends React.Component {
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
       const homePageId = startingPageId ?? dataDefinition.homePageId;
 
-      useAppVersionManagerStore.getState().actions.updateEditingVersion(data.editing_version);
-      useAppVersionManagerStore.getState().actions.updateReleasedVersionId(data.current_version_id);
+      useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
+      useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
       this.setState(
         {
           app: data,
@@ -393,7 +388,7 @@ class EditorComponent extends React.Component {
   };
 
   setAppDefinitionFromVersion = (version, shouldWeEditVersion = true) => {
-    if (version?.id !== useAppVersionManagerStore?.getState()?.editingVersion?.id) {
+    if (version?.id !== useAppVersionStore?.getState()?.editingVersion?.id) {
       this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), {
         skipAutoSave: true,
         skipYmapUpdate: true,
@@ -402,7 +397,7 @@ class EditorComponent extends React.Component {
       if (version?.id === this.state.app?.current_version_id) {
         (this.canUndo = false), (this.canRedo = false);
       }
-      useAppVersionManagerStore.getState().actions.updateEditingVersion(version);
+      useAppVersionStore.getState().actions.updateEditingVersion(version);
 
       this.setState(
         {
@@ -410,8 +405,8 @@ class EditorComponent extends React.Component {
         },
         () => {
           shouldWeEditVersion && this.saveEditingVersion(true);
-          this.fetchDataSources(useAppVersionManagerStore?.getState()?.editingVersion?.id);
-          this.fetchDataQueries(useAppVersionManagerStore?.getState()?.editingVersion?.id, true);
+          this.fetchDataSources(useAppVersionStore?.getState()?.editingVersion?.id);
+          this.fetchDataQueries(useAppVersionStore?.getState()?.editingVersion?.id, true);
           this.initComponentVersioning();
         }
       );
@@ -430,7 +425,7 @@ class EditorComponent extends React.Component {
         })
       );
     } else {
-      this.fetchDataSources(useAppVersionManagerStore?.getState()?.editingVersion?.id);
+      this.fetchDataSources(useAppVersionStore?.getState()?.editingVersion?.id);
     }
   };
 
@@ -450,7 +445,7 @@ class EditorComponent extends React.Component {
         })
       );
     } else {
-      this.fetchDataQueries(useAppVersionManagerStore?.getState()?.editingVersion?.id);
+      this.fetchDataQueries(useAppVersionStore?.getState()?.editingVersion?.id);
     }
   };
 
@@ -518,7 +513,7 @@ class EditorComponent extends React.Component {
         () => {
           this.props.ymap?.set('appDef', {
             newDefinition: appDefinition,
-            editingVersionId: useAppVersionManagerStore?.getState()?.editingVersion?.id,
+            editingVersionId: useAppVersionStore?.getState()?.editingVersion?.id,
           });
 
           this.autoSave();
@@ -549,7 +544,7 @@ class EditorComponent extends React.Component {
         () => {
           this.props.ymap?.set('appDef', {
             newDefinition: appDefinition,
-            editingVersionId: useAppVersionManagerStore?.getState()?.editingVersion?.id,
+            editingVersionId: useAppVersionStore?.getState()?.editingVersion?.id,
           });
 
           this.autoSave();
@@ -564,7 +559,7 @@ class EditorComponent extends React.Component {
     if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
       this.props.ymap?.set('appDef', {
         newDefinition,
-        editingVersionId: useAppVersionManagerStore?.getState()?.editingVersion?.id,
+        editingVersionId: useAppVersionStore?.getState()?.editingVersion?.id,
       });
     }
 
@@ -627,7 +622,7 @@ class EditorComponent extends React.Component {
       });
       this.handleInspectorView();
     } else if (this.isVersionReleased()) {
-      useAppVersionManagerStore.getStates().actions.enableReleasedVersionPopupState();
+      useAppVersionStore.getStates().actions.enableReleasedVersionPopupState();
     }
   };
 
@@ -669,13 +664,13 @@ class EditorComponent extends React.Component {
       });
       this.handleInspectorView();
     } else {
-      useAppVersionManagerStore.getStates().actions.enableReleasedVersionPopupState();
+      useAppVersionStore.getStates().actions.enableReleasedVersionPopupState();
     }
   };
 
   componentDefinitionChanged = (componentDefinition) => {
     if (this.isVersionReleased()) {
-      useAppVersionManagerStore.getStates().actions.enableReleasedVersionPopupState();
+      useAppVersionStore.getStates().actions.enableReleasedVersionPopupState();
       return;
     }
     let _self = this;
@@ -701,7 +696,7 @@ class EditorComponent extends React.Component {
         this.autoSave();
         this.props.ymap?.set('appDef', {
           newDefinition: newDefinition.appDefinition,
-          editingVersionId: useAppVersionManagerStore?.getState()?.editingVersion?.id,
+          editingVersionId: useAppVersionStore?.getState()?.editingVersion?.id,
         });
       });
     }
@@ -750,7 +745,7 @@ class EditorComponent extends React.Component {
 
   cutComponents = () => {
     if (this.isVersionReleased()) {
-      useAppVersionManagerStore.getStates().actions.enableReleasedVersionPopupState();
+      useAppVersionStore.getStates().actions.enableReleasedVersionPopupState();
 
       return;
     }
@@ -761,7 +756,7 @@ class EditorComponent extends React.Component {
 
   cloneComponents = () => {
     if (this.isVersionReleased()) {
-      useAppVersionManagerStore.getStates().actions.enableReleasedVersionPopupState();
+      useAppVersionStore.getStates().actions.enableReleasedVersionPopupState();
       return;
     }
     cloneComponents(this, this.appDefinitionChanged, true);
@@ -784,7 +779,7 @@ class EditorComponent extends React.Component {
       () => {
         this.props.ymap?.set('appDef', {
           newDefinition: appDefinition,
-          editingVersionId: useAppVersionManagerStore?.getState()?.editingVersion?.id,
+          editingVersionId: useAppVersionStore?.getState()?.editingVersion?.id,
         });
         this.autoSave();
       }
@@ -866,20 +861,20 @@ class EditorComponent extends React.Component {
   saveEditingVersion = (isUserSwitchedVersion = false) => {
     if (this.isVersionReleased() && !isUserSwitchedVersion) {
       this.setState({ isSaving: false });
-    } else if (!isEmpty(useAppVersionManagerStore?.getState()?.editingVersion)) {
+    } else if (!isEmpty(useAppVersionStore?.getState()?.editingVersion)) {
       appVersionService
         .save(
           this.state.appId,
-          useAppVersionManagerStore?.getState()?.editingVersion?.id,
+          useAppVersionStore?.getState()?.editingVersion?.id,
           { definition: this.state.appDefinition },
           isUserSwitchedVersion
         )
         .then(() => {
           const _editingVersion = {
-            ...useAppVersionManagerStore?.getState()?.editingVersion,
+            ...useAppVersionStore?.getState()?.editingVersion,
             ...{ definition: this.state.appDefinition },
           };
-          useAppVersionManagerStore.getState().actions.updateEditingVersion(_editingVersion);
+          useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
           this.setState(
             {
               saveError: false,
@@ -1414,7 +1409,7 @@ class EditorComponent extends React.Component {
       hoveredComponent,
       queryConfirmationList,
     } = this.state;
-    const editingVersion = useAppVersionManagerStore?.getState()?.editingVersion;
+    const editingVersion = useAppVersionStore?.getState()?.editingVersion;
     const appVersionPreviewLink = editingVersion
       ? `/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
       : '';

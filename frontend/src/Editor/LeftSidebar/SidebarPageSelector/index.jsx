@@ -9,7 +9,8 @@ import SortableList from '@/_components/SortableList';
 import Popover from '@/_ui/Popover';
 // eslint-disable-next-line import/no-unresolved
 import EmptyIllustration from '@assets/images/no-results.svg';
-import { useAppVersionsManagerActions, useIsVersionReleased } from '@/_stores/appVersionsManagerStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -40,8 +41,13 @@ const LeftSidebarPageSelector = ({
   const [haveUserPinned, setHaveUserPinned] = useState(false);
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-  const { enableReleasedVersionPopupState } = useAppVersionsManagerActions();
-  const isVersionReleased = useIsVersionReleased();
+  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const filterPages = (value) => {
     if (!value || value.length === 0) return clearSearch();

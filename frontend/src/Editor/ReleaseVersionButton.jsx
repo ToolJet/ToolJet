@@ -3,7 +3,8 @@ import cx from 'classnames';
 import { appService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { useIsVersionReleased } from '@/_stores/appVersionsManagerStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const ReleaseVersionButton = function DeployVersionButton({
   appId,
@@ -14,7 +15,12 @@ export const ReleaseVersionButton = function DeployVersionButton({
   saveEditingVersion,
 }) {
   const [isReleasing, setIsReleasing] = useState(false);
-  const isVersionReleased = useIsVersionReleased();
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const { t } = useTranslation();
   const releaseVersion = (editingVersion) => {

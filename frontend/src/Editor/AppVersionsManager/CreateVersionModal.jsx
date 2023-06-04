@@ -4,7 +4,8 @@ import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
-import { useShowCreateVersionModalPrompt } from '@/_stores/appVersionsManagerStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const CreateVersion = ({
   appId,
@@ -19,7 +20,12 @@ export const CreateVersion = ({
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const { t } = useTranslation();
-  const showCreateVersionModalPrompt = useShowCreateVersionModalPrompt();
+  const { showCreateVersionModalPrompt } = useAppVersionStore(
+    (state) => ({
+      showCreateVersionModalPrompt: state.showCreateVersionModalPrompt,
+    }),
+    shallow
+  );
 
   const createVersion = () => {
     if (versionName.trim().length > 25) {

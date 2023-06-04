@@ -11,7 +11,8 @@ import LeftSidebarPageSelector from './SidebarPageSelector';
 import { ConfirmDialog } from '@/_components';
 import config from 'config';
 import { usePanelHeight } from '@/_stores/queryPanelStore';
-import { useAppVersionsManagerActions, useIsVersionReleased } from '@/_stores/appVersionsManagerStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -52,9 +53,13 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
-  const { enableReleasedVersionPopupState } = useAppVersionsManagerActions();
-  const isVersionReleased = useIsVersionReleased();
-
+  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   useEffect(() => {
     popoverContentHeight !== queryPanelHeight && setPopoverContentHeight(queryPanelHeight);
     // eslint-disable-next-line react-hooks/exhaustive-deps

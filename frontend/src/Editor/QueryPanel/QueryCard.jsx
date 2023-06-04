@@ -9,7 +9,8 @@ import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions, useSelectedQuery, useUnsavedChanges } from '@/_stores/queryPanelStore';
-import { useIsVersionReleased } from '@/_stores/appVersionsManagerStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryCard = ({
   dataQuery,
@@ -27,7 +28,12 @@ export const QueryCard = ({
   const { deleteDataQueries, renameQuery } = useDataQueriesActions();
   const { setSelectedQuery, setUnSavedChanges } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const isVersionReleased = useIsVersionReleased();
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   const [renamingQuery, setRenamingQuery] = useState(false);
 
   const getSourceMetaData = (dataSource) => {

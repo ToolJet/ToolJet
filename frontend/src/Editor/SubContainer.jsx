@@ -9,7 +9,8 @@ import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { resolveReferences } from '@/_helpers/utils';
-import { useAppVersionsManagerActions, useIsVersionReleased } from '@/_stores/appVersionsManagerStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 import { useMounted } from '@/_hooks/use-mount';
 
 export const SubContainer = ({
@@ -54,8 +55,13 @@ export const SubContainer = ({
   });
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
-  const { enableReleasedVersionPopupState } = useAppVersionsManagerActions();
-  const isVersionReleased = useIsVersionReleased();
+  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {

@@ -3,11 +3,17 @@ import cx from 'classnames';
 import { LeftSidebarItem } from './SidebarItem';
 import { commentsService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
-import { useEditingVersionId } from '@/_stores/appVersionsManagerStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const LeftSidebarComment = ({ toggleComments, selectedSidebarItem, currentPageId }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const appVersionsId = useEditingVersionId();
+  const { appVersionsId } = useAppVersionStore(
+    (state) => ({
+      appVersionsId: state?.editingVersion?.id,
+    }),
+    shallow
+  );
 
   const [isActive, toggleActive] = React.useState(false);
   const [notifications, setNotifications] = React.useState([]);

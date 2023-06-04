@@ -1,7 +1,7 @@
 import { create, zustandDevTools } from './utils';
 import { dataqueryService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { useAppVersionManagerStore } from '@/_stores/appVersionsManagerStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { runQueries, computeQueryState } from '@/_helpers/appUtils';
 
@@ -52,7 +52,7 @@ export const useDataQueriesStore = create(
               actions.setSelectedQuery(null);
             }
             get().actions.fetchDataQueries(
-              useAppVersionManagerStore.getState().editingVersion?.id,
+              useAppVersionStore.getState().editingVersion?.id,
               selectedQuery?.id === queryId,
               false,
               editorRef
@@ -70,7 +70,7 @@ export const useDataQueriesStore = create(
           .update(id, newName)
           .then(() => {
             toast.success('Query Name Updated');
-            fetchDataQueries(useAppVersionManagerStore.getState().editingVersion?.id); // Should be replaced with - get().actions.fetchDataQueries(useAppDataStore.getState().editingVersion?.id);
+            fetchDataQueries(useAppVersionStore.getState().editingVersion?.id); // Should be replaced with - get().actions.fetchDataQueries(useAppDataStore.getState().editingVersion?.id);
           })
           .catch(({ error }) => {
             toast.error(error);

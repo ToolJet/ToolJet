@@ -17,7 +17,8 @@ import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
 import VerticalIcon from '@assets/images/icons/vertical-menu.svg';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { useDataSources } from '@/_stores/dataSourcesStore';
-import { useIsVersionReleased } from '@/_stores/appVersionsManagerStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const LeftSidebarDataSources = ({
   appId,
@@ -35,7 +36,13 @@ export const LeftSidebarDataSources = ({
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
-  const isVersionReleased = useIsVersionReleased();
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
+
   const { admin } = authenticationService.currentSessionValue;
 
   const deleteDataSource = (selectedSource) => {
@@ -234,7 +241,12 @@ export const LeftSidebarDataSources = ({
 
 const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [] }) => {
   const { t } = useTranslation();
-  const isVersionReleased = useIsVersionReleased();
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   return (
     <div>
       <HeaderSection darkMode={darkMode}>
