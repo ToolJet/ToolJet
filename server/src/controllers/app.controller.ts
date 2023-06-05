@@ -30,13 +30,15 @@ import { Response } from 'express';
 import { SessionAuthGuard } from 'src/modules/auth/session-auth-guard';
 import { UsersService } from '@services/users.service';
 import { SessionService } from '@services/session.service';
+import { OrganizationsService } from '@services/organizations.service';
 
 @Controller()
 export class AppController {
   constructor(
     private authService: AuthService,
     private userService: UsersService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private organizationService: OrganizationsService
   ) {}
 
   @Post('authenticate')
@@ -57,15 +59,20 @@ export class AppController {
 
   @UseGuards(SessionAuthGuard)
   @Get('session')
-  async getSessionDetails(@User() user, @Query('appId') appId: string) {
-    let appOrganizationId: string;
+  async getSessionDetails(@User() user, @Query('appId') appId: string, @Query('workspaceSlug') workspaceSlug: string) {
+    let organizationId: string;
     if (appId) {
-      appOrganizationId = await this.userService.returnOrgIdOfAnApp(appId);
-      if (appOrganizationId && user.organizationIds?.includes(appOrganizationId)) {
-        user.organization_id = appOrganizationId;
+      organizationId = await this.userService.returnOrgIdOfAnApp(appId);
+    } else if (workspaceSlug) {
+      const organization = await this.organizationService.getOrganizationbySlug(workspaceSlug);
+      organizationId = organization?.id;
+    }
+    if (organizationId) {
+      if (organizationId && user.organizationIds?.includes(organizationId)) {
+        user.organization_id = organizationId;
       }
     }
-    return await this.authService.generateSessionPayload(user, appOrganizationId);
+    return this.authService.generateSessionPayload(user, organizationId);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -133,6 +133,10 @@ export class OrganizationsService {
     return await this.organizationsRepository.findOne({ where: { id }, relations: ['ssoConfigs'] });
   }
 
+  async getOrganizationbySlug(slug: string): Promise<Organization> {
+    return await this.organizationsRepository.findOne({ where: { slug } });
+  }
+
   async getSingleOrganization(): Promise<Organization> {
     return await this.organizationsRepository.findOne({ relations: ['ssoConfigs'] });
   }

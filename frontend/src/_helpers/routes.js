@@ -1,4 +1,4 @@
-import { getWorkspaceIdFromURL } from '@/_helpers/utils';
+import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/utils';
 import { authenticationService } from '@/_services/authentication.service';
 
 //TODO: test dashboard menu items
@@ -28,6 +28,7 @@ export const getPrivateRoute = (page, params = {}) => {
 };
 
 const appendWorkspaceId = (url) => {
-  const workspaceId = getWorkspaceIdFromURL() || authenticationService.currentSessionValue?.current_organization_id;
+  const workspaceId =
+    getWorkspaceIdOrSlugFromURL() || authenticationService.currentSessionValue?.current_organization_id;
   return `/${workspaceId}${url}`;
 };

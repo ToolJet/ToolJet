@@ -757,7 +757,7 @@ export const appendWorkspaceId = (workspaceName, path, replaceId = false) => {
   return subpath ? `${subpath}${newPath}` : newPath;
 };
 
-export const getWorkspaceIdFromURL = () => {
+export const getWorkspaceIdOrSlugFromURL = () => {
   const pathname = window.location.pathname;
   const pathnameArray = pathname.split('/').filter((path) => path !== '');
   const subpath = window?.public_config?.SUB_PATH;
@@ -787,7 +787,7 @@ export const getWorkspaceIdFromURL = () => {
 };
 
 export const getWorkspaceId = () =>
-  getWorkspaceIdFromURL() || authenticationService.currentSessionValue?.current_organization_id;
+  getWorkspaceIdOrSlugFromURL() || authenticationService.currentSessionValue?.current_organization_id;
 
 export const excludeWorkspaceIdFromURL = (pathname) => {
   if (!pathname.includes('/applications/')) {
@@ -919,3 +919,8 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
     }
   }
 };
+
+export function isUUID(string) {
+  var regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4-9a-f]{4}-[89ab]{3}-[0-9a-f]{12}$/;
+  return regex.test(string);
+}

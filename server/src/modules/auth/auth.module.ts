@@ -88,6 +88,6 @@ import { SessionScheduler } from 'src/schedulers/session.scheduler';
     SessionScheduler,
   ],
   controllers: [OauthController],
-  exports: [AuthService, SessionService],
+  exports: [AuthService, SessionService, OrganizationsService],
 })
 export class AuthModule {}

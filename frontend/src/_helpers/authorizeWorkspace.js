@@ -2,27 +2,29 @@ import { organizationService, authenticationService } from '@/_services';
 import {
   appendWorkspaceId,
   getSubpath,
-  getWorkspaceIdFromURL,
+  getWorkspaceIdOrSlugFromURL,
   stripTrailingSlash,
   pathnameWithoutSubpath,
+  isUUID,
 } from '@/_helpers/utils';
 
 export const authorizeWorkspace = () => {
   if (!isThisExistedRoute()) {
-    const workspaceId = getWorkspaceIdFromURL();
-    if (workspaceId) {
-      authorizeUserAndHandleErrors(workspaceId);
+    const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
+    if (isUUID(workspaceIdOrSlug)) {
+      authorizeUserAndHandleErrors(workspaceIdOrSlug);
     } else {
+      /* If the workspace slug is there instead of id we can get the id from it */
       const isApplicationsPath = window.location.pathname.includes('/applications/');
       const appId = isApplicationsPath ? pathnameWithoutSubpath(window.location.pathname).split('/')[2] : null;
       authenticationService
-        .validateSession(appId)
+        .validateSession(appId, workspaceIdOrSlug)
         .then(({ current_organization_id }) => {
           updateCurrentSession({
             current_organization_id,
           });
           //get organizations list
-          fetchOrganizations(current_organization_id,({ organizations, current_organization_name }) => {
+          fetchOrganizations(current_organization_id, ({ organizations, current_organization_name }) => {
             //check if the page is not switch-workspace, if then redirect to the page
             if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
               authorizeUserAndHandleErrors(current_organization_name, organizations);
@@ -93,21 +95,21 @@ const organizationsRequestCallback = (organizations, current_organization_id) =>
     return (window.location = appendWorkspaceId(current_organization_id, '/:workspaceId'));
 };
 
-export const authorizeUserAndHandleErrors = (workspace_name, organizations) => {
+export const authorizeUserAndHandleErrors = (workspaceIdOrSlug, organizations) => {
   const subpath = getSubpath();
   authenticationService
-    .authorize(workspace_name)
+    .authorize(workspaceIdOrSlug)
     .then((data) => {
       const { current_organization_id } = data;
       /* add the user details like permission and user previlliage details to the subject */
       updateCurrentSession({
         ...data,
-        current_organization_name: workspace_name,
+        current_organization_name: workspaceIdOrSlug,
       });
       if (organizations) {
         organizationsRequestCallback(organizations, current_organization_id);
       } else {
-        fetchOrganizations(current_organization_id,({ organizations }) => {
+        fetchOrganizations(current_organization_id, ({ organizations }) => {
           organizationsRequestCallback(organizations, current_organization_id);
         });
       }
@@ -125,12 +127,12 @@ export const authorizeUserAndHandleErrors = (workspace_name, organizations) => {
             });
 
             organizationService
-              .switchOrganization(workspace_name)
+              .switchOrganization(workspaceIdOrSlug)
               .then((data) => {
                 updateCurrentSession(data);
                 if (isThisWorkspaceLoginPage())
-                  return (window.location = appendWorkspaceId(workspace_name, '/:workspaceId'));
-                authorizeUserAndHandleErrors(workspace_name);
+                  return (window.location = appendWorkspaceId(workspaceIdOrSlug, '/:workspaceId'));
+                authorizeUserAndHandleErrors(workspaceIdOrSlug);
               })
               .catch(() => {
                 organizationService.getOrganizations().then((response) => {
@@ -144,7 +146,7 @@ export const authorizeUserAndHandleErrors = (workspace_name, organizations) => {
                   });
 
                   if (!isThisWorkspaceLoginPage())
-                    return (window.location = `${subpath ?? ''}/login/${workspace_name}`);
+                    return (window.location = `${subpath ?? ''}/login/${workspaceIdOrSlug}`);
                 });
               });
           })

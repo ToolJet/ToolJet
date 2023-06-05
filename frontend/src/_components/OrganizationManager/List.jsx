@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
-import { getWorkspaceIdFromURL, appendWorkspaceId, getAvatar } from '../../_helpers/utils';
+import { getWorkspaceIdOrSlugFromURL, appendWorkspaceId, getAvatar } from '../../_helpers/utils';
 import { ToolTip } from '@/_components';
 
 export const OrganizationList = function () {
@@ -21,7 +21,7 @@ export const OrganizationList = function () {
   }, []);
 
   const switchOrganization = (orgId) => {
-    if (getWorkspaceIdFromURL() !== orgId) {
+    if (getWorkspaceIdOrSlugFromURL() !== orgId) {
       const newPath = appendWorkspaceId(orgId, location.pathname, true);
       window.history.replaceState(null, null, newPath);
       window.location.reload();

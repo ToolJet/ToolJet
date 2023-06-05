@@ -9,6 +9,7 @@ import {
 } from '@/_helpers';
 import { excludeWorkspaceIdFromURL } from '@/_helpers/utils';
 import config from 'config';
+import queryString from 'query-string';
 
 const currentSessionSubject = new BehaviorSubject({
   current_organization_id: null,
@@ -68,12 +69,13 @@ function login(email, password, organizationId) {
     });
 }
 
-function validateSession(appId) {
+function validateSession(appId, workspaceSlug) {
   const requestOptions = {
     method: 'GET',
     credentials: 'include',
   };
-  return fetch(`${config.apiUrl}/session${appId ? `?appId=${appId}` : ''}`, requestOptions).then(
+  const query = queryString.stringify({ appId, workspaceSlug });
+  return fetch(`${config.apiUrl}/session${query ? `?${query}` : ''}`, requestOptions).then(
     handleResponseWithoutValidation
   );
 }
