@@ -17,10 +17,8 @@ export const DropDown = function DropDown({
   dataCy,
 }) {
   let { label, value, advanced, schema, placeholder, display_values, values } = properties;
-
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
-
   const { value: exposedValue } = exposedVariables;
 
   function findDefaultItem(schema) {
@@ -29,8 +27,8 @@ export const DropDown = function DropDown({
   }
 
   if (advanced) {
-    values = schema?.map((item) => item.value);
-    display_values = schema?.map((item) => item.label);
+    values = schema.map((item) => item.value);
+    display_values = schema.map((item) => item.label);
     value = findDefaultItem(schema);
   } else if (!_.isArray(values)) {
     values = [];
@@ -43,7 +41,6 @@ export const DropDown = function DropDown({
       ? [
           ...schema
             .filter((data) => data.visible)
-
             .map((value) => ({
               ...value,
               isDisabled: value.disable,
@@ -66,9 +63,9 @@ export const DropDown = function DropDown({
 
   function selectOption(value) {
     let index = null;
-    index = values?.indexOf(value);
+    index = values.indexOf(value);
 
-    if (values?.includes(value)) {
+    if (values.includes(value)) {
       setExposedItem(value, index, true);
     } else {
       setExposedItem(undefined, undefined, true);
@@ -96,22 +93,23 @@ export const DropDown = function DropDown({
     let index = null;
     if (values?.includes(value)) {
       newValue = value;
-      index = values?.indexOf(value);
+      index = values.indexOf(value);
     }
+    console.log('xxx', newValue, index);
     setExposedItem(newValue, index);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, JSON.stringify(display_values)]);
+  }, [value, JSON.stringify(values)]);
 
   useEffect(() => {
     let index = null;
     if (exposedValue !== currentValue) {
       setExposedVariable('value', currentValue);
-      index = values?.indexOf(currentValue);
-      setExposedVariable('selectedOptionLabel', display_values?.[index]);
     }
+    index = values.indexOf(currentValue);
+    setExposedVariable('selectedOptionLabel', display_values?.[index]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue]);
+  }, [currentValue, JSON.stringify(display_values), JSON.stringify(values)]);
 
   useEffect(() => {
     let newValue = undefined;
@@ -119,7 +117,7 @@ export const DropDown = function DropDown({
 
     if (values?.includes(currentValue)) newValue = currentValue;
     else if (values?.includes(value)) newValue = value;
-    index = values?.indexOf(newValue);
+    index = values.indexOf(newValue);
     setExposedItem(newValue, index);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(values)]);
@@ -135,9 +133,20 @@ export const DropDown = function DropDown({
         'optionLabels',
         schema?.filter((item) => item.visible)?.map((item) => item.label)
       );
+      if (hasVisibleFalse(currentValue)) {
+        setCurrentValue(findDefaultItem(schema));
+      }
     } else setExposedVariable('optionLabels', display_values);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(schema), advanced, JSON.stringify(display_values)]);
+
+  function hasVisibleFalse(value) {
+    for (let i = 0; i < schema?.length; i++) {
+      if (schema[i].value === value && schema[i].visible === false) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
@@ -215,7 +224,6 @@ export const DropDown = function DropDown({
       backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
     }),
   };
-
   return (
     <>
       <div
