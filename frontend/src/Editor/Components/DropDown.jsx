@@ -130,12 +130,14 @@ export const DropDown = function DropDown({
   }, [label]);
 
   useEffect(() => {
-    setExposedVariable(
-      'optionLabels',
-      schema?.filter((item) => item.visible)?.map((item) => item.label)
-    );
+    if (advanced) {
+      setExposedVariable(
+        'optionLabels',
+        schema?.filter((item) => item.visible)?.map((item) => item.label)
+      );
+    } else setExposedVariable('optionLabels', display_values);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(schema)]);
+  }, [JSON.stringify(schema), advanced, JSON.stringify(display_values)]);
 
   const onSearchTextChange = (searchText, actionProps) => {
     if (actionProps.action === 'input-change') {
