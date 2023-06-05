@@ -5640,7 +5640,26 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
     exposedVariables: {
-      annotations: [],
+      annotations: [
+        {
+          type: 'RECTANGLE',
+          x: 41,
+          y: 62,
+          width: 40,
+          height: 24,
+          text: 'Car',
+          id: 'ce103db2-b2a6-46f5-a4f0-5f4eaa6f3663',
+        },
+        {
+          type: 'RECTANGLE',
+          x: 41,
+          y: 12,
+          width: 40,
+          height: 24,
+          text: 'Tree',
+          id: 'b1a7315e-2b15-4bc8-a1c6-a042dab44f27',
+        },
+      ],
     },
     actions: [],
     definition: {
