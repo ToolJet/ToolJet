@@ -1,6 +1,6 @@
 import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
-import { EntityManager, EntityTarget, getManager, Like } from 'typeorm';
+import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
@@ -125,17 +125,6 @@ export async function getServiceAndRpcNames(protoDefinition) {
   return serviceNamesAndMethods;
 }
 
-export const generateNextName = async (
-  firstWord: string,
-  entityClass: EntityTarget<unknown>,
-  options = {},
-  manager: EntityManager
-) => {
-  const count = await manager.count(entityClass, {
-    where: {
-      ...options,
-      name: Like(`%${firstWord}%`),
-    },
-  });
-  return `${firstWord} ${count == 0 ? 1 : count + 1}`;
+export const generateNextName = async (firstWord: string) => {
+  return `${firstWord} ${Date.now()}`;
 };

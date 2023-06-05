@@ -259,7 +259,7 @@ export class AuthService {
       // Create default organization
       //TODO: check if there any case available that the firstname will be nil
 
-      const organizationName = await generateNextName('Untitled workspace', Organization, {}, manager);
+      const organizationName = await generateNextName('My workspace');
       organization = await this.organizationsService.create(organizationName, null, manager);
       const user = await this.usersService.create(
         {
