@@ -16,6 +16,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorDataStore } from '@/_stores/editorDataStore';
 import { shallow } from 'zustand/shallow';
 
 export const Container = ({
@@ -38,7 +39,6 @@ export const Container = ({
   deviceWindowWidth,
   selectedComponents,
   darkMode,
-  showComments,
   socket,
   handleUndo,
   handleRedo,
@@ -65,7 +65,12 @@ export const Container = ({
     }),
     shallow
   );
-
+  const { showComments } = useEditorDataStore(
+    (state) => ({
+      showComments: state?.showComments,
+    }),
+    shallow
+  );
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -77,7 +82,6 @@ export const Container = ({
   const focusedParentIdRef = useRef(undefined);
   useHotkeys('meta+z, control+z', () => handleUndo());
   useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
-  console.log(isVersionReleased, 'isVersionReleased');
   useHotkeys(
     'meta+v, control+v',
     () => {

@@ -46,7 +46,9 @@ import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError'
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorDataStore } from '@/_stores/editorDataStore';
 import { resetAllStores } from '@/_stores/utils';
+import { shallow } from 'zustand/shallow';
 
 setAutoFreeze(false);
 enablePatches();
@@ -103,7 +105,6 @@ class EditorComponent extends React.Component {
       users: null,
       appId,
       showLeftSidebar: true,
-      showComments: false,
       zoomLevel: 1.0,
       currentLayout: 'desktop',
       deviceWindowWidth: 450,
@@ -361,9 +362,10 @@ class EditorComponent extends React.Component {
         async () => {
           computeComponentState(this, this.state.appDefinition.pages[homePageId]?.components ?? {}).then(async () => {
             this.setWindowTitle(data.name);
-            this.setState({
-              showComments: !!queryString.parse(this.props.location.search).threadId,
-            });
+
+            useEditorDataStore
+              .getState()
+              .actions.setShowComments(!!queryString.parse(this.props.location.search).threadId);
             for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
               await this.handleEvent(event.eventId, event);
             }
@@ -791,10 +793,6 @@ class EditorComponent extends React.Component {
       app: { ...this.state.app, name: newName },
     });
     this.setWindowTitle(newName);
-  };
-
-  toggleComments = () => {
-    this.setState({ showComments: !this.state.showComments });
   };
 
   setSelectedComponent = (id, component, multiSelect = false) => {
@@ -1405,11 +1403,11 @@ class EditorComponent extends React.Component {
       deviceWindowWidth,
       apps,
       defaultComponentStateComputed,
-      showComments,
       hoveredComponent,
       queryConfirmationList,
     } = this.state;
     const editingVersion = useAppVersionStore?.getState()?.editingVersion;
+    const showComments = this.props.showComments;
     const appVersionPreviewLink = editingVersion
       ? `/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
       : '';
@@ -1466,7 +1464,6 @@ class EditorComponent extends React.Component {
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
               <LeftSidebar
-                showComments={showComments}
                 errorLogs={currentState.errors}
                 components={currentState.components}
                 appId={appId}
@@ -1475,7 +1472,6 @@ class EditorComponent extends React.Component {
                 dataQueriesChanged={this.dataQueriesChanged}
                 globalDataSourcesChanged={this.globalDataSourcesChanged}
                 onZoomChanged={this.onZoomChanged}
-                toggleComments={this.toggleComments}
                 switchDarkMode={this.changeDarkMode}
                 currentState={currentState}
                 debuggerActions={this.sideBarDebugger}
@@ -1582,7 +1578,6 @@ class EditorComponent extends React.Component {
                           canvasWidth={this.getCanvasWidth()}
                           canvasHeight={this.getCanvasHeight()}
                           socket={this.socket}
-                          showComments={showComments}
                           appDefinition={appDefinition}
                           appDefinitionChanged={this.appDefinitionChanged}
                           snapToGrid={true}
@@ -1721,11 +1716,7 @@ class EditorComponent extends React.Component {
                 )}
               </div>
               {config.COMMENT_FEATURE_ENABLE && showComments && (
-                <CommentNotifications
-                  socket={this.socket}
-                  toggleComments={this.toggleComments}
-                  pageId={this.state.currentPageId}
-                />
+                <CommentNotifications socket={this.socket} pageId={this.state.currentPageId} />
               )}
             </div>
           </DndProvider>
@@ -1735,4 +1726,15 @@ class EditorComponent extends React.Component {
   }
 }
 
-export const Editor = withTranslation()(withRouter(EditorComponent));
+const withStore = (Component) => (props) => {
+  const { showComments } = useEditorDataStore(
+    (state) => ({
+      showComments: state?.showComments,
+    }),
+    shallow
+  );
+  console.log(showComments, 'withStore');
+  return <Component {...props} showComments={showComments} />;
+};
+
+export const Editor = withTranslation()(withRouter(withStore(EditorComponent)));

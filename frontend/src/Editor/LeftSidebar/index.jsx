@@ -1,6 +1,5 @@
 import '@/_styles/left-sidebar.scss';
 import React, { useState, useImperativeHandle, forwardRef, useEffect } from 'react';
-
 import { LeftSidebarInspector } from './SidebarInspector';
 import { LeftSidebarDataSources } from './SidebarDatasources';
 import { DarkModeToggle } from '../../_components/DarkModeToggle';
@@ -12,6 +11,7 @@ import { ConfirmDialog } from '@/_components';
 import config from 'config';
 import { usePanelHeight } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorDataStore } from '@/_stores/editorDataStore';
 import { shallow } from 'zustand/shallow';
 
 export const LeftSidebar = forwardRef((props, ref) => {
@@ -19,10 +19,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const {
     appId,
     switchDarkMode,
-    showComments,
     darkMode = false,
     components,
-    toggleComments,
     dataSourcesChanged,
     globalDataSourcesChanged,
     dataQueriesChanged,
@@ -57,6 +55,12 @@ export const LeftSidebar = forwardRef((props, ref) => {
     (state) => ({
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
       isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
+  const { showComments } = useEditorDataStore(
+    (state) => ({
+      showComments: state?.showComments,
     }),
     shallow
   );
@@ -132,11 +136,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
       {config.COMMENT_FEATURE_ENABLE && (
         <div className={`${isVersionReleased && 'disabled'}`}>
-          <LeftSidebarComment
-            selectedSidebarItem={showComments ? 'comments' : ''}
-            toggleComments={toggleComments}
-            currentPageId={currentPageId}
-          />
+          <LeftSidebarComment selectedSidebarItem={showComments ? 'comments' : ''} currentPageId={currentPageId} />
         </div>
       )}
       <ConfirmDialog
