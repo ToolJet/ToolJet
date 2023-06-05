@@ -21,7 +21,7 @@ Let's create the query that will be getting the data from the database:
 
 ## 2. Display the data on the table
 
--   Drag a **Table** widget on the canvas and click on its handle to open the properties on the left sidebar
+- Drag a **Table** widget on the canvas and click on its handle to open the properties on the left sidebar
 -   Edit the **Table data** field value and enter **`{{queries.postgresql1.data}}`**
 
 <div style={{textAlign: 'center'}}>
