@@ -14,6 +14,7 @@ import { USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_
 import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
+import { UserDetails } from 'src/entities/user_details.entity';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { LicenseService } from './license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
@@ -168,6 +169,7 @@ export class UsersService {
             'organization_users.organizationId = :organizationId',
             { organizationId }
           )
+          .leftJoinAndSelect('users.userDetails', 'user_details')
           .where('organization_users.status IN(:...statusList)', {
             statusList,
           })
@@ -801,5 +803,17 @@ export class UsersService {
         throw new HttpException('License violation - Number of viewers exceeded', 451);
       }
     }
+  }
+
+  async updateSSOUserInfo(manager: EntityManager, userId: string, ssoUserInfo: any): Promise<void> {
+    await manager.upsert(
+      UserDetails,
+      {
+        userId,
+        ssoUserInfo,
+        updatedAt: new Date(),
+      },
+      ['userId']
+    );
   }
 }

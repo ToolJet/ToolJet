@@ -356,6 +356,10 @@ export class OauthService {
             (ou) => ou.organizationId === organization.id
           )?.invitationToken;
 
+          if (userResponse.userinfoResponse) {
+            // update sso user info
+            await this.usersService.updateSSOUserInfo(manager, userDetails.id, userResponse.userinfoResponse);
+          }
           return await this.validateLicense(
             decamelizeKeys({
               redirectUrl: `${this.configService.get<string>('TOOLJET_HOST')}/invitations/${
@@ -365,6 +369,11 @@ export class OauthService {
             manager
           );
         }
+      }
+
+      if (userResponse.userinfoResponse) {
+        // update sso user info
+        await this.usersService.updateSSOUserInfo(manager, userDetails.id, userResponse.userinfoResponse);
       }
 
       if (userDetails.invitationToken) {

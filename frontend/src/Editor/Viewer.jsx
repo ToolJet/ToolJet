@@ -107,6 +107,7 @@ class ViewerComponent extends React.Component {
         firstName: currentUser.first_name,
         lastName: currentUser.last_name,
         groups: authenticationService.currentSessionValue?.group_permissions.map((group) => group.group),
+        ssoUserInfo: currentUser.sso_user_info,
       };
     }
 

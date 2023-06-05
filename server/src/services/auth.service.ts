@@ -235,6 +235,7 @@ export class AuthService {
           firstName: user.firstName,
           lastName: user.lastName,
           avatarId: user.avatarId,
+          ssoUserInfo: user.userDetails?.ssoUserInfo,
         },
       });
     });
@@ -693,6 +694,7 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       avatar_id: user.avatarId,
+      sso_user_info: user.userDetails?.ssoUserInfo,
       organizationId: organization.id,
       organization: organization.name,
       superAdmin: isSuperAdmin(user),
