@@ -617,7 +617,7 @@ export function Table({
       if (row != undefined) {
         const selectedRowDetails = { selectedRow: item[0], selectedRowId: row.id };
         setExposedVariables(selectedRowDetails).then(() => {
-          if (allowSelection && !highlightSelectedRow) toggleRowSelected(row.id);
+          toggleRowSelected(row.id);
           mergeToTableDetails(selectedRowDetails);
           fireEvent('onRowClicked');
         });
@@ -678,11 +678,21 @@ export function Table({
     if (showBulkSelector) {
       const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
       const selectedRowsId = selectedFlatRows.map((row) => row.id);
-      setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId });
-    } else {
+      setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId }).then(() => {
+        const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
+          accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
+          return accumulator;
+        }, []);
+        mergeToTableDetails({ selectedRowsDetails });
+      });
+    } else if (!showBulkSelector && !highlightSelectedRow) {
       const selectedRow = selectedFlatRows?.[0]?.original ?? {};
       const selectedRowId = selectedFlatRows?.[0]?.id ?? null;
-      setExposedVariables({ selectedRow, selectedRowId });
+      setExposedVariables({ selectedRow, selectedRowId }).then(() => {
+        setExposedVariables({ selectedRow, selectedRowId }).then(() => {
+          mergeToTableDetails({ selectedRow, selectedRowId });
+        });
+      });
     }
   }, [selectedFlatRows.length, selectedFlatRows, _.toString(selectedFlatRows)]);
 
@@ -1045,8 +1055,7 @@ export function Table({
                       ((row.isSelected && row.id === tableDetails.selectedRowId) ||
                         (showBulkSelector &&
                           row.isSelected &&
-                          tableDetails?.selectedRowsDetails?.some((singleRow) => singleRow.selectedRowId === row.id)) ||
-                        row.id === tableDetails.selectedRowId)
+                          tableDetails?.selectedRowsDetails?.some((singleRow) => singleRow.selectedRowId === row.id)))
                         ? 'selected'
                         : ''
                     }`}
@@ -1056,18 +1065,11 @@ export function Table({
                       // toggleRowSelected will triggered useRededcuer function in useTable and in result will get the selectedFlatRows consisting row which are selected
                       if (allowSelection) {
                         await toggleRowSelected(row.id);
-                        if (showBulkSelector) {
-                          const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
-                            accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
-                            return accumulator;
-                          }, []);
-                          mergeToTableDetails({ selectedRowsDetails });
-                        }
                       }
                       const selectedRow = row.original;
                       const selectedRowId = row.id;
                       setExposedVariables({ selectedRow, selectedRowId }).then(() => {
-                        mergeToTableDetails({ selectedRow, selectedRowId });
+                        if (allowSelection && highlightSelectedRow) mergeToTableDetails({ selectedRow, selectedRowId });
                         fireEvent('onRowClicked');
                       });
                     }}
