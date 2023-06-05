@@ -106,7 +106,6 @@ class EditorComponent extends React.Component {
       appId,
       showLeftSidebar: true,
       zoomLevel: 1.0,
-      currentLayout: 'desktop',
       deviceWindowWidth: 450,
       appDefinition: this.defaultDefinition,
       currentState: {
@@ -717,8 +716,8 @@ class EditorComponent extends React.Component {
 
     for (const selectedComponent of this.state.selectedComponents) {
       newComponents = produce(newComponents, (draft) => {
-        let top = draft[selectedComponent.id].layouts[this.state.currentLayout].top;
-        let left = draft[selectedComponent.id].layouts[this.state.currentLayout].left;
+        let top = draft[selectedComponent.id].layouts[this.props.currentLayout].top;
+        let left = draft[selectedComponent.id].layouts[this.props.currentLayout].left;
 
         const gridWidth = (1 * 100) / 43; // width of the canvas grid in percentage
 
@@ -737,8 +736,8 @@ class EditorComponent extends React.Component {
             break;
         }
 
-        draft[selectedComponent.id].layouts[this.state.currentLayout].top = top;
-        draft[selectedComponent.id].layouts[this.state.currentLayout].left = left;
+        draft[selectedComponent.id].layouts[this.props.currentLayout].top = top;
+        draft[selectedComponent.id].layouts[this.props.currentLayout].left = left;
       });
     }
     appDefinition.pages[this.state.currentPageId].components = newComponents;
@@ -1381,12 +1380,6 @@ class EditorComponent extends React.Component {
     return Object.entries(this.state.appDefinition.pages).map(([id, page]) => ({ ...page, id }));
   };
 
-  toggleCurrentLayout = (selectedLayout) => {
-    this.setState({
-      currentLayout: selectedLayout,
-    });
-  };
-
   render() {
     const {
       currentSidebarTab,
@@ -1399,7 +1392,6 @@ class EditorComponent extends React.Component {
       currentState,
       isLoading,
       zoomLevel,
-      currentLayout,
       deviceWindowWidth,
       apps,
       defaultComponentStateComputed,
@@ -1408,6 +1400,7 @@ class EditorComponent extends React.Component {
     } = this.state;
     const editingVersion = useAppVersionStore?.getState()?.editingVersion;
     const showComments = this.props.showComments;
+
     const appVersionPreviewLink = editingVersion
       ? `/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
       : '';
@@ -1436,7 +1429,6 @@ class EditorComponent extends React.Component {
           <EditorHeader
             darkMode={this.props.darkMode}
             currentState={currentState}
-            currentLayout={this.state.currentLayout}
             globalSettingsChanged={this.globalSettingsChanged}
             appDefinition={appDefinition}
             toggleAppMaintenance={this.toggleAppMaintenance}
@@ -1449,7 +1441,6 @@ class EditorComponent extends React.Component {
             canRedo={this.canRedo}
             handleUndo={this.handleUndo}
             handleRedo={this.handleRedo}
-            toggleCurrentLayout={this.toggleCurrentLayout}
             isSaving={this.state.isSaving}
             saveError={this.state.saveError}
             onNameChanged={this.onNameChanged}
@@ -1539,7 +1530,7 @@ class EditorComponent extends React.Component {
                   <div
                     className="canvas-area"
                     style={{
-                      width: currentLayout === 'desktop' ? '100%' : '450px',
+                      width: this.props.currentLayout === 'desktop' ? '100%' : '450px',
                       minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                       maxWidth:
                         +this.state.appDefinition.globalSettings.canvasMaxWidth +
@@ -1584,7 +1575,6 @@ class EditorComponent extends React.Component {
                           darkMode={this.props.darkMode}
                           mode={'edit'}
                           zoomLevel={zoomLevel}
-                          currentLayout={currentLayout}
                           deviceWindowWidth={deviceWindowWidth}
                           selectedComponents={selectedComponents}
                           appLoading={isLoading}
@@ -1602,11 +1592,7 @@ class EditorComponent extends React.Component {
                           sideBarDebugger={this.sideBarDebugger}
                           currentPageId={this.state.currentPageId}
                         />
-                        <CustomDragLayer
-                          snapToGrid={true}
-                          currentLayout={currentLayout}
-                          canvasWidth={this.getCanvasWidth()}
-                        />
+                        <CustomDragLayer snapToGrid={true} canvasWidth={this.getCanvasWidth()} />
                       </>
                     )}
                   </div>
@@ -1710,7 +1696,6 @@ class EditorComponent extends React.Component {
                   <WidgetManager
                     componentTypes={componentTypes}
                     zoomLevel={zoomLevel}
-                    currentLayout={currentLayout}
                     darkMode={this.props.darkMode}
                   ></WidgetManager>
                 )}
@@ -1727,14 +1712,14 @@ class EditorComponent extends React.Component {
 }
 
 const withStore = (Component) => (props) => {
-  const { showComments } = useEditorDataStore(
+  const { showComments, currentLayout } = useEditorDataStore(
     (state) => ({
       showComments: state?.showComments,
+      currentLayout: state?.currentLayout,
     }),
     shallow
   );
-  console.log(showComments, 'withStore');
-  return <Component {...props} showComments={showComments} />;
+  return <Component {...props} showComments={showComments} currentLayout={currentLayout} />;
 };
 
 export const Editor = withTranslation()(withRouter(withStore(EditorComponent)));

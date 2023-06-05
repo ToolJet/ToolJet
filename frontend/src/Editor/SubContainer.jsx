@@ -508,7 +508,6 @@ export const SubContainer = ({
                 inCanvas={true}
                 zoomLevel={zoomLevel}
                 setSelectedComponent={setSelectedComponent}
-                currentLayout={currentLayout}
                 selectedComponent={selectedComponent}
                 deviceWindowWidth={deviceWindowWidth}
                 isSelectedComponent={

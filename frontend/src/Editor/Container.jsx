@@ -34,7 +34,6 @@ export const Container = ({
   appLoading,
   setSelectedComponent,
   zoomLevel,
-  currentLayout,
   removeComponent,
   deviceWindowWidth,
   selectedComponents,
@@ -47,14 +46,6 @@ export const Container = ({
   sideBarDebugger,
   currentPageId,
 }) => {
-  const styles = {
-    width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
-    maxWidth: `${canvasWidth}px`,
-    height: `${canvasHeight}px`,
-    position: 'absolute',
-    backgroundSize: `${canvasWidth / 43}px 10px`,
-  };
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const components = appDefinition.pages[currentPageId]?.components ?? {};
   const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
@@ -65,12 +56,20 @@ export const Container = ({
     }),
     shallow
   );
-  const { showComments } = useEditorDataStore(
+  const { showComments, currentLayout } = useEditorDataStore(
     (state) => ({
       showComments: state?.showComments,
+      currentLayout: state?.currentLayout,
     }),
     shallow
   );
+  const styles = {
+    width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
+    maxWidth: `${canvasWidth}px`,
+    height: `${canvasHeight}px`,
+    position: 'absolute',
+    backgroundSize: `${canvasWidth / 43}px 10px`,
+  };
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -531,7 +530,6 @@ export const Container = ({
               zoomLevel={zoomLevel}
               setSelectedComponent={setSelectedComponent}
               removeComponent={removeComponent}
-              currentLayout={currentLayout}
               deviceWindowWidth={deviceWindowWidth}
               isSelectedComponent={
                 mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false

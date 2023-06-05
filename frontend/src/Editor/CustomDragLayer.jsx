@@ -3,6 +3,9 @@ import { useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { BoxDragPreview } from './BoxDragPreview';
 import { snapToGrid } from '@/_helpers/appUtils';
+import { useEditorDataStore } from '../_stores/editorDataStore';
+import { shallow } from 'zustand/shallow';
+
 const layerStyles = {
   position: 'fixed',
   pointerEvents: 'none',
@@ -53,7 +56,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
     WebkitTransform: transform,
   };
 }
-export const CustomDragLayer = ({ canvasWidth, currentLayout }) => {
+export const CustomDragLayer = ({ canvasWidth }) => {
   const { itemType, isDragging, item, initialOffset, currentOffset, delta, initialClientOffset } = useDragLayer(
     (monitor) => ({
       item: monitor.getItem(),
@@ -65,12 +68,18 @@ export const CustomDragLayer = ({ canvasWidth, currentLayout }) => {
       delta: monitor.getDifferenceFromInitialOffset(),
     })
   );
+  const { currentLayout } = useEditorDataStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
 
   if (itemType === ItemTypes.COMMENT) return null;
   function renderItem() {
     switch (itemType) {
       case ItemTypes.BOX:
-        return <BoxDragPreview item={item} currentLayout={currentLayout} canvasWidth={canvasWidth} />;
+        return <BoxDragPreview item={item} canvasWidth={canvasWidth} />;
       default:
         return null;
     }

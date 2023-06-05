@@ -30,15 +30,15 @@ import { Navigate } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 import { toast } from 'react-hot-toast';
 import { withRouter } from '@/_hoc/withRouter';
-
+import { useEditorDataStore } from '@/_stores/editorDataStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { shallow } from 'zustand/shallow';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
     super(props);
 
     const deviceWindowWidth = window.screen.width - 5;
-    const isMobileDevice = deviceWindowWidth < 600;
 
     const pageHandle = this.props?.params?.pageHandle;
 
@@ -53,7 +53,6 @@ class ViewerComponent extends React.Component {
       appId,
       versionId,
       deviceWindowWidth,
-      currentLayout: isMobileDevice ? 'mobile' : 'desktop',
       currentUser: null,
       isLoading: true,
       users: null,
@@ -113,7 +112,7 @@ class ViewerComponent extends React.Component {
 
     let mobileLayoutHasWidgets = false;
 
-    if (this.state.currentLayout === 'mobile') {
+    if (this.props.currentLayout === 'mobile') {
       const currentComponents = data.definition.pages[data.definition.homePageId].components;
       mobileLayoutHasWidgets =
         Object.keys(currentComponents).filter((componentId) => currentComponents[componentId]['layouts']['mobile'])
@@ -144,14 +143,13 @@ class ViewerComponent extends React.Component {
     const currentPage = pages.find((page) => page.id === currentPageId);
 
     useDataQueriesStore.getState().actions.setDataQueries(data.data_queries);
-
+    useEditorDataStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
     this.setState(
       {
         currentUser,
         currentSidebarTab: 2,
-        currentLayout: mobileLayoutHasWidgets ? 'mobile' : 'desktop',
         canvasWidth:
-          this.state.currentLayout === 'desktop'
+          this.props.currentLayout === 'desktop'
             ? '100%'
             : mobileLayoutHasWidgets
             ? `${this.state.deviceWindowWidth}px`
@@ -342,6 +340,8 @@ class ViewerComponent extends React.Component {
 
   componentDidMount() {
     this.setupViewer();
+    const isMobileDevice = this.state.deviceWindowWidth < 600;
+    useEditorDataStore.getState().actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
   }
 
   componentDidUpdate(prevProps) {
@@ -488,7 +488,6 @@ class ViewerComponent extends React.Component {
       appDefinition,
       isLoading,
       isAppLoaded,
-      currentLayout,
       deviceWindowWidth,
       defaultComponentStateComputed,
       dataQueries,
@@ -578,7 +577,6 @@ class ViewerComponent extends React.Component {
                 pages={Object.entries(this.state.appDefinition?.pages) ?? []}
                 currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                 switchPage={this.switchPage}
-                currentLayout={this.state.currentLayout}
               />
               <div className="sub-section">
                 <div className="main">
@@ -586,7 +584,7 @@ class ViewerComponent extends React.Component {
                     <div className="areas d-flex flex-rows justify-content-center">
                       {appDefinition?.showViewerNavigation && (
                         <ViewerNavigation
-                          isMobileDevice={this.state.currentLayout === 'mobile'}
+                          isMobileDevice={this.props.currentLayout === 'mobile'}
                           canvasBackgroundColor={this.computeCanvasBackgroundColor()}
                           pages={Object.entries(this.state.appDefinition?.pages) ?? []}
                           currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
@@ -624,7 +622,6 @@ class ViewerComponent extends React.Component {
                                 onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
                                 mode="view"
                                 deviceWindowWidth={deviceWindowWidth}
-                                currentLayout={currentLayout}
                                 currentState={this.state.currentState}
                                 selectedComponent={this.state.selectedComponent}
                                 onComponentClick={(id, component) => {
@@ -659,4 +656,14 @@ class ViewerComponent extends React.Component {
   }
 }
 
-export const Viewer = withTranslation()(withRouter(ViewerComponent));
+const withStore = (Component) => (props) => {
+  const { currentLayout } = useEditorDataStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
+  return <Component {...props} currentLayout={currentLayout} />;
+};
+
+export const Viewer = withTranslation()(withStore(withRouter(ViewerComponent)));

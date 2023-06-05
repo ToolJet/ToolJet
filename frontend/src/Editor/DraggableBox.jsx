@@ -9,6 +9,8 @@ import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
+import { useEditorDataStore } from '../_stores/editorDataStore';
+import { shallow } from 'zustand/shallow';
 
 const resizerClasses = {
   topRight: 'top-right',
@@ -83,9 +85,7 @@ export const DraggableBox = function DraggableBox({
   containerProps,
   setSelectedComponent,
   removeComponent,
-  currentLayout,
   layouts,
-  _deviceWindowWidth,
   isSelectedComponent,
   draggingStatusChanged,
   darkMode,
@@ -103,7 +103,12 @@ export const DraggableBox = function DraggableBox({
   const [isDragging2, setDragging] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
   const [mouseOver, setMouseOver] = useState(false);
-
+  const { currentLayout } = useEditorDataStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
   useEffect(() => {
     setMouseOver(hoveredComponent === id);
   }, [hoveredComponent]);
@@ -119,13 +124,12 @@ export const DraggableBox = function DraggableBox({
         parent,
         layouts,
         canvasWidth,
-        currentLayout,
       },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
     }),
-    [id, title, component, index, zoomLevel, parent, layouts, currentLayout, canvasWidth]
+    [id, title, component, index, zoomLevel, parent, layouts, canvasWidth]
   );
 
   useEffect(() => {

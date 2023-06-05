@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 import FolderList from '@/_ui/FolderList/FolderList';
+import { useEditorDataStore } from '../../_stores/editorDataStore';
+import { shallow } from 'zustand/shallow';
 
 export const ViewerNavigation = ({ isMobileDevice, pages, currentPageId, switchPage, darkMode }) => {
   if (isMobileDevice) {
@@ -142,16 +144,13 @@ const MobileNavigationMenu = ({ pages, switchPage, currentPageId, darkMode, chan
   );
 };
 
-const ViewerHeader = ({
-  showHeader,
-  appName,
-  changeDarkMode,
-  darkMode,
-  pages,
-  currentPageId,
-  switchPage,
-  currentLayout,
-}) => {
+const ViewerHeader = ({ showHeader, appName, changeDarkMode, darkMode, pages, currentPageId, switchPage }) => {
+  const { currentLayout } = useEditorDataStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
   if (!showHeader && currentLayout !== 'mobile') {
     return null;
   }

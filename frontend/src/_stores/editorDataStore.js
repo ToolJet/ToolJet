@@ -11,6 +11,7 @@ export const useEditorDataStore = create(
     actions: {
       setShowComments: (showComments) => set({ showComments }),
       toggleComments: () => set({ showComments: !get().showComments }),
+      toggleCurrentLayout: (currentLayout) => set({ currentLayout }),
     },
   }))
 );
