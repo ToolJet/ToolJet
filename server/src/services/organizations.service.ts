@@ -627,6 +627,7 @@ export class OrganizationsService {
     const existingUsers = [];
     const archivedUsers = [];
     const invalidRows = [];
+    const invalidFields = new Set();
     const invalidGroups = [];
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     const manager = getManager();
@@ -660,21 +661,34 @@ export class OrganizationsService {
           }
 
           //Check for invalid groups
-          const receivedGroups: string[] = data?.groups;
-          for (const group of receivedGroups) {
-            if (existingGroups.indexOf(group) === -1) {
-              invalidGroups.push(group);
+          const receivedGroups: string[] | null = data?.groups.length ? data?.groups : null;
+
+          if (Array.isArray(receivedGroups)) {
+            for (const group of receivedGroups) {
+              if (existingGroups.indexOf(group) === -1) {
+                invalidGroups.push(group);
+              }
             }
           }
 
+          data.first_name = data.first_name?.trim();
+          data.last_name = data.last_name?.trim();
+
           const isValidName = data.first_name !== '' || data.last_name !== '';
 
-          return next(null, isValidName && emailPattern.test(data.email));
+          return next(null, isValidName && emailPattern.test(data.email) && receivedGroups?.length > 0);
         }, manager);
       })
       .on('data', function () {})
       .on('data-invalid', (row, rowNumber) => {
+        const invalidField = Object.keys(row).filter((key) => {
+          if (Array.isArray(row[key])) {
+            return row[key].length === 0;
+          }
+          return !row[key] || row[key] === '';
+        });
         invalidRows.push(rowNumber);
+        invalidFields.add(invalidField);
       })
       .on('end', async (rowCount: number) => {
         try {
@@ -683,9 +697,11 @@ export class OrganizationsService {
           }
 
           if (invalidRows.length) {
-            throw new BadRequestException(
-              `Please fix row number${isPlural(invalidRows)}: ${invalidRows.join(', ')}. No users were uploaded`
-            );
+            const invalidFieldsArray = invalidFields.entries().next().value[1];
+            const errorMsg = `Invalid row(s): [${invalidFieldsArray.join(', ')}] in [${
+              invalidRows.length
+            }] row(s). No users were uploaded.`;
+            throw new BadRequestException(errorMsg);
           }
 
           if (invalidGroups.length) {
