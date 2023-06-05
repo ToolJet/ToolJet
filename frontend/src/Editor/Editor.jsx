@@ -1411,14 +1411,13 @@ class EditorComponent extends React.Component {
      * default canvas min width = calc((total view width - width component editor side bar) - width of editor sidebar on left)
      **/
     const defaultCanvasMinWidth = `calc((100vw - 300px) - 48px)`;
-    const userSetMaxWidth =
-      this.state.currentLayout === 'desktop'
-        ? `${
-            +this.state.appDefinition.globalSettings.canvasMaxWidth +
-            (this.state.appDefinition.globalSettings.canvasMaxWidthType || 'px')
-          }`
-        : '450px';
-    if (this.state.appDefinition.globalSettings.canvasMaxWidth) {
+    const canvasMaxWidthType = this.state.appDefinition.globalSettings.canvasMaxWidthType || 'px';
+    const canvasMaxWidth = this.state.appDefinition.globalSettings.canvasMaxWidth;
+    const currentLayout = this.state.currentLayout;
+
+    const userSetMaxWidth = currentLayout === 'desktop' ? `${+canvasMaxWidth + canvasMaxWidthType}` : '450px';
+
+    if (this.state.appDefinition.globalSettings.canvasMaxWidth && canvasMaxWidthType !== '%') {
       return `min(${defaultCanvasMinWidth}, ${userSetMaxWidth})`;
     } else {
       return defaultCanvasMinWidth;
@@ -1608,95 +1607,97 @@ class EditorComponent extends React.Component {
                     this.selectionRef.current.checkScroll();
                   }}
                 >
-                  <div
-                    className="canvas-area"
-                    style={{
-                      width: currentLayout === 'desktop' ? '100%' : '450px',
-                      minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
-                      maxWidth:
-                        +this.state.appDefinition.globalSettings.canvasMaxWidth +
-                        this.state.appDefinition.globalSettings.canvasMaxWidthType,
-                      maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
-                      /**
-                       * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
-                       * default canvas min width = calc(((screen width - width component editor side bar) - width of editor sidebar on left) - width of left sidebar popover)
-                       **/
-                      minWidth: this.state.editorMarginLeft ? this.getCanvasMinWidth() : 'auto',
-                      backgroundColor: this.computeCanvasBackgroundColor(),
-                      transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
-                    }}
-                  >
-                    {config.ENABLE_MULTIPLAYER_EDITING && (
-                      <RealtimeCursors
-                        editingVersionId={this.state?.editingVersion?.id}
-                        editingPageId={this.state.currentPageId}
-                      />
-                    )}
-                    {isLoading && (
-                      <div className="apploader">
-                        <div className="col col-* editor-center-wrapper">
-                          <div className="editor-center">
-                            <div className="canvas">
-                              <div className="mt-5 d-flex flex-column">
-                                <div className="mb-1">
-                                  <Skeleton width={'150px'} height={15} className="skeleton" />
+                  <div style={{ minWidth: `calc((100vw - 300px) - 48px)` }}>
+                    <div
+                      className="canvas-area"
+                      style={{
+                        width: currentLayout === 'desktop' ? '100%' : '450px',
+                        minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
+                        maxWidth:
+                          +this.state.appDefinition.globalSettings.canvasMaxWidth +
+                          this.state.appDefinition.globalSettings.canvasMaxWidthType,
+                        maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
+                        /**
+                         * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
+                         * default canvas min width = calc(((screen width - width component editor side bar) - width of editor sidebar on left) - width of left sidebar popover)
+                         **/
+                        // minWidth: this.state.editorMarginLeft ? this.getCanvasMinWidth() : 'auto',
+                        backgroundColor: this.computeCanvasBackgroundColor(),
+                        transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
+                      }}
+                    >
+                      {config.ENABLE_MULTIPLAYER_EDITING && (
+                        <RealtimeCursors
+                          editingVersionId={this.state?.editingVersion?.id}
+                          editingPageId={this.state.currentPageId}
+                        />
+                      )}
+                      {isLoading && (
+                        <div className="apploader">
+                          <div className="col col-* editor-center-wrapper">
+                            <div className="editor-center">
+                              <div className="canvas">
+                                <div className="mt-5 d-flex flex-column">
+                                  <div className="mb-1">
+                                    <Skeleton width={'150px'} height={15} className="skeleton" />
+                                  </div>
+                                  {Array.from(Array(4)).map((_item, index) => (
+                                    <Skeleton key={index} width={'300px'} height={10} className="skeleton" />
+                                  ))}
+                                  <div className="align-self-end">
+                                    <Skeleton width={'100px'} className="skeleton" />
+                                  </div>
+                                  <Skeleton className="skeleton mt-4" />
+                                  <Skeleton height={'150px'} className="skeleton mt-2" />
                                 </div>
-                                {Array.from(Array(4)).map((_item, index) => (
-                                  <Skeleton key={index} width={'300px'} height={10} className="skeleton" />
-                                ))}
-                                <div className="align-self-end">
-                                  <Skeleton width={'100px'} className="skeleton" />
-                                </div>
-                                <Skeleton className="skeleton mt-4" />
-                                <Skeleton height={'150px'} className="skeleton mt-2" />
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                    {defaultComponentStateComputed && (
-                      <>
-                        <Container
-                          canvasWidth={this.getCanvasWidth()}
-                          canvasHeight={this.getCanvasHeight()}
-                          socket={this.socket}
-                          showComments={showComments}
-                          appVersionsId={this.state?.editingVersion?.id}
-                          appDefinition={appDefinition}
-                          appDefinitionChanged={this.appDefinitionChanged}
-                          snapToGrid={true}
-                          darkMode={this.props.darkMode}
-                          mode={'edit'}
-                          zoomLevel={zoomLevel}
-                          currentLayout={currentLayout}
-                          deviceWindowWidth={deviceWindowWidth}
-                          selectedComponents={selectedComponents}
-                          appLoading={isLoading}
-                          onEvent={this.handleEvent}
-                          onComponentOptionChanged={this.handleOnComponentOptionChanged}
-                          onComponentOptionsChanged={this.handleOnComponentOptionsChanged}
-                          currentState={this.state.currentState}
-                          setSelectedComponent={this.setSelectedComponent}
-                          handleUndo={this.handleUndo}
-                          handleRedo={this.handleRedo}
-                          removeComponent={this.removeComponent}
-                          onComponentClick={this.handleComponentClick}
-                          onComponentHover={this.handleComponentHover}
-                          hoveredComponent={hoveredComponent}
-                          sideBarDebugger={this.sideBarDebugger}
-                          currentPageId={this.state.currentPageId}
-                          setReleasedVersionPopupState={this.setReleasedVersionPopupState}
-                          isVersionReleased={this.isVersionReleased()}
-                        />
-                        <CustomDragLayer
-                          snapToGrid={true}
-                          currentLayout={currentLayout}
-                          canvasWidth={this.getCanvasWidth()}
-                          onDragging={(isDragging) => this.setState({ isDragging })}
-                        />
-                      </>
-                    )}
+                      )}
+                      {defaultComponentStateComputed && (
+                        <>
+                          <Container
+                            canvasWidth={this.getCanvasWidth()}
+                            canvasHeight={this.getCanvasHeight()}
+                            socket={this.socket}
+                            showComments={showComments}
+                            appVersionsId={this.state?.editingVersion?.id}
+                            appDefinition={appDefinition}
+                            appDefinitionChanged={this.appDefinitionChanged}
+                            snapToGrid={true}
+                            darkMode={this.props.darkMode}
+                            mode={'edit'}
+                            zoomLevel={zoomLevel}
+                            currentLayout={currentLayout}
+                            deviceWindowWidth={deviceWindowWidth}
+                            selectedComponents={selectedComponents}
+                            appLoading={isLoading}
+                            onEvent={this.handleEvent}
+                            onComponentOptionChanged={this.handleOnComponentOptionChanged}
+                            onComponentOptionsChanged={this.handleOnComponentOptionsChanged}
+                            currentState={this.state.currentState}
+                            setSelectedComponent={this.setSelectedComponent}
+                            handleUndo={this.handleUndo}
+                            handleRedo={this.handleRedo}
+                            removeComponent={this.removeComponent}
+                            onComponentClick={this.handleComponentClick}
+                            onComponentHover={this.handleComponentHover}
+                            hoveredComponent={hoveredComponent}
+                            sideBarDebugger={this.sideBarDebugger}
+                            currentPageId={this.state.currentPageId}
+                            setReleasedVersionPopupState={this.setReleasedVersionPopupState}
+                            isVersionReleased={this.isVersionReleased()}
+                          />
+                          <CustomDragLayer
+                            snapToGrid={true}
+                            currentLayout={currentLayout}
+                            canvasWidth={this.getCanvasWidth()}
+                            onDragging={(isDragging) => this.setState({ isDragging })}
+                          />
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <QueryPanel
