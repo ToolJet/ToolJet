@@ -4387,7 +4387,8 @@ input[type="text"] {
   }
 
   input:focus {
-    width: 300px;
+    width: 200px;
+    background-color: var(--base);
   }
 
   .input-icon .input-icon-addon {
@@ -10099,7 +10100,7 @@ tbody {
   border-radius: 0px !important;
 }
 
-// custom styles for users multiselect in manage users 
+// custom styles for users multiselect in manage users
 .manage-groups-users-multiselect {
   gap: 17px;
   width: 440px;
