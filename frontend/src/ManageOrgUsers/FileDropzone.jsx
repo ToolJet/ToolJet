@@ -4,6 +4,7 @@ import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { toast } from 'react-hot-toast';
 
 export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileChange, inviteBulkUsers, onDrop }) {
+  const [fileData, setFileData] = useState();
   const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
     accept: { parsedFileType: ['text/csv'] },
     onDrop,
@@ -20,15 +21,8 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
     },
     noKeyboard: true,
   });
-  const [fileData, setFileData] = useState();
-  const files =
-    acceptedFiles.length > 0
-      ? acceptedFiles
-      : acceptedFiles?.map((file) => (
-          <li key={file.path}>
-            {file.path} - {file.size} bytes
-          </li>
-        ));
+
+  // const files = acceptedFiles;
   return (
     <form
       {...getRootProps({ className: 'dropzone' })}
@@ -70,7 +64,7 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
           <span className="file-upload-error" data-cy="file-error">
             {errors['file']}
           </span>
-          <ul>{files}</ul>
+          <ul>{acceptedFiles}</ul>
           {fileData?.name && <ul>{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>}
         </div>
       </div>

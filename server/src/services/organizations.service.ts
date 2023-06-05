@@ -667,7 +667,9 @@ export class OrganizationsService {
             }
           }
 
-          return next(null, data.first_name !== '' && data.last_name !== '' && emailPattern.test(data.email));
+          const isValidName = data.first_name !== '' || data.last_name !== '';
+
+          return next(null, isValidName && emailPattern.test(data.email));
         }, manager);
       })
       .on('data', function () {})
