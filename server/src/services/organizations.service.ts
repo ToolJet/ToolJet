@@ -702,9 +702,7 @@ export class OrganizationsService {
 
           if (existingUsers.length) {
             throw new BadRequestException(
-              `User${isPlural(existingUsers)} with email ${existingUsers.join(
-                ', '
-              )} already exists. No users were uploaded`
+              `${existingUsers.length} users with same email already exist. No users were uploaded `
             );
           }
 
