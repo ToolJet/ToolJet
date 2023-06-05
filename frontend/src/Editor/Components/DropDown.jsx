@@ -108,7 +108,6 @@ export const DropDown = function DropDown({
     if (exposedValue !== currentValue) {
       setExposedVariable('value', currentValue);
       index = values?.indexOf(currentValue);
-      console.log('xxx', index, currentValue, display_values);
       setExposedVariable('selectedOptionLabel', display_values?.[index]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
