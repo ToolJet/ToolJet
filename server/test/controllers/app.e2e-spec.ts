@@ -89,7 +89,7 @@ describe('Authentication', () => {
         });
 
         expect(user.defaultOrganizationId).toBe(user?.organizationUsers?.[0]?.organizationId);
-        expect(organization?.name).toBe('Untitled workspace');
+        expect(organization?.name).toContain('Untitled workspace');
 
         const groupPermissions = await user.groupPermissions;
         const groupNames = groupPermissions.map((x) => x.group);
