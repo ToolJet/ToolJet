@@ -4,7 +4,7 @@ import Select from '@/_ui/Select';
 export const ChangeDataSource = ({ dataSources, onChange, value, selectedQuery }) => {
   return (
     <Select
-      className="px-4"
+      className="px-3"
       options={dataSources
         .filter((ds) => ds.kind === selectedQuery?.kind)
         .map((ds) => ({ label: ds.name, value: ds.id }))}

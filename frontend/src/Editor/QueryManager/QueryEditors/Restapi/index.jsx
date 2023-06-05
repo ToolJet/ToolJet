@@ -103,8 +103,8 @@ class Restapi extends React.Component {
       control: (provided) => ({
         ...provided,
         boxShadow: 'none',
-        backgroundColor: darkMode ? '#2b3547' : '#F1F3F5',
-        borderRadius: '6px 0 0 6px',
+        ...(darkMode && { backgroundColor: '#2b3547' }),
+        borderRadius: '6px',
         height: 32,
         minHeight: 32,
         borderColor: darkMode ? 'inherit' : ' #D7DBDF',
@@ -130,66 +130,71 @@ class Restapi extends React.Component {
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
 
     return (
-      <div>
-        <div className="rest-api-methods-select-element-container">
-          <div className={`${this.props.darkMode && 'dark'}`} style={{ width: '90px', height: '32px' }}>
-            <Select
-              options={[
-                { label: 'GET', value: 'get' },
-                { label: 'POST', value: 'post' },
-                { label: 'PUT', value: 'put' },
-                { label: 'PATCH', value: 'patch' },
-                { label: 'DELETE', value: 'delete' },
-              ]}
-              onChange={(value) => {
-                changeOption(this, 'method', value);
-              }}
-              value={currentValue}
-              defaultValue={{ label: 'GET', value: 'get' }}
-              placeholder="Method"
-              width={100}
-              height={32}
-              styles={this.customSelectStyles(this.props.darkMode, 91)}
-              useCustomStyles={true}
-            />
-          </div>
-
-          <div className={`col field w-100 d-flex rest-methods-url ${this.props.darkMode && 'dark'}`}>
-            {dataSourceURL && (
-              <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
-            )}
-            <div className="col">
-              <CodeHinter
-                currentState={this.props.currentState}
-                initialValue={options.url}
-                theme={this.props.darkMode ? 'monokai' : 'default'}
+      <div className="row">
+        <div className="col-md-3">Request</div>
+        <div className="col-md-9">
+          <div className="rest-api-methods-select-element-container">
+            <div className={`${this.props.darkMode && 'dark'} me-2`} style={{ width: '90px', height: '32px' }}>
+              <label className="font-weight-bold text-dark">Method</label>
+              <Select
+                options={[
+                  { label: 'GET', value: 'get' },
+                  { label: 'POST', value: 'post' },
+                  { label: 'PUT', value: 'put' },
+                  { label: 'PATCH', value: 'patch' },
+                  { label: 'DELETE', value: 'delete' },
+                ]}
                 onChange={(value) => {
-                  changeOption(this, 'url', value);
+                  changeOption(this, 'method', value);
                 }}
-                placeholder="Enter request URL"
-                componentName={`${queryName}::url`}
-                mode="javascript"
-                lineNumbers={false}
-                height={'32px'}
+                value={currentValue}
+                defaultValue={{ label: 'GET', value: 'get' }}
+                placeholder="Method"
+                width={100}
+                height={32}
+                styles={this.customSelectStyles(this.props.darkMode, 91)}
+                useCustomStyles={true}
               />
             </div>
-          </div>
-        </div>
 
-        <div className={`query-pane-restapi-tabs  ${this.props.darkMode ? 'dark' : ''}`}>
-          <Tabs
-            theme={this.props.darkMode ? 'monokai' : 'default'}
-            options={this.state.options}
-            currentState={this.props.currentState}
-            onChange={this.handleChange}
-            onJsonBodyChange={this.handleJsonBodyChanged}
-            removeKeyValuePair={this.removeKeyValuePair}
-            addNewKeyValuePair={this.addNewKeyValuePair}
-            darkMode={this.props.darkMode}
-            componentName={queryName}
-            bodyToggle={this.state.options.body_toggle}
-            setBodyToggle={this.onBodyToggleChanged}
-          />
+            <div className={`field w-100 rest-methods-url ${this.props.darkMode && 'dark'}`}>
+              <div className="font-weight-bold text-dark">URL</div>
+              {dataSourceURL && (
+                <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
+              )}
+              <div className="">
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={options.url}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  onChange={(value) => {
+                    changeOption(this, 'url', value);
+                  }}
+                  placeholder="Enter request URL"
+                  componentName={`${queryName}::url`}
+                  mode="javascript"
+                  lineNumbers={false}
+                  height={'32px'}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className={`query-pane-restapi-tabs  ${this.props.darkMode ? 'dark' : ''}`}>
+            <Tabs
+              theme={this.props.darkMode ? 'monokai' : 'default'}
+              options={this.state.options}
+              currentState={this.props.currentState}
+              onChange={this.handleChange}
+              onJsonBodyChange={this.handleJsonBodyChanged}
+              removeKeyValuePair={this.removeKeyValuePair}
+              addNewKeyValuePair={this.addNewKeyValuePair}
+              darkMode={this.props.darkMode}
+              componentName={queryName}
+              bodyToggle={this.state.options.body_toggle}
+              setBodyToggle={this.onBodyToggleChanged}
+            />
+          </div>
         </div>
       </div>
     );

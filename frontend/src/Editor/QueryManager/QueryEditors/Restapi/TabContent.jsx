@@ -1,5 +1,8 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
+import AddRectangle from '../../../../_ui/Icon/bulkIcons/AddRectangle';
+import Remove from '../../../../_ui/Icon/solidIcons/Remove';
 
 export default ({
   options = [],
@@ -15,6 +18,7 @@ export default ({
   bodyToggle,
   addNewKeyValuePair,
 }) => {
+  const { t } = useTranslation();
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   return (
@@ -23,10 +27,10 @@ export default ({
         options.map((option, index) => {
           return (
             <>
-              <div className="row-container border-bottom query-manager-border-color" key={index}>
-                <div className="fields-container ">
-                  <div className="d-flex justify-content-center align-items-center query-number">{index + 1}</div>
-                  <div className="field col-4 overflow-hidden">
+              <div className="row-container query-manager-border-color" key={index}>
+                <div className="fields-container mb-2">
+                  {/* <div className="d-flex justify-content-center align-items-center query-number">{index + 1}</div> */}
+                  <div className="field col-4 overflow-hidden border-top border-bottom border-start rounded-start">
                     <CodeHinter
                       currentState={currentState}
                       initialValue={option[0]}
@@ -37,7 +41,7 @@ export default ({
                       componentName={`${componentName}/${tabType}::key::${index}`}
                     />
                   </div>
-                  <div className="field col overflow-hidden">
+                  <div className="field col overflow-hidden border rounded-end">
                     <CodeHinter
                       currentState={currentState}
                       initialValue={option[1]}
@@ -48,14 +52,14 @@ export default ({
                       componentName={`${componentName}/${tabType}::value::${index}`}
                     />
                   </div>
-                  <div
-                    className="d-flex justify-content-center align-items-center delete-field-option"
+                  <button
+                    className="d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0"
                     role="button"
                     onClick={() => {
                       removeKeyValuePair(paramType, index);
                     }}
                   >
-                    <span className="rest-api-delete-field-option query-icon-wrapper d-flex">
+                    {/* <span className="rest-api-delete-field-option query-icon-wrapper d-flex">
                       <svg
                         width="auto"
                         height="auto"
@@ -70,8 +74,9 @@ export default ({
                           fill="#DB4324"
                         />
                       </svg>
-                    </span>
-                  </div>
+                    </span> */}
+                    <Remove fill="#11181C" />
+                  </button>
                 </div>
               </div>
             </>
@@ -93,13 +98,13 @@ export default ({
         </div>
       ) : (
         <div className="d-flex" style={{ maxHeight: '32px' }}>
-          <div
-            className="d-flex align-items-center justify-content-center add-tabs "
-            style={{ flex: '0 0 32px', background: darkMode ? 'inherit' : '#F8F9FA', height: '32px' }}
+          <button
+            className="d-flex align-items-center justify-content-center add-tabs bg-transparent border-0"
+            style={{ background: darkMode ? 'inherit' : '#F8F9FA', height: '32px' }}
             onClick={() => addNewKeyValuePair(paramType)}
             role="button"
           >
-            <span className="rest-api-add-field-svg">
+            {/* <span className="rest-api-add-field-svg">
               <svg width="auto" height="auto" viewBox="0 0 24 25" fill="#5677E1" xmlns="http://www.w3.org/2000/svg">
                 <path
                   fillRule="evenodd"
@@ -108,8 +113,10 @@ export default ({
                   fill="#3E63DD"
                 />
               </svg>
-            </span>
-          </div>
+            </span> */}
+            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+            &nbsp;&nbsp;{t('editor.inspector.eventManager.addKeyValueParam', 'Add more')}
+          </button>
           <div className="col" style={{ flex: '1', background: darkMode ? '' : '#ffffff' }}></div>
         </div>
       )}

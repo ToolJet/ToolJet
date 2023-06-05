@@ -628,7 +628,7 @@ $border-radius: 4px;
   width: 100%;
   display: flex;
   flex-direction: row;
-  gap: 4px;
+  // gap: 4px;
 
   .list-group-item {
     border: none !important;
@@ -636,10 +636,11 @@ $border-radius: 4px;
     font-weight: 500;
     font-size: 12px;
     padding: 0 !important;
-    height: 28px;
+    height: 32px;
     color: $color-light-slate-11;
     display: flex;
     align-items: center;
+    border-bottom: 1px solid #dee2e6 !important;
 
     span {
       padding: 6px 8px;
@@ -697,7 +698,7 @@ $border-radius: 4px;
 }
 
 .query-preview-list-group {
-  width: 100%;
+  // width: 100%;
   display: flex;
   flex-direction: row;
   gap: 4px;
@@ -708,14 +709,15 @@ $border-radius: 4px;
     font-weight: 500;
     font-size: 12px;
     padding: 0 !important;
-    height: 28px;
+    height: 24px;
     color: $color-light-slate-11;
     border-radius: 6px;
     display: flex;
     align-items: center;
 
     span {
-      padding: 6px 8px;
+      // padding: 6px 8px;
+      padding: 2px 0px;
     }
 
     &:hover {
@@ -736,11 +738,15 @@ $border-radius: 4px;
 
   .list-group-item.active {
     background-color: transparent !important;
-    color: $color-light-indigo-09 !important;
+    // color: $color-light-indigo-09 !important;
     z-index: inherit !important;
-    border-bottom: 2px solid $color-light-indigo-09 !important;
+    // border-bottom: 2px solid $color-light-indigo-09 !important;
     border-radius: 0;
     transition-delay: 5ms;
+
+    span {
+      background: #ffffff;
+    }
   }
 
   .list-group-item.active:hover {
@@ -1119,9 +1125,9 @@ $border-radius: 4px;
 
   .query-details {
     .form-label {
-      color: $color-light-slate-12 !important;
+      color: $color-light-slate-09 !important;
       font-size: 12px;
-      font-weight: 400;
+      font-weight: 500;
       line-height: 20px;
     }
   }
@@ -1130,7 +1136,8 @@ $border-radius: 4px;
     .code-hinter.codehinter-default-input {
       border-style: solid !important;
       border-color: $color-light-slate-07 !important;
-      border-radius: 0 6px 6px 0 !important;
+      // border-radius: 0 6px 6px 0 !important;
+      border-radius: 6px !important;
 
       &:focus-within {
         box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
@@ -1231,7 +1238,7 @@ $border-radius: 4px;
 
       .inspector-add-button {
         background-color: transparent;
-        font-weight: 400 !important;
+        font-weight: bold;
         font-size: 12px !important;
         color: $color-light-indigo-09 !important;
 

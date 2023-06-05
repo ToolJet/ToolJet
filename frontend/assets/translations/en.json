@@ -204,7 +204,7 @@
                 "table": "Table",
                 "pageIndex": "Page index",
                 "component": "Component",
-                "addHandler": "+ Add handler",
+                "addHandler": "Add handler",
                 "addEventHandler": "+ Add event handler",
                 "emptyMessage": "This {{componentName}} doesn't have any event handlers",
                 "page": "Page"
@@ -259,7 +259,7 @@
                     "enterLastName": "Enter Last Name",
                     "enterEmail": "Enter email id",
                     "enterFulltName": "Enter full name",
-                    "inviteNewUsers":"Invite new users"
+                    "inviteNewUsers": "Invite new users"
                 },
                 "manageGroups": {
                     "permissions": {

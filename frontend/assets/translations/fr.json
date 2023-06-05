@@ -180,7 +180,7 @@
         "table": "Table",
         "pageIndex": "Index de page",
         "component": "Composante",
-        "addHandler": "+ Ajouter le gestionnaire",
+        "addHandler": "Ajouter le gestionnaire",
         "addEventHandler": "+ Ajouter un gestionnaire d'événements",
         "emptyMessage": "Ce {{componentName}} n'a pas de gestionnaires d'événements"
       }
@@ -909,8 +909,7 @@
       "maxHeightOfCanvas": "Hauteur maximale de la toile",
       "backgroundColorOfCanvas": "Couleur d'arrière-plan de la toile"
     },
-    "Back": 
-    {
+    "Back": {
       "text": "Retour",
       "tip": "De retour à la maison"
     }

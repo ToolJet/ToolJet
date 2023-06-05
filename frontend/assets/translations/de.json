@@ -180,7 +180,7 @@
                 "table": "Tabelle",
                 "pageIndex": "Seitenindex",
                 "component": "Komponente",
-                "addHandler": "+ Handler hinzufügen",
+                "addHandler": "Handler hinzufügen",
                 "addEventHandler": "+ Ereignishandler hinzufügen",
                 "emptyMessage": "Dieser {{componentName}} hat keine Ereignishandler"
             }

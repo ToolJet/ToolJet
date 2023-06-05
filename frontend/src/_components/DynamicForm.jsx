@@ -30,8 +30,10 @@ const DynamicForm = ({
   queryName,
   computeSelectStyles = false,
   onBlur,
+  layout = 'vertical',
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
+  const isHorizontalLayout = layout === 'horizontal';
 
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
@@ -288,8 +290,6 @@ const DynamicForm = ({
     if (isEmpty(obj)) return null;
     const flipComponentDropdown = isFlipComponentDropdown(obj);
 
-    console.log('flipComponentDropdown', flipComponentDropdown);
-
     if (flipComponentDropdown) {
       return flipComponentDropdown;
     }
@@ -315,14 +315,24 @@ const DynamicForm = ({
     };
 
     return (
-      <div className="row">
+      <div className={`${isHorizontalLayout ? '' : 'row'}`}>
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className } = obj[key];
           const Element = getElement(type);
 
           return (
-            <div className={cx('my-2', { 'col-md-12': !className, [className]: !!className })} key={key}>
-              <div className="d-flex align-items-center">
+            <div
+              className={cx('my-2', {
+                'col-md-12': !className && !isHorizontalLayout,
+                [className]: !!className,
+                row: isHorizontalLayout,
+                'dynamic-form-row': isHorizontalLayout,
+              })}
+              key={key}
+            >
+              <div
+                className={cx('d-flex', { 'col-md-3': isHorizontalLayout, 'align-items-center': !isHorizontalLayout })}
+              >
                 {label && (
                   <label
                     className="form-label"
@@ -359,12 +369,14 @@ const DynamicForm = ({
                   </div>
                 )}
               </div>
-              <Element
-                {...getElementProps(obj[key])}
-                {...computedProps[key]}
-                data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
-                customWrap={true} //to be removed after whole ui is same
-              />
+              <div className={cx({ 'col-md-9': isHorizontalLayout })}>
+                <Element
+                  {...getElementProps(obj[key])}
+                  {...computedProps[key]}
+                  data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
+                  customWrap={true} //to be removed after whole ui is same
+                />
+              </div>
             </div>
           );
         })}
@@ -380,17 +392,19 @@ const DynamicForm = ({
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
       return (
         <>
-          <div className="row">
+          <div className={`${isHorizontalLayout ? '' : 'row'}`}>
             {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
             <div
               className={cx('my-2', {
-                'col-md-12 row': !flipComponentDropdown.className,
+                'col-md-12': !flipComponentDropdown.className && !isHorizontalLayout,
+                row: isHorizontalLayout,
+                'dynamic-form-row': isHorizontalLayout,
                 [flipComponentDropdown.className]: !!flipComponentDropdown.className,
               })}
             >
-              {flipComponentDropdown.label && (
+              {(flipComponentDropdown.label || isHorizontalLayout) && (
                 <label
-                  className="form-label col-md-3"
+                  className={cx('form-label', { 'col-md-3': isHorizontalLayout })}
                   data-cy={`${String(flipComponentDropdown.label)
                     .toLocaleLowerCase()
                     .replace(/\s+/g, '-')}-dropdown-label`}
@@ -398,7 +412,7 @@ const DynamicForm = ({
                   {flipComponentDropdown.label}
                 </label>
               )}
-              <div data-cy={'query-select-dropdown'} className="col-md-9">
+              <div data-cy={'query-select-dropdown'} className={cx({ 'col-md-9': isHorizontalLayout })}>
                 <Select
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}

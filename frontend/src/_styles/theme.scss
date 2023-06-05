@@ -150,7 +150,7 @@ button {
 
   .resizer-select,
   .resizer-active {
-    border: solid 1px $primary  !important;
+    border: solid 1px $primary !important;
 
     .top-right,
     .top-left,
@@ -630,7 +630,7 @@ button {
 
   .list-group.list-group-transparent.dark .all-apps-link,
   .list-group-item-action.dark.active {
-    background-color: $dark-background  !important;
+    background-color: $dark-background !important;
   }
 }
 
@@ -1268,7 +1268,7 @@ button {
   .select-search-dark input {
     width: 224px !important;
     height: 32px !important;
-    border-radius: $border-radius  !important;
+    border-radius: $border-radius !important;
   }
 }
 
@@ -1279,7 +1279,7 @@ button {
   .select-search__value input,
   .select-search-dark input {
     height: 32px !important;
-    border-radius: $border-radius  !important;
+    border-radius: $border-radius !important;
   }
 }
 
@@ -1340,7 +1340,7 @@ button {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  border-radius: $border-radius  !important;
+  border-radius: $border-radius !important;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
@@ -3644,7 +3644,7 @@ input[type="text"] {
 
 .nav-tabs .nav-link.active {
   font-weight: 400 !important;
-  color: $primary  !important;
+  color: $primary !important;
 }
 
 .empty {
@@ -4159,7 +4159,7 @@ input[type="text"] {
 
 .tabs-inspector.dark {
   .nav-link.active {
-    border-bottom: 1px solid $primary  !important;
+    border-bottom: 1px solid $primary !important;
   }
 }
 
@@ -4393,7 +4393,7 @@ input[type="text"] {
   }
 
   input {
-    border-radius: $border-radius  !important;
+    border-radius: $border-radius !important;
     padding-left: 1.75rem !important;
   }
 }
@@ -4561,11 +4561,11 @@ input[type="text"] {
 }
 
 .modal-content.home-modal-component.dark {
-  background-color: $bg-dark-light  !important;
-  color: $white  !important;
+  background-color: $bg-dark-light !important;
+  color: $white !important;
 
   .modal-header {
-    background-color: $bg-dark-light  !important;
+    background-color: $bg-dark-light !important;
   }
 
   .btn-close {
@@ -4573,22 +4573,22 @@ input[type="text"] {
   }
 
   .form-control {
-    border-color: $border-grey-dark  !important;
+    border-color: $border-grey-dark !important;
     color: inherit;
   }
 
   input {
-    background-color: $bg-dark-light  !important;
+    background-color: $bg-dark-light !important;
   }
 
   .form-select {
-    background-color: $bg-dark  !important;
-    color: $white  !important;
-    border-color: $border-grey-dark  !important;
+    background-color: $bg-dark !important;
+    color: $white !important;
+    border-color: $border-grey-dark !important;
   }
 
   .text-muted {
-    color: $white  !important;
+    color: $white !important;
   }
 }
 
@@ -4883,7 +4883,7 @@ div#driver-page-overlay {
 }
 
 .dark-theme-walkthrough#driver-popover-item {
-  background-color: $bg-dark-light  !important;
+  background-color: $bg-dark-light !important;
   border-color: rgba(101, 109, 119, 0.16) !important;
 
   .driver-popover-title {
@@ -4891,7 +4891,7 @@ div#driver-page-overlay {
   }
 
   .driver-popover-tip {
-    border-color: transparent transparent transparent $bg-dark-light  !important;
+    border-color: transparent transparent transparent $bg-dark-light !important;
   }
 
   .driver-popover-description {
@@ -4923,7 +4923,7 @@ div#driver-page-overlay {
 
   .driver-next-btn,
   .driver-prev-btn {
-    color: $primary  !important;
+    color: $primary !important;
   }
 
   .driver-disabled {
@@ -4974,6 +4974,11 @@ div#driver-page-overlay {
   float: left;
   font-size: 14px;
   color: $light-gray;
+}
+
+.dynamic-form-row {
+  margin-top: 20px !important;
+  margin-bottom: 20px !important;
 }
 
 #transformation-popover-container {
@@ -5372,7 +5377,7 @@ div#driver-page-overlay {
   }
 
   .selected-node {
-    border-color: $primary-light  !important;
+    border-color: $primary-light !important;
   }
 
   .json-tree-icon-container .selected-node>svg:first-child {
@@ -5462,7 +5467,7 @@ div#driver-page-overlay {
   }
 
   .selected-node {
-    border-color: $primary-light  !important;
+    border-color: $primary-light !important;
   }
 
   .selected-node .group-object-container .badge {
@@ -5729,7 +5734,7 @@ div#driver-page-overlay {
 
 //Kanban board
 .kanban-container.dark-themed {
-  background-color: $bg-dark-light  !important;
+  background-color: $bg-dark-light !important;
 
   .kanban-column {
     .card-header {
@@ -5775,7 +5780,7 @@ div#driver-page-overlay {
     }
 
     .dnd-card.card.card-dark {
-      background-color: $bg-dark  !important;
+      background-color: $bg-dark !important;
     }
   }
 
@@ -7052,6 +7057,7 @@ tbody {
   display: grid !important;
   grid-template-rows: auto 1fr auto !important;
 }
+
 .marketplace-page-sidebar {
   height: calc(100vh - 64px);
   max-width: 288px;
@@ -10245,7 +10251,7 @@ tbody {
       background-color: #121212;
       padding: 16px 18px 0px 16px;
       border-radius: 6px;
-  
+
       p {
         font-size: 14px;
         font-family: IBM Plex Sans;
@@ -10255,31 +10261,38 @@ tbody {
   }
 
   .error-shake {
-    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+    animation: shake 0.82s cubic-bezier(.36, .07, .19, .97) both;
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
     perspective: 10000px;
   }
-  
+
   @keyframes shake {
-    10%, 90% {
+
+    10%,
+    90% {
       transform: translate3d(-1px, 0, 0);
     }
-    
-    20%, 80% {
+
+    20%,
+    80% {
       transform: translate3d(2px, 0, 0);
     }
-  
-    30%, 50%, 70% {
+
+    30%,
+    50%,
+    70% {
       transform: translate3d(-4px, 0, 0);
     }
-  
-    40%, 60% {
+
+    40%,
+    60% {
       transform: translate3d(4px, 0, 0);
     }
   }
 
 }
+
 .profile-page-content-wrap {
   background-color: var(--slate2);
   padding-top: 40px;
@@ -10503,6 +10516,7 @@ tbody {
 .theme-dark .card-container {
   background-color: #121212 !important
 }
+
 .version-select {
   .react-select__menu {
     .react-select__menu-list {

@@ -305,12 +305,12 @@ export const QueryManagerBody = forwardRef(
               />
               {renderTransformation()}
             </div>
-            <Preview
+            {/* <Preview
               previewPanelRef={ref}
               previewLoading={previewLoading}
               queryPreviewData={queryPreviewData}
               darkMode={darkMode}
-            />
+            /> */}
           </div>
         </div>
       );
@@ -319,16 +319,16 @@ export const QueryManagerBody = forwardRef(
     const renderEventManager = () => {
       const queryComponent = mockDataQueryAsComponent(options?.events || []);
       return (
-        <>
+        <div className="row">
           <div
-            className={`border-top query-manager-border-color hr-text-left px-4 ${
+            className={`col-md-3 query-manager-border-color hr-text-left ${
               darkMode ? 'color-white' : 'color-light-slate-12'
             }`}
-            style={{ paddingTop: '28px' }}
+            // style={{ paddingTop: '28px' }}
           >
             {t('editor.queryManager.eventsHandler', 'Events Handler')}
           </div>
-          <div className="query-manager-events px-4 mt-2 pb-4">
+          <div className="query-manager-events pb-4 col-md-9">
             <EventManager
               eventsChanged={eventsChanged}
               component={queryComponent.component}
@@ -343,7 +343,7 @@ export const QueryManagerBody = forwardRef(
               }
             />
           </div>
-        </>
+        </div>
       );
     };
 
@@ -363,11 +363,15 @@ export const QueryManagerBody = forwardRef(
     const renderQueryOptions = () => {
       return (
         <div
-          className={cx(`advanced-options-container font-weight-400 border-top query-manager-border-color`, {
+          className={cx(`advanced-options-container font-weight-400 query-manager-border-color row`, {
             'disabled ': isVersionReleased,
           })}
+          style={{ paddingLeft: '32px' }}
         >
-          <div className="advance-options-input-form-container">
+          <div className="col-md-3 advance-options-input-form-container">
+            {t('editor.queryManager.settings', 'Settings')}
+          </div>
+          <div className="advance-options-input-form-container col-md-9">
             {Object.keys(customToggles).map((toggle, index) => (
               <CustomToggleFlag
                 {...customToggles[toggle]}
@@ -380,15 +384,21 @@ export const QueryManagerBody = forwardRef(
             {/* <CustomToggleFlags options={selectedQuery?.options} darkMode={darkMode} toggleOption={toggleOption} /> */}
           </div>
           {renderEventManager()}
+          <Preview
+            previewPanelRef={ref}
+            previewLoading={previewLoading}
+            queryPreviewData={queryPreviewData}
+            darkMode={darkMode}
+          />
         </div>
       );
     };
 
     const renderChangeDataSource = () => {
       return (
-        <div className="mt-2 pb-4 row">
+        <div className="mt-2 row">
           <div
-            className={`border-top query-manager-border-color px-4 hr-text-left py-2 ${
+            className={`col-md-3 query-manager-border-color px-4 hr-text-left py-2 form-label ${
               darkMode ? 'color-white' : 'color-light-slate-12'
             }`}
           >
@@ -435,7 +445,7 @@ const CustomToggleFlag = ({ dataCy, action, translatedLabel, label, value, toggl
   }, [value]);
 
   return (
-    <div className={cx('mx-4', { 'pb-3 pt-3': index === 1 })}>
+    <div className={cx({ 'pb-3 pt-3': index === 1 })}>
       <CustomToggleSwitch
         dataCy={dataCy}
         isChecked={flag}

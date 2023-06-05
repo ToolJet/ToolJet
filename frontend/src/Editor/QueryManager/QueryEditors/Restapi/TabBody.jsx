@@ -17,7 +17,7 @@ export default ({
 }) => {
   return (
     <>
-      <GroupHeader paramType={'body'} descText={'Raw JSON'} bodyToggle={bodyToggle} setBodyToggle={setBodyToggle} />
+      {/* <GroupHeader paramType={'body'} descText={'Raw JSON'} bodyToggle={bodyToggle} setBodyToggle={setBodyToggle} /> */}
       <TabContent
         options={options}
         currentState={currentState}

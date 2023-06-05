@@ -180,7 +180,7 @@
                 "table": "Tabla",
                 "pageIndex": "Índice de página",
                 "component": "Componente",
-                "addHandler": "+ Añadir manejador",
+                "addHandler": "Añadir manejador",
                 "addEventHandler": "+ Añadir manejador de eventos",
                 "emptyMessage": "Este {{componentName}} no tiene manejadores de eventos."
             }

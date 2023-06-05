@@ -14,6 +14,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 
 import { useDataQueries } from '@/_stores/dataQueriesStore';
+import AddRectangle from '../../_ui/Icon/bulkIcons/AddRectangle';
 
 export const EventManager = ({
   component,
@@ -791,7 +792,7 @@ export const EventManager = ({
                             {...provided.dragHandleProps}
                             className="mb-1"
                           >
-                            <div className="card column-sort-row">
+                            <div className="card column-sort-row bg-light border-0">
                               <div className={rowClassName} data-cy="event-handler-card">
                                 <div className="row p-2" role="button">
                                   <div className="col-auto" style={{ cursor: 'grab' }}>
@@ -910,16 +911,17 @@ export const EventManager = ({
 
   return (
     <>
-      <div className="text-right mb-3">
+      {renderHandlers(events)}
+      <div className="mb-3 px-2 font-weight-bold">
         <button
           className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
           onClick={addHandler}
           data-cy="add-more-event-handler"
         >
-          {t('editor.inspector.eventManager.addHandler', '+ Add handler')}
+          <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+          &nbsp;&nbsp;{t('editor.inspector.eventManager.addHandler', 'Add handler')}
         </button>
       </div>
-      {renderHandlers(events)}
     </>
   );
 };
