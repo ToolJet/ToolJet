@@ -559,7 +559,7 @@ export class OrganizationsService {
         // User not exist
         shouldSendWelcomeMail = true;
         // Create default organization if user not exist
-        const organizationName = await generateNextName('My workspace');
+        const organizationName = generateNextName('My workspace');
         defaultOrganization = await this.create(organizationName, null, manager);
       } else if (user.invitationToken) {
         // User not setup
