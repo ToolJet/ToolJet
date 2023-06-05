@@ -5,8 +5,20 @@ import { toast } from 'react-hot-toast';
 
 export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileChange, inviteBulkUsers, onDrop }) {
   const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
+    accept: { parsedFileType: ['text/csv'] },
     onDrop,
-    accept: 'text/csv',
+    onDropRejected: (files) => {
+      if (files[0].size > 1048576) {
+        toast.error('File size cannot exceed more than 1MB');
+      } else {
+        toast.error('Please upload a CSV file');
+      }
+    },
+    maxFiles: 1,
+    onFileDialogCancel: () => {
+      toast.error('Please upload a CSV file');
+    },
+    noKeyboard: true,
   });
   const [fileData, setFileData] = useState();
   const files =
