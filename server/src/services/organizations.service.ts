@@ -5,7 +5,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
-import { cleanObject, dbTransactionWrap, isPlural } from 'src/helpers/utils.helper';
+import { catchDbException, cleanObject, dbTransactionWrap, isPlural, generateNextName } from 'src/helpers/utils.helper';
 import { Brackets, createQueryBuilder, DeepPartial, EntityManager, getManager, Repository } from 'typeorm';
 import { OrganizationUser } from '../entities/organization_user.entity';
 import { EmailService } from './email.service';
@@ -25,6 +25,7 @@ import {
 import { decamelize } from 'humps';
 import { Response } from 'express';
 import { AppEnvironmentService } from './app_environments.service';
+import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 
 const MAX_ROW_COUNT = 500;
 
@@ -66,18 +67,24 @@ export class OrganizationsService {
   async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
     let organization: Organization;
     await dbTransactionWrap(async (manager: EntityManager) => {
-      organization = await manager.save(
-        manager.create(Organization, {
-          ssoConfigs: [
-            {
-              sso: 'form',
-              enabled: true,
-            },
-          ],
-          name,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
+      organization = await catchDbException(
+        async () => {
+          return await manager.save(
+            manager.create(Organization, {
+              ssoConfigs: [
+                {
+                  sso: 'form',
+                  enabled: true,
+                },
+              ],
+              name,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            })
+          );
+        },
+        DataBaseConstraints.WORKSPACE_NAME_UNIQUE,
+        'This workspace name is already taken.'
       );
 
       await this.appEnvironmentService.createDefaultEnvironments(organization.id, manager);
@@ -463,7 +470,13 @@ export class OrganizationsService {
     // removing keys with undefined values
     cleanObject(updatableParams);
 
-    return await this.organizationsRepository.update(organizationId, updatableParams);
+    return await catchDbException(
+      async () => {
+        return await this.organizationsRepository.update(organizationId, updatableParams);
+      },
+      DataBaseConstraints.WORKSPACE_NAME_UNIQUE,
+      'This workspace name is already taken.'
+    );
   }
 
   async updateOrganizationConfigs(organizationId: string, params: any) {
@@ -546,7 +559,8 @@ export class OrganizationsService {
         // User not exist
         shouldSendWelcomeMail = true;
         // Create default organization if user not exist
-        defaultOrganization = await this.create('Untitled workspace', null, manager);
+        const organizationName = await generateNextName('Untitled workspace', Organization, {}, manager);
+        defaultOrganization = await this.create(organizationName, null, manager);
       } else if (user.invitationToken) {
         // User not setup
         shouldSendWelcomeMail = true;
