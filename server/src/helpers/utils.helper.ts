@@ -125,7 +125,7 @@ export async function getServiceAndRpcNames(protoDefinition) {
   return serviceNamesAndMethods;
 }
 
-export const generateNextName = async (firstWord: string) => {
+export const generateNextName = (firstWord: string) => {
   return `${firstWord} ${Date.now()}`;
 };
 
