@@ -2,6 +2,8 @@ import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
+import { ConflictException } from '@nestjs/common';
+import { DataBaseConstraints } from './db_constraints.constants';
 const protobuf = require('protobufjs');
 
 export function maybeSetSubPath(path) {
@@ -78,6 +80,21 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
   }
 }
 
+export async function catchDbException(
+  operation: () => any,
+  dbConstraint: DataBaseConstraints,
+  errorMessage: string
+): Promise<any> {
+  try {
+    return await operation();
+  } catch (err) {
+    if (err?.message?.includes(dbConstraint)) {
+      throw new ConflictException(errorMessage);
+    }
+    throw err;
+  }
+}
+
 export const defaultAppEnvironments = [{ name: 'production', isDefault: true }];
 
 export function isPlural(data: Array<any>) {
@@ -107,3 +124,7 @@ export async function getServiceAndRpcNames(protoDefinition) {
     }, {});
   return serviceNamesAndMethods;
 }
+
+export const generateNextName = (firstWord: string) => {
+  return `${firstWord} ${Date.now()}`;
+};
