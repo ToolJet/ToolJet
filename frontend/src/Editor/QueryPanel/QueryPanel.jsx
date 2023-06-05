@@ -196,7 +196,7 @@ const QueryPanel = ({
         }}
       >
         <div
-          style={{ width: '288px', padding: '8px 16px' }}
+          style={{ width: '288px', padding: '8px 12px 8px 16px' }}
           className="d-flex justify-content-between border-end align-items-center"
         >
           <h5 className="mb-0 font-weight-500 cursor-pointer" onClick={toggleQueryEditor}>
