@@ -217,9 +217,9 @@ export const QueryManagerHeader = forwardRef(
     return (
       <div className="row header">
         <div className="col font-weight-500">{renderBreadcrumb()}</div>
-        <div className="query-header-buttons">
+        <div className="query-header-buttons me-3">
           {renderButtons()}
-          <span
+          {/* <span
             onClick={toggleQueryEditor}
             className={`toggle-query-editor-svg m-3`}
             data-tooltip-id="tooltip-for-hide-query-editor"
@@ -227,7 +227,7 @@ export const QueryManagerHeader = forwardRef(
           >
             <ToggleQueryEditorIcon />
           </span>
-          <Tooltip id="tooltip-for-hide-query-editor" className="tooltip" />
+          <Tooltip id="tooltip-for-hide-query-editor" className="tooltip" /> */}
         </div>
       </div>
     );
