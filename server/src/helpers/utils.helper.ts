@@ -125,17 +125,6 @@ export async function getServiceAndRpcNames(protoDefinition) {
   return serviceNamesAndMethods;
 }
 
-export const generateNextName = async (
-  firstWord: string,
-  entityClass: EntityTarget<unknown>,
-  options = {},
-  manager: EntityManager
-) => {
-  const count = await manager.count(entityClass, {
-    where: {
-      ...options,
-      name: Like(`%${firstWord}%`),
-    },
-  });
-  return `${firstWord} ${count == 0 ? 1 : count + 1}`;
+export const generateNextName = async (firstWord: string) => {
+  return `${firstWord} ${Date.now()}`;
 };
