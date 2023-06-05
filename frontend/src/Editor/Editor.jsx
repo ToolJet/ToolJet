@@ -1415,7 +1415,7 @@ class EditorComponent extends React.Component {
       this.state.currentLayout === 'desktop'
         ? `${
             +this.state.appDefinition.globalSettings.canvasMaxWidth +
-            this.state.appDefinition.globalSettings.canvasMaxWidthType
+            (this.state.appDefinition.globalSettings.canvasMaxWidthType || 'px')
           }`
         : '450px';
     if (this.state.appDefinition.globalSettings.canvasMaxWidth) {
