@@ -36,7 +36,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   }, [properties.selector]);
 
   useEffect(() => {
-    if (properties?.defaultValue.length === 0) {
+    if (properties?.defaultValue?.length === 0) {
       setAnnotations([]);
     } else if (
       Array.isArray(properties?.defaultValue) &&
@@ -63,10 +63,10 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(properties?.defaultValue)]);
 
-  useEffect(() => {
-    setExposedVariable('annotations', getExposedAnnotations(annotationsState));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [annotationsState]);
+  // useEffect(() => {
+  //   setExposedVariable('annotations', getExposedAnnotations(annotationsState));
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [annotationsState]);
 
   const onChange = (annotation) => {
     setAnnotation(annotation);
