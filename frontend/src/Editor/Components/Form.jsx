@@ -69,6 +69,9 @@ export const Form = function Form(props) {
   );
 
   useEffect(() => {
+    if (!Array.isArray(JSONSchema)) {
+      return;
+    }
     const arr = [];
     JSONSchema?.map((item, index) => {
       let comp = JSON.parse(JSON.stringify(componentTypes.find((component) => component.component == item?.type)));
@@ -79,7 +82,10 @@ export const Form = function Form(props) {
   }, []);
 
   useEffect(() => {
-    JSONSchema.map((item, index) => {
+    if (!Array.isArray(JSONSchema)) {
+      return;
+    }
+    JSONSchema?.map((item, index) => {
       if (comp.length) {
         if (comp[index]) {
           switch (item.type) {

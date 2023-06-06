@@ -5492,6 +5492,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           schema: { type: 'boolean' },
         },
       },
+      advanced: {
+        type: 'toggle',
+        displayName: 'Advanced',
+      },
       JSONSchema: {
         type: 'code',
         displayName: 'JSON Schema',
@@ -5499,10 +5503,6 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           key: 'advanced',
           value: true,
         },
-      },
-      advanced: {
-        type: 'toggle',
-        displayName: 'Advanced',
       },
     },
     events: {
