@@ -248,11 +248,6 @@ class EditorComponent extends React.Component {
     return this.state.app.current_version_id === version.id;
   };
 
-  closeCreateVersionModalPrompt = () => {
-    this.setState({ isSaving: false });
-    useAppVersionStore?.getState()?.actions.closeCreateVersionModalPrompt();
-  };
-
   initEventListeners() {
     this.socket?.addEventListener('message', (event) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
@@ -1453,7 +1448,6 @@ class EditorComponent extends React.Component {
             saveError={this.state.saveError}
             onNameChanged={this.onNameChanged}
             setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
-            closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
             handleSlugChange={this.handleSlugChange}
             onVersionRelease={this.onVersionRelease}
             saveEditingVersion={this.saveEditingVersion}

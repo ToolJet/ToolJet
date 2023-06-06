@@ -36,7 +36,6 @@ export default function EditorHeader({
   saveError,
   onNameChanged,
   setAppDefinitionFromVersion,
-  closeCreateVersionModalPrompt,
   handleSlugChange,
   onVersionRelease,
   saveEditingVersion,
@@ -128,7 +127,6 @@ export default function EditorHeader({
                       editingVersion={editingVersion}
                       releasedVersionId={app.current_version_id}
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-                      closeCreateVersionModalPrompt={closeCreateVersionModalPrompt}
                       onVersionDelete={onVersionDelete}
                     />
                   )}
