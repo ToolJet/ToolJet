@@ -1,5 +1,5 @@
 import React from 'react';
-import InfoIcon from '../../../assets/images/icons/info.svg';
+import InfoIcon from '@assets/images/icons/info.svg';
 import AddGlobalDataSourceButton from './AddGlobalDataSourceButton';
 
 const EmptyGlobalDataSources = ({ darkMode }) => {
