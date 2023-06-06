@@ -77,7 +77,6 @@ export const Container = ({
   const focusedParentIdRef = useRef(undefined);
   useHotkeys('meta+z, control+z', () => handleUndo());
   useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
-  console.log(isVersionReleased, 'isVersionReleased');
   useHotkeys(
     'meta+v, control+v',
     () => {

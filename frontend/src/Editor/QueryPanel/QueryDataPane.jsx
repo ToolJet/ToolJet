@@ -16,7 +16,6 @@ export const QueryDataPane = ({
   draftQuery,
   handleAddNewQuery,
   setDraftQuery,
-  setSelectedDataSource,
   darkMode,
   fetchDataQueries,
   editorRef,
@@ -77,14 +76,10 @@ export const QueryDataPane = ({
           </div>
           <button
             data-cy={`button-add-new-queries`}
-            className={cx(
-              `col-auto d-flex align-items-center py-1 rounded default-secondary-button ${
-                isVersionReleased && 'disabled'
-              }`,
-              {
-                'theme-dark': darkMode,
-              }
-            )}
+            className={cx(`col-auto d-flex align-items-center py-1 rounded default-secondary-button`, {
+              disabled: isVersionReleased,
+              'theme-dark': darkMode,
+            })}
             onClick={handleAddNewQuery}
             data-tooltip-id="tooltip-for-add-query"
             data-tooltip-content="Add new query"
@@ -116,9 +111,9 @@ export const QueryDataPane = ({
                   setSaveConfirmation={setSaveConfirmation}
                   setCancelData={setCancelData}
                   setDraftQuery={setDraftQuery}
-                  setSelectedDataSource={setSelectedDataSource}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
+                  editorRef={editorRef}
                 />
               ) : (
                 ''
@@ -130,7 +125,6 @@ export const QueryDataPane = ({
                   setSaveConfirmation={setSaveConfirmation}
                   setCancelData={setCancelData}
                   setDraftQuery={setDraftQuery}
-                  setSelectedDataSource={setSelectedDataSource}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
                   editorRef={editorRef}
