@@ -15,6 +15,7 @@ export default function GenerateEachCellValue({
   cell,
   currentState,
 }) {
+  const divRef = useRef(null); // to make div element focusable
   const updateCellValue = useRef();
   const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
   const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number', undefined];
@@ -100,13 +101,21 @@ export default function GenerateEachCellValue({
       }}
       className="w-100 h-100"
     >
-      {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells ? (
+      {showHighlightedCells &&
+      globalFilter &&
+      !isColumnTypeAction &&
+      columnTypeAllowToRenderMarkElement.includes(columnType) ? (
         <div className="d-flex justify-content-center flex-column w-100 h-100">
           <div
-            style={{ color: cellTextColor }}
+            style={{
+              color: cellTextColor,
+            }}
             dangerouslySetInnerHTML={{
               __html: htmlElement,
             }}
+            ref={divRef}
+            tabIndex={isEditable ? 0 : null}
+            className="global-filter-span-cell"
           ></div>
           <div
             style={{
