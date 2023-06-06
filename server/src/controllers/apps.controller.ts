@@ -187,6 +187,7 @@ export class AppsController {
     const page = query.page;
     const folderId = query.folder;
     const searchKey = query.searchKey || '';
+    const onlyNamesAndIds = query.onlyNamesAndIds;
 
     let apps = [];
     let totalFolderCount = 0;
@@ -209,6 +210,10 @@ export class AppsController {
       folder_count: totalFolderCount,
       current_page: parseInt(page || 1),
     };
+
+    if (onlyNamesAndIds) {
+      apps = apps.map((app) => ({ id: app.id, name: app.name }));
+    }
 
     const response = {
       meta,
