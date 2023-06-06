@@ -23,7 +23,7 @@ export const DropDown = function DropDown({
 
   function findDefaultItem(schema) {
     const foundItem = schema?.find((item) => item.default === true);
-    return foundItem ? foundItem.value : null;
+    return !hasVisibleFalse(foundItem.value) ? foundItem.value : undefined;
   }
 
   if (advanced) {
@@ -95,7 +95,6 @@ export const DropDown = function DropDown({
       newValue = value;
       index = values.indexOf(value);
     }
-    console.log('xxx', newValue, index);
     setExposedItem(newValue, index);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -137,7 +136,8 @@ export const DropDown = function DropDown({
         setCurrentValue(findDefaultItem(schema));
       }
     } else setExposedVariable('optionLabels', display_values);
-  }, [JSON.stringify(schema), advanced, JSON.stringify(display_values)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(schema), advanced, JSON.stringify(display_values), currentValue]);
 
   function hasVisibleFalse(value) {
     for (let i = 0; i < schema?.length; i++) {
