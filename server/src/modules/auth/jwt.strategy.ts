@@ -34,7 +34,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     if (isGetUserSession) {
-      const user: User = await this.usersService.findByEmail(payload.sub, null, null, null, true);
+      const user: User = await this.usersService.findByEmail(payload.sub);
       user.organizationIds = payload.organizationIds;
       return user;
     }
@@ -59,13 +59,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     if (payload?.sub && organizationId) {
-      const user: User = await this.usersService.findByEmail(
-        payload.sub,
-        organizationId,
-        WORKSPACE_USER_STATUS.ACTIVE,
-        null,
-        true
-      );
+      const user: User = await this.usersService.findByEmail(payload.sub, organizationId, WORKSPACE_USER_STATUS.ACTIVE);
 
       user.organizationId = organizationId;
       user.organizationIds = payload.organizationIds;

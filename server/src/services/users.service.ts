@@ -36,8 +36,7 @@ export class UsersService {
     email: string,
     organizationId?: string,
     status?: string | Array<string>,
-    manager?: EntityManager,
-    fetchOrganization = false
+    manager?: EntityManager
   ): Promise<User> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!organizationId) {
@@ -51,7 +50,7 @@ export class UsersService {
             ? status
             : [status]
           : [WORKSPACE_USER_STATUS.ACTIVE, WORKSPACE_USER_STATUS.INVITED, WORKSPACE_USER_STATUS.ARCHIVED];
-        const query = manager
+        return await manager
           .createQueryBuilder(User, 'users')
           .innerJoinAndSelect(
             'users.organizationUsers',
@@ -62,15 +61,8 @@ export class UsersService {
           .where('organization_users.status IN(:...statusList)', {
             statusList,
           })
-          .andWhere('users.email = :email', { email });
-
-        if (fetchOrganization) {
-          query.innerJoinAndSelect('users.organization', 'organization', 'organization.id = :organizationId', {
-            organizationId,
-          });
-        }
-
-        return await query.getOne();
+          .andWhere('users.email = :email', { email })
+          .getOne();
       }
     }, manager);
   }
