@@ -299,24 +299,22 @@ export const Form = function Form(props) {
       setExposedVariable('isValid', childValidation);
       return setValidation(childValidation);
     }
-    if (advanced) {
+    if (!advanced) {
       Object.keys(childComponents).forEach((childId) => {
         if (childrenData[childId]?.name) {
           formattedChildData[childrenData[childId].name] = omit(childrenData[childId], 'name');
           childValidation = childValidation && (childrenData[childId]?.isValid ?? true);
         }
       });
+
+      setExposedVariable('data', formattedChildData);
+      setExposedVariable('isValid', childValidation);
+      setValidation(childValidation);
     } else {
-      Object.keys(comp).forEach((childId) => {
-        if (childrenData[childId]?.name) {
-          formattedChildData[childrenData[childId].name] = omit(childrenData[childId], 'name');
-          childValidation = childValidation && (childrenData[childId]?.isValid ?? true);
-        }
-      });
+      setExposedVariable('data', 'formattedChildData');
+      setExposedVariable('isValid', 'childValidation');
+      setValidation(childValidation);
     }
-    setExposedVariable('data', formattedChildData);
-    setExposedVariable('isValid', childValidation);
-    setValidation(childValidation);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenData, childComponents, advanced]);
 
