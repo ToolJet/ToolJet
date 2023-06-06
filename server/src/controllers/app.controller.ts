@@ -9,6 +9,7 @@ import {
   BadRequestException,
   Query,
   Res,
+  NotFoundException,
 } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
@@ -65,6 +66,9 @@ export class AppController {
       organizationId = await this.userService.returnOrgIdOfAnApp(appId);
     } else if (workspaceSlug) {
       const organization = await this.organizationService.getOrganizationbySlug(workspaceSlug);
+      if (!organization) {
+        throw new NotFoundException('Wrong workspace slug');
+      }
       organizationId = organization?.id;
     }
     if (organizationId) {

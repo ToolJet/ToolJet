@@ -32,7 +32,11 @@ export const authorizeWorkspace = () => {
             }
           });
         })
-        .catch(() => {
+        .catch((error) => {
+          if ((error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404) {
+            const subpath = getSubpath();
+            window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
+          }
           if (!isThisWorkspaceLoginPage(true) && !isApplicationsPath) {
             updateCurrentSession({
               authentication_status: false,
