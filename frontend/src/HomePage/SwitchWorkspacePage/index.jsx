@@ -7,7 +7,7 @@ import { organizationService } from '@/_services';
 
 function SwitchWorkspaceModal({ organizations, switchOrganization, ...props }) {
   const { t } = useTranslation();
-  const [selectedOrganizationId, setOrganizationId] = useState();
+  const [selectedOrganization, setOrganization] = useState({});
 
   return (
     <Modal
@@ -44,15 +44,15 @@ function SwitchWorkspaceModal({ organizations, switchOrganization, ...props }) {
             <div
               key={organization.id}
               className={cx('org-item', {
-                'selected-item': organization.id === selectedOrganizationId,
+                'selected-item': organization.id === selectedOrganization?.id,
               })}
-              onClick={() => setOrganizationId(organization.id)}
+              onClick={() => setOrganization(organization)}
             >
               <input
                 type={'radio'}
                 value={organization.id}
                 name="organization_id"
-                checked={organization.id === selectedOrganizationId}
+                checked={organization.id === selectedOrganization?.id}
                 onChange={() => {}}
               />
               <span className={'avatar avatar-sm'}>{getAvatar(organization.name)}</span>
@@ -62,7 +62,7 @@ function SwitchWorkspaceModal({ organizations, switchOrganization, ...props }) {
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <button className="btn btn-primary" onClick={() => switchOrganization(selectedOrganizationId)}>
+        <button className="btn btn-primary" onClick={() => switchOrganization(selectedOrganization)}>
           {t('globals.workspace-modal.continue-btn', 'Continue on this workspace')}
         </button>
       </Modal.Footer>
@@ -77,9 +77,9 @@ export default function SwitchWorkspacePage({ darkMode }) {
     organizationService.getOrganizations().then((response) => setOrganizations(response.organizations));
   };
 
-  const switchOrganization = (orgId) => {
-    if (orgId) {
-      const newPath = appendWorkspaceId(orgId, location.pathname, true);
+  const switchOrganization = ({ id, slug }) => {
+    if (slug || id) {
+      const newPath = appendWorkspaceId(slug || id, location.pathname, true);
       window.history.replaceState(null, null, newPath);
       window.location.reload();
     }

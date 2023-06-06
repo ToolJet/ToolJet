@@ -921,6 +921,6 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
 };
 
 export function isUUID(string) {
-  var regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4-9a-f]{4}-[89ab]{3}-[0-9a-f]{12}$/;
+  var regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
   return regex.test(string);
 }
