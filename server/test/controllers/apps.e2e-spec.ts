@@ -444,7 +444,7 @@ describe('apps controller', () => {
       });
     });
 
-    describe('only names and ids', () => {
+    describe('skip definition', () => {
       it('should return apps with only their names and ids', async () => {
         const adminUserData = await createUser(app, {
           email: 'admin@tooljet.io',
@@ -461,7 +461,7 @@ describe('apps controller', () => {
         });
 
         const response = await request(app.getHttpServer())
-          .get(`/api/apps?searchKey=public&onlyNamesAndIds=true`)
+          .get(`/api/apps?searchKey=public&skipDefinition=true`)
           .set('tj-workspace-id', adminUserData.organization.id)
           .set('Cookie', adminUserData['tokenCookie']);
 
@@ -469,7 +469,7 @@ describe('apps controller', () => {
 
         const { apps } = response.body;
 
-        expect(Object.keys(apps[0])).toEqual(['id', 'name']);
+        expect(Object.keys(apps[0])).toEqual(['id', 'name', 'slug']);
       });
     });
   });
