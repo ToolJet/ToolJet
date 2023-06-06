@@ -5573,7 +5573,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         advanced: { value: '{{false}}' },
         JSONSchema: {
           value:
-            "{{[\t { type: 'Text', text: 'Admin Details', styles: { backgroundColor: '', textColor: 'black', fontSize: '22px' } },{ type: 'Text', text: 'Sugar hanged', styles: { backgroundColor: '', textColor: 'red' } },{ type: 'Button',text: 'submit',styles: {backgroundColor: '#38b290',textColor: 'white',borderRadius: '6px',borderColor: '#79807e',loaderColor: '#ddd', },},{ type: 'Button', text: 'yes', styles: { backgroundColor: '#7938b2', textColor: 'white' } },{ type: 'TextInput', placeholder: 'Enter your name',value:'ToolJet user' ,styles: { backgroundColor: '', textColor: 'black', fontSize: '14px'},},\t]}}",
+            "{{[\t { type: 'Text', text: 'Admin Details', styles: { backgroundColor: '', textColor: 'black', fontSize: '22px' } },{ type: 'Text', text: 'Sugar hanged', styles: { backgroundColor: '', textColor: 'red' } },{ type: 'Button',text: 'submit',styles: {backgroundColor: '#38b290',textColor: 'white',borderRadius: '6px',borderColor: '#79807e',loaderColor: '#ddd', },},{ type: 'Button', text: 'yes', styles: { backgroundColor: '#7938b2', textColor: 'white' } },{ type: 'TextInput', placeholder: 'Enter your name',value:'ToolJet user' ,styles: { backgroundColor: '', textColor: 'black', fontSize: '14px'},validation: { backgroundColor: '', maxLength:5},},\t]}}",
         },
       },
       events: [],
