@@ -107,23 +107,29 @@ export class MetadataService {
 
   async checkForUpdates(metadata: Metadata) {
     const installedVersion = globalThis.TOOLJET_VERSION;
-    const response = await got('https://hub.tooljet.io/updates', {
-      method: 'post',
-    });
-    const data = JSON.parse(response.body);
-    const latestVersion = data['latest_version'];
+    let latestVersion;
 
-    const newOptions = {
-      last_checked: new Date(),
-    };
+    try {
+      const response = await got('https://hub.tooljet.io/updates', {
+        method: 'post',
+      });
+      const data = JSON.parse(response.body);
+      latestVersion = data['latest_version'];
 
-    if (gt(latestVersion, installedVersion) && installedVersion !== metadata.data['ignored_version']) {
-      newOptions['latest_version'] = latestVersion;
-      newOptions['version_ignored'] = false;
+      const newOptions = {
+        last_checked: new Date(),
+      };
+
+      if (gt(latestVersion, installedVersion) && installedVersion !== metadata.data['ignored_version']) {
+        newOptions['latest_version'] = latestVersion;
+        newOptions['version_ignored'] = false;
+      }
+
+      await this.updateMetaData(newOptions);
+    } catch (error) {
+      console.error('Error while connecting to URL https://hub.tooljet.io/updates', error);
     }
-
-    await this.updateMetaData(newOptions);
-    return { latestVersion };
+    return { latestVersion: latestVersion || installedVersion };
   }
 
   async fetchTotalEditorCount(manager: EntityManager) {

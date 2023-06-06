@@ -71,17 +71,19 @@ To release a version:
 
   </div>
 
+- A confirmation dialog will popup that prompts you to decide whether to release the current version of the app. Clicking on the **Release** button will release the current version of the app.
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/tutorial/versioning-and-release/confirm.png" alt="release" width="300"/>
+
+  </div>
+
 
 :::caution
 To prevent the unintended publishing of an unfinished app, ToolJet will prompt you to create a new version for making any edits to the `Released version` of an app. Editing of the `Released version` will be blocked until a new version is created.
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tutorial/versioning-and-release/releasefreeze.png" alt="release" />
+<img className="screenshot-full" src="/img/tutorial/versioning-and-release/releasepopup.gif" alt="release" />
 
 </div>
 :::
-
-
-
-
-

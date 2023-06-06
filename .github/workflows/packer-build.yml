@@ -61,3 +61,13 @@ jobs:
           working_directory: deploy/ec2
         env:
           PACKER_LOG: 1
+
+      - name: Send Slack Notification
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            message="Job '${{ env.JOB_NAME }}' succeeded! AMI = tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal"
+          else
+            message="Job '${{ env.JOB_NAME }}' failed! AMI = tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal"
+          fi
+
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }} 
