@@ -1,20 +1,26 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, theme, darkMode }) => {
+import { getTheme, tabs } from '../constants';
+
+const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, darkMode }) => {
   const { t } = useTranslation();
-  const [key, setKey] = React.useState('raw');
-  const [isJson, setIsJson] = React.useState(false);
-  const tabs = ['JSON', 'Raw'];
+  const [key, setKey] = useState('raw');
+  const [isJson, setIsJson] = useState(false);
+  const [theme, setTheme] = useState(() => getTheme(darkMode));
 
   useEffect(() => {
-    if (typeof queryPreviewData === 'object') {
+    setTheme(() => getTheme(darkMode));
+  }, [darkMode]);
+
+  useEffect(() => {
+    if (queryPreviewData !== null && typeof queryPreviewData === 'object') {
       setKey('json');
     } else {
       setKey('raw');
     }
-    setIsJson(typeof queryPreviewData === 'object');
+    setIsJson(queryPreviewData !== null && typeof queryPreviewData === 'object');
   }, [queryPreviewData]);
 
   const renderRawData = () => {
