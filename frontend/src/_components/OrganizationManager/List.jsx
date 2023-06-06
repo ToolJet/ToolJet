@@ -20,9 +20,10 @@ export const OrganizationList = function () {
     () => sessionObservable.unsubscribe();
   }, []);
 
-  const switchOrganization = (orgId) => {
-    if (getWorkspaceIdOrSlugFromURL() !== orgId) {
-      const newPath = appendWorkspaceId(orgId, location.pathname, true);
+  const switchOrganization = (id) => {
+    const organization = organizationList.find((org) => org.id === id);
+    if (![id, organization.slug].includes(getWorkspaceIdOrSlugFromURL())) {
+      const newPath = appendWorkspaceId(organization.slug || id, location.pathname, true);
       window.history.replaceState(null, null, newPath);
       window.location.reload();
     }

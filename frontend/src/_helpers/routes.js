@@ -29,6 +29,8 @@ export const getPrivateRoute = (page, params = {}) => {
 
 const appendWorkspaceId = (url) => {
   const workspaceId =
-    getWorkspaceIdOrSlugFromURL() || authenticationService.currentSessionValue?.current_organization_id;
+    getWorkspaceIdOrSlugFromURL() ||
+    authenticationService.currentSessionValue?.current_organization_slug ||
+    authenticationService.currentSessionValue?.current_organization_id;
   return `/${workspaceId}${url}`;
 };
