@@ -5495,6 +5495,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       JSONSchema: {
         type: 'code',
         displayName: 'JSON Schema',
+        conditionallyRender: {
+          key: 'advanced',
+          value: true,
+        },
       },
       advanced: {
         type: 'toggle',
