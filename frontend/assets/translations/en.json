@@ -411,7 +411,7 @@
         },
         "noApplicationFound": "No Applications found",
         "thisFolderIsEmpty": "This folder is empty",
-        "deleteAppAndData": "The app and the associated data will be permanently deleted, do you want to continue?",
+        "deleteAppAndData": "The app {{appName}} and the associated data will be permanently deleted, do you want to continue?",
         "removeAppFromFolder": "The app will be removed from this folder, do you want to continue?",
         "change": "Change",
         "templateCard": {
