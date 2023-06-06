@@ -3,6 +3,7 @@ import Headers from './TabHeaders';
 import Params from './TabParams';
 import Body from './TabBody';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
+import { CustomToggleSwitch } from '../../Components/CustomToggleSwitch';
 
 function ControlledTabs({
   options,
@@ -22,7 +23,7 @@ function ControlledTabs({
   return (
     <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="headers">
       <Row>
-        <div className="keys">
+        <div className="keys d-flex justify-content-between">
           <ListGroup className="query-pane-rest-api-keys-list-group mx-1 mb-2" variant="flush">
             {tabs.map((tab) => (
               <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
@@ -30,6 +31,17 @@ function ControlledTabs({
               </ListGroup.Item>
             ))}
           </ListGroup>
+          {key === 'body' && (
+            <div className="text-nowrap d-flex align-items-center">
+              Raw JSON&nbsp;&nbsp;
+              <CustomToggleSwitch
+                toggleSwitchFunction={setBodyToggle}
+                action="bodyToggle"
+                darkMode={darkMode}
+                isChecked={bodyToggle}
+              />
+            </div>
+          )}
         </div>
 
         <div className={`col ${darkMode && 'theme-dark'}`}>

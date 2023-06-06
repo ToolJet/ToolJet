@@ -302,7 +302,7 @@ $border-radius: 4px;
         gap: 12px;
 
         .queries-search {
-          width: 172px !important;
+          // width: 172px !important;
           height: 28px !important;
 
           .query-manager-search-box-wrapper {
@@ -1129,6 +1129,7 @@ $border-radius: 4px;
       font-size: 12px;
       font-weight: 500;
       line-height: 20px;
+      margin-bottom: 0 !important;
     }
   }
 
