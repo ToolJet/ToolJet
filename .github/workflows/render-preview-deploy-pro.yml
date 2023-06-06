@@ -151,7 +151,7 @@ jobs:
                 "plan": "pro",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon",
-                "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
+                "url": "https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com"
             }
           }')
 
@@ -168,7 +168,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Deployment: https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
+              body: 'Deployment: https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
             })
 
       - uses: actions/github-script@v6
@@ -193,7 +193,7 @@ jobs:
             })
 
   destroy-review-cypress-app:
-    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-create-review-app') || github.event.action == 'closed' }}
+    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-review-cypress-app') || github.event.action == 'closed' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -261,7 +261,7 @@ jobs:
           PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
 
   suspend-review-cypress-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-create-review-app' }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-cypress-app' }}
     runs-on: ubuntu-latest
 
     steps:
