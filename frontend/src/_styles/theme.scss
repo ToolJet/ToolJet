@@ -10557,6 +10557,7 @@ tbody {
   }
 }
 
+
 .workspace-folder-modal {
   .tj-app-input {
     padding-bottom: 0px !important;
@@ -10594,6 +10595,12 @@ tbody {
       max-height: 150px;
     }
   }
+}
+
+.jet-container-loading {
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
 }
 
 .freeze-scroll {
