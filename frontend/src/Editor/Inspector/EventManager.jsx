@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ActionTypes } from '../ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -31,6 +31,10 @@ export const EventManager = ({
   const [events, setEvents] = useState(() => component.component.definition.events || []);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    setEvents(component.component.definition.events || []);
+  }, [component?.component?.definition?.events]);
 
   let actionOptions = ActionTypes.map((action) => {
     return { name: action.name, value: action.id };
