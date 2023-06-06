@@ -47,6 +47,7 @@ import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { resetAllStores } from '@/_stores/utils';
+import { shallow } from 'zustand/shallow';
 
 setAutoFreeze(false);
 enablePatches();
@@ -594,7 +595,7 @@ class EditorComponent extends React.Component {
   };
 
   removeComponents = () => {
-    if (!this.isVersionReleased() && this.state?.selectedComponents?.length > 1) {
+    if (!this.props.isVersionReleased && this.state?.selectedComponents?.length > 1) {
       let newDefinition = cloneDeep(this.state.appDefinition);
       const selectedComponents = this.state?.selectedComponents;
 
@@ -610,17 +611,17 @@ class EditorComponent extends React.Component {
         });
       }
       this.appDefinitionChanged(newDefinition, {
-        skipAutoSave: this.isVersionReleased(),
+        skipAutoSave: this.props.isVersionReleased,
       });
       this.handleInspectorView();
-    } else if (this.isVersionReleased()) {
+    } else if (this.props.isVersionReleased) {
       useAppVersionStore.getStates().actions.enableReleasedVersionPopupState();
     }
   };
 
   removeComponent = (component) => {
     const currentPageId = this.state.currentPageId;
-    if (!this.isVersionReleased()) {
+    if (!this.props.isVersionReleased) {
       let newDefinition = cloneDeep(this.state.appDefinition);
       // Delete child components when parent is deleted
 
@@ -652,7 +653,7 @@ class EditorComponent extends React.Component {
         });
       }
       this.appDefinitionChanged(newDefinition, {
-        skipAutoSave: this.isVersionReleased(),
+        skipAutoSave: this.props.isVersionReleased,
       });
       this.handleInspectorView();
     } else {
@@ -661,7 +662,7 @@ class EditorComponent extends React.Component {
   };
 
   componentDefinitionChanged = (componentDefinition) => {
-    if (this.isVersionReleased()) {
+    if (this.props.isVersionReleased) {
       useAppVersionStore.getStates().actions.enableReleasedVersionPopupState();
       return;
     }
@@ -736,7 +737,7 @@ class EditorComponent extends React.Component {
   };
 
   cutComponents = () => {
-    if (this.isVersionReleased()) {
+    if (this.props.isVersionReleased) {
       useAppVersionStore.getStates().actions.enableReleasedVersionPopupState();
 
       return;
@@ -747,7 +748,7 @@ class EditorComponent extends React.Component {
   copyComponents = () => cloneComponents(this, this.appDefinitionChanged, false);
 
   cloneComponents = () => {
-    if (this.isVersionReleased()) {
+    if (this.props.isVersionReleased) {
       useAppVersionStore.getStates().actions.enableReleasedVersionPopupState();
       return;
     }
@@ -851,7 +852,7 @@ class EditorComponent extends React.Component {
   };
 
   saveEditingVersion = (isUserSwitchedVersion = false) => {
-    if (this.isVersionReleased() && !isUserSwitchedVersion) {
+    if (this.props.isVersionReleased && !isUserSwitchedVersion) {
       this.setState({ isSaving: false });
     } else if (!isEmpty(useAppVersionStore?.getState()?.editingVersion)) {
       appVersionService
@@ -1425,7 +1426,7 @@ class EditorComponent extends React.Component {
           onCancel={() => this.cancelDeletePageRequest()}
           darkMode={this.props.darkMode}
         />
-        {this.isVersionReleased() && <ReleasedVersionError />}
+        {this.props.isVersionReleased && <ReleasedVersionError />}
         <EditorContextWrapper>
           <EditorHeader
             darkMode={this.props.darkMode}
@@ -1683,4 +1684,14 @@ class EditorComponent extends React.Component {
   }
 }
 
-export const Editor = withTranslation()(withRouter(EditorComponent));
+const withStore = (Component) => (props) => {
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
+  return <Component {...props} isVersionReleased={isVersionReleased} />;
+};
+
+export const Editor = withTranslation()(withRouter(withStore(EditorComponent)));
