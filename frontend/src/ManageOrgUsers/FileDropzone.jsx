@@ -22,7 +22,6 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
     noKeyboard: true,
   });
 
-  // const files = acceptedFiles;
   return (
     <form
       {...getRootProps({ className: 'dropzone' })}
