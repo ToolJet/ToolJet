@@ -530,7 +530,7 @@ export class OrganizationsService {
         shouldSendWelcomeMail = false;
 
       if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
-        throw new BadRequestException('User with such email already exists.');
+        throw new BadRequestException('Duplicate email found. Please provide a unique email address.');
       }
 
       if (user?.invitationToken) {
@@ -706,7 +706,7 @@ export class OrganizationsService {
 
           if (invalidGroups.length) {
             throw new BadRequestException(
-              `Group${isPlural(invalidGroups)} ${invalidGroups.join(', ')} doesn't exist. No users were uploaded`
+              `${invalidGroups.length} group${isPlural(invalidGroups)} doesn't exist. No users were uploaded`
             );
           }
 
