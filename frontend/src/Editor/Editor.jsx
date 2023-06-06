@@ -146,7 +146,7 @@ class EditorComponent extends React.Component {
   }
 
   setWindowTitle(name) {
-    document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
+    document.title = name ? `${name} - Tooljet` : `My App - Tooljet`;
   }
 
   onVersionDelete = () => {
