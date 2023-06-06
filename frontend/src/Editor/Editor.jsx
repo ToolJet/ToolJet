@@ -9,7 +9,7 @@ import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
 import { componentTypes } from './WidgetManager/components';
 import { Inspector } from './Inspector/Inspector';
-import { QueryManager, QueryPanel } from './QueryManager';
+import QueryPanel from './QueryPanel/QueryPanel';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
@@ -56,6 +56,7 @@ enablePatches();
 class EditorComponent extends React.Component {
   constructor(props) {
     super(props);
+    resetAllStores();
 
     const appId = this.props.params.id;
 
@@ -139,10 +140,6 @@ class EditorComponent extends React.Component {
       pages: {},
       draftQuery: null,
       selectedDataSource: null,
-      queryPanelHeight: this.queryManagerPreferences?.isExpanded
-        ? this.queryManagerPreferences?.queryPanelHeight
-        : 95 ?? 70,
-      isUserEditingTheVersion: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -150,7 +147,7 @@ class EditorComponent extends React.Component {
   }
 
   setWindowTitle(name) {
-    document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
+    document.title = name ? `${name} - Tooljet` : `My App - Tooljet`;
   }
 
   onVersionDelete = () => {
@@ -184,7 +181,6 @@ class EditorComponent extends React.Component {
   }
 
   componentDidMount() {
-    resetAllStores();
     this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
@@ -1705,60 +1701,16 @@ class EditorComponent extends React.Component {
                   dataQueriesChanged={this.dataQueriesChanged}
                   fetchDataQueries={this.fetchDataQueries}
                   darkMode={this.props.darkMode}
+                  currentState={currentState}
+                  apps={apps}
+                  allComponents={appDefinition.pages[this.state.currentPageId]?.components ?? {}}
+                  appId={appId}
+                  editingVersionId={editingVersion?.id}
+                  appDefinition={appDefinition}
+                  dataSourceModalHandler={this.dataSourceModalHandler}
                   isVersionReleased={this.isVersionReleased()}
                   editorRef={this}
-                >
-                  {({
-                    toggleQueryEditor,
-                    selectedDataSource,
-                    createDraftQuery,
-                    isUnsavedQueriesAvailable,
-                    selectedQuery,
-                    dataQueries,
-                    handleAddNewQuery,
-                    editingQuery,
-                    updateDataQueries,
-                    updateDraftQueryName,
-                  }) => (
-                    <>
-                      <div className="query-definition-pane-wrapper">
-                        <div className="query-definition-pane">
-                          <div>
-                            <QueryManager
-                              addNewQueryAndDeselectSelectedQuery={handleAddNewQuery}
-                              toggleQueryEditor={toggleQueryEditor}
-                              dataQueries={dataQueries}
-                              mode={editingQuery ? 'edit' : 'create'}
-                              selectedQuery={selectedQuery}
-                              selectedDataSource={selectedDataSource}
-                              dataQueriesChanged={updateDataQueries}
-                              appId={appId}
-                              editingVersionId={editingVersion?.id}
-                              addingQuery={!editingQuery || dataQueries?.length === 0}
-                              editingQuery={editingQuery}
-                              currentState={currentState}
-                              darkMode={this.props.darkMode}
-                              apps={apps}
-                              allComponents={appDefinition.pages[this.state.currentPageId]?.components ?? {}}
-                              isSourceSelected={selectedDataSource !== null}
-                              isQueryPaneDragging={this.state.isQueryPaneDragging}
-                              runQuery={this.runQuery}
-                              dataSourceModalHandler={this.dataSourceModalHandler}
-                              appDefinition={appDefinition}
-                              editorState={this}
-                              showQueryConfirmation={queryConfirmationList.length > 0}
-                              createDraftQuery={createDraftQuery}
-                              clearDraftQuery={this.clearDraftQuery}
-                              isUnsavedQueriesAvailable={isUnsavedQueriesAvailable}
-                              updateDraftQueryName={updateDraftQueryName}
-                              isVersionReleased={this.isVersionReleased()}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </QueryPanel>
+                />
                 <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
               </div>
               <div className="editor-sidebar">
