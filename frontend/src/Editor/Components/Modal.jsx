@@ -20,6 +20,8 @@ export const Modal = function Modal({
   height,
 }) {
   const [showModal, setShowModal] = useState(false);
+  const [count, setCount] = useState(0);
+
   const {
     closeOnClickingOutside = false,
     hideOnEsc,
@@ -67,6 +69,15 @@ export const Modal = function Modal({
     fireEvent(canShowModal ? 'onOpen' : 'onClose');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
+
+  useEffect(() => {
+    console.log('mounted', count);
+
+    return () => {
+      console.log('mounted no', count);
+    };
+  }, [showModal]);
+
   useEffect(() => {
     const handleModalOpen = () => {
       const canvasElement = document.getElementsByClassName('canvas-area')[0];
@@ -104,22 +115,30 @@ export const Modal = function Modal({
         canvasElement?.classList?.remove('freeze-scroll');
       }
     };
-
     if (showModal) {
       handleModalOpen();
     } else {
-      handleModalClose();
+      if (document.getElementsByClassName('modal-content')[0] == undefined) {
+        handleModalClose();
+      }
     }
 
     // Cleanup the effect
     return () => {
-      handleModalClose();
+      if (document.getElementsByClassName('modal-content')[0] == undefined) {
+        handleModalClose();
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal, modalHeight]);
 
+  useEffect(() => {
+    console.log('count', count);
+  }, [count]);
+
   function hideModal() {
     setShowModal(false);
+    setCount((prev) => prev - 1);
     setExposedVariable('show', false).then(() => fireEvent('onClose'));
   }
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
@@ -174,6 +193,7 @@ export const Modal = function Modal({
           onClick={(event) => {
             event.stopPropagation();
             setShowModal(true);
+            setCount((prev) => prev + 1);
             setExposedVariable('show', true);
           }}
           data-cy={`${dataCy}-launch-button`}
