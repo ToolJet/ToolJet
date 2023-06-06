@@ -165,16 +165,16 @@ class LoginPageComponent extends React.Component {
   };
 
   authSuccessHandler = () => {
-    authenticationService.deleteLoginOrganizationId();
-    const params = queryString.parse(this.props.location.search);
-    const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
-    if (from.pathname !== '/confirm')
-      // appending workspace-id to avoid 401 error. App.jsx will take the workspace id from URL
-      from.pathname = `${this.returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
-    const redirectPath = from.pathname === '/confirm' ? '/' : from.pathname;
-    this.setState({ isLoading: false });
-    this.eraseRedirectUrl();
-    window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+    // authenticationService.deleteLoginOrganizationId();
+    // const params = queryString.parse(this.props.location.search);
+    // const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
+    // if (from.pathname !== '/confirm')
+    //   // appending workspace-id to avoid 401 error. App.jsx will take the workspace id from URL
+    //   from.pathname = `${this.returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
+    // const redirectPath = from.pathname === '/confirm' ? '/' : from.pathname;
+    // this.setState({ isLoading: false });
+    // this.eraseRedirectUrl();
+    // window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
   };
 
   authFailureHandler = (res) => {

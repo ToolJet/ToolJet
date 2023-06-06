@@ -14,9 +14,12 @@ export const PrivateRoute = ({ children }) => {
     () => subject.unsubscribe();
   }, []);
 
-  const workspace_name = session?.current_organization_name;
-  const path = appendWorkspaceId(workspace_name, location.pathname, true);
-  if (location.pathname === '/:workspaceId' && workspace_name) window.history.replaceState(null, null, path);
+  //get either slug or id from the session and replace
+  const { current_organization_slug, current_organization_id } = session;
+  if (location.pathname.startsWith('/:workspaceId')) {
+    const path = appendWorkspaceId(current_organization_slug || current_organization_id, location.pathname, true);
+    (current_organization_slug || current_organization_id) && window.history.replaceState(null, null, path);
+  }
 
   // authorised so return component
   if (

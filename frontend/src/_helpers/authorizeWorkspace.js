@@ -22,6 +22,7 @@ export const authorizeWorkspace = () => {
         .then(({ current_organization_id }) => {
           updateCurrentSession({
             current_organization_id,
+            ...(workspaceIdOrSlug && { current_organization_slug: workspaceIdOrSlug }),
           });
           //get organizations list
           fetchOrganizations(current_organization_id, ({ organizations, current_organization_name }) => {
@@ -104,7 +105,6 @@ export const authorizeUserAndHandleErrors = (workspaceIdOrSlug, organizations) =
       /* add the user details like permission and user previlliage details to the subject */
       updateCurrentSession({
         ...data,
-        current_organization_name: workspaceIdOrSlug,
       });
       if (organizations) {
         organizationsRequestCallback(organizations, current_organization_id);

@@ -9,17 +9,18 @@ export class AuthorizeWorkspaceGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest();
     if (request?.cookies['tj_auth_token']) {
       let user: any;
-      let workspaceName = request?.query['workspace_name'];
-      if (workspaceName) {
-        workspaceName = workspaceName.replace('-', ' ');
+      const organizationId =
+        typeof request.headers['tj-workspace-id'] === 'object'
+          ? request.headers['tj-workspace-id'][0]
+          : request.headers['tj-workspace-id'];
+      if (organizationId) {
         const org = await getManager().findOne(Organization, {
-          where: { name: workspaceName },
+          where: { id: organizationId },
           select: ['id'],
         });
         if (!org) {
           throw new NotFoundException();
         }
-        request.headers['tj-workspace-id'] = org?.id;
       }
 
       try {
