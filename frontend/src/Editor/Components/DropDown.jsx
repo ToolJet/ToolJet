@@ -22,13 +22,13 @@ export const DropDown = function DropDown({
   const { value: exposedValue } = exposedVariables;
 
   function findDefaultItem(schema) {
-    const foundItem = schema?.find((item) => item.default === true);
-    return !hasVisibleFalse(foundItem.value) ? foundItem.value : undefined;
+    const foundItem = schema?.find((item) => item?.default === true);
+    return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
   }
 
   if (advanced) {
-    values = schema.map((item) => item.value);
-    display_values = schema.map((item) => item.label);
+    values = schema?.map((item) => item?.value);
+    display_values = schema?.map((item) => item?.label);
     value = findDefaultItem(schema);
   } else if (!_.isArray(values)) {
     values = [];
@@ -63,9 +63,9 @@ export const DropDown = function DropDown({
 
   function selectOption(value) {
     let index = null;
-    index = values.indexOf(value);
+    index = values?.indexOf(value);
 
-    if (values.includes(value)) {
+    if (values?.includes(value)) {
       setExposedItem(value, index, true);
     } else {
       setExposedItem(undefined, undefined, true);
@@ -93,7 +93,7 @@ export const DropDown = function DropDown({
     let index = null;
     if (values?.includes(value)) {
       newValue = value;
-      index = values.indexOf(value);
+      index = values?.indexOf(value);
     }
     setExposedItem(newValue, index);
 
@@ -105,7 +105,7 @@ export const DropDown = function DropDown({
     if (exposedValue !== currentValue) {
       setExposedVariable('value', currentValue);
     }
-    index = values.indexOf(currentValue);
+    index = values?.indexOf(currentValue);
     setExposedVariable('selectedOptionLabel', display_values?.[index]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentValue, JSON.stringify(display_values), JSON.stringify(values)]);
@@ -116,7 +116,7 @@ export const DropDown = function DropDown({
 
     if (values?.includes(currentValue)) newValue = currentValue;
     else if (values?.includes(value)) newValue = value;
-    index = values.indexOf(newValue);
+    index = values?.indexOf(newValue);
     setExposedItem(newValue, index);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(values)]);
@@ -130,7 +130,7 @@ export const DropDown = function DropDown({
     if (advanced) {
       setExposedVariable(
         'optionLabels',
-        schema?.filter((item) => item.visible)?.map((item) => item.label)
+        schema?.filter((item) => item?.visible)?.map((item) => item.label)
       );
       if (hasVisibleFalse(currentValue)) {
         setCurrentValue(findDefaultItem(schema));
