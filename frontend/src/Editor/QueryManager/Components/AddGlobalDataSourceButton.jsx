@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getWorkspaceId } from '../../_helpers/utils';
+import { getWorkspaceId } from '@/_helpers/utils';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 

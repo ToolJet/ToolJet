@@ -367,7 +367,7 @@
             "editFolder": "Ordner bearbeiten",
             "deleteFolder": "Ordner löschen",
             "folderName": "Ordner Name",
-            "wishToDeleteFolder": "Sind Sie sicher, dass Sie den Ordner löschen möchten? Die Apps innerhalb des Ordners werden nicht gelöscht."
+            "wishToDeleteFolder": "Sind Sie sicher, dass Sie den Ordner löschen möchten {{folderName}}? Die Apps innerhalb des Ordners werden nicht gelöscht."
         },
         "header": {
             "createNewApplication": "Neue App erstellen",
