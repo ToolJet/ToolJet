@@ -145,7 +145,7 @@ export const LeftSidebarInspector = ({
       for: 'components',
       actions: [
         { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
-        { name: 'Delete Widget', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' },
+        { name: 'Delete Component', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' },
       ],
       enableForAllChildren: false,
       enableFor1stLevelChildren: true,
