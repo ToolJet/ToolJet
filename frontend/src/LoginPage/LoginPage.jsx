@@ -5,7 +5,7 @@ import { Link, Navigate } from 'react-router-dom';
 import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
-import { getSubpath, getWorkspaceId, validateEmail } from '../_helpers/utils';
+import { getSubpath, getWorkspaceId, isUUID, validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -40,6 +40,8 @@ class LoginPageComponent extends React.Component {
   };
 
   componentDidMount() {
+    const isSlug = !isUUID(this.organizationId);
+    if (isSlug) this.organizationSlug = this.organizationId;
     this.setRedirectUrlToCookie();
     authenticationService.deleteLoginOrganizationId();
     this.currentSessionObservable = authenticationService.currentSession.subscribe((newSession) => {
@@ -48,7 +50,9 @@ class LoginPageComponent extends React.Component {
       if (newSession?.group_permissions || newSession?.id) {
         if (
           (!this.organizationId && newSession?.current_organization_id) ||
-          (this.organizationId && newSession?.current_organization_id === this.organizationId)
+          (!this.state.isGettingConfigs &&
+            this.organizationId &&
+            newSession?.current_organization_id === this.organizationId)
         ) {
           // redirect to home if already logged in
           // set redirect path for sso login
@@ -59,12 +63,12 @@ class LoginPageComponent extends React.Component {
       }
     });
 
-    if (this.organizationId) {
-      authenticationService.saveLoginOrganizationId(this.organizationId);
-    }
-
-    authenticationService.getOrganizationConfigs(this.organizationId).then(
+    authenticationService.getOrganizationConfigs(this.organizationSlug || this.organizationId).then(
       (configs) => {
+        this.organizationId = configs.id;
+        if (this.organizationId) {
+          authenticationService.saveLoginOrganizationId(this.organizationId);
+        }
         this.setState({ isGettingConfigs: false, configs });
       },
       (response) => {
@@ -81,7 +85,7 @@ class LoginPageComponent extends React.Component {
         response.data.statusCode !== 422 && this.props.navigate('/setup');
 
         // if wrong workspace id then show workspace-switching page
-        if (response.data.statusCode === 422) {
+        if (response.data.statusCode === 422 || response.data.statusCode === 404) {
           authenticationService
             .validateSession()
             .then(({ current_organization_id }) => {
@@ -164,6 +168,7 @@ class LoginPageComponent extends React.Component {
       .then(this.authSuccessHandler, this.authFailureHandler);
   };
 
+  //TODO: remove this code if we don't need
   authSuccessHandler = () => {
     // authenticationService.deleteLoginOrganizationId();
     // const params = queryString.parse(this.props.location.search);

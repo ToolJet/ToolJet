@@ -138,7 +138,7 @@ export const authorizeUserAndHandleErrors = (workspace_slug, workspace_id) => {
                   });
 
                   if (!isThisWorkspaceLoginPage())
-                    return (window.location = `${subpath ?? ''}/login/${unauthorized_organization_id}`);
+                    return (window.location = `${subpath ?? ''}/login/${workspace_slug}`);
                 });
               });
           })

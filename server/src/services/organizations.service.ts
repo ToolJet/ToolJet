@@ -26,6 +26,7 @@ import { decamelize } from 'humps';
 import { Response } from 'express';
 import { AppEnvironmentService } from './app_environments.service';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { isUUID } from 'class-validator';
 
 const MAX_ROW_COUNT = 500;
 
@@ -340,6 +341,7 @@ export class OrganizationsService {
     isHideSensitiveData?: boolean,
     addInstanceLevelSSO?: boolean
   ): Promise<DeepPartial<Organization>> {
+    const isSlug = !isUUID(organizationId);
     const result: DeepPartial<Organization> = await createQueryBuilder(Organization, 'organization')
       .leftJoinAndSelect(
         'organization.ssoConfigs',
@@ -349,8 +351,8 @@ export class OrganizationsService {
           statusList: statusList || [true, false], // Return enabled and disabled sso if status list not passed
         }
       )
-      .andWhere('organization.id = :organizationId', {
-        organizationId,
+      .andWhere(`${isSlug ? 'organization.slug = :slug' : 'organization.id = :organizationId'}`, {
+        ...(isSlug ? { slug: organizationId } : { organizationId }),
       })
       .getOne();
 
@@ -404,11 +406,16 @@ export class OrganizationsService {
       }
       return result;
     }
-    return this.hideSSOSensitiveData(result?.ssoConfigs, result?.name, result?.enableSignUp);
+    return this.hideSSOSensitiveData(result?.ssoConfigs, result?.name, result?.enableSignUp, result.id);
   }
 
-  private hideSSOSensitiveData(ssoConfigs: DeepPartial<SSOConfigs>[], organizationName, enableSignUp): any {
-    const configs = { name: organizationName, enableSignUp };
+  private hideSSOSensitiveData(
+    ssoConfigs: DeepPartial<SSOConfigs>[],
+    organizationName: string,
+    enableSignUp: boolean,
+    organizationId: string
+  ): any {
+    const configs = { name: organizationName, enableSignUp, id: organizationId };
     if (ssoConfigs?.length > 0) {
       for (const config of ssoConfigs) {
         const configId = config['id'];
