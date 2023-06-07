@@ -25,6 +25,11 @@ import {
   verifyPropertiesGeneralAccordion,
   verifyStylesGeneralAccordion,
 } from "Support/utils/commonWidget";
+import {
+  selectCSA,
+  selectEvent,
+  addSupportCSAData,
+} from "Support/utils/events";
 
 describe("Editor- Test Button widget", () => {
   beforeEach(() => {
@@ -334,5 +339,63 @@ describe("Editor- Test Button widget", () => {
 
     cy.get(commonSelectors.viewerPageLogo).click();
     cy.deleteApp(data.appName);
+  });
+
+  it("Should verify csa", () => {
+    // cy.dragAndDropWidget(buttonText.defaultWidgetText);
+    selectEvent("On click", "Show alert");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget("Text input", 500, 50);
+    selectEvent("On change", "Control Component");
+    selectCSA("button1", "Set text", "500");
+    addSupportCSAData("Text", "{{components.textinput1.value");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 100);
+    selectEvent("On click", "Control Component");
+    selectCSA("button1", "Click");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 150);
+    selectEvent("On click", "Control Component");
+    selectCSA("button1", "Disable");
+    cy.get('[data-cy="Value-toggle-button"]').click();
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 200);
+    selectEvent("On click", "Control Component");
+    selectCSA("button1", "Visibility");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 250);
+    selectEvent("On click", "Control Component");
+    selectCSA("button1", "Loading");
+    cy.get('[data-cy="Value-toggle-button"]').click();
+
+    cy.get(commonWidgetSelector.draggableWidget("textinput1")).type("testBtn");
+    cy.wait(500);
+    cy.get(commonWidgetSelector.draggableWidget("button1")).should(
+      "have.text",
+      "testBtn"
+    );
+
+    cy.get(commonWidgetSelector.draggableWidget("button2")).click();
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Hello world!");
+
+    cy.get(commonWidgetSelector.draggableWidget("button5")).click();
+    cy.get(
+      commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
+    ).should("have.class", "btn-loading");
+
+    cy.get(commonWidgetSelector.draggableWidget("button3")).click();
+    cy.get(
+      commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
+    ).should("have.attr", "disabled");
+
+    cy.get(commonWidgetSelector.draggableWidget("button4")).click();
+    cy.get(
+      commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
+    ).should("not.be.visible");
   });
 });

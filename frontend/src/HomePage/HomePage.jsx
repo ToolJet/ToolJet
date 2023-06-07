@@ -448,6 +448,7 @@ class HomePageComponent extends React.Component {
       showChangeIconModal,
       appOperations,
       isExportingApp,
+      appToBeDeleted,
       app,
     } = this.state;
     return (
@@ -457,7 +458,10 @@ class HomePageComponent extends React.Component {
             show={showAppDeletionConfirmation}
             message={this.props.t(
               'homePage.deleteAppAndData',
-              'The app and the associated data will be permanently deleted, do you want to continue?'
+              'The app {{appName}} and the associated data will be permanently deleted, do you want to continue?',
+              {
+                appName: appToBeDeleted?.name,
+              }
             )}
             confirmButtonLoading={isDeletingApp}
             onConfirm={() => this.executeAppDeletion()}
@@ -558,6 +562,7 @@ class HomePageComponent extends React.Component {
                 <ButtonSolid
                   className={`btn btn-primary ${appOperations?.isAdding ? 'btn-loading' : ''}`}
                   onClick={this.changeIcon}
+                  data-cy="change-button"
                 >
                   {this.props.t('homePage.change', 'Change')}
                 </ButtonSolid>
@@ -626,6 +631,7 @@ class HomePageComponent extends React.Component {
                 canDeleteFolder={this.canDeleteFolder()}
                 canUpdateFolder={this.canUpdateFolder()}
                 darkMode={this.props.darkMode}
+                canCreateApp={this.canCreateApp()}
               />
               <OrganizationList />
             </div>

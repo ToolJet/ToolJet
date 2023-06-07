@@ -97,12 +97,12 @@ describe('organizations controller', () => {
         expect(response.statusCode).toBe(400);
       });
 
-      it('should throw error if name is longer than 25 characters', async () => {
+      it('should throw error if name is longer than 50 characters', async () => {
         const { user } = await createUser(app, { email: 'admin@tooljet.io' });
         const loggedUser = await authenticateUser(app);
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
-          .send({ name: 'xxxxxxxxxxxxxxxxxxxxxxxxxx' })
+          .send({ name: '100000000000000000000000000000000000000000000000000000000000000909' })
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);
 
@@ -143,13 +143,13 @@ describe('organizations controller', () => {
         expect(organization.enableSignUp).toBeTruthy();
       });
 
-      it('should throw error if name is longer than 25 characters', async () => {
+      it('should throw error if name is longer than 50 characters', async () => {
         const { user } = await createUser(app, { email: 'admin@tooljet.io' });
         const loggedUser = await authenticateUser(app);
 
         const response = await request(app.getHttpServer())
           .post('/api/organizations')
-          .send({ name: 'xxxxxxxxxxxxxxxxxxxxxxxxxx' })
+          .send({ name: '1000000000000000000000000000000000000000000000000000000000000009' })
           .set('tj-workspace-id', user.defaultOrganizationId)
           .set('Cookie', loggedUser.tokenCookie);
 
@@ -287,7 +287,7 @@ describe('organizations controller', () => {
         expect(getResponse.statusCode).toBe(200);
         expect(getResponse.body).toEqual({
           sso_configs: {
-            name: 'Test Organization',
+            name: `${user.email}'s workspace`,
             enable_sign_up: false,
             form: {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
@@ -348,7 +348,7 @@ describe('organizations controller', () => {
         expect(getResponse.statusCode).toBe(200);
         expect(getResponse.body).toEqual({
           sso_configs: {
-            name: 'Test Organization',
+            name: `${user.email}'s workspace`,
             enable_sign_up: false,
             form: {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,
@@ -406,7 +406,7 @@ describe('organizations controller', () => {
         expect(getResponse.statusCode).toBe(200);
         expect(getResponse.body).toEqual({
           sso_configs: {
-            name: 'Test Organization',
+            name: `${user.email}'s workspace`,
             enable_sign_up: false,
             form: {
               config_id: authGetResponse.body.organization_details.sso_configs.find((ob) => ob.sso === 'form').id,

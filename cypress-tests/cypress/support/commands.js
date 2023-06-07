@@ -29,6 +29,7 @@ Cypress.Commands.add("verifyToastMessage", (selector, message) => {
   cy.get("body").then(($body) => {
     if ($body.find(commonSelectors.toastCloseButton).length > 0) {
       cy.closeToastMessage();
+      cy.wait(200);
     }
   });
 });
@@ -82,10 +83,11 @@ Cypress.Commands.add("appLogin", () => {
 });
 
 Cypress.Commands.add("waitForAutoSave", () => {
-  cy.wait(200)
+  cy.wait(200);
   cy.get(commonSelectors.autoSave, { timeout: 20000 }).should(
     "have.text",
-    commonText.autoSave, { timeout: 20000 }
+    commonText.autoSave,
+    { timeout: 20000 }
   );
 });
 
@@ -110,7 +112,13 @@ Cypress.Commands.add("createApp", (appName) => {
 
 Cypress.Commands.add(
   "dragAndDropWidget",
-  (widgetName, positionX = 190, positionY = 80, widgetName2 = widgetName) => {
+  (
+    widgetName,
+    positionX = 190,
+    positionY = 80,
+    widgetName2 = widgetName,
+    canvas = commonSelectors.canvas
+  ) => {
     const dataTransfer = new DataTransfer();
 
     cy.clearAndType(commonSelectors.searchField, widgetName);
@@ -119,7 +127,7 @@ Cypress.Commands.add(
       { dataTransfer },
       { force: true }
     );
-    cy.get(commonSelectors.canvas).trigger("drop", positionX, positionY, {
+    cy.get(canvas).trigger("drop", positionX, positionY, {
       dataTransfer,
       force: true,
     });
@@ -171,7 +179,9 @@ Cypress.Commands.add(
 Cypress.Commands.add("deleteApp", (appName) => {
   cy.intercept("DELETE", "/api/apps/*").as("appDeleted");
   cy.get(commonSelectors.appCard(appName))
+    .realHover()
     .find(commonSelectors.appCardOptionsButton)
+    .realHover()
     .click();
   cy.get(commonSelectors.deleteAppOption).click();
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
@@ -204,7 +214,10 @@ Cypress.Commands.add("modifyCanvasSize", (x, y) => {
 });
 
 Cypress.Commands.add("renameApp", (appName) => {
-  cy.get(commonSelectors.appNameInput).type(`{selectAll}{backspace}${appName}`, {force:true});
+  cy.get(commonSelectors.appNameInput).type(
+    `{selectAll}{backspace}${appName}`,
+    { force: true }
+  );
   cy.waitForAutoSave();
 });
 
@@ -238,11 +251,10 @@ Cypress.Commands.add("notVisible", (dataCy) => {
     }
   });
   const log = Cypress.log({
-    name: 'notVisible',
-    displayName: 'Not Visible',
-    message: dataCy
-  })
-
+    name: "notVisible",
+    displayName: "Not Visible",
+    message: dataCy,
+  });
 });
 
 Cypress.Commands.add("resizeWidget", (widgetName, x, y) => {

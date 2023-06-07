@@ -2,6 +2,11 @@ import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
+import { ConflictException } from '@nestjs/common';
+import { DataBaseConstraints } from './db_constraints.constants';
+const protobuf = require('protobufjs');
+import { ConflictException } from '@nestjs/common';
+import { DataBaseConstraints } from './db_constraints.constants';
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -77,6 +82,21 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
   }
 }
 
+export async function catchDbException(
+  operation: () => any,
+  dbConstraint: DataBaseConstraints,
+  errorMessage: string
+): Promise<any> {
+  try {
+    return await operation();
+  } catch (err) {
+    if (err?.message?.includes(dbConstraint)) {
+      throw new ConflictException(errorMessage);
+    }
+    throw err;
+  }
+}
+
 export const defaultAppEnvironments = [{ name: 'production', isDefault: true }];
 
 export function isPlural(data: Array<any>) {
@@ -94,3 +114,27 @@ export async function dropForeignKey(tableName: string, columnName: string, quer
   const foreignKey = table.foreignKeys.find((fk) => fk.columnNames.indexOf(columnName) !== -1);
   await queryRunner.dropForeignKey(tableName, foreignKey);
 }
+
+export async function getServiceAndRpcNames(protoDefinition) {
+  const root = protobuf.parse(protoDefinition).root;
+  const serviceNamesAndMethods = root.nestedArray
+    .filter((item) => item instanceof protobuf.Service)
+    .reduce((acc, service) => {
+      const rpcMethods = service.methodsArray.map((method) => method.name);
+      acc[service.name] = rpcMethods;
+      return acc;
+    }, {});
+  return serviceNamesAndMethods;
+}
+
+export const generateNextName = (firstWord: string) => {
+  return `${firstWord} ${Date.now()}`;
+};
+
+export const truncateAndReplace = (name) => {
+  const secondsSinceEpoch = Date.now();
+  if (name.length > 35) {
+    return name.replace(name.substring(35, 50), secondsSinceEpoch);
+  }
+  return name + secondsSinceEpoch;
+};

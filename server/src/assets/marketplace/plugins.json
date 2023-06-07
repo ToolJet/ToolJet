@@ -1,13 +1,5 @@
 [
   {
-    "name": "AWS S3 plugin",
-    "description": "Datasource plugin for AWS S3",
-    "version": "1.0.1",
-    "id": "s3",
-    "author": "Tooljet",
-    "timestamp": "Mon, 31 Oct 2022 11:02:10 GMT"
-  },
-  {
     "name": "plivo",
     "description": "Datasource plugin for Plivo",
     "version": "1.0.0",
@@ -30,5 +22,13 @@
     "id": "openai",
     "author": "Tooljet",
     "timestamp": "Mon, 10 Apr 2023 06:33:21 GMT"
+  },
+  {
+    "name": "AWS Textract",
+    "description": "Datasource plugin from textract",
+    "version": "1.0.0",
+    "id": "textract",
+    "author": "Tooljet",
+    "timestamp": "Wed, 19 Apr 2023 11:36:56 GMT"
   }
 ]

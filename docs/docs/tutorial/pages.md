@@ -17,7 +17,7 @@ You can open the **Pages Panel** by clicking on the **Pages** icon on the left s
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/pages/pages-panel.png" alt="Pages Panel"/>
+<img className="screenshot-full" src="/img/v2-beta/pages/pages-panel2.png" alt="Pages Panel"/>
 
 </div>
 
@@ -34,14 +34,14 @@ On the header of the Pages Manager, the **+** button that allows you to add more
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/pages/add.png" alt="Pages Panel" width="400" />
+<img className="screenshot-full" src="/img/v2-beta/pages/add2.png" alt="Pages Panel" width="400" />
 
 </div>
 
 On clicking the **+** button, a new page will be added, enter the name for the page and press enter.
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/pages/newpage.png" alt="Pages Panel" width="400" />
+<img className="screenshot-full" src="/img/v2-beta/pages/newpage2.png" alt="Pages Panel" width="400" />
 
 </div>
 
@@ -59,7 +59,7 @@ From **Settings**, you can hide the **page navigation sidebar** in viewer mode, 
 You can pin the pages panel from the **Pin** button and the panel won't close until you **unpin** it.
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/pages/pin.png" alt="Pages Panel" width="400" />
+<img className="screenshot-full" src="/img/v2-beta/pages/pin2.png" alt="Pages Panel" width="400" />
 
 </div>
 
@@ -68,7 +68,7 @@ You can pin the pages panel from the **Pin** button and the panel won't close un
 If there are many pages on the panel then you can use the **Search bar** to look for specific page.
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/pages/search.png" alt="Pages Panel" width="400" />
+<img className="screenshot-full" src="/img/v2-beta/pages/search2.png" alt="Pages Panel" width="400" />
 
 </div>
 
@@ -109,18 +109,6 @@ Rename option will allow you to rename the page.
 <img className="screenshot-full" src="/img/v2-beta/pages/rename.png" alt="Pages Panel" width="300" />
 
 </div>
-
-<!--
-### Duplicate
-
-Duplicate option will create and add a copy of the page to the list. The duplicate page will be the replica of the original page.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/pages/duplicate.png" alt="Pages Panel" width="300" />
-
-</div>
--->
 
 ### Mark Home
 
@@ -169,6 +157,30 @@ You can go to the options again and **unhide** the app from the **page navigatio
 
 </div>
 
+### Duplicate
+
+The duplicate page option allows you to create and add a copy of the page in the pages list. The duplicated page will be an exact replica of the original page.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/pages/duplinew.png" alt="Pages Panel" width="300" />
+
+</div>
+
+### Event Handlers
+
+Just like other Event Handlers on ToolJet, you can add event handlers too pages too.
+
+Currently, there is **On page load** event available. You can use all the available actions for this event along with the new actions added specifically for the pages:
+- **[switch page](/docs/actions/switch-page)**
+- **[set page variable](/docs/actions/set-page-variable)**
+- **[unset page variable](/docs/actions/unset-page-variable)**
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/pages/event.png" alt="Pages Panel" width="300" />
+
+</div>
 
 ### Delete Page
 
@@ -189,17 +201,4 @@ If a page is **Marked Home** then you won't be able to delete and the delete pag
 </div>
 :::
 
-### Event Handlers
 
-Just like other Event Handlers on ToolJet, you can add event handlers too pages too.
-
-Currently, there is **On page load** event available. You can use all the available actions for this event along with the new actions added specifically for the pages:
-- **[switch page](/docs/actions/switch-page)**
-- **[set page variable](/docs/actions/set-page-variable)**
-- **[unset page variable](/docs/actions/unset-page-variable)**
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/pages/event.png" alt="Pages Panel" width="300" />
-
-</div>

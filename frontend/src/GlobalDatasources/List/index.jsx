@@ -7,9 +7,8 @@ import { ConfirmDialog } from '@/_components';
 import { globalDatasourceService } from '@/_services';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
 import { OrganizationList } from '@/_components/OrganizationManager/List';
-import { BreadCrumbContext } from '@/App/App';
 
-export const List = () => {
+export const List = ({ updateSelectedDatasource }) => {
   const { dataSources, fetchDataSources, selectedDataSource, setSelectedDataSource, toggleDataSourceManagerModal } =
     useContext(GlobalDataSourcesContext);
 
@@ -18,7 +17,6 @@ export const List = () => {
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
     fetchDataSources(true)
@@ -30,11 +28,6 @@ export const List = () => {
         toast.error('Failed to fetch datasources');
         return;
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (dataSources?.length == 0) updateSidebarNAV('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -97,7 +90,7 @@ export const List = () => {
                     key={idx}
                     active={selectedDataSource?.id === source?.id}
                     onDelete={deleteDataSource}
-                    updateSidebarNAV={updateSidebarNAV}
+                    updateSelectedDatasource={updateSelectedDatasource}
                   />
                 );
               })

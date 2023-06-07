@@ -18,7 +18,7 @@ Suppose there is an `API key` or a value that you want to use in the queries or 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/work-var.gif" alt="add variable" />
+<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/work-var2.gif" alt="add variable" />
 
 </div>
 
@@ -44,7 +44,7 @@ This feature enables us to add a client variable with and without `encryption`. 
 
 ### Using variable in an app
 
-Let's use the variable that we created [here](Workspace-environment-variables#adding-the-environment-variable). If you have used ToolJet before, then you know that for getting the values from any variable we use JS notation i.e. `{{}}` but for using the Workspace variables we have different opening and closing notation `%% %%`. The environment variables will not work inside js code `{{}}`.
+Let's use the variable that we created [here](/docs/tutorial/workspace-variables/#adding-the-environment-variable). If you have used ToolJet before, then you know that for getting the values from any variable we use JS notation i.e. `{{}}` but for using the Workspace variables we have different opening and closing notation `%% %%`. The environment variables will not work inside js code `{{}}`.
 
 So, the syntax for using the variable that we created before will be `%%client.pi%%`
 

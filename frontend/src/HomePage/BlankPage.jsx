@@ -72,18 +72,18 @@ export const BlankPage = function BlankPage({
                       leftIcon="plus"
                       onClick={createApp}
                       isLoading={creatingApp}
-                      data-cy="create-new-application"
+                      data-cy="button-new-app-from-scratch"
                       className="col"
                       fill={'#FDFDFE'}
                     >
-                      New app from scratch
+                      Create new application
                     </ButtonSolid>
                     <div className="col">
                       <ButtonSolid
                         leftIcon="folderdownload"
                         onChange={handleImportApp}
                         isLoading={isImportingApp}
-                        data-cy="create-new-application"
+                        data-cy="button-import-an-app"
                         className="col"
                         variant="tertiary"
                       >
@@ -138,13 +138,13 @@ export const BlankPage = function BlankPage({
                 })}
               </div>
               <div className="m-auto text-center mt-4">
-                <span
-                  className="see-all-temlplates-link tj-text-sm font-weight-600"
+                <button
+                  className="see-all-temlplates-link tj-text-sm font-weight-600 bg-transparent border-0"
                   onClick={viewTemplateLibraryModal}
                   data-cy="see-all-apps-template-buton"
                 >
                   See all templates
-                </span>
+                </button>
               </div>
             </div>
           </div>

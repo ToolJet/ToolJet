@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 import { getWorkspaceIdFromURL, appendWorkspaceId, getAvatar } from '../../_helpers/utils';
+import { ToolTip } from '@/_components';
 
 export const OrganizationList = function () {
   const { current_organization_id } = authenticationService.currentSessionValue;
@@ -32,10 +33,17 @@ export const OrganizationList = function () {
     name: org.name,
     label: (
       <div className={`align-items-center d-flex tj-org-dropdown  ${darkMode && 'dark-theme'}`}>
-        <div className="dashboard-org-avatar " data-cy={`${org.name}-avatar`}>
+        <div
+          className="dashboard-org-avatar "
+          data-cy={`${String(org.name).toLowerCase().replace(/\s+/g, '-')}-avatar`}
+        >
           {getAvatar(org.name)}
         </div>
-        <div className="org-name">{org.name}</div>
+        <ToolTip message={org.name} placement="right">
+          <div className="org-name" data-cy={`${String(org.name).toLowerCase().replace(/\s+/g, '-')}-name-selector`}>
+            {org.name}
+          </div>
+        </ToolTip>
       </div>
     ),
   }));

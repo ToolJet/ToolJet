@@ -74,3 +74,13 @@ This property only accepts boolean values. If set to `{{true}}`, the widget will
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Exposed Variables
+
+| Variables    | Description |
+| ----------- | ----------- |
+| value | This variable holds the boolean value i.e `true` or `false` when the toggle is on or off respectively. You can access the value dynamically using JS: `{{components.toggleswitch1.value}}`|
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.

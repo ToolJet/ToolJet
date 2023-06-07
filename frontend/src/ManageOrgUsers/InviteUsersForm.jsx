@@ -3,7 +3,6 @@ import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
-import { useDropzone } from 'react-dropzone';
 import { FileDropzone } from './FileDropzone';
 
 function InviteUsersForm({
@@ -21,10 +20,6 @@ function InviteUsersForm({
   const [activeTab, setActiveTab] = useState(1);
 
   const hiddenFileInput = useRef(null);
-  const { acceptedFiles } = useDropzone({
-    onDrop,
-    accept: 'text/csv',
-  });
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -40,12 +35,6 @@ function InviteUsersForm({
     hiddenFileInput.current.click();
   };
 
-  const files = acceptedFiles.map((file) => (
-    <li key={file.path}>
-      {file.path} - {file.size} bytes
-    </li>
-  ));
-
   return (
     <div>
       <div className="animation-fade invite-user-drawer-wrap">
@@ -55,7 +44,14 @@ function InviteUsersForm({
               <h3 className="tj-text-lg tj-text font-weight-500" data-cy="add-users-card-title">
                 {t('header.organization.menus.manageUsers.addNewUser', 'Add new user')}
               </h3>
-              <div onClick={() => onClose()} style={{ cursor: 'pointer' }} data-cy="close-button">
+              <div
+                onClick={() => {
+                  onCancel();
+                  onClose();
+                }}
+                style={{ cursor: 'pointer' }}
+                data-cy="close-button"
+              >
                 <SolidIcon name="remove" width="16" />
               </div>
             </div>

@@ -31,6 +31,8 @@ import Spinner from '@/_ui/Spinner';
 import { toast } from 'react-hot-toast';
 import { withRouter } from '@/_hoc/withRouter';
 
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+
 class ViewerComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -140,6 +142,8 @@ class ViewerComponent extends React.Component {
     const startingPageHandle = this.props?.params?.pageHandle;
     const currentPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id ?? homePageId;
     const currentPage = pages.find((page) => page.id === currentPageId);
+
+    useDataQueriesStore.getState().actions.setDataQueries(data.data_queries);
 
     this.setState(
       {
@@ -415,7 +419,7 @@ class ViewerComponent extends React.Component {
   };
 
   setWindowTitle(name) {
-    document.title = name ?? 'Untitled App';
+    document.title = name ?? 'My App';
   }
 
   computeCanvasBackgroundColor = () => {
@@ -445,6 +449,8 @@ class ViewerComponent extends React.Component {
   };
 
   switchPage = (id, queryParams = []) => {
+    document.getElementById('real-canvas').scrollIntoView();
+
     if (this.state.currentPageId === id) return;
 
     const { handle } = this.state.appDefinition.pages[id];
@@ -525,6 +531,34 @@ class ViewerComponent extends React.Component {
         if (errorDetails) {
           this.handleError(errorDetails, errorAppId, errorVersionId);
         }
+
+        const pageArray = Object.values(this.state.appDefinition?.pages || {});
+        //checking if page is hidden
+        if (
+          pageArray.find((page) => page.handle === this.props.params.pageHandle)?.hidden &&
+          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
+        ) {
+          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
+          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/${homeHandle}`;
+          if (this.state.slug) {
+            url = `/applications/${this.state.slug}/${homeHandle}`;
+          }
+          return <Navigate to={url} replace />;
+        }
+
+        //checking if page exists
+        if (
+          !pageArray.find((page) => page.handle === this.props.params.pageHandle) &&
+          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
+        ) {
+          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
+          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/${homeHandle}`;
+          if (this.state.slug) {
+            url = `/applications/${this.state.slug}/${homeHandle}`;
+          }
+          return <Navigate to={url} replace />;
+        }
+
         return (
           <div className="viewer wrapper">
             <Confirm

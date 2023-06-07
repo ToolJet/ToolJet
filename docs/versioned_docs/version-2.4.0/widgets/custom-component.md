@@ -103,3 +103,14 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
+
+## Exposed Variables
+
+| Variables      | Description |
+| ----------- | ----------- |
+| data | This variable will hold the variables assigned inside the `code` for custom component. You can access the value dynamically using JS: `{{components.customcomponent1.data.title}}`|
+
+
+## Component specific actions (CSA)
+
+There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.

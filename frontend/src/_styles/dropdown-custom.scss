@@ -44,6 +44,14 @@
             background: var(--slate3) !important;
         }
     }
+
+    .tj-text-xsm {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 200px;
+    }
+
 }
 
 .users-filter-dropdown,
@@ -52,7 +60,8 @@
 .select-operation-field,
 .select-column-field,
 .select-order-field,
-.select-column-field {
+.select-column-field,
+.records-dropdown-field {
     .react-select__control {
         border: 1px solid var(--slate7) !important;
     }

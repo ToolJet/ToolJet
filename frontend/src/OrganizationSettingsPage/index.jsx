@@ -6,6 +6,7 @@ import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
 import { authenticationService } from '@/_services';
+import { CopilotSetting } from '@/CopilotSettings';
 import { BreadCrumbContext } from '../App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
@@ -15,11 +16,7 @@ export function OrganizationSettings(props) {
   const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  useEffect(() => {
-    updateSidebarNAV('Users & permissions');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables'];
+  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Copilot'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'Users':
@@ -30,6 +27,8 @@ export function OrganizationSettings(props) {
         return 'manageSSO';
       case 'Workspace variables':
         return 'manageEnvVars';
+      case 'Copilot':
+        return 'manageCopilot';
       default:
         return groupName;
     }
@@ -38,7 +37,7 @@ export function OrganizationSettings(props) {
   useEffect(() => {
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
-      admin ? setSelectedTab('Users & permissions') : setSelectedTab('manageEnvVars');
+      admin ? updateSidebarNAV('Users & permissions') : updateSidebarNAV('Workspace variables');
     });
 
     () => subscription.unsubsciption();
@@ -54,19 +53,21 @@ export function OrganizationSettings(props) {
               {sideBarNavs.map((item, index) => {
                 return (
                   <>
-                    <FolderList
-                      className="workspace-settings-nav-items"
-                      key={index}
-                      onClick={() => {
-                        setSelectedTab(defaultOrgName(item));
-                        if (item == 'Users') updateSidebarNAV('Users & permissions');
-                        else updateSidebarNAV(item);
-                      }}
-                      selectedItem={selectedTab == defaultOrgName(item)}
-                      dataCy={item.toLowerCase().replace(/\s+/g, '-')}
-                    >
-                      {item}
-                    </FolderList>
+                    {(admin || item == 'Workspace variables' || item == 'Copilot') && (
+                      <FolderList
+                        className="workspace-settings-nav-items"
+                        key={index}
+                        onClick={() => {
+                          setSelectedTab(defaultOrgName(item));
+                          if (item == 'Users') updateSidebarNAV('Users & permissions');
+                          else updateSidebarNAV(item);
+                        }}
+                        selectedItem={selectedTab == defaultOrgName(item)}
+                        dataCy={item.toLowerCase().replace(/\s+/g, '-')}
+                      >
+                        {item}
+                      </FolderList>
+                    )}
                   </>
                 );
               })}
@@ -80,6 +81,7 @@ export function OrganizationSettings(props) {
               {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
               {selectedTab === 'manageSSO' && <ManageSSO />}
               {selectedTab === 'manageEnvVars' && <ManageOrgVars darkMode={props.darkMode} />}
+              {selectedTab === 'manageCopilot' && <CopilotSetting />}
             </div>
           </div>
         </div>

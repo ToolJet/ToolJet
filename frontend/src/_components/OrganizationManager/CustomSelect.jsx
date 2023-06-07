@@ -6,6 +6,7 @@ import { CreateOrganization } from './CreateOrganization';
 import { useTranslation } from 'react-i18next';
 import { authenticationService } from '@/_services';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ToolTip } from '@/_components';
 
 const Menu = (props) => {
   const { t } = useTranslation();
@@ -37,16 +38,11 @@ const Menu = (props) => {
           onClick={props.selectProps.setShowCreateOrg}
         >
           <div className="add-new-workspace-icon-old-wrap">
-            <SolidIcon
-              name="plus"
-              fill="#FDFDFE"
-              className="add-new-workspace-icon-old"
-              data-cy="add-new-workspace-link"
-            />
+            <SolidIcon name="plus" fill="#FDFDFE" className="add-new-workspace-icon-old" />
           </div>
 
           <div className="add-new-workspace-icon-wrap">
-            <SolidIcon name="plus" fill="#3E63DD" className="add-new-workspace-icon" data-cy="add-new-workspace-link" />
+            <SolidIcon name="plus" fill="#3E63DD" className="add-new-workspace-icon" dataCy="add-new-workspace-link" />
           </div>
           <span className="p-1 tj-text-xsm">{t('header.organization.addNewWorkSpace', 'Add new workspace')}</span>
         </div>
@@ -57,11 +53,13 @@ const Menu = (props) => {
 
 const SingleValue = ({ selectProps }) => {
   return (
-    <div className="d-inline-flex align-items-center">
-      <div data-cy="workspace-name" className="tj-text-xsm">
-        {selectProps.value.name}
+    <ToolTip message={selectProps?.value?.name}>
+      <div className="d-inline-flex align-items-center">
+        <div data-cy="workspace-name" className="tj-text-xsm">
+          {selectProps.value.name}
+        </div>
       </div>
-    </div>
+    </ToolTip>
   );
 };
 
@@ -69,11 +67,12 @@ export const CustomSelect = ({ ...props }) => {
   const [showEditOrg, setShowEditOrg] = useState(false);
   const [showCreateOrg, setShowCreateOrg] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const currentValue = props?.options.find((option) => option?.value === props?.value);
 
   return (
     <>
       <CreateOrganization showCreateOrg={showCreateOrg} setShowCreateOrg={setShowCreateOrg} />
-      <EditOrganization showEditOrg={showEditOrg} setShowEditOrg={setShowEditOrg} />
+      <EditOrganization showEditOrg={showEditOrg} setShowEditOrg={setShowEditOrg} currentValue={currentValue} />
 
       <Select
         className={`react-select-container ${darkMode && 'dark-theme'}`}
