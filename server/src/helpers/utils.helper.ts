@@ -5,8 +5,6 @@ import { isEmpty } from 'lodash';
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
 const protobuf = require('protobufjs');
-import { ConflictException } from '@nestjs/common';
-import { DataBaseConstraints } from './db_constraints.constants';
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
