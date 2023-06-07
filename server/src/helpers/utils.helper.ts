@@ -128,3 +128,11 @@ export async function getServiceAndRpcNames(protoDefinition) {
 export const generateNextName = (firstWord: string) => {
   return `${firstWord} ${Date.now()}`;
 };
+
+export const truncateAndReplace = (name) => {
+  const secondsSinceEpoch = Date.now();
+  if (name.length > 35) {
+    return name.replace(name.substring(35, 50), secondsSinceEpoch);
+  }
+  return name + secondsSinceEpoch;
+};

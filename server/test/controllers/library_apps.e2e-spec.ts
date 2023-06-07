@@ -47,7 +47,7 @@ describe('library apps controller', () => {
         .set('Cookie', adminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.name).toBe('GitHub Contributor Leaderboard');
+      expect(response.body.name).toContain('GitHub Contributor Leaderboard');
     });
 
     it('should return error if template identifier is not found', async () => {
