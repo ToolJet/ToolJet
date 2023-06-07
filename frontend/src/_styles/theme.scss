@@ -4544,10 +4544,6 @@ input[type="text"] {
   }
 }
 
-.onboarding-modal.dark .modal-content {
-  @extend .modal-content, .home-modal-component, .dark;
-}
-
 .modal-content.home-modal-component.dark-theme {
   .btn-close {
     filter: brightness(0) invert(1);
