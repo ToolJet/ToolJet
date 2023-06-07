@@ -10585,11 +10585,14 @@ tbody {
   }
 }
 
-<<<<<<< HEAD
+.jet-container-loading {
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+}
+
 .jet-container-json-form {
   padding: 20px;
-
-  .box {}
 
   fieldset {
     width: 100%;
@@ -10605,10 +10608,4 @@ tbody {
       }
     }
   }
-=======
-.jet-container-loading {
-  margin: 0 auto;
-  justify-content: center;
-  align-items: center;
->>>>>>> develop
 }
