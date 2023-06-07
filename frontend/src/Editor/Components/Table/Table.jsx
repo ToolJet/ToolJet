@@ -689,9 +689,7 @@ export function Table({
       const selectedRow = selectedFlatRows?.[0]?.original ?? {};
       const selectedRowId = selectedFlatRows?.[0]?.id ?? null;
       setExposedVariables({ selectedRow, selectedRowId }).then(() => {
-        setExposedVariables({ selectedRow, selectedRowId }).then(() => {
-          mergeToTableDetails({ selectedRow, selectedRowId });
-        });
+        mergeToTableDetails({ selectedRow, selectedRowId });
       });
     }
   }, [selectedFlatRows.length, selectedFlatRows, _.toString(selectedFlatRows)]);
