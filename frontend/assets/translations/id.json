@@ -368,7 +368,7 @@
           "editFolder": "Edit folder",
           "deleteFolder": "Hapus folder",
           "folderName": "Nama folder",
-          "wishToDeleteFolder": "Apakah Anda yakin ingin menghapus foldernya? Aplikasi di dalam folder tidak akan dihapus."
+          "wishToDeleteFolder": "Apakah Anda yakin ingin menghapus foldernya {{folderName}}? Aplikasi di dalam folder tidak akan dihapus."
         },
         "header": {
           "createNewApplication": "Buat Aplikasi Baru",
