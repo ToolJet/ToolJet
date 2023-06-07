@@ -27,15 +27,17 @@ function isEmpty(value: number | null | undefined | string) {
 }
 
 function isFileObject(value) {
+  const keys = Object.keys(value);
+
   return (
     typeof value === 'object' &&
-    Object.keys(value).length > 0 &&
-    Object.keys(value).includes('name') && // example.zip
-    Object.keys(value).includes('type') && // application/zip
-    Object.keys(value).includes('content') && // raw bytes
-    Object.keys(value).includes('dataURL') && // data url version
-    Object.keys(value).includes('base64Data') && // data
-    Object.keys(value).includes('filePath')
+    keys.length > 0 &&
+    keys.includes('name') && // example.zip
+    keys.includes('type') && // application/zip
+    keys.includes('content') && // raw'ish bytes (contains new lines - \n)
+    keys.includes('dataURL') && // data url representation
+    keys.includes('base64Data') && // data in base64
+    keys.includes('filePath')
   );
 }
 
@@ -195,10 +197,10 @@ export default class RestapiQueryService implements QueryService {
       const form = new FormData();
       for (const key in json) {
         if (isFileObject(json[key])) {
-          const fileBuffer = Buffer.from(json[key].base64Data, 'base64');
+          const fileBuffer = Buffer.from(json[key]?.base64Data || '', 'base64');
           form.append(key, fileBuffer, {
-            filename: json[key].name,
-            contentType: json[key].type,
+            filename: json[key]?.name || '',
+            contentType: json[key]?.type || '',
             knownLength: fileBuffer.length,
           });
         } else {
