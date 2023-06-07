@@ -21,7 +21,6 @@ describe("Bulk user upload", () => {
     "cypress/fixtures/bulkUser/without_firstname - Sheet1.csv";
   const without_lastName =
     "cypress/fixtures/bulkUser/without_lastname - Sheet1.csv";
-
   const invite_users =
     "cypress/fixtures/bulkUser/invite_users - Sheet1 - 500_invite_users - Sheet1.csv.csv";
 
@@ -51,18 +50,16 @@ describe("Bulk user upload", () => {
       "Invalid row(s): [groups] in [5] row(s). No users were uploaded."
     );
 
-    // toast
     bulkUserUpload(
       same_email,
       "same_email",
-      "User with such email already exists."
+      "Duplicate email found. Please provide a unique email address."
     );
 
-    // Toast
     bulkUserUpload(
       invalid_group_name,
       "invalid_group_name",
-      "Groups All-users, All-users, All-users, All-users, All-users, All-users, All-users, All-users, All-users, All-users, All-users doesn't exist. No users were uploaded"
+      "11 groups doesn't exist. No users were uploaded"
     );
 
     bulkUserUpload(
