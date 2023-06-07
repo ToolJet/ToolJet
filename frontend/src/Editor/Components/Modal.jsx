@@ -20,7 +20,6 @@ export const Modal = function Modal({
   height,
 }) {
   const [showModal, setShowModal] = useState(false);
-  const [count, setCount] = useState(0);
 
   const {
     closeOnClickingOutside = false,
@@ -69,14 +68,6 @@ export const Modal = function Modal({
     fireEvent(canShowModal ? 'onOpen' : 'onClose');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
-
-  useEffect(() => {
-    console.log('mounted', count);
-
-    return () => {
-      console.log('mounted no', count);
-    };
-  }, [showModal]);
 
   useEffect(() => {
     const handleModalOpen = () => {
@@ -132,13 +123,8 @@ export const Modal = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal, modalHeight]);
 
-  useEffect(() => {
-    console.log('count', count);
-  }, [count]);
-
   function hideModal() {
     setShowModal(false);
-    setCount((prev) => prev - 1);
     setExposedVariable('show', false).then(() => fireEvent('onClose'));
   }
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
@@ -193,7 +179,6 @@ export const Modal = function Modal({
           onClick={(event) => {
             event.stopPropagation();
             setShowModal(true);
-            setCount((prev) => prev + 1);
             setExposedVariable('show', true);
           }}
           data-cy={`${dataCy}-launch-button`}
