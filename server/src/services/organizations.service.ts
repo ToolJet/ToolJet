@@ -341,16 +341,18 @@ export class OrganizationsService {
         }
       );
 
-    if (loginType === 'form') {
-      query.where('organization_sso.enabled = :enabled', {
-        enabled: true,
-      });
-    } else if (loginType === 'sso') {
-      query.where('organization.inheritSSO = :inheritSSO', {
-        inheritSSO: true,
-      });
-    } else {
-      return;
+    if (!isSuperAdmin(user)) {
+      if (loginType === 'form') {
+        query.where('organization_sso.enabled = :enabled', {
+          enabled: true,
+        });
+      } else if (loginType === 'sso') {
+        query.where('organization.inheritSSO = :inheritSSO', {
+          inheritSSO: true,
+        });
+      } else {
+        return;
+      }
     }
 
     query.andWhere('organization_users.userId = :userId', {

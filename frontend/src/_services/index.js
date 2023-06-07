@@ -22,3 +22,4 @@ export * from './auditLogsService.js';
 export * from './globalDatasource.service';
 export * from './app_environment.service';
 export * from './license.service';
+export * from './copilot.service';

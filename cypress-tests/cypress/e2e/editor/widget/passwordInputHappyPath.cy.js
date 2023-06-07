@@ -122,12 +122,14 @@ describe("Password Input", () => {
       commonWidgetSelector.draggableWidget(data.widgetName),
       data.customText
     );
+    cy.get('[data-cy="real-canvas"]').click("topLeft", { force: true });
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(data.widgetName)
     ).verifyVisibleElement(
       "have.text",
       commonWidgetText.maxLengthValidationError(data.maximumLength)
     );
+    openEditorSidebar(data.widgetName);
 
     verifyAndModifyParameter(
       commonWidgetText.labelcustomValidadtion,
@@ -135,9 +137,11 @@ describe("Password Input", () => {
     );
     cy.forceClickOnCanvas();
     cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).clear();
+    cy.get('[data-cy="real-canvas"]').click("topLeft", { force: true });
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(data.widgetName)
     ).verifyVisibleElement("have.text", data.customText);
+    openEditorSidebar(data.widgetName);
 
     cy.get(
       commonWidgetSelector.accordion(commonWidgetText.accordionProperties)
@@ -322,6 +326,7 @@ describe("Password Input", () => {
       .invoke("attr", "placeholder")
       .should("contain", data.customText);
 
+    cy.get('[data-cy="real-canvas"]').click("topLeft", { force: true });
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(
         passwordInputText.defaultWidgetName
@@ -338,6 +343,7 @@ describe("Password Input", () => {
       commonWidgetSelector.draggableWidget(commonWidgetText.text1)
     ).verifyVisibleElement("have.text", "t");
     cy.forceClickOnCanvas();
+    cy.get('[data-cy="real-canvas"]').click("topLeft", { force: true });
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(
         passwordInputText.defaultWidgetName
@@ -348,6 +354,7 @@ describe("Password Input", () => {
       commonWidgetSelector.draggableWidget(passwordInputText.defaultWidgetName),
       data.customText.toUpperCase()
     );
+    cy.get('[data-cy="real-canvas"]').click("topLeft", { force: true });
     cy.get(
       commonWidgetSelector.validationFeedbackMessage(
         passwordInputText.defaultWidgetName

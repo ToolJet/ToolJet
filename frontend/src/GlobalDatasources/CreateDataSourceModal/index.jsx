@@ -15,6 +15,7 @@ export const CreateDataSourceModal = ({ updateSelectedDatasource }) => {
             handleModalVisibility();
             setEditing(false);
           }}
+          data-cy="add-new-data-source-button"
         >
           Add new datasource
         </button>

@@ -3,7 +3,7 @@ id: overview
 title: Overview
 ---
 
-# Components : Overview
+# Components: Overview
 
 Components are used to build the UI of the applications. They can be dragged onto the canvas from the Component Library and can be modified from the Properties Panel without needing to write any code. **[Event Handlers](/docs/actions/event-handler)** in Components allow end users to trigger queries and other application events to perform the **[Actions](/docs/category/actions-reference)**.
 
@@ -68,13 +68,16 @@ Check all the available Actions **[here](/docs/category/actions-reference)**.
 Bindings allow you to get dynamic data into the components. Anything inside of **`{{}}`** is evaluated as a JavaScript expression in ToolJet.
 
 Any arbitrary JavaScript code can be written inside **`{{}}`**:
+
 ```js
 {{(function () {
         <your_javascript_code_here>
     })()
 }}
 ```
+
 or
+
 ```js
 {{components.xyz.data.key === Sun ?? true : false}}
 ```
@@ -82,4 +85,3 @@ or
 :::tip
 Check out the How-to guides like **[changing color of text in table column](/docs/how-to/access-cellvalue-rowdata)**, **[Enable/Disable a component using JavaScript](/docs/how-to/access-currentuser)**, and **[more](/docs/category/how-to)**.
 :::
-

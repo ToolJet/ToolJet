@@ -9,17 +9,17 @@ Both the ToolJet server and client requires some environment variables to start 
 
 ## ToolJet server
 
-#### ToolJet host ( required )
+### ToolJet host ( required )
 
 | variable     | description                                                      |
 | ------------ | ---------------------------------------------------------------- |
 | TOOLJET_HOST | the public URL of ToolJet client ( eg: https://app.tooljet.com ) |
 
-#### Lockbox configuration ( required )
+### Lockbox configuration ( required )
 
 ToolJet server uses lockbox to encrypt datasource credentials. You should set the environment variable `LOCKBOX_MASTER_KEY` with a 32 byte hexadecimal string.
 
-#### Application Secret ( required )
+### Application Secret ( required )
 
 ToolJet server uses a secure 64 byte hexadecimal string to encrypt session cookies. You should set the environment variable `SECRET_KEY_BASE`.
 
@@ -30,7 +30,7 @@ For `LOCKBOX_MASTER_KEY` use `openssl rand -hex 32`
 For `SECRET_KEY_BASE` use `openssl rand -hex 64`
 :::
 
-#### Database configuration ( required )
+### Database configuration ( required )
 
 ToolJet server uses PostgreSQL as the database.
 
@@ -55,11 +55,11 @@ If you intent you use the DB connection url and if the connection does not suppo
 
 ToolJet by default tries to create database based on `PG_DB` variable set and additionally my try to create postgres extensions. This requires the postgres user to have CREATEDB permission. If this cannot be granted you can disable this behaviour by setting `PG_DB_OWNER` as `false` and will have to manually run them.
 
-#### Check for updates ( optional )
+### Check for updates ( optional )
 
 Self-hosted version of ToolJet pings our server to fetch the latest product updates every 24 hours. You can disable this by setting the value of `CHECK_FOR_UPDATES` environment variable to `0`. This feature is enabled by default.
 
-#### Comment feature enable ( optional )
+### Comment feature enable ( optional )
 
 Use this environment variable to enable/disable the feature that allows you to add comments on the canvas.
 
@@ -67,7 +67,7 @@ Use this environment variable to enable/disable the feature that allows you to a
 | ---------------------- | ----------------- |
 | COMMENT_FEATURE_ENABLE | `true` or `false` |
 
-#### Multiplayer feature enable ( optional )
+### Multiplayer feature enable ( optional )
 
 Use this environment variable to enable/disable the feature that allows users to collaboratively work on the canvas.
 
@@ -75,6 +75,7 @@ Use this environment variable to enable/disable the feature that allows users to
 | -------------------------- | ----------------- |
 | ENABLE_MULTIPLAYER_EDITING | `true` or `false` |
 
+### Marketplace
 #### Marketplace feature enable ( optional )
 
 Use this environment variable to enable/disable the feature that allows users to use the [marketplace](/docs/marketplace).
@@ -83,7 +84,21 @@ Use this environment variable to enable/disable the feature that allows users to
 | -------------------------- | ----------------- |
 | ENABLE_MARKETPLACE_FEATURE | `true` or `false` |
 
-#### Enable ToolJet Database ( optional )
+#### Enable Marketplace plugin developement mode ( optional )
+
+Use this environment variable to enable/disable the developement mode that allows developers to build the plugin.
+
+| variable                   | value             |
+| -------------------------- | ----------------- |
+| ENABLE_MARKETPLACE_DEV_MODE | `true` or `false` |
+
+### User Session Expiry Time (Optional)
+
+| variable         | description                                     |
+| ---------------- | ----------------------------------------------- |
+| USER_SESSION_EXPIRY | This variable controls the user session expiry time. By default, the session expires after 2 days. The variable expects the value in minutes. ex: USER_SESSION_EXPIRY = 120 which is 2 hours |
+
+### Enable ToolJet Database ( optional )
 
 | variable          | description                                  |
 | ----------------- | -------------------------------------------- |
@@ -108,7 +123,7 @@ If you intent you use the DB connection url and if the connection does not suppo
 `postgres://username:password@hostname:port/database_name?sslmode=disable`
 :::
 
-#### Server Host ( optional )
+### Server Host ( optional )
 
 You can specify a different server for backend if it is hosted on another server.
 
@@ -116,7 +131,7 @@ You can specify a different server for backend if it is hosted on another server
 | ----------- | ------------------------------------------------------------------------------------------------- |
 | SERVER_HOST | Configure a hostname for the server as a proxy pass. If no value is set, it defaults to `server`. |
 
-#### Disable Multi-Workspace ( optional )
+### Disable Multi-Workspace ( optional )
 
 If you want to disable Multi-Workspace feature, set the environment variable `DISABLE_MULTI_WORKSPACE` to `true`.
 
@@ -124,7 +139,7 @@ If you want to disable Multi-Workspace feature, set the environment variable `DI
 
 If you want to hide account setup link from admin in manage user page, set the environment variable `HIDE_ACCOUNT_SETUP_LINK` to `true`, please make sure you have configured SMTP to receive welcome mail for users. Valid only if `DISABLE_MULTI_WORKSPACE` is not `true`.
 
-#### Disabling signups ( optional )
+### Disabling signups ( optional )
 
 Sign up is enabled only if Multi-Workspace is enabled. If you want to restrict the signups and allow new users only by invitations, set the environment variable `DISABLE_SIGNUPS` to `true`.
 
@@ -132,17 +147,17 @@ Sign up is enabled only if Multi-Workspace is enabled. If you want to restrict t
 You will still be able to see the signup page but won't be able to successfully submit the form.
 :::
 
-#### Serve client as a server end-point ( optional )
+### Serve client as a server end-point ( optional )
 
 By default, the `SERVE_CLIENT` variable will be unset and the server will serve the client at its `/` end-point.
 You can set `SERVE_CLIENT` to `false` to disable this behaviour.
 
-#### Serve client at subpath
+### Serve client at subpath
 
 If ToolJet is hosted on a domain subpath, you can set the environment variable `SUB_PATH` to support it.
 Please note the subpath is to be set with trailing `/` and is applicable only when the server is serving the frontend client.
 
-#### SMTP configuration ( optional )
+### SMTP configuration ( optional )
 
 ToolJet uses SMTP services to send emails ( Eg: invitation email when you add new users to your workspace ).
 
@@ -154,7 +169,7 @@ ToolJet uses SMTP services to send emails ( Eg: invitation email when you add ne
 | SMTP_DOMAIN        | domain or host                            |
 | SMTP_PORT          | port                                      |
 
-#### Slack configuration ( optional )
+### Slack configuration ( optional )
 
 If your ToolJet installation requires Slack as a data source, you need to create a Slack app and set the following environment variables:
 
@@ -163,7 +178,7 @@ If your ToolJet installation requires Slack as a data source, you need to create
 | SLACK_CLIENT_ID     | client id of the slack app     |
 | SLACK_CLIENT_SECRET | client secret of the slack app |
 
-#### Google OAuth ( optional )
+### Google OAuth ( optional )
 
 If your ToolJet installation needs access to data sources such as Google sheets, you need to create OAuth credentials from Google Cloud Console.
 
@@ -172,7 +187,7 @@ If your ToolJet installation needs access to data sources such as Google sheets,
 | GOOGLE_CLIENT_ID     | client id     |
 | GOOGLE_CLIENT_SECRET | client secret |
 
-#### Google maps configuration ( optional )
+### Google maps configuration ( optional )
 
 If your ToolJet installation requires `Maps` widget, you need to create an API key for Google Maps API.
 
@@ -180,7 +195,7 @@ If your ToolJet installation requires `Maps` widget, you need to create an API k
 | ------------------- | ------------------- |
 | GOOGLE_MAPS_API_KEY | Google maps API key |
 
-#### APM VENDOR ( optional )
+### APM VENDOR ( optional )
 
 Specify application monitoring vendor. Currently supported values - `sentry`.
 
@@ -188,13 +203,13 @@ Specify application monitoring vendor. Currently supported values - `sentry`.
 | ---------- | ----------------------------------------- |
 | APM_VENDOR | Application performance monitoring vendor |
 
-#### SENTRY DNS ( optional )
+### SENTRY DNS ( optional )
 
 | variable   | description                                                                                       |
 | ---------- | ------------------------------------------------------------------------------------------------- |
 | SENTRY_DNS | DSN tells a Sentry SDK where to send events so the events are associated with the correct project |
 
-#### SENTRY DEBUG ( optional )
+### SENTRY DEBUG ( optional )
 
 Prints logs for sentry.
 
@@ -202,7 +217,7 @@ Prints logs for sentry.
 | ------------ | ------------------------------------------- |
 | SENTRY_DEBUG | `true` or `false`. Default value is `false` |
 
-#### Server URL ( optional)
+### Server URL ( optional)
 
 This is used to set up for CSP headers and put trace info to be used with APM vendors.
 
@@ -210,11 +225,11 @@ This is used to set up for CSP headers and put trace info to be used with APM ve
 | ------------------ | ------------------------------------------------------------ |
 | TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.com ) |
 
-#### RELEASE VERSION ( optional)
+### RELEASE VERSION ( optional)
 
 Once set any APM provider that supports segregation with releases will track it.
 
-#### NODE_EXTRA_CA_CERTS (optional)
+### NODE_EXTRA_CA_CERTS (optional)
 
 Tooljet needs to be configured for custom CA certificate to be able to trust and establish connection over https. This requires you to configure an additional env var `NODE_EXTRA_CA_CERTS` to have absolute path to your CA certificates. This file named `cert.pem` needs to be in PEM format and can have more than one certificates.
 
@@ -222,11 +237,11 @@ Tooljet needs to be configured for custom CA certificate to be able to trust and
 | ------------------- | ------------------------------------------------------------------ |
 | NODE_EXTRA_CA_CERTS | absolute path to certificate PEM file ( eg: /ToolJet/ca/cert.pem ) |
 
-#### Disable telemetry ( optional )
+### Disable telemetry ( optional )
 
 Pings our server to update the total user count every 24 hours. You can disable this by setting the value of `DISABLE_TOOLJET_TELEMETRY` environment variable to `true`. This feature is enabled by default.
 
-#### Password Retry Limit (Optional)
+### Password Retry Limit (Optional)
 
 The maximum retry limit of login password for a user is by default set to 5, account will be locked after 5 unsuccessful login attempts. Use the variables mentioned below to control this behavior:
 
@@ -235,7 +250,7 @@ The maximum retry limit of login password for a user is by default set to 5, acc
 | DISABLE_PASSWORD_RETRY_LIMIT | (true/false) To disable the password retry check, if value is `true` then no limits for password retry |
 | PASSWORD_RETRY_LIMIT         | To change the default password retry limit (5)                                                         |
 
-#### SSO Configurations (Optional)
+### SSO Configurations (Optional)
 
 Configurations for instance level SSO. Valid only if `DISABLE_MULTI_WORKSPACE` is not `true`.
 
@@ -250,7 +265,7 @@ Configurations for instance level SSO. Valid only if `DISABLE_MULTI_WORKSPACE` i
 
 ## ToolJet client
 
-#### Server URL ( optionally required )
+### Server URL ( optionally required )
 
 This is required when client is built separately.
 
@@ -258,7 +273,7 @@ This is required when client is built separately.
 | ------------------ | ------------------------------------------------------------ |
 | TOOLJET_SERVER_URL | the URL of ToolJet server ( eg: https://server.tooljet.com ) |
 
-#### Server Port ( optional)
+### Server Port ( optional)
 
 This could be used to for local development, it will set the server url like so: `http://localhost:<TOOLJET_SERVER_PORT>`
 
@@ -266,7 +281,7 @@ This could be used to for local development, it will set the server url like so:
 | ------------------- | --------------------------------------- |
 | TOOLJET_SERVER_PORT | the port of ToolJet server ( eg: 3000 ) |
 
-#### Asset path ( optionally required )
+### Asset path ( optionally required )
 
 This is required when the assets for the client are to be loaded from elsewhere (eg: CDN).
 This can be an absolute path, or relative to main HTML file.
@@ -275,7 +290,7 @@ This can be an absolute path, or relative to main HTML file.
 | ---------- | -------------------------------------------------------------- |
 | ASSET_PATH | the asset path for the website ( eg: https://app.tooljet.com/) |
 
-#### Serve client as a server end-point ( optional )
+### Serve client as a server end-point ( optional )
 
 By default the client build will be done to be served with ToolJet server.
 If you intend to use client separately then can set `SERVE_CLIENT` to `false`.

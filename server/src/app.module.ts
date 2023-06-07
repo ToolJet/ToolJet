@@ -40,6 +40,7 @@ import { AuditLogsModule } from './modules/audit_logs/audit_logs.module';
 import { InstanceSettingsModule } from './modules/instance_settings/instance_settings.module';
 import { TooljetDbModule } from './modules/tooljet_db/tooljet_db.module';
 import { PluginsModule } from './modules/plugins/plugins.module';
+import { CopilotModule } from './modules/copilot/copilot.module';
 import { AppEnvironmentsModule } from './modules/app_environments/app_environments.module';
 import { RequestContextModule } from './modules/request_context/request-context.module';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -101,6 +102,7 @@ const imports = [
   AppEnvironmentsModule,
   InstanceSettingsModule,
   LicenseModule,
+  CopilotModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
