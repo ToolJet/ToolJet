@@ -128,6 +128,10 @@ jobs:
               {
                 "key": "SMTP_PASSWORD",
                 "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"
+              },
+              {
+                "key": "ENABLE_MARKETPLACE_FEATURE",
+                "value": "true"
               }
             ],
             "serviceDetails": {
@@ -144,7 +148,7 @@ jobs:
                 "port": 80,
                 "protocol": "TCP"
                 }],
-                "plan": "pro",
+                "plan": "starter",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
@@ -241,6 +245,20 @@ jobs:
             } catch (e) {
               console.log(e)
             }
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt update
+          sudo apt install postgresql-client -y
+
+      - name: Drop PostgreSQL PR database
+        env:
+          PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
+          PGPORT: 5432
+          PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
+          PGDATABASE: ${{ env.PR_NUMBER }}
+        run: |
+          PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
 
   suspend-review-app:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-app' }}

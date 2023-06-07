@@ -1,9 +1,10 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonText } from "Texts/common";
-import { closeDSModal,deleteDatasource } from "Support/utils/dataSource";
+import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 import {
   addQuery,
   fillDataSourceTextField,
@@ -15,6 +16,9 @@ import {
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
 
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
@@ -22,7 +26,7 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal()
+    closeDSModal();
     cy.get(commonSelectors.addNewDataSourceButton)
       .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
@@ -129,7 +133,7 @@ describe("Data sources", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      "cypress-clickhouse"
+      `cypress-${data.lastName}-clickhouse`
     );
 
     fillDataSourceTextField(
@@ -165,10 +169,9 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get('[data-cy="cypress-clickhouse-button"]').verifyVisibleElement(
-      "have.text",
-      "cypress-clickhouse"
-    );
-    deleteDatasource("cypress-clickhouse");
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-clickhouse-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-clickhouse`);
+    deleteDatasource(`cypress-${data.lastName}-clickhouse`);
   });
 });
