@@ -101,6 +101,7 @@ export function Table({
     rowsPerPage,
     enabledSort,
     hideColumnSelectorButton,
+    showAddNewRowButton,
     allowSelection,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
@@ -834,7 +835,7 @@ export function Table({
       ref={tableRef}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
-      {(displaySearchBox || showDownloadButton || showFilterButton) && (
+      {(displaySearchBox || showDownloadButton || showFilterButton || showAddNewRowButton) && (
         <div className={`card-body border-bottom py-3 ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'}`}>
           <div
             className={`d-flex align-items-center ms-auto text-muted ${
@@ -853,21 +854,23 @@ export function Table({
               />
             )}
             <div>
-              <button
-                className="btn btn-light btn-sm p-1 mx-1"
-                onClick={(e) => {
-                  showAddNewRowPopup();
-                }}
-                data-tooltip-id="tooltip-for-add-new-row"
-                data-tooltip-content="Add new row"
-                disabled={tableDetails.addNewRowsDetails.addingNewRows}
-              >
-                <img src="assets/images/icons/plus.svg" width="15" height="15" />
-                {!tableDetails.addNewRowsDetails.addingNewRows &&
-                  !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
-                    <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                  )}
-              </button>
+              {showAddNewRowButton && (
+                <button
+                  className="btn btn-light btn-sm p-1 mx-1"
+                  onClick={(e) => {
+                    showAddNewRowPopup();
+                  }}
+                  data-tooltip-id="tooltip-for-add-new-row"
+                  data-tooltip-content="Add new row"
+                  disabled={tableDetails.addNewRowsDetails.addingNewRows}
+                >
+                  <img src="assets/images/icons/plus.svg" width="15" height="15" />
+                  {!tableDetails.addNewRowsDetails.addingNewRows &&
+                    !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
+                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                    )}
+                </button>
+              )}
               <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
               {showFilterButton && (
                 <>
