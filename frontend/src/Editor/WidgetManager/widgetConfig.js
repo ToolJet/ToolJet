@@ -264,6 +264,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      allowSelection: {
+        type: 'toggle',
+        displayName: 'Allow selection',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       showBulkSelector: {
         type: 'toggle',
         displayName: 'Bulk selection',
@@ -475,6 +482,7 @@ export const widgets = [
         actions: { value: [] },
         enabledSort: { value: '{{true}}' },
         hideColumnSelectorButton: { value: '{{false}}' },
+        allowSelection: { value: '{{true}}' },
       },
       events: [],
       styles: {
