@@ -684,6 +684,19 @@ class TableComponent extends React.Component {
               paramType="properties"
             />
           )}
+
+          <ProgramaticallyHandleToggleSwitch
+            label="Column visibility"
+            currentState={this.state.currentState}
+            index={index}
+            darkMode={this.props.darkMode}
+            callbackFunction={this.onColumnItemChange}
+            property="columnVisibility"
+            props={column}
+            component={this.props.component}
+            paramMeta={{ type: 'toggle', displayName: 'Column visibility' }}
+            paramType="properties"
+          />
         </Popover.Body>
       </Popover>
     );
