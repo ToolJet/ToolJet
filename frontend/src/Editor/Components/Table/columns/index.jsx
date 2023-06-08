@@ -92,6 +92,7 @@ export default function generateColumnsData({
       regex: column.regex,
       customRule: column?.customRule,
       sortType,
+      columnVisibility: column?.columnVisibility ?? true,
       Cell: function ({ cell, isEditable, newRowsChangeSet = null }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
