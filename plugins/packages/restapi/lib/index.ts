@@ -196,15 +196,16 @@ export default class RestapiQueryService implements QueryService {
     } else if (hasFiles) {
       const form = new FormData();
       for (const key in json) {
-        if (isFileObject(json[key])) {
-          const fileBuffer = Buffer.from(json[key]?.base64Data || '', 'base64');
+        const value = json[key];
+        if (isFileObject(value)) {
+          const fileBuffer = Buffer.from(value?.base64Data || '', 'base64');
           form.append(key, fileBuffer, {
-            filename: json[key]?.name || '',
-            contentType: json[key]?.type || '',
+            filename: value?.name || '',
+            contentType: value?.type || '',
             knownLength: fileBuffer.length,
           });
-        } else {
-          form.append(key, json[key]);
+        } else if (value !== undefined && value !== null) {
+          form.append(key, value);
         }
       }
 
