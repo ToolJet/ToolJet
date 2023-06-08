@@ -822,7 +822,7 @@ export const widgets = [
     component: 'Modal',
     defaultSize: {
       width: 10,
-      height: 400,
+      height: 34,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -874,6 +874,13 @@ export const widgets = [
           { name: 'medium', value: 'lg' },
           { name: 'large', value: 'xl' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      modalHeight: {
+        type: 'code',
+        displayName: 'Modal Height',
         validation: {
           schema: { type: 'string' },
         },
@@ -965,6 +972,7 @@ export const widgets = [
         hideCloseButton: { value: '{{false}}' },
         hideOnEsc: { value: '{{true}}' },
         closeOnClickingOutside: { value: '{{false}}' },
+        modalHeight: { value: '400px' },
       },
       events: [],
       styles: {

@@ -2576,8 +2576,20 @@ hr {
   height: 28px !important;
 }
 
+.editor {
+  .modal-dialog {
+    overflow-y: initial !important
+  }
+
+  .modal-dialog-scrollable .modal-content {
+    max-height: 88% !important;
+  }
+
+}
+
+
 .modal-component {
-  margin-top: 150px;
+
 
   .modal-body {
     padding: 0;
@@ -10613,4 +10625,10 @@ tbody {
   margin: 0 auto;
   justify-content: center;
   align-items: center;
+}
+
+.freeze-scroll {
+  #real-canvas {
+    overflow: hidden;
+  }
 }
