@@ -101,6 +101,7 @@ export function Table({
     rowsPerPage,
     enabledSort,
     hideColumnSelectorButton,
+    allowSelection,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
@@ -422,6 +423,8 @@ export function Table({
       showBulkSelector,
       JSON.stringify(variablesExposedForPreview && variablesExposedForPreview[id]),
       darkMode,
+      allowSelection,
+      highlightSelectedRow,
     ] // Hack: need to fix
   );
 
@@ -448,6 +451,8 @@ export function Table({
     tableDetails.changeSet,
     component.definition.properties.data.value,
     JSON.stringify(properties.data),
+    showBulkSelector,
+    allowSelection,
   ]);
 
   useEffect(() => {
@@ -499,6 +504,8 @@ export function Table({
     selectedFlatRows,
     globalFilteredRows,
     getToggleHideAllColumnsProps,
+    toggleRowSelected,
+    toggleAllRowsSelected,
   } = useTable(
     {
       autoResetPage: false,
@@ -516,6 +523,23 @@ export function Table({
       getExportFileBlob,
       disableSortBy: !enabledSort,
       manualSortBy: serverSideSort,
+      stateReducer: (newState, action, prevState) => {
+        const newStateWithPrevSelectedRows = showBulkSelector
+          ? { ...newState, selectedRowId: { ...prevState.selectedRowIds, ...newState.selectedRowIds } }
+          : { ...newState.selectedRowId };
+        if (action.type === 'toggleRowSelected') {
+          prevState.selectedRowIds[action.id]
+            ? (newState.selectedRowIds = {
+                ...newStateWithPrevSelectedRows.selectedRowIds,
+                [action.id]: false,
+              })
+            : (newState.selectedRowIds = {
+                ...newStateWithPrevSelectedRows.selectedRowIds,
+                [action.id]: true,
+              });
+        }
+        return newState;
+      },
     },
     useColumnOrder,
     useFilters,
@@ -527,20 +551,23 @@ export function Table({
     useExportData,
     useRowSelect,
     (hooks) => {
-      showBulkSelector &&
+      allowSelection &&
+        !highlightSelectedRow &&
         hooks.visibleColumns.push((columns) => [
           {
             id: 'selection',
             Header: ({ getToggleAllPageRowsSelectedProps }) => (
               <div className="d-flex flex-column align-items-center">
-                <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />
+                {showBulkSelector && <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />}
               </div>
             ),
-            Cell: ({ row }) => (
-              <div className="d-flex flex-column align-items-center">
-                <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-              </div>
-            ),
+            Cell: ({ row }) => {
+              return (
+                <div className="d-flex flex-column align-items-center">
+                  <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+                </div>
+              );
+            },
             width: 1,
             columnType: 'selector',
           },
@@ -589,8 +616,9 @@ export function Table({
       const row = rows.find((item, index) => item.original[key] == value);
       if (row != undefined) {
         const selectedRowDetails = { selectedRow: item[0], selectedRowId: row.id };
-        mergeToTableDetails(selectedRowDetails);
         setExposedVariables(selectedRowDetails).then(() => {
+          toggleRowSelected(row.id);
+          mergeToTableDetails(selectedRowDetails);
           fireEvent('onRowClicked');
         });
       }
@@ -602,8 +630,10 @@ export function Table({
     async function () {
       if (!_.isEmpty(tableDetails.selectedRow)) {
         const selectedRowDetails = { selectedRow: {}, selectedRowId: {} };
-        mergeToTableDetails(selectedRowDetails);
-        setExposedVariables(selectedRowDetails);
+        setExposedVariables(selectedRowDetails).then(() => {
+          if (allowSelection && !highlightSelectedRow) toggleRowSelected(tableDetails.selectedRowId, false);
+          mergeToTableDetails(selectedRowDetails);
+        });
       }
       return;
     },
@@ -644,6 +674,26 @@ export function Table({
       JSON.stringify(tableDetails.addNewRowsDetails.newRowsDataUpdates),
     ]
   );
+  useEffect(() => {
+    if (showBulkSelector) {
+      const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
+      const selectedRowsId = selectedFlatRows.map((row) => row.id);
+      setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId }).then(() => {
+        const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
+          accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
+          return accumulator;
+        }, []);
+        mergeToTableDetails({ selectedRowsDetails });
+      });
+    } else if (!showBulkSelector && !highlightSelectedRow) {
+      const selectedRow = selectedFlatRows?.[0]?.original ?? {};
+      const selectedRowId = selectedFlatRows?.[0]?.id ?? null;
+      setExposedVariables({ selectedRow, selectedRowId }).then(() => {
+        mergeToTableDetails({ selectedRow, selectedRowId });
+      });
+    }
+  }, [selectedFlatRows.length, selectedFlatRows, _.toString(selectedFlatRows)]);
+
   registerAction(
     'downloadTableData',
     async function (format) {
@@ -653,9 +703,11 @@ export function Table({
   );
 
   useEffect(() => {
-    const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
-    onComponentOptionChanged(component, 'selectedRows', selectedRowsOriginalData);
-  }, [selectedFlatRows.length]);
+    setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null }).then(() => {
+      mergeToTableDetails({ selectedRowsDetails: [], selectedRow: {}, selectedRowId: null });
+      toggleAllRowsSelected(false);
+    });
+  }, [showBulkSelector, highlightSelectedRow, allowSelection]);
 
   React.useEffect(() => {
     if (serverSidePagination || !clientSidePagination) {
@@ -996,14 +1048,26 @@ export function Table({
                   <tr
                     key={index}
                     className={`table-row table-editor-component-row ${
-                      highlightSelectedRow && row.id === tableDetails.selectedRowId ? 'selected' : ''
+                      allowSelection &&
+                      highlightSelectedRow &&
+                      ((row.isSelected && row.id === tableDetails.selectedRowId) ||
+                        (showBulkSelector &&
+                          row.isSelected &&
+                          tableDetails?.selectedRowsDetails?.some((singleRow) => singleRow.selectedRowId === row.id)))
+                        ? 'selected'
+                        : ''
                     }`}
                     {...row.getRowProps()}
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
-                      const selectedRowDetails = { selectedRowId: row.id, selectedRow: row.original };
-                      mergeToTableDetails(selectedRowDetails);
-                      setExposedVariables(selectedRowDetails).then(() => {
+                      // toggleRowSelected will triggered useRededcuer function in useTable and in result will get the selectedFlatRows consisting row which are selected
+                      if (allowSelection) {
+                        await toggleRowSelected(row.id);
+                      }
+                      const selectedRow = row.original;
+                      const selectedRowId = row.id;
+                      setExposedVariables({ selectedRow, selectedRowId }).then(() => {
+                        if (allowSelection && highlightSelectedRow) mergeToTableDetails({ selectedRow, selectedRowId });
                         fireEvent('onRowClicked');
                       });
                     }}
