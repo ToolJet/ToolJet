@@ -29,11 +29,23 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
   );
 
   const editOrganization = () => {
-    if (!Object.keys(fields).find((key) => !_.isEmpty(fields[key].error))) {
+    let emptyError = false;
+    const fieldsTemp = fields;
+    Object.keys(fields).map((key) => {
+      if (!fields?.[key]?.value?.trim()) {
+        fieldsTemp[key] = {
+          error: `Workspace ${key} can't be empty`,
+        };
+        emptyError = true;
+      }
+    });
+    setFields({ ...fields, ...fieldsTemp });
+
+    if (!emptyError && !Object.keys(fields).find((key) => !_.isEmpty(fields[key].error))) {
       setIsCreating(true);
       const data = {
-        ...(fields?.name?.value && fields?.name?.value !== currentValue?.name && { name: fields.name.value }),
-        ...(fields?.slug?.value && fields?.slug?.value !== currentValue?.slug && { slug: fields.slug.value }),
+        ...(fields?.name?.value && fields?.name?.value !== currentValue?.name && { name: fields.name.value.trim() }),
+        ...(fields?.slug?.value && fields?.slug?.value !== currentValue?.slug && { slug: fields.slug.value.trim() }),
       };
       organizationService.editOrganization(data).then(
         () => {
@@ -66,7 +78,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     setFields({
       ...fields,
       [field]: {
-        value: trimmedValue,
+        value,
         error: error?.errorMsg,
       },
     });
@@ -135,7 +147,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
               data-cy="workspace-slug-input-field"
               autoFocusfields
             />
-            {fields['slug'].value !== null && !fields['slug'].error && (
+            {fields?.['slug']?.value !== currentValue?.slug && !fields['slug'].error && (
               <div className="icon-container">
                 <svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -149,7 +161,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
             )}
             {fields['slug']?.error ? (
               <label className="label tj-input-error">{fields['slug']?.error || ''}</label>
-            ) : fields['slug'].value ? (
+            ) : fields?.['slug']?.value !== currentValue?.slug ? (
               <label className="label label-success">{`Slug accepted!`}</label>
             ) : (
               <label className="label label-info">{`URL-friendly 'slug' consists of lowercase letters, numbers, and hyphens`}</label>

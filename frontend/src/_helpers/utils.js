@@ -845,7 +845,7 @@ export function isExpectedDataType(data, expectedDataType) {
 }
 
 export const validateName = (name, nameType, showError = false, allowSpecialChars = true, allowSpaces = true) => {
-  const newName = name.trim();
+  const newName = name;
   let errorMsg = '';
   if (!newName) {
     errorMsg = `${nameType} can't be empty`;

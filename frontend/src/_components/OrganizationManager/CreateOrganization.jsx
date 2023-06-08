@@ -10,13 +10,14 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [fields, setFields] = useState({ name: { value: '', error: '' }, slug: { value: null, error: '' } });
   const [slugProgress, setSlugProgress] = useState(false);
+  const [isDisabled, setDisabled] = useState(true);
   const { t } = useTranslation();
 
   const createOrganization = () => {
     let emptyError = false;
     const fieldsTemp = fields;
     Object.keys(fields).map((key) => {
-      if (!fields[key].value) {
+      if (!fields?.[key]?.value?.trim()) {
         fieldsTemp[key] = {
           error: `Workspace ${key} can't be empty`,
         };
@@ -58,11 +59,13 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         error: error?.errorMsg,
       },
     });
+    setDisabled(!error?.status);
   };
 
   const closeModal = () => {
     setFields({ name: { value: '', error: '' }, slug: { value: null, error: '' } });
     setShowCreateOrg(false);
+    setDisabled(true);
   };
 
   const delayedSlugChange = _.debounce((value, field) => {
@@ -154,7 +157,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>
             <ButtonSolid
-              disabled={isCreating}
+              disabled={isCreating || isDisabled}
               onClick={createOrganization}
               data-cy="create-workspace-button"
               isLoading={isCreating}
