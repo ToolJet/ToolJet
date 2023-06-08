@@ -122,7 +122,7 @@ export class AuthService {
         } else {
           // no form login enabled organization available for user - creating new one
           const organizationName = generateNextName('My workspace');
-          const slug = organizationName.replace(' ', '-').toLowerCase();
+          const slug = organizationName.replace(/\s+/g, '-').toLowerCase();
           organization = await this.organizationsService.create(organizationName, slug, user, manager);
         }
 
@@ -266,7 +266,7 @@ export class AuthService {
       //TODO: check if there any case available that the firstname will be nil
 
       const organizationName = generateNextName('My workspace');
-      const slug = organizationName.replace(' ', '-').toLowerCase();
+      const slug = organizationName.replace(/\s+/g, '-').toLowerCase();
       organization = await this.organizationsService.create(organizationName, slug, null, manager);
       const user = await this.usersService.create(
         {

@@ -80,7 +80,7 @@ export class OauthService {
 
     if (!user) {
       const organizationName = generateNextName('My workspace');
-      const slug = organizationName.replace(' ', '-').toLowerCase();
+      const slug = organizationName.replace(/\s+/g, '-').toLowerCase();
       defaultOrganization = await this.organizationService.create(organizationName, slug, null, manager);
     }
 
@@ -223,7 +223,7 @@ export class OauthService {
 
           // Not logging in to specific organization, creating new
           const organizationName = generateNextName('My workspace');
-          const slug = organizationName.replace(' ', '-').toLowerCase();
+          const slug = organizationName.replace(/\s+/g, '-').toLowerCase();
           defaultOrganization = await this.organizationService.create(organizationName, slug, null, manager);
 
           const groups = ['all_users', 'admin'];
@@ -266,7 +266,7 @@ export class OauthService {
           } else {
             // no SSO login enabled organization available for user - creating new one
             const organizationName = generateNextName('My workspace');
-            const slug = organizationName.replace(' ', '-').toLowerCase();
+            const slug = organizationName.replace(/\s+/g, '-').toLowerCase();
             organizationDetails = await this.organizationService.create(organizationName, slug, userDetails, manager);
           }
         } else if (!userDetails) {
