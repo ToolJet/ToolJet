@@ -80,17 +80,21 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
   }
 }
 
-export async function catchDbException(
-  operation: () => any,
-  dbConstraint: DataBaseConstraints,
-  errorMessage: string
-): Promise<any> {
+type DbContraintAndMsg = {
+  dbConstraint: DataBaseConstraints;
+  message: string;
+};
+
+export async function catchDbException(operation: () => any, dbConstraints: DbContraintAndMsg[]): Promise<any> {
   try {
     return await operation();
   } catch (err) {
-    if (err?.message?.includes(dbConstraint)) {
-      throw new ConflictException(errorMessage);
-    }
+    dbConstraints.map((dbConstraint) => {
+      if (err?.message?.includes(dbConstraint.dbConstraint)) {
+        throw new ConflictException(dbConstraint.message);
+      }
+    });
+
     throw err;
   }
 }

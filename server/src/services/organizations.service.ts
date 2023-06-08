@@ -49,6 +49,18 @@ interface UserCsvRow {
   email: string;
   groups?: any;
 }
+
+const orgConstraints = [
+  {
+    dbConstraint: DataBaseConstraints.WORKSPACE_NAME_UNIQUE,
+    message: 'This workspace name is already taken.',
+  },
+  {
+    dbConstraint: DataBaseConstraints.WORKSPACE_SLUG_UNIQUE,
+    message: 'This workspace slug is already taken.',
+  },
+];
+
 @Injectable()
 export class OrganizationsService {
   constructor(
@@ -68,26 +80,22 @@ export class OrganizationsService {
   async create(name: string, slug: string, user: User, manager?: EntityManager): Promise<Organization> {
     let organization: Organization;
     await dbTransactionWrap(async (manager: EntityManager) => {
-      organization = await catchDbException(
-        async () => {
-          return await manager.save(
-            manager.create(Organization, {
-              ssoConfigs: [
-                {
-                  sso: 'form',
-                  enabled: true,
-                },
-              ],
-              name,
-              slug,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            })
-          );
-        },
-        DataBaseConstraints.WORKSPACE_NAME_UNIQUE,
-        'This workspace name is already taken.'
-      );
+      organization = await catchDbException(async () => {
+        return await manager.save(
+          manager.create(Organization, {
+            ssoConfigs: [
+              {
+                sso: 'form',
+                enabled: true,
+              },
+            ],
+            name,
+            slug,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        );
+      }, orgConstraints);
 
       await this.appEnvironmentService.createDefaultEnvironments(organization.id, manager);
 
@@ -482,13 +490,9 @@ export class OrganizationsService {
     // removing keys with undefined values
     cleanObject(updatableParams);
 
-    return await catchDbException(
-      async () => {
-        return await this.organizationsRepository.update(organizationId, updatableParams);
-      },
-      DataBaseConstraints.WORKSPACE_NAME_UNIQUE,
-      'This workspace name is already taken.'
-    );
+    return await catchDbException(async () => {
+      return await this.organizationsRepository.update(organizationId, updatableParams);
+    }, orgConstraints);
   }
 
   async updateOrganizationConfigs(organizationId: string, params: any) {

@@ -212,13 +212,9 @@ export class AppsService {
     // removing keys with undefined values
     cleanObject(updatableParams);
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await catchDbException(
-        async () => {
-          return await manager.update(App, appId, updatableParams);
-        },
-        DataBaseConstraints.APP_NAME_UNIQUE,
-        'This app name is already taken.'
-      );
+      return await catchDbException(async () => {
+        return await manager.update(App, appId, updatableParams);
+      }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
     }, manager);
   }
 
