@@ -567,6 +567,13 @@ export function Table({
     ];
   }, [JSON.stringify(state)]);
 
+  const getDetailsOfPreSelectedRow = () => {
+    const key = Object?.keys(defaultSelctedRow)[0] ?? '';
+    const value = defaultSelctedRow?.[key] ?? undefined;
+    const preSelectedRowDetails = rows.find((row) => row?.original?.[key] === value);
+    return preSelectedRowDetails;
+  };
+
   useEffect(() => {
     if (!sortOptions) {
       setExposedVariable('sortApplied', []);
@@ -669,9 +676,10 @@ export function Table({
 
   useEffect(() => {
     const pageData = page.map((row) => row.original);
-    const selectedRowDetails = rows.find((row) => row.id === String(defaultSelctedRow));
-    const selectedRow = selectedRowDetails?.original ?? {};
-    const selectedRowId = selectedRowDetails?.id ?? null;
+    const preSelectedRowDetails =
+      typeof defaultSelctedRow === 'object' && !_.isEmpty(defaultSelctedRow) ? getDetailsOfPreSelectedRow() : {};
+    const selectedRow = preSelectedRowDetails?.original ?? {};
+    const selectedRowId = preSelectedRowDetails?.id ?? null;
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
       ['currentData', data],
@@ -727,13 +735,15 @@ export function Table({
   }, [JSON.stringify(changeSet)]);
 
   useEffect(() => {
-    const selectedRowDetails = rows.find((row) => row.id === String(defaultSelctedRow));
-    const selectedRow = selectedRowDetails?.original;
-    const selectedRowId = selectedRowDetails?.id;
-    setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId }).then(() => {
-      mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
-    });
-  }, []);
+    if (!_.isEmpty(defaultSelctedRow) && typeof defaultSelctedRow === 'object') {
+      const preSelectedRowDetails = getDetailsOfPreSelectedRow();
+      const selectedRow = preSelectedRowDetails?.original ?? {};
+      const selectedRowId = preSelectedRowDetails?.id ?? null;
+      setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId }).then(() => {
+        mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
+      });
+    }
+  }, [JSON.stringify(defaultSelctedRow)]);
 
   function downlaodPopover() {
     return (

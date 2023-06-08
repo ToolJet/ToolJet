@@ -282,7 +282,11 @@ export const widgets = [
         type: 'code',
         displayName: 'Default selected row',
         validation: {
-          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+          schema: {
+            type: 'array',
+            element: { type: 'object' },
+            optional: true,
+          },
         },
       },
     },
@@ -482,7 +486,7 @@ export const widgets = [
         actions: { value: [] },
         enabledSort: { value: '{{true}}' },
         hideColumnSelectorButton: { value: '{{false}}' },
-        defaultSelctedRow: { value: '{{1}}' },
+        defaultSelctedRow: { value: '{{{"name":"Sarah"}}}' },
       },
       events: [],
       styles: {
