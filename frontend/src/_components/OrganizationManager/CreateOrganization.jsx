@@ -28,9 +28,9 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     if (!emptyError && !Object.keys(fields).find((key) => !_.isEmpty(fields[key].error))) {
       setIsCreating(true);
       organizationService.createOrganization({ name: fields['name'].value, slug: fields['slug'].value }).then(
-        (data) => {
+        () => {
           setIsCreating(false);
-          const newPath = appendWorkspaceId(data.current_organization_id, location.pathname, true);
+          const newPath = appendWorkspaceId(fields['slug'].value, location.pathname, true);
           window.history.replaceState(null, null, newPath);
           window.location.reload();
         },

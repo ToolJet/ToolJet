@@ -735,21 +735,19 @@ export const removeSpaceFromWorkspace = (name) => {
   return name?.replace(' ', '-') || '';
 };
 
-export const appendWorkspaceId = (workspaceName, path, replaceId = false) => {
+export const appendWorkspaceId = (slug, path, replaceId = false) => {
   const subpath = getSubpath();
   path = pathnameWithoutSubpath(path);
 
-  workspaceName = removeSpaceFromWorkspace(workspaceName);
-
   let newPath = path;
   if (path === '/:workspaceId' || path.split('/').length === 2) {
-    newPath = `/${workspaceName}`;
+    newPath = `/${slug}`;
   } else {
     const paths = path.split('/').filter((path) => path !== '');
     if (replaceId) {
-      paths[0] = workspaceName;
+      paths[0] = slug;
     } else {
-      paths.unshift(workspaceName);
+      paths.unshift(slug);
     }
     newPath = `/${paths.join('/')}`;
   }
