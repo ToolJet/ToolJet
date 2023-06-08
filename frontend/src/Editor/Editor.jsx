@@ -55,6 +55,7 @@ enablePatches();
 class EditorComponent extends React.Component {
   constructor(props) {
     super(props);
+    resetAllStores();
 
     const appId = this.props.params.id;
 
@@ -145,7 +146,7 @@ class EditorComponent extends React.Component {
   }
 
   setWindowTitle(name) {
-    document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
+    document.title = name ? `${name} - Tooljet` : `My App - Tooljet`;
   }
 
   onVersionDelete = () => {
@@ -179,7 +180,6 @@ class EditorComponent extends React.Component {
   }
 
   componentDidMount() {
-    resetAllStores();
     this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
