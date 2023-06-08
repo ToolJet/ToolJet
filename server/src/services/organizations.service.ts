@@ -65,7 +65,7 @@ export class OrganizationsService {
     private configService: ConfigService
   ) {}
 
-  async create(name: string, user?: User, manager?: EntityManager): Promise<Organization> {
+  async create(name: string, slug: string, user: User, manager?: EntityManager): Promise<Organization> {
     let organization: Organization;
     await dbTransactionWrap(async (manager: EntityManager) => {
       organization = await catchDbException(
@@ -79,6 +79,7 @@ export class OrganizationsService {
                 },
               ],
               name,
+              slug,
               createdAt: new Date(),
               updatedAt: new Date(),
             })
@@ -571,7 +572,8 @@ export class OrganizationsService {
         shouldSendWelcomeMail = true;
         // Create default organization if user not exist
         const organizationName = generateNextName('My workspace');
-        defaultOrganization = await this.create(organizationName, null, manager);
+        const slug = organizationName.replace(' ', '-').toLowerCase();
+        defaultOrganization = await this.create(organizationName, slug, null, manager);
       } else if (user.invitationToken) {
         // User not setup
         shouldSendWelcomeMail = true;

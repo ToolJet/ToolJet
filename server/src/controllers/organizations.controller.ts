@@ -67,7 +67,7 @@ export class OrganizationsController {
     @Body() organizationCreateDto: OrganizationCreateDto,
     @Res({ passthrough: true }) response: Response
   ) {
-    const result = await this.organizationsService.create(organizationCreateDto.name, user);
+    const result = await this.organizationsService.create(organizationCreateDto.name, organizationCreateDto.slug, user);
 
     if (!result) {
       throw new Error();

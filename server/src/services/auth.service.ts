@@ -121,7 +121,9 @@ export class AuthService {
           organization = organizationList[0];
         } else {
           // no form login enabled organization available for user - creating new one
-          organization = await this.organizationsService.create(generateNextName('My workspace'), user, manager);
+          const organizationName = generateNextName('My workspace');
+          const slug = organizationName.replace(' ', '-').toLowerCase();
+          organization = await this.organizationsService.create(organizationName, slug, user, manager);
         }
 
         user.organizationId = organization.id;
@@ -264,7 +266,8 @@ export class AuthService {
       //TODO: check if there any case available that the firstname will be nil
 
       const organizationName = generateNextName('My workspace');
-      organization = await this.organizationsService.create(organizationName, null, manager);
+      const slug = organizationName.replace(' ', '-').toLowerCase();
+      organization = await this.organizationsService.create(organizationName, slug, null, manager);
       const user = await this.usersService.create(
         {
           email,
@@ -330,7 +333,12 @@ export class AuthService {
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       // Create first organization
-      const organization = await this.organizationsService.create(workspace || 'My workspace', null, manager);
+      const organization = await this.organizationsService.create(
+        workspace || 'My workspace',
+        'my-workspace',
+        null,
+        manager
+      );
       const user = await this.usersService.create(
         {
           email,

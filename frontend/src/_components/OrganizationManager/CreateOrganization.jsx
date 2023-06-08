@@ -13,19 +13,19 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const { t } = useTranslation();
 
   const createOrganization = () => {
-    let errorState = false;
+    let emptyError = false;
     const fieldsTemp = fields;
     Object.keys(fields).map((key) => {
       if (!fields[key].value) {
         fieldsTemp[key] = {
           error: `Workspace ${key} can't be empty`,
         };
-        errorState = true;
+        emptyError = true;
       }
     });
     setFields({ ...fields, ...fieldsTemp });
 
-    if (!errorState) {
+    if (!emptyError && !Object.keys(fields).find((key) => !_.isEmpty(fields[key].error))) {
       setIsCreating(true);
       organizationService.createOrganization({ name: fields['name'].value, slug: fields['slug'].value }).then(
         (data) => {
