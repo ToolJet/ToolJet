@@ -391,7 +391,7 @@ const PopupIcon = ({ callback, icon, tip, transformation = false }) => {
   const size = transformation ? 20 : 12;
 
   return (
-    <div className="d-flex justify-content-end" style={{ position: 'relative' }}>
+    <div className="d-flex justify-content-end">
       <OverlayTrigger
         trigger={['hover', 'focus']}
         placement="top"
