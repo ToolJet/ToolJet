@@ -34,7 +34,7 @@ jobs:
       - name: Checking the PR URL
         run: |
           timeout 1500 bash -c '
-          until curl --silent --fail https://tooljet-pr-${PR_NUMBER}.onrender.com; do
+          until curl --silent --fail https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com; do
             sleep 100
           done'
 

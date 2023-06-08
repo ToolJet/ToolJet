@@ -264,6 +264,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      allowSelection: {
+        type: 'toggle',
+        displayName: 'Allow selection',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       showBulkSelector: {
         type: 'toggle',
         displayName: 'Bulk selection',
@@ -487,6 +494,7 @@ export const widgets = [
         enabledSort: { value: '{{true}}' },
         hideColumnSelectorButton: { value: '{{false}}' },
         defaultSelctedRow: { value: '{{{"name":"Sarah"}}}' },
+        allowSelection: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -826,7 +834,7 @@ export const widgets = [
     component: 'Modal',
     defaultSize: {
       width: 10,
-      height: 400,
+      height: 34,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -878,6 +886,13 @@ export const widgets = [
           { name: 'medium', value: 'lg' },
           { name: 'large', value: 'xl' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      modalHeight: {
+        type: 'code',
+        displayName: 'Modal Height',
         validation: {
           schema: { type: 'string' },
         },
@@ -969,6 +984,7 @@ export const widgets = [
         hideCloseButton: { value: '{{false}}' },
         hideOnEsc: { value: '{{true}}' },
         closeOnClickingOutside: { value: '{{false}}' },
+        modalHeight: { value: '400px' },
       },
       events: [],
       styles: {
@@ -2209,7 +2225,15 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
-    properties: {},
+    properties: {
+      loadingState: {
+        type: 'toggle',
+        displayName: 'loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+    },
     events: {},
     styles: {
       backgroundColor: {
@@ -2259,6 +2283,7 @@ export const widgets = [
       },
       properties: {
         visible: { value: '{{true}}' },
+        loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
