@@ -32,6 +32,7 @@ export const OrganizationList = function () {
   const options = organizationList.map((org) => ({
     value: org.id,
     name: org.name,
+    slug: org.slug,
     label: (
       <div className={`align-items-center d-flex tj-org-dropdown  ${darkMode && 'dark-theme'}`}>
         <div

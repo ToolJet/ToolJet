@@ -27,6 +27,7 @@ import { Response } from 'express';
 import { AppEnvironmentService } from './app_environments.service';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { isUUID } from 'class-validator';
+import { OrganizationUpdateDto } from '@dto/organization.dto';
 
 const MAX_ROW_COUNT = 500;
 
@@ -477,11 +478,12 @@ export class OrganizationsService {
     );
   }
 
-  async updateOrganization(organizationId: string, params) {
-    const { name, domain, enableSignUp, inheritSSO } = params;
+  async updateOrganization(organizationId: string, params: OrganizationUpdateDto) {
+    const { name, slug, domain, enableSignUp, inheritSSO } = params;
 
     const updatableParams = {
       name,
+      slug,
       domain,
       enableSignUp,
       inheritSSO,
