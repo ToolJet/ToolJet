@@ -24,7 +24,6 @@ import {
   verifyAndModifyStylePickerFx,
   verifyWidgetColorCss,
   selectColourFromColourPicker,
-  verifyLoaderColor,
   fillBoxShadowParams,
   verifyBoxShadowCss,
   verifyLayout,
@@ -422,6 +421,7 @@ describe("Modal", () => {
       .find(".form-check-input")
       .click();
     launchModal("modal1");
+    cy.wait(500);
     cy.notVisible('[data-cy="modal-close-button"]');
   });
 

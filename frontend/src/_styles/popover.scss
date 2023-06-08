@@ -15,6 +15,10 @@
   }
 }
 
+.PopoverContent.global-settings-popover-content{
+  will-change: initial;
+}
+
 .PopoverContent-dark {
   background-color: #1f2936;
 }

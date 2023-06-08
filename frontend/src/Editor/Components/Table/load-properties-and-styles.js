@@ -58,6 +58,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   });
 
   const showAddNewRowButton = properties?.showAddNewRowButton ?? true;
+  const allowSelection = properties?.allowSelection ?? (showBulkSelector || highlightSelectedRow) ? true : false;
 
   return {
     color,
@@ -88,5 +89,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     enabledSort,
     hideColumnSelectorButton,
     showAddNewRowButton,
+    allowSelection,
   };
 }

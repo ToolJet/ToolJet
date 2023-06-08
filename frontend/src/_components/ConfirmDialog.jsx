@@ -3,10 +3,22 @@ import Modal from 'react-bootstrap/Modal';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-export function ConfirmDialog({ show, title, message, onConfirm, onCancel, confirmButtonLoading, darkMode }) {
+export function ConfirmDialog({
+  show,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  confirmButtonLoading,
+  darkMode,
+  confirmButtonText,
+  confirmButtonType = 'dangerPrimary',
+}) {
   darkMode = darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const [showModal, setShow] = useState(show);
   const { t } = useTranslation();
+
+  const buttonText = confirmButtonText ?? t('globals.yes', 'Yes');
 
   useEffect(() => {
     setShow(show);
@@ -56,16 +68,16 @@ export function ConfirmDialog({ show, title, message, onConfirm, onCancel, confi
         {message}
       </Modal.Body>
       <Modal.Footer className="mt-3">
-        <ButtonSolid variant="tertiary" onClick={handleClose} data-cy="cancel-button">
+        <ButtonSolid variant="secondary" onClick={handleClose} data-cy="cancel-button">
           {t('globals.cancel', 'Cancel')}
         </ButtonSolid>
         <ButtonSolid
-          variant="dangerPrimary"
+          variant={confirmButtonType}
           data-cy="yes-button"
           onClick={handleConfirm}
           isLoading={confirmButtonLoading}
         >
-          {t('globals.yes', 'Yes')}
+          {buttonText}
         </ButtonSolid>
       </Modal.Footer>
     </Modal>

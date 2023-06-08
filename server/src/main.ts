@@ -17,6 +17,28 @@ const fs = require('fs');
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
 
+function replaceSubpathPlaceHoldersInStaticAssets() {
+  const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
+
+  for (const fileName of filesToReplaceAssetPath) {
+    const file = join(__dirname, '../../../', 'frontend/build', fileName);
+
+    let newValue = process.env.SUB_PATH;
+
+    if (process.env.SUB_PATH === undefined) {
+      newValue = fileName === 'index.html' ? '/' : '';
+    }
+
+    const data = fs.readFileSync(file, { encoding: 'utf8' });
+
+    const result = data
+      .replace(/__REPLACE_SUB_PATH__\/api/g, join(newValue, '/api'))
+      .replace(/__REPLACE_SUB_PATH__/g, newValue);
+
+    fs.writeFileSync(file, result, { encoding: 'utf8' });
+  }
+}
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
@@ -97,9 +119,14 @@ async function bootstrap() {
     defaultVersion: VERSION_NEUTRAL,
   });
 
+  const listen_addr = process.env.LISTEN_ADDR || '::';
   const port = parseInt(process.env.PORT) || 3000;
 
-  await app.listen(port, '0.0.0.0', function () {
+  if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
+    replaceSubpathPlaceHoldersInStaticAssets();
+  }
+
+  await app.listen(port, listen_addr, function () {
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
     console.log(`Ready to use at ${tooljetHost} 🚀`);
   });

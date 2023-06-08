@@ -1,7 +1,10 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { commonWidgetText } from "Texts/common";
+import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
+
 import {
   addQuery,
   fillDataSourceTextField,
@@ -16,18 +19,16 @@ import {
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
-  it("Should verify elements on connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
+  const data = {};
+  data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+  it("Should verify elements on connection form", () => {
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
@@ -47,12 +48,8 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      "Snowflake"
-    );
-    cy.get("[data-cy*='data-source-']")
-      .eq(0)
-      .should("contain", "Snowflake");
+    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("Snowflake");
+    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "Snowflake");
     cy.get("[data-cy='data-source-snowflake']").click();
 
     cy.get(postgreSqlSelector.dataSourceNameInputField).should(
@@ -65,8 +62,6 @@ describe("Data sources", () => {
       postgreSqlText.labelUserName
     );
 
-
-    
     cy.get('[data-cy="label-account"]').verifyVisibleElement(
       "have.text",
       "Account"
@@ -84,16 +79,12 @@ describe("Data sources", () => {
       "have.text",
       "Schema"
     );
-    
-    
+
     cy.get('[data-cy="label-warehouse"]').verifyVisibleElement(
       "have.text",
       "Warehouse"
     );
-    cy.get('[data-cy="label-role"]').verifyVisibleElement(
-      "have.text",
-      "Role"
-    );
+    cy.get('[data-cy="label-role"]').verifyVisibleElement("have.text", "Role");
     cy.get(postgreSqlSelector.labelIpWhitelist).verifyVisibleElement(
       "have.text",
       postgreSqlText.whiteListIpText
@@ -121,9 +112,9 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+    cy.get('[data-cy="connection-alert-text"]').should(
       "have.text",
-      'A user name must be specified.'
+      "A user name must be specified."
     );
   });
 
@@ -132,7 +123,7 @@ describe("Data sources", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      "cypress-snowflake"
+      `cypress-${data.lastName}-snowflake`
     );
 
     fillDataSourceTextField(
@@ -156,23 +147,11 @@ describe("Data sources", () => {
       "Enter database",
       Cypress.env("snowflake_database")
     );
-    fillDataSourceTextField(
-      "Schema",
-      "Enter schema",
-      "{del}"
-    );
+    fillDataSourceTextField("Schema", "Enter schema", "{del}");
 
-    fillDataSourceTextField(
-      "Warehouse",
-      "Enter warehouse",
-      "{del}"
-    );
+    fillDataSourceTextField("Warehouse", "Enter warehouse", "{del}");
 
-    fillDataSourceTextField(
-      "Role",
-      "Enter role",
-      "{del}"
-    );
+    fillDataSourceTextField("Role", "Enter role", "{del}");
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
@@ -185,11 +164,11 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", "cypress-snowflake")
-      .find("button")
-      .invoke('show')
-      .should("be.visible");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-snowflake-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-snowflake`);
+
+    deleteDatasource(`cypress-${data.lastName}-snowflake`);
   });
 });
