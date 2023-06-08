@@ -17,11 +17,23 @@ In order to manage plugins for the ToolJet marketplace, including creating, upda
 npm install -g @tooljet/cli
 ```
 
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/tooljet-cli/install.png" alt="ToolJet CLI installation" />
+
+</div>
+
 #### Ensure the installation was successful
 
 ```bash
 tooljet --version
 ```
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/tooljet-cli/version.png" alt="ToolJet CLI version check" />
+
+</div>
 
 ## Commands
 
@@ -32,6 +44,12 @@ This command returns the information about where tooljet is being run
 ```bash
 tooljet info
 ```
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/tooljet-cli/info.png" alt="ToolJet CLI info" />
+
+</div>
 
 ### create
 
@@ -44,6 +62,12 @@ tooljet plugin create PLUGIN_NAME
 Read the detailed guide on creating a marketplace plugin [here](/docs/contributing-guide/marketplace/creating-a-plugin).
 :::
 
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/tooljet-cli/create.gif" alt="ToolJet CLI : create plugin" />
+
+</div>
+
 ### delete
 
 This command deletes a plugin.
@@ -53,6 +77,12 @@ tooljet plugin delete PLUGIN_NAME
 ```
 
 The CLI will prompt developers to verify if the plugin to be deleted is a marketplace plugin before proceeding with the deletion.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/tooljet-cli/delete.gif" alt="ToolJet CLI: delete plugin" />
+
+</div>
 
 ### install
 
