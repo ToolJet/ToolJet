@@ -23,8 +23,7 @@ const generateActionsData = ({ actions: actionItems, columnSizes, defaultColumn,
                     color: action.textColor,
                     borderRadius: action.actionButtonRadius,
                   }}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     setExposedVariables({
                       selectedRowId: cell.row.id,
                       selectedRow: cell.row.original,
@@ -64,8 +63,7 @@ const generateActionsData = ({ actions: actionItems, columnSizes, defaultColumn,
                     color: action.textColor,
                     borderRadius: action.actionButtonRadius,
                   }}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     setExposedVariables({
                       selectedRowId: cell.row.id,
                       selectedRow: cell.row.original,
