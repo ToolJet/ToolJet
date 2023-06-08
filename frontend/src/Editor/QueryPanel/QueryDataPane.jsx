@@ -6,11 +6,14 @@ import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg'
 import { QueryCard } from './QueryCard';
 import Fuse from 'fuse.js';
 import cx from 'classnames';
+import { Tooltip } from 'react-bootstrap';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 import ToggleQueryEditorIcon from '../QueryManager/Icons/ToggleQueryEditorIcon';
-import { Tooltip } from 'react-bootstrap';
+import FilterandSortPopup from './FilterandSortPopup';
 import Minimize from '../../_ui/Icon/solidIcons/Minimize';
 import Search from '../../_ui/Icon/solidIcons/Search';
+import Filter from '../../_ui/Icon/bulkIcons/Filter';
+import { isEmpty } from 'lodash';
 
 export const QueryDataPane = ({
   setSaveConfirmation,
@@ -31,11 +34,28 @@ export const QueryDataPane = ({
   const [filteredQueries, setFilteredQueries] = useState(dataQueries);
   const [showSearchBox, setShowSearchBox] = useState(false);
   const searchBoxRef = useRef(null);
+  const [dataSourcesForFilters, setDataSourcesForFilters] = useState([]);
 
   useEffect(() => {
-    setFilteredQueries(dataQueries);
+    console.log(dataSourcesForFilters);
+    if (isEmpty(dataSourcesForFilters)) {
+      setFilteredQueries(dataQueries);
+    } else {
+      console.log('dataSourcesForFilters >>', dataSourcesForFilters);
+      setFilteredQueries(dataQueries.filter((query) => dataSourcesForFilters.includes(query.kind)));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(dataQueries)]);
+  }, [JSON.stringify(dataQueries), dataSourcesForFilters]);
+
+  const handleFilterDatasourcesChange = (kind) => {
+    setDataSourcesForFilters((dataSourcesForFilters) => {
+      if (dataSourcesForFilters.includes(kind)) {
+        return dataSourcesForFilters.filter((source) => source !== kind);
+      } else {
+        return [...dataSourcesForFilters, kind];
+      }
+    });
+  };
 
   const filterQueries = useCallback(
     (value) => {
@@ -150,16 +170,30 @@ export const QueryDataPane = ({
             <span className="query-manager-btn-name">Add</span>
           </button>
           <div className="col-auto d-flex">
+            {/* <button
+              onClick={() => setShowSearchBox(true)}
+              // className={`toggle-query-editor-svg`}
+              className="bg-transparent border-0"
+              data-tooltip-id="tooltip-for-open-filter"
+              data-tooltip-content="Show sort/filter"
+            >
+              <Filter width="13" height="13" fill="#343a40" />
+            </button>
+            <Tooltip id="tooltip-for-open-filter" className="tooltip" /> */}
+            <FilterandSortPopup
+              onFilterDatasourcesChange={handleFilterDatasourcesChange}
+              selectedDataSources={dataSourcesForFilters}
+            />
             <button
               onClick={() => setShowSearchBox(true)}
               // className={`toggle-query-editor-svg`}
               className="bg-transparent border-0"
-              data-tooltip-id="tooltip-for-hide-query-editor"
-              data-tooltip-content="Hide query editor"
+              data-tooltip-id="tooltip-for-quick-search-query"
+              data-tooltip-content="Open quick search"
             >
               <Search width="12" height="12" fill="#343a40" />
             </button>
-            <Tooltip id="tooltip-for-hide-query-editor" className="tooltip" />
+            <Tooltip id="tooltip-for-search-query" className="tooltip" />
             <button
               onClick={toggleQueryEditor}
               // className={`toggle-query-editor-svg`}

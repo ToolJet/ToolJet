@@ -9,6 +9,8 @@ import { runQueries, computeQueryState } from '@/_helpers/appUtils';
 
 const initialState = {
   dataQueries: [],
+  sortBy: 'updated_at',
+  sortOrder: 'asc',
   loadingDataQueries: true,
   isDeletingQueryInProcess: false,
   isCreatingQueryInProcess: false,
@@ -159,12 +161,16 @@ export const useDataQueriesStore = create(
               // toast.success('Query Name Updated');
               // get().actions.fetchDataQueries(useAppDataStore.getState().editingVersion?.id, false, false, editorRef);
               set((state) => ({
-                dataQueries: state.dataQueries.map((query) => {
-                  if (query.id === id) {
-                    return { ...query, name: newName };
-                  }
-                  return query;
-                }),
+                dataQueries: sortByAttribute(
+                  state.dataQueries.map((query) => {
+                    if (query.id === id) {
+                      return { ...query, name: newName };
+                    }
+                    return query;
+                  }),
+                  state.sortBy,
+                  state.sortOrder
+                ),
               }));
               useQueryPanelStore.getState().actions.setSelectedQuery(id);
             })
@@ -298,6 +304,13 @@ export const useDataQueriesStore = create(
             })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         }, 1000),
+        sortDataQueries: (sortBy) => {
+          set(({ dataQueries, sortOrder }) => ({
+            sortBy,
+            sortOrder: sortOrder === 'asc' ? 'desc' : 'asc',
+            dataQueries: sortByAttribute(dataQueries, sortBy, sortOrder === 'asc' ? 'desc' : 'asc'),
+          }));
+        },
       },
     }),
     { name: 'Data Queries Store' }
@@ -317,6 +330,15 @@ useQueryPanelStore.subscribe(({ selectedQuery }, prevState) => {
     useAppDataStore.getState().actions.setIsSaving(false);
   }
 });
+
+const sortByAttribute = (data, sortBy, order) => {
+  if (order === 'asc') {
+    return data.sort((a, b) => (a[sortBy] > b[sortBy] ? 1 : -1));
+  }
+  if (order === 'desc') {
+    return data.sort((a, b) => (a[sortBy] < b[sortBy] ? 1 : -1));
+  }
+};
 
 export const useDataQueries = () => useDataQueriesStore((state) => state.dataQueries);
 export const useDataQueriesActions = () => useDataQueriesStore((state) => state.actions);
