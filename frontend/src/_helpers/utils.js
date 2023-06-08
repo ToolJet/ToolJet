@@ -846,7 +846,7 @@ export function isExpectedDataType(data, expectedDataType) {
   return data;
 }
 
-export const validateName = (name, nameType, showError = false, allowSpecialChars = true) => {
+export const validateName = (name, nameType, showError = false, allowSpecialChars = true, allowSpaces = true) => {
   const newName = name.trim();
   let errorMsg = '';
   if (!newName) {
@@ -871,6 +871,18 @@ export const validateName = (name, nameType, showError = false, allowSpecialChar
     showError &&
       toast.error(errorMsg, {
         id: '2',
+      });
+    return {
+      status: false,
+      errorMsg,
+    };
+  }
+
+  if (!allowSpaces && /\s/g.test(newName)) {
+    errorMsg = 'Cannot contain spaces';
+    showError &&
+      toast.error(errorMsg, {
+        id: '3',
       });
     return {
       status: false,

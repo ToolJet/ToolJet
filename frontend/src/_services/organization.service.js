@@ -28,12 +28,12 @@ function getUsersByValue(searchInput) {
   );
 }
 
-function createOrganization(name) {
+function createOrganization(data) {
   const requestOptions = {
     method: 'POST',
     headers: authHeader(),
     credentials: 'include',
-    body: JSON.stringify({ name }),
+    body: JSON.stringify(data),
   };
   return fetch(`${config.apiUrl}/organizations`, requestOptions).then(handleResponse);
 }

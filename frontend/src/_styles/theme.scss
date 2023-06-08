@@ -10555,19 +10555,63 @@ tbody {
   }
 }
 
+.break-all {
+  word-break: break-all;
+}
 
 .workspace-folder-modal {
   .tj-app-input {
     padding-bottom: 0px !important;
   }
 
-  .tj-input-error {
-    height: 32px;
-    color: #ED5F00;
+  .label {
     font-weight: 400;
     font-size: 10px;
     height: 0px;
-    padding: 4px 0px 20px 0px;
+    padding: 4px 0px 16px 0px;
+  }
+
+  .tj-input-error {
+    color: #ED5F00;
+  }
+
+  .tj-text-input {
+    width: auto !important;
+    background: linear-gradient(0deg, #F1F3F5, #F1F3F5),
+    linear-gradient(0deg, #D7DBDF, #D7DBDF);    
+    color: #889096;
+    height: auto !important;
+
+    &:hover {
+      box-shadow: none;
+    }
+    
+    &:active {
+      border: 1px solid #D7DBDF;
+      box-shadow: none;
+    }
+  }
+
+  .input-with-icon {
+    .icon-container {
+      right: 20px;
+      top: calc(50% - 13px);
+    }
+  }
+
+  .label-info {
+    color: #687076;
+  }
+
+  .label-success {
+    color: #3D9A50;
+  }
+
+  .workspace-spinner {
+    color: #889096 !important;
+    width: 16px;
+    height: 16px;
+    align-self: center;
   }
 }
 
@@ -10595,20 +10639,6 @@ tbody {
   }
 }
 
-.workspace-folder-modal {
-  .tj-app-input {
-    padding-bottom: 0px !important;
-  }
-
-  .tj-input-error {
-    height: 32px;
-    color: #ED5F00;
-    font-weight: 400;
-    font-size: 10px;
-    height: 0px;
-    padding: 4px 0px 20px 0px;
-  }
-}
 .jet-container-loading {
   margin: 0 auto;
   justify-content: center;
