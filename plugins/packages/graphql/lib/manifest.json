@@ -18,6 +18,46 @@
       },
       "body": {
         "type": "array"
+      },
+      "auth_type": {
+        "type": "string"
+      },
+      "grant_type": {
+        "type": "string"
+      },
+      "add_token_to": {
+        "type": "string"
+      },
+      "header_prefix": {
+        "type": "string"
+      },
+      "access_token_url": {
+        "type": "string"
+      },
+      "client_id": {
+        "type": "string"
+      },
+      "client_secret": {
+        "type": "string",
+        "encrypted": true
+      },
+      "password": {
+        "encrypted": true
+      },
+      "bearer_token": {
+        "encrypted": true
+      },
+      "scopes": {
+        "type": "string"
+      },
+      "auth_url": {
+        "type": "string"
+      },
+      "client_auth": {
+        "type": "string"
+      },
+      "custom_auth_params": {
+        "type": "array"
       }
     },
     "exposedVariables": {
@@ -31,6 +71,45 @@
     "url": {
       "value": ""
     },
+    "auth_type": {
+      "value": "none"
+    },
+    "grant_type": {
+      "value": "authorization_code"
+    },
+    "add_token_to": {
+      "value": "header"
+    },
+    "header_prefix": {
+      "value": "Bearer "
+    },
+    "access_token_url": {
+      "value": ""
+    },
+    "client_id": {
+      "value": ""
+    },
+    "client_secret": {
+      "value": ""
+    },
+    "scopes": {
+      "value": "read, write"
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "bearer_token": {
+      "value": ""
+    },
+    "auth_url": {
+      "value": ""
+    },
+    "client_auth": {
+      "value": "header"
+    },
     "headers": {
       "value": [
         [
@@ -38,6 +117,33 @@
           ""
         ]
       ]
+    },
+    "custom_query_params": {
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
+    },
+    "custom_auth_params": {
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
+    },
+    "access_token_custom_headers": {
+      "value": [
+        [
+          "",
+          ""
+        ]
+      ]
+    },
+    "multiple_auth_enabled": {
+      "value": false
     },
     "url_params": {
       "value": [
@@ -53,7 +159,7 @@
       "label": "URL",
       "key": "url",
       "type": "text",
-      "description": "https://api.example.com/v1/"
+      "description": "https://api.example.com/v1/graphql"
     },
     "headers": {
       "label": "Headers",
@@ -66,6 +172,12 @@
       "key": "url_params",
       "type": "react-component-headers",
       "description": "key-value pair url parameters for graphql api"
+    },
+    "auth_type": {
+      "label": "Authentication Type",
+      "key": "auth_type",
+      "type": "react-component-oauth-authentication",
+      "description": "key-value pair headers for graphQL api"
     }
   },
   "required": [
