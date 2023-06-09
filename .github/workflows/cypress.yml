@@ -34,7 +34,7 @@ jobs:
       - name: Checking the PR URL
         run: |
           timeout 1500 bash -c '
-          until curl --silent --fail https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com; do
+          until curl --silent --fail https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com; do
             sleep 100
           done'
 
@@ -51,7 +51,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
+          config: "baseUrl=https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com"
           config-file: cypress-run.config.js
 
       - name: Cypress Integration Test (App Builder)
@@ -59,7 +59,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
+          config: "baseUrl=https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com"
           config-file: cypress-app-builder.config.js
 
       - name: Cypress Integration Test (Workspace)
@@ -67,7 +67,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
+          config: "baseUrl=https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com"
           config-file: cypress-workspace.config.js
 
       - name: Capture Screenshots
