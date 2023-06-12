@@ -30,6 +30,7 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
+import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
 
 @Controller('apps')
 export class AppsController {
@@ -40,7 +41,7 @@ export class AppsController {
     private auditLoggerService: AuditLoggerService
   ) {}
 
-  @UseGuards(JwtAuthGuard, AppCountGuard)
+  @UseGuards(JwtAuthGuard, LicenseExpiryGuard, AppCountGuard)
   @Post()
   async create(@User() user, @Body('icon') icon: string) {
     const ability = await this.appsAbilityFactory.appsActions(user);
@@ -70,7 +71,7 @@ export class AppsController {
     });
   }
 
-  @UseGuards(JwtAuthGuard, AppCountGuard)
+  @UseGuards(JwtAuthGuard, LicenseExpiryGuard, AppCountGuard)
   @Get('license-terms')
   async getAppCount() {
     return;

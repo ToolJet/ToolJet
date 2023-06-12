@@ -51,6 +51,7 @@ export const authenticationService = {
   authorize,
   validateSession,
   getUserDetails,
+  validateLicense,
 };
 
 function login(email, password, organizationId) {
@@ -293,4 +294,9 @@ function authorize() {
     credentials: 'include',
   };
   return fetch(`${config.apiUrl}/authorize`, requestOptions).then(handleResponseWithoutValidation);
+}
+
+function validateLicense() {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/validate-license`, requestOptions).then(handleResponse);
 }

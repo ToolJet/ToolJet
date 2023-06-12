@@ -45,8 +45,9 @@ export const Container = ({
   onComponentHover,
   hoveredComponent,
   sideBarDebugger,
-  dataQueries,
   currentPageId,
+  isVersionReleased,
+  setReleasedVersionPopupState,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -76,7 +77,7 @@ export const Container = ({
   useHotkeys(
     'meta+v, control+v',
     () => {
-      if (isContainerFocused) {
+      if (isContainerFocused && !isVersionReleased) {
         navigator.clipboard.readText().then((cliptext) => {
           try {
             addComponents(
@@ -91,6 +92,7 @@ export const Container = ({
           }
         });
       }
+      setReleasedVersionPopupState();
     },
     [isContainerFocused, appDefinition, focusedParentIdRef]
   );
@@ -248,6 +250,10 @@ export const Container = ({
   );
 
   function onDragStop(e, componentId, direction, currentLayout) {
+    if (isVersionReleased) {
+      setReleasedVersionPopupState();
+      return;
+    }
     // const id = componentId ? componentId : uuidv4();
 
     // Get the width of the canvas
@@ -282,6 +288,10 @@ export const Container = ({
   }
 
   function onResizeStop(id, e, direction, ref, d, position) {
+    if (isVersionReleased) {
+      setReleasedVersionPopupState();
+      return;
+    }
     const deltaWidth = d.width;
     const deltaHeight = d.height;
 
@@ -542,7 +552,6 @@ export const Container = ({
               hoveredComponent={hoveredComponent}
               sideBarDebugger={sideBarDebugger}
               isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
-              dataQueries={dataQueries}
               childComponents={childComponents[key]}
               containerProps={{
                 mode,
@@ -565,11 +574,13 @@ export const Container = ({
                 onComponentHover,
                 hoveredComponent,
                 sideBarDebugger,
-                dataQueries,
                 addDefaultChildren,
                 currentPageId,
                 childComponents,
+                isVersionReleased,
+                setReleasedVersionPopupState,
               }}
+              isVersionReleased={isVersionReleased}
             />
           );
         }

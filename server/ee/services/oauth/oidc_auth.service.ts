@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BaseClient, CallbackParamsType, Issuer, TokenSet, generators } from 'openid-client';
+import { BaseClient, CallbackParamsType, Issuer, TokenSet, generators, UserinfoResponse } from 'openid-client';
 import UserResponse from './models/user_response';
 import { OrganizationsService } from '@services/organizations.service';
 import * as uuid from 'uuid';
@@ -74,22 +74,19 @@ export class OidcOAuthService {
         console.error('Error while parsing JWT', error);
       }
     }
-
-    if (!(email || name)) {
-      const response: any = await this.oidcClient.userinfo(access_token);
-      const emailData = email;
-      ({ name, email } = response);
-      if (!email && emailData) {
-        // id_token cintains email, userinfo don't
-        email = emailData;
-      }
+    const userinfoResponse: UserinfoResponse = await this.oidcClient.userinfo(access_token);
+    const emailData = email;
+    ({ name, email } = userinfoResponse);
+    if (!email && emailData) {
+      // id_token contains email, userinfo don't
+      email = emailData;
     }
 
     const words = name?.split(' ');
     const firstName = words?.[0] || '';
     const lastName = words?.length > 1 ? words[words.length - 1] : '';
 
-    return { userSSOId: access_token, firstName, lastName, email, sso: 'openid' };
+    return { userSSOId: access_token, firstName, lastName, email, sso: 'openid', userinfoResponse };
   }
 
   async signIn(code: string, configs: any): Promise<any> {

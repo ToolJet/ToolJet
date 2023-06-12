@@ -68,6 +68,8 @@ export function CodeHinter({
   component,
   popOverCallback,
   cyLabel = '',
+  callgpt = () => null,
+  isCopilotEnabled = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -173,7 +175,7 @@ export function CodeHinter({
   const getPreview = () => {
     if (!enablePreview) return;
     const customResolvables = getCustomResolvables();
-    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true);
+    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
 
     if (error) {
@@ -318,9 +320,11 @@ export function CodeHinter({
                   callback={handleToggle}
                   icon="portal-open"
                   tip="Pop out code editor into a new window"
+                  transformation={componentName === 'transformation'}
                 />
               )}
               <CodeHinter.Portal
+                isCopilotEnabled={isCopilotEnabled}
                 isOpen={isOpen}
                 callback={setIsOpen}
                 componentName={componentName}
@@ -331,6 +335,7 @@ export function CodeHinter({
                 darkMode={darkMode}
                 selectors={{ className: 'preview-block-portal' }}
                 dragResizePortal={true}
+                callgpt={callgpt}
               >
                 <CodeMirror
                   value={typeof initialValue === 'string' ? initialValue : ''}
@@ -382,7 +387,9 @@ export function CodeHinter({
   );
 }
 
-const PopupIcon = ({ callback, icon, tip }) => {
+const PopupIcon = ({ callback, icon, tip, transformation = false }) => {
+  const size = transformation ? 20 : 12;
+
   return (
     <div className="d-flex justify-content-end" style={{ position: 'relative' }}>
       <OverlayTrigger
@@ -394,8 +401,8 @@ const PopupIcon = ({ callback, icon, tip }) => {
         <img
           className="svg-icon m-2 popup-btn"
           src={`assets/images/icons/${icon}.svg`}
-          width="12"
-          height="12"
+          width={size}
+          height={size}
           onClick={(e) => {
             e.stopPropagation();
             callback();

@@ -3,7 +3,8 @@ import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { InferSubjects, AbilityBuilder, Ability, AbilityClass, ExtractSubjectType } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '@services/users.service';
-import License from '@ee/licensing/configs/License';
+import { LicenseService } from '@services/license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 
 type Actions =
   | 'changeRole'
@@ -20,7 +21,7 @@ export type AppAbility = Ability<[Actions, Subjects]>;
 
 @Injectable()
 export class CaslAbilityFactory {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService, private licenseService: LicenseService) {}
 
   async organizationUserActions(user: User, params: any) {
     const { can, build } = new AbilityBuilder<Ability<[Actions, Subjects]>>(Ability as AbilityClass<AppAbility>);
@@ -34,7 +35,7 @@ export class CaslAbilityFactory {
       can('updateOrganizations', User);
       can('viewAllUsers', User);
 
-      if (License.Instance.auditLog) {
+      if (await this.licenseService.getLicenseTerms(LICENSE_FIELD.AUDIT_LOGS)) {
         can('accessAuditLogs', User);
       }
     }
