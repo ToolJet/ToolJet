@@ -23,6 +23,10 @@ export const authorizeWorkspace = () => {
           //get organizations list
           if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
             authorizeUserAndHandleErrors(workspaceIdOrSlug, current_organization_id);
+          } else {
+            updateCurrentSession({
+              current_organization_id,
+            });
           }
         })
         .catch((error) => {
@@ -106,7 +110,7 @@ export const authorizeUserAndHandleErrors = (workspace_slug, workspace_id) => {
 
         // if user is trying to load the workspace login page, then redirect to the dashboard
         if (isThisWorkspaceLoginPage())
-          return (window.location = appendWorkspaceId(current_organization_id, '/:workspaceId'));
+          return (window.location = appendWorkspaceId(workspace_slug || current_organization_id, '/:workspaceId'));
       });
     })
     .catch((error) => {

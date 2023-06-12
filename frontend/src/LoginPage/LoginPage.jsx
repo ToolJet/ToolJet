@@ -81,10 +81,10 @@ class LoginPageComponent extends React.Component {
         // If there is no organization found for single organization setup
         // show form to sign up
         // redirected here for self hosted version
-        response.data.statusCode !== 422 && this.props.navigate('/setup');
+        response.data.statusCode !== 422 && !this.organizationSlug && this.props.navigate('/setup');
 
         // if wrong workspace id then show workspace-switching page
-        if (response.data.statusCode === 422 || response.data.statusCode === 404) {
+        if (response.data.statusCode === 422 || (response.data.statusCode === 404 && this.organizationSlug)) {
           authenticationService
             .validateSession()
             .then(({ current_organization_id }) => {

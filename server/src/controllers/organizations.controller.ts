@@ -87,6 +87,8 @@ export class OrganizationsController {
     }
 
     const result = await this.organizationsService.fetchOrganizationDetails(organizationId, [true], true, true);
+    if (!result) throw new NotFoundException();
+
     return decamelizeKeys({ ssoConfigs: result });
   }
 
