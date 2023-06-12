@@ -73,7 +73,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     setErrorHistory({ appLevel: [], pageLevel: [] });
   };
 
-  React.useEffect(() => {
+ useEffect(() => {
     if (currentPageId) {
       const olderPageErrorFromHistory = errorHistory.pageLevel[currentPageId] ?? [];
       const olderAppErrorFromHistory = errorHistory.appLevel ?? [];
