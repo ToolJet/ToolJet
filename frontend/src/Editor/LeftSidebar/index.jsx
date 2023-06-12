@@ -58,9 +58,9 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
   const [pinned, setPinned] = useState(!!localStorage.getItem('selectedSidebarItem'));
-  const [errorLogs, setErrorLogs] = React.useState([]);
-  const [errorHistory, setErrorHistory] = React.useState({ appLevel: [], pageLevel: [] });
-  const [unReadErrorCount, setUnReadErrorCount] = React.useState({ read: 0, unread: 0 });
+  const [errorLogs, setErrorLogs] = useState([]);
+  const [errorHistory, setErrorHistory] = useState({ appLevel: [], pageLevel: [] });
+  const [unReadErrorCount, setUnReadErrorCount] = useState({ read: 0, unread: 0 });
 
   const sideBarBtnRefs = useRef({});
 
