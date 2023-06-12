@@ -8,6 +8,8 @@ import { createQueryBuilder, Repository, UpdateResult } from 'typeorm';
 import { User } from '../../src/entities/user.entity';
 import { Folder } from '../entities/folder.entity';
 import { UsersService } from './users.service';
+import { catchDbException } from 'src/helpers/utils.helper';
+import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 
 @Injectable()
 export class FoldersService {
@@ -22,18 +24,30 @@ export class FoldersService {
   ) {}
 
   async create(user: User, folderName): Promise<Folder> {
-    return this.foldersRepository.save(
-      this.foldersRepository.create({
-        name: folderName,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        organizationId: user.organizationId,
-      })
+    return await catchDbException(
+      async () => {
+        return await this.foldersRepository.save(
+          this.foldersRepository.create({
+            name: folderName,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            organizationId: user.organizationId,
+          })
+        );
+      },
+      DataBaseConstraints.FOLDER_NAME_UNIQUE,
+      'This folder name is already taken.'
     );
   }
 
   async update(folderId: string, folderName: string): Promise<UpdateResult> {
-    return this.foldersRepository.update({ id: folderId }, { name: folderName });
+    return await catchDbException(
+      async () => {
+        return await this.foldersRepository.update({ id: folderId }, { name: folderName });
+      },
+      DataBaseConstraints.FOLDER_NAME_UNIQUE,
+      'This folder name is already taken.'
+    );
   }
 
   async allFolders(user: User, searchKey?: string): Promise<Folder[]> {

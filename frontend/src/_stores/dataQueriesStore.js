@@ -6,6 +6,7 @@ import isEqual from 'lodash/isEqual';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { runQueries, computeQueryState } from '@/_helpers/appUtils';
+import { source } from '../Editor/QueryManager/QueryEditors';
 
 const initialState = {
   dataQueries: [],
@@ -124,23 +125,24 @@ export const useDataQueriesStore = create(
           //   })
           //   .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
-        createDataQuery: (appId, appVersionId, options, shouldRunQuery) => {
+        createDataQuery: (appId, appVersionId, options, kind, name, selectedDataSource, shouldRunQuery) => {
           set({ isCreatingQueryInProcess: true });
-          const { actions, selectedQuery, selectedDataSource } = useQueryPanelStore.getState();
-          const { name, kind } = selectedQuery;
+          const { actions, selectedQuery } = useQueryPanelStore.getState();
+          // const { name, kind } = selectedQuery;
           const dataSourceId = selectedDataSource?.id !== 'null' ? selectedDataSource?.id : null;
           const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
           useAppDataStore.getState().actions.setIsSaving(true);
           dataqueryService
             .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId)
             .then((data) => {
-              actions.setUnSavedChanges(false);
+              // actions.setUnSavedChanges(false);
               // toast.success('Query Added');
               set((state) => ({
                 isCreatingQueryInProcess: false,
                 dataQueries: [{ ...selectedQuery, ...data }, ...state.dataQueries],
               }));
               actions.setSelectedQuery(data.id, data);
+              // actions.setSelectedDataSource(selectedDataSource);
               if (shouldRunQuery) actions.setQueryToBeRun(data);
             })
             .catch((error) => {

@@ -63,7 +63,7 @@ export const QueryManagerBody = forwardRef(
     const autoUpdateDataQuery = debounce(updateDataQuery, 500);
 
     const queryName = selectedQuery?.name ?? '';
-    const sourcecomponentName = selectedDataSource?.kind.charAt(0).toUpperCase() + selectedDataSource?.kind.slice(1);
+    const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
 
     const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
 
@@ -120,14 +120,14 @@ export const QueryManagerBody = forwardRef(
       const newQueryName = computeQueryName(source.kind);
       defaultOptions.current = { ...newOptions };
 
-      setSelectedDataSource(source);
+      // setSelectedDataSource(source);
       setOptions({ ...newOptions });
 
-      createDraftQuery(
-        { ...source, data_source_id: source.id, name: newQueryName, id: 'draftQuery', options: { ...newOptions } },
-        source
-      );
-      createDataQuery(appId, editingVersionId, options, false);
+      // createDraftQuery(
+      //   { ...source, data_source_id: source.id, name: newQueryName, id: 'draftQuery', options: { ...newOptions } },
+      //   source
+      // );
+      createDataQuery(appId, editingVersionId, options, source.kind, newQueryName, source, false);
     };
 
     // Clear the focus field value from options
