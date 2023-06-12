@@ -11,15 +11,36 @@ import { AllExceptionsFilter } from './all-exceptions-filter';
 import { RequestMethod, ValidationPipe, VersioningType, VERSION_NEUTRAL } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
-import License from '@ee/licensing/configs/License';
-import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
 import { custom } from 'openid-client';
 import { join } from 'path';
+import { LicenseService } from '@services/license.service';
+import License from '@ee/licensing/configs/License';
 
-const license = License.Instance;
 const fs = require('fs');
 
 globalThis.TOOLJET_VERSION = fs.readFileSync('./.version', 'utf8').trim();
+
+function replaceSubpathPlaceHoldersInStaticAssets() {
+  const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
+
+  for (const fileName of filesToReplaceAssetPath) {
+    const file = join(__dirname, '../../../', 'frontend/build', fileName);
+
+    let newValue = process.env.SUB_PATH;
+
+    if (process.env.SUB_PATH === undefined) {
+      newValue = fileName === 'index.html' ? '/' : '';
+    }
+
+    const data = fs.readFileSync(file, { encoding: 'utf8' });
+
+    const result = data
+      .replace(/__REPLACE_SUB_PATH__\/api/g, join(newValue, '/api'))
+      .replace(/__REPLACE_SUB_PATH__/g, newValue);
+
+    fs.writeFileSync(file, result, { encoding: 'utf8' });
+  }
+}
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -37,7 +58,6 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Logger)));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  app.useGlobalGuards(new LicenseExpiryGuard());
   app.useWebSocketAdapter(new WsAdapter(app));
 
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -109,9 +129,17 @@ async function bootstrap() {
 
   const port = parseInt(process.env.PORT) || 3000;
 
-  await app.listen(port, '0.0.0.0', function () {
+  if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
+    replaceSubpathPlaceHoldersInStaticAssets();
+  }
+
+  await app.listen(port, '0.0.0.0', async function () {
+    const licenseService = app.get<LicenseService>(LicenseService);
+    await licenseService.init();
     const tooljetHost = configService.get<string>('TOOLJET_HOST');
-    console.log(`License Terms : ${JSON.stringify(license.terms)} 🚀`);
+    console.log(
+      `License valid : ${License.Instance().isValid} License Terms : ${JSON.stringify(License.Instance().terms)} 🚀`
+    );
     console.log(`Ready to use at ${tooljetHost} 🚀`);
   });
 }

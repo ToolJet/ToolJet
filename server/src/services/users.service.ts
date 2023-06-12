@@ -10,13 +10,15 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
 import { cleanObject, dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
-import License from '@ee/licensing/configs/License';
 import got from 'got';
 import { USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
+import { UserDetails } from 'src/entities/user_details.entity';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 const freshDeskBaseUrl = 'https://tooljet-417912114917301615.myfreshworks.com/crm/sales/api/';
@@ -37,6 +39,7 @@ type UserFilterOptions = { searchText?: string; status?: string };
 export class UsersService {
   constructor(
     private readonly filesService: FilesService,
+    private readonly licenseService: LicenseService,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(App)
@@ -168,6 +171,7 @@ export class UsersService {
             'organization_users.organizationId = :organizationId',
             { organizationId }
           )
+          .leftJoinAndSelect('users.userDetails', 'user_details')
           .where('organization_users.status IN(:...statusList)', {
             statusList,
           })
@@ -768,31 +772,36 @@ export class UsersService {
   }
 
   async validateLicense(manager: EntityManager): Promise<void> {
-    const licensing = License.Instance;
     let editor = -1,
       viewer = -1;
 
-    if (licensing.users !== 'UNLIMITED' && (await this.getCount(true, manager)) > licensing.users) {
+    const {
+      total: users,
+      editors: editorUsers,
+      viewers: viewerUsers,
+    } = await this.licenseService.getLicenseTerms(LICENSE_FIELD.USER);
+
+    if (users !== 'UNLIMITED' && (await this.getCount(true, manager)) > users) {
       throw new HttpException('License violation - Maximum user limit reached', 451);
     }
 
-    if (licensing.editorUsers !== 'UNLIMITED' && licensing.viewerUsers !== 'UNLIMITED') {
+    if (editorUsers !== 'UNLIMITED' && viewerUsers !== 'UNLIMITED') {
       ({ editor, viewer } = await this.fetchTotalViewerEditorCount(manager));
     }
-    if (licensing.editorUsers !== 'UNLIMITED') {
+    if (editorUsers !== 'UNLIMITED') {
       if (editor === -1) {
         editor = await this.fetchTotalEditorCount(manager);
       }
-      if (editor > licensing.editorUsers) {
+      if (editor > editorUsers) {
         throw new HttpException('License violation - Number of editors exceeded', 451);
       }
     }
 
-    if (licensing.viewerUsers !== 'UNLIMITED') {
+    if (viewerUsers !== 'UNLIMITED') {
       if (viewer === -1) {
         ({ viewer } = await this.fetchTotalViewerEditorCount(manager));
       }
-      if (viewer > licensing.viewerUsers) {
+      if (viewer > viewerUsers) {
         throw new HttpException('License violation - Number of viewers exceeded', 451);
       }
     }
@@ -853,5 +862,17 @@ export class UsersService {
     });
 
     return true;
+  }
+
+  async updateSSOUserInfo(manager: EntityManager, userId: string, ssoUserInfo: any): Promise<void> {
+    await manager.upsert(
+      UserDetails,
+      {
+        userId,
+        ssoUserInfo,
+        updatedAt: new Date(),
+      },
+      ['userId']
+    );
   }
 }

@@ -1,7 +1,10 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { commonWidgetText } from "Texts/common";
+import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
+
 import {
   addQuery,
   fillDataSourceTextField,
@@ -13,21 +16,19 @@ import {
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
 
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
   it("Should verify elements on connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
@@ -47,12 +48,8 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-      "TypeSense"
-    );
-    cy.get("[data-cy*='data-source-']")
-      .eq(0)
-      .should("contain", "TypeSense");
+    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("TypeSense");
+    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "TypeSense");
     cy.get('[data-cy="data-source-typesense"]').click();
 
     cy.get(postgreSqlSelector.dataSourceNameInputField).should(
@@ -102,34 +99,35 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+    cy.get('[data-cy="connection-alert-text"]').should(
       "have.text",
-      'Ensure that apiKey is set'
+      "Ensure that apiKey is set"
     );
   });
 
-  it.skip("Should verify the functionality of PostgreSQL connection form.", () => {
+  it("Should verify the functionality of PostgreSQL connection form.", () => {
     selectDataSource("TypeSense");
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      "cypress-typesense"
+      `cypress-${data.lastName}-typesense`
     );
 
     fillDataSourceTextField(
       postgreSqlText.labelHost,
       postgreSqlText.placeholderEnterHost,
-      Cypress.env("pg_host")
+      Cypress.env("typesense_host")
     );
+    cy.get(".react-select__input-container").click().type(`HTTPS{enter}`);
     fillDataSourceTextField(
       postgreSqlText.labelPort,
       postgreSqlText.placeholderEnterPort,
-      "5432"
+      Cypress.env("typesense_port")
     );
     fillDataSourceTextField(
       "API Key",
       "Enter API key",
-      "postgres"
+      Cypress.env("typesense_api_key")
     );
     //dropdown
     cy.get(postgreSqlSelector.buttonTestConnection).click();
@@ -143,10 +141,11 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", "cypress-typesense")
-      .find("button")
-      .should("be.visible");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-typesense-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-typesense`);
+
+    deleteDatasource(`cypress-${data.lastName}-typesense`);
   });
 });

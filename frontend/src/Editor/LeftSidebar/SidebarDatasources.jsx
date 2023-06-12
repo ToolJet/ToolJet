@@ -17,14 +17,14 @@ import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
 import VerticalIcon from '@assets/images/icons/vertical-menu.svg';
 import { getPrivateRoute } from '@/_helpers/routes';
 
+import { useDataSources } from '@/_stores/dataSourcesStore';
+
 export const LeftSidebarDataSources = ({
   appId,
   editingVersionId,
   selectedSidebarItem,
   setSelectedSidebarItem,
   darkMode,
-  dataSources = [],
-  globalDataSources = [],
   dataSourcesChanged,
   globalDataSourcesChanged,
   dataQueriesChanged,
@@ -32,7 +32,10 @@ export const LeftSidebarDataSources = ({
   showDataSourceManagerModal,
   currentAppEnvironmentId,
   popoverContentHeight,
+  isVersionReleased,
+  setReleasedVersionPopupState,
 }) => {
+  const dataSources = useDataSources();
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
@@ -93,7 +96,15 @@ export const LeftSidebarDataSources = ({
     return DataSourceTypes.find((source) => source.kind === dataSource.kind);
   };
 
-  const RenderDataSource = ({ dataSource, idx, convertToGlobal, showDeleteIcon = true, enableEdit = true }) => {
+  const RenderDataSource = ({
+    dataSource,
+    idx,
+    convertToGlobal,
+    showDeleteIcon = true,
+    enableEdit = true,
+    setReleasedVersionPopupState,
+    isVersionReleased,
+  }) => {
     const [isConversionVisible, setConversionVisible] = React.useState(false);
     const sourceMeta = getSourceMetaData(dataSource);
 
@@ -149,7 +160,7 @@ export const LeftSidebarDataSources = ({
             {dataSource.name}
           </span>
         </div>
-        {showDeleteIcon && (
+        {showDeleteIcon && !isVersionReleased && (
           <div className="col-auto">
             <button className="btn btn-sm p-1 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
               <div>
@@ -158,7 +169,7 @@ export const LeftSidebarDataSources = ({
             </button>
           </div>
         )}
-        {convertToGlobal && admin && (
+        {convertToGlobal && admin && !isVersionReleased && (
           <div className="col-auto">
             <OverlayTrigger
               rootClose={false}
@@ -182,10 +193,13 @@ export const LeftSidebarDataSources = ({
       darkMode={darkMode}
       RenderDataSource={RenderDataSource}
       dataSources={dataSources}
-      globalDataSources={globalDataSources}
       toggleDataSourceManagerModal={toggleDataSourceManagerModal}
+      isVersionReleased={isVersionReleased}
+      setReleasedVersionPopupState={setReleasedVersionPopupState}
     />
   );
+
+  if (dataSources?.length <= 0) return;
 
   return (
     <>
@@ -228,12 +242,19 @@ export const LeftSidebarDataSources = ({
         globalDataSourcesChanged={globalDataSourcesChanged}
         selectedDataSource={selectedDataSource}
         currentAppEnvironmentId={currentAppEnvironmentId}
+        isVersionReleased={isVersionReleased}
       />
     </>
   );
 };
 
-const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [] }) => {
+const LeftSidebarDataSourcesContainer = ({
+  darkMode,
+  RenderDataSource,
+  dataSources = [],
+  isVersionReleased,
+  setReleasedVersionPopupState,
+}) => {
   const { t } = useTranslation();
   return (
     <div>
@@ -254,6 +275,8 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
                       idx={idx}
                       convertToGlobal={true}
                       showDeleteIcon={true}
+                      isVersionReleased={isVersionReleased}
+                      setReleasedVersionPopupState={setReleasedVersionPopupState}
                     />
                   ))}
                 </div>
@@ -262,13 +285,15 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
           </div>
         </div>
       </div>
-      <div className="add-datasource-btn w-100 p-3">
-        <Link to={getPrivateRoute('global_datasources')}>
-          <div className="p-2 color-primary cursor-pointer">
-            {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
-          </div>
-        </Link>
-      </div>
+      {!isVersionReleased && (
+        <div className="add-datasource-btn w-100 p-3">
+          <Link to={getPrivateRoute('global_datasources')}>
+            <div className="p-2 color-primary cursor-pointer">
+              {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
+            </div>
+          </Link>
+        </div>
+      )}
     </div>
   );
 };

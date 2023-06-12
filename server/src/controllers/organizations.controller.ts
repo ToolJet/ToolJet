@@ -25,6 +25,7 @@ import { OIDCGuard } from '@ee/licensing/guards/oidc.guard';
 import { AllowPersonalWorkspaceGuard } from 'src/modules/instance_settings/personal-workspace.guard';
 import { OrganizationCreateDto, OrganizationUpdateDto } from '@dto/organization.dto';
 import { Response } from 'express';
+import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -147,7 +148,7 @@ export class OrganizationsController {
     return decamelizeKeys({ id: result.id });
   }
 
-  @UseGuards(JwtAuthGuard, OIDCGuard)
+  @UseGuards(JwtAuthGuard, LicenseExpiryGuard, OIDCGuard)
   @Get('license-terms/oidc')
   async getOIDC() {
     return;

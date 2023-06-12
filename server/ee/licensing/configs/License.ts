@@ -1,7 +1,5 @@
+import { decrypt } from 'src/helpers/license.helper';
 import { Terms } from '../types';
-import { readFileSync } from 'fs';
-import { publicDecrypt } from 'crypto';
-import { resolve } from 'path';
 
 export default class License {
   private static _instance: License;
@@ -10,20 +8,24 @@ export default class License {
   private isAuditLogs: boolean;
   private isOidc: boolean;
   private expiryDate: Date;
+  private updatedDate: Date;
   private editorUsersCount: number;
   private viewerUsersCount: number;
+  private isLicenseValid: boolean;
 
-  private constructor() {
+  private constructor(key: string, updatedDate: Date) {
     if (process.env.NODE_ENV !== 'test') {
-      if (!process.env.LICENSE_KEY) {
-        throw new Error('LICENSE_KEY not found');
+      if (!(key && updatedDate)) {
+        console.error('Invalid License Key', key);
+        this.isLicenseValid = false;
+        return;
       }
 
       try {
-        const licenseData: Partial<Terms> = this.decrypt(process.env.LICENSE_KEY);
+        const licenseData: Partial<Terms> = decrypt(key);
 
         if (!licenseData?.expiry) {
-          throw new Error('LICENSE_KEY:expiry not found');
+          throw new Error('Invalid License Key:expiry not found');
         }
 
         this.appsCount = licenseData?.apps;
@@ -33,9 +35,11 @@ export default class License {
         this.isAuditLogs = !!licenseData?.features?.auditLogs;
         this.isOidc = !!licenseData?.features?.oidc;
         this.expiryDate = new Date(`${licenseData.expiry} 23:59:59`);
+        this.updatedDate = updatedDate;
+        this.isLicenseValid = true;
       } catch (err) {
-        console.error(err);
-        throw new Error('LICENSE_KEY invalid');
+        console.error('Invalid License Key:Parse error', err);
+        this.isLicenseValid = false;
       }
     } else {
       const now = new Date();
@@ -44,11 +48,16 @@ export default class License {
       this.expiryDate = now;
       this.isAuditLogs = true;
       this.isOidc = true;
+      this.isLicenseValid = true;
     }
   }
 
-  public isExpired(): boolean {
-    return new Date() > this.expiryDate;
+  public get isExpired(): boolean {
+    return this.expiryDate && new Date().getTime() > this.expiryDate.getTime();
+  }
+
+  public get isValid(): boolean {
+    return this.isLicenseValid;
   }
 
   public get apps(): number | string {
@@ -75,6 +84,10 @@ export default class License {
     return !!this.isOidc;
   }
 
+  public get updatedAt(): Date {
+    return this.updatedDate;
+  }
+
   public get terms(): object {
     return {
       appsCount: this.apps,
@@ -82,21 +95,17 @@ export default class License {
       auditLogEnabled: this.auditLog,
       oidcEnabled: this.oidc,
       expiryDate: this.expiryDate,
-      isExpired: this.isExpired(),
+      isExpired: this.isExpired,
       editorUsers: this.editorUsers,
       viewerUsers: this.viewerUsers,
     };
   }
 
-  public static get Instance(): License {
-    return this._instance || (this._instance = new this());
+  public static Instance(): License {
+    return this._instance;
   }
 
-  private decrypt(toDecrypt: string): Terms {
-    const absolutePath = resolve('keys/public.pem');
-    const publicKey = readFileSync(absolutePath, 'utf8');
-    const buffer = Buffer.from(toDecrypt, 'base64');
-    const decrypted = publicDecrypt(publicKey, buffer);
-    return JSON.parse(decrypted.toString('utf8'));
+  public static Reload(key: string, updatedDate: Date): License {
+    return (this._instance = new this(key, updatedDate));
   }
 }

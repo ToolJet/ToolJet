@@ -46,7 +46,8 @@ function MultiSelectUser({
         <div>
           <input
             type="checkbox"
-            onClick={() => {
+            // eslint-disable-next-line no-unused-vars
+            onClick={(e) => {
               onSelect([...selectedValues, option]);
             }}
           />

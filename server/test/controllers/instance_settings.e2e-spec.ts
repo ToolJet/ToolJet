@@ -171,7 +171,7 @@ describe('instance settings controller', () => {
         .patch(`/api/instance-settings`)
         .set('tj-workspace-id', superAdminUserData.user.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie'])
-        .send({ allow_personal_workspace: { value: 'true', id: response.body.setting.id } })
+        .send([{ value: 'true', id: response.body.setting.id }])
         .expect(200);
 
       const updatedSetting = await getManager().findOne(InstanceSettings, response.body.setting.id);

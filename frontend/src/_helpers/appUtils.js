@@ -26,6 +26,9 @@ import urlJoin from 'url-join';
 import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/operations';
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
+import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
+
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -774,10 +777,19 @@ export function getQueryVariables(options, state) {
   switch (optionsType) {
     case 'string': {
       options = options.replace(/\n/g, ' ');
-      const dynamicVariables = getDynamicVariables(options) || [];
-      dynamicVariables.forEach((variable) => {
-        queryVariables[variable] = resolveReferences(variable, state);
-      });
+      // check if {{var}} and %%var%% are present in the string
+
+      if (options.includes('{{') && options.includes('%%')) {
+        const vars = resolveReferences(options, state);
+        console.log('queryVariables', { options, vars });
+        queryVariables[options] = vars;
+      } else {
+        const dynamicVariables = getDynamicVariables(options) || [];
+        dynamicVariables.forEach((variable) => {
+          queryVariables[variable] = resolveReferences(variable, state);
+        });
+      }
+
       break;
     }
 
@@ -797,6 +809,7 @@ export function getQueryVariables(options, state) {
     default:
       break;
   }
+
   return queryVariables;
 }
 
@@ -898,7 +911,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
 }
 
 export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit') {
-  const query = _ref.state.app.data_queries.find((query) => query.id === queryId);
+  const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   let dataQuery = {};
 
   //for viewer we will only get the environment id from the url
@@ -1652,3 +1665,44 @@ function convertMapSet(obj) {
     return obj;
   }
 }
+
+export const checkExistingQueryName = (newName) =>
+  useDataQueriesStore.getState().dataQueries.some((query) => query.name === newName);
+
+export const runQueries = (queries, _ref) => {
+  queries.forEach((query) => {
+    if (query.options.runOnPageLoad) {
+      runQuery(_ref, query.id, query.name);
+    }
+  });
+};
+
+export const computeQueryState = (queries, _ref) => {
+  let queryState = {};
+  queries.forEach((query) => {
+    if (query.plugin?.plugin_id) {
+      queryState[query.name] = {
+        ...query.plugin.manifest_file.data.source.exposedVariables,
+        kind: query.plugin.manifest_file.data.source.kind,
+        ..._ref.state.currentState.queries[query.name],
+      };
+    } else {
+      queryState[query.name] = {
+        ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+        kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
+        ..._ref.state.currentState.queries[query.name],
+      };
+    }
+  });
+  const hasDiffQueryState = !_.isEqual(_ref.state?.currentState?.queries, queryState);
+  if (hasDiffQueryState) {
+    _ref.setState({
+      currentState: {
+        ..._ref.state.currentState,
+        queries: {
+          ...queryState,
+        },
+      },
+    });
+  }
+};

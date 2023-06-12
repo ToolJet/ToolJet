@@ -1,10 +1,8 @@
-import { InstanceSettings } from 'src/entities/instance_settings.entity';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class instanceSettings1663689836425 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
-    const InstanceSettingsRepository = entityManager.getRepository(InstanceSettings);
 
     const settings = [
       {
@@ -13,8 +11,14 @@ export class instanceSettings1663689836425 implements MigrationInterface {
       },
     ];
 
-    const entries = settings.map((setting) => InstanceSettingsRepository.create(setting));
-    await InstanceSettingsRepository.save(entries);
+    settings.map(async (setting) => {
+      const { key, value } = setting;
+
+      await entityManager.query(
+        'insert into instance_settings ("key", "value", created_at, updated_at) values ($1, $2, $3, $3) returning *',
+        [key, value, new Date()]
+      );
+    });
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {}

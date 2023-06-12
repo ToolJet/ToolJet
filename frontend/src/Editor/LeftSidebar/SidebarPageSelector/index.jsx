@@ -35,12 +35,15 @@ const LeftSidebarPageSelector = ({
   updateOnPageLoadEvents,
   currentState,
   apps,
-  dataQueries,
   popoverContentHeight,
+  isVersionReleased,
+  setReleasedVersionPopupState,
 }) => {
   const [allpages, setPages] = useState(pages);
   const [pinned, setPinned] = useState(false);
   const router = useRouter();
+  const [haveUserPinned, setHaveUserPinned] = useState(false);
+
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
 
@@ -64,6 +67,12 @@ const LeftSidebarPageSelector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ pages })]);
 
+  const pinPagesPopover = (state) => {
+    if (!haveUserPinned) {
+      setPinned(state);
+    }
+  };
+
   const popoverContent = (
     <div>
       <div className="card-body p-0 pb-5">
@@ -75,6 +84,8 @@ const LeftSidebarPageSelector = ({
                 darkMode={darkMode}
                 showHideViewerNavigationControls={showHideViewerNavigationControls}
                 showPageViwerPageNavitation={appDefinition?.showViewerNavigation || false}
+                isVersionReleased={isVersionReleased}
+                setReleasedVersionPopupState={setReleasedVersionPopupState}
               />
             }
           >
@@ -88,6 +99,10 @@ const LeftSidebarPageSelector = ({
                       authenticationService?.currentSessionValue?.current_organization_id,
                     appId: router.query.id,
                   });
+                  if (isVersionReleased) {
+                    setReleasedVersionPopupState();
+                    return;
+                  }
                   setNewPageBeingCreated(true);
                 }}
                 darkMode={darkMode}
@@ -107,7 +122,10 @@ const LeftSidebarPageSelector = ({
               </Button>
               <Button
                 title={`${pinned ? 'Unpin' : 'Pin'}`}
-                onClick={() => setPinned(!pinned)}
+                onClick={() => {
+                  setPinned(!pinned);
+                  !haveUserPinned && setHaveUserPinned(true);
+                }}
                 darkMode={darkMode}
                 size="sm"
                 styles={{ width: '28px', padding: 0 }}
@@ -155,7 +173,10 @@ const LeftSidebarPageSelector = ({
                 apps={apps}
                 allpages={pages}
                 components={appDefinition?.components ?? {}}
-                dataQueries={dataQueries}
+                isVersionReleased={isVersionReleased}
+                setReleasedVersionPopupState={setReleasedVersionPopupState}
+                pinPagesPopover={pinPagesPopover}
+                haveUserPinned={haveUserPinned}
               />
             ) : (
               <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>

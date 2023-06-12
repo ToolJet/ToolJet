@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -40,6 +41,8 @@ import { Response } from 'express';
 import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -61,7 +64,8 @@ export class AuthService {
     private instanceSettingsService: InstanceSettingsService,
     private metadataService: MetadataService,
     private configService: ConfigService,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private licenseService: LicenseService
   ) {}
 
   verifyToken(token: string) {
@@ -233,6 +237,7 @@ export class AuthService {
           avatarId: user.avatarId,
           //for knowing the user is new or old one [posthog telemetry]
           createdAt: user.createdAt,
+          ssoUserInfo: user.userDetails?.ssoUserInfo,
         },
       });
     });
@@ -659,6 +664,10 @@ export class AuthService {
     ]);
     let sessionId = loggedInUser?.sessionId;
 
+    if ((await this.licenseService.getLicenseTerms(LICENSE_FIELD.IS_EXPIRED)) && !isSuperAdmin(user)) {
+      throw new HttpException('You cannot login now. Please contact your administrator for support.', 451);
+    }
+
     // logged in user and new user are different -> creating session
     if (loggedInUser?.id !== user.id) {
       const session: UserSessions = await this.sessionService.createSession(
@@ -695,6 +704,7 @@ export class AuthService {
       avatar_id: user.avatarId,
       //for posthog events
       created_at: user.createdAt,
+      sso_user_info: user.userDetails?.ssoUserInfo,
       organizationId: organization.id,
       organization: organization.name,
       superAdmin: isSuperAdmin(user),
