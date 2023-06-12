@@ -15,10 +15,33 @@ export const ProgramaticallyHandleToggleSwitch = ({
   // eslint-disable-next-line no-unused-vars
   paramType,
 }) => {
-  const value = property === 'isEditable' ? props.isEditable : props.disableActionButton;
+  const getValueBasedOnProperty = (property, props) => {
+    switch (property) {
+      case 'isEditable':
+        return props.isEditable;
+
+      case 'disableActionButton':
+        return props.disableActionButton;
+
+      case 'columnVisibility':
+        return props.columnVisibility;
+      default:
+        return;
+    }
+  };
+
+  const getInitialValue = (property, definition) => {
+    if (property === 'columnVisibility') {
+      return definition?.value ?? `{{true}}`;
+    }
+    return definition?.value ?? `{{false}}`;
+  };
+
+  const value = getValueBasedOnProperty(property, props);
   const param = { name: property };
   const definition = { value, fxActive: props.fxActive };
-  const initialValue = definition?.value ?? `{{false}}`;
+  const initialValue = getInitialValue(property, definition);
+
   const options = {};
   return (
     <div className={`mb-2 field ${options.className}`} onClick={(e) => e.stopPropagation()}>

@@ -1818,7 +1818,7 @@ button {
       padding: 10px;
       margin-left: -9px;
       background: white;
-      box-shadow: rgba(15, 15, 15, 0/05) 0px 0px 0px 1px,
+      box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px,
         rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
       white-space: initial;
     }
@@ -2576,8 +2576,20 @@ hr {
   height: 28px !important;
 }
 
+.editor {
+  .modal-dialog {
+    overflow-y: initial !important
+  }
+
+  .modal-dialog-scrollable .modal-content {
+    max-height: 88% !important;
+  }
+
+}
+
+
 .modal-component {
-  margin-top: 150px;
+
 
   .modal-body {
     padding: 0;
@@ -4575,10 +4587,6 @@ input[type="text"] {
     color: #fff;
     background-color: #232e3c !important;
   }
-}
-
-.onboarding-modal.dark .modal-content {
-  @extend .modal-content.home-modal-component.dark;
 }
 
 .modal-content.home-modal-component.dark-theme {
@@ -10651,4 +10659,10 @@ tbody {
   margin: 0 auto;
   justify-content: center;
   align-items: center;
+}
+
+.freeze-scroll {
+  #real-canvas {
+    overflow: hidden;
+  }
 }
