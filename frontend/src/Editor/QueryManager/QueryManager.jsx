@@ -69,15 +69,14 @@ const QueryManager = ({
 
   useEffect(() => {
     if (selectedQuery) {
-      if (selectedQuery?.kind in defaultSources && !selectedQuery?.data_source_id) {
+      if (defaultSources?.[selectedQuery?.kind]) {
         return setSelectedDataSource(defaultSources[selectedQuery?.kind]);
       }
-      mode === 'edit' &&
-        setSelectedDataSource(
-          [...dataSources, ...globalDataSources].find(
-            (datasource) => datasource.id === selectedQuery?.data_source_id
-          ) || null
-        );
+      // mode === 'edit' &&
+      setSelectedDataSource(
+        [...dataSources, ...globalDataSources].find((datasource) => datasource.id === selectedQuery?.data_source_id) ||
+          null
+      );
     } else if (selectedQuery === null) {
       setSelectedDataSource(null);
     }
