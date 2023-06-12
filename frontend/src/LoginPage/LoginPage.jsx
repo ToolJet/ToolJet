@@ -15,6 +15,7 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
 import { withRouter } from '@/_hoc/withRouter';
+import queryString from 'query-string';
 class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -54,9 +55,24 @@ class LoginPageComponent extends React.Component {
             newSession?.current_organization_id === this.organizationId)
         ) {
           // redirect to home if already logged in
-          // set redirect path for sso login
-          const path = this.eraseRedirectUrl();
-          const redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
+          // set redirect path for sso/form login
+          let redirectPath = '';
+          if (this.state.formLogin) {
+            const params = queryString.parse(this.props.location.search);
+            const { from } = params.redirectTo
+              ? { from: { pathname: params.redirectTo } }
+              : { from: { pathname: '/' } };
+            if (from.pathname !== '/confirm')
+              // appending workspace-id to avoid 401 error. App.jsx will take the workspace id from URL
+              from.pathname = `${this.returnWorkspaceIdIfNeed(from.pathname)}${
+                from.pathname !== '/' ? from.pathname : ''
+              }`;
+            redirectPath = from.pathname === '/confirm' ? '/' : from.pathname;
+          } else {
+            const path = this.eraseRedirectUrl();
+            redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
+          }
+
           window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
         }
       }
@@ -144,7 +160,7 @@ class LoginPageComponent extends React.Component {
   authUser = (e) => {
     e.preventDefault();
 
-    this.setState({ isLoading: true });
+    this.setState({ isLoading: true, formLogin: true });
 
     const { email, password } = this.state;
 
@@ -169,16 +185,8 @@ class LoginPageComponent extends React.Component {
 
   //TODO: remove this code if we don't need
   authSuccessHandler = () => {
-    // authenticationService.deleteLoginOrganizationId();
-    // const params = queryString.parse(this.props.location.search);
-    // const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
-    // if (from.pathname !== '/confirm')
-    //   // appending workspace-id to avoid 401 error. App.jsx will take the workspace id from URL
-    //   from.pathname = `${this.returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
-    // const redirectPath = from.pathname === '/confirm' ? '/' : from.pathname;
-    // this.setState({ isLoading: false });
-    // this.eraseRedirectUrl();
-    // window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+    this.setState({ isLoading: false });
+    this.eraseRedirectUrl();
   };
 
   authFailureHandler = (res) => {
