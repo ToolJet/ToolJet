@@ -7,10 +7,9 @@ import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 
 export const LeftSidebarDebugger = ({ darkMode, errors, clearErrorLogs, setPinned, pinned }) => {
   const { t } = useTranslation();
-  const elemRef = useRef();
 
   return (
-    <div ref={elemRef}>
+    <div>
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Debugger">
           <div className="d-flex justify-content-end">

@@ -73,7 +73,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     setErrorHistory({ appLevel: [], pageLevel: [] });
   };
 
- useEffect(() => {
+  useEffect(() => {
     if (currentPageId) {
       const olderPageErrorFromHistory = errorHistory.pageLevel[currentPageId] ?? [];
       const olderAppErrorFromHistory = errorHistory.appLevel ?? [];
@@ -82,7 +82,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPageId]);
 
- useEffect(() => {
+  useEffect(() => {
     const newError = _.flow([
       Object.entries,
       // eslint-disable-next-line no-unused-vars
@@ -115,13 +115,13 @@ export const LeftSidebar = forwardRef((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ errors })]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       setUnReadErrorCount((prev) => ({ read: errorLogs.length, unread: 0 }));
     }
   }, [open]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const unReadErrors = errorLogs.length - unReadErrorCount.read;
     setUnReadErrorCount((prev) => {
       return { ...prev, unread: unReadErrors };

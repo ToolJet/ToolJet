@@ -198,6 +198,8 @@ class EditorComponent extends React.Component {
         threshold: 0,
       },
     });
+
+    useQueryPanelStore.subscribe(({ queryPanelHeight }) => this.setState({ queryPanelHeight }));
   }
 
   /**
@@ -866,7 +868,7 @@ class EditorComponent extends React.Component {
   computeCanvasContainerHeight = () => {
     // 45 = (height of header)
     // 85 = (the height of the query panel header when minimised) + (height of header)
-    return `calc(${100}% - ${Math.max(this.props.queryPanelStore.queryPanelHeight + 45, 85)}px)`;
+    return `calc(${100}% - ${Math.max(this.state.queryPanelHeight + 45, 85)}px)`;
   };
 
   handleQueryPaneDragging = (isQueryPaneDragging) => this.setState({ isQueryPaneDragging });
@@ -1777,9 +1779,4 @@ class EditorComponent extends React.Component {
   }
 }
 
-const withGlobalStore = (BaseComponent) => (props) => {
-  const queryPanelStore = useQueryPanelStore();
-  return <BaseComponent {...props} queryPanelStore={queryPanelStore} />;
-};
-
-export const Editor = withGlobalStore(withTranslation()(withRouter(EditorComponent)));
+export const Editor = withTranslation()(withRouter(EditorComponent));
