@@ -218,7 +218,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'destroy-create-review-app'
+                name: 'destroy-review-cypress-app'
               })
             } catch (e) {
               console.log(e)
@@ -229,7 +229,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'suspend-create-review-app'
+                name: 'suspend-review-cypress-app'
               })
             } catch (e) {
               console.log(e)
@@ -240,7 +240,7 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'active-create-review-app'
+                name: 'active-review-cypress-app'
               })
             } catch (e) {
               console.log(e)
@@ -317,7 +317,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['active-create-review-app']
+              labels: ['active-review-cypress-app']
             })
 
             try {
@@ -325,8 +325,10 @@ jobs:
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                name: 'suspend-create-review-app'
+                name: 'suspend-review-cypress-app'
               })
             } catch (e) {
               console.log(e)
             }
+
+            # testing

@@ -36,6 +36,7 @@ export function renderElement(
 
   const paramTypeConfig = componentMeta[paramType] || {};
   const paramConfig = paramTypeConfig[param] || {};
+  const meta = componentMeta[paramType][param];
   const { conditionallyRender = null } = paramConfig;
 
   if (componentConfig.component == 'BoundedBox') {
@@ -45,7 +46,6 @@ export function renderElement(
       if (resolvedValue?.value !== value) return;
     }
   }
-  const meta = componentMeta[paramType][param];
 
   return (
     <Code
