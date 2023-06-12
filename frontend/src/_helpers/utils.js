@@ -846,7 +846,14 @@ export function isExpectedDataType(data, expectedDataType) {
   return data;
 }
 
-export const validateName = (name, nameType, showError = false, allowSpecialChars = true, allowSpaces = true) => {
+export const validateName = (
+  name,
+  nameType,
+  showError = false,
+  allowSpecialChars = true,
+  allowSpaces = true,
+  checkReservedWords = false
+) => {
   const newName = name;
   let errorMsg = '';
   if (!newName) {
@@ -892,6 +899,40 @@ export const validateName = (name, nameType, showError = false, allowSpecialChar
 
   if (newName.length > 50) {
     errorMsg = `Maximum length has been reached.`;
+    showError &&
+      toast.error(errorMsg, {
+        id: '3',
+      });
+    return {
+      status: false,
+      errorMsg,
+    };
+  }
+
+  const reservedPaths = [
+    'forgot-password',
+    'switch-workspace',
+    'reset-password',
+    'invitations',
+    'organization-invitations',
+    'sso',
+    'setup',
+    'confirm',
+    ':workspaceId',
+    'confirm-invite',
+    'oauth2',
+    'applications',
+    'integrations',
+    'login',
+    'signup',
+    'workspace-settings',
+    'settings',
+    'global-datasources',
+    'database',
+  ];
+
+  if (checkReservedWords && reservedPaths.includes(newName)) {
+    errorMsg = `Reserved words are not allowed.`;
     showError &&
       toast.error(errorMsg, {
         id: '3',

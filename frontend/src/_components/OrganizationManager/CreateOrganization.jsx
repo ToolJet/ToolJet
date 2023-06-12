@@ -52,7 +52,14 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         error: null,
       },
     });
-    const error = validateName(value, `Workspace ${field}`, false, !(field === 'slug'), !(field === 'slug'));
+    const error = validateName(
+      value,
+      `Workspace ${field}`,
+      false,
+      !(field === 'slug'),
+      !(field === 'slug'),
+      field === 'slug'
+    );
     setFields({
       ...fields,
       [field]: {

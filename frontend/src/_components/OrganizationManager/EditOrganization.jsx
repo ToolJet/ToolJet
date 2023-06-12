@@ -74,7 +74,14 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
         error: null,
       },
     });
-    const error = validateName(value, `Workspace ${field}`, false, !(field === 'slug'), !(field === 'slug'));
+    const error = validateName(
+      value,
+      `Workspace ${field}`,
+      false,
+      !(field === 'slug'),
+      !(field === 'slug'),
+      field === 'slug'
+    );
     setFields({
       ...fields,
       [field]: {
