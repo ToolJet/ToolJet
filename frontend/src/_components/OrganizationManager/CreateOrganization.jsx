@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
   const [errorText, setErrorText] = useState('');
+  const createButtonRef = useRef(null);
   const { t } = useTranslation();
 
   const createOrganization = () => {
@@ -32,6 +33,13 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
           handleHttpErrorMessages(error, 'workspace');
         }
       );
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.keyCode === 13) {
+      e.preventDefault();
+      createButtonRef.current.click(); 
     }
   };
 
@@ -62,6 +70,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
           <input
             type="text"
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             className="form-control"
             placeholder={t('header.organization.workspaceName', 'workspace name')}
             disabled={isCreating}
@@ -78,6 +87,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
             {t('globals.cancel', 'Cancel')}
           </ButtonSolid>
           <ButtonSolid
+            ref={createButtonRef}
             disabled={isCreating}
             onClick={createOrganization}
             data-cy="create-workspace-button"
