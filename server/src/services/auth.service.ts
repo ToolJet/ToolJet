@@ -617,6 +617,7 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       currentOrganizationId: organization.id,
+      currentOrganizationSlug: organization.slug,
     });
   }
 }

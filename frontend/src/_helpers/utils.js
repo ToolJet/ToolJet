@@ -784,7 +784,9 @@ export const getWorkspaceIdOrSlugFromURL = () => {
 };
 
 export const getWorkspaceId = () =>
-  getWorkspaceIdOrSlugFromURL() || authenticationService.currentSessionValue?.current_organization_id;
+  getWorkspaceIdOrSlugFromURL() ||
+  authenticationService.currentSessionValue?.current_organization_slug ||
+  authenticationService.currentSessionValue?.current_organization_id;
 
 export const excludeWorkspaceIdFromURL = (pathname) => {
   if (!pathname.includes('/applications/')) {
