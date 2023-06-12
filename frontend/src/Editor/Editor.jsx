@@ -198,10 +198,6 @@ class EditorComponent extends React.Component {
         threshold: 0,
       },
     });
-
-    this.queryPanelStoreListner = useQueryPanelStore.subscribe(({ queryPanelHeight }) =>
-      this.setState({ queryPanelHeight })
-    );
   }
 
   /**
@@ -250,6 +246,14 @@ class EditorComponent extends React.Component {
     if (!isEqual(prevState.editorMarginLeft, this.state.editorMarginLeft)) {
       this.canvasContainerRef.current.scrollLeft += this.state.editorMarginLeft;
     }
+
+    if (
+      !isEqual(prevState.isQueryPaneDragging, this.state.isQueryPaneDragging) ||
+      !isEqual(prevState.isQueryPaneExpanded, this.state.isQueryPaneExpanded)
+    ) {
+      console.log('useQueryPanelStore.getState()', useQueryPanelStore.getState());
+      this.setState({ queryPanelHeight: useQueryPanelStore.getState().queryPanelHeight });
+    }
   }
 
   isVersionReleased = (version = this.state.editingVersion) => {
@@ -280,7 +284,6 @@ class EditorComponent extends React.Component {
     this.socket && this.socket?.close();
     this.subscription && this.subscription.unsubscribe();
     if (config.ENABLE_MULTIPLAYER_EDITING) this.props?.provider?.disconnect();
-    this.queryPanelStoreListner && this.queryPanelStoreListner();
   }
 
   // 1. When we receive an undoable action – we can always undo but cannot redo anymore.
@@ -875,6 +878,7 @@ class EditorComponent extends React.Component {
   };
 
   handleQueryPaneDragging = (isQueryPaneDragging) => this.setState({ isQueryPaneDragging });
+  handleQueryPaneExpanding = (isQueryPaneExpanded) => this.setState({ isQueryPaneExpanded });
 
   saveEditingVersion = (isUserSwitchedVersion = false) => {
     if (this.isVersionReleased() && !isUserSwitchedVersion) {
@@ -1703,6 +1707,7 @@ class EditorComponent extends React.Component {
                 </div>
                 <QueryPanel
                   onQueryPaneDragging={this.handleQueryPaneDragging}
+                  handleQueryPaneExpanding={this.handleQueryPaneExpanding}
                   dataQueriesChanged={this.dataQueriesChanged}
                   fetchDataQueries={this.fetchDataQueries}
                   darkMode={this.props.darkMode}

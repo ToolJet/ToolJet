@@ -23,6 +23,7 @@ const QueryPanel = ({
   editorRef,
   onQueryPaneDragging,
   isVersionReleased,
+  handleQueryPaneExpanding,
 }) => {
   const { setSelectedQuery, updateQueryPanelHeight, setUnSavedChanges, setSelectedDataSource } = useQueryPanelActions();
   const isUnsavedQueriesAvailable = useUnsavedChanges();
@@ -50,6 +51,10 @@ const QueryPanel = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedQuery?.id, editingQuery]);
+
+  useEffect(() => {
+    handleQueryPaneExpanding(isExpanded);
+  }, [isExpanded]);
 
   useEffect(() => {
     setEditingQuery(dataQueries.length > 0);
