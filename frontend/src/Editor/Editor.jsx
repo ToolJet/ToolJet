@@ -199,7 +199,9 @@ class EditorComponent extends React.Component {
       },
     });
 
-    useQueryPanelStore.subscribe(({ queryPanelHeight }) => this.setState({ queryPanelHeight }));
+    this.queryPanelStoreListner = useQueryPanelStore.subscribe(({ queryPanelHeight }) =>
+      this.setState({ queryPanelHeight })
+    );
   }
 
   /**
@@ -278,6 +280,7 @@ class EditorComponent extends React.Component {
     this.socket && this.socket?.close();
     this.subscription && this.subscription.unsubscribe();
     if (config.ENABLE_MULTIPLAYER_EDITING) this.props?.provider?.disconnect();
+    this.queryPanelStoreListner && this.queryPanelStoreListner();
   }
 
   // 1. When we receive an undoable action – we can always undo but cannot redo anymore.
