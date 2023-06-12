@@ -95,14 +95,16 @@ class HomePageComponent extends React.Component {
     });
 
     folderService.getAll(appSearchKey).then((data) => {
-      const currentFolder = data?.folders?.filter(
-        (folder) => this.state.currentFolder?.id && folder.id === this.state.currentFolder?.id
-      )?.[0];
+      const folder_slug = new URL(window.location.href)?.searchParams?.get('folder');
+      const folder = data?.folders?.find((folder) => folder.name === folder_slug);
+      const currentFolderId = folder ? folder.id : this.state.currentFolder?.id;
+      const currentFolder = data?.folders?.find((folder) => currentFolderId && folder.id === currentFolderId);
       this.setState({
         folders: data.folders,
         foldersLoading: false,
         currentFolder: currentFolder || {},
       });
+      currentFolder && this.fetchApps(1, currentFolder.id);
     });
   };
 
