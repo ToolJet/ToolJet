@@ -193,7 +193,6 @@ class Chart extends React.Component {
 
     items.push({
       title: 'Layout',
-      isOpen: false,
       children: (
         <>
           {renderElement(
