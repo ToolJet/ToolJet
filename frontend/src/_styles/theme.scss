@@ -1170,6 +1170,38 @@ button {
   width: 184px !important;
 }
 
+.component-action-select {
+  .css-zz6spl-container {
+    width: inherit;
+  }
+
+  &.fx-container-eventmanager {
+    .fx-common {
+      right: 0;
+    }
+
+    .custom-row {
+      width: 100%
+    }
+  }
+
+  .codeShow-active {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+
+    .custom-row {
+      width: 75%;
+    }
+  }
+
+  .row.fx-container {
+    .col {
+      display: flex;
+    }
+  }
+}
+
 .fx-container-eventmanager *.fx-common {
   top: 6px !important;
   right: -34px;
@@ -2544,8 +2576,20 @@ hr {
   height: 28px !important;
 }
 
+.editor {
+  .modal-dialog {
+    overflow-y: initial !important
+  }
+
+  .modal-dialog-scrollable .modal-content {
+    max-height: 88% !important;
+  }
+
+}
+
+
 .modal-component {
-  margin-top: 150px;
+
 
   .modal-body {
     padding: 0;
@@ -4349,7 +4393,8 @@ input[type="text"] {
   }
 
   input:focus {
-    width: 300px;
+    width: 200px;
+    background-color: var(--base);
   }
 
   .input-icon .input-icon-addon {
@@ -7492,6 +7537,16 @@ tbody {
   &:focus {
     box-shadow: 0px 0px 0px 4px #DFE3E6;
   }
+
+  .tj-text-xsm {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;  
+  }
+
+  .tj-folder-list {
+    display: block;
+  }
 }
 
 
@@ -8005,6 +8060,10 @@ tbody {
 
 .react-tooltip {
   font-size: .765625rem !important;
+}
+
+.tooltip {
+  z-index: 10000;
 }
 
 .add-new-workspace-icon-wrap {
@@ -10062,7 +10121,7 @@ tbody {
   border-radius: 0px !important;
 }
 
-// custom styles for users multiselect in manage users 
+// custom styles for users multiselect in manage users
 .manage-groups-users-multiselect {
   gap: 17px;
   width: 440px;
@@ -10513,6 +10572,34 @@ tbody {
   }
 }
 
+
+.workspace-folder-modal {
+  .tj-app-input {
+    padding-bottom: 0px !important;
+  }
+
+  .tj-input-error {
+    height: 32px;
+    color: #ED5F00;
+    font-weight: 400;
+    font-size: 10px;
+    height: 0px;
+    padding: 4px 0px 20px 0px;
+  }
+}
+
+.table-editor-component-row {
+  .rdt.cell-type-datepicker {
+    margin-top: 0;
+  }
+
+  .has-multiselect {
+    .select-search-input {
+      margin-bottom: 0;
+    }
+  }
+}
+
 .theme-dark .card-container {
   background-color: #121212 !important
 }
@@ -10522,5 +10609,31 @@ tbody {
     .react-select__menu-list {
       max-height: 150px;
     }
+  }
+}
+
+.workspace-folder-modal {
+  .tj-app-input {
+    padding-bottom: 0px !important;
+  }
+
+  .tj-input-error {
+    height: 32px;
+    color: #ED5F00;
+    font-weight: 400;
+    font-size: 10px;
+    height: 0px;
+    padding: 4px 0px 20px 0px;
+  }
+}
+.jet-container-loading {
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+}
+
+.freeze-scroll {
+  #real-canvas {
+    overflow: hidden;
   }
 }

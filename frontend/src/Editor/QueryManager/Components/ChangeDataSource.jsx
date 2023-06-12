@@ -8,7 +8,7 @@ export const ChangeDataSource = ({ dataSources, onChange, value, selectedQuery }
       options={dataSources
         .filter((ds) => ds.kind === selectedQuery?.kind)
         .map((ds) => ({ label: ds.name, value: ds.id }))}
-      value={value.id}
+      value={value?.id}
       onChange={(value) => {
         const dataSource = dataSources.find((ds) => ds.id === value);
         onChange(dataSource);

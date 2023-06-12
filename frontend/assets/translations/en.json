@@ -397,7 +397,7 @@
             "editFolder": "Edit folder",
             "deleteFolder": "Delete folder",
             "folderName": "Folder name",
-            "wishToDeleteFolder": "Are you sure you want to delete the folder? Apps within the folder will not be deleted."
+            "wishToDeleteFolder": "Are you sure you want to delete the folder {{folderName}}? Apps within the folder will not be deleted."
         },
         "header": {
             "createNewApplication": "Create new app",
@@ -411,7 +411,7 @@
         },
         "noApplicationFound": "No Applications found",
         "thisFolderIsEmpty": "This folder is empty",
-        "deleteAppAndData": "The app and the associated data will be permanently deleted, do you want to continue?",
+        "deleteAppAndData": "The app {{appName}} and the associated data will be permanently deleted, do you want to continue?",
         "removeAppFromFolder": "The app will be removed from this folder, do you want to continue?",
         "change": "Change",
         "templateCard": {

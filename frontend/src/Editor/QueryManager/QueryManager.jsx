@@ -42,7 +42,7 @@ const QueryManager = ({
   const previewLoading = usePreviewLoading();
   const queryPreviewData = usePreviewData();
   const selectedQuery = useSelectedQuery();
-  const { setSelectedDataSource } = useQueryPanelActions();
+  const { setSelectedDataSource, setQueryToBeRun } = useQueryPanelActions();
 
   const [options, setOptions] = useState({});
   const mounted = useRef(false);
@@ -61,20 +61,22 @@ const QueryManager = ({
   }, [selectedQuery?.options]);
 
   useEffect(() => {
-    if (queryToBeRun !== null) runQuery(editorRef, queryToBeRun.id, queryToBeRun.name);
+    if (queryToBeRun !== null) {
+      runQuery(editorRef, queryToBeRun.id, queryToBeRun.name);
+      setQueryToBeRun(null);
+    }
   }, [editorRef, queryToBeRun]);
 
   useEffect(() => {
     if (selectedQuery) {
-      if (selectedQuery?.kind in defaultSources) {
+      if (defaultSources?.[selectedQuery?.kind]) {
         return setSelectedDataSource(defaultSources[selectedQuery?.kind]);
       }
-      mode === 'edit' &&
-        setSelectedDataSource(
-          [...dataSources, ...globalDataSources].find(
-            (datasource) => datasource.id === selectedQuery?.data_source_id
-          ) || null
-        );
+      // mode === 'edit' &&
+      setSelectedDataSource(
+        [...dataSources, ...globalDataSources].find((datasource) => datasource.id === selectedQuery?.data_source_id) ||
+          null
+      );
     } else if (selectedQuery === null) {
       setSelectedDataSource(null);
     }

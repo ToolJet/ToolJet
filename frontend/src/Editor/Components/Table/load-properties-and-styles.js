@@ -57,6 +57,8 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     };
   });
 
+  const allowSelection = properties?.allowSelection ?? (showBulkSelector || highlightSelectedRow) ? true : false;
+
   return {
     color,
     serverSidePagination,
@@ -85,5 +87,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     rowsPerPage,
     enabledSort,
     hideColumnSelectorButton,
+    allowSelection,
   };
 }
