@@ -2,7 +2,6 @@ import React from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link, Navigate } from 'react-router-dom';
-import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import { getSubpath, getWorkspaceId, isUUID, validateEmail } from '../_helpers/utils';

@@ -935,3 +935,8 @@ export function isUUID(string) {
   var regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
   return regex.test(string);
 }
+
+export const redirectToDashboard = (data) => {
+  const id_slug = data?.current_organization_slug || data?.current_organization_id;
+  window.location = getSubpath() ? `${getSubpath()}/${id_slug}` : `/${id_slug}`;
+};

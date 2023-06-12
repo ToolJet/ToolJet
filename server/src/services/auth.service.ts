@@ -335,7 +335,7 @@ export class AuthService {
       // Create first organization
       const organization = await this.organizationsService.create(
         workspace || 'My workspace',
-        'my-workspace',
+        workspace || 'my-workspace',
         null,
         manager
       );
