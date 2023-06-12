@@ -11,6 +11,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [fields, setFields] = useState({ name: { value: '', error: '' }, slug: { value: null, error: '' } });
   const [slugProgress, setSlugProgress] = useState(false);
   const [isDisabled, setDisabled] = useState(true);
+  const darkMode = localStorage.getItem('darkMode') === 'true';
   const { t } = useTranslation();
 
   const createOrganization = () => {
@@ -137,7 +138,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         <div className="row mb-3">
           <div className="col modal-main tj-app-input">
             <label>Workspace link</label>
-            <div className="tj-text-input break-all">
+            <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`}>
               {!slugProgress ? (
                 `${window.public_config?.TOOLJET_HOST}/${fields['slug']?.value || ''}`
               ) : (
@@ -153,7 +154,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         </div>
         <div className="row">
           <div className="col d-flex justify-content-end gap-2">
-            <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button">
+            <ButtonSolid variant="secondary" onClick={closeModal} data-cy="cancel-button" className="cancel-btn">
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>
             <ButtonSolid
@@ -162,6 +163,15 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               data-cy="create-workspace-button"
               isLoading={isCreating}
             >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M6 0.666992C6.36819 0.666992 6.66667 0.965469 6.66667 1.33366V5.33366H10.6667C11.0349 5.33366 11.3333 5.63214 11.3333 6.00033C11.3333 6.36852 11.0349 6.66699 10.6667 6.66699H6.66667V10.667C6.66667 11.0352 6.36819 11.3337 6 11.3337C5.63181 11.3337 5.33333 11.0352 5.33333 10.667V6.66699H1.33333C0.965145 6.66699 0.666668 6.36852 0.666668 6.00033C0.666668 5.63214 0.965145 5.33366 1.33333 5.33366H5.33333V1.33366C5.33333 0.965469 5.63181 0.666992 6 0.666992Z"
+                  fill="#FDFDFE"
+                />
+              </svg>
+
               {t('header.organization.createWorkspace', 'Create workspace')}
             </ButtonSolid>
           </div>

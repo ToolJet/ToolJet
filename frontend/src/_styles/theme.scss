@@ -10577,9 +10577,8 @@ tbody {
 
   .tj-text-input {
     width: auto !important;
-    background: linear-gradient(0deg, #F1F3F5, #F1F3F5),
-    linear-gradient(0deg, #D7DBDF, #D7DBDF);    
-    color: #889096;
+    background: var(--slate7);
+    color: var(--slate9);
     height: auto !important;
 
     &:hover {
@@ -10590,6 +10589,11 @@ tbody {
       border: 1px solid #D7DBDF;
       box-shadow: none;
     }
+  }
+
+  .tj-text-input.dark {
+    background:  #202425;
+    border: none;
   }
 
   .input-with-icon {
@@ -10612,6 +10616,10 @@ tbody {
     width: 16px;
     height: 16px;
     align-self: center;
+  }
+
+  .cancel-btn {
+    color: var(--indigo9);
   }
 }
 
