@@ -82,7 +82,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPageId]);
 
-  React.useEffect(() => {
+ useEffect(() => {
     const newError = _.flow([
       Object.entries,
       // eslint-disable-next-line no-unused-vars
