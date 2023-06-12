@@ -251,7 +251,6 @@ class EditorComponent extends React.Component {
       !isEqual(prevState.isQueryPaneDragging, this.state.isQueryPaneDragging) ||
       !isEqual(prevState.isQueryPaneExpanded, this.state.isQueryPaneExpanded)
     ) {
-      console.log('useQueryPanelStore.getState()', useQueryPanelStore.getState());
       this.setState({ queryPanelHeight: useQueryPanelStore.getState().queryPanelHeight });
     }
   }
