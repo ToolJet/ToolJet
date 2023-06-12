@@ -30,6 +30,7 @@ class Runjs extends React.Component {
           isMultiLineJs={false}
           enablePreview={false}
           componentName="Runjs"
+          cyLabel={`runjs`}
         />
       </div>
     );

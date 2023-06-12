@@ -239,7 +239,7 @@ To contribute to ToolJet code, plugins, and documentation, refer to our **[Contr
 [![GitHub license](https://img.shields.io/github/license/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet)
 
 <a href="https://github.com/tooljet/tooljet/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=tooljet/tooljet&max=300&columns=20" />
+  <img src="https://contrib.rocks/image?repo=tooljet/tooljet&max=360&columns=20" />
 </a>
 
 ## Help and Support

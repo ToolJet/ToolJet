@@ -11,7 +11,7 @@ export function handleResponse(response) {
       }
 
       const error = (data && data.message) || response.statusText;
-      return Promise.reject({ error, data });
+      return Promise.reject({ error, data, statusCode: response?.status });
     }
 
     return data;

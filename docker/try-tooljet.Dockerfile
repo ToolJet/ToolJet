@@ -4,6 +4,7 @@ FROM tooljet/tooljet-ce:latest
 COPY --from=postgrest/postgrest:v10.1.1.20221215 /bin/postgrest /bin
 
 # Install Postgres
+USER root
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
 RUN echo "deb http://deb.debian.org/debian"
@@ -33,6 +34,7 @@ RUN echo "[supervisord] \n" \
 # ENV defaults
 ENV TOOLJET_HOST=http://localhost \
     PORT=80 \
+    NODE_ENV=production \
     LOCKBOX_MASTER_KEY=replace_with_lockbox_master_key \
     SECRET_KEY_BASE=replace_with_secret_key_base \
     PG_DB=tooljet_production \
@@ -49,6 +51,7 @@ ENV TOOLJET_HOST=http://localhost \
     PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj \
     ORM_LOGGING=true \
     DEPLOYMENT_PLATFORM=docker:local \
+    HOME=/home/appuser \
     TERM=xterm
 
 # Prepare DB and start application
