@@ -67,12 +67,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const open = !!selectedSidebarItem;
 
   const clearErrorLogs = () => {
-    setUnReadErrorCount(() => {
-      return { read: 0, unread: 0 };
-    });
+    setUnReadErrorCount({ read: 0, unread: 0 });
 
-    setErrorLogs(() => []);
-    setErrorHistory(() => ({ appLevel: [], pageLevel: [] }));
+    setErrorLogs([]);
+    setErrorHistory({ appLevel: [], pageLevel: [] });
   };
 
   React.useEffect(() => {
