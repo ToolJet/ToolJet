@@ -13,6 +13,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
   const [slugProgress, setSlugProgress] = useState(false);
   const [isDisabled, setDisabled] = useState(true);
   const { t } = useTranslation();
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(
     () =>
@@ -104,6 +105,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
   const closeModal = () => {
     setFields({ name: { value: currentValue?.name, error: '' }, slug: { value: currentValue?.slug, error: '' } });
     setShowEditOrg(false);
+    setDisabled(true);
   };
 
   const delayedSlugChange = _.debounce((value, field) => {
@@ -178,7 +180,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
         <div className="row mb-3">
           <div className="col modal-main tj-app-input">
             <label>Workspace link</label>
-            <div className="tj-text-input break-all">
+            <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`}>
               {!slugProgress ? (
                 `${window.public_config?.TOOLJET_HOST}/${fields['slug']?.value || ''}`
               ) : (
@@ -194,7 +196,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
         </div>
         <div className="row">
           <div className="col d-flex justify-content-end gap-2">
-            <ButtonSolid variant="tertiary" onClick={closeModal}>
+            <ButtonSolid variant="secondary" onClick={closeModal} className="cancel-btn">
               {t('globals.cancel', 'Cancel')}
             </ButtonSolid>
             <ButtonSolid isLoading={isCreating} disabled={isCreating || isDisabled} onClick={editOrganization}>
