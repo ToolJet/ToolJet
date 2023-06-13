@@ -247,12 +247,6 @@ class EditorComponent extends React.Component {
       this.canvasContainerRef.current.scrollLeft += this.state.editorMarginLeft;
     }
 
-    if (
-      !isEqual(prevState.isQueryPaneDragging, this.state.isQueryPaneDragging) ||
-      !isEqual(prevState.isQueryPaneExpanded, this.state.isQueryPaneExpanded)
-    ) {
-      this.setState({ queryPanelHeight: useQueryPanelStore.getState().queryPanelHeight });
-    }
   }
 
   isVersionReleased = (version = this.state.editingVersion) => {
