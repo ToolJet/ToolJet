@@ -6,7 +6,7 @@ title: ToolJet CLI
 ToolJet CLI is a powerful tool that empowers developers to effortlessly create and enhance Marketplace plugins for ToolJet workspace.
 
 :::info
-Starting from ToolJet CLI version 0.0.14, a significant update has been made. The previous version, 0.0.13 and lower, focused on building datasource plugins. However, with the introduction of v0.0.14, functionality to create datasource plugins has been removed, and now the CLI prioritizes the creation of marketplace plugins by default.
+Starting from ToolJet CLI version 0.0.14, the creation of datasource plugins has been deprecated to prioritise marketplace plugins. This change enhances the plugin development experience and aligns with ToolJet's roadmap.
 :::
 
 ## Installation
