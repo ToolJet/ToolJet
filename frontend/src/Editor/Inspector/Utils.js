@@ -33,6 +33,7 @@ export function renderElement(
   const componentDefinition = componentConfig.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
+  const meta = componentMeta[paramType][param];
 
   if (componentConfig.component == 'DropDown') {
     const paramTypeConfig = componentMeta[paramType] || {};
@@ -47,7 +48,6 @@ export function renderElement(
       }
     }
   }
-  const meta = componentMeta[paramType][param];
 
   return (
     <Code
