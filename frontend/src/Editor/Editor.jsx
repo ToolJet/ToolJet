@@ -867,7 +867,7 @@ class EditorComponent extends React.Component {
   computeCanvasContainerHeight = () => {
     // 45 = (height of header)
     // 85 = (the height of the query panel header when minimised) + (height of header)
-    return `calc(${100}% - ${Math.max(this.state.queryPanelHeight + 45, 85)}px)`;
+    return `calc(${100}% - ${Math.max(useQueryPanelStore.getState().queryPanelHeight + 45, 85)}px)`;
   };
 
   handleQueryPaneDragging = (isQueryPaneDragging) => this.setState({ isQueryPaneDragging });
