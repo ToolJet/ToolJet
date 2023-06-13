@@ -29,6 +29,7 @@ import { setCookie } from '@/_helpers/cookie';
 import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -99,7 +100,7 @@ export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
 
-async function executeRunPycode(_ref, code, query, editorState, isPreview, mode) {
+async function executeRunPycode(_ref, code, query, isPreview, mode) {
   const pyodide = await loadPyodide();
 
   function log(line) {
@@ -112,7 +113,7 @@ async function executeRunPycode(_ref, code, query, editorState, isPreview, mode)
     try {
       const appStateVars = currentState['variables'] ?? {};
 
-      const actions = generateAppActions(_ref, query.id, mode, editorState, isPreview);
+      const actions = generateAppActions(_ref, query.id, mode, isPreview);
 
       for (const key of Object.keys(currentState.queries)) {
         currentState.queries[key] = {
@@ -393,7 +394,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'run-query': {
         const { queryId, queryName } = event;
-        return runQuery(_ref, queryId, queryName, undefined, mode);
+        const name =
+          useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
+        return runQuery(_ref, queryId, name, undefined, mode);
       }
       case 'logout': {
         return logoutAction(_ref);
@@ -551,12 +554,12 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const component = Object.values(_ref.state.currentState?.components ?? {}).filter(
           (component) => component.id === event.componentId
         )[0];
-        const action = component[event.componentSpecificActionHandle];
+        const action = component?.[event.componentSpecificActionHandle];
         const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
           ...param,
           value: resolveReferences(param.value, _ref.state.currentState, undefined, customVariables),
         }));
-        const actionPromise = action(...actionArguments.map((argument) => argument.value));
+        const actionPromise = actionArguments?.length && action(...actionArguments.map((argument) => argument.value));
         return actionPromise ?? Promise.resolve();
       }
 
@@ -777,10 +780,19 @@ export function getQueryVariables(options, state) {
   switch (optionsType) {
     case 'string': {
       options = options.replace(/\n/g, ' ');
-      const dynamicVariables = getDynamicVariables(options) || [];
-      dynamicVariables.forEach((variable) => {
-        queryVariables[variable] = resolveReferences(variable, state);
-      });
+      // check if {{var}} and %%var%% are present in the string
+
+      if (options.includes('{{') && options.includes('%%')) {
+        const vars = resolveReferences(options, state);
+        console.log('queryVariables', { options, vars });
+        queryVariables[options] = vars;
+      } else {
+        const dynamicVariables = getDynamicVariables(options) || [];
+        dynamicVariables.forEach((variable) => {
+          queryVariables[variable] = resolveReferences(variable, state);
+        });
+      }
+
       break;
     }
 
@@ -800,18 +812,20 @@ export function getQueryVariables(options, state) {
     default:
       break;
   }
+
   return queryVariables;
 }
 
-export function previewQuery(_ref, query, editorState, calledFromQuery = false) {
+export function previewQuery(_ref, query, calledFromQuery = false) {
   const options = getQueryVariables(query.options, _ref.props.currentState);
 
-  _ref.setState({ previewLoading: true });
+  const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
+  setPreviewLoading(true);
 
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query?.id, true);
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, query?.id, true);
     } else if (query.kind === 'tooljetdb') {
       const currentSessionValue = authenticationService.currentSessionValue;
       queryExecutionPromise = tooljetDbOperations.perform(
@@ -820,9 +834,9 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         _ref.state.currentState
       );
     } else if (query.kind === 'runpy') {
-      queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, editorState, true, 'edit');
+      queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit');
     } else {
-      queryExecutionPromise = dataqueryService.preview(query, options, editorState?.state?.editingVersion?.id);
+      queryExecutionPromise = dataqueryService.preview(query, options, _ref?.state?.editingVersion?.id);
     }
 
     queryExecutionPromise
@@ -841,9 +855,10 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         }
 
         if (calledFromQuery) {
-          _ref.setState({ previewLoading: false });
+          setPreviewLoading(false);
         } else {
-          _ref.setState({ previewLoading: false, queryPreviewData: finalData });
+          setPreviewLoading(false);
+          setPreviewData(finalData);
         }
 
         const queryStatus =
@@ -879,7 +894,8 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         resolve({ status: data.status, data: finalData });
       })
       .catch(({ error, data }) => {
-        _ref.setState({ previewLoading: false, queryPreviewData: data });
+        setPreviewLoading(false);
+        setPreviewData(data);
         toast.error(error);
         reject({ error, data });
       });
@@ -887,7 +903,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
 }
 
 export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit') {
-  const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
+  const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   let dataQuery = {};
 
   if (query) {
