@@ -8,7 +8,7 @@ Modal widget renders in front of a backdrop, and it blocks interaction with the 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/modal/prop.png" alt="ToolJet - Widget Reference - Modal" />
+<img className="screenshot-full" src="/img/widgets/modal/modal2.png" alt="ToolJet - Widget Reference - Modal" />
 
 </div>
 
@@ -36,19 +36,23 @@ Enabling this option hides the title bar in the modal. The value `{{true}}` or `
 
 ### Hide close button
 
-Enabling this option hides the close button in the modal. The value `{{true}}` or `{{false}}` can be set programmatically by clicking on the `Fx` button next to it.
+By enabling this option, the close button within the modal will be hidden. The value can be programmatically set to either `{{true}}` or `{{false}}` by clicking the adjacent `Fx` button.
 
-### Hide on escape
+### Close on escape key
 
-Enabling this option closes the modal(opened) whenever the escape key is pressed. The value `{{true}}` or `{{false}}` can be set programmatically by clicking on the `Fx` button next to it. This property is enabled by default.
+Enabling this option will cause the modal to close whenever the escape key is pressed. The value can be programmatically set to either `{{true}}` or `{{false}}` by clicking the adjacent `Fx` button. This property is enabled by default.
 
-:::info
-Now hide the modal by simply clicking anywhere outside the modal (for preview or released apps).
-:::
+### Close on outside click
+
+Enabling this feature will result in the modal closing when clicked outside of its boundaries. The value can be programmatically set to either `{{true}}` or `{{false}}` by clicking the adjacent `Fx` button.
 
 ### Modal size
 
-Size of the modal. Options are `medium`, `small` and `large`. The default is `small`. You can also programmatically configure the value by clicking on the `Fx` and set the value to `sm`, `md` or `lg`.
+Determines the size of the modal. Available options include `medium`, `small`, and `large`, with the default set to `medium`. The value can also be programmatically configured by clicking the `Fx` button and setting it to `sm`, `md`, or `lg`.
+
+### Modal height
+
+Specifies the height of the modal, with the default height set to `400px`. The modal's height can also be dynamically set using JS binding by utilizing the `{{components.xyz.data.key === 'Sun' ?? '600px' : '300px'}}` syntax.
 
 ## Options
 
