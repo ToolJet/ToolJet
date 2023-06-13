@@ -81,7 +81,7 @@ const Modal = ({
   const includeGPT = ['Runjs', 'Runpy', 'transformation'].includes(componentName) && isCopilotEnabled;
 
   const renderModalContent = () => (
-    <div className="modal-content" style={{ ...portalStyles, ...styles }}>
+    <div className="modal-content" style={{ ...portalStyles, ...styles }} onClick={(e) => e.stopPropagation()}>
       <div
         className={`resize-handle portal-header d-flex ${darkMode ? 'dark-mode-border' : ''}`}
         style={{ ...portalStyles }}
