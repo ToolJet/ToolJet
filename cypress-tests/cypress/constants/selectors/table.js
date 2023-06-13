@@ -31,6 +31,9 @@ export const tableSelector = {
     return `[data-cy="column-header-${column}"]`;
   },
 
+  draggableHandleColumn: (column) => {
+    return `[data-cy="draggable-handle-column-${column}"]`;
+  },
   filterButton: '[data-tooltip-id="tooltip-for-filter-data"]',
   headerFilters: '[data-cy="header-filters"]',
   labelNoFilters: '[data-cy="label-no-filters"]',
