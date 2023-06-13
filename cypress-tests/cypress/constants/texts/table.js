@@ -29,4 +29,6 @@ export const tableText = {
   optionEquals: "equals",
 
   labelDynamicColumn: "Use dynamic column",
+  makeEditable: "make editable",
+  lableDisableActionButton: "Disable action button",
 };
