@@ -372,7 +372,7 @@ export class UsersService {
       });
     }
 
-    return { organizationId: app?.isPublic ? null : app?.organizationId, isPublic: app?.isPublic };
+    return { organizationId: app?.organizationId, isPublic: app?.isPublic };
   }
 
   async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
