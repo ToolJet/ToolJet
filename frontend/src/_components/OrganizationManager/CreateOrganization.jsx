@@ -67,7 +67,11 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
         error: error?.errorMsg,
       },
     });
-    setDisabled(!error?.status);
+
+    const otherInputErrors = Object.keys(fields).find(
+      (key) => (key !== field && !_.isEmpty(fields[key].error)) || (key !== field && _.isEmpty(fields[key].value))
+    );
+    setDisabled(!error?.status || otherInputErrors);
   };
 
   const closeModal = () => {
@@ -157,6 +161,9 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
                 </div>
               )}
             </div>
+            <label className="label label-success label-updated">
+              {fields['slug'].value && !fields['slug'].error ? `Link updated successfully!` : ''}
+            </label>
           </div>
         </div>
         <div className="row">

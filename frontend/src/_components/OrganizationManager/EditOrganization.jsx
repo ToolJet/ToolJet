@@ -192,6 +192,11 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
                 </div>
               )}
             </div>
+            <label className="label label-success label-updated">
+              {fields['slug'].value && !fields['slug'].error && fields?.['slug']?.value !== currentValue?.slug
+                ? `Link updated successfully!`
+                : ''}
+            </label>
           </div>
         </div>
         <div className="row">

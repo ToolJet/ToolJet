@@ -10588,6 +10588,7 @@ tbody {
     background: var(--slate7);
     color: var(--slate9);
     height: auto !important;
+    margin-bottom: 5px;
 
     &:hover {
       box-shadow: none;
@@ -10619,6 +10620,10 @@ tbody {
     color: #3D9A50;
   }
 
+  .label-updated {
+    margin-bottom: 20px;
+  }
+  
   .workspace-spinner {
     color: #889096 !important;
     width: 16px;
