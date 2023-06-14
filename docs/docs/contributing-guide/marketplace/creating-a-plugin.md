@@ -377,8 +377,14 @@ The GitHub class has three methods:
 - **getConnection**: This method is a helper function that returns an authenticated octokit client, which is utilized to send requests to the GitHub API. It takes in sourceOptions as input, representing the source metadata, and returns an authenticated octokit client.
 
 
-## Removing a plugin
-To remove a plugin from the marketplace, you can simply remove the object entry of the plugin from the **plugins.json**(`ToolJet/server/src/assets/marketplace/plugins.json`) and then re-run the build commands.
+## Delete a plugin
+To delete a plugin, enter the following command:
+
+```bash
+tooljet plugin delete PLUGIN_NAME
+```
+
+The CLI will prompt users to verify if the plugin to be deleted is a marketplace plugin before proceeding with the deletion.
 
 ## Publish a plugin
 To release a plugin, submit a pull request on ToolJet's GitHub Repository after creating it. The ToolJet team will review the pull request, and if approved, the plugin will be included and published in the next release.
