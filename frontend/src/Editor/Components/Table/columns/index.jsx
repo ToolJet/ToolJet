@@ -164,7 +164,10 @@ export default function generateColumnsData({
                       }
                     }}
                     onBlur={(e) => {
-                      if (e.target.defaultValue !== e.target.value) {
+                      if (
+                        e.target.defaultValue !== e.target.value &&
+                        e.target.defaultValue.replace(/\n/g, '') !== e.target.value // do we require this, I have a doubt, need to add this condition, only when we change the column data type to string from text
+                      ) {
                         handleCellValueChange(
                           cell.row.index,
                           column.key || column.name,
@@ -263,7 +266,7 @@ export default function generateColumnsData({
                 readOnly={!isEditable}
                 style={{ maxWidth: width }}
                 onBlur={(e) => {
-                  if (isEditable) {
+                  if (isEditable && e.target.defaultValue !== e.target.value) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}
