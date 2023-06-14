@@ -288,8 +288,6 @@ const DynamicForm = ({
     if (isEmpty(obj)) return null;
     const flipComponentDropdown = isFlipComponentDropdown(obj);
 
-    console.log('flipComponentDropdown', flipComponentDropdown);
-
     if (flipComponentDropdown) {
       return flipComponentDropdown;
     }
