@@ -1,0 +1,59 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "HarperDB datasource",
+  "description": "A schema defining HarperDB datasource",
+  "type": "database",
+  "source": {
+    "name": "HarperDB",
+    "kind": "harperdb",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "host": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "host": {
+      "value": "http://localhost:9925"
+    },
+    "username": {
+      "value": "HDB_ADMIN"
+    },
+    "password": {
+      "value": "password"
+    }
+  },
+  "properties": {
+    "host": {
+      "label": "HarperDB Host",
+      "key": "host",
+      "type": "text",
+      "description": "Enter host url"
+    },
+    "username": {
+      "label": "Username",
+      "key": "username",
+      "type": "text",
+      "description": "Enter username"
+    },
+    "password": {
+      "label": "Password",
+      "key": "password",
+      "type": "password",
+      "description": "Enter password"
+    }
+  },
+  "required": []
+}
