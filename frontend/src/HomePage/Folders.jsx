@@ -111,11 +111,8 @@ export const Folders = function Folders({
   }
 
   function updateFolderQuery(name) {
-    if (name) {
-      navigate(`?folder=${name}`);
-    } else {
-      navigate(`/${getWorkspaceId()}`);
-    }
+    const path = `/${getWorkspaceId()}${name ? `?folder=${name}` : ''}`;
+    navigate(path);
   }
 
   function deleteFolder(folder) {
