@@ -24,17 +24,7 @@
       }
     }
   },
-  "defaults": {
-    "host": {
-      "value": "http://localhost:9925"
-    },
-    "username": {
-      "value": "HDB_ADMIN"
-    },
-    "password": {
-      "value": "password"
-    }
-  },
+  "defaults": {},
   "properties": {
     "host": {
       "label": "HarperDB Host",
@@ -55,5 +45,9 @@
       "description": "Enter password"
     }
   },
-  "required": []
+  "required": [
+    "host",
+    "username",
+    "password"
+  ]
 }

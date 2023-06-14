@@ -3,7 +3,9 @@
   "title": "HarperDB datasource",
   "description": "A schema defining HarperDB datasource",
   "type": "database",
-  "defaults": {},
+  "defaults": {
+    "mode": "sql"
+  },
   "properties": {
     "mode": {
       "label": "",
@@ -14,10 +16,6 @@
         {
           "name": "SQL mode",
           "value": "sql"
-        },
-        {
-          "name": "NoSQL mode",
-          "value": "nosql"
         }
       ]
     },

@@ -5,7 +5,6 @@ import JSON5 from 'json5';
 
 export default class Harperdb implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    console.log("HarperDB Run Query", "sourceOptions", sourceOptions, 'queryOptions', queryOptions);
     const harperdbClient = await this.getConnection(sourceOptions);
     const { operation, mode } = queryOptions;
     let result = {};
@@ -24,7 +23,6 @@ export default class Harperdb implements QueryService {
             result = describe_all_response.data
             break;
           case 'insert':
-            console.log("Insert - Values", 'queryOptions', queryOptions);
             const insert_response = await harperdbClient.insert({
               schema: queryOptions.schema,
               table: queryOptions.table,
@@ -67,8 +65,6 @@ export default class Harperdb implements QueryService {
     const harperdb = await this.getConnection(sourceOptions);
 
     try {
-      // await harperdb.describeAll();
-      // return { status: 'ok' };
       const res = await harperdb.describeAll();
       if (res.statusCode === 200) return { status: 'ok' };
       return { status: 'failed', message: 'Invalid credentials' };
