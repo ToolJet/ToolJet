@@ -2906,6 +2906,9 @@ input:focus-visible {
   .was-validated .form-control:invalid {
     border-color: #ffb0b0;
   }
+  .form-check-input{
+    cursor:pointer;
+  }
 }
 
 .widgets-list {
