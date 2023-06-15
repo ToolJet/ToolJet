@@ -41,7 +41,11 @@ const usePortal = ({ children, ...restProps }) => {
           callgpt={callgpt}
           isCopilotEnabled={isCopilotEnabled}
         >
-          <div className={`editor-container ${optionalProps.cls ?? ''}`} key={key}>
+          <div
+            className={`editor-container ${optionalProps.cls ?? ''}`}
+            key={key}
+            data-cy={`codehinder-popup-input-field`}
+          >
             {React.cloneElement(children, { ...styleProps })}
           </div>
           {renderCustomComponent({ component: customComponent(), selectors: selectors })}

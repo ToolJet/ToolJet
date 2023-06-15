@@ -129,9 +129,14 @@ export const verifyMultipleComponentValuesFromInspector = (
   cy.forceClickOnCanvas();
 };
 
-export const selectColourFromColourPicker = (paramName, colour, index = 0) => {
+export const selectColourFromColourPicker = (
+  paramName,
+  colour,
+  index = 0,
+  parent = commonWidgetSelector.colourPickerParent
+) => {
   cy.get(commonWidgetSelector.stylePicker(paramName)).click();
-  cy.get(commonWidgetSelector.colourPickerParent)
+  cy.get(parent)
     .eq(index)
     .then(() => {
       colour.forEach((value, i) =>
@@ -289,8 +294,7 @@ export const verifyLayout = (widgetName) => {
 export const verifyPropertiesGeneralAccordion = (widgetName, tooltipText) => {
   openEditorSidebar(widgetName);
   openAccordion(commonWidgetText.accordionGenaral);
-  cy.intercept("PUT", "/api/apps/**").as("apps");
-  cy.wait("@apps");
+  cy.wait(3000);
   addAndVerifyTooltip(
     commonWidgetSelector.draggableWidget(widgetName),
     tooltipText

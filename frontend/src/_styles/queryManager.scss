@@ -14,6 +14,7 @@ $border-radius: 4px;
     --tblr-gutter-x: 0rem;
     position: sticky;
     top: 0;
+    padding: 8px 0;
   }
 
   .nav-header {
@@ -243,8 +244,21 @@ $border-radius: 4px;
         text-overflow: ellipsis;
       }
 
+      &>div{
+        margin: auto;
+        align-items: center;
+        height: 100%;
+        display: flex
+      }
+      &>div:first-child{
+        gap: 10px;
+        padding: 0.25rem 1rem;
+      }
+
       .query-header-buttons {
         gap: 8px;
+        flex: 0 0 auto;
+        width: auto;
       }
     }
   }
@@ -1264,11 +1278,11 @@ $border-radius: 4px;
     .CodeMirror-gutters {
       background-color: $color-light-slate-02;
     }
+  }
 
-    .query-hinter {
-      textarea:first-of-type {
-        opacity: 0.1; // Added to avoid displaying textarea while switching from one RunJS Query to another
-      }
+  .code-hinter, .query-hinter {
+    textarea:first-of-type {
+      opacity: 0.1; // Added to avoid displaying textarea while switching from one Query to another
     }
   }
 

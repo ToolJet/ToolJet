@@ -4,19 +4,11 @@ title: Dropdown
 ---
 # Dropdown
 
-The Dropdown widget can be used to collect user input from a list of options.
-
-## How To Use Dropdown Widget
-
-<iframe height="500" src="https://www.youtube.com/embed/PKlkD2rtlP8" title="Dropdown widget" frameborder="0" allowfullscreen width="100%"></iframe>
-
-:::tip
-Dropdown options can be referred to your query data with dynamic variables.
-:::
+The Dropdown component can be used to collect user input from a list of options.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/dropdown/dropdown-dynamicvalues.gif" alt="ToolJet - Widget Reference - Dropdown" />
+<img className="screenshot-full" src="/img/widgets/dropdown/drop2.gif" alt="ToolJet - Widget Reference - Dropdown" />
 
 </div>
 
@@ -46,23 +38,44 @@ This event is triggered whenever the user searches through the options by typing
 
 ### Label
 
-The text is to be used as the label of the dropdown.
+Set the value of the label in the dropdown. The value can also be set dynamically using JavaScript. For example, set the Label value to `Select the {{components.text1.text}}`
 
 ### Default value
 
-Value of the default option
+Specify the default selected option in the dropdown.
 
 ### Option value
 
-Option values are values for different options in the list of the dropdown. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.value)}}` or populate it with sample values `{{[1,2,3]}}`
+The option values correspond to the different options available in the dropdown. Dynamically set the option values based on your query, for example: `{{queries.datasource.data.map(item => item.value)}}`.
 
 ### Option labels
 
-Option labels are labels for different options in the list of the dropdown. Refer your query data with dynamic variables `{{queries.datasource.data.map(item => item.label)}}` or populate it with sample values `{{["one", "two", "three"]}}`
+The option labels represent the displayed labels for each value in the dropdown list. Dynamically set the option labels based on your query, for example: `{{queries.datasource.data.map(item => item.value)}}`.
+
+### Advanced
+
+Configure the dropdown options and manage them by providing an array of objects as data. You can dynamically generate this data using JavaScript. 
+
+For example:
+```json
+{{[	{label: 'One',value: 1,disable: false,visible: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}	]}}
+```
+Each object in the array should include the following key-value pairs:
+
+| Key | Value |
+| --- | ----- |
+| label | Option label |
+| value | Option value |
+| disable | Set to true to disable the option for selection, and false to keep it enabled |
+| visible | Set to true to display the option in the dropdown list, and false to hide it |
 
 ### Options loading state
 
-Show a loading state in the widget using this property. It is off by default, toggle on to enable it. You can also programmatically set the values `{{true}}` or `{{false}}` by clicking on the `Fx` button.
+Enable this property to display a loading state in the widget. By default, it is turned off. You can programmatically toggle it by setting the values to `{{true}}` or `{{false}}` using the `Fx` button.
+
+### Default placeholder
+
+Set a placeholder value that appears in the dropdown when no default option is selected or set.
 
 ## Validation
 

@@ -1,11 +1,9 @@
-import React, { useMemo, useState } from 'react';
-import { LeftSidebarItem } from './SidebarItem';
+import React, { useMemo } from 'react';
 import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
-import Popover from '@/_ui/Popover';
 
 import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
@@ -19,17 +17,15 @@ const staticDataSources = [
 export const LeftSidebarInspector = ({
   darkMode,
   currentState,
-  selectedSidebarItem,
-  setSelectedSidebarItem,
   appDefinition,
   setSelectedComponent,
   removeComponent,
   runQuery,
-  popoverContentHeight,
+  setPinned,
+  pinned,
 }) => {
   const dataSources = useGlobalDataSources();
   const dataQueries = useDataQueries();
-  const [pinned, setPinned] = useState(false);
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
   const selectedComponent = React.useMemo(() => {
     return {
@@ -145,7 +141,7 @@ export const LeftSidebarInspector = ({
       for: 'components',
       actions: [
         { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
-        { name: 'Delete Widget', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' },
+        { name: 'Delete Component', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' },
       ],
       enableForAllChildren: false,
       enableFor1stLevelChildren: true,
@@ -156,7 +152,7 @@ export const LeftSidebarInspector = ({
     },
   ];
 
-  const popoverContent = (
+  return (
     <div className={`left-sidebar-inspector`} style={{ resize: 'horizontal', minWidth: 288 }}>
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Inspector">
@@ -194,26 +190,5 @@ export const LeftSidebarInspector = ({
         />
       </div>
     </div>
-  );
-
-  return (
-    <Popover
-      handleToggle={(open) => {
-        if (!open) setSelectedSidebarItem('');
-      }}
-      {...(pinned && { open: true })}
-      side="right"
-      popoverContentClassName="p-0 sidebar-h-100-popover sidebar-h-100-popover-inspector"
-      popoverContent={popoverContent}
-      popoverContentHeight={popoverContentHeight}
-    >
-      <LeftSidebarItem
-        selectedSidebarItem={selectedSidebarItem}
-        onClick={() => setSelectedSidebarItem('inspect')}
-        icon="inspect"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
-        tip="Inspector"
-      />
-    </Popover>
   );
 };

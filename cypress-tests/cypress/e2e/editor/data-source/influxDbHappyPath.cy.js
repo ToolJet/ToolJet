@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText, commonText } from "Texts/common";
@@ -12,7 +13,14 @@ import {
   addGuiQuery,
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
-import { verifyCouldnotConnectWithAlert,deleteDatasource,closeDSModal } from "Support/utils/dataSource";
+import {
+  verifyCouldnotConnectWithAlert,
+  deleteDatasource,
+  closeDSModal,
+} from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
@@ -105,10 +113,11 @@ describe("Data sources", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      "cypress-influxdb"
+      `cypress-${data.lastName}-influxdb`
     );
 
-    cy.clearAndType('[data-cy="api-token-text-field"]',
+    cy.clearAndType(
+      '[data-cy="api-token-text-field"]',
       Cypress.env("influxdb_token")
     );
 
@@ -118,9 +127,7 @@ describe("Data sources", () => {
       Cypress.env("influxdb_host")
     );
     fillDataSourceTextField(postgreSqlText.labelPort, "8086 ", "8086");
-    cy.get(".react-select__input-container")
-      .click()
-      .type("HTTP{enter}");
+    cy.get(".react-select__input-container").click().type("HTTP{enter}");
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
@@ -133,11 +140,10 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-      cy.get('[data-cy="cypress-influxdb-button"]').verifyVisibleElement(
-        "have.text",
-        "cypress-influxdb"
-      );
-  
-      deleteDatasource("cypress-influxdb");
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-influxdb-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-influxdb`);
+
+    deleteDatasource(`cypress-${data.lastName}-influxdb`);
   });
 });

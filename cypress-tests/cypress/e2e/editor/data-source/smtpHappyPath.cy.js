@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonSelectors } from "Selectors/common";
@@ -7,6 +8,9 @@ import {
   selectDataSource,
 } from "Support/utils/postgreSql";
 import { deleteDatasource, closeDSModal } from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source SMTP", () => {
   beforeEach(() => {
@@ -97,7 +101,7 @@ describe("Data source SMTP", () => {
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
-      "cypress-smtp"
+      `cypress-${data.lastName}-smtp`
     );
 
     fillDataSourceTextField(
@@ -134,11 +138,10 @@ describe("Data source SMTP", () => {
       postgreSqlText.toastDSAdded
     );
 
-      cy.get(commonSelectors.globalDataSourceIcon).click();
-      cy.get('[data-cy="cypress-smtp-button"]').verifyVisibleElement(
-        "have.text",
-        "cypress-smtp"
-      );
-      deleteDatasource("cypress-smtp");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-smtp-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-smtp`);
+    deleteDatasource(`cypress-${data.lastName}-smtp`);
   });
 });
