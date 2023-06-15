@@ -1,0 +1,9 @@
+============================================================================
+This is the default directory for Oracle Network and Oracle Client
+configuration files. You can place files such as tnsnames.ora, sqlnet.ora
+and oraaccess.xml in this directory.
+NOTE:
+If you set an environment variable TNS_ADMIN to another directory containing
+configuration files, they will be used instead of the files in this default
+directory.
+============================================================================
