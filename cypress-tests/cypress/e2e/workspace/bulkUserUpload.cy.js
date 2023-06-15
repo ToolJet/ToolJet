@@ -17,12 +17,15 @@ describe("Bulk user upload", () => {
     "cypress/fixtures/bulkUser/empty_first_and_last_name - Sheet1.csv";
   const limit_exceeded_list =
     "cypress/fixtures/bulkUser/500_invite_users - Sheet1.csv";
+  const non_existing_group =
+    "cypress/fixtures/bulkUser/non_existing_group -Sheet1 .csv";
+  const multiple_groups =
+    "cypress/fixtures/bulkUser/multiple_groups - Sheet1.csv";
   const without_firstName =
     "cypress/fixtures/bulkUser/without_firstname - Sheet1.csv";
   const without_lastName =
     "cypress/fixtures/bulkUser/without_lastname - Sheet1.csv";
-  const invite_users =
-    "cypress/fixtures/bulkUser/invite_users - Sheet1 - 500_invite_users - Sheet1.csv.csv";
+  const invite_users = "cypress/fixtures/bulkUser/invite_users - Sheet1 .csv";
 
   beforeEach(() => {
     cy.appUILogin();
@@ -43,35 +46,40 @@ describe("Bulk user upload", () => {
       "without_email",
       "Invalid row(s): [email] in [11] row(s). No users were uploaded."
     );
-
     bulkUserUpload(
       without_group,
       "without_group",
       "Invalid row(s): [groups] in [5] row(s). No users were uploaded."
     );
-
     bulkUserUpload(
       same_email,
       "same_email",
       "Duplicate email found. Please provide a unique email address."
     );
-
     bulkUserUpload(
       invalid_group_name,
       "invalid_group_name",
       "11 groups doesn't exist. No users were uploaded"
     );
-
     bulkUserUpload(
       empty_first_and_last_name,
       "empty_first_and_last_name",
       "Invalid row(s): [first_name, last_name] in [1] row(s). No users were uploaded."
     );
-
     bulkUserUpload(
       limit_exceeded_list,
       "500_invite_users",
       "You can only invite 250 users at a time"
+    );
+    bulkUserUpload(
+      non_existing_group,
+      "non_existing_group",
+      "1 group doesn't exist. No users were uploaded"
+    );
+    bulkUserUpload(
+      multiple_groups,
+      "multiple_groups",
+      "Conflicting Group Memberships: User cannot be in both the Admin group and other groups simultaneously."
     );
 
     cy.get(usersSelector.inputFieldBulkUpload).selectFile(without_firstName, {
