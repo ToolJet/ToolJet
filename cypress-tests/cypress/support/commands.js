@@ -100,13 +100,7 @@ Cypress.Commands.add("createApp", (appName) => {
     }
     cy.intercept("GET", "/api/apps/**/versions").as("appVersion");
     cy.wait("@appVersion", { timeout: 15000 });
-    cy.get("body").then(($el) => {
-      if ($el.text().includes("Skip", { timeout: 1000 })) {
-        cy.get(commonSelectors.skipButton).click();
-      } else {
-        cy.log("instructions modal is skipped ");
-      }
-    });
+    cy.skipEditorPopover();
   });
 });
 
@@ -282,6 +276,16 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
   cy.get("body").then(($title) => {
     if (!$title.text().includes(elementText)) {
       cy.reload();
+    }
+  });
+});
+
+Cypress.Commands.add("skipEditorPopover", () => {
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Skip", { timeout: 2000 })) {
+      cy.get(commonSelectors.skipButton).realClick();
+    } else {
+      cy.log("instructions modal is skipped ");
     }
   });
 });
