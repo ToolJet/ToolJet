@@ -175,24 +175,23 @@ const QueryPanel = ({
     <>
       <Confirm
         show={showSaveConfirmation}
-        message={`Query ${selectedQuery?.name} has unsaved changes`}
+        message={`Query ${selectedQuery?.name} has unsaved changes. Are you sure you want to discard changes ?`}
         onConfirm={() => {
           setSaveConfirmation(false);
-        }}
-        onCancel={(data) => {
-          setSaveConfirmation(false);
           setDraftQuery(null);
-          setSelectedQuery(data?.selectedQuery?.id ?? null);
-          setSelectedDataSource(data?.selectedDataSource ?? null);
+          setSelectedQuery(queryCancelData?.selectedQuery?.id ?? null);
+          setSelectedDataSource(queryCancelData?.selectedDataSource ?? null);
           setUnSavedChanges(false);
-          if (data.hasOwnProperty('editingQuery')) {
-            setEditingQuery(data.editingQuery);
+          if (queryCancelData.hasOwnProperty('editingQuery')) {
+            setEditingQuery(queryCancelData.editingQuery);
           }
         }}
-        confirmButtonText="Continue editing"
-        cancelButtonText="Discard changes"
+        onCancel={() => {
+          setSaveConfirmation(false);
+        }}
+        confirmButtonText="Discard changes"
+        cancelButtonText="Continue editing"
         callCancelFnOnConfirm={false}
-        queryCancelData={queryCancelData}
         darkMode={darkMode}
       />
       <div
