@@ -25,6 +25,12 @@ export class AppEnvironment {
   @Column({ name: 'default' })
   isDefault: boolean;
 
+  @Column({ name: 'priority' })
+  priority: number;
+
+  @Column({ name: 'enabled' })
+  enabled: boolean;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 
