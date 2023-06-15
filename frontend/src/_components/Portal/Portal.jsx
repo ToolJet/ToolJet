@@ -92,6 +92,7 @@ const Modal = ({
               textTransform: 'none',
             }}
             className="badge tj-badge"
+            data-cy="codehinder-popup-badge"
           >
             {componentName ?? 'Editor'}
           </span>
@@ -118,7 +119,11 @@ const Modal = ({
           size="sm"
           styles={{ width: '50px', padding: '2px' }}
         >
-          <Button.Content iconSrc={'assets/images/icons/portal-close.svg'} direction="left" />
+          <Button.Content
+            iconSrc={'assets/images/icons/portal-close.svg'}
+            direction="left"
+            dataCy={`codehinder-popup-close`}
+          />
         </Button>
       </div>
       <div
