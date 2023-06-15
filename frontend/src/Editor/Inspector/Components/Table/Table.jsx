@@ -436,6 +436,7 @@ class TableComponent extends React.Component {
                     },
                   },
                 }}
+                hideEmptyEventsAlert={true}
                 componentMeta={{ events: { onChange: { displayName: 'On change' } } }}
                 currentState={this.props.currentState}
                 dataQueries={this.props.dataQueries}
