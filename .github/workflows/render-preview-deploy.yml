@@ -148,7 +148,7 @@ jobs:
                 "port": 80,
                 "protocol": "TCP"
                 }],
-                "plan": "pro",
+                "plan": "starter",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
@@ -258,7 +258,7 @@ jobs:
           PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
           PGDATABASE: ${{ env.PR_NUMBER }}
         run: |
-          PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "DROP DATABASE $PGDATABASE;"
+          PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
 
   suspend-review-app:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-app' }}

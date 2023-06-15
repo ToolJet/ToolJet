@@ -129,9 +129,14 @@ export const verifyMultipleComponentValuesFromInspector = (
   cy.forceClickOnCanvas();
 };
 
-export const selectColourFromColourPicker = (paramName, colour, index = 0) => {
+export const selectColourFromColourPicker = (
+  paramName,
+  colour,
+  index = 0,
+  parent = commonWidgetSelector.colourPickerParent
+) => {
   cy.get(commonWidgetSelector.stylePicker(paramName)).click();
-  cy.get(commonWidgetSelector.colourPickerParent)
+  cy.get(parent)
     .eq(index)
     .then(() => {
       colour.forEach((value, i) =>

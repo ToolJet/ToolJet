@@ -16,7 +16,6 @@ export const QueryCard = ({
   setSaveConfirmation,
   setCancelData,
   setDraftQuery,
-  setSelectedDataSource,
   darkMode = false,
   fetchDataQueries,
   editorRef,
@@ -26,7 +25,7 @@ export const QueryCard = ({
   const isUnsavedChangesAvailable = useUnsavedChanges();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
   const { deleteDataQueries, renameQuery } = useDataQueriesActions();
-  const { setSelectedQuery, setUnSavedChanges } = useQueryPanelActions();
+  const { setSelectedQuery, setSelectedDataSource, setUnSavedChanges } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [renamingQuery, setRenamingQuery] = useState(false);
 
@@ -68,7 +67,7 @@ export const QueryCard = ({
         setDraftQuery((query) => ({ ...query, name: newName }));
         setSelectedQuery('draftQuery', { ...dataQuery, name: newName });
       } else {
-        renameQuery(dataQuery?.id, newName, fetchDataQueries);
+        renameQuery(dataQuery?.id, newName, editorRef);
       }
       setRenamingQuery(false);
     } else {
@@ -138,6 +137,7 @@ export const QueryCard = ({
             </OverlayTrigger>
           )}
         </div>
+
         {!isVersionReleased && (
           <div className="col-auto query-rename-delete-btn">
             <div
