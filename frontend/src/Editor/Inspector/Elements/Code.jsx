@@ -58,7 +58,7 @@ export const Code = ({
         lineWrapping={true}
         className={options.className}
         onChange={(value) => handleCodeChanged(value)}
-        componentName={`widget/${componentName}::${getfieldName}`}
+        componentName={`component/${componentName}::${getfieldName}`}
         type={paramMeta.type}
         paramName={param.name}
         paramLabel={displayName}
