@@ -60,6 +60,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   const showAddNewRowButton = properties?.showAddNewRowButton ?? true;
   const allowSelection = properties?.allowSelection ?? (showBulkSelector || highlightSelectedRow) ? true : false;
 
+  const maximumCellHeight = properties?.maximumCellHeight ? properties.maximumCellHeight : undefined;
   return {
     color,
     serverSidePagination,
@@ -90,5 +91,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     hideColumnSelectorButton,
     showAddNewRowButton,
     allowSelection,
+    maximumCellHeight,
   };
 }

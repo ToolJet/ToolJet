@@ -292,6 +292,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      maximumCellHeight: {
+        type: 'code',
+        displayName: 'Maximum height of cell',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
@@ -491,6 +498,7 @@ export const widgets = [
         hideColumnSelectorButton: { value: '{{false}}' },
         showAddNewRowButton: { value: '{{true}}' },
         allowSelection: { value: '{{true}}' },
+        maximumCellHeight: { value: '100' },
       },
       events: [],
       styles: {

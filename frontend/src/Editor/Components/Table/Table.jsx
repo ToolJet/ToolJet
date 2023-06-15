@@ -103,6 +103,7 @@ export function Table({
     hideColumnSelectorButton,
     showAddNewRowButton,
     allowSelection,
+    maximumCellHeight,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
@@ -1164,6 +1165,11 @@ export function Table({
                             } ${
                               cell.column.columnType !== 'image' && `w-100 ${_.isEmpty(actionButtonsArray) && 'h-100'}`
                             }`}
+                            style={{
+                              maxHeight:
+                                maximumCellHeight && Number(maximumCellHeight) ? Number(maximumCellHeight) : 'inherit',
+                              overflow: maximumCellHeight ? 'auto' : 'none',
+                            }}
                           >
                             <GenerateEachCellValue
                               cellValue={cellValue}

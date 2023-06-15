@@ -17,7 +17,7 @@ export const Code = ({
   component,
 }) => {
   const getDefinitionForNewProps = (param) => {
-    if (['showAddNewRowButton', 'allowSelection'].includes(param)) {
+    if (['showAddNewRowButton', 'allowSelection', 'maximumCellHeight'].includes(param)) {
       if (param === 'allowSelection') {
         const highlightSelectedRow = component?.component?.definition?.properties?.highlightSelectedRow?.value ?? false;
         const showBulkSelector = component?.component?.definition?.properties?.showBulkSelector?.value ?? false;
@@ -25,6 +25,9 @@ export const Code = ({
           resolveReferences(highlightSelectedRow, currentState) || resolveReferences(showBulkSelector, currentState);
 
         return '{{' + `${allowSelection}` + '}}';
+      } else if (param === 'maximumCellHeight') {
+        const cellheight = component?.component?.definition?.properties?.maximumCellHeight?.value ?? 100;
+        return `{{${cellheight}}}`;
       } else {
         return '{{true}}';
       }

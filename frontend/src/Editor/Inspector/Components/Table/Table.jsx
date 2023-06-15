@@ -1097,6 +1097,7 @@ class TableComponent extends React.Component {
       'allowSelection',
       ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector'] : []),
       'hideColumnSelectorButton',
+      'maximumCellHeight',
     ];
 
     let renderOptions = [];

@@ -98,12 +98,12 @@ export default function GenerateEachCellValue({
           setHighlighterCells(true);
         }
       }}
-      className="w-100 h-100"
+      className="w-100 h-100 px-2"
     >
       {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells ? (
         <div className="d-flex justify-content-center flex-column w-100 h-100">
           <div
-            style={{ color: cellTextColor }}
+            style={{ color: cellTextColor, height: '100%', display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}
             dangerouslySetInnerHTML={{
               __html: htmlElement,
             }}
