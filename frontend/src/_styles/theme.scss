@@ -1818,7 +1818,7 @@ button {
       padding: 10px;
       margin-left: -9px;
       background: white;
-      box-shadow: rgba(15, 15, 15, 0/05) 0px 0px 0px 1px,
+      box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px,
         rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
       white-space: initial;
     }
@@ -2576,8 +2576,20 @@ hr {
   height: 28px !important;
 }
 
+.editor {
+  .modal-dialog {
+    overflow-y: initial !important
+  }
+
+  .modal-dialog-scrollable .modal-content {
+    max-height: 88% !important;
+  }
+
+}
+
+
 .modal-component {
-  margin-top: 150px;
+
 
   .modal-body {
     padding: 0;
@@ -4575,10 +4587,6 @@ input[type="text"] {
     color: #fff;
     background-color: #232e3c !important;
   }
-}
-
-.onboarding-modal.dark .modal-content {
-  @extend .modal-content.home-modal-component.dark;
 }
 
 .modal-content.home-modal-component.dark-theme {
@@ -7519,6 +7527,16 @@ tbody {
 
   &:focus {
     box-shadow: 0px 0px 0px 4px #DFE3E6;
+  }
+
+  .tj-text-xsm {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tj-folder-list {
+    display: block;
   }
 }
 
@@ -10585,6 +10603,21 @@ tbody {
   }
 }
 
+.workspace-folder-modal {
+  .tj-app-input {
+    padding-bottom: 0px !important;
+  }
+
+  .tj-input-error {
+    height: 32px;
+    color: #ED5F00;
+    font-weight: 400;
+    font-size: 10px;
+    height: 0px;
+    padding: 4px 0px 20px 0px;
+  }
+}
+
 .jet-container-loading {
   margin: 0 auto;
   justify-content: center;
@@ -10607,5 +10640,11 @@ tbody {
         }
       }
     }
+  }
+}
+
+.freeze-scroll {
+  #real-canvas {
+    overflow: hidden;
   }
 }

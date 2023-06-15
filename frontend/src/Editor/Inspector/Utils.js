@@ -33,8 +33,9 @@ export function renderElement(
   const componentDefinition = componentConfig.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
+  const meta = componentMeta[paramType][param];
 
-  if (componentConfig.component == 'DropDown' || componentConfig.component == 'Form') {
+  if (componentConfig.component == 'DropDown') {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
     const { conditionallyRender = null } = paramConfig;
@@ -47,7 +48,6 @@ export function renderElement(
       }
     }
   }
-  const meta = componentMeta[paramType][param];
 
   return (
     <Code
