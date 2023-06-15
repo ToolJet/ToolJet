@@ -5,6 +5,7 @@ import { QueryDataPane } from './QueryDataPane';
 import { Confirm } from '../Viewer/Confirm';
 import QueryManager from '../QueryManager/QueryManager';
 
+import useWindowResize from '@/_hooks/useWindowResize';
 import { useQueryPanelActions, useUnsavedChanges, useSelectedQuery } from '@/_stores/queryPanelStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 
@@ -20,7 +21,9 @@ const QueryPanel = ({
   appDefinition,
   dataSourceModalHandler,
   editorRef,
+  onQueryPaneDragging,
   isVersionReleased,
+  handleQueryPaneExpanding,
 }) => {
   const { setSelectedQuery, updateQueryPanelHeight, setUnSavedChanges, setSelectedDataSource } = useQueryPanelActions();
   const isUnsavedQueriesAvailable = useUnsavedChanges();
@@ -40,6 +43,7 @@ const QueryPanel = ({
   const [queryCancelData, setCancelData] = useState({});
   const [draftQuery, setDraftQuery] = useState(null);
   const [editingQuery, setEditingQuery] = useState(dataQueries.length > 0);
+  const windowSize = useWindowResize();
 
   useEffect(() => {
     if (!editingQuery && selectedQuery !== null && selectedQuery?.id !== 'draftQuery') {
@@ -49,15 +53,20 @@ const QueryPanel = ({
   }, [selectedQuery?.id, editingQuery]);
 
   useEffect(() => {
+    handleQueryPaneExpanding(isExpanded);
+  }, [isExpanded]);
+
+  useEffect(() => {
     setEditingQuery(dataQueries.length > 0);
   }, [dataQueries.length]);
 
   useEffect(() => {
-    if (!isDragging && isExpanded) {
-      updateQueryPanelHeight(height);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    onQueryPaneDragging(isDragging);
   }, [isDragging]);
+
+  useEffect(() => {
+    updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
+  }, [windowSize.height, isExpanded]);
 
   const createDraftQuery = useCallback((queryDetails, source) => {
     setSelectedQuery(queryDetails.id, queryDetails);
@@ -69,6 +78,9 @@ const QueryPanel = ({
 
   const onMouseUp = () => {
     setDragging(false);
+
+    /* Updated queryPanelHeight here instead of using a useEffect on height to avoid continuous rerendering during window dragging which causes screen to act sluggish */
+    updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
   };
 
   const onMouseDown = () => {
@@ -137,7 +149,7 @@ const QueryPanel = ({
     if (isExpanded) {
       updateQueryPanelHeight(95);
     } else {
-      updateQueryPanelHeight(height);
+      updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
     }
     setExpanded(!isExpanded);
     // eslint-disable-next-line react-hooks/exhaustive-deps
