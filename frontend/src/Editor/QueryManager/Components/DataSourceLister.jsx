@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import RunjsIcon from '../Icons/runjs.svg';
-import RunTooljetDbIcon from '../Icons/tooljetdb.svg';
-import RunpyIcon from '../Icons/runpy.svg';
-import AddIcon from '../../../assets/images/icons/add-source.svg';
+import RunjsIcon from '@/Editor/Icons/runjs.svg';
+import RunTooljetDbIcon from '@/Editor/Icons/tooljetdb.svg';
+import RunpyIcon from '@/Editor/Icons/runpy.svg';
+import AddIcon from '@assets/images/icons/add-source.svg';
 import { useTranslation } from 'react-i18next';
 import { getSvgIcon } from '@/_helpers/appUtils';
 
