@@ -18,10 +18,6 @@ export default class Harperdb implements QueryService {
 
       if (mode === 'nosql') {
         switch (operation) {
-          case 'describe_all':
-            const describe_all_response = await harperdbClient.describeAll()
-            result = describe_all_response.data
-            break;
           case 'insert':
             const insert_response = await harperdbClient.insert({
               schema: queryOptions.schema,

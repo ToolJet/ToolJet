@@ -35,12 +35,12 @@
         "desription": "Single select dropdown for operation",
         "list": [
           {
-            "name": "Descibe all",
-            "value": "describe_all"
-          },
-          {
             "name": "Insert",
             "value": "insert"
+          },
+          {
+            "name": "Update",
+            "value": "update"
           }
         ]
       },
@@ -58,12 +58,34 @@
           "description": "Enter table name"
         },
         "records": {
-          "label": "records",
+          "label": "Records",
           "key": "records",
           "type": "codehinter",
           "mode": "javascript",
           "description": "Enter records to insert",
-          "placeholder": "[{id: 1, name: 'Ganesh', age: 26, country: 'India', hobby: 'Badminton'}]"
+          "placeholder": "[{id: 1, name: 'Jose', age: 24}]"
+        }
+      },
+      "update": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "text",
+          "description": "Enter schema"
+        },
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "text",
+          "description": "Enter table name"
+        },
+        "records": {
+          "label": "records",
+          "key": "records",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Enter records to update",
+          "placeholder": "[{id: 1, age: 25}]"
         }
       }
     }
