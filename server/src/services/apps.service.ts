@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, MoreThan, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -204,6 +204,16 @@ export class AppsService {
     // removing keys with undefined values
     cleanObject(updatableParams);
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      if (updatableParams.currentVersionId) {
+        //check if the app version is eligible for release
+        const currentEnvironment = await manager.query(
+          'SELECT id, is_default FROM app_environments INNER JOIN app_versions b ON app_environments.id = app_versions.current_environment_id'
+        );
+        if (!currentEnvironment.is_default) {
+          throw new BadRequestException('You can only release when the version is promoted to production');
+        }
+      }
+
       return await manager.update(App, appId, updatableParams);
     }, manager);
   }
@@ -277,12 +287,23 @@ export class AppsService {
         throw new BadRequestException('Version name already exists.');
       }
 
+      const firstPriorityEnv = await manager.findOne(AppEnvironment, {
+        where: {
+          organizationId: app.organizationId,
+        },
+        order: {
+          //Instead of checking priority == 1, this will help us to use the same code in EE and CE
+          priority: 'ASC',
+        },
+      });
+
       const appVersion = await manager.save(
         AppVersion,
         manager.create(AppVersion, {
           name: versionName,
           appId: app.id,
           definition: versionFrom?.definition,
+          currentEnvironmentId: firstPriorityEnv?.id,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
@@ -526,9 +547,6 @@ export class AppsService {
       throw new BadRequestException('You cannot update a released version');
 
     const editableParams = {};
-    if (body.definition) editableParams['definition'] = body.definition;
-    if (body.name) editableParams['name'] = body.name;
-
     if (body.name) {
       //means user is trying to update the name
       const versionNameExists = await this.appVersionsRepository.findOne({
@@ -538,7 +556,35 @@ export class AppsService {
       if (versionNameExists) {
         throw new BadRequestException('Version name already exists.');
       }
+      editableParams['name'] = body.name;
     }
+
+    //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
+    if (body.currentEnvironmentId) {
+      const { currentEnvironmentId } = body;
+      if (version.currentEnvironmentId !== currentEnvironmentId) {
+        throw new NotAcceptableException();
+      }
+      const currentEnvironment = await AppEnvironment.findOne(version.currentEnvironmentId);
+      const nextEnvironment = await AppEnvironment.findOne({
+        select: ['id'],
+        where: {
+          priority: MoreThan(currentEnvironment.priority),
+        },
+        order: { priority: 'ASC' },
+      });
+      editableParams['currentEnvironmentId'] = nextEnvironment.id;
+    }
+
+    if (body.definition) {
+      const environments = await AppEnvironment.count();
+      const currentEnvironment = await AppEnvironment.findOne(version.currentEnvironmentId);
+      if (editableParams['definition'] && environments > 1 && currentEnvironment.priority !== 1) {
+        throw new BadRequestException('You cannot update a promoted version');
+      }
+      editableParams['definition'] = body.definition;
+    }
+
     editableParams['updatedAt'] = new Date();
 
     return await this.appVersionsRepository.update(version.id, editableParams);

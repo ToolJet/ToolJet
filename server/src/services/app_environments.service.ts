@@ -47,7 +47,12 @@ export class AppEnvironmentService {
 
   async getAll(organizationId: string, manager?: EntityManager): Promise<AppEnvironment[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.find(AppEnvironment, { where: { organizationId } });
+      return await manager.find(AppEnvironment, {
+        where: { organizationId, enabled: true },
+        order: {
+          priority: 'ASC',
+        },
+      });
     }, manager);
   }
 

@@ -7,12 +7,13 @@ import {
   ManyToOne,
   JoinColumn,
   Unique,
+  BaseEntity,
 } from 'typeorm';
 import { Organization } from './organization.entity';
 
 @Entity({ name: 'app_environments' })
 @Unique(['name'])
-export class AppEnvironment {
+export class AppEnvironment extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
