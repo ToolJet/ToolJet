@@ -2315,9 +2315,29 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          validation: {
+            schema: { type: 'string' },
+          },
+        },
+      },
+      advanced: {
+        type: 'toggle',
+        displayName: 'Advanced',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       value: {
         type: 'code',
         displayName: 'Default value',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
         validation: {
           schema: {
             type: 'union',
@@ -2328,6 +2348,10 @@ export const widgets = [
       values: {
         type: 'code',
         displayName: 'Option values',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
         validation: {
           schema: {
             type: 'array',
@@ -2338,11 +2362,24 @@ export const widgets = [
       display_values: {
         type: 'code',
         displayName: 'Option labels',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
         validation: {
           schema: {
             type: 'array',
             element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
           },
+        },
+      },
+
+      schema: {
+        type: 'code',
+        displayName: 'Schema',
+        conditionallyRender: {
+          key: 'advanced',
+          value: true,
         },
       },
       loadingState: {
@@ -2426,12 +2463,18 @@ export const widgets = [
         customRule: { value: null },
       },
       properties: {
+        advanced: { value: `{{false}}` },
+        schema: {
+          value:
+            "{{[\t{label: 'One',value: 1,disable: false,visible: true,default: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}\t]}}",
+        },
+
         label: { value: 'Select' },
         value: { value: '{{2}}' },
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
-        visible: { value: '{{true}}' },
         loadingState: { value: '{{false}}' },
+        placeholder: { value: 'Select an option' },
       },
       events: [],
       styles: {

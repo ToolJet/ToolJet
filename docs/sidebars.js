@@ -376,6 +376,7 @@ const sidebars = {
             'contributing-guide/marketplace/creating-a-plugin',
           ],
         },
+        'tooljet-cli',
         'contributing-guide/testing',
         'contributing-guide/l10n',
         {
