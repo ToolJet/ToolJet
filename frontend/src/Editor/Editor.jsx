@@ -246,7 +246,6 @@ class EditorComponent extends React.Component {
     if (!isEqual(prevState.editorMarginLeft, this.state.editorMarginLeft)) {
       this.canvasContainerRef.current.scrollLeft += this.state.editorMarginLeft;
     }
-
   }
 
   isVersionReleased = (version = this.state.editingVersion) => {
