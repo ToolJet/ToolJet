@@ -556,7 +556,7 @@ class ViewerComponent extends React.Component {
           if (this.state.slug) {
             url = `/applications/${this.state.slug}/${homeHandle}`;
           }
-          return <Navigate to={url} replace />;
+          return <Navigate to={`${url}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
         }
 
         return (

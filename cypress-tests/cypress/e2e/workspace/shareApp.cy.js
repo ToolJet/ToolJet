@@ -18,8 +18,6 @@ describe("App share functionality", () => {
   it("Verify private and public app share funtionality", () => {
     cy.createApp();
     cy.renameApp(data.appName);
-    cy.dragAndDropWidget("Table", 50, 50);
-
     cy.get(commonWidgetSelector.shareAppButton).click();
 
     for (const elements in commonWidgetSelector.shareModalElements) {
@@ -39,6 +37,7 @@ describe("App share functionality", () => {
 
     cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
     cy.get(commonWidgetSelector.modalCloseButton).click();
+    cy.dragAndDropWidget("Table", 50, 50);
     cy.get(commonSelectors.editorPageLogo).click();
 
     logout();

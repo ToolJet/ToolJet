@@ -61,6 +61,7 @@ export const ReleaseVersionButton = function DeployVersionButton({
       />
       <div>
         <button
+          data-cy={`button-release`}
           className={cx('btn btn-primary btn-sm rounded-2 bg-light-indigo-09', {
             disabled: isVersionReleased,
             'btn-loading': isReleasing,
