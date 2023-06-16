@@ -319,6 +319,7 @@
         "how-to/import-external-libraries-using-runjs",
         "how-to/run-actions-from-runjs",
         "how-to/intentionally-fail-js-query",
+        "how-to/use-to-py-function-in-runpy",
         "how-to/run-query-at-specified-intervals",
         "how-to/access-users-location",
         "how-to/s3-custom-endpoints",
@@ -367,7 +368,8 @@
           "type": "category",
           "label": "Troubleshooting",
           "items": [
-            "contributing-guide/troubleshooting/eslint"
+            "contributing-guide/troubleshooting/eslint",
+            "contributing-guide/troubleshooting/runpy-limitations"
           ]
         },
         "contributing-guide/code-of-conduct",

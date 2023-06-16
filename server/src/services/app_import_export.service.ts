@@ -8,7 +8,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { DataSourcesService } from './data_sources.service';
-import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, defaultAppEnvironments, truncateAndReplace } from 'src/helpers/utils.helper';
 import { isEmpty } from 'lodash';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
@@ -159,7 +159,7 @@ export class AppImportExportService {
 
   async createImportedAppForUser(manager: EntityManager, appParams: any, user: User): Promise<App> {
     const importedApp = manager.create(App, {
-      name: appParams.name,
+      name: truncateAndReplace(appParams.name),
       organizationId: user.organizationId,
       userId: user.id,
       slug: null, // Prevent db unique constraint error.
@@ -387,6 +387,7 @@ export class AppImportExportService {
           kind: source.kind,
           type: source.type || DataSourceTypes.DEFAULT,
           appVersionId: appVersionMapping[appVersion.id],
+          pluginId: source?.pluginId || null,
         });
         await manager.save(newSource);
 
@@ -473,6 +474,7 @@ export class AppImportExportService {
           name: source.name,
           kind: source.kind,
           type: source.type || DataSourceTypes.DEFAULT,
+          pluginId: source?.pluginId || null,
           appVersionId: appVersionMapping[appVersion.id],
         });
         await manager.save(newSource);
