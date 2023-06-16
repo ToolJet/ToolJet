@@ -4,7 +4,7 @@ import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonText } from "Texts/common";
 import { verifyModal, closeModal } from "Support/utils/common";
 import {
-  deleteVersionSelectors,
+  confirmVersionModalSelectors,
   editVersionSelectors,
 } from "Selectors/version";
 import {
@@ -100,11 +100,11 @@ export const deleteVersionAndVerify = (value, toastMessageText) => {
         .find(".app-version-delete")
         .click({ force: true });
     });
-  cy.get(deleteVersionSelectors.modalMessage).verifyVisibleElement(
+  cy.get(confirmVersionModalSelectors.modalMessage).verifyVisibleElement(
     "have.text",
     deleteVersionText.deleteModalText(value)
   );
-  cy.get(deleteVersionSelectors.yesButton).click();
+  cy.get(confirmVersionModalSelectors.yesButton).click();
   cy.verifyToastMessage(commonSelectors.toastMessage, toastMessageText);
 };
 
@@ -126,6 +126,11 @@ export const verifyDuplicateVersion = (newVersion = [], version) => {
 };
 export const releasedVersionAndVerify = (currentVersion) => {
   cy.contains("Release").click();
+  cy.get(confirmVersionModalSelectors.modalMessage).verifyVisibleElement(
+    "have.text",
+    releasedVersionText.releasedVersionConfirmText
+  );
+  cy.get(confirmVersionModalSelectors.yesButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     releasedVersionText.releasedToastMessage(currentVersion)
