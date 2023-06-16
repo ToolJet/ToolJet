@@ -65,24 +65,21 @@ export default class OracledbQueryService implements QueryService {
     };
   }
 
-  initOracleClient(clientPathType: string, customPath: string) {
+  // If in Windows, you use backslashes in the libDir string, you will
+  // need to double them.
+  // clientOpts = { libDir: 'C:\\oracle\\instantclient_19_19' };
+  // else on other platforms like Linux
+  // the system library search path MUST always be
+  // set before Node.js is started, for example with ldconfig or LD_LIBRARY_PATH.
+  initOracleClient(clientPathType: string, customPath: string, instantClientVersion: string) {
     try {
       let clientOpts = {};
 
       if (clientPathType === 'custom') {
-        if (process.platform === 'darwin' && process.arch === 'x64') {
-          // macOS Intel
-          clientOpts = { libDir: process.env.HOME + customPath };
-        } else if (process.platform === 'win32') {
-          // Windows
-          // If you use backslashes in the libDir string, you will
-          // need to double them.
-          // clientOpts = { libDir: 'C:\\oracle\\instantclient_19_19' };
-          clientOpts =  { libDir: customPath }; 
-        }
-      } 
-      // else on other platforms like Linux the system library search path MUST always be
-      // set before Node.js is started, for example with ldconfig or LD_LIBRARY_PATH.
+        clientOpts = { libDir: customPath };
+      } else if (clientPathType === 'default') {
+        clientOpts = { libDir: `/opt/oracle/instantclient_${instantClientVersion}` };
+      }
 
       // enable node-oracledb Thick mode
       oracledb.initOracleClient(clientOpts);
@@ -98,7 +95,7 @@ export default class OracledbQueryService implements QueryService {
       oracledb.oracleClientVersion;
     } catch (err) {
       console.log('Oracle client is not initailized');
-      this.initOracleClient(sourceOptions.client_path_type, sourceOptions.path);
+      this.initOracleClient(sourceOptions.client_path_type, sourceOptions.path, sourceOptions.instant_client_version);
     }
 
     const config: Knex.Config = {

@@ -8,6 +8,7 @@ export type SourceOptions = {
   ssl_enabled: boolean;
   client_path_type: string;
   path: string;
+  instant_client_version: string;
 };
 export type QueryOptions = {
   operation: string;
