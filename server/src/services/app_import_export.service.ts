@@ -191,10 +191,51 @@ export class AppImportExportService {
     if (!appVersions?.length) {
       // Old version without app version
       // Handle exports prior to 0.12.0
+
+      let envIdArray: string[] = [];
+      // For CE this will be default env, but for EE env with priority 1
+      let startingEnvironmentId: string;
+
+      const organization: Organization = await manager.findOne(Organization, {
+        where: { id: user.organizationId },
+        relations: ['appEnvironments'],
+      });
+      envIdArray = [...organization.appEnvironments.map((env) => env.id)];
+
+      if (!envIdArray.length) {
+        await Promise.all(
+          defaultAppEnvironments.map(async (en) => {
+            const env = manager.create(AppEnvironment, {
+              organizationId: user.organizationId,
+              name: en.name,
+              isDefault: en.isDefault,
+              priority: en.priority,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            await manager.save(env);
+            if (defaultAppEnvironments.length === 1 || en.priority === 1) {
+              startingEnvironmentId = env.id;
+            }
+            envIdArray.push(env.id);
+          })
+        );
+      } else {
+        //get starting env from the organization environments list
+        const { appEnvironments } = organization;
+        if (appEnvironments.length === 1) startingEnvironmentId = appEnvironments[0].id;
+        else {
+          organization.appEnvironments.map((appEnvironment) => {
+            if (appEnvironment.priority === 1) startingEnvironmentId = appEnvironment.id;
+          });
+        }
+      }
+
       const version = manager.create(AppVersion, {
         appId: importedApp.id,
         definition: appParams.definition,
         name: 'v1',
+        currentEnvironmentId: startingEnvironmentId,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -210,27 +251,6 @@ export class AppImportExportService {
         manager
       );
 
-      let envIdArray: string[] = [];
-      const organization: Organization = await manager.findOne(Organization, {
-        where: { id: user.organizationId },
-        relations: ['appEnvironments'],
-      });
-      envIdArray = [...organization.appEnvironments.map((env) => env.id)];
-      if (!envIdArray.length) {
-        await Promise.all(
-          defaultAppEnvironments.map(async (en) => {
-            const env = manager.create(AppEnvironment, {
-              organizationId: user.organizationId,
-              name: en.name,
-              isDefault: en.isDefault,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            });
-            await manager.save(env);
-            envIdArray.push(env.id);
-          })
-        );
-      }
       for (const source of dataSources) {
         const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
 
@@ -293,22 +313,32 @@ export class AppImportExportService {
     // With version support v1 & v2
     // create new app versions
     for (const appVersion of appVersions) {
-      const version = manager.create(AppVersion, {
-        appId: importedApp.id,
-        definition: appVersion.definition,
-        name: appVersion.name,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      await manager.save(version);
-
       let envIdArray: string[] = [];
+      let startingEnvironmentId: string;
       const organization: Organization = await manager.findOne(Organization, {
         where: { id: user.organizationId },
         relations: ['appEnvironments'],
       });
       envIdArray = [...organization.appEnvironments.map((env) => env.id)];
-      if (appEnvironments.length > 0) defaultAppEnvironmentId = appEnvironments.find((env: any) => env.isDefault)?.id;
+      if (appEnvironments.length > 0) {
+        defaultAppEnvironmentId = appEnvironments.find((env: any) => env.isDefault)?.id;
+        if (appEnvironments.length === 1) startingEnvironmentId = defaultAppEnvironmentId;
+        else {
+          appEnvironments.map((appEnvironment) => {
+            if (appEnvironment.priority === 1) startingEnvironmentId = appEnvironment.id;
+          });
+        }
+      }
+
+      const version = manager.create(AppVersion, {
+        appId: importedApp.id,
+        definition: appVersion.definition,
+        name: appVersion.name,
+        currentEnvironmentId: startingEnvironmentId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      await manager.save(version);
 
       appDefaultEnvironmentMapping[appVersion.id] = envIdArray;
 
