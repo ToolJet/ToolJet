@@ -36,9 +36,9 @@
     "timestamp": "Wed, 19 Apr 2023 11:36:56 GMT"
   },
   {
-    "name": "harperdb",
+    "name": "HarperDB",
     "repo": "",
-    "description": "database plugin from harperdb",
+    "description": "Datasource plugin for HarperDB",
     "version": "1.0.0",
     "id": "harperdb",
     "author": "Tooljet",
