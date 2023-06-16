@@ -11,7 +11,7 @@ export class BackFillAppEnvironmentsPriorityColumn1686826460358 implements Migra
   async backFillPriorityColumn(manager: EntityManager) {
     const organizations = await manager
       .createQueryBuilder(Organization, 'organizations')
-      .leftJoin('organizations.appEnvironments', 'appEnvironments')
+      .leftJoinAndSelect('organizations.appEnvironments', 'appEnvironments')
       .getMany();
 
     for (const { appEnvironments } of organizations) {
