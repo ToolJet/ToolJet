@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { BoxDragPreview } from './BoxDragPreview';
@@ -45,15 +45,17 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
 
   [x, y] = snapToGrid(canvasWidth, x, y);
 
-  x += realCanvasDelta;
+  // commented to fix issue that caused the dragged element to be out of position with mouse pointer
+  // x += realCanvasDelta;
 
   const transform = `translate(${x}px, ${y}px)`;
   return {
     transform,
     WebkitTransform: transform,
+    width: 'fit-content',
   };
 }
-export const CustomDragLayer = ({ canvasWidth, currentLayout }) => {
+export const CustomDragLayer = ({ canvasWidth, currentLayout, onDragging }) => {
   const { itemType, isDragging, item, initialOffset, currentOffset, delta, initialClientOffset } = useDragLayer(
     (monitor) => ({
       item: monitor.getItem(),
@@ -65,6 +67,10 @@ export const CustomDragLayer = ({ canvasWidth, currentLayout }) => {
       delta: monitor.getDifferenceFromInitialOffset(),
     })
   );
+
+  useEffect(() => {
+    onDragging(isDragging);
+  }, [isDragging]);
 
   if (itemType === ItemTypes.COMMENT) return null;
   function renderItem() {

@@ -559,7 +559,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
           ...param,
           value: resolveReferences(param.value, _ref.state.currentState, undefined, customVariables),
         }));
-        const actionPromise = actionArguments?.length && action(...actionArguments.map((argument) => argument.value));
+        const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
         return actionPromise ?? Promise.resolve();
       }
 
