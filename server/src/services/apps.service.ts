@@ -206,10 +206,11 @@ export class AppsService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (updatableParams.currentVersionId) {
         //check if the app version is eligible for release
-        const currentEnvironment = await manager.query(
-          'SELECT id, is_default FROM app_environments INNER JOIN app_versions b ON app_environments.id = app_versions.current_environment_id'
+        const result = await manager.query(
+          'SELECT app_environments.id, app_environments.default FROM app_environments INNER JOIN app_versions ON app_versions.current_environment_id = app_environments.id;'
         );
-        if (!currentEnvironment.is_default) {
+        const currentEnvironment = result[0];
+        if (!currentEnvironment?.default) {
           throw new BadRequestException('You can only release when the version is promoted to production');
         }
       }
@@ -446,7 +447,13 @@ export class AppsService {
 
   private async createEnvironments(appEnvironments: any[], manager: EntityManager, organizationId: string) {
     for (const appEnvironment of appEnvironments) {
-      await this.appEnvironmentService.create(organizationId, appEnvironment.name, appEnvironment.isDefault, manager);
+      await this.appEnvironmentService.create(
+        organizationId,
+        appEnvironment.name,
+        appEnvironment.isDefault,
+        appEnvironment.priority,
+        manager
+      );
     }
   }
 

@@ -29,6 +29,7 @@ export class AppEnvironmentService {
     organizationId: string,
     name: string,
     isDefault = false,
+    priority: number,
     manager?: EntityManager
   ): Promise<AppEnvironment> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -38,6 +39,7 @@ export class AppEnvironmentService {
           name,
           organizationId,
           isDefault,
+          priority,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
@@ -77,6 +79,7 @@ export class AppEnvironmentService {
             organizationId: organizationId,
             name: en.name,
             isDefault: en.isDefault,
+            priority: en.priority,
             createdAt: new Date(),
             updatedAt: new Date(),
           });

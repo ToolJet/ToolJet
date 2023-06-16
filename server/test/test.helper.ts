@@ -138,12 +138,23 @@ export async function importAppFromTemplates(nestApp, user, identifier) {
 
 export async function createApplicationVersion(nestApp, application, { name = 'v0', definition = null } = {}) {
   let appVersionsRepository: Repository<AppVersion>;
+  let appEnvironmentsRepository: Repository<AppEnvironment>;
   appVersionsRepository = nestApp.get('AppVersionRepository');
+
+  const environments = await appEnvironmentsRepository.find({
+    where: {
+      organizationId: application.organizationId,
+    },
+  });
+
+  const envId =
+    defaultAppEnvironments.length > 1 ? environments.find((env) => env.priority === 1)?.id : environments[0].id;
 
   return await appVersionsRepository.save(
     appVersionsRepository.create({
       app: application,
       name,
+      currentEnvironmentId: envId,
       definition,
     })
   );
@@ -159,6 +170,7 @@ export async function createAppEnvironments(nestApp, organizationId): Promise<Ap
         appEnvironmentRepository.create({
           organizationId,
           name: env.name,
+          priority: env.priority,
           isDefault: env.isDefault,
         })
       );

@@ -105,6 +105,7 @@ export class SeedsService {
           organizationId: organizationId,
           name: en.name,
           isDefault: en.isDefault,
+          priority: en.priority,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
