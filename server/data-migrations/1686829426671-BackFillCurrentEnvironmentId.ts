@@ -19,6 +19,9 @@ export class BackFillCurrentEnvironmentId1686829426671 implements MigrationInter
       const productionEnvironment = organization.appEnvironments.find((appEnvironment) => appEnvironment.isDefault);
       const apps = await manager.find(App, {
         select: ['id', 'appVersions'],
+        where: {
+          organizationId: organization.id,
+        },
         relations: ['appVersions'],
       });
       for (const { appVersions } of apps) {
