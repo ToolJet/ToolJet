@@ -24,11 +24,15 @@ export class AuditLogsQueryService {
       .addSelect(['user.id', 'user.email', 'user.firstName', 'user.lastName']);
 
     if (timeFrom) {
-      query.andWhere('audit_log.createdAt >= :timeFrom', { timeFrom });
+      query.andWhere("audit_log.created_at AT TIME ZONE current_setting('TIMEZONE') >= :timeFrom", {
+        timeFrom,
+      });
     }
 
     if (timeTo) {
-      query.andWhere('audit_log.createdAt <= :timeTo', { timeTo });
+      query.andWhere("audit_log.created_at AT TIME ZONE current_setting('TIMEZONE') <= :timeTo", {
+        timeTo,
+      });
     }
 
     if (users) {

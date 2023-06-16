@@ -16,6 +16,8 @@
     "@tabler/icons-react": "^2.4.0",
     "@tooljet/plugins": "../plugins",
     "@uiw/react-codemirror": "^3.0.6",
+    "@wojtekmaj/react-daterange-picker": "^5.2.0",
+    "@wojtekmaj/react-datetimerange-picker": "^5.2.0",
     "@y-presence/react": "^2.0.1",
     "array-move": "^4.0.0",
     "axios": "^1.3.3",

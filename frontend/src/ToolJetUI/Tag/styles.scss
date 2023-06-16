@@ -1,0 +1,38 @@
+@import "../../_styles/designtheme.scss";
+
+.tooljet-tag-base {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 0px 6px;
+    gap: 4px;
+
+    position: relative;
+    width: fit-content;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid var(--base);
+    background: var(--base);
+
+    font-size: 11px;
+    line-height: 20px;
+    text-align: center;
+    font-weight: 500;
+
+    svg {
+        width: 0.85rem;
+    }
+}
+
+.tooljet-tag-default {
+    @extend .tooljet-tag-base;
+    background: var(--indigo5);
+    border: 1px solid var(--indigo5);
+}
+
+.tooljet-tag-filter {
+    @extend .tooljet-tag-base;
+    background: var(--slate6);
+    border-color: var(--slate6);
+}
