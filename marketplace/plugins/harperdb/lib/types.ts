@@ -10,4 +10,8 @@ export type QueryOptions = {
   schema: string;
   table: string;
   records: string;
+  hash_values: string;
+  attributes: string;
+  search_attribute: string;
+  search_value: string;
 };

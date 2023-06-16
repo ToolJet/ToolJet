@@ -7,25 +7,58 @@ export default class Harperdb implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const harperdbClient = await this.getConnection(sourceOptions);
     const { operation, mode } = queryOptions;
-    let result = {};
+    let result: any = {};
 
     try {
       if (mode === 'sql') {
         const { sql_query } = queryOptions;
-        const sql_operation_response = await harperdbClient.query(sql_query);
-        result = sql_operation_response?.data;
+        result = await harperdbClient.query(sql_query);
       }
 
       if (mode === 'nosql') {
         switch (operation) {
           case 'insert':
-            const insert_response = await harperdbClient.insert({
+            result = await harperdbClient.insert({
               schema: queryOptions.schema,
               table: queryOptions.table,
               records: JSON5.parse(queryOptions.records)
             })
-            result = insert_response.data
             break;
+          case 'update': {
+            result = await harperdbClient.update({
+              schema: queryOptions.schema,
+              table: queryOptions.table,
+              records: JSON5.parse(queryOptions.records)
+            })
+            break;
+          }
+          case 'delete': {
+            result = await harperdbClient.delete({
+              schema: queryOptions.schema,
+              table: queryOptions.table,
+              hashValues: JSON5.parse(queryOptions.hash_values)
+            })
+            break;
+          }
+          case 'search_by_hash': {
+            result = await harperdbClient.searchByHash({
+              schema: queryOptions.schema,
+              table: queryOptions.table,
+              hashValues: JSON5.parse(queryOptions.hash_values),
+              attributes: JSON5.parse(queryOptions.attributes)
+            })
+            break;
+          }
+          case 'search_by_value': {
+            result = await harperdbClient.searchByValue({
+              schema: queryOptions.schema,
+              table: queryOptions.table,
+              searchAttribute: queryOptions.search_attribute,
+              searchValue: queryOptions.search_value,
+              attributes: JSON5.parse(queryOptions.attributes)
+            })
+            break;
+          }
           default:
             break;
         }
@@ -36,7 +69,7 @@ export default class Harperdb implements QueryService {
 
     return {
       status: 'ok',
-      data: result,
+      data: result?.data ?? {},
     };
   }
 
