@@ -5649,7 +5649,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         advanced: { value: '{{false}}' },
         JSONSchema: {
           value:
-            "{{{title: 'A registration form', properties: {firstname: {type: 'TextInput','value': 'ToolJet',  style: {backgroundColor: '',textColor: 'black',fontSize: '22px' }} }}}}",
+            "{{{title: 'A registration form', properties: {firstname: {type: 'TextInput','value': 'Kiran',  styles: {backgroundColor: 'indigo',textColor: 'black',fontSize: '22px' },},lastname: {type: 'TextInput','value': 'Ashok',  styles: {backgroundColor: 'orange',textColor: 'black',fontSize: '22px' }}}, submitButton: {value: 'Submit', styles: {hidden: false}}}}}",
         },
       },
       events: [],
