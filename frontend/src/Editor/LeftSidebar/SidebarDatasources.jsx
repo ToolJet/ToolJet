@@ -1,7 +1,6 @@
 /* eslint-disable import/no-named-as-default */
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { LeftSidebarItem } from './SidebarItem';
 import { HeaderSection } from '@/_ui/LeftSidebar';
 import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
@@ -10,7 +9,6 @@ import { datasourceService, globalDatasourceService, authenticationService } fro
 import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import Popover from '@/_ui/Popover';
 import { Popover as PopoverBS, OverlayTrigger } from 'react-bootstrap';
 // eslint-disable-next-line import/no-unresolved
 import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
@@ -22,15 +20,12 @@ import { useDataSources } from '@/_stores/dataSourcesStore';
 export const LeftSidebarDataSources = ({
   appId,
   editingVersionId,
-  selectedSidebarItem,
-  setSelectedSidebarItem,
   darkMode,
   dataSourcesChanged,
   globalDataSourcesChanged,
   dataQueriesChanged,
   toggleDataSourceManagerModal,
   showDataSourceManagerModal,
-  popoverContentHeight,
   isVersionReleased,
   setReleasedVersionPopupState,
 }) => {
@@ -101,6 +96,7 @@ export const LeftSidebarDataSources = ({
     convertToGlobal,
     showDeleteIcon = true,
     enableEdit = true,
+    // eslint-disable-next-line no-unused-vars
     setReleasedVersionPopupState,
     isVersionReleased,
   }) => {
@@ -187,17 +183,6 @@ export const LeftSidebarDataSources = ({
     );
   };
 
-  const popoverContent = (
-    <LeftSidebarDataSources.Container
-      darkMode={darkMode}
-      RenderDataSource={RenderDataSource}
-      dataSources={dataSources}
-      toggleDataSourceManagerModal={toggleDataSourceManagerModal}
-      isVersionReleased={isVersionReleased}
-      setReleasedVersionPopupState={setReleasedVersionPopupState}
-    />
-  );
-
   if (dataSources?.length <= 0) return;
 
   return (
@@ -210,24 +195,14 @@ export const LeftSidebarDataSources = ({
         onCancel={() => cancelDeleteDataSource()}
         darkMode={darkMode}
       />
-      <Popover
-        handleToggle={(open) => {
-          if (!open) setSelectedSidebarItem('');
-        }}
-        popoverContentClassName="p-0 sidebar-h-100-popover"
-        side="right"
-        popoverContent={popoverContent}
-        popoverContentHeight={popoverContentHeight}
-      >
-        <LeftSidebarItem
-          selectedSidebarItem={selectedSidebarItem}
-          onClick={() => setSelectedSidebarItem('database')}
-          icon="database"
-          className={`left-sidebar-item sidebar-datasources left-sidebar-layout`}
-          tip="Sources"
-        />
-      </Popover>
-
+      <LeftSidebarDataSources.Container
+        darkMode={darkMode}
+        RenderDataSource={RenderDataSource}
+        dataSources={dataSources}
+        toggleDataSourceManagerModal={toggleDataSourceManagerModal}
+        isVersionReleased={isVersionReleased}
+        setReleasedVersionPopupState={setReleasedVersionPopupState}
+      />
       <DataSourceManager
         appId={appId}
         showDataSourceManagerModal={showDataSourceManagerModal}
