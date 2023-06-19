@@ -187,14 +187,13 @@ export class AppImportExportService {
     const dataSourceOptions = appParams?.dataSourceOptions || [];
     const newDataQueries = [];
     let defaultAppEnvironmentId: string;
+    let currentEnvironmentId: string;
 
     if (!appVersions?.length) {
       // Old version without app version
       // Handle exports prior to 0.12.0
 
       let envIdArray: string[] = [];
-      // For CE this will be default env, but for EE env with priority 1
-      let startingEnvironmentId: string;
 
       const organization: Organization = await manager.findOne(Organization, {
         where: { id: user.organizationId },
@@ -215,7 +214,7 @@ export class AppImportExportService {
             });
             await manager.save(env);
             if (defaultAppEnvironments.length === 1 || en.priority === 1) {
-              startingEnvironmentId = env.id;
+              currentEnvironmentId = env.id;
             }
             envIdArray.push(env.id);
           })
@@ -223,10 +222,10 @@ export class AppImportExportService {
       } else {
         //get starting env from the organization environments list
         const { appEnvironments } = organization;
-        if (appEnvironments.length === 1) startingEnvironmentId = appEnvironments[0].id;
+        if (appEnvironments.length === 1) currentEnvironmentId = appEnvironments[0].id;
         else {
           organization.appEnvironments.map((appEnvironment) => {
-            if (appEnvironment.priority === 1) startingEnvironmentId = appEnvironment.id;
+            if (appEnvironment.priority === 1) currentEnvironmentId = appEnvironment.id;
           });
         }
       }
@@ -235,7 +234,7 @@ export class AppImportExportService {
         appId: importedApp.id,
         definition: appParams.definition,
         name: 'v1',
-        currentEnvironmentId: startingEnvironmentId,
+        currentEnvironmentId,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -314,27 +313,29 @@ export class AppImportExportService {
     // create new app versions
     for (const appVersion of appVersions) {
       let envIdArray: string[] = [];
-      let startingEnvironmentId: string;
       const organization: Organization = await manager.findOne(Organization, {
         where: { id: user.organizationId },
         relations: ['appEnvironments'],
       });
       envIdArray = [...organization.appEnvironments.map((env) => env.id)];
-      if (appEnvironments.length > 0) {
-        defaultAppEnvironmentId = appEnvironments.find((env: any) => env.isDefault)?.id;
-        if (appEnvironments.length === 1) startingEnvironmentId = defaultAppEnvironmentId;
-        else {
-          appEnvironments.map((appEnvironment) => {
-            if (appEnvironment.priority === 1) startingEnvironmentId = appEnvironment.id;
-          });
-        }
+      if (appEnvironments.length > 0) defaultAppEnvironmentId = appEnvironments.find((env: any) => env.isDefault)?.id;
+      if (
+        (appVersion.currentEnvironmentId && defaultAppEnvironments.length === 1) ||
+        !appVersion.currentEnvironmentId
+      ) {
+        //importing to CE or old version without current environment id
+        currentEnvironmentId = organization.appEnvironments.find((env: any) => env.isDefault)?.id;
+      } else if (appVersion.currentEnvironmentId && appEnvironments) {
+        //importing to EE. new version with currentEnvironmentId
+        const oldEnvironment = appEnvironments.find((env: any) => env.id === appVersion.currentEnvironmentId);
+        currentEnvironmentId = organization.appEnvironments.find((env) => env.name === oldEnvironment.name)?.id;
       }
 
       const version = manager.create(AppVersion, {
         appId: importedApp.id,
         definition: appVersion.definition,
         name: appVersion.name,
-        currentEnvironmentId: startingEnvironmentId,
+        currentEnvironmentId,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
