@@ -13,6 +13,7 @@ import config from 'config';
 import { LeftSidebarItem } from './SidebarItem';
 import Popover from '@/_ui/Popover';
 import { usePanelHeight } from '@/_stores/queryPanelStore';
+import { useDataSources } from '@/_stores/dataSourcesStore';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -182,6 +183,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
     sideBarBtnRefs.current[page] = ref;
   };
 
+  const dataSources = useDataSources();
+
   const SELECTED_ITEMS = {
     page: (
       <LeftSidebarPageSelector
@@ -276,15 +279,16 @@ export const LeftSidebar = forwardRef((props, ref) => {
         tip="Inspector"
         ref={setSideBarBtnRefs('inspect')}
       />
-      <LeftSidebarItem
-        selectedSidebarItem={selectedSidebarItem}
-        onClick={() => handleSelectedSidebarItem('database')}
-        icon="database"
-        className={`left-sidebar-item left-sidebar-layout sidebar-datasources`}
-        tip="Sources"
-        ref={setSideBarBtnRefs('database')}
-      />
-
+      {dataSources?.length > 0 && (
+        <LeftSidebarItem
+          selectedSidebarItem={selectedSidebarItem}
+          onClick={() => handleSelectedSidebarItem('database')}
+          icon="database"
+          className={`left-sidebar-item left-sidebar-layout sidebar-datasources`}
+          tip="Sources"
+          ref={setSideBarBtnRefs('database')}
+        />
+      )}
       <Popover
         onInteractOutside={handleInteractOutside}
         open={pinned || !!selectedSidebarItem}
