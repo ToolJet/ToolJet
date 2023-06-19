@@ -203,3 +203,12 @@ Currently, there is **On page load** event available. You can use all the availa
 <img className="screenshot-full" src="/img/v2-beta/pages/event.png" alt="Pages Panel" width="300" />
 
 </div>
+
+## Exposed variables
+
+| Variable    | Description |
+| ----------- | ----------- | 
+| `handle` | The `handle` represents the slug of the `page` within an app. In the URL `https://app.tooljet.com/applications/crm2/home`, `crm2` refers to the app name, and `home` corresponds to the handle. The handle is automatically set when a page is added, and you can also [rename](/docs/tutorial/pages#page-handle) the `handle` from the Page options. To access the value of the `handle` variable dynamically, use **`{{page.handle}}`**|
+| `name` | The `name` indicates the name of the page set during its creation. To access the value of the `name` variable dynamically, use **`{{page.name}}`** |
+| `id` | Each page in the ToolJet app receives a unique identifier upon creation. To access the value of the `id` dynamically, use **`{{page.id}}`** |
+| `variables` | `variables` is an object that contains all the variables created for a specific page using the **[Set Page variable](/docs/actions/set-page-variable)** action. The value of a specific variable can be accessed dynamically using **`{{page.variables.<pagevariablename>}}`**, where `<pagevariablename>` refers to the variable created for that page using the Set Page variable action. |
