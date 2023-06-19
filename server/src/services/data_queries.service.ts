@@ -94,8 +94,6 @@ export class DataQueriesService {
       status,
     });
 
-    console.log(dataQuery);
-
     return dataQuery;
   }
 

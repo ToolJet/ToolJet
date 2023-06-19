@@ -124,7 +124,6 @@ export const QueryCard = ({
               defaultValue={dataQuery.name}
               autoFocus={true}
               onKeyDown={({ target, key }) => {
-                console.log(key);
                 if (key === 'Enter') {
                   updateQueryName(selectedQuery, target.value);
                 }

@@ -1,168 +1,169 @@
 {
-  "globals": {
-    "readDocumentation": "Прочесть документацию",
-    "cancel": "Отмена",
-    "save": "Сохранить",
-    "back": "Назад",
-    "edit": "Редактировать",
-    "search": "Поиск",
-    "update": "Обновить",
-    "delete": "Удалить",
-    "add": "Добавить",
-    "view": "Просмотр",
-    "create": "Создать",
-    "enabled": "Включен",
-    "disabled": "Отключен",
-    "yes": "Да",
-    "submit": "Отправить",
-    "select": "Выбор",
-    "environmentVar": "Переменные среды",
-    "saving": "Сохранение...",
-    "saveDatasource": "Сохранить источник данных",
-    "authorize": "Авторизоваться",
-    "connect": "Подключиться",
-    "reconnect": "Переподключиться",
-    "components": "компоненты",
-    "send": "Отправить",
-    "noConnection": "не удалось подключиться",
-    "connectionVerifeid": "соединение установлено",
-    "left": "Влево",
-    "center": "Центр",
-    "right": "Вправо",
-    "justified": "Выровнено",
-    "host": "Хост",
-    "operation": "Операция",
-    "header": "ЗАГОЛОВОК",
-    "path": "ПУТЬ",
-    "query": "ЗАПРОС",
-    "requestBody": "ТЕЛО ЗАПРОСА"
+  "globals":{
+    "readDocumentation":"Прочесть документацию",
+    "cancel":"Отмена",
+    "save":"Сохранить",
+    "back":"Назад",
+    "edit":"Редактировать",
+    "search":"Поиск",
+    "update":"Обновить",
+    "delete":"Удалить",
+    "add":"Добавить",
+    "view":"Просмотр",
+    "create":"Создать",
+    "enabled":"Включен",
+    "disabled":"Отключен",
+    "yes":"Да",
+    "submit":"Отправить",
+    "select":"Выбор",
+    "environmentVar":"Переменные среды",
+    "saving":"Сохранение...",
+    "saveDatasource":"Сохранить источник данных",
+    "authorize":"Авторизоваться",
+    "connect":"Подключиться",
+    "reconnect":"Переподключиться",
+    "components":"компоненты",
+    "send":"Отправить",
+    "noConnection":"не удалось подключиться",
+    "connectionVerifeid":"соединение установлено",
+    "left":"Влево",
+    "center":"Центр",
+    "right":"Вправо",
+    "justified":"Выровнено",
+    "host":"Хост",
+    "operation":"Операция",
+    "header":"ЗАГОЛОВОК",
+    "path":"ПУТЬ",
+    "query":"ЗАПРОС",
+    "requestBody":"ТЕЛО ЗАПРОСА"
   },
-  "errorBoundary": "Что-то пошло не так.",
-  "viewer": "Извините! Это приложение находится на тех.обслуживании",
-  "app": {
-    "updateAvailable": "Доступно обновление",
-    "newVersionReleased": "Новая версия Tooljet была выпущена",
-    "readReleaseNotes": "Прочитать, что нового было добавлено",
-    "skipVersion": "Пропустить эту версию"
+  "errorBoundary":"Что-то пошло не так.",
+  "viewer":"Извините! Это приложение находится на тех.обслуживании",
+  "app":{
+    "updateAvailable":"Доступно обновление",
+    "newVersionReleased":"Новая версия Tooljet была выпущена",
+    "readReleaseNotes":"Прочитать, что нового было добавлено",
+    "skipVersion":"Пропустить эту версию"
   },
-  "stripe": "Пожалуйста, подождите пока мы загрузим OpenAPI для Stripe.",
-  "openApi": {
-    "noValidOpenApi": "Подходящая спецификация OpenAPI сейчас недоступна!.",
-    "selectHost": "Выберите хоста",
-    "selectOperation": "Выберите операцию"
+  "stripe":"Пожалуйста, подождите пока мы загрузим OpenAPI для Stripe.",
+  "openApi":{
+    "noValidOpenApi":"Подходящая спецификация OpenAPI сейчас недоступна!.",
+    "selectHost":"Выберите хоста",
+    "selectOperation":"Выберите операцию"
   },
-  "slack": {
-    "authorize": "Авторизоваться",
-    "connectToolJetToSlack": "ToolJet может подключиться к Slack и получить список пользователей, отправлять сообщения, и др. Пожалуйста, настройте подходящие права доступа.",
-    "chatWrite": "chat:написать",
-    "listUsersAndSendMessage": "Ваше приложение ToolJet сможет получить список пользователей, а также отправлять сообщения пользователям и в чаты.",
-    "connectSlack": "Подключиться к Slack"
+  "slack":{
+    "authorize":"Авторизоваться",
+    "connectToolJetToSlack":"ToolJet может подключиться к Slack и получить список пользователей, отправлять сообщения, и др. Пожалуйста, настройте подходящие права доступа.",
+    "chatWrite":"chat:написать",
+    "listUsersAndSendMessage":"Ваше приложение ToolJet сможет получить список пользователей, а также отправлять сообщения пользователям и в чаты.",
+    "connectSlack":"Подключиться к Slack"
   },
-  "googleSheets": {
-    "readOnly": "Только чтение",
-    "enableReadAndWrite": "Если вы хотите, чтобы приложения ToolJet могли изменять ваши Google-таблицы, удостоверьтесь, что были даны права на чтение и запись",
-    "readDataFromSheets": "Ваши ToolJet приложения могут только читать данные из Google-таблиц",
-    "readWrite": "Чтение и запись",
-    "readModifySheets": "Ваши ToolJet приложения могут только читать данные из Google-таблиц, изменять их, и др",
-    "toGoogleSheets": "к Google-таблицам"
+  "googleSheets":{
+    "readOnly":"Только чтение",
+    "enableReadAndWrite":"Если вы хотите, чтобы приложения ToolJet могли изменять ваши Google-таблицы, удостоверьтесь, что были даны права на чтение и запись",
+    "readDataFromSheets":"Ваши ToolJet приложения могут только читать данные из Google-таблиц",
+    "readWrite":"Чтение и запись",
+    "readModifySheets":"Ваши ToolJet приложения могут только читать данные из Google-таблиц, изменять их, и др",
+    "toGoogleSheets":"к Google-таблицам"
+
   },
   "profile": {
     "profileSettings": "Настройки профиля"
   },
-  "loginSignupPage": {
-    "forgotPassword": "Забыли пароль",
-    "emailAddress": "Почтовый адрес",
-    "enterEmail": "Введите адрес электронной почты",
-    "resetPassword": "Сбросить пароль",
-    "dontHaveAccount": "У вас еще нет аккаунта??",
-    "signIn": "Войти",
-    "signUp": "Зарегистрироваться",
-    "createToolJetAccount": "Создать аккаунт ToolJet",
-    "enterBusinessEmail": "Введите свою бизнес почту",
-    "alreadyHaveAnAccount": "У вас уже есть аккаунт?",
-    "password": "Пароль",
-    "showPassword": "Показать пароль",
-    "loginTo": "Залогиниться в",
-    "yourAccount": "ваш аккаунт",
-    "noLoginMethodsEnabled": "Не найдено методов логина для этого рабочего пространства",
-    "emailConfirmLink": "Пожалуйста, поищите письмо с подтверждением на вашей электронной почте",
-    "newPassword": "Новый Пароль",
-    "passwordConfirmation": "Подтверждение Пароля"
+  "loginSignupPage":{
+    "forgotPassword":"Забыли пароль",
+    "emailAddress":"Почтовый адрес",
+    "enterEmail":"Введите адрес электронной почты",
+    "resetPassword":"Сбросить пароль",
+    "dontHaveAccount":"У вас еще нет аккаунта??",
+    "signIn":"Войти",
+    "signUp":"Зарегистрироваться",
+    "createToolJetAccount":"Создать аккаунт ToolJet",
+    "enterBusinessEmail":"Введите свою бизнес почту",
+    "alreadyHaveAnAccount":"У вас уже есть аккаунт?",
+    "password":"Пароль",
+    "showPassword":"Показать пароль",
+    "loginTo":"Залогиниться в",
+    "yourAccount":"ваш аккаунт",
+    "noLoginMethodsEnabled":"Не найдено методов логина для этого рабочего пространства",
+    "emailConfirmLink":"Пожалуйста, поищите письмо с подтверждением на вашей электронной почте",
+    "newPassword":"Новый Пароль",
+    "passwordConfirmation":"Подтверждение Пароля"
   },
   "editor": {
     "preview": "Предпросмотр",
-    "share": "Поделиться",
+    "share":"Поделиться",
     "shareModal": {
-      "makeApplicationPublic": "Сделать приложение общедоступным ?",
-      "shareableLink": "Получить ссылку, которой можно поделиться этим приложением",
-      "copy": "копировать",
-      "embeddableLink": "Получить встроенную ссылку для этого приложения",
-      "manageUsers": "Управлять пользователями"
+      "makeApplicationPublic":"Сделать приложение общедоступным ?",
+      "shareableLink":"Получить ссылку, которой можно поделиться этим приложением",
+      "copy":"копировать",
+      "embeddableLink":"Получить встроенную ссылку для этого приложения",
+      "manageUsers":"Управлять пользователями"
     },
-    "appVersionManager": {
-      "version": "Версия",
-      "currentlyReleased": "Текущая выпущенная",
-      "createVersion": "Создать Версию",
-      "versionName": "Имя версии",
-      "createVersionFrom": "Создать версию из",
-      "save": "Сохранить",
-      "create": "Создать версию",
+    "appVersionManager":{
+      "version":"Версия",
+      "currentlyReleased":"Текущая выпущенная",
+      "createVersion":"Создать Версию",
+      "versionName":"Имя версии",
+      "createVersionFrom":"Создать версию из",
+      "save":"Сохранить",
+      "create":"Создать версию",
       "editVersion": "Редактировать версию",
-      "deleteVersion": "Вы действительно хотите удалить эту версию ({{version}})?",
-      "enterVersionName": "Введите имя версии",
-      "versionAlreadyReleased": "Версия уже выпущена. Пожалуйста, создайте новую версию или переключитесь на другую, чтобы продолжить работу."
+      "deleteVersion":"Вы действительно хотите удалить эту версию ({{version}})?",
+      "enterVersionName":"Введите имя версии",
+      "versionAlreadyReleased":"Версия уже выпущена. Пожалуйста, создайте новую версию или переключитесь на другую, чтобы продолжить работу."
     },
-    "queries": "Запросы",
-    "inspectComponent": "Пожалуйста, выберите компонент для инспекции",
-    "release": "Релиз",
-    "searchQueries": "Поисковые запросы",
-    "createQuery": "Создать запрос",
-    "queryManager": {
-      "general": "Общие",
-      "advanced": "Продвинутые",
-      "preview": "Предпросмотр",
-      "Save": "Сохранить",
-      "selectDatasource": "Выбрать источник данных",
-      "addDatasource": "Добавить источник данных",
-      "dataSourceManager": {
-        "toast": {
+    "queries":"Запросы",
+    "inspectComponent":"Пожалуйста, выберите компонент для инспекции",
+    "release":"Релиз",
+    "searchQueries":"Поисковые запросы",
+    "createQuery":"Создать запрос",
+    "queryManager":{
+      "general":"Общие",
+      "advanced":"Продвинутые",
+      "preview":"Предпросмотр",
+      "Save":"Сохранить",
+      "selectDatasource":"Выбрать источник данных",
+      "addDatasource":"Добавить источник данных",
+      "dataSourceManager":{
+        "toast":{
           "success": {
             "dataSourceAdded": "Источник данных добавлен",
             "dataSourceSaved": "Источник данных сохранен"
           },
-          "error": {
-            "noEmptyDsName": "Имя источника не может быть пустым"
+          "error" :{
+            "noEmptyDsName" :"Имя источника не может быть пустым"
           }
         },
-        "suggestDataSource": "Предложить источник данных",
-        "suggestAnIntegration": "Предложить интеграцию",
-        "whatLookingFor": "Расскажите нам, что вы ищете?",
-        "noResultFound": "Не нашли то, что искали?",
-        "suggest": "Предложить",
-        "addNewDataSource": "Добавить новый источник данных",
-        "whiteListIP": "Пожалуйста, добавьте наш  IP адрес в белый список, если источник данных не в открытом доступе.",
-        "copied": "Скопировано",
-        "copy": "Копировать",
-        "saving": "Сохранение",
-        "noResultsFor": "Нет результато для",
-        "noteTaken": "Спасибо, мы уведомлены об этом!",
-        "goToAllDatasources": "Ко всем источникам данных",
-        "send": "Отправлено"
+        "suggestDataSource":"Предложить источник данных",
+        "suggestAnIntegration":"Предложить интеграцию",
+        "whatLookingFor":"Расскажите нам, что вы ищете?",
+        "noResultFound":"Не нашли то, что искали?",
+        "suggest":"Предложить",
+        "addNewDataSource":"Добавить новый источник данных",
+        "whiteListIP":"Пожалуйста, добавьте наш  IP адрес в белый список, если источник данных не в открытом доступе.",
+        "copied":"Скопировано",
+        "copy":"Копировать",
+        "saving":"Сохранение",
+        "noResultsFor":"Нет результато для",
+        "noteTaken":"Спасибо, мы уведомлены об этом!",
+        "goToAllDatasources":"Ко всем источникам данных",
+        "send":"Отправлено"
       },
-      "runQueryOnPageLoad": "Запускать этот запрос при загрузке страницы?",
-      "confirmBeforeQueryRun": "Требовать подтверждение перед запуском запроса?",
-      "notificationOnSuccess": "Показывать уведомление при успехе?",
-      "successMessage": "Успех",
-      "queryRanSuccessfully": "Запрос был успешно запущен",
-      "notificationDuration": "Длина сообщения (сек)",
-      "events": "События",
-      "transformation": {
-        "transformationToolTip": "Трансформации могут быть использованы для преобразования результатов запросов. Все переменные доступны для преобразователей и поддерживают JS-библиотеки, такие как Lodash и Moment",
-        "transformations": "Трансформации"
+      "runQueryOnPageLoad":"Запускать этот запрос при загрузке страницы?",
+      "confirmBeforeQueryRun":"Требовать подтверждение перед запуском запроса?",
+      "notificationOnSuccess":"Показывать уведомление при успехе?",
+      "successMessage":"Успех",
+      "queryRanSuccessfully":"Запрос был успешно запущен",
+      "notificationDuration":"Длина сообщения (сек)",
+      "events":"События",
+      "transformation":{
+        "transformationToolTip":"Трансформации могут быть использованы для преобразования результатов запросов. Все переменные доступны для преобразователей и поддерживают JS-библиотеки, такие как Lodash и Moment",
+        "transformations":"Трансформации"
       }
     },
-    "inspector": {
-      "eventManager": {
+    "inspector":{
+      "eventManager":{
         "event": "Событие",
         "action": "Действие",
         "actionOptions": "Опции действия",
@@ -180,283 +181,285 @@
         "table": "Таблица",
         "pageIndex": "Номер страницы",
         "component": "Компонент",
-        "addHandler": "добавить обработчик",
+        "addHandler": "+ добавить обработчик",
         "addEventHandler": "+ добавить обработчик событий",
         "emptyMessage": "Этот {{componentName}} не имеет ни одного обработчика"
       }
     }
   },
-  "header": {
-    "darkModeToggle": {
-      "activateLightMode": "Включить светлый режим",
-      "activateDarkMode": "Включить темный режим"
+  "header":{
+    "darkModeToggle":{
+      "activateLightMode" :"Включить светлый режим",
+      "activateDarkMode":"Включить темный режим"
     },
-    "languageSelection": {
-      "changeLanguage": "Изменить язык",
-      "searchLanguage": "Выбрать язык"
+    "languageSelection":{
+      "changeLanguage":"Изменить язык",
+      "searchLanguage":"Выбрать язык"
     },
-    "notificationCenter": {
-      "notifications": "Уведомления",
-      "markAllAs": "Отметить все как",
-      "read": "прочитано",
-      "un": "не",
-      "youDontHaveany": "У вас нет ни одного",
-      "youAreCaughtUp": "Вы просмотрели все уведомления!",
-      "view": "Просмотр"
+    "notificationCenter":{
+      "notifications":"Уведомления",
+      "markAllAs":"Отметить все как",
+      "read":"прочитано",
+      "un":"не",
+      "youDontHaveany":"У вас нет ни одного",
+      "youAreCaughtUp":"Вы просмотрели все уведомления!",
+      "view":"Просмотр"
     },
-    "organization": {
-      "loadOrganizations": "Загрузить организации",
-      "createWorkspace": "Создать рабочее пространство",
-      "workspaceName": "имя пространства",
-      "editWorkspace": "редактировать пространство",
+    "organization":{
+      "loadOrganizations":"Загрузить организации",
+      "createWorkspace":"Создать рабочее пространство",
+      "workspaceName":"имя пространства",
+      "editWorkspace":"редактировать пространство",
       "menus": {
-        "addWorkspace": "Добавить рабочее пространство",
-        "menusList": {
-          "manageUsers": "Управлять пользователями",
-          "manageGroups": "Управлять группами",
-          "manageSso": "Управлять SSO",
-          "manageEnv": "Управлять переменными среды"
+        "addWorkspace":"Добавить рабочее пространство",
+        "menusList":{
+          "manageUsers":"Управлять пользователями",
+          "manageGroups":"Управлять группами",
+          "manageSso":"Управлять SSO",
+          "manageEnv":"Управлять переменными среды"
         },
-        "manageUsers": {
-          "usersAndPermission": "Пользователи и разрешения",
-          "inviteNewUser": "Пригласить нового пользователя",
-          "name": "ИМЯ",
-          "email": "ПОЧТА",
-          "status": "СТАТУС",
-          "archive": "Архивировать",
-          "unarchive": "Разархивировать",
-          "addNewUser": "Добавить нового пользователя",
-          "emailAddress": "Адрес электронной почты",
-          "createUser": "Создать пользователя",
-          "enterFirstName": "Введите Имя",
-          "enterLastName": "Введитя Фамилию",
-          "enterEmail": "Введите Почту"
+        "manageUsers":{
+          "usersAndPermission":"Пользователи и разрешения",
+          "inviteNewUser":"Пригласить нового пользователя",
+          "name":"ИМЯ",
+          "email":"ПОЧТА",
+          "status":"СТАТУС",
+          "archive":"Архивировать",
+          "unarchive":"Разархивировать",
+          "addNewUser":"Добавить нового пользователя",
+          "emailAddress":"Адрес электронной почты",
+          "createUser":"Создать пользователя",
+          "enterFirstName":"Введите Имя",
+          "enterLastName":"Введитя Фамилию",
+          "enterEmail":"Введите Почту"
         },
-        "manageGroups": {
-          "permissions": {
-            "userGroups": "Группы пользователей",
-            "createNewGroup": "Создать новую группу",
-            "udpateGroup": "Обновить группу",
-            "addNewGroup": "Добавить новую группу",
-            "enterName": "Введите имя",
-            "createGroup": "Создать группу",
-            "name": "Имя"
+        "manageGroups":{
+          "permissions":{
+            "userGroups":"Группы пользователей",
+            "createNewGroup":"Создать новую группу",
+            "udpateGroup":"Обновить группу",
+            "addNewGroup":"Добавить новую группу",
+            "enterName":"Введите имя",
+            "createGroup":"Создать группу",
+            "name":"Имя"
           },
-          "permissionResources": {
-            "userGroup": "Группа пользователей",
-            "apps": "Приложения",
-            "users": "Пользователь",
-            "permissions": "Разрешение",
-            "addAppsToGroup": "Выберите приложения для добавления в группу",
-            "name": "имя",
-            "addUsersToGroup": "Выберите пользователей для добавления в группу",
-            "email": "электронная почта",
-            "resource": "ресурс",
-            "createUpdateDelete": "Создать/Обновить/Удалить",
-            "folder": "Папка"
+          "permissionResources":{
+            "userGroup":"Группа пользователей",
+            "apps":"Приложения",
+            "users":"Пользователь",
+            "permissions":"Разрешение",
+            "addAppsToGroup":"Выберите приложения для добавления в группу",
+            "name":"имя",
+            "addUsersToGroup":"Выберите пользователей для добавления в группу",
+            "email":"электронная почта",
+            "resource":"ресурс",
+            "createUpdateDelete":"Создать/Обновить/Удалить",
+            "folder":"Папка"
           }
         },
-        "manageSSO": {
-          "manageSso": "Управлять SSO",
-          "generalSettings": {
-            "title": "Основные настройки",
-            "enableSignup": "Включить вход",
-            "newAccountWillBeCreated": "Новый аккаунт будет создан для первого логина пользователя через SSO",
-            "allowedDomains": "Разрешенные домены",
-            "enterDomains": "Домены входа",
-            "supportMultiDomains": "Поддержка множества доменов. Введите доменные имена, разделенные запятой. Например: tooljet.com,tooljet.io,yourorganization.com",
-            "loginUrl": "Ссылка на логин",
-            "workspaceLogin": "Используйте эту чтобы напрямую залогиниться в рабочую область",
-            "allowDefaultSso": "Разрешить стандартный SSO",
-            "ssoAuth": "Разрешить пользователям вход через стандартный SSO. Стандартная конфигурация SSO будут перезаписана."
+        "manageSSO":{
+          "manageSso":"Управлять SSO",
+          "generalSettings":{
+            "title":"Основные настройки",
+            "enableSignup":"Включить вход",
+            "newAccountWillBeCreated":"Новый аккаунт будет создан для первого логина пользователя через SSO",
+            "allowedDomains":"Разрешенные домены",
+            "enterDomains":"Домены входа",
+            "supportMultiDomains":"Поддержка множества доменов. Введите доменные имена, разделенные запятой. Например: tooljet.com,tooljet.io,yourorganization.com",
+            "loginUrl":"Ссылка на логин",
+            "workspaceLogin":"Используйте эту чтобы напрямую залогиниться в рабочую область",
+            "allowDefaultSso":"Разрешить стандартный SSO",
+            "ssoAuth":"Разрешить пользователям вход через стандартный SSO. Стандартная конфигурация SSO будут перезаписана."
           },
-          "google": {
-            "title": "Google",
-            "enabled": "Включен",
-            "disabled": "Выключен",
-            "clientId": "Id клиента",
-            "enterClientId": "Ввести Id клиента",
-            "redirectUrl": "Редирект ссылка"
+          "google":{
+            "title":"Google",
+            "enabled":"Включен",
+            "disabled":"Выключен",
+            "clientId":"Id клиента",
+            "enterClientId":"Ввести Id клиента",
+            "redirectUrl":"Редирект ссылка"
           },
-          "github": {
-            "title": "Github",
-            "hostName": "Имя хоста",
-            "enterHostName": "Введите имя хоста",
-            "requiredGithub": "Обязателен, если GitHub хоститься самостоятельно",
-            "clientId": "Id клиента",
-            "enterClientId": "Ввести Id клиента",
-            "clientSecret": "Secret клиента",
-            "enterClientSecret": "Введите Secret клиента",
-            "encrypted": "Зашифровано",
-            "redirectUrl": "Редирект ссылка"
+          "github":{
+            "title":"Github",
+            "hostName":"Имя хоста",
+            "enterHostName":"Введите имя хоста",
+            "requiredGithub":"Обязателен, если GitHub хоститься самостоятельно",
+            "clientId":"Id клиента",
+            "enterClientId":"Ввести Id клиента",
+            "clientSecret":"Secret клиента",
+            "enterClientSecret":"Введите Secret клиента",
+            "encrypted":"Зашифровано",
+            "redirectUrl":"Редирект ссылка"
           },
-          "passwordLogin": "Пароль логин",
-          "environmentVar": {
-            "noEnvConfig": "Вы не настроили ни одной переменной среды, нажмите кнопку 'Добавить новую переменную' чтобы создать",
-            "envWillBeDeleted": "Переменная будет удалена, вы хотите продолжить?",
-            "addNewVariable": "Добавить новую переменную",
-            "variableForm": {
-              "addNewVariable": "Добавить новую переменную",
-              "updatevariable": "Обновить переменную",
-              "name": "Имя",
-              "value": "Значение",
-              "enterVariableName": "Введите значение переменной",
-              "enterValue": "Введите значение",
-              "type": "Тип",
-              "enableEncryption": "Включить шифрование",
-              "addVariable": "Добавить переменную"
+          "passwordLogin":"Пароль логин",
+          "environmentVar" : {
+            "noEnvConfig":"Вы не настроили ни одной переменной среды, нажмите кнопку 'Добавить новую переменную' чтобы создать",
+            "envWillBeDeleted":"Переменная будет удалена, вы хотите продолжить?",
+            "addNewVariable":"Добавить новую переменную",
+            "variableForm":{
+              "addNewVariable":"Добавить новую переменную",
+              "updatevariable":"Обновить переменную",
+              "name":"Имя",
+              "value":"Значение",
+              "enterVariableName":"Введите значение переменной",
+              "enterValue":"Введите значение",
+              "type":"Тип",
+              "enableEncryption":"Включить шифрование",
+              "addVariable":"Добавить переменную"
             },
-            "variableTable": {
-              "name": "Имя",
-              "value": "значение",
-              "type": "тип",
-              "secret": "secret"
+            "variableTable":{
+              "name":"Имя",
+              "value":"значение",
+              "type":"тип",
+              "secret":"secret"
             }
           }
         }
       }
     },
-    "profileSettingPage": {
-      "profileSettings": "Настройки профиля",
-      "firstName": "Имя",
-      "lastName": "Фамилия",
-      "enterFirstName": "Ввести имя",
-      "enterLastName": "Ввести фамилию",
-      "email": "Электронная почта",
-      "avatar": "Аватар",
-      "update": "Обновить",
-      "profile": "Профиль",
-      "changePassword": "Сменить пароль",
-      "currentPassword": "Текущий пароль",
-      "newPassword": "Новый пароль",
-      "confirmNewPassword": "Подтвердить новый пароль",
-      "enterCurrentPassword": "Ввести текущий пароль",
-      "enterNewPassword": "Ввести новый пароль"
+    "profileSettingPage":{
+      "profileSettings":"Настройки профиля",
+      "firstName":"Имя",
+      "lastName":"Фамилия",
+      "enterFirstName":"Ввести имя",
+      "enterLastName":"Ввести фамилию",
+      "email":"Электронная почта",
+      "avatar":"Аватар",
+      "update":"Обновить",
+      "profile":"Профиль",
+      "changePassword":"Сменить пароль",
+      "currentPassword":"Текущий пароль",
+      "newPassword":"Новый пароль",
+      "confirmNewPassword":"Подтвердить новый пароль",
+      "enterCurrentPassword":"Ввести текущий пароль",
+      "enterNewPassword":"Ввести новый пароль"
     },
-    "profile": "Профиль",
-    "logout": "Разлогиниться"
+    "profile":"Профиль",
+    "logout":"Разлогиниться"
   },
-  "homePage": {
-    "appCard": {
-      "changeIcon": "Изменить иконку",
-      "addToFolder": "Добавить в папку",
-      "move": "Переместить",
-      "to": "в",
-      "selectFolder": "Выбрать папку",
-      "deleteApp": "Удалить приложение",
-      "exportApp": "Экспортировать приложение",
-      "cloneApp": "Клонировать приложение",
-      "launch": "Запустить",
-      "maintenance": "Тех.обслуживание",
-      "noDeployedVersion": "Приложение не имеет задеплоенной версии",
-      "openInAppViewer": "Открыть просмотрщик приложений",
-      "removeFromFolder": "Удалить из папки"
+  "homePage":{
+    "appCard":{
+      "changeIcon":"Изменить иконку",
+      "addToFolder":"Добавить в папку",
+      "move":"Переместить",
+      "to":"в",
+      "selectFolder":"Выбрать папку",
+      "deleteApp":"Удалить приложение",
+      "exportApp":"Экспортировать приложение",
+      "cloneApp":"Клонировать приложение",
+      "launch":"Запустить",
+      "maintenance":"Тех.обслуживание",
+      "noDeployedVersion":"Приложение не имеет задеплоенной версии",
+      "openInAppViewer":"Открыть просмотрщик приложений",
+      "removeFromFolder":"Удалить из папки"
     },
-    "blankPage": {
-      "welcomeToToolJet": "Добро пожаловать в ToolJet!",
-      "getStartedCreateNewApp": "Вы можете начать создание нового приложения или создание нового приложения используя шаблон из библиотеки ToolJet",
-      "importApplication": "Импортировать приложение"
+    "blankPage":{
+      "welcomeToToolJet":"Добро пожаловать в ToolJet!",
+      "getStartedCreateNewApp":"Вы можете начать создание нового приложения или создание нового приложения используя шаблон из библиотеки ToolJet",
+      "importApplication":"Импортировать приложение"
     },
-    "foldersSection": {
-      "allApplications": "Все приложения",
-      "folders": "Папки",
-      "createNewFolder": "+ Создать новую папку",
-      "noFolders": "Вы не создали ни одной папки.",
-      "createFolder": "Создать папку",
-      "updateFolder": "Обновить папку",
-      "editFolder": "Редактировать папку",
-      "deleteFolder": "Удалить папку",
-      "folderName": "Имя папки",
-      "wishToDeleteFolder": "Вы уверены, что хотите удалить папку {{folderName}}? Приложения в папке не будут удалены."
+    "foldersSection":{
+      "allApplications":"Все приложения",
+      "folders":"Папки",
+      "createNewFolder":"+ Создать новую папку",
+      "noFolders":"Вы не создали ни одной папки.",
+      "createFolder":"Создать папку",
+      "updateFolder":"Обновить папку",
+      "editFolder":"Редактировать папку",
+      "deleteFolder":"Удалить папку",
+      "folderName":"Имя папки",
+      "wishToDeleteFolder":"Вы уверены, что хотите удалить папку {{folderName}}? Приложения в папке не будут удалены."
+
     },
-    "header": {
-      "createNewApplication": "Создать новое приложение",
-      "import": "Импорт",
-      "chooseFromTemplate": "Выбрать из шаблона"
+    "header":{
+      "createNewApplication":"Создать новое приложение",
+      "import":"Импорт",
+      "chooseFromTemplate":"Выбрать из шаблона"
     },
-    "pagination": {
-      "showing": "Показывается",
-      "of": "от",
-      "to": "до"
+    "pagination":{
+      "showing":"Показывается",
+      "of":"от",
+      "to":"до"
     },
-    "noApplicationFound": "Приложения не найдены",
-    "thisFolderIsEmpty": "Эта папка пуста",
-    "deleteAppAndData": "Приложение и связанные с ним данные будут удалены, вы хотите продолжить?",
-    "removeAppFromFolder": "Приложение будет удалине из папки, вы хотите продолжить?",
-    "change": "Изменить",
-    "templateCard": {
-      "use": "Использовать",
-      "preview": "Предпросмотр",
-      "leadGeneretion": "Лидогенерация"
+    "noApplicationFound":"Приложения не найдены",
+    "thisFolderIsEmpty":"Эта папка пуста",
+    "deleteAppAndData":"Приложение и связанные с ним данные будут удалены, вы хотите продолжить?",
+    "removeAppFromFolder":"Приложение будет удалине из папки, вы хотите продолжить?",
+    "change":"Изменить",
+    "templateCard":{
+      "use":"Использовать",
+      "preview":"Предпросмотр",
+      "leadGeneretion":"Лидогенерация"
     },
-    "templateLibraryModal": {
-      "select": "Выбрать шаблон",
-      "createAppfromTemplate": "Создать приложение из шаблона"
+    "templateLibraryModal":{
+      "select":"Выбрать шаблон",
+      "createAppfromTemplate":"Создать приложение из шаблона"
     }
   },
-  "confirmationPage": {
-    "setupAccount": "Настройте свою учетную запись",
-    "signupWithGoogle": "Залогиниться через Google",
-    "signupWithGitHub": "Залогиниться через GitHub",
-    "or": "ИЛИ",
-    "firstName": "Имя",
-    "lastName": "Фамилия",
-    "company": "Компания",
-    "role": "Роль",
-    "pleaseSelect": "Пожалуйста выберите",
-    "password": "Пароль",
-    "confirmPassword": "Подтвердите пароль",
-    "clickAndAgree": "Нажав на кнопку ниже, вы соглашаетесь с нашими",
-    "termsAndConditions": "Условиями и положениями",
-    "finishAccountSetup": "Закончить настройку учетной записи",
-    "acceptInvite": "принять инвайт",
-    "accountExists": "У вас уже есть учетная запись?",
-    "and": "и"
+  "confirmationPage":{
+    "setupAccount":"Настройте свою учетную запись",
+    "signupWithGoogle":"Залогиниться через Google",
+    "signupWithGitHub":"Залогиниться через GitHub",
+    "or":"ИЛИ",
+    "firstName":"Имя",
+    "lastName":"Фамилия",
+    "company":"Компания",
+    "role":"Роль",
+    "pleaseSelect":"Пожалуйста выберите",
+    "password":"Пароль",
+    "confirmPassword":"Подтвердите пароль",
+    "clickAndAgree":"Нажав на кнопку ниже, вы соглашаетесь с нашими",
+    "termsAndConditions":"Условиями и положениями",
+    "finishAccountSetup":"Закончить настройку учетной записи",
+    "acceptInvite":"принять инвайт",
+    "accountExists":"У вас уже есть учетная запись?",
+    "and":"и"
+
   },
-  "onBoarding": {
-    "finishToolJetInstallation": "Закончить установку ToolJet",
-    "organization": "Организация",
-    "name": "Имя",
-    "email": "Электронная почта",
-    "receiveUpdatesFromToolJet": "Вы будете получать обновления от команды ToolJet ( 1-2 письма каждый месяц, мы не спамим )",
-    "finishSetup": "Закончить настройку",
-    "skip": "Пропустить"
+  "onBoarding":{
+    "finishToolJetInstallation":"Закончить установку ToolJet",
+    "organization":"Организация",
+    "name":"Имя",
+    "email":"Электронная почта",
+    "receiveUpdatesFromToolJet":"Вы будете получать обновления от команды ToolJet ( 1-2 письма каждый месяц, мы не спамим )",
+    "finishSetup":"Закончить настройку",
+    "skip":"Пропустить"
   },
-  "redirectSso": {
-    "upgradingTov1.13.0": "Обновление до версии v1.13.0 и выше.",
-    "fromV1.13.0": "С v1.13.0 мы представили",
-    "multiWorkspace": "Мульти-рабочее пространство",
-    "singleSignOnConfig": "Конфигурации, связанные с SSO были перенесены переменных среды в базу данных. Пожалуйста, учтите это",
-    "link": "Ссылка",
-    "toConfigureSSO": "чтобы настроить SSO.",
-    "haveGoogleGithubSSo": "Если у вас есть конфигурации SSO от Google или GitHub до обновления и мульти-рабочие пространства были отключены значит SSO конфигурации будут мигрированы во время обновления, но, вам нужно перенастроить ссылку перенаправления на стороне SSO провайдера. Ссылки перенаправления для каждого SSO даны ниже.",
-    "isMultiWorkspaceEnabled": "Если вы включили Мульти-рабочие пространства, тогда конфигурации SSO не будут мигрированы во время обновления и вам нужно перенастроить SSO в соответствующем провайдере.",
-    "youHaveEnabled": "Вы включили",
-    "setupSsoWorkspace": "Пожалуйста, залогиньтесь с вашим паролем и вы сможете настроить SSO в пространстве",
-    "manageSsoMenu": "Управление меню SSO.",
-    "youHaveDisabled": "Вы отключили",
-    "configureRedirectUrl": "Пожалуйста, настройте ссылку перенаправления на стороне SSO провайдера.",
-    "google": "Google",
-    "redirectUrl": "Ссылка перенаправления:",
-    "gitHub": "GitHub"
+  "redirectSso":{
+    "upgradingTov1.13.0":"Обновление до версии v1.13.0 и выше.",
+    "fromV1.13.0":"С v1.13.0 мы представили",
+    "multiWorkspace":"Мульти-рабочее пространство",
+    "singleSignOnConfig":"Конфигурации, связанные с SSO были перенесены переменных среды в базу данных. Пожалуйста, учтите это",
+    "link":"Ссылка",
+    "toConfigureSSO":"чтобы настроить SSO.",
+    "haveGoogleGithubSSo":"Если у вас есть конфигурации SSO от Google или GitHub до обновления и мульти-рабочие пространства были отключены значит SSO конфигурации будут мигрированы во время обновления, но, вам нужно перенастроить ссылку перенаправления на стороне SSO провайдера. Ссылки перенаправления для каждого SSO даны ниже.",
+    "isMultiWorkspaceEnabled":"Если вы включили Мульти-рабочие пространства, тогда конфигурации SSO не будут мигрированы во время обновления и вам нужно перенастроить SSO в соответствующем провайдере.",
+    "youHaveEnabled":"Вы включили",
+    "setupSsoWorkspace":"Пожалуйста, залогиньтесь с вашим паролем и вы сможете настроить SSO в пространстве",
+    "manageSsoMenu":"Управление меню SSO.",
+    "youHaveDisabled":"Вы отключили",
+    "configureRedirectUrl":"Пожалуйста, настройте ссылку перенаправления на стороне SSO провайдера.",
+    "google":"Google",
+    "redirectUrl":"Ссылка перенаправления:",
+    "gitHub":"GitHub"
   },
   "oAuth2": {
-    "pleaseWait": "Пожалуйста подождите...",
-    "authSuccess": "Аутентификация успешна, вы можете закрыть эту вкладку.",
-    "authFailed": "Аутентификация провалена"
+    "pleaseWait":"Пожалуйста подождите...",
+    "authSuccess":"Аутентификация успешна, вы можете закрыть эту вкладку.",
+    "authFailed":"Аутентификация провалена"
   },
   "widgetManager": {
     "commonlyUsed": "обычно используется",
-    "layouts": "слои",
-    "forms": "формы",
-    "intregrations": "интеграции",
-    "others": "другие",
+    "layouts" : "слои",
+    "forms" : "формы",
+    "intregrations" : "интеграции",
+    "others":"другие",
     "noResults": "Не найдено результатов",
     "tryAdjustingFilterMessage": "Попробуйте изменить свой поисковой запрос или фильтр чтобы найти то, что вы ищете.",
     "clearQuery": "очистить запрос"
   },
-  "widget": {
-    "common": {
+  "widget":{
+    "common":{
       "properties": "Свойства",
       "events": "События",
       "layout": "Слой",
@@ -699,219 +702,220 @@
       "displayName": "Диаграмма",
       "description": "Отображает диаграммы"
     },
-    "Modal": {
+    "Modal" : {
       "displayName": "Модальное окно",
       "description": "Модальное окно, которое вызывается событиями"
     },
-    "TextInput": {
+    "TextInput" : {
       "displayName": "Ввода текста",
       "description": "Ввод текста в формах"
     },
-    "NumberInput": {
+    "NumberInput" :{
       "displayName": "Ввод цифр",
       "description": "Цифровое поле для форм"
     },
-    "PasswordInput": {
+    "PasswordInput":{
       "displayName": "Ввод пароля",
       "description": "Ввод пароля для форм"
     },
-    "Datepicker": {
+    "Datepicker" :{
       "displayName": "Выбор даты",
       "description": "Выбор даты и времени"
     },
-    "Checkbox": {
+    "Checkbox":{
       "displayName": "Чекбокс",
       "description": "Обычный чекбокс"
     },
-    "Radio-button": {
+    "Radio-button":{
       "displayName": "Радио баттоны",
       "description": "Радио баттоны"
     },
-    "ToggleSwitch": {
+    "ToggleSwitch":{
       "displayName": "Переключатель",
       "description": "Переключатель"
     },
-    "Textarea": {
+    "Textarea":{
       "displayName": "Текстовое поле",
       "description": "Текстовое поле в форме"
     },
-    "DateRangePicker": {
+    "DateRangePicker":{
       "displayName": "Выбор диапазона",
       "description": "Выберите диапазон дат"
     },
-    "Text": {
+    "Text":{
       "displayName": "Текст",
       "description": "Отображать HTML или разметку"
     },
-    "Image": {
+    "Image":{
       "displayName": "Изображение",
       "description": "Отображает изображeние"
     },
-    "Container": {
+    "Container":{
       "displayName": "Контейнер",
       "description": "Обертка для множества компонентов"
     },
-    "Dropdown": {
+    "Dropdown":{
       "displayName": "Выпадающий список",
       "description": "Выбрать одно значение из списка опций"
     },
-    "Multiselect": {
+    "Multiselect":{
       "displayName": "Мультивыбор",
       "description": "Выбирает несколько значений из списка опций"
     },
-    "RichTextEditor": {
+    "RichTextEditor":{
       "displayName": "Редактор текста",
       "description": "Полноценный текстовый редактор"
     },
-    "Map": {
+    "Map":{
       "displayName": "Карта",
       "description": "Отображает Google карты"
     },
-    "QrScanner": {
+    "QrScanner":{
       "displayName": "QR сканер",
       "description": "Сканирует QR коды и хранит данные"
     },
-    "StarRating": {
+    "StarRating":{
       "displayName": "Рейтинг",
       "description": "Рейтинг через звездочки"
     },
-    "Divider": {
+    "Divider":{
       "displayName": "Разделитель",
       "description": "Разделитель между компонентами"
     },
-    "FilePicker": {
+    "FilePicker":{
       "displayName": "Средство выбора файлов",
       "description": "Средство выбора файлов"
     },
-    "Calendar": {
+    "Calendar":{
       "displayName": "Календарь",
       "description": "Календарь"
     },
-    "Iframe": {
+    "Iframe":{
       "displayName": "Iframe",
       "description": "отображать как Iframe"
     },
-    "CodeEditor": {
+    "CodeEditor":{
       "displayName": "Редактор кода",
       "description": "Редактор кода"
     },
-    "Tabs": {
+    "Tabs":{
       "displayName": "Вкладки",
       "description": "Компонент вкладок"
     },
-    "Timer": {
+    "Timer":{
       "displayName": "Таймер",
       "description": "таймер"
     },
-    "Listview": {
+    "Listview":{
       "displayName": "Список",
       "description": "Может использоваться для разных компонентов"
     },
-    "Tags": {
+    "Tags":{
       "displayName": "Теги",
       "description": "Контент может быть показан как теги"
     },
-    "Pagination": {
+    "Pagination":{
       "displayName": "Пагинация",
       "description": "Пагинация "
     },
-    "CircularProgressbar": {
+    "CircularProgressbar":{
       "displayName": "Круговой индикатор прогресса",
       "description": "Показывает прогресс благодаря круговому прогрессбару"
     },
-    "Spinner": {
+    "Spinner":{
       "displayName": "Спиннер",
       "description": "Можно использовать для отображения состояния загрузки"
     },
-    "Statistics": {
+    "Statistics":{
       "displayName": "Статистика",
       "description": "Может быть использована для отображения разной статистической информации"
     },
-    "RangeSlider": {
+    "RangeSlider":{
       "displayName": "Ползунок диапазона",
       "description": "Можно использовать для отображения диапазона"
     },
-    "Timeline": {
+    "Timeline":{
       "displayName": "Временная линия",
       "description": "Визуальное отображение последовательности событий"
     },
-    "SvgImage": {
+    "SvgImage":{
       "displayName": "Svg изображение",
       "description": "Svg изображение"
     },
-    "Html": {
+    "Html":{
       "displayName": "HTML просмотрщик",
       "description": "HTML просмотрщик"
     },
-    "VerticalDivider": {
+    "VerticalDivider":{
       "displayName": "Вертикальный разделитель",
       "description": "Вертикальный разделитель между компонентами"
     },
-    "CustomComponent": {
+    "CustomComponent":{
       "displayName": "Пользовательский элемент",
       "description": "Добавьте свой собственный react компонент"
     },
-    "ButtonGroup": {
+    "ButtonGroup":{
       "displayName": "Группа кнопок",
       "description": "ButtonGroup"
     },
-    "PDF": {
+    "PDF":{
       "displayName": "PDF",
       "description": "Встроенный PDF файл"
     },
-    "Steps": {
+    "Steps":{
       "displayName": "Шаги",
       "description": "Шаги"
     },
-    "KanbanBoard": {
+    "KanbanBoard":{
       "displayName": "Канбан доска",
       "description": "Канбан доска "
     },
-    "ColorPicker": {
+    "ColorPicker":{
       "displayName": "Выбор цвета",
       "description": "Выбор цвета из палитры"
     },
-    "TreeSelect": {
+    "TreeSelect":{
       "displayName": "Выбор дерева",
       "description": "Выберите значения из режима дерева"
     }
   },
-  "leftSidebar": {
-    "Inspector": {
-      "text": "Инспектор",
-      "tip": "Инспектор"
+  "leftSidebar":{
+    "Inspector":{
+      "text":"Инспектор",
+      "tip" : "Инспектор"
     },
-    "Sources": {
-      "text": "Источники",
-      "tip": "Добавить или редактировать источники данных",
-      "dataSources": "Источники данных",
-      "addDataSource": "+ добавить источник данных"
+    "Sources" :{
+      "text":"Источники",
+      "tip" : "Добавить или редактировать источники данных",
+      "dataSources":"Источники данных",
+      "addDataSource":"+ добавить источник данных"
     },
-    "Debugger": {
-      "text": "Отладчик",
-      "tip": "Отладчик",
-      "errors": "Ошибки",
-      "noErrors": "Ошибок нет",
-      "clear": "очистить"
+    "Debugger":{
+      "text":"Отладчик",
+      "tip" : "Отладчик",
+      "errors":"Ошибки",
+      "noErrors":"Ошибок нет",
+      "clear":"очистить"
     },
-    "Comments": {
-      "text": "Комментарии",
-      "tip": "Включить комментарии",
-      "commentBody": "Нет комментариев для отображения",
-      "typeComment": "Оставьте свой комментарий тут"
+    "Comments":{
+      "text":"Комментарии",
+      "tip" : "Включить комментарии",
+      "commentBody":"Нет комментариев для отображения",
+      "typeComment":"Оставьте свой комментарий тут"
     },
-    "Settings": {
-      "text": "Настройки",
-      "tip": "Главные настройки",
+    "Settings":{
+      "text":"Настройки",
+      "tip" : "Главные настройки",
       "hideHeader": "Спрятать заголовок для запущенных приложений",
-      "maintenanceMode": "Режим тех.обслуживания",
-      "maxWidthOfCanvas": "Максимальная ширина поверхности",
-      "maxHeightOfCanvas": "Максимальная высота поверхности",
-      "backgroundColorOfCanvas": "Задний фон поверхности"
+      "maintenanceMode":"Режим тех.обслуживания",
+      "maxWidthOfCanvas":"Максимальная ширина поверхности",
+      "maxHeightOfCanvas" :"Максимальная высота поверхности",
+      "backgroundColorOfCanvas":"Задний фон поверхности"
+
     },
-    "Back": {
-      "text": "Назад",
-      "tip": "Домой"
+    "Back":{
+      "text":"Назад",
+      "tip" : "Домой"
     }
   }
 }

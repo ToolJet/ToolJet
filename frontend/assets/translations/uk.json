@@ -1,168 +1,168 @@
 {
-  "globals": {
-    "readDocumentation": "Прочитать документацію",
-    "cancel": "Відміна",
-    "save": "Зберегти",
-    "back": "Назад",
-    "edit": "Редактувати",
-    "search": "Пошук",
-    "update": "Оновити",
-    "delete": "Видалити",
-    "add": "Додати",
-    "view": "Перегляд",
-    "create": "Створити",
-    "enabled": "Увімкнено",
-    "disabled": "Вимкнено",
-    "yes": "Так",
-    "submit": "Відіслати",
-    "select": "Вибір",
-    "environmentVar": "Змінні середовища",
-    "saving": "Збереження...",
-    "saveDatasource": "Зберегти джерело даних",
-    "authorize": "Авторизуватися",
-    "connect": "Під'єднатися",
-    "reconnect": "Перепідключитися",
-    "components": "компоненти",
-    "send": "Відправити",
-    "noConnection": "Не вдалося під'єднатися",
-    "connectionVerifeid": "з'єднання встановлено",
-    "left": "Ліворуч",
-    "center": "Центр",
-    "right": "Праворуч",
-    "justified": "Вирівняно",
-    "host": "Хост",
-    "operation": "Операція",
-    "header": "ЗАГОЛОВОК",
-    "path": "ШЛЯХ",
-    "query": "ЗАПИТ",
-    "requestBody": "ТІЛО ЗАПИТУ"
+  "globals":{
+    "readDocumentation":"Прочитать документацію",
+    "cancel":"Відміна",
+    "save":"Зберегти",
+    "back":"Назад",
+    "edit":"Редактувати",
+    "search":"Пошук",
+    "update":"Оновити",
+    "delete":"Видалити",
+    "add":"Додати",
+    "view":"Перегляд",
+    "create":"Створити",
+    "enabled":"Увімкнено",
+    "disabled":"Вимкнено",
+    "yes":"Так",
+    "submit":"Відіслати",
+    "select":"Вибір",
+    "environmentVar":"Змінні середовища",
+    "saving":"Збереження...",
+    "saveDatasource":"Зберегти джерело даних",
+    "authorize":"Авторизуватися",
+    "connect":"Під'єднатися",
+    "reconnect":"Перепідключитися",
+    "components":"компоненти",
+    "send":"Відправити",
+    "noConnection":"Не вдалося під'єднатися",
+    "connectionVerifeid":"з'єднання встановлено",
+    "left":"Ліворуч",
+    "center":"Центр",
+    "right":"Праворуч",
+    "justified":"Вирівняно",
+    "host":"Хост",
+    "operation":"Операція",
+    "header":"ЗАГОЛОВОК",
+    "path":"ШЛЯХ",
+    "query":"ЗАПИТ",
+    "requestBody":"ТІЛО ЗАПИТУ"
   },
-  "errorBoundary": "Щось пішло не так.",
-  "viewer": "Вибачте! Цей додаток наразі на тех.обслуговуванні",
-  "app": {
-    "updateAvailable": "Доступне оновлення",
-    "newVersionReleased": "Нова версія Tooljet була випущена",
-    "readReleaseNotes": "Прочитать, що нового було додано",
-    "skipVersion": "Пропустити цю версію"
+  "errorBoundary":"Щось пішло не так.",
+  "viewer":"Вибачте! Цей додаток наразі на тех.обслуговуванні",
+  "app":{
+    "updateAvailable":"Доступне оновлення",
+    "newVersionReleased":"Нова версія Tooljet була випущена",
+    "readReleaseNotes":"Прочитать, що нового було додано",
+    "skipVersion":"Пропустити цю версію"
   },
-  "stripe": "Будь ласка, почекайте пока ми завантажимо OpenAPI для Stripe.",
-  "openApi": {
-    "noValidOpenApi": "Відповідна специфікація OpenAPI зараз недоступна!.",
-    "selectHost": "Оберіть хоста",
-    "selectOperation": "Оберіть операцію"
+  "stripe":"Будь ласка, почекайте пока ми завантажимо OpenAPI для Stripe.",
+  "openApi":{
+    "noValidOpenApi":"Відповідна специфікація OpenAPI зараз недоступна!.",
+    "selectHost":"Оберіть хоста",
+    "selectOperation":"Оберіть операцію"
   },
-  "slack": {
-    "authorize": "Авторизуватися",
-    "connectToolJetToSlack": "ToolJet може підключитися до Slack і отримати список користувачів, надсилати повідомлення та ін. Будь ласка, налаштуйте відповідні права доступу",
-    "chatWrite": "chat:написати",
-    "listUsersAndSendMessage": "Ваша програма ToolJet зможе отримати список користувачів, а також надсилати повідомлення користувачам і в чати.",
-    "connectSlack": "Підключитися до Slack"
+  "slack":{
+    "authorize":"Авторизуватися",
+    "connectToolJetToSlack":"ToolJet може підключитися до Slack і отримати список користувачів, надсилати повідомлення та ін. Будь ласка, налаштуйте відповідні права доступу",
+    "chatWrite":"chat:написати",
+    "listUsersAndSendMessage":"Ваша програма ToolJet зможе отримати список користувачів, а також надсилати повідомлення користувачам і в чати.",
+    "connectSlack":"Підключитися до Slack"
   },
-  "googleSheets": {
-    "readOnly": "Тільки читання",
-    "enableReadAndWrite": "Якщо ви хочете, щоб програми ToolJet могли змінювати ваші Google-таблиці, переконайтеся, що були надані права на читання та запис",
-    "readDataFromSheets": "Ваші ToolJet програми можуть тільки читати дані з Google-таблиць",
-    "readWrite": "Читання та запис",
-    "readModifySheets": "Ваші ToolJet програми можуть тільки читати дані з Google-таблиць, змінювати їх, та ін",
-    "toGoogleSheets": "до Google-таблиць"
+  "googleSheets":{
+    "readOnly":"Тільки читання",
+    "enableReadAndWrite":"Якщо ви хочете, щоб програми ToolJet могли змінювати ваші Google-таблиці, переконайтеся, що були надані права на читання та запис",
+    "readDataFromSheets":"Ваші ToolJet програми можуть тільки читати дані з Google-таблиць",
+    "readWrite":"Читання та запис",
+    "readModifySheets":"Ваші ToolJet програми можуть тільки читати дані з Google-таблиць, змінювати їх, та ін",
+    "toGoogleSheets":"до Google-таблиць"
   },
   "profile": {
     "profileSettings": "Налаштувння профілю"
   },
-  "loginSignupPage": {
-    "forgotPassword": "Забули пароль",
-    "emailAddress": "Поштова адреса",
-    "enterEmail": "Введіть адресу електронної пошти",
-    "resetPassword": "Скинути пароль",
-    "dontHaveAccount": "У вас ще немає облікового запису??",
-    "signIn": "Увійти",
-    "signUp": "Зареєструватися",
-    "createToolJetAccount": "Створити обліковий запис ToolJet",
-    "enterBusinessEmail": "Введіть свою бізнес пошту",
-    "alreadyHaveAnAccount": "У вас вже є обліковий запис?",
-    "password": "Пароль",
-    "showPassword": "Показати пароль",
-    "loginTo": "Залогінитися в",
-    "yourAccount": "ваш аккаунт",
-    "noLoginMethodsEnabled": "Не знайдено методів логіну для цього робочого простору",
-    "emailConfirmLink": "Будь ласка, пошукайте листа з підтвердженням на вашій електронній пошті",
-    "newPassword": "Новий Пароль",
-    "passwordConfirmation": "Підтвердження Пароля"
+  "loginSignupPage":{
+    "forgotPassword":"Забули пароль",
+    "emailAddress":"Поштова адреса",
+    "enterEmail":"Введіть адресу електронної пошти",
+    "resetPassword":"Скинути пароль",
+    "dontHaveAccount":"У вас ще немає облікового запису??",
+    "signIn":"Увійти",
+    "signUp":"Зареєструватися",
+    "createToolJetAccount":"Створити обліковий запис ToolJet",
+    "enterBusinessEmail":"Введіть свою бізнес пошту",
+    "alreadyHaveAnAccount":"У вас вже є обліковий запис?",
+    "password":"Пароль",
+    "showPassword":"Показати пароль",
+    "loginTo":"Залогінитися в",
+    "yourAccount":"ваш аккаунт",
+    "noLoginMethodsEnabled":"Не знайдено методів логіну для цього робочого простору",
+    "emailConfirmLink":"Будь ласка, пошукайте листа з підтвердженням на вашій електронній пошті",
+    "newPassword":"Новий Пароль",
+    "passwordConfirmation":"Підтвердження Пароля"
   },
   "editor": {
     "preview": "Предперегляд",
-    "share": "Поділитися",
+    "share":"Поділитися",
     "shareModal": {
-      "makeApplicationPublic": "Зробити програму загальнодоступною?",
-      "shareableLink": "Отримати посилання, яким можна поділитися цією програмою",
-      "copy": "копіювати",
-      "embeddableLink": "Отримати вбудоване посилання для цієї програми",
-      "manageUsers": "Керувати користувачами"
+      "makeApplicationPublic":"Зробити програму загальнодоступною?",
+      "shareableLink":"Отримати посилання, яким можна поділитися цією програмою",
+      "copy":"копіювати",
+      "embeddableLink":"Отримати вбудоване посилання для цієї програми",
+      "manageUsers":"Керувати користувачами"
     },
-    "appVersionManager": {
-      "version": "Версія",
-      "currentlyReleased": "Поточна випущена",
-      "createVersion": "Створити Версію",
-      "versionName": "Ім'я версії",
-      "createVersionFrom": "Створити версію з",
-      "save": "Зберегти",
-      "create": "Створити версію",
+    "appVersionManager":{
+      "version":"Версія",
+      "currentlyReleased":"Поточна випущена",
+      "createVersion":"Створити Версію",
+      "versionName":"Ім'я версії",
+      "createVersionFrom":"Створити версію з",
+      "save":"Зберегти",
+      "create":"Створити версію",
       "editVersion": "Редагувати версію",
-      "deleteVersion": "Ви дійсно хочете видалити цю версію?",
-      "enterVersionName": "Введіть ім'я версії",
-      "versionAlreadyReleased": "Версія вже випущена. Будь ласка, створіть нову версію або перейдіть на іншу, щоб продовжити роботу."
+      "deleteVersion":"Ви дійсно хочете видалити цю версію?",
+      "enterVersionName":"Введіть ім'я версії",
+      "versionAlreadyReleased":"Версія вже випущена. Будь ласка, створіть нову версію або перейдіть на іншу, щоб продовжити роботу."
     },
     "queries": "Запити",
-    "inspectComponent": "Будь ласка, оберіть компонент для інспекції",
+    "inspectComponent":"Будь ласка, оберіть компонент для інспекції",
     "release": "Реліз",
-    "searchQueries": "Пошукові запити",
-    "createQuery": "Створити запит",
-    "queryManager": {
-      "general": "Загальні",
-      "advanced": "Додаткові",
-      "preview": "Перегляд",
-      "Save": "Зберегти",
-      "selectDatasource": "Вибрати джерело даних",
-      "addDatasource": "Додати джерело даних",
-      "dataSourceManager": {
-        "toast": {
+    "searchQueries":"Пошукові запити",
+    "createQuery":"Створити запит",
+    "queryManager":{
+      "general":"Загальні",
+      "advanced":"Додаткові",
+      "preview":"Перегляд",
+      "Save":"Зберегти",
+      "selectDatasource":"Вибрати джерело даних",
+      "addDatasource":"Додати джерело даних",
+      "dataSourceManager":{
+        "toast":{
           "success": {
             "dataSourceAdded": "Джерело даних додано",
             "dataSourceSaved": "Джерело даних збережено"
           },
-          "error": {
-            "noEmptyDsName": "Ім'я джерела не може бути порожнім"
+          "error" :{
+            "noEmptyDsName" :"Ім'я джерела не може бути порожнім"
           }
         },
-        "suggestDataSource": "Запропонувати джерело даних",
-        "suggestAntegration": "Запропонувати інтеграцію",
-        "whatLookingFor": "Розкажіть нам, що ви шукаєте?",
-        "noResultFound": "Не знайшли те, що шукали?",
-        "suggest": "Запропонувати",
-        "addNewDataSource": "Додати нове джерело даних",
-        "whiteListIP": "Будь ласка, додайте нашу IP адресу в білий список, якщо джерело даних не у відкритому доступі.",
-        "copied": "Скопійовано",
-        "copy": "Копіювати",
+        "suggestDataSource":"Запропонувати джерело даних",
+        "suggestAntegration":"Запропонувати інтеграцію",
+        "whatLookingFor":"Розкажіть нам, що ви шукаєте?",
+        "noResultFound":"Не знайшли те, що шукали?",
+        "suggest":"Запропонувати",
+        "addNewDataSource":"Додати нове джерело даних",
+        "whiteListIP":"Будь ласка, додайте нашу IP адресу в білий список, якщо джерело даних не у відкритому доступі.",
+        "copied":"Скопійовано",
+        "copy":"Копіювати",
         "saving": "Збереження",
-        "noResultsFor": "Немає результату",
-        "noteTaken": "Дякую, ми повідомлені про це!",
-        "goToAllDatasources": "До всіх джерел даних",
-        "send": "Відправлено"
+        "noResultsFor":"Немає результату",
+        "noteTaken":"Дякую, ми повідомлені про це!",
+        "goToAllDatasources":"До всіх джерел даних",
+        "send":"Відправлено"
       },
-      "runQueryOnPageLoad": "Запускати цей запит під час завантаження сторінки?",
-      "confirmBeforeQueryRun": "Вимагати підтвердження перед запуском запиту?",
-      "notificationOnSuccess": "Показувати повідомлення при успіху?",
-      "successMessage": "Успіх",
-      "queryRanSuccessfully": "Запит був успішно запущений",
-      "notificationDuration": "Довжина повідомлення (сек)",
-      "events": "Події",
-      "transformation": {
-        "transformationToolTip": "Трансформації можуть бути використані для перетворення результатів запитів. Всі змінні доступні для перетворювачів і підтримують JS-бібліотеки, такі як Lodash та Moment",
-        "transformations": "Трансформації"
+      "runQueryOnPageLoad":"Запускати цей запит під час завантаження сторінки?",
+      "confirmBeforeQueryRun":"Вимагати підтвердження перед запуском запиту?",
+      "notificationOnSuccess":"Показувати повідомлення при успіху?",
+      "successMessage":"Успіх",
+      "queryRanSuccessfully":"Запит був успішно запущений",
+      "notificationDuration":"Довжина повідомлення (сек)",
+      "events":"Події",
+      "transformation":{
+        "transformationToolTip":"Трансформації можуть бути використані для перетворення результатів запитів. Всі змінні доступні для перетворювачів і підтримують JS-бібліотеки, такі як Lodash та Moment",
+        "transformations":"Трансформації"
       }
     },
-    "inspector": {
-      "eventManager": {
+    "inspector":{
+      "eventManager":{
         "event": "Подія",
         "action": "Дія",
         "actionOptions": "Опції дії",
@@ -180,283 +180,283 @@
         "table": "Таблиця",
         "pageIndex": "Номер сторінки",
         "component": "Компонент",
-        "addHandler": "додати обробник",
+        "addHandler": "+ додати обробник",
         "addEventHandler": "+ додати обробник подій",
         "emptyMessage": "Цей {{componentName}} не має жодного оброблювача"
       }
     }
   },
-  "header": {
-    "darkModeToggle": {
-      "activateLightMode": "Увімкнути світлий режим",
-      "activateDarkMode": "Увімкнути темний режим"
+  "header":{
+    "darkModeToggle":{
+      "activateLightMode" :"Увімкнути світлий режим",
+      "activateDarkMode":"Увімкнути темний режим"
     },
-    "languageSelection": {
-      "changeLanguage": "Змінити мову",
-      "searchLanguage": "Вибрати мову"
+    "languageSelection":{
+      "changeLanguage":"Змінити мову",
+      "searchLanguage":"Вибрати мову"
     },
-    "notificationCenter": {
-      "notifications": "Повідомлення",
-      "markAllAs": "Відзначити все як",
-      "read": "прочитано",
-      "un": "не",
-      "youDontHaveany": "У вас немає жодного",
-      "youAreCaughtUp": "Ви переглянули всі повідомлення!",
-      "view": "Перегляд"
+    "notificationCenter":{
+      "notifications":"Повідомлення",
+      "markAllAs":"Відзначити все як",
+      "read":"прочитано",
+      "un":"не",
+      "youDontHaveany":"У вас немає жодного",
+      "youAreCaughtUp":"Ви переглянули всі повідомлення!",
+      "view":"Перегляд"
     },
-    "organization": {
-      "loadOrganizations": "Завантажити організації",
-      "createWorkspace": "Створити робочий простір",
-      "workspaceName": "ім'я простору",
-      "editWorkspace": "редагувати простір",
+    "organization":{
+      "loadOrganizations":"Завантажити організації",
+      "createWorkspace":"Створити робочий простір",
+      "workspaceName":"ім'я простору",
+      "editWorkspace":"редагувати простір",
       "menus": {
-        "addWorkspace": "Додати робочий простір",
-        "menusList": {
-          "manageUsers": "Керувати користувачами",
-          "manageGroups": "Керувати групами",
-          "manageSso": "Керувати SSO",
-          "manageEnv": "Керувати змінними середовища"
+        "addWorkspace":"Додати робочий простір",
+        "menusList":{
+          "manageUsers":"Керувати користувачами",
+          "manageGroups":"Керувати групами",
+          "manageSso":"Керувати SSO",
+          "manageEnv":"Керувати змінними середовища"
         },
-        "manageUsers": {
-          "usersAndPermission": "Користувачі та дозволи",
-          "inviteNewUser": "Запросити нового користувача",
-          "name": "ІМ'Я",
-          "email": "ПОШТА",
+        "manageUsers":{
+          "usersAndPermission":"Користувачі та дозволи",
+          "inviteNewUser":"Запросити нового користувача",
+          "name":"ІМ'Я",
+          "email":"ПОШТА",
           "status": "СТАТУС",
-          "archive": "Архівувати",
-          "unarchive": "Розархівувати",
-          "addNewUser": "Додати нового користувача",
-          "emailAddress": "Адреса електронної пошти",
-          "createUser": "Створити користувача",
-          "enterFirstName": "Введіть Ім'я",
-          "enterLastName": "Введіть Прізвище",
-          "enterEmail": "Введіть Пошту"
+          "archive":"Архівувати",
+          "unarchive":"Розархівувати",
+          "addNewUser":"Додати нового користувача",
+          "emailAddress":"Адреса електронної пошти",
+          "createUser":"Створити користувача",
+          "enterFirstName":"Введіть Ім'я",
+          "enterLastName":"Введіть Прізвище",
+          "enterEmail":"Введіть Пошту"
         },
-        "manageGroups": {
-          "permissions": {
-            "userGroups": "Групи користувачів",
-            "createNewGroup": "Створити нову групу",
-            "updateGroup": "Оновити групу",
-            "addNewGroup": "Додати нову групу",
-            "enterName": "Введіть ім'я",
-            "createGroup": "Створити групу",
-            "name": "Ім'я"
+        "manageGroups":{
+          "permissions":{
+            "userGroups":"Групи користувачів",
+            "createNewGroup":"Створити нову групу",
+            "updateGroup":"Оновити групу",
+            "addNewGroup":"Додати нову групу",
+            "enterName":"Введіть ім'я",
+            "createGroup":"Створити групу",
+            "name":"Ім'я"
           },
-          "permissionResources": {
-            "userGroup": "Група користувачів",
-            "apps": "Додатки",
-            "users": "Користувач",
-            "permissions": "Дозвол",
-            "addAppsToGroup": "Виберіть програми для додавання до групи",
-            "name": "ім'я",
-            "addUsersToGroup": "Виберіть користувачів для додавання до групи",
-            "email": "електронна пошта",
-            "resource": "ресурс",
-            "createUpdateDelete": "Створити/Оновити/Видалити",
-            "folder": "Папка"
+          "permissionResources":{
+            "userGroup":"Група користувачів",
+            "apps":"Додатки",
+            "users":"Користувач",
+            "permissions":"Дозвол",
+            "addAppsToGroup":"Виберіть програми для додавання до групи",
+            "name":"ім'я",
+            "addUsersToGroup":"Виберіть користувачів для додавання до групи",
+            "email":"електронна пошта",
+            "resource":"ресурс",
+            "createUpdateDelete":"Створити/Оновити/Видалити",
+            "folder":"Папка"
           }
         },
-        "manageSSO": {
-          "manageSso": "Керувати SSO",
-          "generalSettings": {
-            "title": "Основні налаштування",
-            "enableSignup": "Увімкнути вхід",
-            "newAccountWillBeCreated": "Новий обліковий запис буде створено для першого логіна користувача через SSO",
-            "allowedDomains": "Дозволені домени",
-            "enterDomains": "Домени входу",
-            "supportMultiDomains": "Підтримка безлічі доменів. Введіть доменні імена, розділені комою. Наприклад: tooljet.com,tooljet.io,yourorganization.com",
-            "loginUrl": "Посилання на логін",
-            "workspaceLogin": "Використовуйте це, щоб безпосередньо залогінитися в робочу область",
-            "allowDefaultSso": "Дозволити стандартний SSO",
-            "ssoAuth": "Дозволити користувачам вхід через стандартний SSO. Стандартну конфігурацію SSO буде перезаписано."
+        "manageSSO":{
+          "manageSso":"Керувати SSO",
+          "generalSettings":{
+            "title":"Основні налаштування",
+            "enableSignup":"Увімкнути вхід",
+            "newAccountWillBeCreated":"Новий обліковий запис буде створено для першого логіна користувача через SSO",
+            "allowedDomains":"Дозволені домени",
+            "enterDomains":"Домени входу",
+            "supportMultiDomains":"Підтримка безлічі доменів. Введіть доменні імена, розділені комою. Наприклад: tooljet.com,tooljet.io,yourorganization.com",
+            "loginUrl":"Посилання на логін",
+            "workspaceLogin":"Використовуйте це, щоб безпосередньо залогінитися в робочу область",
+            "allowDefaultSso":"Дозволити стандартний SSO",
+            "ssoAuth":"Дозволити користувачам вхід через стандартний SSO. Стандартну конфігурацію SSO буде перезаписано."
           },
-          "google": {
-            "title": "Google",
-            "enabled": "Увімкнено",
-            "disabled": "Вимкнено",
-            "clientId": "Id клієнта",
-            "enterClientId": "Ввести Id клієнта",
-            "redirectUrl": "Редирект посилання"
+          "google":{
+            "title":"Google",
+            "enabled":"Увімкнено",
+            "disabled":"Вимкнено",
+            "clientId":"Id клієнта",
+            "enterClientId":"Ввести Id клієнта",
+            "redirectUrl":"Редирект посилання"
           },
-          "github": {
-            "title": "Github",
-            "hostName": "Ім'я хоста",
-            "enterHostName": "Введіть ім'я хоста",
-            "requiredGithub": "Обов'язковий, якщо GitHub хоститься самостійно",
-            "clientId": "Id клієнта",
-            "enterClientId": "Ввести Id клієнта",
-            "clientSecret": "Secret клієнта",
-            "enterClientSecret": "Введіть Secret клієнта",
-            "encrypted": "Зашифровано",
-            "redirectUrl": "Редирект посилання"
+          "github":{
+            "title":"Github",
+            "hostName":"Ім'я хоста",
+            "enterHostName":"Введіть ім'я хоста",
+            "requiredGithub":"Обов'язковий, якщо GitHub хоститься самостійно",
+            "clientId":"Id клієнта",
+            "enterClientId":"Ввести Id клієнта",
+            "clientSecret":"Secret клієнта",
+            "enterClientSecret":"Введіть Secret клієнта",
+            "encrypted":"Зашифровано",
+            "redirectUrl":"Редирект посилання"
           },
-          "passwordLogin": "Пароль логин",
-          "environmentVar": {
-            "noEnvConfig": "Ви не налаштували жодного змінного середовища, натисніть кнопку 'Додати нову змінну' щоб створити",
-            "envWillBeDeleted": "Змінна буде видалена, ви хочете продовжити?",
-            "addNewVariable": "Додати нову змінну",
-            "variableForm": {
-              "addNewVariable": "Додати нову змінну",
-              "updatevariable": "Оновити змінну",
-              "name": "Ім'я",
-              "value": "Значення",
-              "enterVariableName": "Введіть значення змінної",
-              "enterValue": "Введіть значення",
-              "type": "Тип",
-              "enableEncryption": "Увімкнути шифрування",
-              "addVariable": "Додати змінну"
+          "passwordLogin":"Пароль логин",
+          "environmentVar" : {
+            "noEnvConfig":"Ви не налаштували жодного змінного середовища, натисніть кнопку 'Додати нову змінну' щоб створити",
+            "envWillBeDeleted":"Змінна буде видалена, ви хочете продовжити?",
+            "addNewVariable":"Додати нову змінну",
+            "variableForm":{
+              "addNewVariable":"Додати нову змінну",
+              "updatevariable":"Оновити змінну",
+              "name":"Ім'я",
+              "value":"Значення",
+              "enterVariableName":"Введіть значення змінної",
+              "enterValue":"Введіть значення",
+              "type":"Тип",
+              "enableEncryption":"Увімкнути шифрування",
+              "addVariable":"Додати змінну"
             },
-            "variableTable": {
-              "name": "Ім'я",
-              "value": "значення",
-              "type": "тип",
-              "secret": "secret"
+            "variableTable":{
+              "name":"Ім'я",
+              "value":"значення",
+              "type":"тип",
+              "secret":"secret"
             }
           }
         }
       }
     },
-    "profileSettingPage": {
-      "profileSettings": "Налаштування профілю",
-      "firstName": "Ім'я",
-      "lastName": "Прізвище",
-      "enterFirstName": "Ввести ім'я",
-      "enterLastName": "Ввести прізвище",
-      "email": "Електронна пошта",
-      "avatar": "Аватар",
-      "update": "Оновити",
-      "profile": "Профіль",
-      "changePassword": "Змінити пароль",
-      "currentPassword": "Поточний пароль",
-      "newPassword": "Новий пароль",
-      "confirmNewPassword": "Підтвердити новий пароль",
-      "enterCurrentPassword": "Ввести поточний пароль",
-      "enterNewPassword": "Ввести новий пароль"
+    "profileSettingPage":{
+      "profileSettings":"Налаштування профілю",
+      "firstName":"Ім'я",
+      "lastName":"Прізвище",
+      "enterFirstName":"Ввести ім'я",
+      "enterLastName":"Ввести прізвище",
+      "email":"Електронна пошта",
+      "avatar":"Аватар",
+      "update":"Оновити",
+      "profile":"Профіль",
+      "changePassword":"Змінити пароль",
+      "currentPassword":"Поточний пароль",
+      "newPassword":"Новий пароль",
+      "confirmNewPassword":"Підтвердити новий пароль",
+      "enterCurrentPassword":"Ввести поточний пароль",
+      "enterNewPassword":"Ввести новий пароль"
     },
-    "profile": "Профіль",
-    "logout": "Розлогитися"
+    "profile":"Профіль",
+    "logout":"Розлогитися"
   },
-  "homePage": {
-    "appCard": {
-      "changeIcon": "Змінити іконку",
-      "addToFolder": "Додати до папки",
-      "move": "Перемістити",
-      "to": "в",
-      "selectFolder": "Вибрати папку",
-      "deleteApp": "Видалити програму",
-      "exportApp": "Експортувати програму",
-      "cloneApp": "Клонувати програму",
+  "homePage":{
+    "appCard":{
+      "changeIcon":"Змінити іконку",
+      "addToFolder":"Додати до папки",
+      "move":"Перемістити",
+      "to":"в",
+      "selectFolder":"Вибрати папку",
+      "deleteApp":"Видалити програму",
+      "exportApp":"Експортувати програму",
+      "cloneApp":"Клонувати програму",
       "launch": "Запустити",
-      "maintenance": "Тех.обслуговування",
-      "noDeployedVersion": "Додаток не має задеплоєної версії",
-      "openInAppViewer": "Відкрити переглядач додатків",
-      "removeFromFolder": "Видалити з папки"
+      "maintenance":"Тех.обслуговування",
+      "noDeployedVersion":"Додаток не має задеплоєної версії",
+      "openInAppViewer":"Відкрити переглядач додатків",
+      "removeFromFolder":"Видалити з папки"
     },
-    "blankPage": {
-      "welcomeToToolJet": "Ласкаво просимо до ToolJet!",
-      "getStartedCreateNewApp": "Ви можете почати створення нової програми або створення нової програми, використовуючи шаблон з бібліотеки ToolJet",
-      "importApplication": "Імпортувати програму"
+    "blankPage":{
+      "welcomeToToolJet":"Ласкаво просимо до ToolJet!",
+      "getStartedCreateNewApp":"Ви можете почати створення нової програми або створення нової програми, використовуючи шаблон з бібліотеки ToolJet",
+      "importApplication":"Імпортувати програму"
     },
-    "foldersSection": {
-      "allApplications": "Всі програми",
-      "folders": "Папки",
-      "createNewFolder": "+ Створити нову папку",
-      "noFolders": "Ви не створили жодної папки.",
-      "createFolder": "Створити папку",
-      "updateFolder": "Оновити папку",
-      "editFolder": "Редагувати папку",
-      "deleteFolder": "Видалити папку",
-      "folderName": "Ім'я папки",
-      "wishToDeleteFolder": "Ви впевнені, що хочете видалити папку {{folderName}}? Програми не будуть видалені."
+    "foldersSection":{
+      "allApplications":"Всі програми",
+      "folders":"Папки",
+      "createNewFolder":"+ Створити нову папку",
+      "noFolders":"Ви не створили жодної папки.",
+      "createFolder":"Створити папку",
+      "updateFolder":"Оновити папку",
+      "editFolder":"Редагувати папку",
+      "deleteFolder":"Видалити папку",
+      "folderName":"Ім'я папки",
+      "wishToDeleteFolder":"Ви впевнені, що хочете видалити папку {{folderName}}? Програми не будуть видалені."
     },
-    "header": {
-      "createNewApplication": "Створити новий додаток",
-      "import": "Імпорт",
-      "chooseFromTemplate": "Вибрати із шаблону"
+    "header":{
+      "createNewApplication":"Створити новий додаток",
+      "import":"Імпорт",
+      "chooseFromTemplate":"Вибрати із шаблону"
     },
-    "pagination": {
-      "showing": "Показується",
-      "of": "від",
-      "to": "до"
+    "pagination":{
+      "showing":"Показується",
+      "of":"від",
+      "to":"до"
     },
-    "noApplicationFound": "Програми не знайдені",
-    "thisFolderIsEmpty": "Ця папка порожня",
-    "deleteAppAndData": "Додаток та пов'язані з ним дані будуть видалені, ви хочете продовжити?",
-    "removeAppFromFolder": "Додаток буде видалений з папки, ви хочете продовжити?",
-    "change": "Змінити",
-    "templateCard": {
-      "use": "Використати",
-      "preview": "Перегляд",
-      "leadGeneretion": "Лідогенерація"
+    "noApplicationFound":"Програми не знайдені",
+    "thisFolderIsEmpty":"Ця папка порожня",
+    "deleteAppAndData":"Додаток та пов'язані з ним дані будуть видалені, ви хочете продовжити?",
+    "removeAppFromFolder":"Додаток буде видалений з папки, ви хочете продовжити?",
+    "change":"Змінити",
+    "templateCard":{
+      "use":"Використати",
+      "preview":"Перегляд",
+      "leadGeneretion":"Лідогенерація"
     },
-    "templateLibraryModal": {
-      "select": "Вибрати шаблон",
-      "createAppfromTemplate": "Створити програму з шаблону"
+    "templateLibraryModal":{
+      "select":"Вибрати шаблон",
+      "createAppfromTemplate":"Створити програму з шаблону"
     }
   },
-  "confirmationPage": {
-    "setupAccount": "Налаштуйте свій обліковий запис",
-    "signupWithGoogle": "Залогуватися через Google",
-    "signupWithGitHub": "Залогуватися через GitHub",
-    "or": "АБО",
-    "firstName": "Ім'я",
-    "lastName": "Прізвище",
-    "company": "Компанія",
+  "confirmationPage":{
+    "setupAccount":"Налаштуйте свій обліковий запис",
+    "signupWithGoogle":"Залогуватися через Google",
+    "signupWithGitHub":"Залогуватися через GitHub",
+    "or":"АБО",
+    "firstName":"Ім'я",
+    "lastName":"Прізвище",
+    "company":"Компанія",
     "Role": "Роль",
-    "pleaseSelect": "Будь ласка, виберіть",
-    "password": "Пароль",
-    "confirmPassword": "Підтвердіть пароль",
-    "clickAndAgree": "Натиснувши на кнопку нижче, ви погоджуєтесь з нашими",
-    "termsAndConditions": "Умовами та положеннями",
-    "finishAccountSetup": "Закінчити налаштування облікового запису",
-    "acceptInvite": "прийняти інвайт",
-    "accountExists": "У вас вже є обліковий запис?",
-    "and": "і"
+    "pleaseSelect":"Будь ласка, виберіть",
+    "password":"Пароль",
+    "confirmPassword":"Підтвердіть пароль",
+    "clickAndAgree":"Натиснувши на кнопку нижче, ви погоджуєтесь з нашими",
+    "termsAndConditions":"Умовами та положеннями",
+    "finishAccountSetup":"Закінчити налаштування облікового запису",
+    "acceptInvite":"прийняти інвайт",
+    "accountExists":"У вас вже є обліковий запис?",
+    "and":"і"
   },
-  "onBoarding": {
-    "finishToolJetInstallation": "Закінчити встановлення ToolJet",
+  "onBoarding":{
+    "finishToolJetInstallation":"Закінчити встановлення ToolJet",
     "organization": "Організація",
-    "name": "Ім'я",
-    "email": "Електронна пошта",
-    "receiveUpdatesFromToolJet": "Ви отримуватимете оновлення від команди ToolJet ( 1-2 листи щомісяця, ми не спамимо )",
-    "finishSetup": "Закінчити налаштування",
-    "skip": "Пропустити"
+    "name":"Ім'я",
+    "email":"Електронна пошта",
+    "receiveUpdatesFromToolJet":"Ви отримуватимете оновлення від команди ToolJet ( 1-2 листи щомісяця, ми не спамимо )",
+    "finishSetup":"Закінчити налаштування",
+    "skip":"Пропустити"
   },
-  "redirectSso": {
-    "upgradingTov1.13.0": "Оновлення до версії v1.13.0 та вище.",
-    "fromV1.13.0": "З v1.13.0 ми представили",
-    "multiWorkspace": "Мульти-робочий простір",
-    "singleSignOnConfig": "Конфігурації, пов'язані з SSO були перенесені змінних середовища в базу даних. Будь ласка, врахуйте це",
-    "link": "Посилання",
-    "toConfigureSSO": "щоб налаштувати SSO.",
-    "haveGoogleGithubSSo": "Якщо у вас є конфігурації SSO від Google або GitHub до оновлення та мульти-робочі простори були відключені значить SSO конфігурації будуть мігровані під час оновлення, але, вам потрібно переналаштувати посилання перенаправлення на стороні SSO провайдера. Посилання перенаправлення дано нижче.",
-    "isMultiWorkspaceEnabled": "Якщо ви увімкнули Мульти-робочі простори, тоді конфігурації SSO не будуть мігровані під час оновлення і вам потрібно переналаштувати SSO у відповідному провайдері.",
-    "youHaveEnabled": "Ви увімкнули",
-    "setupSsoWorkspace": "Будь ласка, залогіньтесь з вашим паролем і ви зможете налаштувати SSO у просторі",
-    "manageSsoMenu": "Керування меню SSO.",
-    "youHaveDisabled": "Ви відключили",
-    "configureRedirectUrl": "Будь ласка, налаштуйте посилання перенаправлення на стороні SSO-провайдера.",
-    "google": "Google",
-    "redirectUrl": "Посилання перенаправлення:",
-    "gitHub": "GitHub"
+  "redirectSso":{
+    "upgradingTov1.13.0":"Оновлення до версії v1.13.0 та вище.",
+    "fromV1.13.0":"З v1.13.0 ми представили",
+    "multiWorkspace":"Мульти-робочий простір",
+    "singleSignOnConfig":"Конфігурації, пов'язані з SSO були перенесені змінних середовища в базу даних. Будь ласка, врахуйте це",
+    "link":"Посилання",
+    "toConfigureSSO":"щоб налаштувати SSO.",
+    "haveGoogleGithubSSo":"Якщо у вас є конфігурації SSO від Google або GitHub до оновлення та мульти-робочі простори були відключені значить SSO конфігурації будуть мігровані під час оновлення, але, вам потрібно переналаштувати посилання перенаправлення на стороні SSO провайдера. Посилання перенаправлення дано нижче.",
+    "isMultiWorkspaceEnabled":"Якщо ви увімкнули Мульти-робочі простори, тоді конфігурації SSO не будуть мігровані під час оновлення і вам потрібно переналаштувати SSO у відповідному провайдері.",
+    "youHaveEnabled":"Ви увімкнули",
+    "setupSsoWorkspace":"Будь ласка, залогіньтесь з вашим паролем і ви зможете налаштувати SSO у просторі",
+    "manageSsoMenu":"Керування меню SSO.",
+    "youHaveDisabled":"Ви відключили",
+    "configureRedirectUrl":"Будь ласка, налаштуйте посилання перенаправлення на стороні SSO-провайдера.",
+    "google":"Google",
+    "redirectUrl":"Посилання перенаправлення:",
+    "gitHub":"GitHub"
   },
   "oAuth2": {
-    "pleaseWait": "Будь ласка зачекайте...",
-    "authSuccess": "Успішна автентифікація, ви можете закрити цю вкладку.",
-    "authFailed": "Аутентифікація провалена"
+    "pleaseWait":"Будь ласка зачекайте...",
+    "authSuccess":"Успішна автентифікація, ви можете закрити цю вкладку.",
+    "authFailed":"Аутентифікація провалена"
   },
   "widgetManager": {
     "commonlyUsed": "зазвичай використовується",
-    "layouts": "шари",
-    "форми": "форми",
-    "intregrations": "інтеграції",
-    "others": "інші",
+    "layouts" : "шари",
+    "форми" : "форми",
+    "intregrations" : "інтеграції",
+    "others":"інші",
     "noResults": "Не знайдено результатів",
     "tryAdjustingFilterMessage": "Спробуйте змінити пошуковий запит або фільтр, щоб знайти те, що ви шукаєте.",
     "clearQuery": "очистити запит"
   },
-  "widget": {
-    "common": {
+  "widget":{
+    "common":{
       "properties": "Властивості",
       "events": "Події",
       "layout": "Шар",
@@ -698,23 +698,23 @@
       "displayName": "Діаграма",
       "description": "Відображає діаграми"
     },
-    "Modal": {
+    "Modal" : {
       "displayName": "Модальне вікно",
       "description": "Модальне вікно, яке викликається подіями"
     },
-    "TextInput": {
+    "TextInput" : {
       "displayName": "Введення тексту",
       "description": "Введення тексту у формах"
     },
-    "NumberInput": {
+    "NumberInput" :{
       "displayName": "Введення цифр",
       "description": "Цифрове поле для форм"
     },
-    "PasswordInput": {
+    "PasswordInput":{
       "displayName": "Введення пароля",
       "description": "Введення пароля для форм"
     },
-    "Datepicker": {
+    "Datepicker" :{
       "displayName": "Вибір дати",
       "description": "Вибір дати та часу"
     },
@@ -722,7 +722,7 @@
       "displayName": "Чекбокс",
       "description": "Звичайний чекбокс"
     },
-    "Radio-button": {
+    "Radio-button":{
       "displayName": "Радіо батони",
       "description": "Радіо батони"
     },
@@ -730,31 +730,31 @@
       "displayName": "Перемикач",
       "description": "Перемикач"
     },
-    "Textarea": {
+    "Textarea":{
       "displayName": "Текстове поле",
       "description": "Текстове поле у формі"
     },
-    "DateRangePicker": {
+    "DateRangePicker":{
       "displayName": "Вибір діапазону",
       "description": "Виберіть діапазон дат"
     },
-    "Text": {
+    "Text":{
       "displayName": "Текст",
       "description": "Відображати HTML або розмітку"
     },
-    "Image": {
+    "Image":{
       "displayName": "Зображення",
       "description": "Відображає зображення"
     },
-    "Container": {
+    "Container":{
       "displayName": "Контейнер",
       "description": "Обгортка для безлічі компонентів"
     },
-    "Dropdown": {
+    "Dropdown":{
       "displayName": "Випадаючий список",
       "description": "Вибрати одне значення зі списку опцій"
     },
-    "Multiselect": {
+    "Multiselect":{
       "displayName": "Мультивибір",
       "description": "Вибирає декілька значень зі списку опцій"
     },
@@ -766,11 +766,11 @@
       "displayName": "Карта",
       "description": "Відображає Google карти"
     },
-    "QrScanner": {
+    "QrScanner":{
       "displayName": "QR сканер",
       "description": "Сканує QR коди та зберігає дані"
     },
-    "StarRating": {
+    "StarRating":{
       "displayName": "Рейтинг",
       "description": "Рейтинг через зірочки"
     },
@@ -778,7 +778,7 @@
       "displayName": "Розділювач",
       "description": "Розділювач між компонентами"
     },
-    "FilePicker": {
+    "FilePicker":{
       "displayName": "Засіб вибору файлів",
       "description": "Засіб вибору файлів"
     },
@@ -786,7 +786,7 @@
       "displayName": "Календар",
       "description": "Календар"
     },
-    "Iframe": {
+    "Iframe":{
       "displayName": "Iframe",
       "description": "відображати як Iframe"
     },
@@ -794,11 +794,11 @@
       "displayName": "Редактор коду",
       "description": "Редактор коду"
     },
-    "Tabs": {
+    "Tabs":{
       "displayName": "Вкладки",
       "description": "Компонент вкладок"
     },
-    "Timer": {
+    "Timer":{
       "displayName": "Таймер",
       "description": "таймер"
     },
@@ -810,11 +810,11 @@
       "displayName": "Теги",
       "description": "Контент може бути показаний як теги"
     },
-    "Pagination": {
+    "Pagination":{
       "displayName": "Пагінація",
       "description": "Пагінація"
     },
-    "CircularProgressbar": {
+    "CircularProgressbar":{
       "displayName": "Круговий індикатор прогресу",
       "description": "Показує прогрес завдяки круговому прогресу"
     },
@@ -822,7 +822,7 @@
       "displayName": "Спінер",
       "description": "Можна використовувати для відображення стану завантаження"
     },
-    "Statistics": {
+    "Statistics":{
       "displayName": "Статистика",
       "description": "Може бути використана для відображення різної статистичної інформації"
     },
@@ -838,23 +838,23 @@
       "displayName": "Svg зображення",
       "description": "Svg зображення"
     },
-    "Html": {
+    "Html":{
       "displayName": "HTML переглядач",
       "description": "HTML переглядач"
     },
-    "VerticalDivider": {
+    "VerticalDivider":{
       "displayName": "Вертикальний роздільник",
       "description": "Вертикальний роздільник між компонентами"
     },
-    "CustomComponent": {
+    "CustomComponent":{
       "displayName": "Елемент користувача",
       "description": "Додайте свій власний react компонент"
     },
-    "ButtonGroup": {
+    "ButtonGroup":{
       "displayName": "Група кнопок",
       "description": "ButtonGroup"
     },
-    "PDF": {
+    "PDF":{
       "displayName": "PDF",
       "description": "Вбудований PDF файл"
     },
@@ -870,47 +870,48 @@
       "displayName": "Вибір кольору",
       "description": "Вибір кольору з палітри"
     },
-    "TreeSelect": {
+    "TreeSelect":{
       "displayName": "Вибір дерева",
       "description": "Виберіть значення з режиму дерева"
     }
   },
-  "leftSidebar": {
-    "Inspector": {
-      "text": "Інспектор",
-      "tip": "Інспектор"
+  "leftSidebar":{
+    "Inspector":{
+      "text":"Інспектор",
+      "tip" : "Інспектор"
     },
-    "Sources": {
-      "text": "Джерела",
-      "tip": "Додати або редагувати джерела даних",
-      "dataSources": "Джерела даних",
-      "addDataSource": "+ додати джерело даних"
+    "Sources" :{
+      "text":"Джерела",
+      "tip" : "Додати або редагувати джерела даних",
+      "dataSources":"Джерела даних",
+      "addDataSource":"+ додати джерело даних"
     },
-    "Debugger": {
-      "text": "Відладчик",
-      "tip": "Відладчик",
-      "errors": "Помилки",
-      "noErrors": "Нема помилок",
-      "clear": "очистити"
+    "Debugger":{
+      "text":"Відладчик",
+      "tip" : "Відладчик",
+      "errors":"Помилки",
+      "noErrors":"Нема помилок",
+      "clear":"очистити"
     },
-    "Comments": {
-      "text": "Коментарі",
-      "tip": "Увімкнути комментарі",
-      "commentBody": "Немає коментарів для відображення",
-      "typeComment": "Залиште свій комментар тут"
+    "Comments":{
+      "text":"Коментарі",
+      "tip" : "Увімкнути комментарі",
+      "commentBody":"Немає коментарів для відображення",
+      "typeComment":"Залиште свій комментар тут"
     },
-    "Settings": {
-      "text": "Налаштування",
-      "tip": "Головні налаштування",
+    "Settings":{
+      "text":"Налаштування",
+      "tip" : "Головні налаштування",
       "hideHeader": "Спрятать заголовок для запущенных приложений",
-      "maintenanceMode": "Режим тех.обслуживания",
-      "maxWidthOfCanvas": "Максимальная ширина поверхности",
-      "maxHeightOfCanvas": "Максимальная высота поверхности",
-      "backgroundColorOfCanvas": "Задній фон поверхні"
+      "maintenanceMode":"Режим тех.обслуживания",
+      "maxWidthOfCanvas":"Максимальная ширина поверхности",
+      "maxHeightOfCanvas" :"Максимальная высота поверхности",
+      "backgroundColorOfCanvas":"Задній фон поверхні"
+
     },
-    "Back": {
-      "text": "Назад",
-      "tip": "Додому"
+    "Back":{
+      "text":"Назад",
+      "tip" :"Додому"
     }
   }
 }
