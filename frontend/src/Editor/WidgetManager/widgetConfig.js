@@ -2601,6 +2601,7 @@ export const widgets = [
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: '{{true}}' },
+        showAllOption: { value: '{{false}}' },
       },
       events: [],
       styles: {
