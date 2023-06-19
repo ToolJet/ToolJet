@@ -26,6 +26,7 @@ export const EventManager = ({
   popOverCallback,
   popoverPlacement,
   pages,
+  hideEmptyEventsAlert,
 }) => {
   const dataQueries = useDataQueries();
   const [events, setEvents] = useState(() => component.component.definition.events || []);
@@ -925,13 +926,19 @@ export const EventManager = ({
             {t('editor.inspector.eventManager.addEventHandler', '+ Add event handler')}
           </button>
         </div>
-        <div className="text-left">
-          <small className="color-disabled" data-cy="no-event-handler-message">
-            {t('editor.inspector.eventManager.emptyMessage', "This {{componentName}} doesn't have any event handlers", {
-              componentName: componentName.toLowerCase(),
-            })}
-          </small>
-        </div>
+        {!hideEmptyEventsAlert ? (
+          <div className="text-left">
+            <small className="color-disabled" data-cy="no-event-handler-message">
+              {t(
+                'editor.inspector.eventManager.emptyMessage',
+                "This {{componentName}} doesn't have any event handlers",
+                {
+                  componentName: componentName.toLowerCase(),
+                }
+              )}
+            </small>
+          </div>
+        ) : null}
       </>
     );
   }

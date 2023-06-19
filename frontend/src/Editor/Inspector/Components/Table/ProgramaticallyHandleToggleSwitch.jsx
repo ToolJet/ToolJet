@@ -53,7 +53,7 @@ export const ProgramaticallyHandleToggleSwitch = ({
         theme={darkMode ? 'monokai' : options.theme}
         lineWrapping={true}
         onChange={(value) => callbackFunction(index, property, value)}
-        componentName={`widget/${component?.component?.name}::${param.name}`}
+        componentName={`component/${component?.component?.name}::${param.name}`}
         type={paramMeta.type}
         paramName={param.name}
         paramLabel={paramMeta.displayName}
