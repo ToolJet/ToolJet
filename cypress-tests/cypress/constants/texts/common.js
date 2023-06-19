@@ -6,7 +6,6 @@ export const path = {
   loginPath: "/login",
   profilePath: "/settings",
   confirmInvite: "/confirm",
-  auditLogsPath: "/audit-logs",
   database: "/database",
 };
 
@@ -15,7 +14,6 @@ export const commonText = {
   email: "dev@tooljet.io",
   password: "password",
   loginErrorToast: "Invalid email or password",
-  welcomeToolJetText: "Welcome to ToolJet!",
   welcomeTooljetWorkspace: "Welcome to your new ToolJet workspace",
   introductionMessage:
     "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
@@ -112,7 +110,7 @@ export const commonText = {
   backtoSignUpButton: "Back to signup",
   createAnAccountLink: "Create an account",
   forgotPasswordPageHeader: "Forgot Password",
-  newToTooljetText: "New to ToolJet?",
+  newToTooljetText: "New to",
   emailAddressLabel: "Email address",
   resetPasswordLinkButton: " Send a reset link",
   passwordResetEmailToast:

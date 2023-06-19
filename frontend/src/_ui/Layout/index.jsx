@@ -200,6 +200,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === '/instance-settings' && `current-seleted-route`
                         }`}
+                        data-cy="icon-instance-settings"
                       >
                         <SolidIcon
                           name="instancesettings"
@@ -217,7 +218,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                         className={`tj-leftsidebar-icon-items  ${
                           router.pathname === getPrivateRoute('audit_logs') && `current-seleted-route`
                         }`}
-                        data-cy="icon-workspace-settings"
+                        data-cy="icon-audit-logs"
                       >
                         <SolidIcon
                           name="auditlogs"

@@ -1,0 +1,241 @@
+import {
+  commonEeSelectors,
+  ssoEeSelector,
+  instanceSettingsSelector,
+} from "Selectors/eeCommon";
+import { ssoEeText } from "Texts/eeCommon";
+import { commonSelectors } from "Selectors/common";
+import * as common from "Support/utils/common";
+import { groupsSelector } from "Selectors/manageGroups";
+import { groupsText } from "Texts/manageGroups";
+import { eeGroupsSelector } from "Selectors/eeCommon";
+import { eeGroupsText } from "Texts/eeCommon";
+import { verifyOnboardingQuestions } from "Support/utils/onboarding";
+import { commonText } from "Texts/common";
+import { dashboardText } from "Texts/dashboard";
+import { usersText } from "Texts/manageUsers";
+import { usersSelector } from "Selectors/manageUsers";
+
+export const oidcSSOPageElements = () => {
+  cy.get(ssoEeSelector.oidcToggle).then(($el) => {
+    if ($el.is(":checked")) {
+      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoEeText.enabledLabel
+      );
+      cy.get(ssoEeSelector.oidcToggle).uncheck();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        ssoEeText.oidcDisabledToast
+      );
+      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoEeText.disabledLabel
+      );
+      cy.get(ssoEeSelector.oidcToggle).check();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        ssoEeText.oidcEnabledToast
+      );
+      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoEeText.enabledLabel
+      );
+    } else {
+      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoEeText.disabledLabel
+      );
+      cy.get(ssoEeSelector.oidcToggle).check();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        ssoEeText.oidcEnabledToast
+      );
+      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoEeText.enabledLabel
+      );
+      cy.get(ssoEeSelector.oidcToggle).uncheck();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        ssoEeText.oidcDisabledToast
+      );
+      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoEeText.disabledLabel
+      );
+      cy.get(ssoEeSelector.oidcToggle).check();
+      cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoEeText.enabledLabel
+      );
+    }
+    cy.clearAndType(ssoEeSelector.nameInput, ssoEeText.testName);
+    cy.clearAndType(ssoEeSelector.clientIdInput, ssoEeText.testclientId);
+    cy.clearAndType(
+      ssoEeSelector.clientSecretInput,
+      ssoEeText.testclientSecret
+    );
+    cy.clearAndType(
+      ssoEeSelector.WellKnownUrlInput,
+      ssoEeText.testWellknownUrl
+    );
+    cy.get(commonEeSelectors.saveButton).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      ssoEeText.oidcUpdatedToast
+    );
+    cy.get(ssoEeSelector.nameInput).should("have.value", ssoEeText.testName);
+    cy.get(ssoEeSelector.clientIdInput).should(
+      "have.value",
+      ssoEeText.testclientId
+    );
+    cy.get(ssoEeSelector.clientSecretInput).should(
+      "have.value",
+      ssoEeText.testclientSecret
+    );
+    cy.get(ssoEeSelector.WellKnownUrlInput).should(
+      "have.value",
+      ssoEeText.testWellknownUrl
+    );
+  });
+};
+
+export const resetDsPermissions = () => {
+  common.navigateToManageGroups();
+  cy.contains(groupsText.allUsers).click();
+  cy.get(groupsSelector.permissionsLink).click();
+
+  cy.get(eeGroupsSelector.dsCreateCheck).then(($el) => {
+    if ($el.is(":checked")) {
+      cy.get(eeGroupsSelector.dsCreateCheck).uncheck();
+    }
+  });
+  cy.get(eeGroupsSelector.dsDeleteCheck).then(($el) => {
+    if ($el.is(":checked")) {
+      cy.get(eeGroupsSelector.dsDeleteCheck).uncheck();
+    }
+  });
+};
+
+export const userSignUp = (fullName, email, workspaceName) => {
+  let invitationLink = "";
+  cy.visit("/");
+  cy.wait(500);
+  cy.get(commonSelectors.createAnAccountLink).realClick();
+  cy.clearAndType(commonSelectors.nameInputField, fullName);
+  cy.clearAndType(commonSelectors.emailInputField, email);
+  cy.clearAndType(commonSelectors.passwordInputField, commonText.password);
+  cy.get(commonSelectors.signUpButton).click();
+
+  cy.wait(500);
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select invitation_token from users where email='${email}';`,
+  }).then((resp) => {
+    invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
+    cy.visit(invitationLink);
+    cy.get(commonSelectors.setUpToolJetButton).click();
+    cy.wait(4000);
+  });
+  cy.get("body").then(($el) => {
+    if (!$el.text().includes(dashboardText.emptyPageHeader)) {
+      verifyOnboardingQuestions(fullName, workspaceName);
+      cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+        "have.text",
+        workspaceName
+      );
+    } else {
+      cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+        "have.text",
+        "Untitled workspace"
+      );
+    }
+  });
+};
+
+export const resetAllowPersonalWorkspace = () => {
+  cy.get(commonEeSelectors.instanceSettingIcon).click();
+  cy.get(instanceSettingsSelector.manageInstanceSettings).click();
+  cy.get(instanceSettingsSelector.allowWorkspaceToggle).then(($el) => {
+    if (!$el.is(":checked")) {
+      cy.get(instanceSettingsSelector.allowWorkspaceToggle).check();
+      cy.get(commonEeSelectors.saveButton).click();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        "Instance settings have been updated"
+      );
+    }
+  });
+};
+
+export const addNewUser = (firstName, email, companyName) => {
+  common.navigateToManageUsers();
+  inviteUser(firstName, email);
+  cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
+  cy.get(commonSelectors.acceptInviteButton).click();
+  cy.get(commonSelectors.workspaceName).verifyVisibleElement(
+    "have.text",
+    "My workspace"
+  );
+};
+
+export const inviteUser = (firstName, email) => {
+  let invitationToken,
+    organizationToken,
+    workspaceId,
+    userId,
+    url = "";
+  cy.get(usersSelector.buttonAddUsers).click();
+  cy.clearAndType(commonSelectors.inputFieldFullName, firstName);
+  cy.clearAndType(commonSelectors.inputFieldEmailAddress, email);
+
+  cy.get(usersSelector.buttonInviteUsers).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    usersText.userCreatedToast
+  );
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select invitation_token from users where email='${email}';`,
+  }).then((resp) => {
+    invitationToken = resp.rows[0].invitation_token;
+
+    cy.task("updateId", {
+      dbconfig: Cypress.env("app_db"),
+      sql: "select id from organizations where name='My workspace';",
+    }).then((resp) => {
+      workspaceId = resp.rows[0].id;
+
+      cy.task("updateId", {
+        dbconfig: Cypress.env("app_db"),
+        sql: `select id from users where email='${email}';`,
+      }).then((resp) => {
+        userId = resp.rows[0].id;
+
+        cy.task("updateId", {
+          dbconfig: Cypress.env("app_db"),
+          sql: `select invitation_token from organization_users where user_id='${userId}';`,
+        }).then((resp) => {
+          organizationToken = resp.rows[0].invitation_token;
+
+          url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
+          common.logout();
+          cy.wait(500);
+          cy.visit(url);
+        });
+      });
+    });
+  });
+};
+
+export const defaultWorkspace = () => {
+  cy.get(".org-select-container").then(($title) => {
+    if (!$title.text().includes("My workspace")) {
+      cy.get(commonSelectors.workspaceName).realClick();
+      cy.contains("My workspace").realClick();
+      cy.wait(2000);
+      defaultWorkspace();
+    }
+  });
+};
