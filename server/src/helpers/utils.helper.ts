@@ -108,16 +108,12 @@ export async function getServiceAndRpcNames(protoDefinition) {
   return serviceNamesAndMethods;
 }
 
-export const showMigrationProgress = (fileName: string, progress, totalCount) => {};
-
 export class MigrationProgress {
-  private progress: number;
+  private progress = 0;
   constructor(private fileName: string, private totalCount: number) {}
 
   show() {
     this.progress++;
-    console.log(
-      `BackfillAppVersionToDataQueries1675368628727 Progress ${Math.round((this.progress / this.totalCount) * 100)} %`
-    );
+    console.log(`${this.fileName} Progress ${Math.round((this.progress / this.totalCount) * 100)} %`);
   }
 }
