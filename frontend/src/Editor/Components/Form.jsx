@@ -70,7 +70,7 @@ export const Form = function Form(props) {
       const item = data[key];
 
       if (item.name === 'Text') {
-        const textKey = item.text.toLowerCase();
+        const textKey = item?.text?.toLowerCase();
         const nextItem = data[parseInt(key) + 1];
 
         if (nextItem && nextItem.name !== 'Text') {
@@ -546,8 +546,15 @@ export const Form = function Form(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(JSONSchema), advanced]);
 
+  const checkJsonChildrenValidtion = () => {
+    for (const key in childrenData) {
+      if (childrenData[key]?.isValid == false) return false;
+    }
+    return true;
+  };
+
   useEffect(() => {
-    const formattedChildData = {};
+    let formattedChildData = {};
     let childValidation = true;
 
     if (childComponents === null) {
@@ -557,10 +564,8 @@ export const Form = function Form(props) {
     }
 
     if (advanced) {
-      const data = extractData(childrenData);
-      setExposedVariable('data', data);
-      setExposedVariable('isValid', childValidation);
-      setValidation(childValidation);
+      formattedChildData = extractData(childrenData);
+      childValidation = checkJsonChildrenValidtion();
     } else {
       Object.keys(childComponents).forEach((childId) => {
         if (childrenData[childId]?.name) {
@@ -568,13 +573,13 @@ export const Form = function Form(props) {
           childValidation = childValidation && (childrenData[childId]?.isValid ?? true);
         }
       });
-      setExposedVariable('data', formattedChildData);
-      setExposedVariable('isValid', childValidation);
-      setValidation(childValidation);
     }
+    setExposedVariable('data', formattedChildData);
+    setExposedVariable('isValid', childValidation);
+    setValidation(childValidation);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childrenData, childComponents, advanced]);
+  }, [childrenData, childComponents, advanced, JSON.stringify(JSONSchema)]);
 
   useEffect(() => {
     const childIds = Object.keys(childrenData);
