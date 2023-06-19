@@ -60,6 +60,7 @@ export const QueryManagerBody = forwardRef(
     /* - Added the below line to cause re-rendering when the query is switched
        - QueryEditors are not updating when the query is switched
        - TODO: Remove the below line and make query editors update when the query is switched
+       - Ref PR #6763
     */
     const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
 
@@ -250,7 +251,6 @@ export const QueryManagerBody = forwardRef(
     };
 
     const renderQueryElement = () => {
-      if (selectedQueryId !== selectedQuery?.id) return;
       return (
         <div style={{ padding: '0 32px' }}>
           <div>
@@ -284,7 +284,6 @@ export const QueryManagerBody = forwardRef(
     };
 
     const renderEventManager = () => {
-      if (selectedQueryId !== selectedQuery?.id) return;
       const queryComponent = mockDataQueryAsComponent(options?.events || []);
       return (
         <>
@@ -370,7 +369,6 @@ export const QueryManagerBody = forwardRef(
     );
 
     const renderQueryOptions = () => {
-      if (selectedQueryId !== selectedQuery?.id) return;
       return (
         <div
           className={cx(`advanced-options-container font-weight-400 border-top query-manager-border-color`, {
@@ -387,7 +385,6 @@ export const QueryManagerBody = forwardRef(
     };
 
     const renderChangeDataSource = () => {
-      if (selectedQueryId !== selectedQuery?.id) return;
       return (
         <div className="mt-2 pb-4">
           <div
@@ -408,6 +405,8 @@ export const QueryManagerBody = forwardRef(
         </div>
       );
     };
+
+    if (selectedQueryId !== selectedQuery?.id) return;
 
     return (
       <div
