@@ -47,12 +47,10 @@ export const Form = function Form(props) {
   const [childrenData, setChildrenData] = useState({});
   const [isValid, setValidation] = useState(true);
   const [uiComponents, setUIComponents] = useState([]);
-  console.log('buttonToSubmit', componentTypes);
 
   registerAction('resetForm', async function () {
     resetComponent();
   });
-  console.log('properties', properties);
   registerAction(
     'submitForm',
     async function () {
@@ -87,9 +85,9 @@ export const Form = function Form(props) {
 
   useEffect(() => {
     if (advanced) {
-      // if (!typeof JSONSchema?.properties !== 'object' && JSONSchema?.properties !== null) {
-      //   return;
-      // }
+      if (typeof JSONSchema?.properties !== 'object' || JSONSchema?.properties == null) {
+        return;
+      }
       const uiComponentsDraft = [];
 
       // eslint-disable-next-line no-unused-vars
@@ -515,11 +513,38 @@ export const Form = function Form(props) {
         uiComponentsDraft.unshift(structuredClone(componentTypes.find((component) => component?.component == 'Text')));
         uiComponentsDraft[0]['definition']['properties']['text']['value'] = JSONSchema?.title;
       }
+      if (JSONSchema?.submitButton) {
+        uiComponentsDraft.push(structuredClone(componentTypes.find((component) => component?.component == 'Button')));
+        uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['backgroundColor']['value'] =
+          JSONSchema?.submitButton?.styles?.backgroundColor ||
+          uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['backgroundColor']['value'];
+
+        uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['textColor']['value'] =
+          JSONSchema?.submitButton?.styles?.textColor ||
+          uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['textColor']['value'];
+        uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['borderRadius']['value'] =
+          JSONSchema?.submitButton?.styles?.borderRadius ||
+          uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['borderRadius']['value'];
+        uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['borderColor']['value'] =
+          JSONSchema?.submitButton?.styles?.borderColor ||
+          uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['borderColor']['value'];
+        uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['loaderColor']['value'] =
+          JSONSchema?.submitButton?.styles?.loaderColor ||
+          uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['loaderColor']['value'];
+        uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['visibility']['value'] =
+          JSONSchema?.submitButton?.styles?.visibility ||
+          uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['visibility']['value'];
+        uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['disabledState']['value'] =
+          JSONSchema?.submitButton?.styles?.disabledState ||
+          uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['disabledState']['value'];
+        uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['properties']['text']['value'] =
+          JSONSchema?.submitButton?.text;
+      }
 
       setUIComponents(uiComponentsDraft);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(JSONSchema?.properties), advanced]);
+  }, [JSON.stringify(JSONSchema), advanced]);
 
   useEffect(() => {
     const formattedChildData = {};
@@ -534,7 +559,7 @@ export const Form = function Form(props) {
     if (advanced) {
       const data = extractData(childrenData);
       setExposedVariable('data', data);
-      setExposedVariable('isValid', 'childValidation');
+      setExposedVariable('isValid', childValidation);
       setValidation(childValidation);
     } else {
       Object.keys(childComponents).forEach((childId) => {
@@ -571,14 +596,22 @@ export const Form = function Form(props) {
     document.addEventListener('submitForm', handleFormSubmission);
     return () => document.removeEventListener('submitForm', handleFormSubmission);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buttonToSubmit, isValid]);
+  }, [buttonToSubmit, isValid, advanced]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
   };
 
   const handleFormSubmission = ({ detail: { buttonComponentId } }) => {
-    if (buttonToSubmit === buttonComponentId) {
+    if (!advanced) {
+      if (buttonToSubmit === buttonComponentId) {
+        if (isValid) {
+          onEvent('onSubmit', { component }).then(() => resetComponent());
+        } else {
+          fireEvent('onInvalid');
+        }
+      }
+    } else {
       if (isValid) {
         onEvent('onSubmit', { component }).then(() => resetComponent());
       } else {

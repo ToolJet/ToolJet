@@ -5561,6 +5561,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         validation: {
           schema: { type: 'string' },
         },
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
       },
       loadingState: {
         type: 'toggle',
