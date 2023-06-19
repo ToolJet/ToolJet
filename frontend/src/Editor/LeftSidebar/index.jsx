@@ -53,8 +53,13 @@ export const LeftSidebar = forwardRef((props, ref) => {
     isVersionReleased,
     setReleasedVersionPopupState,
   } = props;
+
+  const dataSources = useDataSources();
+  const prevSelectedSidebarItem = localStorage.getItem('selectedSidebarItem');
   const queryPanelHeight = usePanelHeight();
-  const [selectedSidebarItem, setSelectedSidebarItem] = useState(localStorage.getItem('selectedSidebarItem'));
+  const [selectedSidebarItem, setSelectedSidebarItem] = useState(
+    dataSources?.length === 0 && prevSelectedSidebarItem === 'database' ? 'inspect' : prevSelectedSidebarItem
+  );
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
@@ -182,8 +187,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const setSideBarBtnRefs = (page) => (ref) => {
     sideBarBtnRefs.current[page] = ref;
   };
-
-  const dataSources = useDataSources();
 
   const SELECTED_ITEMS = {
     page: (
