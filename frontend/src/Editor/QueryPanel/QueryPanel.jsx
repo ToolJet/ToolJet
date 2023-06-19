@@ -43,7 +43,7 @@ const QueryPanel = ({
   const [queryCancelData, setCancelData] = useState({});
   const [draftQuery, setDraftQuery] = useState(null);
   const [editingQuery, setEditingQuery] = useState(dataQueries.length > 0);
-  const windowSize = useWindowResize();
+  const [windowSize, isWindowResizing] = useWindowResize();
 
   useEffect(() => {
     if (!editingQuery && selectedQuery !== null && selectedQuery?.id !== 'draftQuery') {
@@ -66,7 +66,12 @@ const QueryPanel = ({
 
   useEffect(() => {
     updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
-  }, [windowSize.height, isExpanded]);
+    if (isWindowResizing) {
+      onQueryPaneDragging(true);
+    } else {
+      onQueryPaneDragging(false);
+    }
+  }, [windowSize.height, isExpanded, isWindowResizing]);
 
   const createDraftQuery = useCallback((queryDetails, source) => {
     setSelectedQuery(queryDetails.id, queryDetails);
