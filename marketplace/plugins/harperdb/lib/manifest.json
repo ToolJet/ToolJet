@@ -15,6 +15,9 @@
       "host": {
         "type": "string"
       },
+      "port": {
+        "type": "string"
+      },
       "username": {
         "type": "string"
       },
@@ -24,13 +27,35 @@
       }
     }
   },
-  "defaults": {},
+  "defaults": {
+    "port": {
+      "value": "9925"
+    },
+    "host": {
+      "value": "localhost"
+    },
+    "ssl_enabled": {
+      "value": false
+    }
+  },
   "properties": {
     "host": {
-      "label": "HarperDB Host",
+      "label": "Host",
       "key": "host",
       "type": "text",
-      "description": "Enter host url"
+      "description": "Enter host"
+    },
+    "port": {
+      "label": "Port",
+      "key": "port",
+      "type": "text",
+      "description": "Enter port"
+    },
+    "ssl_enabled": {
+      "label": "SSL",
+      "key": "ssl_enabled",
+      "type": "toggle",
+      "description": "Toggle to enable SSL"
     },
     "username": {
       "label": "Username",
@@ -47,6 +72,8 @@
   },
   "required": [
     "host",
+    "port",
+    "ssl_enabled",
     "username",
     "password"
   ]

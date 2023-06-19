@@ -1,5 +1,7 @@
 export type SourceOptions = {
   host: string;
+  port: string;
+  ssl_enabled: boolean;
   username: string;
   password: string;
 };

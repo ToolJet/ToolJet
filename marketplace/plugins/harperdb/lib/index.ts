@@ -73,11 +73,18 @@ export default class Harperdb implements QueryService {
     };
   }
 
+  determineProtocol(sourceOptions: SourceOptions) {
+    const { ssl_enabled} = sourceOptions;
+    if (ssl_enabled === undefined) return 'https';
+    return ssl_enabled ? 'https' : 'http';
+  }
+
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    const { host, username, password } = sourceOptions
+    const { host, port, username, password } = sourceOptions
+    const protocol = this.determineProtocol(sourceOptions);
 
     const DB_CONFIG = {
-      harperHost: host,
+      harperHost: `${protocol}://${host}:${port}`,
       username: username,
       password: password,
       token: '',
