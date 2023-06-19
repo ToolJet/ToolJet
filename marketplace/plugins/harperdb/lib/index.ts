@@ -39,10 +39,10 @@ export default class Harperdb implements QueryService {
   }
 
   async getConnection(sourceOptions: SourceOptions): Promise<any> {
-    const { host, username, password } = sourceOptions
+    const { host, port, protocol, username, password } = sourceOptions
 
     const DB_CONFIG = {
-      harperHost: host,
+      harperHost: `${protocol}://${host}:${port}`,
       username: username,
       password: password,
       token: '',
