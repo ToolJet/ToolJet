@@ -10642,6 +10642,10 @@ tbody {
 .jet-container-json-form {
   padding: 20px;
 
+  .DateRangePickerInput {
+    width: 100% !important;
+  }
+
   .dropzone {
     aside {
       width: 100% !important;

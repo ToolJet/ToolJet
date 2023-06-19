@@ -99,7 +99,7 @@ export const Form = function Form(props) {
       });
       Object.entries(JSONSchema?.properties).forEach(([key, value], index) => {
         if (uiComponentsDraft?.length > 0 && uiComponentsDraft[index * 2 + 1]) {
-          switch (value.type) {
+          switch (value?.type) {
             case 'TextInput':
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['backgroundColor']['value'] =
                 value?.styles?.backgroundColor ||
@@ -177,7 +177,6 @@ export const Form = function Form(props) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['backgroundColor']['value'] =
                 value?.styles?.backgroundColor ||
                 uiComponentsDraft[index * 2 + 1]['definition']['styles']['backgroundColor']['value'];
-
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor']['value'] =
                 value?.styles?.textColor ||
                 uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor']['value'];
@@ -201,11 +200,17 @@ export const Form = function Form(props) {
               break;
             case 'Text':
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['backgroundColor']['value'] =
-                value?.styles?.backgroundColor;
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor']['value'] = value?.styles?.textColor;
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['textSize']['value'] = value?.styles?.fontSize;
+                value?.styles?.backgroundColor ||
+                uiComponentsDraft[index * 2 + 1]['definition']['styles']['backgroundColor']['value'];
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor']['value'] =
+                value?.styles?.textColor ||
+                uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor']['value'];
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['textSize']['value'] =
+                value?.styles?.fontSize ||
+                uiComponentsDraft[index * 2 + 1]['definition']['styles']['textSize']['value'];
 
-              uiComponentsDraft[index * 2 + 1]['definition']['properties']['text']['value'] = value?.text;
+              uiComponentsDraft[index * 2 + 1]['definition']['properties']['text']['value'] =
+                value?.text || uiComponentsDraft[index * 2 + 1]['definition']['properties']['text']['value'];
               break;
             case 'NumberInput':
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['backgroundColor']['value'] =
@@ -299,7 +304,6 @@ export const Form = function Form(props) {
                 uiComponentsDraft[index * 2 + 1]['definition']['properties']['enableTime']['value'];
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['format']['value'] =
                 value?.format || uiComponentsDraft[index * 2 + 1]['definition']['properties']['format']['value'];
-
               break;
 
             case 'Checkbox':
@@ -321,7 +325,6 @@ export const Form = function Form(props) {
                 uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'];
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] =
                 value?.label || uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'];
-
               break;
 
             case 'RadioButton':
@@ -367,7 +370,6 @@ export const Form = function Form(props) {
                 uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'];
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] =
                 value?.label || uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'];
-
               break;
 
             case 'TextArea':
@@ -386,7 +388,6 @@ export const Form = function Form(props) {
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder']['value'] =
                 value?.placeholder ||
                 uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder']['value'];
-
               break;
 
             case 'DaterangePicker':
@@ -463,7 +464,6 @@ export const Form = function Form(props) {
                 value?.tooltips || uiComponentsDraft[index * 2 + 1]['definition']['properties']['tooltips']['value'];
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['visible']['value'] =
                 value?.visible || uiComponentsDraft[index * 2 + 1]['definition']['properties']['visible']['value'];
-
               break;
 
             case 'FilePicker':
@@ -505,14 +505,19 @@ export const Form = function Form(props) {
                 value?.parseFileType ||
                 uiComponentsDraft[index * 2 + 1]['definition']['properties']['parseFileType']['value'];
               break;
+            default:
+              return;
           }
-          uiComponentsDraft[index * 2]['definition']['properties']['text']['value'] = key;
+          // converting label/key as text input
+          uiComponentsDraft[index * 2]['definition']['properties']['text']['value'] = value?.label ?? key;
         }
       });
+      // adding title as first item
       if (JSONSchema?.title) {
         uiComponentsDraft.unshift(structuredClone(componentTypes.find((component) => component?.component == 'Text')));
         uiComponentsDraft[0]['definition']['properties']['text']['value'] = JSONSchema?.title;
       }
+      // adding submit button to end
       if (JSONSchema?.submitButton) {
         uiComponentsDraft.push(structuredClone(componentTypes.find((component) => component?.component == 'Button')));
         uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['backgroundColor']['value'] =
@@ -540,8 +545,12 @@ export const Form = function Form(props) {
         uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['properties']['text']['value'] =
           JSONSchema?.submitButton?.text;
       }
-
-      setUIComponents(uiComponentsDraft);
+      // filtering out undefined items
+      setUIComponents(
+        uiComponentsDraft.filter(function (element) {
+          return element !== undefined;
+        })
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(JSONSchema), advanced]);
@@ -672,13 +681,7 @@ export const Form = function Form(props) {
                 removeComponent={removeComponent}
                 onOptionChange={function ({ component, optionName, value, componentId }) {
                   if (componentId) {
-                    const optionData = {
-                      ...(childDataRef.current[componentId] ?? {}),
-                      name: component.name,
-                      [optionName]: value,
-                    };
-                    childDataRef.current = { ...childDataRef.current, [componentId]: optionData };
-                    setChildrenData(childDataRef.current);
+                    onOptionChange({ component, optionName, value, componentId });
                   }
                 }}
               />
