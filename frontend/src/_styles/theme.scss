@@ -150,7 +150,7 @@ button {
 
   .resizer-select,
   .resizer-active {
-    border: solid 1px $primary !important;
+    border: solid 1px $primary  !important;
 
     .top-right,
     .top-left,
@@ -636,7 +636,7 @@ button {
 
   .list-group.list-group-transparent.dark .all-apps-link,
   .list-group-item-action.dark.active {
-    background-color: $dark-background !important;
+    background-color: $dark-background  !important;
   }
 }
 
@@ -1306,7 +1306,7 @@ button {
   .select-search-dark input {
     width: 224px !important;
     height: 32px !important;
-    border-radius: $border-radius !important;
+    border-radius: $border-radius  !important;
   }
 }
 
@@ -1317,7 +1317,7 @@ button {
   .select-search__value input,
   .select-search-dark input {
     height: 32px !important;
-    border-radius: $border-radius !important;
+    border-radius: $border-radius  !important;
   }
 }
 
@@ -1378,7 +1378,7 @@ button {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  border-radius: $border-radius !important;
+  border-radius: $border-radius  !important;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
@@ -2906,8 +2906,9 @@ input:focus-visible {
   .was-validated .form-control:invalid {
     border-color: #ffb0b0;
   }
-  .form-check-input{
-    cursor:pointer;
+
+  .form-check-input {
+    cursor: pointer;
   }
 }
 
@@ -3697,7 +3698,7 @@ input[type="text"] {
 
 .nav-tabs .nav-link.active {
   font-weight: 400 !important;
-  color: $primary !important;
+  color: $primary  !important;
 }
 
 .empty {
@@ -4212,7 +4213,7 @@ input[type="text"] {
 
 .tabs-inspector.dark {
   .nav-link.active {
-    border-bottom: 1px solid $primary !important;
+    border-bottom: 1px solid $primary  !important;
   }
 }
 
@@ -4447,7 +4448,7 @@ input[type="text"] {
   }
 
   input {
-    border-radius: $border-radius !important;
+    border-radius: $border-radius  !important;
     padding-left: 1.75rem !important;
   }
 }
@@ -4611,11 +4612,11 @@ input[type="text"] {
 }
 
 .modal-content.home-modal-component.dark {
-  background-color: $bg-dark-light !important;
-  color: $white !important;
+  background-color: $bg-dark-light  !important;
+  color: $white  !important;
 
   .modal-header {
-    background-color: $bg-dark-light !important;
+    background-color: $bg-dark-light  !important;
   }
 
   .btn-close {
@@ -4623,22 +4624,22 @@ input[type="text"] {
   }
 
   .form-control {
-    border-color: $border-grey-dark !important;
+    border-color: $border-grey-dark  !important;
     color: inherit;
   }
 
   input {
-    background-color: $bg-dark-light !important;
+    background-color: $bg-dark-light  !important;
   }
 
   .form-select {
-    background-color: $bg-dark !important;
-    color: $white !important;
-    border-color: $border-grey-dark !important;
+    background-color: $bg-dark  !important;
+    color: $white  !important;
+    border-color: $border-grey-dark  !important;
   }
 
   .text-muted {
-    color: $white !important;
+    color: $white  !important;
   }
 }
 
@@ -4933,7 +4934,7 @@ div#driver-page-overlay {
 }
 
 .dark-theme-walkthrough#driver-popover-item {
-  background-color: $bg-dark-light !important;
+  background-color: $bg-dark-light  !important;
   border-color: rgba(101, 109, 119, 0.16) !important;
 
   .driver-popover-title {
@@ -4941,7 +4942,7 @@ div#driver-page-overlay {
   }
 
   .driver-popover-tip {
-    border-color: transparent transparent transparent $bg-dark-light !important;
+    border-color: transparent transparent transparent $bg-dark-light  !important;
   }
 
   .driver-popover-description {
@@ -4973,7 +4974,7 @@ div#driver-page-overlay {
 
   .driver-next-btn,
   .driver-prev-btn {
-    color: $primary !important;
+    color: $primary  !important;
   }
 
   .driver-disabled {
@@ -5422,7 +5423,7 @@ div#driver-page-overlay {
   }
 
   .selected-node {
-    border-color: $primary-light !important;
+    border-color: $primary-light  !important;
   }
 
   .json-tree-icon-container .selected-node>svg:first-child {
@@ -5512,7 +5513,7 @@ div#driver-page-overlay {
   }
 
   .selected-node {
-    border-color: $primary-light !important;
+    border-color: $primary-light  !important;
   }
 
   .selected-node .group-object-container .badge {
@@ -5779,7 +5780,7 @@ div#driver-page-overlay {
 
 //Kanban board
 .kanban-container.dark-themed {
-  background-color: $bg-dark-light !important;
+  background-color: $bg-dark-light  !important;
 
   .kanban-column {
     .card-header {
@@ -5825,7 +5826,7 @@ div#driver-page-overlay {
     }
 
     .dnd-card.card.card-dark {
-      background-color: $bg-dark !important;
+      background-color: $bg-dark  !important;
     }
   }
 
@@ -10640,6 +10641,12 @@ tbody {
 
 .jet-container-json-form {
   padding: 20px;
+
+  .dropzone {
+    aside {
+      width: 100% !important;
+    }
+  }
 
   fieldset {
     width: 100%;
