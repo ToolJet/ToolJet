@@ -193,7 +193,7 @@ export const DropDown = function DropDown({
       const styles = darkMode
         ? {
             color: state.isDisabled ? '#88909698' : 'white',
-            backgroundColor: state.value === currentValue ? '#3650AF' : '#1f283793',
+            backgroundColor: state.value === currentValue ? '#3650AF' : 'rgb(31,40,55)',
             ':hover': {
               backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? '#1F2E64' : '#323C4B',
             },
