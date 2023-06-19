@@ -208,6 +208,9 @@ export const Form = function Form(props) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['textSize']['value'] =
                 value?.styles?.fontSize ||
                 uiComponentsDraft[index * 2 + 1]['definition']['styles']['textSize']['value'];
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['fontWeight']['value'] =
+                value?.styles?.fontWeight ||
+                uiComponentsDraft[index * 2 + 1]['definition']['styles']['fontWeight']['value'];
 
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['text']['value'] =
                 value?.text || uiComponentsDraft[index * 2 + 1]['definition']['properties']['text']['value'];
@@ -516,6 +519,8 @@ export const Form = function Form(props) {
       if (JSONSchema?.title) {
         uiComponentsDraft.unshift(structuredClone(componentTypes.find((component) => component?.component == 'Text')));
         uiComponentsDraft[0]['definition']['properties']['text']['value'] = JSONSchema?.title;
+        uiComponentsDraft[0]['definition']['styles']['textSize']['value'] = 20;
+        uiComponentsDraft[0]['definition']['styles']['fontWeight']['value'] = 'bolder';
       }
       // adding submit button to end
       if (JSONSchema?.submitButton) {

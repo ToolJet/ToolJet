@@ -5654,7 +5654,7 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         advanced: { value: '{{false}}' },
         JSONSchema: {
           value:
-            "{{{title: 'A registration form', properties: {firstname: {type: 'TextInput','value': 'Kiran',  styles: {backgroundColor: 'indigo',textColor: 'black',fontSize: '22px' },},lastname: {type: 'TextInput','value': 'Ashok',  styles: {backgroundColor: 'orange',textColor: 'black',fontSize: '22px' }}}, submitButton: {value: 'Submit', styles: {hidden: false}}}}}",
+            "{{{title: 'User registration form', properties: {firstname: {type: 'TextInput','value': 'Maria',label:'First nane', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'TextInput','value': 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'NumberInput'},}, submitButton: {text: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}}}}",
         },
       },
       events: [],
