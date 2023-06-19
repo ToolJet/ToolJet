@@ -37,9 +37,9 @@ export class BackFillCurrentEnvironmentId1686829426671 implements MigrationInter
               currentEnvironmentId: productionEnvironment.id,
             }
           );
-          migrationProgress.show();
         }
       }
+      migrationProgress.show();
     }
   }
 

@@ -26,8 +26,8 @@ export class BackFillAppEnvironmentsPriorityColumn1686826460358 implements Migra
           (defaultAppEnvironment) => defaultAppEnvironment.name === appEnvironment.name
         ).priority;
         await manager.query('UPDATE app_environments SET priority = $1 WHERE id = $2;', [priority, appEnvironment.id]);
-        migrationProgress.show();
       }
+      migrationProgress.show();
     }
   }
 
