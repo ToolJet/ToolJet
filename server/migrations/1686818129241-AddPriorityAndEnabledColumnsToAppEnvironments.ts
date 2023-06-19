@@ -8,6 +8,7 @@ export class AddPriorityAndEnabledColumnsToAppEnvironments1686818129241 implemen
         name: 'priority',
         type: 'integer',
         isNullable: true,
+        default: 1,
       })
     );
 
