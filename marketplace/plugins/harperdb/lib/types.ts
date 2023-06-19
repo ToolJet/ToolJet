@@ -16,4 +16,8 @@ export type QueryOptions = {
   attributes: string;
   search_attribute: string;
   search_value: string;
+  operator: string;
+  offset: string;
+  limit: string;
+  conditions: string;
 };

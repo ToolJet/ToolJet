@@ -59,6 +59,19 @@ export default class Harperdb implements QueryService {
             })
             break;
           }
+          case 'search_by_conditions': {
+            result = await harperdbClient.executeOperation({
+              operation: "search_by_conditions",
+              schema: queryOptions.schema,
+              table: queryOptions.table,
+              operator: queryOptions.operator,
+              offset: queryOptions.offset,
+              limit: queryOptions.limit,
+              get_attributes: JSON5.parse(queryOptions.attributes),
+              conditions: JSON5.parse(queryOptions.conditions)
+            })
+          }
+            break;
           default:
             break;
         }
@@ -74,7 +87,7 @@ export default class Harperdb implements QueryService {
   }
 
   determineProtocol(sourceOptions: SourceOptions) {
-    const { ssl_enabled} = sourceOptions;
+    const { ssl_enabled } = sourceOptions;
     if (ssl_enabled === undefined) return 'https';
     return ssl_enabled ? 'https' : 'http';
   }
