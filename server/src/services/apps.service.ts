@@ -206,11 +206,20 @@ export class AppsService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (updatableParams.currentVersionId) {
         //check if the app version is eligible for release
-        const result = await manager.query(
-          'SELECT app_environments.id, app_environments.default FROM app_environments INNER JOIN app_versions ON app_versions.current_environment_id = app_environments.id;'
-        );
-        const currentEnvironment = result[0];
-        if (!currentEnvironment?.default) {
+        const currentEnvironment: AppEnvironment = await manager
+          .createQueryBuilder(AppEnvironment, 'app_environments')
+          .select(['app_environments.id', 'app_environments.isDefault'])
+          .innerJoinAndSelect(
+            'app_versions',
+            'app_versions',
+            'app_versions.current_environment_id = app_environments.id'
+          )
+          .where('app_versions.id = :currentVersionId', {
+            currentVersionId,
+          })
+          .getOne();
+
+        if (!currentEnvironment?.isDefault) {
           throw new BadRequestException('You can only release when the version is promoted to production');
         }
       }
@@ -549,30 +558,37 @@ export class AppsService {
     }
   }
 
-  async updateVersion(version: AppVersion, body: VersionEditDto) {
+  async updateVersion(version: AppVersion, body: VersionEditDto, organizationId: string) {
+    const { name, currentEnvironmentId, definition } = body;
+    let currentEnvironment: AppEnvironment;
+
     if (version.id === version.app.currentVersionId && !body?.is_user_switched_version)
       throw new BadRequestException('You cannot update a released version');
 
+    if (currentEnvironmentId || definition) {
+      currentEnvironment = await AppEnvironment.findOne({
+        where: { id: version.currentEnvironmentId },
+      });
+    }
+
     const editableParams = {};
-    if (body.name) {
+    if (name) {
       //means user is trying to update the name
       const versionNameExists = await this.appVersionsRepository.findOne({
-        where: { name: body.name, appId: version.appId },
+        where: { name, appId: version.appId },
       });
 
       if (versionNameExists) {
         throw new BadRequestException('Version name already exists.');
       }
-      editableParams['name'] = body.name;
+      editableParams['name'] = name;
     }
 
     //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
-    if (body.currentEnvironmentId) {
-      const { currentEnvironmentId } = body;
+    if (currentEnvironmentId) {
       if (version.currentEnvironmentId !== currentEnvironmentId) {
         throw new NotAcceptableException();
       }
-      const currentEnvironment = await AppEnvironment.findOne(version.currentEnvironmentId);
       const nextEnvironment = await AppEnvironment.findOne({
         select: ['id'],
         where: {
@@ -583,13 +599,16 @@ export class AppsService {
       editableParams['currentEnvironmentId'] = nextEnvironment.id;
     }
 
-    if (body.definition) {
-      const environments = await AppEnvironment.count();
-      const currentEnvironment = await AppEnvironment.findOne(version.currentEnvironmentId);
+    if (definition) {
+      const environments = await AppEnvironment.count({
+        where: {
+          organizationId,
+        },
+      });
       if (editableParams['definition'] && environments > 1 && currentEnvironment.priority !== 1) {
         throw new BadRequestException('You cannot update a promoted version');
       }
-      editableParams['definition'] = body.definition;
+      editableParams['definition'] = definition;
     }
 
     editableParams['updatedAt'] = new Date();

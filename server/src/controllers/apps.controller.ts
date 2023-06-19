@@ -310,7 +310,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.appsService.updateVersion(version, versionEditDto);
+    await this.appsService.updateVersion(version, versionEditDto, app.organizationId);
     return;
   }
 
