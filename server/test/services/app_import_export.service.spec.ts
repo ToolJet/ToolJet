@@ -89,8 +89,8 @@ describe('AppImportExportService', () => {
         name: 'sample app',
         isPublic: true,
       });
-      const appVersion1 = await createApplicationVersion(nestApp, application, { name: 'v1', definition: {} });
       await createAppEnvironments(nestApp, adminUser.organizationId);
+      const appVersion1 = await createApplicationVersion(nestApp, application, { name: 'v1', definition: {} });
       const dataSource1 = await createDataSource(nestApp, {
         appVersion: appVersion1,
         kind: 'test_kind',

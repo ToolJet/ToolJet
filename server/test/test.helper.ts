@@ -140,6 +140,7 @@ export async function createApplicationVersion(nestApp, application, { name = 'v
   let appVersionsRepository: Repository<AppVersion>;
   let appEnvironmentsRepository: Repository<AppEnvironment>;
   appVersionsRepository = nestApp.get('AppVersionRepository');
+  appEnvironmentsRepository = nestApp.get('AppEnvironmentRepository');
 
   const environments = await appEnvironmentsRepository.find({
     where: {
@@ -683,8 +684,8 @@ export const generateAppDefaults = async (
     isPublic: isAppPublic,
   });
 
-  const appVersion = await createApplicationVersion(app, application);
   const appEnvironments = await createAppEnvironments(app, user.organizationId);
+  const appVersion = await createApplicationVersion(app, application);
 
   let dataQuery: any;
   let dataSource: any;
