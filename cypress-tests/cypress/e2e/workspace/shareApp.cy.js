@@ -114,7 +114,7 @@ describe("App share functionality", () => {
 
     navigateToAppEditor(data.appName);
     cy.reload();
-    cy.wait(1000);
+    cy.wait(2000);
     cy.skipEditorPopover();
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.get(commonWidgetSelector.makePublicAppToggle).check();
