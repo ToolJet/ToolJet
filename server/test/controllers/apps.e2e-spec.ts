@@ -1125,9 +1125,15 @@ describe('apps controller', () => {
           const loggedUser = await authenticateUser(app);
           adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-          const application = await createApplication(app, {
-            user: adminUserData.user,
-          });
+          const appEnvironments = await createAppEnvironments(app, adminUserData.user.organizationId);
+
+          const application = await createApplication(
+            app,
+            {
+              user: adminUserData.user,
+            },
+            false
+          );
 
           //create first version and default app environments
           const version = await createApplicationVersion(app, application);
@@ -1137,8 +1143,6 @@ describe('apps controller', () => {
             kind: 'postgres',
             appVersion: version,
           });
-
-          const appEnvironments = await createAppEnvironments(app, adminUserData.user.organizationId);
 
           await createDataSourceOption(app, {
             dataSource,

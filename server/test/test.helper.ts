@@ -106,11 +106,15 @@ export async function clearDB() {
   }
 }
 
-export async function createApplication(nestApp, { name, user, isPublic, slug }: any) {
+export async function createApplication(nestApp, { name, user, isPublic, slug }: any, shouldCreateEnvs = true) {
   let appRepository: Repository<App>;
   appRepository = nestApp.get('AppRepository');
 
   user = user || (await (await createUser(nestApp, {})).user);
+
+  if (shouldCreateEnvs) {
+    await createAppEnvironments(nestApp, user.organizationId);
+  }
 
   const newApp = await appRepository.save(
     appRepository.create({
@@ -678,11 +682,15 @@ export const generateAppDefaults = async (
   user: any,
   { isQueryNeeded = true, isDataSourceNeeded = true, isAppPublic = false, dsKind = 'restapi', dsOptions = [{}] }
 ) => {
-  const application = await createApplication(app, {
-    name: 'name',
-    user: user,
-    isPublic: isAppPublic,
-  });
+  const application = await createApplication(
+    app,
+    {
+      name: 'name',
+      user: user,
+      isPublic: isAppPublic,
+    },
+    false
+  );
 
   const appEnvironments = await createAppEnvironments(app, user.organizationId);
   const appVersion = await createApplicationVersion(app, application);
