@@ -1,7 +1,7 @@
 /* eslint-disable import/no-named-as-default */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { HeaderSection } from '@/_ui/LeftSidebar';
+import { HeaderSection, Button } from '@/_ui/LeftSidebar';
 import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
@@ -28,11 +28,19 @@ export const LeftSidebarDataSources = ({
   showDataSourceManagerModal,
   isVersionReleased,
   setReleasedVersionPopupState,
+  onDeleteofAllDataSources,
+  setPinned,
+  pinned,
 }) => {
   const dataSources = useDataSources();
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
+  useEffect(() => {
+    if (dataSources.length === 0) {
+      onDeleteofAllDataSources();
+    }
+  }, [dataSources.length]);
 
   const { admin } = authenticationService.currentSessionValue;
 
@@ -202,6 +210,8 @@ export const LeftSidebarDataSources = ({
         toggleDataSourceManagerModal={toggleDataSourceManagerModal}
         isVersionReleased={isVersionReleased}
         setReleasedVersionPopupState={setReleasedVersionPopupState}
+        setPinned={setPinned}
+        pinned={pinned}
       />
       <DataSourceManager
         appId={appId}
@@ -227,12 +237,29 @@ const LeftSidebarDataSourcesContainer = ({
   dataSources = [],
   isVersionReleased,
   setReleasedVersionPopupState,
+  setPinned,
+  pinned,
 }) => {
   const { t } = useTranslation();
   return (
     <div>
       <HeaderSection darkMode={darkMode}>
-        <HeaderSection.PanelHeader title="Datasources"></HeaderSection.PanelHeader>
+        <HeaderSection.PanelHeader title="Datasources">
+          <div className="d-flex justify-content-end">
+            <Button
+              title={`${pinned ? 'Unpin' : 'Pin'}`}
+              onClick={() => setPinned(!pinned)}
+              darkMode={darkMode}
+              size="sm"
+              styles={{ width: '28px', padding: 0 }}
+            >
+              <Button.Content
+                iconSrc={`assets/images/icons/editor/left-sidebar/pinned${pinned ? 'off' : ''}.svg`}
+                direction="left"
+              />
+            </Button>
+          </div>
+        </HeaderSection.PanelHeader>
       </HeaderSection>
       <div className="card-body pb-5">
         <div className="d-flex w-100 flex-column align-items-start">

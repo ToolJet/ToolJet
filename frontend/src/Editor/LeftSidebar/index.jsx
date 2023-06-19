@@ -244,6 +244,12 @@ export const LeftSidebar = forwardRef((props, ref) => {
         showDataSourceManagerModal={showDataSourceManagerModal}
         isVersionReleased={isVersionReleased}
         setReleasedVersionPopupState={setReleasedVersionPopupState}
+        onDeleteofAllDataSources={() => {
+          setSelectedSidebarItem();
+          setPinned(false);
+        }}
+        setPinned={handlePin}
+        pinned={pinned}
       />
     ),
     debugger: (
