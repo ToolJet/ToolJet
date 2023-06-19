@@ -1,6 +1,7 @@
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { Organization } from 'src/entities/organization.entity';
+import { MigrationProgress } from 'src/helpers/utils.helper';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
 export class BackFillCurrentEnvironmentId1686829426671 implements MigrationInterface {
@@ -14,6 +15,8 @@ export class BackFillCurrentEnvironmentId1686829426671 implements MigrationInter
       select: ['id', 'appEnvironments'],
       relations: ['appEnvironments'],
     });
+
+    const migrationProgress = new MigrationProgress('BackFillCurrentEnvironmentId1686829426671', organizations.length);
 
     for (const organization of organizations) {
       const productionEnvironment = organization.appEnvironments.find((appEnvironment) => appEnvironment.isDefault);
@@ -34,6 +37,7 @@ export class BackFillCurrentEnvironmentId1686829426671 implements MigrationInter
               currentEnvironmentId: productionEnvironment.id,
             }
           );
+          migrationProgress.show();
         }
       }
     }

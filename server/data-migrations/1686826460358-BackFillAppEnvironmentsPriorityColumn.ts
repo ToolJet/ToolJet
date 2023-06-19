@@ -1,5 +1,5 @@
 import { Organization } from 'src/entities/organization.entity';
-import { defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { defaultAppEnvironments, MigrationProgress } from 'src/helpers/utils.helper';
 import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
 
 export class BackFillAppEnvironmentsPriorityColumn1686826460358 implements MigrationInterface {
@@ -14,6 +14,11 @@ export class BackFillAppEnvironmentsPriorityColumn1686826460358 implements Migra
       .leftJoinAndSelect('organizations.appEnvironments', 'appEnvironments')
       .getMany();
 
+    const migrationProgress = new MigrationProgress(
+      'BackFillAppEnvironmentsPriorityColumn1686826460358',
+      organizations.length
+    );
+
     for (const { appEnvironments } of organizations) {
       for (const appEnvironment of appEnvironments) {
         console.log('Updating app environment =>', appEnvironment.id);
@@ -21,6 +26,7 @@ export class BackFillAppEnvironmentsPriorityColumn1686826460358 implements Migra
           (defaultAppEnvironment) => defaultAppEnvironment.name === appEnvironment.name
         ).priority;
         await manager.query('UPDATE app_environments SET priority = $1 WHERE id = $2;', [priority, appEnvironment.id]);
+        migrationProgress.show();
       }
     }
   }
