@@ -1080,7 +1080,7 @@ export function Table({
                       const selectedRow = row.original;
                       const selectedRowId = row.id;
                       setExposedVariables({ selectedRow, selectedRowId }).then(() => {
-                        if (allowSelection && highlightSelectedRow) mergeToTableDetails({ selectedRow, selectedRowId });
+                        if (allowSelection) mergeToTableDetails({ selectedRow, selectedRowId });
                         fireEvent('onRowClicked');
                       });
                     }}
