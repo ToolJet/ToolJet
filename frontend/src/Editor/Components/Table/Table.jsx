@@ -211,7 +211,7 @@ export function Table({
 
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
-
+    fireEvent('onCellValueChanged');
     return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
   }
 
