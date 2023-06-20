@@ -192,19 +192,19 @@ export const DropDown = function DropDown({
     option: (provided, state) => {
       const styles = darkMode
         ? {
-            color: state.isDisabled ? '#889096' : 'white',
+            color: state.isDisabled ? '#88909698' : 'white',
             backgroundColor: state.value === currentValue ? '#3650AF' : 'rgb(31,40,55)',
             ':hover': {
-              backgroundColor: state.isDisabled ? '#F1F3F5' : state.value === currentValue ? '#1F2E64' : '#323C4B',
+              backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? '#1F2E64' : '#323C4B',
             },
             maxWidth: 'auto',
             minWidth: 'max-content',
           }
         : {
             backgroundColor: state.value === currentValue ? '#7A95FB' : 'white',
-            color: state.isDisabled ? '#889096' : state.value === currentValue ? 'white' : 'black',
+            color: state.isDisabled ? '#88909694' : state.value === currentValue ? 'white' : 'black',
             ':hover': {
-              backgroundColor: state.isDisabled ? '#F1F3F5' : state.value === currentValue ? '#3650AF' : '#d8dce9',
+              backgroundColor: state.isDisabled ? 'transparent' : state.value === currentValue ? '#3650AF' : '#d8dce9',
             },
             maxWidth: 'auto',
             minWidth: 'max-content',
