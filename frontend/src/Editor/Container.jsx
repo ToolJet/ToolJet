@@ -47,7 +47,6 @@ export const Container = ({
   currentPageId,
   isVersionReleased,
   setReleasedVersionPopupState,
-  allComponents,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -565,7 +564,6 @@ export const Container = ({
                 childComponents,
                 isVersionReleased,
                 setReleasedVersionPopupState,
-                allComponents,
               }}
               isVersionReleased={isVersionReleased}
             />
