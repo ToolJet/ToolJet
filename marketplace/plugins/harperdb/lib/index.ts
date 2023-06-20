@@ -64,9 +64,9 @@ export default class Harperdb implements QueryService {
               operation: "search_by_conditions",
               schema: queryOptions.schema,
               table: queryOptions.table,
-              operator: queryOptions.operator,
-              offset: queryOptions.offset,
-              limit: queryOptions.limit,
+              ...(queryOptions?.operator && {operator: queryOptions.operator}),
+              ...(queryOptions?.offset && {offset: queryOptions.offset}),
+              ...(queryOptions?.limit && { limit: queryOptions.limit }),
               get_attributes: JSON5.parse(queryOptions.attributes),
               conditions: JSON5.parse(queryOptions.conditions)
             })
