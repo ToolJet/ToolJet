@@ -419,7 +419,7 @@ class ViewerComponent extends React.Component {
   };
 
   setWindowTitle(name) {
-    document.title = name ?? 'Untitled App';
+    document.title = name ?? 'My App';
   }
 
   computeCanvasBackgroundColor = () => {

@@ -8,7 +8,6 @@ var tinycolor = require('tinycolor2');
 export const Modal = function Modal({
   id,
   component,
-  height,
   containerProps,
   darkMode,
   properties,
@@ -18,8 +17,10 @@ export const Modal = function Modal({
   registerAction,
   fireEvent,
   dataCy,
+  height,
 }) {
   const [showModal, setShowModal] = useState(false);
+
   const {
     closeOnClickingOutside = false,
     hideOnEsc,
@@ -28,6 +29,7 @@ export const Modal = function Modal({
     loadingState,
     useDefaultButton,
     triggerButtonLabel,
+    modalHeight,
   } = properties;
   const {
     headerBackgroundColor,
@@ -67,14 +69,69 @@ export const Modal = function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exposedVariables.show]);
 
+  useEffect(() => {
+    const handleModalOpen = () => {
+      const canvasElement = document.getElementsByClassName('canvas-area')[0];
+      const modalBackdropEl = document.getElementsByClassName('modal-backdrop')[0];
+      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+      const modalCanvasEl = document.getElementById(`canvas-${id}`);
+
+      if (canvasElement && modalBackdropEl) {
+        canvasElement.style.height = '100vh';
+        canvasElement.style.maxHeight = '100vh';
+        canvasElement.style.minHeight = '100vh';
+        canvasElement.style.height = '100vh';
+        modalCanvasEl.style.height = modalHeight;
+
+        realCanvasEl.style.height = '100vh';
+
+        canvasElement?.classList?.add('freeze-scroll');
+        modalBackdropEl.style.height = '100vh';
+        modalBackdropEl.style.minHeight = '100vh';
+        modalBackdropEl.style.minHeight = '100vh';
+      }
+    };
+
+    const handleModalClose = () => {
+      const canvasElement = document.getElementsByClassName('canvas-area')[0];
+      const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+
+      if (canvasElement) {
+        canvasElement.style.height = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
+        canvasElement.style.minHeight = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
+        canvasElement.style.maxHeight = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
+
+        realCanvasEl.style.maxHeight = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
+
+        canvasElement?.classList?.remove('freeze-scroll');
+      }
+    };
+    if (showModal) {
+      handleModalOpen();
+    } else {
+      if (document.getElementsByClassName('modal-content')[0] == undefined) {
+        handleModalClose();
+      }
+    }
+
+    // Cleanup the effect
+    return () => {
+      if (document.getElementsByClassName('modal-content')[0] == undefined) {
+        handleModalClose();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal, modalHeight]);
+
   function hideModal() {
     setShowModal(false);
     setExposedVariable('show', false).then(() => fireEvent('onClose'));
   }
+  const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
 
   const customStyles = {
     modalBody: {
-      height,
+      height: backwardCompatibilityCheck ? modalHeight : height,
       backgroundColor:
         ['#fff', '#ffffffff'].includes(bodyBackgroundColor) && darkMode ? '#1F2837' : bodyBackgroundColor,
       overflowX: 'hidden',

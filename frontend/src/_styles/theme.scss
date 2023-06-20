@@ -1171,27 +1171,32 @@ button {
 }
 
 .component-action-select {
-  .css-zz6spl-container{
+  .css-zz6spl-container {
     width: inherit;
   }
-  &.fx-container-eventmanager{
+
+  &.fx-container-eventmanager {
     .fx-common {
       right: 0;
     }
-    .custom-row{
-      width:100%
+
+    .custom-row {
+      width: 100%
     }
   }
-  .codeShow-active{
+
+  .codeShow-active {
     display: flex;
     flex-direction: row-reverse;
     justify-content: space-between;
-    .custom-row{
+
+    .custom-row {
       width: 75%;
     }
   }
-  .row.fx-container{
-    .col{
+
+  .row.fx-container {
+    .col {
       display: flex;
     }
   }
@@ -1813,7 +1818,7 @@ button {
       padding: 10px;
       margin-left: -9px;
       background: white;
-      box-shadow: rgba(15, 15, 15, 0/05) 0px 0px 0px 1px,
+      box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px,
         rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
       white-space: initial;
     }
@@ -2571,8 +2576,20 @@ hr {
   height: 28px !important;
 }
 
+.editor {
+  .modal-dialog {
+    overflow-y: initial !important
+  }
+
+  .modal-dialog-scrollable .modal-content {
+    max-height: 88% !important;
+  }
+
+}
+
+
 .modal-component {
-  margin-top: 150px;
+
 
   .modal-body {
     padding: 0;
@@ -4570,10 +4587,6 @@ input[type="text"] {
     color: #fff;
     background-color: #232e3c !important;
   }
-}
-
-.onboarding-modal.dark .modal-content {
-  @extend .modal-content.home-modal-component.dark;
 }
 
 .modal-content.home-modal-component.dark-theme {
@@ -7080,6 +7093,7 @@ tbody {
   display: grid !important;
   grid-template-rows: auto 1fr auto !important;
 }
+
 .marketplace-page-sidebar {
   height: calc(100vh - 64px);
   max-width: 288px;
@@ -7513,6 +7527,16 @@ tbody {
 
   &:focus {
     box-shadow: 0px 0px 0px 4px #DFE3E6;
+  }
+
+  .tj-text-xsm {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;  
+  }
+
+  .tj-folder-list {
+    display: block;
   }
 }
 
@@ -10287,31 +10311,38 @@ tbody {
   }
 
   .error-shake {
-    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+    animation: shake 0.82s cubic-bezier(.36, .07, .19, .97) both;
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
     perspective: 10000px;
   }
 
   @keyframes shake {
-    10%, 90% {
+
+    10%,
+    90% {
       transform: translate3d(-1px, 0, 0);
     }
 
-    20%, 80% {
+    20%,
+    80% {
       transform: translate3d(2px, 0, 0);
     }
 
-    30%, 50%, 70% {
+    30%,
+    50%,
+    70% {
       transform: translate3d(-4px, 0, 0);
     }
 
-    40%, 60% {
+    40%,
+    60% {
       transform: translate3d(4px, 0, 0);
     }
   }
 
 }
+
 .profile-page-content-wrap {
   background-color: var(--slate2);
   padding-top: 40px;
@@ -10532,6 +10563,7 @@ tbody {
   }
 }
 
+
 .workspace-folder-modal {
   .tj-app-input {
     padding-bottom: 0px !important;
@@ -10547,16 +10579,18 @@ tbody {
   }
 }
 
-.table-editor-component-row{
-  .rdt.cell-type-datepicker{
+.table-editor-component-row {
+  .rdt.cell-type-datepicker {
     margin-top: 0;
   }
-  .has-multiselect{
-    .select-search-input{
+
+  .has-multiselect {
+    .select-search-input {
       margin-bottom: 0;
     }
   }
 }
+
 .theme-dark .card-container {
   background-color: #121212 !important
 }
@@ -10566,5 +10600,31 @@ tbody {
     .react-select__menu-list {
       max-height: 150px;
     }
+  }
+}
+
+.workspace-folder-modal {
+  .tj-app-input {
+    padding-bottom: 0px !important;
+  }
+
+  .tj-input-error {
+    height: 32px;
+    color: #ED5F00;
+    font-weight: 400;
+    font-size: 10px;
+    height: 0px;
+    padding: 4px 0px 20px 0px;
+  }
+}
+.jet-container-loading {
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+}
+
+.freeze-scroll {
+  #real-canvas {
+    overflow: hidden;
   }
 }

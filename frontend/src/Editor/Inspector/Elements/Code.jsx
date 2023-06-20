@@ -1,5 +1,7 @@
 import React from 'react';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import _ from 'lodash';
+import { resolveReferences } from '@/_helpers/utils';
 
 export const Code = ({
   param,
@@ -14,7 +16,24 @@ export const Code = ({
   fxActive,
   component,
 }) => {
-  const initialValue = definition ? definition.value : '';
+  const getDefinitionForNewProps = (param) => {
+    if (['showAddNewRowButton', 'allowSelection'].includes(param)) {
+      if (param === 'allowSelection') {
+        const highlightSelectedRow = component?.component?.definition?.properties?.highlightSelectedRow?.value ?? false;
+        const showBulkSelector = component?.component?.definition?.properties?.showBulkSelector?.value ?? false;
+        const allowSelection =
+          resolveReferences(highlightSelectedRow, currentState) || resolveReferences(showBulkSelector, currentState);
+
+        return '{{' + `${allowSelection}` + '}}';
+      } else {
+        return '{{true}}';
+      }
+    } else {
+      return '';
+    }
+  };
+
+  const initialValue = !_.isEmpty(definition) ? definition.value : getDefinitionForNewProps(param.name);
   const paramMeta = componentMeta[paramType][param.name];
   const displayName = paramMeta.displayName || param.name;
 

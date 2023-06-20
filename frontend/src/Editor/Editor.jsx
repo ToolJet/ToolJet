@@ -146,7 +146,7 @@ class EditorComponent extends React.Component {
   }
 
   setWindowTitle(name) {
-    document.title = name ? `${name} - Tooljet` : `Untitled App - Tooljet`;
+    document.title = name ? `${name} - Tooljet` : `My App - Tooljet`;
   }
 
   onVersionDelete = () => {
@@ -1123,8 +1123,16 @@ class EditorComponent extends React.Component {
       i++;
     }
 
+    const newPageData = cloneDeep(currentPage);
+    if (!isEmpty(currentPage?.components)) {
+      newPageData.components = Object.keys(newPageData.components).reduce((acc, key) => {
+        acc[uuid()] = newPageData.components[key];
+        return acc;
+      }, {});
+    }
+
     const newPage = {
-      ...cloneDeep(currentPage),
+      ...newPageData,
       name: newPageName,
       handle: newPageHandle,
     };
