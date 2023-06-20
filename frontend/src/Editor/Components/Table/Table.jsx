@@ -642,7 +642,7 @@ export function Table({
       if (!_.isEmpty(tableDetails.selectedRow)) {
         const selectedRowDetails = { selectedRow: {}, selectedRowId: {} };
         setExposedVariables(selectedRowDetails).then(() => {
-          if (allowSelection && !highlightSelectedRow) toggleRowSelected(tableDetails.selectedRowId, false);
+          if (allowSelection && !showBulkSelector) toggleRowSelected(tableDetails.selectedRowId, false);
           mergeToTableDetails(selectedRowDetails);
         });
       }
@@ -1080,7 +1080,7 @@ export function Table({
                       const selectedRow = row.original;
                       const selectedRowId = row.id;
                       setExposedVariables({ selectedRow, selectedRowId }).then(() => {
-                        if (allowSelection && highlightSelectedRow) mergeToTableDetails({ selectedRow, selectedRowId });
+                        mergeToTableDetails({ selectedRow, selectedRowId });
                         fireEvent('onRowClicked');
                       });
                     }}
