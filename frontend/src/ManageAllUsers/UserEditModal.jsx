@@ -29,11 +29,11 @@ const UserEditModal = ({ showModal, darkMode, hideModal, translator, updatingUse
         className={`${darkMode && 'dark-mode'} user-edit-modal`}
       >
         <Modal.Header>
-          <Modal.Title className="text-center">
+          <Modal.Title className="text-center" data-cy="modal-title">
             {translator('header.organization.menus.manageAllUsers.updateUser', 'Update User')}:{' '}
             {`${updatingUser?.name} (${updatingUser?.email})`}
           </Modal.Title>
-          <div className="close-button cursor-pointer" onClick={hideModal}>
+          <div className="close-button cursor-pointer" onClick={hideModal} data-cy="modal-close-button">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon icon-tabler icon-tabler-x"
@@ -62,9 +62,9 @@ const UserEditModal = ({ showModal, darkMode, hideModal, translator, updatingUse
                   type="checkbox"
                   onChange={(event) => changeOptions('userType', event.target.checked)}
                   checked={options?.userType === 'instance'}
-                  data-cy="form-check-input"
+                  data-cy="super-admin-form-check-input"
                 />
-                <span className="form-check-label" data-cy="form-check-label">
+                <span className="form-check-label" data-cy="super-admin-form-check-label">
                   {translator(
                     'header.organization.menus.manageSSO.generalSettings.superadminSwitch',
                     'Make the user super admin'

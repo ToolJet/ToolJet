@@ -106,7 +106,9 @@ export function OpenId({ settings, updateData }) {
       <div className="card-body">
         <form noValidate className="sso-form-wrap">
           <div className="form-group mb-3">
-            <label className="form-label">Name</label>
+            <label className="form-label" data-cy="name-label">
+              Name
+            </label>
             <div>
               <input
                 type="text"
@@ -114,11 +116,14 @@ export function OpenId({ settings, updateData }) {
                 placeholder="Enter Name "
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                data-cy="name-input"
               />
             </div>
           </div>
           <div className="form-group mb-3">
-            <label className="form-label">Client Id</label>
+            <label className="form-label" data-cy="client-id-label">
+              Client Id
+            </label>
             <div>
               <input
                 type="text"
@@ -126,6 +131,7 @@ export function OpenId({ settings, updateData }) {
                 placeholder="Enter Client Id"
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
+                data-cy="client-id-input"
               />
             </div>
           </div>
@@ -144,11 +150,14 @@ export function OpenId({ settings, updateData }) {
                 placeholder="Enter Client Secret"
                 value={clientSecret}
                 onChange={(e) => setClientSecret(e.target.value)}
+                data-cy="client-secret-input"
               />
             </div>
           </div>
           <div className="form-group mb-3">
-            <label className="form-label">Well Known URL</label>
+            <label className="form-label" data-cy="well-known-url-label">
+              Well Known URL
+            </label>
             <div>
               <input
                 type="text"
@@ -156,6 +165,7 @@ export function OpenId({ settings, updateData }) {
                 placeholder="Enter Well Known URL"
                 value={wellKnownUrl}
                 onChange={(e) => setWellKnownUrl(e.target.value)}
+                data-cy="well-known-url-input"
               />
             </div>
           </div>

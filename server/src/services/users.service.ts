@@ -560,7 +560,7 @@ export class UsersService {
     return !!app && app.organizationId === user.organizationId;
   }
 
-  async returnOrgIdOfAnApp(slug: string): Promise<any> {
+  async returnOrgIdOfAnApp(slug: string): Promise<{ organizationId: string; isPublic: boolean }> {
     let app: App;
     try {
       app = await this.appsRepository.findOneOrFail(slug);
@@ -570,7 +570,7 @@ export class UsersService {
       });
     }
 
-    return app?.organizationId;
+    return { organizationId: app?.organizationId, isPublic: app?.isPublic };
   }
 
   async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {

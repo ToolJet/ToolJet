@@ -39,7 +39,9 @@ const UsersTable = ({
                   {translator('header.organization.menus.manageUsers.email', 'Email')}
                 </th>
                 {isLoadingAllUsers && (
-                  <th data-cy="status-title">{translator('header.organization.menus.manageUsers.userType', 'Type')}</th>
+                  <th data-cy="users-table-type-column-header">
+                    {translator('header.organization.menus.manageUsers.userType', 'Type')}
+                  </th>
                 )}
                 {users && users[0]?.status ? (
                   <th data-cy="users-table-status-column-header">
@@ -49,7 +51,7 @@ const UsersTable = ({
                   <th className="w-1"></th>
                 )}
                 {isLoadingAllUsers && (
-                  <th data-cy="status-title">
+                  <th data-cy="users-table-workspaces-column-header">
                     {translator('header.organization.menus.manageUsers.worksapces', 'Worksapces')}
                   </th>
                 )}
@@ -106,18 +108,29 @@ const UsersTable = ({
                             user.last_name ? user.last_name[0] : ''
                           }`}
                         />
-                        <span className="mx-3 tj-text-sm" data-cy="user-name">
+                        <span
+                          className="mx-3 tj-text-sm"
+                          data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-name`}
+                        >
                           {user.name}
                         </span>
                       </td>
                       <td className="text-muted">
-                        <a className="text-reset user-email tj-text-sm" data-cy="user-email">
+                        <a
+                          className="text-reset user-email tj-text-sm"
+                          data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-email`}
+                        >
                           {user.email}
                         </a>
                       </td>
                       {isLoadingAllUsers && (
                         <td className="text-muted">
-                          <span className="text-muted user-type">{user.user_type}</span>
+                          <span
+                            className="text-muted user-type"
+                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-type`}
+                          >
+                            {user.user_type}
+                          </span>
                         </td>
                       )}
                       {user.status && (
@@ -130,7 +143,10 @@ const UsersTable = ({
                             })}
                             data-cy="status-badge"
                           ></span>
-                          <small className="workspace-user-status tj-text-sm text-capitalize" data-cy="user-status">
+                          <small
+                            className="workspace-user-status tj-text-sm text-capitalize"
+                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-status`}
+                          >
                             {user.status}
                           </small>
                           {user.status === 'invited' && 'invitation_token' in user ? (
@@ -144,7 +160,12 @@ const UsersTable = ({
                                     fill="#889096"
                                     name="copy"
                                   />
-                                  <p className="tj-text-xsm" data-cy="copy-invitation-link">
+                                  <p
+                                    className="tj-text-xsm"
+                                    data-cy={`${user.name
+                                      .toLowerCase()
+                                      .replace(/\s+/g, '-')}-user-copy-invitation-link`}
+                                  >
                                     Copy link
                                   </p>
                                 </span>
@@ -158,7 +179,11 @@ const UsersTable = ({
                       )}
                       {isLoadingAllUsers && (
                         <td className="text-muted">
-                          <a className="px-2 text-muted workspaces" onClick={() => openOrganizationModal(user)}>
+                          <a
+                            className="px-2 text-muted workspaces"
+                            onClick={() => openOrganizationModal(user)}
+                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-view-button`}
+                          >
                             View ({user.total_organizations})
                           </a>
                         </td>
@@ -193,7 +218,7 @@ const UsersTable = ({
                             fill="#E54D2E"
                             iconWidth="12"
                             onClick={() => openEditModal(user)}
-                            data-cy="edit-user"
+                            data-cy={`${user.name.toLowerCase().replace(/\s+/g, '-')}-user-edit-button`}
                           >
                             {translator('header.organization.menus.manageUsers.edit', 'Edit')}
                           </ButtonSolid>
