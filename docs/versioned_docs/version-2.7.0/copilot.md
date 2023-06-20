@@ -4,7 +4,7 @@ title: Copilot
 ---
 
 :::info BETA
-ToolJet Copilot is currently available in private beta for all the users.
+ToolJet Copilot is currently in private beta for **Enterprise** and **Cloud** users only. It is not yet available for ToolJet Community Edition, but we plan to make it accessible in the future. 
 :::
 
 **ToolJet Copilot** helps you write your queries faster. It uses OpenAI to suggest queries based on your data. 
@@ -30,6 +30,22 @@ You can join the waitlist here: **https://tooljet.com/copilot**
 Once activated, the Copilot feature can be accessed while editing any query within the transformations section in the query editor.
 
 Copilot's functionality relies on the provision of clear and concise plain English prompts. It possesses the capability to interact with and retrieve information from various components, enabling it to generate code specific to the desired actions associated with those components. This capability is facilitated by Copilot's comprehensive understanding of the application's present state.
+
+### Token Limit per Workspace
+
+A token is a unit of text that language models like ChatGPT process, such as a word or a character. To ensure fair usage and resource allocation among workspaces, a token limit is implemented. Currently, the token limit is set to **400**. If the token limit is surpassed, the request is declined with the message **"Unable to process request. Max tokens exceeded."**
+
+### Rate-Limiting
+
+To prevent abuse or excessive usage of the Copilot API, rate-limiting measures are in place. The following rules apply:
+
+1. Each user is restricted to a maximum number of requests within a specific time frame.
+2. The current rate limit allows for 100 requests per minute per user.
+3. If a user surpasses the rate limit, subsequent requests from that user will be rejected.
+
+:::info
+When generating an API key, if a workspace has 5 editors, the daily request limit will be 500 (100 requests per editor). Even if the workspace later expands to 10 editors after a week, the maximum number of requests allowed per day will still be 500.
+:::
 
 ### Example: Generating a SQL statement 
 
