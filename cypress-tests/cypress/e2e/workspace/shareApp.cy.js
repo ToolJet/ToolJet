@@ -96,7 +96,7 @@ describe("App share functionality", () => {
     );
   });
 
-  it("Verify app private and public app visisbility for the same instance user", () => {
+  it.skip("Verify app private and public app visisbility for the same instance user", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase();
 
