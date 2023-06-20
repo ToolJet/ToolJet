@@ -21,7 +21,7 @@ Cypress.Commands.add("clearAndType", (selector, text) => {
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
-  cy.get(commonSelectors.canvas).click({ force: true });
+  cy.get(commonSelectors.canvas).click("topRight", { force: true });
 });
 
 Cypress.Commands.add("verifyToastMessage", (selector, message) => {
