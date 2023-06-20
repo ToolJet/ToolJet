@@ -26,7 +26,6 @@ export class UpdateOracleDbOptionsWithInstantClientVersion1687188169091 implemen
         )} %`
       );
 
-      console.log(JSON.stringify(dataSourceOption.options));
       if (dataSourceOption.options?.instant_client_version) continue;
 
       dataSourceOption.options = {
@@ -34,7 +33,6 @@ export class UpdateOracleDbOptionsWithInstantClientVersion1687188169091 implemen
         instant_client_version: { value: '21_10', encrypted: false },
       };
 
-      console.log(JSON.stringify(dataSourceOption.options));
       await entityManager.save(dataSourceOption);
     }
   }
