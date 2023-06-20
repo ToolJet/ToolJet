@@ -27,11 +27,11 @@ Cypress.Commands.add("forceClickOnCanvas", () => {
 Cypress.Commands.add("verifyToastMessage", (selector, message) => {
   cy.get(selector).eq(0).should("be.visible").and("contain.text", message);
   cy.get("body").then(($body) => {
+    // if ($body.find(commonSelectors.toastCloseButton).length > 0) {
+    //   cy.closeToastMessage();
+    //   cy.wait(200);
+    // }
     cy.wait(1000);
-    if ($body.find(commonSelectors.toastCloseButton).length > 0) {
-      cy.closeToastMessage();
-      cy.wait(200);
-    }
   });
 });
 
