@@ -14,7 +14,7 @@ export class AppEnvironmentService {
   ): Promise<AppEnvironment> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (priorityCheck && !id) {
-        return await manager.findOneOrFail(AppEnvironment, { where: { organizationId, priority: 1 } });
+        return await manager.findOneOrFail(AppEnvironment, { where: { organizationId }, order: { priority: 'ASC' } });
       }
       if (!id) {
         return await manager.findOneOrFail(AppEnvironment, { where: { organizationId, isDefault: true } });

@@ -1,11 +1,19 @@
 import { Organization } from 'src/entities/organization.entity';
 import { defaultAppEnvironments, MigrationProgress } from 'src/helpers/utils.helper';
-import { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
+import { EntityManager, MigrationInterface, QueryRunner, TableUnique } from 'typeorm';
 
 export class BackFillAppEnvironmentsPriorityColumn1686826460358 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     //backfill new columns
     await this.backFillPriorityColumn(queryRunner.manager);
+
+    await queryRunner.createUniqueConstraint(
+      'app_environments',
+      new TableUnique({
+        name: 'unique_organization_id_priority',
+        columnNames: ['organization_id', 'priority'],
+      })
+    );
   }
 
   async backFillPriorityColumn(manager: EntityManager) {
@@ -31,5 +39,7 @@ export class BackFillAppEnvironmentsPriorityColumn1686826460358 implements Migra
     }
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.dropUniqueConstraint('app_environments', 'unique_organization_id_priority');
+  }
 }
