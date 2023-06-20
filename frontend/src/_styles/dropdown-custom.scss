@@ -44,6 +44,14 @@
             background: var(--slate3) !important;
         }
     }
+
+    .tj-text-xsm {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 200px;
+    }
+
 }
 
 .users-filter-dropdown,

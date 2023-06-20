@@ -457,6 +457,7 @@ class HomePageComponent extends React.Component {
       showChangeIconModal,
       appOperations,
       isExportingApp,
+      appToBeDeleted,
       app,
     } = this.state;
     return (
@@ -466,7 +467,10 @@ class HomePageComponent extends React.Component {
             show={showAppDeletionConfirmation}
             message={this.props.t(
               'homePage.deleteAppAndData',
-              'The app and the associated data will be permanently deleted, do you want to continue?'
+              'The app {{appName}} and the associated data will be permanently deleted, do you want to continue?',
+              {
+                appName: appToBeDeleted?.name,
+              }
             )}
             confirmButtonLoading={isDeletingApp}
             onConfirm={() => this.executeAppDeletion()}

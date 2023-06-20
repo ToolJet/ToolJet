@@ -414,7 +414,7 @@ describe('folders controller', () => {
         .post(`/api/folders`)
         .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie)
-        .send({ name: 'My folder' });
+        .send({ name: 'my folder' });
 
       expect(response.statusCode).toBe(201);
 
@@ -422,7 +422,7 @@ describe('folders controller', () => {
       expect(id).toBeDefined();
       expect(created_at).toBeDefined();
       expect(updated_at).toBeDefined();
-      expect(name).toEqual('My folder');
+      expect(name).toEqual('my folder');
       expect(organization_id).toEqual(user.organizationId);
     });
 
@@ -516,24 +516,25 @@ describe('folders controller', () => {
         organizationId: adminUserData.organization.id,
       });
 
-      for (const userData of [adminUserData, developerUserData, superAdminUserData]) {
+      for (const [i, userData] of [adminUserData, developerUserData, superAdminUserData].entries()) {
+        const name = `folder ${i}`;
         await request(nestApp.getHttpServer())
           .put(`/api/folders/${folder.id}`)
           .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
           .set('Cookie', userData['tokenCookie'])
-          .send({ name: 'My folder' })
+          .send({ name })
           .expect(200);
 
         const updatedFolder = await getManager().findOne(Folder, folder.id);
 
-        expect(updatedFolder.name).toEqual('My folder');
+        expect(updatedFolder.name).toEqual(name);
       }
 
       await request(nestApp.getHttpServer())
         .put(`/api/folders/${folder.id}`)
         .set('tj-workspace-id', viewerUserData.user.defaultOrganizationId)
         .set('Cookie', viewerUserData['tokenCookie'])
-        .send({ name: 'My folder' })
+        .send({ name: 'my folder' })
         .expect(403);
     });
   });

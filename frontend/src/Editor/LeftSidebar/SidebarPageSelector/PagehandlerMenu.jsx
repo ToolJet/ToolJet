@@ -65,6 +65,14 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                 />
 
                 <Field
+                  id="clone-page"
+                  text="Duplicate page"
+                  iconSrc={`assets/images/icons/clone.svg`}
+                  closeMenu={closeMenu}
+                  callback={handlePageCallback}
+                />
+
+                <Field
                   id="settings"
                   text="Event Handlers"
                   customClass={'delete-btn'}
@@ -114,7 +122,7 @@ const PageHandleField = ({ page, updatePageHandle }) => {
 
   const content = () => {
     return (
-      <div className="col">
+      <div className="col text-truncate pe-3">
         <span style={{ color: '#889096' }}>.../</span>
         <span data-cy={`page-handle-text`}>{page.handle}</span>
       </div>

@@ -2,37 +2,29 @@
 id: map
 title: Map
 ---
-# Map
 
-The map widget can be used to pick or select locations on the Google map with the location's coordinates.
+The map component enables users to choose or select locations by their coordinates on Google Map. It allows users to interact with the map interface and pick specific points of interest.
+
+:::tip Using Self-hosted 
+If you are utilizing the self-hosted version of ToolJet, it is necessary to configure the Google Maps API key as an environment variable. Please refer to the [environment variable setup documentation](/docs/setup/env-vars/#google-maps-configuration--optional-).
+:::
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/map/map.png" alt="ToolJet - Widget Reference - Map" />
+<img className="screenshot-full" src="/img/widgets/map/mapv2.png" alt="ToolJet - Widget Reference - Map" />
 
 </div>
 
-## Exposed variables
-
-Exposed variables can be used to get data from the widget.
-
-| variable      | description |
-| ----------- | ----------- |
-| bounds      | Viewport area of the map |
-| center      | It contains the locations' coordinates at the center of the bounding area |
-| markers     | A marker identifies a location on the map. `markers` contains the list of markers on the map |
-| selectedMarker | Object with the marker selected by the user |
-
 ## Events
 
-| events      | description |
-| ----------- | ----------- |
-| On bounds change | Triggered when the bounding area is changed. This event is triggered after `bounds` variable is updated |
-| On create marker | This event is triggered when a new marker is created on the map |
-| On marker click | This event is triggered when any of the markers in the map is clicked |
+| Event Name        | Description                                   |
+| ----------------- | --------------------------------------------- |
+| On bounds change  | Triggered when the bounding area is modified. This event occurs after the `bounds` variable has been updated. |
+| On create marker  | Triggered when a new marker is added to the map. |
+| On marker click   | Triggered when a user clicks on any of the markers displayed on the map. |
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+For detailed information about all the available **Actions**, please refer to the [Action Reference](/docs/category/actions-reference) documentation.
 :::
 
 ## Properties
@@ -80,8 +72,24 @@ This is `off` by default, toggle `on` the switch to lock the widget and make it 
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
 
-## Actions
+## Exposed Variables
 
-| Action      | Description | Properties |
-| ----------- | ----------- | ------------------ |
-| `setLocation` | Set map's location. | Latitude and Longitude values as parameters. ex: `component.map1.setLocation(40.7128, -73.935242)` |
+Exposed variables can be used to get data from the widget.
+
+| Variables    | Description |
+| ----------- | ----------- |
+| center | This variable will hold the latitude, longitude and the google map url value. |
+| center.`lat` | This variable holds the latitude value of the marker on the map component. You can access the value dynamically using JS: `{{components.map1.center.lat}}`|
+| centere.`lng` | This variable gets updated with RGB color code whenever a user selects a color from the color picker. You can access the value dynamically using JS: `{{components.map1.center.lng}}`|
+| center.`googleMapUrl` | This variable holds the URL of the location where the center marker is placed on the map component. You can access the value dynamically using JS: `{{components.map1.center.googleMapUrl}}`|
+| markers | The markers variable will hold the value only if `add new markers` is enabled from the map properties. Each marker is an object and will have `lat` and `lng` keys. Values can be accessed dynamically using `{{components.map1.markers[1].lat}}` |
+| selectedMarker | Object with the marker selected by the user |
+
+## Component specific actions (CSA)
+
+Following actions of map component can be controlled using the component specific actions(CSA):
+
+| Actions     | Description |
+| ----------- | ----------- |
+| setLocation | Set the marker's location on map using latitude and longitude values as parameteres via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as: `component.map1.setLocation(40.7128, -73.935242)`  |
+

@@ -264,6 +264,7 @@ export function Page3({ formData, setFormData, setPage, page, setCompleted, isLo
             setCompleted(true);
           }
         }}
+        country={'us'}
         value={formData?.phoneNumber}
         inputClass="tj-onboarding-phone-input"
         containerClass="tj-onboarding-phone-input-wrapper"
