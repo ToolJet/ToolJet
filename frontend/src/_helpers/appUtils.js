@@ -954,9 +954,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
-        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, query?.id, false, confirmed, mode);
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode);
       } else if (query.kind === 'runpy') {
-        queryExecutionPromise = executeRunPycode(_self, query.options.code, query, _ref, false, mode);
+        queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode);
       } else if (query.kind === 'tooljetdb') {
         const currentSessionValue = authenticationService.currentSessionValue;
         queryExecutionPromise = tooljetDbOperations.perform(
