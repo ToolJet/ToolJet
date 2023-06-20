@@ -29,10 +29,10 @@ const OrganizationsModal = ({
         className={`${darkMode && 'dark-mode'} organizations-modal`}
       >
         <Modal.Header>
-          <Modal.Title className="text-center ">
+          <Modal.Title className="text-center " data-cy="modal-title">
             {translator('header.organization.menus.manageAllUsers.workspaces', 'Workspaces')} of {selectedUser?.name}
           </Modal.Title>
-          <div className="close-button cursor-pointer" onClick={hideModal}>
+          <div className="close-button cursor-pointer" onClick={hideModal} data-cy="modal-close-button">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="icon icon-tabler icon-tabler-x"
@@ -57,11 +57,11 @@ const OrganizationsModal = ({
             <table data-testid="usersTable" className="table table-vcenter h-100">
               <thead className="user-table-header">
                 <tr>
-                  <th data-cy="name-title">NO</th>
-                  <th data-cy="name-title">
+                  <th data-cy="number-column-header">NO</th>
+                  <th data-cy="name-column-header">
                     {translator('header.organization.menus.manageAllUsers.organizationsTable.name', 'Name')}
                   </th>
-                  <th data-cy="email-title">
+                  <th data-cy="status-column-header">
                     {translator('header.organization.menus.manageAllUsers.organizationsTable.status', 'Status')}
                   </th>
                   <th className="w-1">
@@ -71,6 +71,7 @@ const OrganizationsModal = ({
                       })}
                       onClick={archiveAll}
                       style={{ minWidth: '100px' }}
+                      data-cy="archive-all-button"
                     >
                       Archive All
                     </button>
@@ -79,9 +80,18 @@ const OrganizationsModal = ({
               </thead>
               <tbody>
                 {organization_users?.map((organization_user, index) => (
-                  <tr key={index}>
+                  <tr
+                    key={index}
+                    data-cy={`${organization_user.organization.name.toLowerCase().replace(/\s+/g, '-')}-workspace-row`}
+                  >
                     <td>{index + 1}</td>
-                    <td>{organization_user.organization.name}</td>
+                    <td
+                      data-cy={`${organization_user.organization.name
+                        .toLowerCase()
+                        .replace(/\s+/g, '-')}-workspace-name`}
+                    >
+                      {organization_user.organization.name}
+                    </td>
                     <td className={`${darkMode ? 'text-light' : 'text-muted'}`}>
                       <span
                         className={cx('badge me-1 m-1', {
@@ -112,7 +122,7 @@ const OrganizationsModal = ({
                             ? unarchiveOrgUser(organization_user.id, organization_user.organization_id)
                             : archiveOrgUser(organization_user.id, organization_user.organization_id);
                         }}
-                        data-cy="user-state"
+                        data-cy="user-state-change-button"
                       >
                         {organization_user.status === 'archived'
                           ? translator('header.organization.menus.manageUsers.unarchive', 'Unarchive')

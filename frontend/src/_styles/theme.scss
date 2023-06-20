@@ -22,6 +22,10 @@ body {
   font-family: 'IBM Plex Sans';
 }
 
+body:has(.wrapper.audit-log) {
+  overflow: hidden;
+}
+
 input,
 button {
   border-radius: 4px;
@@ -1547,7 +1551,6 @@ button {
  */
 .select-search-dark__value {
   position: relative;
-  z-index: 1;
 }
 
 .select-search-dark__value::after {
@@ -2941,6 +2944,11 @@ input:focus-visible {
   }
 
   .audit-log {
+
+    .card-footer {
+      background: var(--base);
+      color: var(--slate12);
+    }
 
     .select-search__option:not(.is-selected),
     .select-search__select {
@@ -6078,9 +6086,12 @@ a.step-item-disabled {
 }
 
 .notification-center-badge {
-  top: 0;
-  right: 0;
+
+  margin-top: 0px;
+  margin-left: 10px;
+  margin-bottom: 15px;
   position: absolute;
+  right: 0;
 }
 
 .notification-center {
@@ -10939,6 +10950,10 @@ tbody {
     width: unset;
   }
 
+  .filter-by-section {
+    height: 90px;
+  }
+
   .select-search__select{
     .select-search__options {
       margin-left: -24px;
@@ -10949,6 +10964,10 @@ tbody {
           overflow: hidden !important;
           text-overflow: ellipsis !important;
           white-space: nowrap;
+          border-radius: 0;
+        }
+        :hover {
+          background-color: var(--slate3) !important;
         }
       }
     }
@@ -10963,11 +10982,10 @@ tbody {
 
     .select-search-dark__option,
       .select-search-dark__not-found {
-        background-color: var(--base) !important;
+        background-color: var(--base);
         color: var(--slate12);
         border: 1px solid var(--slate5);
         box-shadow: 0px 32px 64px -12px rgba(16, 24, 40, 0.14);
-        border-radius: 6px;
         margin: 0 auto;
       }
     }

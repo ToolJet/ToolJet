@@ -11,7 +11,13 @@ export default function AppLogo({ isLoadingFromHeader, className, darkMode = fal
       {url ? (
         <img src={url} height={26} />
       ) : (
-        <>{isLoadingFromHeader ? <Logo height={26} /> : <img src="assets/images/rocket.svg" className={className} />}</>
+        <>
+          {isLoadingFromHeader ? (
+            <Logo height={26} data-cy="page-logo" />
+          ) : (
+            <img src="assets/images/rocket.svg" className={className} />
+          )}
+        </>
       )}
     </>
   );

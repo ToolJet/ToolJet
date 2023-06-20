@@ -108,9 +108,9 @@ class ManageInstanceSettingsComponent extends React.Component {
                                 type="checkbox"
                                 onChange={() => this.optionsChanged(option?.key)}
                                 checked={option.value === 'true'}
-                                data-cy="form-check-input"
+                                data-cy="allow-workspace-form-check-input"
                               />
-                              <span className="form-check-label" data-cy="form-check-label">
+                              <span className="form-check-label" data-cy="allow-workspace-form-check-label">
                                 {this.props.t(option?.label_key, option?.label)}
                               </span>
                             </label>

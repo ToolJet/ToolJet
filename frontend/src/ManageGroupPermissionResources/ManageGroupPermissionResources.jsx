@@ -572,6 +572,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   <a
                     onClick={() => this.setState({ currentTab: 'datasources' })}
                     className={cx('nav-item nav-link', { active: currentTab === 'datasources' })}
+                    data-cy="datasource-link"
                   >
                     <SolidIcon
                       className="manage-group-tab-icons"
@@ -1070,7 +1071,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                   </div>
                                 </div>
                                 <div className="datasource-permissions-wrap">
-                                  <div data-cy="resource-apps">Datasources</div>
+                                  <div data-cy="resource-datasources">Datasources</div>
                                   <div className="text-muted">
                                     <div className="d-flex apps-permission-wrap flex-column">
                                       <label className="form-check form-check-inline">
@@ -1084,8 +1085,9 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                           }}
                                           checked={groupPermission.data_source_create}
                                           disabled={groupPermission.group === 'admin'}
+                                          data-cy="checkbox-create-ds"
                                         />
-                                        <span className="form-check-label" data-cy="app-create-label">
+                                        <span className="form-check-label" data-cy="ds-create-label">
                                           {this.props.t('globals.create', 'Create')}
                                         </span>
                                       </label>
@@ -1100,9 +1102,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                           }}
                                           checked={groupPermission.data_source_delete}
                                           disabled={groupPermission.group === 'admin'}
+                                          data-cy="checkbox-delete-ds"
                                         />
 
-                                        <span className="form-check-label" data-cy="app-delete-label">
+                                        <span className="form-check-label" data-cy="ds-delete-label">
                                           {this.props.t('globals.delete', 'Delete')}
                                         </span>
                                       </label>
@@ -1120,13 +1123,13 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                   <div className={`tab-pane ${currentTab === 'datasources' ? 'active show' : ''}`}>
                     {groupPermission?.group !== 'admin' && (
                       <div className="row">
-                        <div className="manage-groups-datasource-dropdown">
+                        <div className="manage-groups-datasource-dropdown" data-cy="datasource-select-search">
                           <Multiselect
                             value={selectedDataSourceIds}
                             onChange={this.setSelectedDataSources}
                             options={dataSourceSelectOptions}
                             overrideStrings={{
-                              selectSomeItems: 'Select DataSources to add to the group',
+                              selectSomeItems: 'Select Datasources to add to the group',
                             }}
                             setState={this.setState}
                             selectedData={this.state.selectedDataSourceIds}
@@ -1147,6 +1150,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                 : '#C1C8CD'
                             }
                             isLoading={isAddingDataSources}
+                            data-cy="datasource-add-button"
                           >
                             Add
                           </ButtonSolid>
@@ -1175,8 +1179,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             </tr>
                           </thead> */}
                           <div className="groups-datasource-body-header d-flex">
-                            <p className="font-weight-500 tj-text-xsm">Datasource name</p>
-                            <p className="font-weight-500 tj-text-xsm">Permissions</p>
+                            <p className="font-weight-500 tj-text-xsm" data-cy="datasource-name-header">
+                              Datasource name
+                            </p>
+                            <p className="font-weight-500 tj-text-xsm" data-cy="permissions-header">
+                              Permissions
+                            </p>
                           </div>
 
                           <tbody className="manage-group-datasource-table-body">
@@ -1197,10 +1205,20 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             ) : (
                               dataSourcesInGroup.map((dataSource) => (
                                 <tr key={dataSource.id} className="datasources-table-row">
-                                  <td className="font-weight-500">{dataSource.name}</td>
-                                  <td className="text-secondary d-flex">
+                                  <td
+                                    className="font-weight-500"
+                                    data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-datasource`}
+                                  >
+                                    {dataSource.name}
+                                  </td>
+                                  <td
+                                    className="text-secondary d-flex"
+                                    data-cy={`${String(dataSource.name)
+                                      .toLowerCase()
+                                      .replace(/\s+/g, '-')}-datasource-view-edit-wrap`}
+                                  >
                                     <div className="datasources-view-edit-wrap">
-                                      <label className="form-check form-check-inline">
+                                      <label className="form-check form-check-inline" data-cy="view-label">
                                         <input
                                           className="form-check-input"
                                           type="radio"
@@ -1217,10 +1235,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             groupPermission.id,
                                             'view'
                                           )}
+                                          data-cy="view-radio-button"
                                         />
                                         <span className="form-check-label">{this.props.t('globals.view', 'view')}</span>
                                       </label>
-                                      <label className="form-check form-check-inline">
+                                      <label className="form-check form-check-inline" data-cy="edit-label">
                                         <input
                                           className="form-check-input"
                                           type="radio"
@@ -1237,12 +1256,17 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             groupPermission.id,
                                             'edit'
                                           )}
+                                          data-cy="edit-radio-button"
                                         />
                                         <span className="form-check-label">{this.props.t('globals.edit', 'Edit')}</span>
                                       </label>
                                     </div>
                                   </td>
-                                  <td>
+                                  <td
+                                    data-cy={`${String(dataSource.name)
+                                      .toLowerCase()
+                                      .replace(/\s+/g, '-')}-datasource-remove-button-wrap`}
+                                  >
                                     {groupPermission.group !== 'admin' && (
                                       <Link
                                         to="#"
@@ -1261,6 +1285,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                           leftIcon="trash"
                                           iconWidth="14"
                                           fill={'#E54D2E'}
+                                          data-cy="remove-button"
                                         >
                                           Remove
                                         </ButtonSolid>
