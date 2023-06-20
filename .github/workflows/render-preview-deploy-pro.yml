@@ -83,7 +83,7 @@ jobs:
               },              
               {
                 "key": "PGRST_DB_URI",
-                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}"
+                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}_cypress"
               },
               {
                 "key": "PGRST_HOST",
