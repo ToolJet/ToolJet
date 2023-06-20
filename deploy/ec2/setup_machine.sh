@@ -37,8 +37,7 @@ curl -o instantclient-basiclite-11.zip https://tooljet-plugins-production.s3.us-
     rm instantclient-basiclite-11.zip && \
     echo /usr/lib/instantclient/* | sudo tee /etc/ld.so.conf.d/oracle-instantclient.conf > /dev/null && sudo ldconfig
 # Set the Instant Client library paths
-export LD_LIBRARY_PATH="/usr/lib/instantclient/instantclient_11_2:${LD_LIBRARY_PATH}" 
-export LD_LIBRARY_PATH="/opt/oracle/instantclient/instantclient_21_10:${LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="/usr/lib/instantclient/instantclient_11_2:/usr/lib/instantclient/instantclient_21_10${LD_LIBRARY_PATH}" 
 
 # Gen fallback certs
 sudo openssl rand -out /home/ubuntu/.rnd -hex 256
