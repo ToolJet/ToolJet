@@ -245,8 +245,9 @@ export const LeftSidebar = forwardRef((props, ref) => {
         isVersionReleased={isVersionReleased}
         setReleasedVersionPopupState={setReleasedVersionPopupState}
         onDeleteofAllDataSources={() => {
-          setSelectedSidebarItem();
-          setPinned(false);
+          handleSelectedSidebarItem(null);
+          handlePin(false);
+          delete sideBarBtnRefs.current['database'];
         }}
         setPinned={handlePin}
         pinned={pinned}
