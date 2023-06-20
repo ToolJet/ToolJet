@@ -68,6 +68,10 @@ RUN wget https://download.oracle.com/otn_software/linux/instantclient/instantcli
     cd /opt/oracle/instantclient_21_10 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     cd /opt/oracle/instantclient_11_2 && rm -f *jdbc* *occi* *mysql* *mql1* *ipc1* *jar uidrvci genezi adrci && \
     echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
+# Set the Instant Client library paths
+ENV LD_LIBRARY_PATH="/opt/oracle/instantclient_11_2:${LD_LIBRARY_PATH}" \
+    LD_LIBRARY_PATH="/opt/oracle/instantclient_21_10:${LD_LIBRARY_PATH}"
+
 WORKDIR /
 
 RUN mkdir -p /app
@@ -100,4 +104,6 @@ USER appuser
 WORKDIR /app
 # Dependencies for scripts outside nestjs
 RUN npm install dotenv@10.0.0 joi@17.4.1
+
+
 ENTRYPOINT ["./server/entrypoint.sh"]
