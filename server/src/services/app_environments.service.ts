@@ -6,8 +6,16 @@ import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 
 @Injectable()
 export class AppEnvironmentService {
-  async get(organizationId: string, id?: string, manager?: EntityManager): Promise<AppEnvironment> {
+  async get(
+    organizationId: string,
+    id?: string,
+    priorityCheck = false,
+    manager?: EntityManager
+  ): Promise<AppEnvironment> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      if (priorityCheck && !id) {
+        return await manager.findOneOrFail(AppEnvironment, { where: { organizationId, priority: 1 } });
+      }
       if (!id) {
         return await manager.findOneOrFail(AppEnvironment, { where: { organizationId, isDefault: true } });
       }
@@ -19,7 +27,7 @@ export class AppEnvironmentService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
       if (!environmentId) {
-        envId = (await this.get(organizationId, null, manager)).id;
+        envId = (await this.get(organizationId, null, false, manager)).id;
       }
       return await manager.findOneOrFail(DataSourceOptions, { where: { environmentId: envId, dataSourceId } });
     });
