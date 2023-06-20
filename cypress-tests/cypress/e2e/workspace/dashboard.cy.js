@@ -187,6 +187,7 @@ describe("dashboard", () => {
             expect($el.contents().last().text().trim()).to.eq("The Developer");
           });
       });
+    cy.reloadAppForTheElement(data.appName);
 
     viewAppCardOptions(data.appName);
     cy.get(
@@ -207,6 +208,7 @@ describe("dashboard", () => {
 
     modifyAndVerifyAppCardIcon(data.appName);
     createFolder(data.folderName);
+    cy.reloadAppForTheElement(data.appName);
 
     viewAppCardOptions(data.appName);
     cy.get(
@@ -239,6 +241,7 @@ describe("dashboard", () => {
     cy.get(commonSelectors.appCard(data.appName))
       .contains(data.appName)
       .should("be.visible");
+    cy.reloadAppForTheElement(data.appName);
     viewAppCardOptions(data.appName);
 
     cy.get(commonSelectors.appCardOptions(commonText.removeFromFolderOption))
@@ -248,6 +251,7 @@ describe("dashboard", () => {
 
     cancelModal(commonText.cancelButton);
 
+    cy.reloadAppForTheElement(data.appName);
     viewAppCardOptions(data.appName);
     cy.get(
       commonSelectors.appCardOptions(commonText.removeFromFolderOption)
@@ -267,6 +271,8 @@ describe("dashboard", () => {
     deleteFolder(data.folderName);
 
     cy.get(commonSelectors.allApplicationsLink).click();
+    cy.reloadAppForTheElement(data.appName);
+
     viewAppCardOptions(data.appName);
     cy.get(commonSelectors.appCardOptions(commonText.cloneAppOption)).click();
     cy.verifyToastMessage(
@@ -292,6 +298,7 @@ describe("dashboard", () => {
       expect(downloadedAppExportFileName).to.contain.string("app");
     });
 
+    cy.reloadAppForTheElement(data.cloneAppName);
     viewAppCardOptions(data.cloneAppName);
     cy.get(commonSelectors.deleteAppOption).click();
     cy.get(commonSelectors.modalMessage).verifyVisibleElement(
@@ -306,6 +313,7 @@ describe("dashboard", () => {
     ).verifyVisibleElement("have.text", commonText.modalYesButton);
     cancelModal(commonText.cancelButton);
 
+    cy.reloadAppForTheElement(data.cloneAppName);
     viewAppCardOptions(data.cloneAppName);
     cy.get(commonSelectors.deleteAppOption).click();
     cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
@@ -388,6 +396,7 @@ describe("dashboard", () => {
       commonText.emptyFolderText
     );
 
+    cy.reloadAppForTheElement(data.folderName);
     viewFolderCardOptions(data.folderName);
     cy.get(commonSelectors.folderCard).should("be.visible");
     cy.get(
@@ -410,6 +419,7 @@ describe("dashboard", () => {
       "not.exist"
     );
 
+    cy.reloadAppForTheElement(data.folderName);
     viewFolderCardOptions(data.folderName);
     cy.get(commonSelectors.editFolderOption(data.folderName)).click();
     cy.clearAndType(commonSelectors.folderNameInput, data.updatedFolderName);
@@ -419,6 +429,7 @@ describe("dashboard", () => {
       "not.exist"
     );
 
+    cy.reloadAppForTheElement(data.folderName);
     viewFolderCardOptions(data.folderName);
     cy.get(commonSelectors.editFolderOption(data.folderName)).click();
     cy.clearAndType(commonSelectors.folderNameInput, data.updatedFolderName);
@@ -430,6 +441,7 @@ describe("dashboard", () => {
       .should("exist")
       .and("be.visible");
 
+    cy.reloadAppForTheElement(data.folderName);
     viewFolderCardOptions(data.updatedFolderName);
     cy.get(commonSelectors.deleteFolderOption(data.updatedFolderName)).click();
     cy.log(commonText.folderDeleteModalMessage(data.updatedFolderName));
