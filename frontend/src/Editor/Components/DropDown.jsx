@@ -15,6 +15,7 @@ export const DropDown = function DropDown({
   exposedVariables,
   registerAction,
   dataCy,
+  boxShadow,
 }) {
   let { label, value, advanced, schema, placeholder, display_values, values } = properties;
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
@@ -228,7 +229,7 @@ export const DropDown = function DropDown({
     <>
       <div
         className="dropdown-widget row g-0"
-        style={{ height, display: visibility ? '' : 'none' }}
+        style={{ height, display: visibility ? '' : 'none', boxShadow }}
         onMouseDown={(event) => {
           onComponentClick(id, component, event);
         }}

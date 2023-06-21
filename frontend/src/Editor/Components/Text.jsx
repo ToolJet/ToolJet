@@ -9,6 +9,7 @@ export const Text = function Text({
   registerAction,
   setExposedVariable,
   dataCy,
+  boxShadow,
 }) {
   let {
     textSize,
@@ -80,6 +81,7 @@ export const Text = function Text({
     textIndent: `${textIndent}px` ?? '0px',
     letterSpacing: `${letterSpacing}px` ?? '0px',
     wordSpacing: `${wordSpacing}px` ?? '0px',
+    boxShadow,
   };
 
   return (

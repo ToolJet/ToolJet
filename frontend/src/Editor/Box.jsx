@@ -284,13 +284,13 @@ export const Box = function Box({
         style={{
           ...styles,
           backgroundColor,
-          boxShadow: validatedGeneralStyles?.boxShadow,
         }}
         role={preview ? 'BoxPreview' : 'Box'}
       >
         {inCanvas ? (
           !resetComponent ? (
             <ComponentToRender
+              boxShadow={validatedGeneralStyles?.boxShadow}
               onComponentClick={onComponentClick}
               onComponentOptionChanged={onComponentOptionChanged}
               currentState={currentState}

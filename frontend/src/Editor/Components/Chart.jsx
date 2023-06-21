@@ -6,12 +6,11 @@ import createPlotlyComponent from 'react-plotly.js/factory';
 import { isJson } from '@/_helpers/utils';
 const Plot = createPlotlyComponent(Plotly);
 
-export const Chart = function Chart({ width, height, darkMode, properties, styles, dataCy }) {
+export const Chart = function Chart({ width, height, darkMode, properties, styles, dataCy, boxShadow }) {
   const [loadingState, setLoadingState] = useState(false);
 
   const { padding, visibility, disabledState } = styles;
   const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson, showAxes } = properties;
-
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
     if (loadingStateProperty != undefined) {
@@ -24,6 +23,7 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
     height,
     display: visibility ? '' : 'none',
     background: darkMode ? '#1f2936' : 'white',
+    boxShadow,
   };
 
   const dataString = data ?? [];

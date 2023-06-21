@@ -16,6 +16,7 @@ export const Datepicker = function Datepicker({
   darkMode,
   fireEvent,
   dataCy,
+  boxShadow,
 }) {
   const { enableTime, enableDate, defaultValue, disabledDates } = properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
@@ -85,6 +86,7 @@ export const Datepicker = function Datepicker({
       style={{
         height,
         display: visibility ? '' : 'none',
+        boxShadow,
       }}
     >
       <DatePickerComponent
