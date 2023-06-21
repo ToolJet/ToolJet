@@ -3,6 +3,7 @@ import { EntityManager } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
 
 @Injectable()
 export class AppEnvironmentService {
@@ -93,6 +94,41 @@ export class AppEnvironmentService {
         })
       );
       await manager.save(DataSourceOptions, allEnvOptions);
+    }, manager);
+  }
+
+  async createOrgConstantsInAllEnvironments(organizationId: string, orgConstantId: string, manager?: EntityManager) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      const allEnvs = await this.getAll(organizationId, manager);
+
+      const allEnvConstants = allEnvs.map((env) =>
+        manager.create(OrgEnvironmentConstantValue, {
+          organizationConstantId: orgConstantId,
+          environmentId: env.id,
+          value: '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      );
+      await manager.save(OrgEnvironmentConstantValue, allEnvConstants);
+    }, manager);
+  }
+
+  async updateOrgEnvironmentConstant(
+    constantValue: string,
+    environmentId: string,
+    orgConstantId: string,
+    manager?: EntityManager
+  ) {
+    await dbTransactionWrap(async (manager: EntityManager) => {
+      await manager.update(
+        OrgEnvironmentConstantValue,
+        {
+          environmentId,
+          organizationConstantId: orgConstantId,
+        },
+        { value: constantValue, updatedAt: new Date() }
+      );
     }, manager);
   }
 }
