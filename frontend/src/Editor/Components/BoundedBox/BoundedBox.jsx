@@ -48,21 +48,27 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
     ) {
       const defaultValueAnnotation = properties?.defaultValue?.map((item) => {
         // Calculate the rightmost and bottommost coordinates of the inner div
-        const innerDivRight = (item.x + item.width) * 6.25;
+        const innerDivRight = (item.x + item.width) * 6.25; //px -> %
         const innerDivBottom = (item.y + item.height) * 6.25;
         const outerDivWidth = outerDiv[0].offsetWidth;
         const outerDivHeight = outerDiv[0].offsetHeight;
         // Check if the inner div exceeds the boundaries of the outer div
         const exceedsBoundaries = innerDivRight > outerDivWidth || innerDivBottom > outerDivHeight;
+        if (item.x < 0) {
+          item.x = 0;
+        }
+        if (item.y < 0) {
+          item.y = 0;
+        }
 
         if (exceedsBoundaries) {
           if (innerDivRight > outerDivWidth) {
-            const newWidth = (outerDivWidth - item.x * 6.25) / 6.25; // Calculate the new width
+            const newWidth = 100 - item.x;
             item.width = newWidth;
           }
 
           if (innerDivBottom > outerDivHeight) {
-            const newHeight = outerDivHeight - item.y * 6.25; // Calculate the new height
+            const newHeight = 100 - item.y;
             item.height = newHeight;
           }
         }
@@ -141,7 +147,6 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       onMouseDown={(e) => e.stopPropagation()}
       style={{ display: styles.visibility ? 'block' : 'none', height: height }}
       className="bounded-box relative"
-      // ref={outerDiv}
     >
       <Annotation
         src={`${properties.imageUrl}`}
