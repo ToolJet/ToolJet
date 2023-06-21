@@ -33,8 +33,9 @@ export const commonText = {
   modalYesButton: "Yes",
   emptyFolderText: "This folder is empty",
   allApplicationsLink: "All applications",
-  deleteAppModalMessage:
-    "The app and the associated data will be permanently deleted, do you want to continue?",
+  deleteAppModalMessage: (appName) => {
+    return `The app ${appName} and the associated data will be permanently deleted, do you want to continue?`;
+  },
   appDeletedToast: "App deleted successfully.",
   folderDeletedToast: "Folder has been deleted.",
   createNewFolderButton: "+ Create new folder",
@@ -46,8 +47,9 @@ export const commonText = {
   deleteFolderOption: "Delete folder",
   updateFolderTitle: "Update folder",
   updateFolderButton: "Update folder",
-  folderDeleteModalMessage:
-    "Are you sure you want to delete the folder? Apps within the folder will not be deleted.",
+  folderDeleteModalMessage: (folderName) => {
+    `Are you sure you want to delete the folder ${folderName}? Apps within the folder will not be deleted.`;
+  },
   closeButton: "modal close",
   workEmailLabel: "Email",
   emailInputError: "Invalid Email",
@@ -159,6 +161,15 @@ export const commonText = {
     ThousandPlus: "1000+",
   },
   selfHostSignUpTermsHelperText: "By continuing you are agreeing to the",
+
+  shareModalElements: {
+    modalHeader: "Share",
+    makePublicAppToggleLabel: "Make application public?",
+    shareableAppLink: "Get shareable link for this application",
+    copyAppLinkButton: "copy",
+    iframeLinkLabel: "Get embeddable link for this application",
+    ifameLinkCopyButton: "copy",
+  },
 };
 
 export const commonWidgetText = {

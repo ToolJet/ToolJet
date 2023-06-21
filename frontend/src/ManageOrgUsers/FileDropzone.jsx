@@ -4,19 +4,24 @@ import BulkIcon from '@/_ui/Icon/BulkIcons';
 import { toast } from 'react-hot-toast';
 
 export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileChange, inviteBulkUsers, onDrop }) {
-  const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
-    onDrop,
-    accept: 'text/csv',
-  });
   const [fileData, setFileData] = useState();
-  const files =
-    acceptedFiles.length > 0
-      ? acceptedFiles
-      : acceptedFiles?.map((file) => (
-          <li key={file.path}>
-            {file.path} - {file.size} bytes
-          </li>
-        ));
+  const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
+    accept: { parsedFileType: ['text/csv'] },
+    onDrop,
+    onDropRejected: (files) => {
+      if (files[0].size > 1048576) {
+        toast.error('File size cannot exceed more than 1MB');
+      } else {
+        toast.error('Please upload a CSV file');
+      }
+    },
+    maxFiles: 1,
+    onFileDialogCancel: () => {
+      toast.error('Please upload a CSV file');
+    },
+    noKeyboard: true,
+  });
+
   return (
     <form
       {...getRootProps({ className: 'dropzone' })}
@@ -58,7 +63,7 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
           <span className="file-upload-error" data-cy="file-error">
             {errors['file']}
           </span>
-          <ul>{files}</ul>
+          <ul>{acceptedFiles}</ul>
           {fileData?.name && <ul>{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>}
         </div>
       </div>

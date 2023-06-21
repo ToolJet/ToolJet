@@ -13,20 +13,48 @@ ToolJet's **multi-environment** helps in streamlining workflows, thereby minimiz
 
 </div>
 
-## Using Multi-environments
+### Environments
 
-ToolJet comes with three default **environments**:
+ToolJet provides three default **environments**:
 - **Production**
 - **Development**
 - **Staging**
 
+:::info
+The default environments cannot be removed or renamed.
+:::
+
+### Configuring connections for environments
+
+To configure connection settings for different environments, follow these steps:
+
+1. Go to the **[Global Datasource](/docs/data-sources/overview)** page.
+2. Click on the **Add new datasource** button.
+3. Choose a datasource. In the connection modal, you'll find three tabs: **Production**, **Staging**, and **Development**.
+4. Switch to each tab and enter the appropriate credentials for connecting to the respective database. Remember to save after entering credentials on each tab.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/multi-env/envconnect.gif" alt="Multi-Environment" />
+
+</div>
+
 ### Switching environments
 
-For switching the environment, click on the **Environment Manager** on the navbar of app-builder to open the dropdown and select a environment.
+To switch between environments, follow these steps:
 
-The **datasource credentials** are required to be entered specifically for every environment.
+1. Click on the **Environment Manager** located on the top bar of the app builder.
+2. The dropdown menu will open, allowing you to select an environment.
 
-:::tip Best Practice
-Make your default environment the **Production** environment - the environment in which the users use the final versions of your developed applications. This will help ensure that the production environment has access to all of the data sources.
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/multi-env/switch.png" alt="Multi-Environment" />
+
+</div>
+
+ToolJet automatically saves your most recently selected environment in the app builder. The next time you open an app, it will use the same environment. For example, if you switch to the staging environment in an app, the next time you open it will automatically use the same staging environment.
+
+:::info
+The default environment for released apps is **Production**.
 :::
 

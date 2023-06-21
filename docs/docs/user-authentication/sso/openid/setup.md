@@ -3,7 +3,6 @@ id: setup
 title: Setup
 ---
 
-
 <div className='badge badge--primary heading-badge'>Available on: Enterprise Edition</div>
 
 # Configure OpenId Connect Single Sign-on
@@ -31,3 +30,15 @@ title: Setup
   </div>
 
 - Find and set **Name**, **Client Id**, **Client Secret**, and **Well Known URL** from your Open Id provider.
+
+### Exposed User Info
+
+If OpenID is configured on ToolJet version **`v2.6.2-ee2.1.0`** or above, the ToolJet apps will expose the `ssoUserInfo` property under the `currentUser` variables. Check the **[Inspector](/docs/app-builder/left-sidebar#inspector)** doc to learn more.
+
+The exposed user info can be dynamically accessed throughout the apps using JS **`{{globals.currentUser.ssoUserInfo.<key>}}`**
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/sso/openid/ssouserinfo.png" alt="ssouserinfo" /> 
+
+</div>
