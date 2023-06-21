@@ -30,7 +30,6 @@ export const CustomToggleSwitch = ({
             }
           }}
           data-cy={`${dataCy}-toggle-switch`}
-          disabled={disabled}
         />
         <label htmlFor={action} className="slider round"></label>
       </label>
