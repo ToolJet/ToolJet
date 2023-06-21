@@ -9,7 +9,7 @@ import { DateRangePicker, Tag } from '@/ToolJetUI/';
 import { MultiSelectUser, ToolTip } from '@/_components';
 import moment from 'moment';
 import Pagination from '@/_ui/Pagination';
-import { CustomToggleSwitch } from '@/Editor/QueryManager/CustomToggleSwitch';
+import { CustomToggleSwitch } from '../Editor/QueryManager/Components/CustomToggleSwitch';
 import { Button } from '@/_ui/LeftSidebar';
 import { BreadCrumbContext } from '@/App/App';
 
