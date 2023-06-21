@@ -19,7 +19,7 @@ export function AddNewRowComponent({
   const getNewRowObject = () => {
     return allColumns.reduce((accumulator, column) => {
       const key = column.key ?? column.exportValue;
-      accumulator[key] = '';
+      if (column.id !== 'selection') accumulator[key] = '';
       return accumulator;
     }, {});
   };

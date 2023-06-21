@@ -1,7 +1,8 @@
 import { create as _create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
-export const zustandDevTools = process.env.NODE_ENV === 'production' ? (fn) => fn : devtools;
+export const zustandDevTools = (fn, options = {}) =>
+  devtools(fn, { ...options, enabled: process.env.NODE_ENV === 'production' ? false : true });
 
 const resetters = [];
 

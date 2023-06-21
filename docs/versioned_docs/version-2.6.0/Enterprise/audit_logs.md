@@ -10,21 +10,35 @@ The audit log is the report of all the activities done in your ToolJet account. 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/enterprise/audit_logs/auditlogv2.png" alt="Audit logs" />
+<img className="screenshot-full" src="/img/enterprise/audit_logs/logsnew.png" alt="Audit logs" />
 
 </div>
 
-### Filter audit logs
+### Date Range
 
-Audited events can be filtered using the below characteristics:
+Retrieve the log of events that occurred within the specified date and time range using the range picker. By default, the system loads 24-hour logs for the initial view. The maximum duration that can be specified for the "from" and "to" dates is 30 days.
+
+:::info
+Pagination at the bottom allows navigation through the pages, with each page displaying a maximum of 7 logs.
+:::
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/enterprise/audit_logs/filtersnew.png" alt="Audit logs" />
+
+</div>
+
+### Filter Audit Logs
+
+You can apply filters to the audited events based on the following criteria.
 
 #### Select Users
 
-Select a specific user from this dropdown to check all their activities. 
+Choose a specific user from the dropdown list to view all their activities.
 
 #### Select Apps
 
-The dropdown will list all the apps present in your account. Choose an app to filter the logs associated with that app.
+The dropdown will display all the apps associated with your account. Select an app to filter the logs related to that particular app.
 
 #### Select Resources
 
@@ -57,11 +71,7 @@ The dropdown will list all the apps present in your account. Choose an app to fi
 | GROUP_PERMISSION_DELETE | This event is recorded whenever a user group is deleted from an account. |
 | APP_GROUP_PERMISSION_UPDATE | For every app added in to user group, you can set privileges like `View` or `Edit` and whenever these privileges are updated this event is recorded. By default, the permission of an app for a user group is set to `View`. |
 
-:::info
-It is mandatory to set a Data Range in `From` and `To` to filter audit logs.
-:::
-
-### Understanding information from logs
+### Understanding Log Information
 
 <div style={{textAlign: 'center'}}>
 
@@ -69,16 +79,15 @@ It is mandatory to set a Data Range in `From` and `To` to filter audit logs.
 
 </div>
 
-
-| Property  | description |
+| Property  | Description |
 | ----------- | ----------- |
-| action_type | It is the type of action that was logged in this event. Refer [this](#select-actions) to know about actions. |
-| created_at | Displays the date and time of a logged event.  |
-| id | Every event logged has a specific event id associated with it. |
-| ip_address | Displays the IP address from where the event was logged. |
-| metadata | Metadata includes two sub-properties - `tooljet_version` and `user_agent`. `tooljet_version` displays the version of ToolJet used for the logged event and `user_agent` contains information about the device and browser used for that event. |
-| organization_id | Every organization in ToolJet has an id associated with it and is recorded when an event occurs. |
-| resource_id | There are several [resources](#select-resources) and for each resource that is created, an id gets associated with it.|
-| resource_name | Displays the name of the [resources](#select-resources) that were logged in the event. For example, if an app was created or deleted then it will display the name of the app. |
-| resource_type | Displays the type of the [resources](#select-resources) that were logged in the event. |
-| user_id | Every user account in ToolJet has an id associated with it and is recorded when an event occurs. |
+| action_type | This indicates the type of action that was logged in the event. Refer to [this](#select-actions) for more information on actions. |
+| created_at | Shows the date and time when the event was logged.  |
+| id | Each logged event is assigned a unique event ID. |
+| ip_address | Displays the IP address from which the event was logged. |
+| metadata | The metadata includes two sub-properties: `tooljet_version` and `user_agent`. `tooljet_version` shows the version of ToolJet used for the event, while `user_agent` contains information about the device and browser used. |
+| organization_id | Every organization in ToolJet has a unique ID associated with it, which is recorded when an event occurs. |
+| resource_id | Different [resources](#select-resources) have their respective IDs associated with them. These IDs are assigned when the resources are created. |
+| resource_name | Shows the name of the [resources](#select-resources) that were involved in the logged event. For example, if an app was created or deleted, it will display the name of that app. |
+| resource_type | Indicates the type of the [resources](#select-resources) involved in the logged event. |
+| user_id | Each user account in ToolJet has a unique ID associated with it, which is recorded when an event occurs. |
