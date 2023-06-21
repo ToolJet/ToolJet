@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Annotation from 'react-image-annotation';
 import { PointSelector, RectangleSelector } from 'react-image-annotation/lib/selectors';
 import defaultStyles from '@/_ui/Select/styles';
@@ -19,6 +19,8 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
         }),
       ]
     : [];
+  let outerDiv = document.getElementsByClassName('lmGPCf');
+
   useEffect(() => {
     let selector = undefined;
     switch (properties.selector) {
@@ -44,19 +46,41 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       properties?.defaultValue?.length > 0 &&
       typeof properties?.defaultValue[0] === 'object'
     ) {
-      const defaultValueAnnotation = properties?.defaultValue?.map((item) => ({
-        geometry: {
-          type: item.type,
-          x: item.x,
-          y: item.y,
-          width: item.width,
-          height: item.height,
-        },
-        data: {
-          text: item.text,
-          id: uuid(),
-        },
-      }));
+      const defaultValueAnnotation = properties?.defaultValue?.map((item) => {
+        // Calculate the rightmost and bottommost coordinates of the inner div
+        const innerDivRight = (item.x + item.width) * 6.25;
+        const innerDivBottom = (item.y + item.height) * 6.25;
+        const outerDivWidth = outerDiv[0].offsetWidth;
+        const outerDivHeight = outerDiv[0].offsetHeight;
+        // Check if the inner div exceeds the boundaries of the outer div
+        const exceedsBoundaries = innerDivRight > outerDivWidth || innerDivBottom > outerDivHeight;
+
+        if (exceedsBoundaries) {
+          if (innerDivRight > outerDivWidth) {
+            const newWidth = (outerDivWidth - item.x * 6.25) / 6.25; // Calculate the new width
+            item.width = newWidth;
+          }
+
+          if (innerDivBottom > outerDivHeight) {
+            const newHeight = outerDivHeight - item.y * 6.25; // Calculate the new height
+            item.height = newHeight;
+          }
+        }
+
+        return {
+          geometry: {
+            type: item.type,
+            x: item.x,
+            y: item.y,
+            width: item.width,
+            height: item.height,
+          },
+          data: {
+            text: item.text,
+            id: uuid(),
+          },
+        };
+      });
       setExposedVariable('annotations', getExposedAnnotations(defaultValueAnnotation));
       setAnnotations(defaultValueAnnotation || []);
     }
@@ -117,6 +141,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       onMouseDown={(e) => e.stopPropagation()}
       style={{ display: styles.visibility ? 'block' : 'none', height: height }}
       className="bounded-box relative"
+      // ref={outerDiv}
     >
       <Annotation
         src={`${properties.imageUrl}`}
