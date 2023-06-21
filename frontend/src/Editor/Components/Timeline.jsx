@@ -1,7 +1,7 @@
 import React from 'react';
 import { isArray } from 'lodash';
 
-export const Timeline = function Timeline({ height, darkMode, properties, styles, dataCy }) {
+export const Timeline = function Timeline({ height, darkMode, properties, styles, dataCy, boxShadow }) {
   const { visibility } = styles;
   const { data, hideDate } = properties;
 
@@ -10,7 +10,7 @@ export const Timeline = function Timeline({ height, darkMode, properties, styles
   return (
     <div
       className="card"
-      style={{ display: visibility ? '' : 'none', height, overflow: 'auto', overflowWrap: 'normal' }}
+      style={{ display: visibility ? '' : 'none', height, overflow: 'auto', overflowWrap: 'normal', boxShadow }}
       data-cy={dataCy}
     >
       <div className="card-body">

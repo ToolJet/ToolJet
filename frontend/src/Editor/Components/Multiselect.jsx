@@ -22,6 +22,7 @@ export const Multiselect = function Multiselect({
   fireEvent,
   registerAction,
   dataCy,
+  boxShadow,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState } = styles;
@@ -129,7 +130,7 @@ export const Multiselect = function Multiselect({
     <div
       className="multiselect-widget row g-0"
       data-cy={dataCy}
-      style={{ height, display: visibility ? '' : 'none' }}
+      style={{ height, display: visibility ? '' : 'none', boxShadow }}
       onFocus={() => {
         onComponentClick(this, id, component);
       }}

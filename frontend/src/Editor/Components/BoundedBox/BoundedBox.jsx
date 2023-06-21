@@ -7,7 +7,7 @@ import { RenderEditor } from './RenderEditor';
 import { RenderHighlight } from './RenderHighlight';
 import _ from 'lodash';
 
-export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles }) => {
+export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles, boxShadow }) => {
   const [annotationState, setAnnotation] = useState({});
   const [annotationsState, setAnnotations] = useState([]);
   const [typeState, setType] = useState(properties.selector);
@@ -85,7 +85,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   return (
     <div
       onMouseDown={(e) => e.stopPropagation()}
-      style={{ display: styles.visibility ? 'block' : 'none', height: height }}
+      style={{ display: styles.visibility ? 'block' : 'none', height: height, boxShadow }}
       className="bounded-box relative"
     >
       <Annotation

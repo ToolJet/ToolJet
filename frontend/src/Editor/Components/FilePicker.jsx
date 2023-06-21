@@ -16,6 +16,7 @@ export const FilePicker = ({
   styles,
   registerAction,
   dataCy,
+  boxShadow,
 }) => {
   //* properties definitions
   const instructionText =
@@ -71,6 +72,7 @@ export const FilePicker = ({
     display: parsedWidgetVisibility ? 'flex' : 'none',
     height,
     backgroundColor: !parsedDisabledState && bgThemeColor,
+    boxShadow,
   };
 
   const activeStyle = {

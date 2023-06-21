@@ -11,6 +11,7 @@ export const RadioButton = function RadioButton({
   registerAction,
   darkMode,
   dataCy,
+  boxShadow,
 }) {
   const { label, value, values, display_values } = properties;
   const { visibility, disabledState, activeColor } = styles;
@@ -52,7 +53,7 @@ export const RadioButton = function RadioButton({
     <div
       data-disabled={disabledState}
       className="row py-1"
-      style={{ height, display: visibility ? '' : 'none' }}
+      style={{ height, display: visibility ? '' : 'none', boxShadow }}
       data-cy={dataCy}
     >
       <span className="form-check-label col-auto py-0" style={{ color: textColor }}>

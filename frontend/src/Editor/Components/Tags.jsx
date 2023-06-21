@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const Tags = function Tags({ width, height, properties, styles, dataCy }) {
+export const Tags = function Tags({ width, height, properties, styles, dataCy, boxShadow }) {
   const { data } = properties;
   const { visibility } = styles;
 
@@ -9,6 +9,7 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy })
     height,
     display: visibility ? '' : 'none',
     overflowY: 'auto',
+    boxShadow,
   };
 
   function renderTag(item, index) {

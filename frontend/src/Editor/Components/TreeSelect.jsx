@@ -5,7 +5,16 @@ import CheckboxTree from 'react-checkbox-tree';
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 import { isExpectedDataType } from '@/_helpers/utils.js';
 
-export const TreeSelect = ({ height, properties, styles, setExposedVariable, fireEvent, darkMode, dataCy }) => {
+export const TreeSelect = ({
+  height,
+  properties,
+  styles,
+  setExposedVariable,
+  fireEvent,
+  darkMode,
+  dataCy,
+  boxShadow,
+}) => {
   const { label } = properties;
   const { visibility, disabledState, checkboxColor } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
@@ -88,7 +97,13 @@ export const TreeSelect = ({ height, properties, styles, setExposedVariable, fir
     <div
       className="custom-checkbox-tree"
       data-disabled={disabledState}
-      style={{ maxHeight: height, display: visibility ? '' : 'none', color: textColor, accentColor: checkboxColor }}
+      style={{
+        maxHeight: height,
+        display: visibility ? '' : 'none',
+        color: textColor,
+        accentColor: checkboxColor,
+        boxShadow,
+      }}
       data-cy={dataCy}
     >
       <div className="card-title" style={{ marginBottom: '0.5rem' }}>

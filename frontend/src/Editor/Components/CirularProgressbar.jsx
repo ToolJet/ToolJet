@@ -2,12 +2,13 @@ import React from 'react';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 
-export const CircularProgressBar = function CircularProgressBar({ height, properties, styles, dataCy }) {
+export const CircularProgressBar = function CircularProgressBar({ height, properties, styles, dataCy, boxShadow }) {
   const { text, progress } = properties;
   const { visibility, color, textColor, textSize, strokeWidth, counterClockwise, circleRatio } = styles;
 
   const computedStyles = {
     display: visibility ? '' : 'none',
+    boxShadow,
   };
 
   return (

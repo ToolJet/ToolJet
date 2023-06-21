@@ -12,6 +12,7 @@ export const Image = function Image({
   width,
   parentId = null,
   dataCy,
+  boxShadow,
 }) {
   const { source, loadingState, alternativeText, zoomButtons, rotateButton } = properties;
   const { visibility, disabledState, borderType, backgroundColor, padding, imageFit } = styles;
@@ -134,6 +135,7 @@ export const Image = function Image({
       style={{
         display: widgetVisibility ? 'flex' : 'none',
         justifyContent: 'center',
+        boxShadow,
       }}
       ref={imageRef}
       className="image-widget-wrapper"

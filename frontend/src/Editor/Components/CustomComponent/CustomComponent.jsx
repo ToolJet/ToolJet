@@ -6,7 +6,7 @@ import { useDataQueries } from '@/_stores/dataQueriesStore';
 
 export const CustomComponent = (props) => {
   const dataQueries = useDataQueries();
-  const { height, properties, styles, id, setExposedVariable, exposedVariables, fireEvent, dataCy } = props;
+  const { height, properties, styles, id, setExposedVariable, exposedVariables, fireEvent, dataCy, boxShadow } = props;
   const { visibility } = styles;
   const { code, data } = properties;
   const [customProps, setCustomProps] = useState(data);
@@ -96,7 +96,7 @@ export const CustomComponent = (props) => {
   };
 
   return (
-    <div className="card" style={{ display: visibility ? '' : 'none', height }} data-cy={dataCy}>
+    <div className="card" style={{ display: visibility ? '' : 'none', height, boxShadow }} data-cy={dataCy}>
       <iframe
         srcDoc={iframeContent}
         style={{ width: '100%', height: '100%', border: 'none' }}

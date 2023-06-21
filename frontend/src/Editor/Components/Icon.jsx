@@ -3,7 +3,18 @@ import React, { useState, useEffect } from 'react';
 import * as Icons from '@tabler/icons-react';
 import cx from 'classnames';
 
-export const Icon = ({ properties, styles, fireEvent, width, height, registerAction, darkMode, dataCy, component }) => {
+export const Icon = ({
+  properties,
+  styles,
+  fireEvent,
+  width,
+  height,
+  registerAction,
+  darkMode,
+  dataCy,
+  component,
+  boxShadow,
+}) => {
   const { icon } = properties;
   const { iconColor, visibility } = styles;
   // eslint-disable-next-line import/namespace
@@ -39,7 +50,7 @@ export const Icon = ({ properties, styles, fireEvent, width, height, registerAct
     >
       <IconElement
         color={color}
-        style={{ width, height }}
+        style={{ width, height, boxShadow }}
         onClick={(event) => {
           event.stopPropagation();
           fireEvent('onClick');

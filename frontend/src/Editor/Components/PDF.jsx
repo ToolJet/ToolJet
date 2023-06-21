@@ -4,7 +4,7 @@ import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import { debounce } from 'lodash';
 
-export const PDF = React.memo(({ styles, properties, width, height, component, dataCy }) => {
+export const PDF = React.memo(({ styles, properties, width, height, component, dataCy, boxShadow }) => {
   const pdfName = component.name;
   const { visibility } = styles;
   const { url, scale, pageControls, showDownloadOption } = properties;
@@ -122,7 +122,7 @@ export const PDF = React.memo(({ styles, properties, width, height, component, d
   };
 
   return (
-    <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height }} data-cy={dataCy}>
+    <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height, boxShadow }} data-cy={dataCy}>
       <div className="d-flex position-relative h-100 flex-column" style={{ margin: '0 auto', overflow: 'hidden' }}>
         <div
           className="scrollable h-100 col position-relative"

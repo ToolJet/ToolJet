@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 class Switch extends React.Component {
   render() {
-    const { on, onClick, onChange, disabledState, color } = this.props;
+    const { on, onClick, onChange, disabledState, color, boxShadow } = this.props;
 
     return (
       <label className="form-switch form-check-inline">
@@ -22,7 +22,16 @@ class Switch extends React.Component {
   }
 }
 
-export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposedVariable, darkMode, dataCy }) => {
+export const ToggleSwitch = ({
+  height,
+  properties,
+  styles,
+  fireEvent,
+  setExposedVariable,
+  darkMode,
+  dataCy,
+  boxShadow,
+}) => {
   // definition props
   const defaultValue = properties.defaultValue ?? false;
   const [on, setOn] = React.useState(defaultValue);
@@ -48,7 +57,7 @@ export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposed
   const toggle = () => setOn(!on);
 
   return (
-    <div className="row py-1" style={{ height, display: visibility ? '' : 'none' }} data-cy={dataCy}>
+    <div className="row py-1" style={{ height, display: visibility ? '' : 'none', boxShadow }} data-cy={dataCy}>
       <span className="form-check-label form-check-label col-auto my-auto" style={{ color: textColor }}>
         {label}
       </span>

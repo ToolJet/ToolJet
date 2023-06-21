@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import cx from 'classnames';
 
-export const Link = ({ height, properties, styles, fireEvent, registerAction, dataCy }) => {
+export const Link = ({ height, properties, styles, fireEvent, registerAction, dataCy, boxShadow }) => {
   const { linkTarget, linkText, targetType } = properties;
   const { textColor, textSize, underline, visibility } = styles;
   const clickRef = useRef();
@@ -9,6 +9,7 @@ export const Link = ({ height, properties, styles, fireEvent, registerAction, da
   const computedStyles = {
     fontSize: textSize,
     height,
+    boxShadow,
   };
 
   registerAction(

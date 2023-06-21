@@ -8,6 +8,7 @@ export const NumberInput = function NumberInput({
   darkMode,
   fireEvent,
   dataCy,
+  boxShadow,
 }) {
   const { visibility, borderRadius, borderColor, backgroundColor } = styles;
 
@@ -50,6 +51,7 @@ export const NumberInput = function NumberInput({
     borderColor,
     color: textColor,
     backgroundColor: darkMode && ['#ffffff', '#ffffffff'].includes(backgroundColor) ? '#000000' : backgroundColor,
+    boxShadow,
   };
 
   return (

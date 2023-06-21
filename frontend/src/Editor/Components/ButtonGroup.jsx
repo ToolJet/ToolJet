@@ -10,6 +10,7 @@ export const ButtonGroup = function Button({
   setExposedVariable,
   darkMode,
   dataCy,
+  boxShadow,
 }) {
   const { label, multiSelection } = properties;
   const values = isExpectedDataType(properties.values, 'array');
@@ -77,7 +78,7 @@ export const ButtonGroup = function Button({
     }
   };
   return (
-    <div className="widget-buttongroup" style={{ height }} data-cy={dataCy}>
+    <div className="widget-buttongroup" style={{ height, boxShadow }} data-cy={dataCy}>
       {label && (
         <p
           style={{ display: computedStyles.display }}

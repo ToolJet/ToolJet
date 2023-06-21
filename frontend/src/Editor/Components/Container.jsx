@@ -14,6 +14,7 @@ export const Container = function Container({
   darkMode,
   dataCy,
   properties,
+  boxShadow,
 }) {
   const { visibility, disabledState, borderRadius, borderColor } = styles;
   const backgroundColor =
@@ -26,6 +27,7 @@ export const Container = function Container({
     display: visibility ? 'flex' : 'none',
     overflow: 'hidden auto',
     position: 'relative',
+    boxShadow,
   };
 
   const parentRef = useRef(null);

@@ -18,6 +18,7 @@ export const Modal = function Modal({
   fireEvent,
   dataCy,
   height,
+  boxShadow,
 }) {
   const [showModal, setShowModal] = useState(false);
 
@@ -148,6 +149,7 @@ export const Modal = function Modal({
       width: '100%',
       display: visibility ? '' : 'none',
       '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
+      boxShadow,
     },
   };
 

@@ -1,6 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-export const Timer = function Timer({ height, properties = {}, styles, setExposedVariable, fireEvent, dataCy }) {
+export const Timer = function Timer({
+  height,
+  properties = {},
+  styles,
+  setExposedVariable,
+  fireEvent,
+  dataCy,
+  boxShadow,
+}) {
   const getTimeObj = ({ HH, MM, SS, MS }) => {
     return {
       hour: isNaN(HH) ? 0 : parseInt(HH, 10),
@@ -145,7 +153,7 @@ export const Timer = function Timer({ height, properties = {}, styles, setExpose
   };
 
   return (
-    <div className="card" style={{ height, display: styles.visibility ? '' : 'none' }} data-cy={dataCy}>
+    <div className="card" style={{ height, display: styles.visibility ? '' : 'none', boxShadow }} data-cy={dataCy}>
       <div className="timer-wrapper">
         <div className="counter-container">
           {`${prependZero(time.hour)}:${prependZero(time.minute)}:${prependZero(time.second)}:${prependZero(

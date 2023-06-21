@@ -14,6 +14,7 @@ export const DaterangePicker = function DaterangePicker({
   darkMode,
   fireEvent,
   dataCy,
+  boxShadow,
 }) {
   const { borderRadius, visibility, disabledState } = styles;
   const { defaultStartDate, defaultEndDate } = properties;
@@ -66,7 +67,7 @@ export const DaterangePicker = function DaterangePicker({
   return (
     <div
       className={`daterange-picker-widget ${darkMode && 'theme-dark'} p-0`}
-      style={{ height, display: visibility ? '' : 'none' }}
+      style={{ height, display: visibility ? '' : 'none', boxShadow }}
       data-cy={dataCy}
     >
       <DateRangePicker

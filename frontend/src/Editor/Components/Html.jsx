@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 
-export const Html = function ({ height, properties, styles, darkMode, dataCy }) {
+export const Html = function ({ height, properties, styles, darkMode, dataCy, boxShadow }) {
   const { rawHtml: stringifyHTML } = properties;
   const baseStyle = {
     backgroundColor: darkMode ? '#47505D' : '#ffffff',
@@ -22,7 +22,10 @@ export const Html = function ({ height, properties, styles, darkMode, dataCy }) 
   });
 
   return (
-    <div style={{ display: visibility ? '' : 'none', width: '100%', height, overflowY: 'auto' }} data-cy={dataCy}>
+    <div
+      style={{ display: visibility ? '' : 'none', width: '100%', height, overflowY: 'auto', boxShadow }}
+      data-cy={dataCy}
+    >
       {
         <div
           style={baseStyle}

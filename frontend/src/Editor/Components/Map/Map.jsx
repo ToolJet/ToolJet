@@ -18,6 +18,7 @@ export const Map = function Map({
   // canvasWidth,
   registerAction,
   dataCy,
+  boxShadow,
 }) {
   const center = component.definition.properties.initialLocation.value;
   const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
@@ -137,7 +138,7 @@ export const Map = function Map({
   return (
     <div
       data-disabled={parsedDisabledState}
-      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ height, display: parsedWidgetVisibility ? '' : 'none', boxShadow }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component, event);

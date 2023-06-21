@@ -17,6 +17,7 @@ export const Tabs = function Tabs({
   styles,
   darkMode,
   dataCy,
+  boxShadow,
 }) {
   const { tabWidth } = styles;
 
@@ -134,7 +135,7 @@ export const Tabs = function Tabs({
     <div
       data-disabled={parsedDisabledState}
       className="jet-tabs card"
-      style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor }}
+      style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor, boxShadow }}
       data-cy={dataCy}
     >
       <ul

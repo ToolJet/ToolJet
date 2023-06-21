@@ -16,6 +16,7 @@ export const Listview = function Listview({
   setExposedVariable,
   darkMode,
   dataCy,
+  boxShadow,
 }) {
   const fallbackProperties = { height: 100, showBorder: false, data: [] };
   const fallbackStyles = { visibility: true, disabledState: false };
@@ -40,6 +41,7 @@ export const Listview = function Listview({
     height: enablePagination ? height - 54 : height,
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
+    boxShadow,
   };
 
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);

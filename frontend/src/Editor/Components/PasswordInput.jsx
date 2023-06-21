@@ -10,6 +10,7 @@ export const PasswordInput = ({
   component,
   fireEvent,
   dataCy,
+  boxShadow,
 }) => {
   const { visibility, disabledState, borderRadius, backgroundColor } = styles;
 
@@ -42,6 +43,7 @@ export const PasswordInput = ({
           display: visibility ? '' : 'none',
           borderRadius: `${borderRadius}px`,
           backgroundColor,
+          boxShadow,
         }}
         data-cy={dataCy}
       />

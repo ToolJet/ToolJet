@@ -284,6 +284,7 @@ export const Box = function Box({
         style={{
           ...styles,
           backgroundColor,
+          // boxShadow: validatedGeneralStyles?.boxShadow,
         }}
         role={preview ? 'BoxPreview' : 'Box'}
       >

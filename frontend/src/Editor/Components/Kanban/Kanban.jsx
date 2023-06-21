@@ -3,7 +3,7 @@ import React, { useRef } from 'react';
 import { KanbanBoard } from './KanbanBoard';
 
 export const Kanban = (props) => {
-  const { height, width, properties, styles, id } = props;
+  const { height, width, properties, styles, id, boxShadow } = props;
   const { showDeleteButton } = properties;
   const { visibility, disabledState } = styles;
 
@@ -17,6 +17,7 @@ export const Kanban = (props) => {
         overflowX: 'auto',
         height: widgetHeight,
         display: visibility ? '' : 'none',
+        boxShadow,
       }}
       id={id}
       ref={parentRef}

@@ -24,6 +24,7 @@ export const Form = function Form(props) {
     childComponents,
     onEvent,
     dataCy,
+    boxShadow,
   } = props;
   const { visibility, disabledState, borderRadius, borderColor } = styles;
   const { buttonToSubmit, loadingState } = properties;
@@ -37,6 +38,7 @@ export const Form = function Form(props) {
     display: visibility ? 'flex' : 'none',
     position: 'relative',
     overflow: 'hidden auto',
+    boxShadow,
   };
 
   const parentRef = useRef(null);

@@ -11,6 +11,7 @@ export const TextInput = function TextInput({
   component,
   darkMode,
   dataCy,
+  boxShadow,
 }) {
   const textInputRef = useRef();
 
@@ -25,6 +26,7 @@ export const TextInput = function TextInput({
     color: darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor,
     borderColor: styles.borderColor,
     backgroundColor: darkMode && ['#fff'].includes(styles.backgroundColor) ? '#232e3c' : styles.backgroundColor,
+    boxShadow,
   };
 
   useEffect(() => {

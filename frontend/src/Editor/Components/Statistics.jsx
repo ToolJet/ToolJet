@@ -1,5 +1,5 @@
 import React from 'react';
-export const Statistics = function Statistics({ width, height, properties, styles, darkMode, dataCy }) {
+export const Statistics = function Statistics({ width, height, properties, styles, darkMode, dataCy, boxShadow }) {
   const {
     primaryValueLabel,
     primaryValue,
@@ -25,6 +25,7 @@ export const Statistics = function Statistics({ width, height, properties, style
     textAlign: 'center',
     overflow: 'hidden',
     height,
+    boxShadow,
   };
 
   const letterStyle = {
