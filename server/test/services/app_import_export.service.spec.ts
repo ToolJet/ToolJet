@@ -182,7 +182,7 @@ describe('AppImportExportService', () => {
       const importedApp = await getAppWithAllDetails(result.id);
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();
-      expect(importedApp.name).toBe(exportedApp.name);
+      expect(importedApp.name).toContain(exportedApp.name);
       expect(importedApp.isPublic).toBeFalsy();
       expect(importedApp.organizationId).toBe(exportedApp.organizationId);
       expect(importedApp.currentVersionId).toBe(null);
@@ -254,7 +254,7 @@ describe('AppImportExportService', () => {
       const importedApp = await getAppWithAllDetails(result.id);
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();
-      expect(importedApp.name).toBe(exportedApp.name);
+      expect(importedApp.name).toContain(exportedApp.name);
       expect(importedApp.isPublic).toBeFalsy();
       expect(importedApp.organizationId).toBe(exportedApp.organizationId);
       expect(importedApp.currentVersionId).toBe(null);

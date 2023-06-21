@@ -3,6 +3,8 @@ import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
 const protobuf = require('protobufjs');
+import { ConflictException } from '@nestjs/common';
+import { DataBaseConstraints } from './db_constraints.constants';
 
 export function maybeSetSubPath(path) {
   const hasSubPath = process.env.SUB_PATH !== undefined;
@@ -79,6 +81,20 @@ export async function dbTransactionWrap(operation: (...args) => any, manager?: E
 }
 
 export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
+export async function catchDbException(
+  operation: () => any,
+  dbConstraint: DataBaseConstraints,
+  errorMessage: string
+): Promise<any> {
+  try {
+    return await operation();
+  } catch (err) {
+    if (err?.message?.includes(dbConstraint)) {
+      throw new ConflictException(errorMessage);
+    }
+    throw err;
+  }
+}
 
 export function isPlural(data: Array<any>) {
   return data?.length > 1 ? 's' : '';
@@ -117,3 +133,14 @@ export class MigrationProgress {
     console.log(`${this.fileName} Progress ${Math.round((this.progress / this.totalCount) * 100)} %`);
   }
 }
+export const generateNextName = (firstWord: string) => {
+  return `${firstWord} ${Date.now()}`;
+};
+
+export const truncateAndReplace = (name) => {
+  const secondsSinceEpoch = Date.now();
+  if (name.length > 35) {
+    return name.replace(name.substring(35, 50), secondsSinceEpoch);
+  }
+  return name + secondsSinceEpoch;
+};

@@ -38,6 +38,7 @@ const sidebars = {
       ]
     },
     'tooljet-database',
+    'tooljet-copilot',
     {
       'type': 'category',
       'label': 'Datasource Catalog',
@@ -333,6 +334,7 @@ const sidebars = {
         'how-to/run-actions-from-runjs',
         'how-to/intentionally-fail-js-query',
         'how-to/run-query-at-specified-intervals',
+        'how-to/use-to-py-function-in-runpy',
         'how-to/access-users-location',
         'how-to/use-s3-signed-url-to-upload-docs',
         'how-to/s3-custom-endpoints',
@@ -374,6 +376,7 @@ const sidebars = {
             'contributing-guide/marketplace/creating-a-plugin',
           ],
         },
+        'tooljet-cli',
         'contributing-guide/testing',
         'contributing-guide/l10n',
         {
@@ -381,6 +384,7 @@ const sidebars = {
           'label': 'Troubleshooting',
           'items': [
             'contributing-guide/troubleshooting/eslint',
+            'contributing-guide/troubleshooting/runpy-limitations',
           ],
         },
         'contributing-guide/code-of-conduct',

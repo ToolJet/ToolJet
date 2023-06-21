@@ -97,7 +97,7 @@ describe('apps controller', () => {
           .set('Cookie', adminUserData['tokenCookie']);
 
         expect(response.statusCode).toBe(201);
-        expect(response.body.name).toBe('Untitled app');
+        expect(response.body.name).toContain('My app');
 
         await logoutUser(app, developerUserData['tokenCookie'], developerUserData.user.defaultOrganizationId);
         await logoutUser(app, viewerUserData['tokenCookie'], viewerUserData.user.defaultOrganizationId);
@@ -119,12 +119,12 @@ describe('apps controller', () => {
         .set('Cookie', loggedUser.tokenCookie);
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.name).toBe('Untitled app');
+      expect(response.body.name).toContain('My app');
 
       const appId = response.body.id;
       const application = await App.findOneOrFail({ where: { id: appId } });
 
-      expect(application.name).toBe('Untitled app');
+      expect(application.name).toContain('My app');
       expect(application.id).toBe(application.slug);
 
       // await logoutUser(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
@@ -539,7 +539,7 @@ describe('apps controller', () => {
 
       const appId = response.body.id;
       const clonedApplication = await App.findOneOrFail({ where: { id: appId } });
-      expect(clonedApplication.name).toBe('App to clone');
+      expect(clonedApplication.name).toContain('App to clone');
 
       response = await request(app.getHttpServer())
         .post(`/api/apps/${application.id}/clone`)
@@ -2133,7 +2133,7 @@ describe('apps controller', () => {
       expect(response.statusCode).toBe(201);
 
       const importedApp = await getManager().find(App, {
-        name: 'Imported App',
+        name: response.body.name,
       });
 
       expect(importedApp).toHaveLength(1);
