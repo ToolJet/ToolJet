@@ -237,6 +237,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
       <LeftSidebarDataSources
         darkMode={darkMode}
         appId={appId}
+        currentAppEnvironmentId={currentAppEnvironmentId}
         editingVersionId={appVersionsId}
         dataSourcesChanged={dataSourcesChanged}
         globalDataSourcesChanged={globalDataSourcesChanged}
