@@ -79,7 +79,7 @@ export class OauthService {
     }
 
     if (!user) {
-      const organizationName = await generateNextName('Untitled workspace', Organization, {}, manager);
+      const organizationName = generateNextName('My workspace');
       defaultOrganization = await this.organizationService.create(organizationName, null, manager);
     }
 
@@ -221,7 +221,7 @@ export class OauthService {
           let defaultOrganization: DeepPartial<Organization> = organization;
 
           // Not logging in to specific organization, creating new
-          const organizationName = await generateNextName('Untitled workspace', Organization, {}, manager);
+          const organizationName = generateNextName('My workspace');
           defaultOrganization = await this.organizationService.create(organizationName, null, manager);
 
           const groups = ['all_users', 'admin'];
@@ -263,7 +263,7 @@ export class OauthService {
             organizationDetails = organizationList[0];
           } else {
             // no SSO login enabled organization available for user - creating new one
-            const organizationName = await generateNextName('Untitled workspace', Organization, {}, manager);
+            const organizationName = generateNextName('My workspace');
             organizationDetails = await this.organizationService.create(organizationName, userDetails, manager);
           }
         } else if (!userDetails) {

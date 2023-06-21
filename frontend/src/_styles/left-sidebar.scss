@@ -157,7 +157,7 @@
   background: transparent !important;
 
   &:hover {
-    background: $primary  !important;
+    background: $primary !important;
     color: #fffffc !important;
   }
 }
@@ -416,6 +416,15 @@
 
 .empty-state-wrapper {
   margin-left: 5rem !important;
+
+  input {
+    color: var(--slate12);
+    background-color: var(--base);
+  }
+
+  input:focus {
+    background-color: var(--base);
+  }
 }
 
 .close-btn {
