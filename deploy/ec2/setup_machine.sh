@@ -65,9 +65,8 @@ sudo cp /tmp/postgrest.service /lib/systemd/system/postgrest.service
 
 # Setup app directory
 mkdir -p ~/app
-git clone -b release/2.7.0 https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
+git clone -b main https://github.com/ToolJet/ToolJet.git ~/app && cd ~/app
 
-# Need to change the branch back to develop from release/2.7.0
 
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
