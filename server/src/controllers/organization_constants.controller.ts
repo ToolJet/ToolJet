@@ -66,7 +66,7 @@ export class OrganizationConstantController {
     const { organizationId } = user;
     const result = await this.organizationConstantsService.delete(constantId, organizationId);
 
-    return decamelizeKeys({ constant: result });
+    return decamelizeKeys({ result });
   }
 
   @UseGuards(IsPublicGuard)
