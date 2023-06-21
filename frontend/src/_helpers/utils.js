@@ -387,22 +387,12 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(
-  _ref,
-  code,
-  editorState,
-  queryId,
-  isPreview,
-  // eslint-disable-next-line no-unused-vars
-  confirmed = undefined,
-  mode = ''
-) {
-  //:: confirmed arg is unused
+export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '') {
   const { currentState } = _ref.state;
   let result = {},
     error = null;
 
-  const actions = generateAppActions(_ref, queryId, mode, editorState, isPreview);
+  const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
@@ -507,7 +497,7 @@ export const hightlightMentionedUserInComment = (comment) => {
   return comment.replace(regex, '<span class=mentioned-user>$2</span>');
 };
 
-export const generateAppActions = (_ref, queryId, mode, editorState, isPreview = false) => {
+export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
   const currentPageId = _ref.state.currentPageId;
   const currentComponents = _ref.state?.appDefinition?.pages[currentPageId]?.components
     ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
@@ -522,7 +512,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
     }
 
     if (isPreview) {
-      return previewQuery(_ref, query, editorState, true);
+      return previewQuery(_ref, query, true);
     }
 
     const event = {
@@ -582,7 +572,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
       actionId: 'show-modal',
       modal,
     };
-    return executeAction(editorState, event, mode, {});
+    return executeAction(_ref, event, mode, {});
   };
 
   const closeModal = (modalName = '') => {
@@ -597,7 +587,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
       actionId: 'close-modal',
       modal,
     };
-    return executeAction(editorState, event, mode, {});
+    return executeAction(_ref, event, mode, {});
   };
 
   const setLocalStorage = (key = '', value = '') => {

@@ -255,3 +255,17 @@ export const userStatus = (email) => {
       cy.get("td button").click();
     });
 };
+
+export const bulkUserUpload = (file, fileName, toastMessage) => {
+  cy.get(usersSelector.inputFieldBulkUpload).selectFile(file, {
+    force: true,
+  });
+  cy.get(usersSelector.uploadedFileData).should("contain", fileName);
+  cy.get(usersSelector.buttonUploadUsers).click();
+  cy.get(commonSelectors.newToastMessage)
+    .should("be.visible")
+    .and("have.text", toastMessage);
+  cy.get(usersSelector.toastCloseButton).click();
+
+  cy.wait(200);
+};

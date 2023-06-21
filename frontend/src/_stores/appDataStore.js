@@ -5,12 +5,15 @@ const initialState = {
 };
 
 export const useAppDataStore = create(
-  zustandDevTools((set) => ({
-    ...initialState,
-    actions: {
-      updateEditingVersion: (version) => set(() => ({ editingVersion: version })),
-    },
-  }))
+  zustandDevTools(
+    (set) => ({
+      ...initialState,
+      actions: {
+        updateEditingVersion: (version) => set(() => ({ editingVersion: version })),
+      },
+    }),
+    { name: 'App Data Store' }
+  )
 );
 
 export const useEditingVersion = () => useAppDataStore((state) => state.editingVersion);

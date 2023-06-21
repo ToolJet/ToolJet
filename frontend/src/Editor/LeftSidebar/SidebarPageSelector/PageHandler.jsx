@@ -75,7 +75,7 @@ export const PageHandler = ({
         showSettings();
         break;
 
-      // case 'duplicate-page':
+      // case 'clone-page':
       //   clonePage(page.id);
       //   break;
 
