@@ -14,6 +14,7 @@ import {
   generateAppDefaults,
   authenticateUser,
   logoutUser,
+  getAllEnvironments,
 } from '../test.helper';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -26,6 +27,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { Folder } from 'src/entities/folder.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { Credential } from 'src/entities/credential.entity';
+import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 
 describe('apps controller', () => {
   let app: INestApplication;
@@ -965,6 +967,53 @@ describe('apps controller', () => {
           expect(response.body.versions.length).toBe(1);
         }
       });
+
+      it('should be able to fetch app versions only for specific environment', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+
+        let loggedUser = await authenticateUser(app);
+        adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const organization = adminUserData.organization;
+        const defaultUserData = await createUser(app, {
+          email: 'developer@tooljet.io',
+          groups: ['all_users'],
+          organization,
+        });
+
+        loggedUser = await authenticateUser(app, 'developer@tooljet.io');
+        defaultUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const application = await createApplication(app, {
+          name: 'name',
+          user: adminUserData.user,
+        });
+
+        const appEnvironments = await getAllEnvironments(app, organization.id);
+        const versionsEnvironmentMapping = [];
+        appEnvironments.map(async (env) => {
+          const version = await createApplicationVersion(app, application, { currentEnvironmentId: env.id });
+          versionsEnvironmentMapping.push({
+            [env.id]: [version.id],
+          });
+        });
+
+        for (const userData of [adminUserData, defaultUserData]) {
+          for (const item of versionsEnvironmentMapping) {
+            const envId = Object.keys(item)[0];
+            const response = await request(app.getHttpServer())
+              .get(`/api/apps/${application.id}/versions?environment_id=${envId}`)
+              .set('tj-workspace-id', userData.user.defaultOrganizationId)
+              .set('Cookie', userData['tokenCookie']);
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.versions.length).toBe(1);
+          }
+        }
+      });
     });
 
     describe('POST /api/apps/:id/versions', () => {
@@ -1747,6 +1796,45 @@ describe('apps controller', () => {
         expect(response.statusCode).toBe(400);
         expect(response.body.message).toBe('You cannot update a released version');
         await logoutUser(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
+      });
+
+      it('should be able to release the app if the version is promoted to production', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const loggedUser = await authenticateUser(app);
+        adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const application = await createApplication(app, {
+          user: adminUserData.user,
+        });
+        const version = await createApplicationVersion(app, application);
+
+        const environments = await getAllEnvironments(app, adminUserData.organization.id);
+
+        for (const appEnvironment of defaultAppEnvironments) {
+          const currentEnv = environments.find((env) => env.name === appEnvironment.name);
+          if (!appEnvironment.isDefault) {
+            const response = await request(app.getHttpServer())
+              .put(`/api/apps/${application.id}/versions/${version.id}`)
+              .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+              .set('Cookie', adminUserData['tokenCookie'])
+              .send({
+                currentEnvironmentId: currentEnv.id,
+              });
+
+            expect(response.statusCode).toBe(200);
+          } else {
+            const response = await request(app.getHttpServer())
+              .put(`/api/apps/${application.id}`)
+              .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+              .set('Cookie', loggedUser.tokenCookie)
+              .send({ app: { currentVersionId: version.id } });
+
+            expect(response.statusCode).toBe(200);
+          }
+        }
       });
     });
   });

@@ -140,7 +140,11 @@ export async function importAppFromTemplates(nestApp, user, identifier) {
   return service.perform(user, identifier);
 }
 
-export async function createApplicationVersion(nestApp, application, { name = 'v0', definition = null } = {}) {
+export async function createApplicationVersion(
+  nestApp,
+  application,
+  { name = 'v0', definition = null, currentEnvironmentId = null } = {}
+) {
   let appVersionsRepository: Repository<AppVersion>;
   let appEnvironmentsRepository: Repository<AppEnvironment>;
   appVersionsRepository = nestApp.get('AppVersionRepository');
@@ -152,8 +156,11 @@ export async function createApplicationVersion(nestApp, application, { name = 'v
     },
   });
 
-  const envId =
-    defaultAppEnvironments.length > 1 ? environments.find((env) => env.priority === 1)?.id : environments[0].id;
+  const envId = currentEnvironmentId
+    ? currentEnvironmentId
+    : defaultAppEnvironments.length > 1
+    ? environments.find((env) => env.priority === 1)?.id
+    : environments[0].id;
 
   return await appVersionsRepository.save(
     appVersionsRepository.create({
@@ -163,6 +170,19 @@ export async function createApplicationVersion(nestApp, application, { name = 'v
       definition,
     })
   );
+}
+export async function getAllEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
+  let appEnvironmentRepository: Repository<AppEnvironment>;
+  appEnvironmentRepository = nestApp.get('AppEnvironmentRepository');
+
+  return await appEnvironmentRepository.find({
+    where: {
+      organizationId,
+    },
+    order: {
+      priority: 'ASC',
+    },
+  });
 }
 
 export async function createAppEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
