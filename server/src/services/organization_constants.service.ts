@@ -18,10 +18,48 @@ export class OrganizationConstantsService {
     private appEnvironmentService: AppEnvironmentService
   ) {}
 
-  async fetchVariables(organizationId: string): Promise<OrganizationConstant[]> {
-    console.log('fetching variables------', { organizationId });
+  async allEnvironmentConstants(organizationId: string): Promise<OrganizationConstant[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const query = manager
+        .createQueryBuilder(OrganizationConstant, 'organization_constants')
+        .leftJoinAndSelect('organization_constants.orgEnvironmentConstantValues', 'org_environment_constant_values')
+        .where('organization_constants.organization_id = :organizationId', { organizationId });
+      const result = await query.getMany();
 
-    return [];
+      const appEnvironments = await this.appEnvironmentService.getAll(organizationId, null);
+
+      return result.map((constant) => {
+        const environmentName = appEnvironments.find(
+          (env) => env.id === constant.orgEnvironmentConstantValues[0].environmentId
+        ).name;
+
+        return {
+          id: constant.id,
+          name: constant.constantName,
+          environment: environmentName,
+          value: constant.orgEnvironmentConstantValues[0].value,
+        };
+      });
+    });
+  }
+
+  async getConstantsForEnvironment(organizationId: string, environmentId: string): Promise<OrganizationConstant[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const query = manager
+        .createQueryBuilder(OrganizationConstant, 'organization_constants')
+        .leftJoinAndSelect('organization_constants.orgEnvironmentConstantValues', 'org_environment_constant_values')
+        .where('organization_constants.organization_id = :organizationId', { organizationId })
+        .andWhere('org_environment_constant_values.environment_id = :environmentId', { environmentId });
+      const result = await query.getMany();
+
+      return result.map((constant) => {
+        return {
+          id: constant.id,
+          name: constant.constantName,
+          value: constant.orgEnvironmentConstantValues[0].value,
+        };
+      });
+    });
   }
 
   async create(

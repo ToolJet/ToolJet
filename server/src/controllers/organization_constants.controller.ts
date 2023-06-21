@@ -4,6 +4,7 @@ import {
   UseGuards,
   Body,
   Get,
+  Param,
   // Patch,
   // Delete,
   // Param,
@@ -28,7 +29,17 @@ export class OrganizationConstantController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async get(@User() user) {
-    const result = await this.organizationConstantsService.fetchVariables(user.organizationId);
+    const result = await this.organizationConstantsService.allEnvironmentConstants(user.organizationId);
+    return { constants: result };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':environmentId')
+  async getConstantsFromEnvironment(@User() user, @Param('environmentId') environmentId) {
+    const result = await this.organizationConstantsService.getConstantsForEnvironment(
+      user.organizationId,
+      environmentId
+    );
     return { constants: result };
   }
 
