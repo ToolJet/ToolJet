@@ -35,6 +35,13 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.keyCode === 13) {
+      e.preventDefault();
+      createOrganization();
+    }
+  };
+
   const handleInputChange = (e) => {
     const value = e.target.value;
     setErrorText('');
@@ -62,6 +69,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
           <input
             type="text"
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             className="form-control"
             placeholder={t('header.organization.workspaceName', 'workspace name')}
             disabled={isCreating}

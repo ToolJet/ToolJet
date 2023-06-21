@@ -8,27 +8,30 @@ const initialState = {
 };
 
 export const useDataSourcesStore = create(
-  zustandDevTools((set) => ({
-    ...initialState,
-    actions: {
-      fetchDataSources: (appId) => {
-        set({ loadingDataSources: true });
-        datasourceService.getAll(appId).then((data) => {
-          set({
-            dataSources: data.data_sources,
-            loadingDataSources: false,
+  zustandDevTools(
+    (set) => ({
+      ...initialState,
+      actions: {
+        fetchDataSources: (appId) => {
+          set({ loadingDataSources: true });
+          datasourceService.getAll(appId).then((data) => {
+            set({
+              dataSources: data.data_sources,
+              loadingDataSources: false,
+            });
           });
-        });
-      },
-      fetchGlobalDataSources: (organizationId) => {
-        globalDatasourceService.getAll(organizationId).then((data) => {
-          set({
-            globalDataSources: data.data_sources,
+        },
+        fetchGlobalDataSources: (organizationId) => {
+          globalDatasourceService.getAll(organizationId).then((data) => {
+            set({
+              globalDataSources: data.data_sources,
+            });
           });
-        });
+        },
       },
-    },
-  }))
+    }),
+    { name: 'Data Source Store' }
+  )
 );
 
 export const useDataSources = () => useDataSourcesStore((state) => state.dataSources);
