@@ -28,18 +28,28 @@ export class OrganizationConstantsService {
 
       const appEnvironments = await this.appEnvironmentService.getAll(organizationId, null);
 
-      return result.map((constant) => {
-        const environmentName = appEnvironments.find(
-          (env) => env.id === constant.orgEnvironmentConstantValues[0].environmentId
-        ).name;
+      const constantsWithValues = await Promise.all(
+        result.map(async (constant) => {
+          const values = await Promise.all(
+            appEnvironments.map(async (env) => {
+              const value = constant.orgEnvironmentConstantValues.find((value) => value.environmentId === env.id);
 
-        return {
-          id: constant.id,
-          name: constant.constantName,
-          environment: environmentName,
-          value: constant.orgEnvironmentConstantValues[0].value,
-        };
-      });
+              return {
+                environmentName: env.name,
+                value: value ? await this.decryptSecret(organizationId, value.value) : '',
+              };
+            })
+          );
+
+          return {
+            id: constant.id,
+            name: constant.constantName,
+            values,
+          };
+        })
+      );
+
+      return constantsWithValues;
     });
   }
 
@@ -52,13 +62,17 @@ export class OrganizationConstantsService {
         .andWhere('org_environment_constant_values.environment_id = :environmentId', { environmentId });
       const result = await query.getMany();
 
-      return result.map((constant) => {
+      const constantsWithValues = result.map(async (constant) => {
+        const decryptedValue = await this.decryptSecret(organizationId, constant.orgEnvironmentConstantValues[0].value);
+
         return {
           id: constant.id,
           name: constant.constantName,
-          value: constant.orgEnvironmentConstantValues[0].value,
+          value: decryptedValue,
         };
       });
+
+      return Promise.all(constantsWithValues);
     });
   }
 
@@ -87,8 +101,10 @@ export class OrganizationConstantsService {
         manager
       );
 
+      const encryptedValue = await this.encryptSecret(organizationId, organizationConstant.value);
+
       await this.appEnvironmentService.updateOrgEnvironmentConstant(
-        organizationConstant.value,
+        encryptedValue,
         environmentToUpdate.id,
         savedOrganizationConstant.id,
         manager
@@ -153,11 +169,11 @@ export class OrganizationConstantsService {
     });
   }
 
-  // private async encryptSecret(workspaceId: string, value: string) {
-  //   return await this.encryptionService.encryptColumnValue('org_environment_variables', workspaceId, value);
-  // }
+  private async encryptSecret(workspaceId: string, value: string) {
+    return await this.encryptionService.encryptColumnValue('org_environment_constant_values', workspaceId, value);
+  }
 
-  // private async decryptSecret(workspaceId: string, value: string) {
-  //   return await this.encryptionService.decryptColumnValue('org_environment_variables', workspaceId, value);
-  // }
+  private async decryptSecret(workspaceId: string, value: string) {
+    return await this.encryptionService.decryptColumnValue('org_environment_constant_values', workspaceId, value);
+  }
 }
