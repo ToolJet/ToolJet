@@ -227,7 +227,6 @@ describe("Table", () => {
       { id: 3, name: "Steph", email: "steph@example.com" },
       { id: 4, name: "Oliver", email: "oliver@example.com" },
     ]);
-    cy.get('[data-cy="inspector-close-icon"]').click();
     openEditorSidebar(data.widgetName);
     openAccordion("Columns", ["Options", "Properties", "Layout"]);
     deleteAndVerifyColumn("email");
