@@ -7,7 +7,7 @@ import { EncryptionService } from './encryption.service';
 import { AppEnvironmentService } from './app_environments.service';
 
 import { EntityManager, Repository } from 'typeorm';
-import { CreateOrganizationConstantDto } from '@dto/organization-constant.dto';
+import { CreateOrganizationConstantDto, UpdateOrganizationConstantDto } from '@dto/organization-constant.dto';
 
 @Injectable()
 export class OrganizationConstantsService {
@@ -66,8 +66,6 @@ export class OrganizationConstantsService {
     organizationConstant: CreateOrganizationConstantDto,
     organizationId: string
   ): Promise<OrganizationConstant> {
-    console.log('creating constant------', { organizationConstant, organizationId });
-
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const newOrganizationConstant = manager.create(OrganizationConstant, {
         constantName: organizationConstant.constant_name,
@@ -97,6 +95,61 @@ export class OrganizationConstantsService {
       );
 
       return savedOrganizationConstant;
+    });
+  }
+
+  async update(
+    constantId: string,
+    organizationId: string,
+    params: UpdateOrganizationConstantDto
+  ): Promise<OrganizationConstant> {
+    const { constant_name, environment_id, value } = params;
+
+    if (!constant_name && !value) {
+      throw new Error('Nothing to update');
+    }
+
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const constantToUpdate = await manager.findOne(OrganizationConstant, {
+        where: { id: constantId, organizationId },
+      });
+
+      if (!constantToUpdate) {
+        throw new Error('Constant not found');
+      }
+
+      if (constant_name) {
+        constantToUpdate.constantName = constant_name;
+      }
+
+      await manager.save(constantToUpdate);
+
+      const environmentToUpdate = await this.appEnvironmentService.get(organizationId, environment_id, manager);
+
+      await this.appEnvironmentService.updateOrgEnvironmentConstant(
+        value,
+        environmentToUpdate.id,
+        constantToUpdate.id,
+        manager
+      );
+
+      return constantToUpdate;
+    });
+  }
+
+  async delete(constantId: string, organizationId: string): Promise<void> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const constantToDelete = await manager.findOne(OrganizationConstant, {
+        where: { id: constantId, organizationId },
+      });
+
+      if (!constantToDelete) {
+        throw new Error('Constant not found');
+      }
+
+      await manager.delete(OrganizationConstant, { id: constantId });
+
+      return { message: 'OK' };
     });
   }
 

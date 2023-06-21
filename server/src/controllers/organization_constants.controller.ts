@@ -5,19 +5,18 @@ import {
   Body,
   Get,
   Param,
-  // Patch,
-  // Delete,
-  // Param,
-  // BadRequestException,
-  // ForbiddenException,
-  // Query,
+  Patch,
+  Delete,
+  //   BadRequestException,
+  //   ForbiddenException,
+  //   Query,
 } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 
 import { User } from 'src/decorators/user.decorator';
 import { OrganizationConstantsService } from '@services/organization_constants.service';
-import { CreateOrganizationConstantDto } from '@dto/organization-constant.dto';
+import { CreateOrganizationConstantDto, UpdateOrganizationConstantDto } from '@dto/organization-constant.dto';
 // import { OrganizationConstants } from '../entities/organization_constants.entity';
 import { IsPublicGuard } from 'src/modules/org_environment_variables/is-public.guard';
 import { AppDecorator as App } from 'src/decorators/app.decorator';
@@ -48,6 +47,24 @@ export class OrganizationConstantController {
   async create(@User() user, @Body() createOrganizationConstantDto: CreateOrganizationConstantDto) {
     const { organizationId } = user;
     const result = await this.organizationConstantsService.create(createOrganizationConstantDto, organizationId);
+
+    return decamelizeKeys({ constant: result });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  async update(@Body() body: UpdateOrganizationConstantDto, @User() user, @Param('id') constantId) {
+    const { organizationId } = user;
+    const result = await this.organizationConstantsService.update(constantId, organizationId, body);
+
+    return decamelizeKeys({ constant: result });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async delete(@User() user, @Param('id') constantId) {
+    const { organizationId } = user;
+    const result = await this.organizationConstantsService.delete(constantId, organizationId);
 
     return decamelizeKeys({ constant: result });
   }

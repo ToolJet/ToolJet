@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '../helpers/utils.helper';
-// import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateOrganizationConstantDto {
   @IsString()
@@ -16,4 +16,10 @@ export class CreateOrganizationConstantDto {
   @IsString()
   @IsNotEmpty()
   value: string;
+}
+
+export class UpdateOrganizationConstantDto extends PartialType(CreateOrganizationConstantDto) {
+  @IsString()
+  @IsNotEmpty()
+  value?: string;
 }
