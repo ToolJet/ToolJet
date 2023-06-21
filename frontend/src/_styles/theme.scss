@@ -487,23 +487,29 @@ button {
   }
 
   .main {
-    margin-left: 3%;
-    width: 82%;
+    // margin-left: 3%;
+    // width: 82%;
     top: 0;
+    height: calc(100vh - 84px);
+
+    &.hide-scrollbar {
+      .canvas-container::-webkit-scrollbar {
+        height: 0;
+      }
+    }
 
     .canvas-container::-webkit-scrollbar {
       width: 0;
       background: transparent;
-      height: 0;
+      // height: 0;
+    }
+
+    .canvas-container::-webkit-scrollbar-track {
+      background: transparent !important;
     }
 
     .canvas-container {
       scrollbar-width: none;
-    }
-
-    .canvas-container::-webkit-scrollbar {
-      width: 0;
-      background: transparent;
     }
 
     .canvas-container {
@@ -512,8 +518,8 @@ button {
       position: fixed;
       right: 300px;
       left: 48px;
-      overflow-y: auto;
-      overflow-x: scroll;
+      overflow-y: scroll;
+      overflow-x: auto;
       -webkit-box-pack: center;
       justify-content: center;
       -webkit-box-align: center;
@@ -1818,7 +1824,7 @@ button {
       padding: 10px;
       margin-left: -9px;
       background: white;
-      box-shadow: rgba(15, 15, 15, 0/05) 0px 0px 0px 1px,
+      box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px,
         rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
       white-space: initial;
     }
@@ -2576,8 +2582,20 @@ hr {
   height: 28px !important;
 }
 
+.editor {
+  .modal-dialog {
+    overflow-y: initial !important
+  }
+
+  .modal-dialog-scrollable .modal-content {
+    max-height: 88% !important;
+  }
+
+}
+
+
 .modal-component {
-  margin-top: 150px;
+
 
   .modal-body {
     padding: 0;
@@ -2887,6 +2905,9 @@ input:focus-visible {
   .form-control.is-invalid,
   .was-validated .form-control:invalid {
     border-color: #ffb0b0;
+  }
+  .form-check-input{
+    cursor:pointer;
   }
 }
 
@@ -4381,7 +4402,8 @@ input[type="text"] {
   }
 
   input:focus {
-    width: 300px;
+    width: 200px;
+    background-color: var(--base);
   }
 
   .input-icon .input-icon-addon {
@@ -4574,10 +4596,6 @@ input[type="text"] {
     color: #fff;
     background-color: #232e3c !important;
   }
-}
-
-.onboarding-modal.dark .modal-content {
-  @extend .modal-content.home-modal-component.dark;
 }
 
 .modal-content.home-modal-component.dark-theme {
@@ -5520,10 +5538,10 @@ div#driver-page-overlay {
     }
   }
 
-  .action-icons-group {
-    margin-right: 4rem !important;
-    margin-left: 2rem !important;
-  }
+  // .action-icons-group {
+  //   margin-right: 4rem !important;
+  //   margin-left: 2rem !important;
+  // }
 
   .action-icons-group {
     cursor: pointer;
@@ -7326,6 +7344,9 @@ tbody {
 
   .query-preview-svg {
     padding: 2.67px 0.067px;
+    width: 16px;
+    height: 16px;
+    margin: 6px 0;
   }
 
   &:active {
@@ -7425,6 +7446,8 @@ tbody {
   width: 16px;
   height: 16px;
   padding: 2.88px 5.22px;
+  display: flex;
+  cursor: pointer;
 }
 
 .theme-dark {
@@ -7527,6 +7550,16 @@ tbody {
   &:focus {
     box-shadow: 0px 0px 0px 4px #DFE3E6;
   }
+
+  .tj-text-xsm {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;  
+  }
+
+  .tj-folder-list {
+    display: block;
+  }
 }
 
 
@@ -7586,6 +7619,11 @@ tbody {
 
 .modal-backdrop {
   opacity: 0.5;
+}
+
+.canvas-area>.modal-backdrop {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .ds-delete-btn {
@@ -10552,6 +10590,7 @@ tbody {
   }
 }
 
+
 .workspace-folder-modal {
   .tj-app-input {
     padding-bottom: 0px !important;
@@ -10588,5 +10627,31 @@ tbody {
     .react-select__menu-list {
       max-height: 150px;
     }
+  }
+}
+
+.workspace-folder-modal {
+  .tj-app-input {
+    padding-bottom: 0px !important;
+  }
+
+  .tj-input-error {
+    height: 32px;
+    color: #ED5F00;
+    font-weight: 400;
+    font-size: 10px;
+    height: 0px;
+    padding: 4px 0px 20px 0px;
+  }
+}
+.jet-container-loading {
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+}
+
+.freeze-scroll {
+  #real-canvas {
+    overflow: hidden;
   }
 }

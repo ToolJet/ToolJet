@@ -44,7 +44,7 @@ export const initEditorWalkThrough = () => {
         element: '.left-sidebar-inspector',
         popover: {
           title: 'Inspector',
-          description: 'Inspector lets you check the properties of widgets, results of queries etc.',
+          description: 'Inspector lets you check the properties of components, results of queries etc.',
           position: 'right',
           closeBtnText: 'Skip (3/6)',
         },
