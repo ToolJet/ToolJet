@@ -411,7 +411,6 @@ export const EventManager = ({
                     options={dataQueries
                       .filter((query) => query.status === 'published')
                       .map((query) => {
-                        console.log({ name: query.name, value: query.id });
                         return { name: query.name, value: query.id };
                       })}
                     value={event.queryId}

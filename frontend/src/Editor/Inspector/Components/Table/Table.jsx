@@ -1091,6 +1091,7 @@ class TableComponent extends React.Component {
       ...(enabledSort ? ['serverSideSort'] : []),
       'showDownloadButton',
       'showFilterButton',
+      'showAddNewRowButton',
       ...(displayServerSideFilter ? ['serverSideFilter'] : []),
       'showBulkUpdateActions',
       'allowSelection',

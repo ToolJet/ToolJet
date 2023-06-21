@@ -28,11 +28,11 @@ jobs:
           {
             "autoDeploy": "yes",
             "branch": "${{ env.BRANCH_NAME }}",
-            "name": "ToolJet PR #${{ env.PR_NUMBER }}",
+            "name": "ToolJet PR CYPRESS #${{ env.PR_NUMBER }}",
             "notifyOnFail": "default",
             "ownerId": "tea-caeo4bj19n072h3dddc0",
             "repo": "${{ github.event.pull_request.head.repo.git_url }}",
-            "slug": "tooljet-pr-cypress${{ env.PR_NUMBER }}",
+            "slug": "tooljet-pr-cypress-${{ env.PR_NUMBER }}",
             "suspended": "not_suspended",
             "suspenders": [],
             "type": "web_service",
@@ -200,7 +200,7 @@ jobs:
       - name: Delete service
         run: |
           export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20CYPRESS%20%23${{ env.PR_NUMBER }}&limit=1' \
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
            jq -r '.[0].service.id')
@@ -268,7 +268,7 @@ jobs:
       - name: Suspend service
         run: |
           export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20CYPRESS%20%23${{ env.PR_NUMBER }}&limit=1' \
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
            jq -r '.[0].service.id')
@@ -300,7 +300,7 @@ jobs:
       - name: Resume service
         run: |
           export SERVICE_ID=$(curl --request GET \
-          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20CYPRESS%20%23${{ env.PR_NUMBER }}&limit=1' \
           --header 'accept: application/json' \
           --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
            jq -r '.[0].service.id')

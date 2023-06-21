@@ -148,7 +148,7 @@ jobs:
                 "port": 80,
                 "protocol": "TCP"
                 }],
-                "plan": "pro",
+                "plan": "starter",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"

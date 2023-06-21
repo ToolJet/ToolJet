@@ -31,7 +31,6 @@ export function renderElement(
   const componentDefinition = component.component.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
-
   const meta = componentMeta[paramType][param];
 
   return (

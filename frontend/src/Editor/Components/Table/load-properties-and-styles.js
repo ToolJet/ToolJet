@@ -57,6 +57,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     };
   });
 
+  const showAddNewRowButton = properties?.showAddNewRowButton ?? true;
   const allowSelection = properties?.allowSelection ?? (showBulkSelector || highlightSelectedRow) ? true : false;
 
   return {
@@ -87,6 +88,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     rowsPerPage,
     enabledSort,
     hideColumnSelectorButton,
+    showAddNewRowButton,
     allowSelection,
   };
 }
