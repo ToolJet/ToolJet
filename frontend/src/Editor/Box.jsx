@@ -287,6 +287,7 @@ export const Box = function Box({
           boxShadow: validatedGeneralStyles?.boxShadow,
         }}
         role={preview ? 'BoxPreview' : 'Box'}
+        className={inCanvas ? `_tooljet-${component.component} _tooljet-${component.name}` : ''}
       >
         {inCanvas ? (
           !resetComponent ? (

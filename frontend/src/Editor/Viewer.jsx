@@ -1,5 +1,11 @@
 import React from 'react';
-import { appService, authenticationService, orgEnvironmentVariableService, organizationService } from '@/_services';
+import {
+  appService,
+  authenticationService,
+  orgEnvironmentVariableService,
+  organizationService,
+  customStylesService,
+} from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -25,7 +31,7 @@ import {
   excludeWorkspaceIdFromURL,
 } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
-import _ from 'lodash';
+import _, { snakeCase } from 'lodash';
 import { Navigate } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 import { toast } from 'react-hot-toast';
@@ -137,6 +143,7 @@ class ViewerComponent extends React.Component {
       }
     });
 
+    await this.fetchAndInjectCustomStyles(data.slug, data.is_public);
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
 
     const pages = Object.entries(data.definition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
@@ -221,6 +228,18 @@ class ViewerComponent extends React.Component {
         variable.variable_type === 'server' ? 'HiddenEnvironmentVariable' : variable.value;
     });
     return variables;
+  };
+
+  fetchAndInjectCustomStyles = async (slug, isPublic) => {
+    let data;
+    if (!isPublic) {
+      data = await customStylesService.get();
+    } else {
+      data = await customStylesService.getForPublicApp(slug);
+    }
+    const styleEl = document.createElement('style');
+    styleEl.appendChild(document.createTextNode(data.css));
+    document.head.appendChild(styleEl);
   };
 
   loadApplicationBySlug = (slug) => {
@@ -487,6 +506,11 @@ class ViewerComponent extends React.Component {
     this.subscription && this.subscription.unsubscribe();
   }
 
+  formCustomPageSelectorClass = () => {
+    const handle = this.state.appDefinition?.pages[this.state.currentPageId]?.handle;
+    return `_tooljet-page-${handle}`;
+  };
+
   render() {
     const {
       appDefinition,
@@ -586,7 +610,7 @@ class ViewerComponent extends React.Component {
               />
               <div className="sub-section">
                 <div className="main">
-                  <div className="canvas-container align-items-center">
+                  <div className="canvas-container page-container align-items-center">
                     <div className="areas d-flex flex-rows justify-content-center">
                       {appDefinition?.showViewerNavigation && (
                         <ViewerNavigation
@@ -599,7 +623,7 @@ class ViewerComponent extends React.Component {
                         />
                       )}
                       <div
-                        className="canvas-area"
+                        className={`canvas-area ${this.formCustomPageSelectorClass()}`}
                         style={{
                           width: currentCanvasWidth,
                           minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,

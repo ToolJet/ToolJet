@@ -49,6 +49,7 @@ import Grid from './Grid.jsx';
 import HelpPolygon from './HelpPolygon.jsx';
 import Home from './Home.jsx';
 import Information from './Information.jsx';
+import InformationCircle from './InformationCircle.jsx';
 import InRectangle from './InRectangle.jsx';
 import Interactive from './Interactive.jsx';
 import Layers from './Layers.jsx';

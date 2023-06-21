@@ -101,7 +101,7 @@ export function CodeHinter({
   });
   const { t } = useTranslation();
 
-  const { variablesExposedForPreview } = useContext(EditorContext);
+  const { variablesExposedForPreview } = useContext(EditorContext) || {};
 
   const prevCountRef = useRef(false);
 
@@ -160,7 +160,7 @@ export function CodeHinter({
   };
 
   const getCustomResolvables = () => {
-    if (variablesExposedForPreview.hasOwnProperty(component?.id)) {
+    if (variablesExposedForPreview?.hasOwnProperty(component?.id)) {
       if (component?.component?.component === 'Table' && fieldMeta?.name) {
         return {
           ...variablesExposedForPreview[component?.id],

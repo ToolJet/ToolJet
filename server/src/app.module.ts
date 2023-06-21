@@ -45,6 +45,7 @@ import { AppEnvironmentsModule } from './modules/app_environments/app_environmen
 import { RequestContextModule } from './modules/request_context/request-context.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LicenseModule } from './modules/license/license.module';
+import { CustomStylesModule } from './modules/custom_styles/custom_styles.module';
 
 const imports = [
   ScheduleModule.forRoot(),
@@ -103,6 +104,7 @@ const imports = [
   InstanceSettingsModule,
   LicenseModule,
   CopilotModule,
+  CustomStylesModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
