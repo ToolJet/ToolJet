@@ -1,5 +1,5 @@
-export const selectEvent = (event, action) => {
-  cy.get('[data-cy="add-event-handler"]').click();
+export const selectEvent = (event, action, index = 0) => {
+  cy.get('[data-cy="add-event-handler"]').eq(index).click();
   cy.get('[data-cy="event-handler"]').eq(0).click();
   cy.get('[data-cy="event-selection"]')
     .click()

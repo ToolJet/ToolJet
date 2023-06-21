@@ -49,7 +49,7 @@ describe('FolderAppsService', () => {
       // remove app from folder
       await service.remove(folder.id, app.id);
 
-      await foldersService.create(adminUser, 'folder');
+      await foldersService.create(adminUser, 'folder1');
       await expect(manager.findOneOrFail(FolderApp, { where: { folderId: folder.id, appId: app.id } })).rejects.toThrow(
         expect.any(Error)
       );

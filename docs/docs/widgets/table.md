@@ -57,6 +57,10 @@ The table data can be downloaded in various file formats, including:
 
 You have the option to **[hide the download button](/docs/widgets/table#show-download-button)** in the table properties.
 
+:::tip
+You can utilize **[Component Specific Actions](#component-specific-actions-csa)** to retrieve the table data in the mentioned formats from the event handlers across the application.
+:::
+
 ### Column selector button
 
 You can choose which columns to display or hide in the table by clicking on this button. You also have the option to **[hide the column selector button](/docs/widgets/table#show-column-selector-button)** in the table properties.
@@ -79,30 +83,236 @@ The table component will **auto-generate all the columns** as soon as the expect
 
 ## Columns
 
+Whenever data is loaded into a table, the columns are automatically generated. You can add, remove, or modify columns by accessing the table properties under the column section.
+
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/columns2.png" alt="ToolJet - Widget Reference - Table" width="400" />
+<img className="screenshot-full" src="/img/widgets/table/columntypes.png" alt="ToolJet - Widget Reference - Table" />
 
 </div>
 
-### Cell data types
+### Types of Columns
 
-You can define the cell types as per your table's data source using the following:
+The table provides different column types based on the data being displayed:
 
-- <b>String | Default</b>: It is used to render the data for cell types: <i>text or textarea</i>,
-- <b>Number</b>: This cell type will only expect the <b>numerical</b> values and can be sorted in ascending or descending order
-- <b>Badge</b>: It is a labeling component used to display data with badges for e.g <b><i>status of a shipment</i></b>
-- <b>Multiple badges</b>: Similar to badge, used to display multiple data badges in the form of array of objects,
-- <b>Tags</b>: Used to display an array of objects in the form of tags, e.g <b><i>status, levels, steps</i></b>
-- <b>Dropdown</b>: When data is in the form of an array of options to be selected, e.g <b><i>select priority</i></b>
-- <b>Radio</b>: Used to make a selection from a group of options, e.g <b><i>select your salary-range</i></b>
-- <b>Multiselect</b>: Similar to dropdown but to collect multiple user inputs from a list of options,
-- <b>Toggle switch</b>: Allows a user to change a setting between two states, e.g <b><i>select between Yes/No</i></b>,
-- <b>Date picker</b>: Allowing users to display and select dates, e.g <b><i>delivery date</i></b>
-- <b>Image</b>: This cell type expects the URL of image and will display the image in the cell. It also has the option to style the image.
+- [String | Default](#string--default)
+- [Number](#number)
+- [Badge](#badge)
+- [Multiple Badges](#multiple-badges)
+- [Tags](#tags)
+- [Dropdown](#dropdown)
+- [Radio](#radio)
+- [Multiselect](#multiselect)
+- [Toggle switch](#toggle-switch)
+- [Date Picker](#date-picker)
+- [Image](#image)
+
+#### String | Default
+
+This column type is automatically selected by default when a column is added or when data is populated in the table.
+
+| Column property | Description |
+| ----------- | ----------- |
+| Column name | Specify the name to be displayed on the table column header |
+| Overflow | Manage the handling of content that exceeds the cell dimensions. `Wrap` wraps the content onto the next line within the cell, `Scroll` enables scrolling for content that exceeds the cell, and `Hide` conceals content that goes beyond the cell boundary. |
+| Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Text color | Modify the color of the text in the column. You can use a hex color code or color name. The value can be dynamically assigned using JS. Refer to the [how-to guide](/docs/how-to/access-cellvalue-rowdata). |
+| Cell background color | Adjust the background color of the cell in the column. You can utilize a hex color code or color name. The value can be dynamically assigned using JS. |
+| Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
+| Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
+
+#### Number
+
+Selecting the column type as **Number** will only load numerical data in the column cells.
+
+| Column property | Description |
+| ----------- | ----------- |
+| Column name | Specify the name to be displayed on the table column header |
+| Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
+| Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/numbertype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Badge
+
+The **Badge** column type is utilized to exhibit labels on the columns using the column data. 
+
+| Column property | Description |
+| ----------- | ----------- |
+| Column name | Specify the name to be displayed on the table column header |
+| Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Values | Provide the values for the badge as an array |
+| Labels | Provide the labels for the values in the badge as an array |
+| Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
+| Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/badgetype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Multiple Badges
+
+Similar to the **Badge** column type, the **Multiple Badges** type is used to display multiple badges within a column cell.
+
+| Column property | Description |
+| ----------- | ----------- |
+| Column name | Specify the name to be displayed on the table column header |
+| Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Values | Provide the values for the multiple badges as an array |
+| Labels | Provide the labels for the values in the multiple badges as an array |
+| Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
+| Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/multibadgetype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Tags
+
+The **Tags** column type is utilized to display tags within the column cells using the column data. The provided **key** should have values in an array format.
+
+| Column property | Description |
+| ----------- | ----------- |
+| Column name | Specify the name to be displayed on the table column header |
+| Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
+| Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/tagtype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Dropdown
+
+The **Dropdown** column type is used to display a dropdown in the column cells using the column data.
+
+| Column property | Description |
+| ----------- | ----------- |
+| Column name | Specify the name to be displayed on the table column header |
+| Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Values | Provide the values for the dropdown as an array |
+| Labels | Provide the labels for the values in the dropdown as an array |
+| Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
+| Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/droptype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Radio
+
+The **Radio** column type is used to show radio buttons in the column cells using the column data.
+
+| Column property | Description |
+| ----------- | ----------- |
+| Column name | Specify the name to be displayed on the table column header |
+| Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Values | Provide the values for the radio as an array |
+| Labels | Provide the labels for the values in the radio as an array |
+| Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
+| Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/radiotype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Multiselect
+
+The **Multiselect** column type is used to show a multiselect dropdown in the column cells using the column data. 
+
+| Column property | Description |
+| ----------- | ----------- |
+| Column name | Specify the name to be displayed on the table column header |
+| Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Values | Provide the values for the multiselect as an array |
+| Labels | Provide the labels for the values in the multiselect as an array |
+| Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
+| Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/multiselecttype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Toggle Switch
+
+The **Toggle Switch** column type is used to display a toggle switch in the column cells using the column data. The provided **key** should be a boolean value, either true or false.
+
+| Column property | Description |
+| ----------- | ----------- |
+| Column name | Specify the name to be displayed on the table column header |
+| Key | Specify the key name associated with the loaded data in the table. If no key is provided, the `Column name` is used as the key for that column. |
+| Active color | Set the color of the toggle switch when it is active using this property. |
+| + Add Event Handler | Add an event handler to perform actions whenever the toggle switch is turned on or off. |
+| Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
+| Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/toggletype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Date Picker
+
+The **Date Picker** column type is used to display a date picker in the column cells using the column data.
+
+| Column property | Description |
+| ----------- | ----------- |
+| Column name | Specify the name to be displayed on the table column header |
+| Key | Specify the key name associated with the loaded data in the table. The provided **key** should hold a date value. |
+| Date Display Format | Determines how the date should be displayed in the table |
+| Date Parse Format | Specifies the format in which the date is stored in the database. |
+| Parse in timezone | The timezone of the time stored in the database. Only required if the **Show time** option is enabled. |
+| Display in timezone | The timezone in which the date should be displayed. Only required if the **Show time** option is enabled. |
+| Show time | Displays the time along with the date. |
+| Make editable | This option is disabled by default. Enabling it allows the column to be edited by app users. Its value can also be dynamically set to `{{true}}` or `{{false}}` to toggle it on or off. |
+| Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/datetype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
+#### Image
+
+The **Image** column type is used to display images in the column cells using the column data.
+
+| Column property | Description |
+| ----------- | ----------- |
+| Column name | Specify the name to be displayed on the table column header |
+| Key | Specify the key name associated with the loaded data in the table. The provided **key** should hold a URL for the image to be loaded in the column cells. |
+| Border radius | Set a border radius for the image loaded in the column cell. The field accepts a numerical value from `0` to `100`. |
+| Width | Set a width for the image loaded in the column cell. The field accepts a numerical value from `0` to `100`. |
+| Height | Set a height for the image loaded in the column cell. The field accepts a numerical value from `0` to `100`. |
+| Object fit | This option allows you to choose how the image should be fitted within its container. The available options are: **Cover**, **Contain**, and **Fill**. **Cover** maintains the aspect ratio of the image but may crop or clip parts of it to cover the container's width, **Contain** maintains the aspect ratio and resizes the image to fit within the given dimensions while displaying the entire image, and **Fill** stretches the image to cover 100% of the width. |
+| Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/imagetype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
 
 :::info
-Check this **[how-to guide](/docs/how-to/access-cellvalue-rowdata)** on dynamically change the color of text in a row and column in the table.
+For a guide on dynamically changing the color of text in a row and column in the table, refer to this **[how-to guide](/docs/how-to/access-cellvalue-rowdata)**.
 :::
 
 ### Displaying Data
@@ -252,7 +462,7 @@ If server-side search is enabled, `on search` event is fired after the content o
 
 The download button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the download button by clicking on the **Fx** button.
 
-### Show column selector button
+### Hide column selector button
 
 The column selector button on the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the column selector button by clicking on the **Fx** button.
 
@@ -260,17 +470,25 @@ The column selector button on the table header is visible by default. You can ch
 
 The filter button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the filter button by clicking on the **Fx** button.
 
+### Show add new row button
+
+The Add new row button in the table header is visible by default. You can choose to hide it by disabling this option. You can dynamically set the value to {{true}} or {{false}} to show or hide the Add new row button by clicking on the **Fx** button.
+
 ### Show update buttons
 
 It's enabled by default. Table footer will show two update buttons **Save changes** & **Discard changes** whenever a cell is edited. Toggle `off` to hide update buttons.
 
-### Bulk selection
+### Allow selection
 
-To let the user select one or more rows from the current page of a table, enable 'Bulk selection' from the inspector. The values of selected rows will be exposed as `selectedRows`.
+This option is active by default. **Enabling** this functionality allows users to choose a row in the table by utilizing `checkboxes` placed next to each row. If this option is **disabled**, the ability to highlight selected rows and perform bulk selection will not be accessible.
 
 ### Highlight selected row
 
-Enable this option to have the last selected(clicked on) row to be highlighted.
+Activate this option to visually emphasize the last clicked row. **Enabling** this feature will alter the row selection appearance of the table from a `checkbox`-based theme to a `highlighting`-based theme.
+
+### Bulk selection
+
+To enable the selection of one or more rows from the current page of a table, you can activate the 'Bulk selection' setting in the inspector. The values of the selected rows will be exposed as '**selectedRows**'.
 
 ### Disable sorting
 
@@ -345,19 +563,6 @@ This event is triggered when filter is added, removed, or updated from the filte
 
 This event is triggered when the **Save** button is clicked from the **Add new row** modal on the table. 
 
-## Exposed variables
-
-| variable      | description |
-| ----------- | ----------- |
-| currentData      | Data that is currently being displayed by the table ( including edits if any ) |
-| currentPageData  | Data that is displayed on the current page if pagination is enabled ( including edits if any )      |
-| pageIndex | Index of the current page, starting from 1
-| changeSet | Object with row number as the key and object of edited fields and their values as the value |
-| dataUpdates | Just like changeSet but includes the data of the entire row |
-| selectedRow | The data of the row that was last clicked. `selectedRow` also changes when an action button is clicked |
-| searchText | The value of the search field if server-side pagination is enabled |
-| newRows| The newRows variable stores an array of objects, each containing data for a row that was added to the table using the "Add new row" button. When the user clicks either the "Save" or "Discard" button in the modal, this data is cleared.|
-
 ## Styles
 
 | Style      | Description |
@@ -374,6 +579,19 @@ This event is triggered when the **Save** button is clicked from the **Add new r
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
 
+## Exposed variables
+
+| variable      | description |
+| ----------- | ----------- |
+| currentData      | Data that is currently being displayed by the table ( including edits if any ) |
+| currentPageData  | Data that is displayed on the current page if pagination is enabled ( including edits if any )      |
+| pageIndex | Index of the current page, starting from 1
+| changeSet | Object with row number as the key and object of edited fields and their values as the value |
+| dataUpdates | Just like changeSet but includes the data of the entire row |
+| selectedRow | The data of the row that was last clicked. `selectedRow` also changes when an action button is clicked |
+| searchText | The value of the search field if server-side pagination is enabled |
+| newRows| The newRows variable stores an array of objects, each containing data for a row that was added to the table using the "Add new row" button. When the user clicks either the "Save" or "Discard" button in the modal, this data is cleared.|
+
 ## Component specific actions (CSA)
 
 Following actions of color picker component can be controlled using the component specific actions(CSA):
@@ -385,3 +603,4 @@ Following actions of color picker component can be controlled using the componen
 | deselectRow | Deselect the row on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.deselectRow()` |
 | discardChanges | Discard the changes from the table when a cell is edited via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.discardChanges()` |
 | discardNewlyAddedRows | Discard the newly added rows from the add new row popup on the table via component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.table1.discardNewlyAddedRows()` |
+| downloadTableData | Retrieve the data from the table in the PDF, CSV, or Excel sheet by using a component-specific action within an event handler. Furthermore, you have the choice to utilize a RunJS query to execute component-specific actions. For downloading the table data as a PDF, you can use the following code: `await components.table1.downloadTableData('pdf')`. Similarly, for downloading as a CSV: `await components.table1.downloadTableData('csv')`, and for downloading as an Excel sheet: `await components.table1.downloadTableData('xlsx')`. |

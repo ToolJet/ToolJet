@@ -3,55 +3,89 @@ id: postgresql
 title: PostgreSQL
 ---
 
-# PostgreSQL
+ToolJet has the capability to connect to PostgreSQL databases for data retrieval and modification.
 
-ToolJet can connect to PostgreSQL databases to read and write data. 
+## Establishing a Connection
 
-## Connection
+To establish a connection with the PostgreSQL global datasource, you can take either of the following steps: click on the "Add new global datasource" button in the query panel, or access the [Global Datasources](/docs/data-sources/overview) page through the ToolJet dashboard.
 
-Please make sure the host/ip of the database is accessible from your VPC if you have self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
-
-To add a new PostgreSQL database, click on the `+` button on data sources panel at the left-bottom corner of the app editor. Select PostgreSQL from the modal that pops up.
-
-ToolJet requires the following to connect to your PostgreSQL database.
+ToolJet requires the following information to connect to your PostgreSQL database:
 
 - **Host**
 - **Port**
+- **SSL**
+- **Database Name**
 - **Username**
 - **Password**
+- **Connection Options**
+- **SSL Certificate**
 
-It is recommended to create a new PostgreSQL database user so that you can control the access levels of ToolJet.
+We recommend creating a new PostgreSQL database user to have control over ToolJet's access levels.
 
+:::caution
+Ensure that the host/IP of the database is accessible from your VPC in case you are using self-hosted ToolJet. If you are using ToolJet cloud, please whitelist our IP.
+:::
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnect.png" alt="ppg connect" />
+<div style={{textAlign: 'center'}}>
 
+<img className="screenshot-full" src="/img/datasource-reference/postgresql/pgconnection.png" alt="PG connection"/>
 
-Click on **Test connection** button to verify if the credentials are correct and that the database is accessible to ToolJet server. Click on **Save** button to save the data source.
+</div>
+
+Click the **Test connection** button to verify the correctness of the credentials and the accessibility of the database to ToolJet server. Click the **Save** button to save the data source.
 
 ## Querying PostgreSQL
 
-Click on `+` button of the query manager at the bottom panel of the editor and select the database added in the previous step as the data source. PostgreSQL query editor has two modes, SQL & GUI. **[SQL mode](/docs/data-sources/postgresql#sql-mode)** can be used to write raw SQL queries and **[GUI mode](/docs/data-sources/postgresql#gui-mode)** can be used to query your PostgreSQL database without writing queries.
+Click on `+Add` button on the query panel and select the PostgreSQL from the global datasources. 
 
-#### SQL mode
+PostgreSQL query editor has two modes, **SQL** & **GUI**. **[SQL mode](/docs/data-sources/postgresql#sql-mode)** can be used to write raw SQL queries and **[GUI mode](/docs/data-sources/postgresql#gui-mode)** can be used to query your PostgreSQL database without writing queries.
 
-Select SQL mode from the dropdown and enter the query in the editor. Click on the `run` button to run the query.
+<div style={{textAlign: 'center'}}>
 
-**NOTE**: Query should be saved before running.
+<img className="screenshot-full" src="/img/datasource-reference/postgresql/newquery.png" alt="PG connection"/>
 
+</div>
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/pg-sql.png" alt="ppg sql" />
+#### SQL Mode
 
+To execute SQL queries, select the SQL mode from the dropdown and enter your query in the editor. Click the `Run` button to execute the query.
 
-#### GUI mode
+<div style={{textAlign: 'center'}}>
 
-Select GUI mode from the dropdown and then choose the operation **Bulk update using primary key**. Enter the **Table** name and **Primary key column** name. Now, in the editor enter the **records** in the form of an array of objects. 
+<img className="screenshot-full" src="/img/datasource-reference/postgresql/sql1.png" alt="PG connection"/>
 
-Click on the `run` button to run the query. **NOTE**: Query should be saved before running.
+</div>
 
+#### GUI Mode
 
-<img className="screenshot-full" src="/img/datasource-reference/postgresql/pg-gui.png" alt="ppg gui" />
+Choose the GUI mode from the dropdown and select the operation **Bulk update using primary key**. Provide the **Table** name and the **Primary key column** name. Then, in the editor, input the **records** as an array of objects.
 
+Here is an example of records for a bulk update using the provided format:
+
+```json
+[
+  {
+    "customer_id": 1,
+    "country": "India"
+  },
+  {
+    "customer_id": 2,
+    "country": "USA"
+  }
+]
+```
+
+Please note that the records should be enclosed within square brackets `[]`, and each record should be represented as an object with key-value pairs.
+
+Click the `Run` button to execute the query.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/datasource-reference/postgresql/gui1.png" alt="PG connection"/>
+
+</div>
 
 :::tip
-Query results can be transformed using transformations. Read our transformations documentation to see how: **[link](/docs/tutorial/transformations)**
+- You can apply transformations to the query results. Refer to our transformations documentation for more details: **[link](/docs/tutorial/transformations)**
+- Check out this how-to guide on **[bulk updating multiple rows](/docs/how-to/bulk-update-multiple-rows)** from a table component.
 :::
