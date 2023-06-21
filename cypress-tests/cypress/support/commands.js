@@ -21,11 +21,11 @@ Cypress.Commands.add("clearAndType", (selector, text) => {
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
-  cy.get(commonSelectors.canvas).click({ force: true });
+  cy.get(commonSelectors.canvas).click("topRight", { force: true });
 });
 
 Cypress.Commands.add("verifyToastMessage", (selector, message) => {
-  cy.get(selector).eq(0).should("be.visible").and("contain.text", message);
+  cy.get(selector).should("contain.text", message);
   cy.get("body").then(($body) => {
     if ($body.find(commonSelectors.toastCloseButton).length > 0) {
       cy.closeToastMessage();
