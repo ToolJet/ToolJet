@@ -1138,11 +1138,21 @@ class EditorComponent extends React.Component {
     }
 
     const newPageData = cloneDeep(currentPage);
+    const oldToNewIdMapping = {};
     if (!isEmpty(currentPage?.components)) {
       newPageData.components = Object.keys(newPageData.components).reduce((acc, key) => {
-        acc[uuid()] = newPageData.components[key];
+        const newComponentId = uuid();
+        acc[newComponentId] = newPageData.components[key];
+        oldToNewIdMapping[key] = newComponentId;
         return acc;
       }, {});
+
+      Object.values(newPageData.components).map((comp) => {
+        if (comp.parent) {
+          comp.parent = oldToNewIdMapping[comp.parent];
+        }
+        return comp;
+      });
     }
 
     const newPage = {
