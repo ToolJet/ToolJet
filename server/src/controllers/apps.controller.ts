@@ -236,14 +236,14 @@ export class AppsController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Get(':id/versions')
-  async fetchVersions(@User() user, @AppDecorator() app: App) {
+  async fetchVersions(@User() user, @AppDecorator() app: App, @Query('environment_id') environmentId: string) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('fetchVersions', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.fetchVersions(user, app.id);
+    const result = await this.appsService.fetchVersions(user, app.id, environmentId);
     return { versions: result };
   }
 
@@ -330,8 +330,8 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const numVersions = await this.appsService.fetchVersions(user, id);
-    if (numVersions.length <= 1) {
+    const numVersions = await this.appsService.getAppVersionsCount(id);
+    if (numVersions <= 1) {
       throw new ForbiddenException('Cannot delete only version of app');
     }
 

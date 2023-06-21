@@ -173,6 +173,12 @@ export class AppsService {
     return await viewableAppsQuery(user, searchKey).getCount();
   }
 
+  getAppVersionsCount = async (appId: string) => {
+    return await this.appVersionsRepository.count({
+      where: { appId },
+    });
+  };
+
   async all(user: User, page: number, searchKey: string): Promise<App[]> {
     const viewableAppsQb = viewableAppsQuery(user, searchKey);
 
@@ -257,9 +263,14 @@ export class AppsService {
     return serializedUsers;
   }
 
-  async fetchVersions(user: any, appId: string): Promise<AppVersion[]> {
+  async fetchVersions(user: any, appId: string, environmentId: string): Promise<AppVersion[]> {
+    const conditions = { appId };
+    if (environmentId) {
+      const env = await this.appEnvironmentService.get(user?.organizationId, environmentId);
+      if (env.priority !== 1) conditions['currentEnvironmentId'] = environmentId;
+    }
     return await this.appVersionsRepository.find({
-      where: { appId },
+      where: conditions,
       order: {
         createdAt: 'DESC',
       },
