@@ -5,6 +5,7 @@ import { ManageOrgUsers } from '@/ManageOrgUsers';
 import { ManageGroupPermissions } from '@/ManageGroupPermissions';
 import { ManageSSO } from '@/ManageSSO';
 import { ManageOrgVars } from '@/ManageOrgVars';
+import { CustomStylesEditor } from '@/CustomStylesEditor';
 import { authenticationService } from '@/_services';
 import { CopilotSetting } from '@/CopilotSettings';
 import { BreadCrumbContext } from '../App/App';
@@ -16,7 +17,7 @@ export function OrganizationSettings(props) {
   const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Copilot'];
+  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Copilot', 'Custom styles'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'Users':
@@ -29,6 +30,8 @@ export function OrganizationSettings(props) {
         return 'manageEnvVars';
       case 'Copilot':
         return 'manageCopilot';
+      case 'Custom styles':
+        return 'manageCustomstyles';
       default:
         return groupName;
     }
@@ -82,6 +85,7 @@ export function OrganizationSettings(props) {
               {selectedTab === 'manageSSO' && <ManageSSO />}
               {selectedTab === 'manageEnvVars' && <ManageOrgVars darkMode={props.darkMode} />}
               {selectedTab === 'manageCopilot' && <CopilotSetting />}
+              {selectedTab === 'manageCustomstyles' && <CustomStylesEditor darkMode={props.darkMode} />}
             </div>
           </div>
         </div>

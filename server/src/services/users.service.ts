@@ -423,6 +423,7 @@ export class UsersService {
 
       case 'User':
       case 'Plugin':
+      case 'CustomStyle':
         return await this.hasGroup(user, 'admin');
 
       case 'Thread':

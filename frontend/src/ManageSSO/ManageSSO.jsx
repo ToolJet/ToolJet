@@ -111,7 +111,7 @@ export function ManageSSO({ darkMode }) {
         <div className="page-wrapper">
           <div className="container-xl">
             <div className="manage-sso-container">
-              <div className="d-flex manage-sso-wrapper-card">
+              <div className="d-flex org-settings-wrapper-card">
                 <div className="left-menu">
                   <ul data-cy="left-menu-items tj-text-xsm">
                     {menuItems.map((item, index) => {

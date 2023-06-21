@@ -1,8 +1,14 @@
 import React from 'react';
-import { appService, authenticationService, appVersionService, orgEnvironmentVariableService } from '@/_services';
+import {
+  appService,
+  authenticationService,
+  appVersionService,
+  orgEnvironmentVariableService,
+  customStylesService,
+} from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
+import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit, snakeCase } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -195,6 +201,7 @@ class EditorComponent extends React.Component {
     this.setCurrentAppEnvironmentId();
     this.fetchApp(this.props.params.pageHandle);
     this.fetchOrgEnvironmentVariables();
+    this.fetchAndInjectCustomStyles();
     this.initComponentVersioning();
     this.initRealtimeSave();
     this.initEventListeners();
@@ -244,6 +251,21 @@ class EditorComponent extends React.Component {
           client: client_variables,
         },
       });
+    });
+  };
+
+  fetchAndInjectCustomStyles = () => {
+    customStylesService.get().then((data) => {
+      const head = document.head || document.getElementsByTagName('head')[0];
+      let styleTag = document.getElementById('workspace-custom-css');
+      if (!styleTag) {
+        // If it doesn't exist, create a new style tag and append it to the head
+        styleTag = document.createElement('style');
+        styleTag.type = 'text/css';
+        styleTag.id = 'workspace-custom-css';
+        head.appendChild(styleTag);
+      }
+      styleTag.innerHTML = data.css;
     });
   };
 
@@ -1421,6 +1443,11 @@ class EditorComponent extends React.Component {
     });
   };
 
+  formCustomPageSelectorClass = () => {
+    const handle = this.state.appDefinition?.pages[this.state.currentPageId]?.handle;
+    return `_tooljet-page-${handle}`;
+  };
+
   render() {
     const {
       currentSidebarTab,
@@ -1582,7 +1609,7 @@ class EditorComponent extends React.Component {
               )}
               <div className="main main-editor-canvas" id="main-editor-canvas">
                 <div
-                  className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
+                  className={`canvas-container page-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
                   style={{ transform: `scale(${zoomLevel})` }}
                   onMouseUp={(e) => {
                     if (['real-canvas', 'modal'].includes(e.target.className)) {
@@ -1595,7 +1622,7 @@ class EditorComponent extends React.Component {
                   }}
                 >
                   <div
-                    className="canvas-area"
+                    className={`canvas-area ${this.formCustomPageSelectorClass()}`}
                     style={{
                       width: currentLayout === 'desktop' ? '100%' : '450px',
                       minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,

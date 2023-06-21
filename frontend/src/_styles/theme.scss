@@ -9114,7 +9114,7 @@ tbody {
 }
 
 .org-users-page-card-wrap,
-.manage-sso-wrapper-card {
+.org-settings-wrapper-card {
   display: flex;
   flex-direction: row;
   background: var(--base);
@@ -9124,7 +9124,7 @@ tbody {
   border-radius: 6px;
 }
 
-.manage-sso-wrapper-card {
+.org-settings-wrapper-card {
   margin: 0 auto;
 
   .card-body {
@@ -10996,4 +10996,16 @@ tbody {
       max-height: 150px;
     }
   }
+}
+
+.custom-css-input-container span.cm-error {
+  background-color: transparent;
+  text-decoration: underline;
+  text-decoration-color: red;
+  text-decoration-style: dashed;
+}
+
+.org-settings-info {
+  background-color: var(--slate2);
+  border: 1px solid var(--slate3);
 }
