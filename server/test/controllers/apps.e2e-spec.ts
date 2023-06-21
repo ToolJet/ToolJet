@@ -175,35 +175,55 @@ describe('apps controller', () => {
           user: anotherOrgAdminUserData.user,
         });
 
-        const nonPermissibleApp = await createApplication(app, {
-          name: 'Non Permissible App',
-          user: adminUserData.user,
-        });
+        const nonPermissibleApp = await createApplication(
+          app,
+          {
+            name: 'Non Permissible App',
+            user: adminUserData.user,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: nonPermissibleApp.id }, { read: false });
 
-        const publicApp = await createApplication(app, {
-          name: 'Public App',
-          user: adminUserData.user,
-          isPublic: true,
-        });
+        const publicApp = await createApplication(
+          app,
+          {
+            name: 'Public App',
+            user: adminUserData.user,
+            isPublic: true,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: publicApp.id }, { read: false });
-        const ownedApp = await createApplication(app, {
-          name: 'Owned App',
-          user: developerUserData.user,
-        });
-        const appNotInFolder = await createApplication(app, {
-          name: 'App not in folder',
-          user: adminUserData.user,
-        });
+        const ownedApp = await createApplication(
+          app,
+          {
+            name: 'Owned App',
+            user: developerUserData.user,
+          },
+          false
+        );
+        const appNotInFolder = await createApplication(
+          app,
+          {
+            name: 'App not in folder',
+            user: adminUserData.user,
+          },
+          false
+        );
         await getManager().update(
           AppGroupPermission,
           { app: appNotInFolder, groupPermissionId: allUserGroup },
           { read: true }
         );
-        const appInFolder = await createApplication(app, {
-          name: 'App in folder',
-          user: adminUserData.user,
-        });
+        const appInFolder = await createApplication(
+          app,
+          {
+            name: 'App in folder',
+            user: adminUserData.user,
+          },
+          false
+        );
         await getManager().update(
           AppGroupPermission,
           { app: appInFolder, groupPermissionId: allUserGroup },
@@ -349,53 +369,81 @@ describe('apps controller', () => {
           user: anotherOrgAdminUserData.user,
         });
 
-        const nonPermissibleApp = await createApplication(app, {
-          name: 'Non Permissible App',
-          user: adminUserData.user,
-        });
+        const nonPermissibleApp = await createApplication(
+          app,
+          {
+            name: 'Non Permissible App',
+            user: adminUserData.user,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: nonPermissibleApp.id }, { read: false });
 
-        const publicApp = await createApplication(app, {
-          name: 'Public App',
-          user: adminUserData.user,
-          isPublic: true,
-        });
+        const publicApp = await createApplication(
+          app,
+          {
+            name: 'Public App',
+            user: adminUserData.user,
+            isPublic: true,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: publicApp.id }, { read: false });
 
-        await createApplication(app, {
-          name: 'Owned App',
-          user: developerUserData.user,
-        });
-        const appNotInfolder = await createApplication(app, {
-          name: 'App not in folder',
-          user: adminUserData.user,
-        });
+        await createApplication(
+          app,
+          {
+            name: 'Owned App',
+            user: developerUserData.user,
+          },
+          false
+        );
+        const appNotInfolder = await createApplication(
+          app,
+          {
+            name: 'App not in folder',
+            user: adminUserData.user,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: appNotInfolder.id }, { read: true });
-        const appInFolder = await createApplication(app, {
-          name: 'App in folder',
-          user: adminUserData.user,
-        });
+        const appInFolder = await createApplication(
+          app,
+          {
+            name: 'App in folder',
+            user: adminUserData.user,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: appInFolder.id }, { read: true });
         await getManager().save(FolderApp, {
           app: appInFolder,
           folder: folder,
         });
 
-        const publicAppInFolder = await createApplication(app, {
-          name: 'Public App in Folder',
-          user: adminUserData.user,
-          isPublic: true,
-        });
+        const publicAppInFolder = await createApplication(
+          app,
+          {
+            name: 'Public App in Folder',
+            user: adminUserData.user,
+            isPublic: true,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: publicAppInFolder.id }, { read: false });
         await getManager().save(FolderApp, {
           app: publicAppInFolder,
           folder: folder,
         });
 
-        const nonPermissibleAppInFolder = await createApplication(app, {
-          name: 'Non permissible App in folder',
-          user: adminUserData.user,
-        });
+        const nonPermissibleAppInFolder = await createApplication(
+          app,
+          {
+            name: 'Non permissible App in folder',
+            user: adminUserData.user,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: nonPermissibleAppInFolder.id }, { read: false });
         await getManager().save(FolderApp, {
           app: nonPermissibleAppInFolder,
@@ -479,8 +527,6 @@ describe('apps controller', () => {
       });
 
       await createApplicationVersion(app, application);
-
-      await createAppEnvironments(app, adminUserData.user.organizationId);
 
       let response = await request(app.getHttpServer())
         .post(`/api/apps/${application.id}/clone`)
@@ -1864,8 +1910,6 @@ describe('apps controller', () => {
       });
 
       await createApplicationVersion(app, application);
-
-      await createAppEnvironments(app, adminUserData.user.organizationId);
 
       // setup app permissions for developer
       const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
