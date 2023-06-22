@@ -363,13 +363,12 @@ export class DataQueriesService {
     if (!options) return {};
 
     for (const key of Object.keys(options)) {
-      const toResolve = options[key]?.['value'];
-
+      const currentOption = options[key]?.['value'];
       const variablesMatcher = /(%%.+?%%)/g;
+      const matched = variablesMatcher.exec(currentOption);
 
-      const matched = variablesMatcher.exec(toResolve);
       if (matched) {
-        const resolved = await this.resolveVariable(toResolve, organization_id);
+        const resolved = await this.resolveVariable(currentOption, organization_id);
         options[key]['value'] = resolved;
       }
     }

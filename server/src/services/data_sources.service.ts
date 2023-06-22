@@ -300,14 +300,12 @@ export class DataSourcesService {
     const parsedOptions = JSON.parse(JSON.stringify(options));
 
     for (const key of Object.keys(parsedOptions)) {
-      const toResolve = parsedOptions[key]?.['value'];
-
+      const currentOption = parsedOptions[key]?.['value'];
       const variablesMatcher = /(%%.+?%%)/g;
+      const matched = variablesMatcher.exec(currentOption);
 
-      const matched = variablesMatcher.exec(toResolve);
       if (matched) {
-        const resolved = await this.resolveVariable(toResolve, organization_id);
-
+        const resolved = await this.resolveVariable(currentOption, organization_id);
         parsedOptions[key]['value'] = resolved;
       }
     }
