@@ -8,7 +8,7 @@ import {
   Patch,
   Delete,
   //   BadRequestException,
-  //   ForbiddenException,
+  ForbiddenException,
   //   Query,
 } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
@@ -17,13 +17,17 @@ import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { User } from 'src/decorators/user.decorator';
 import { OrganizationConstantsService } from '@services/organization_constants.service';
 import { CreateOrganizationConstantDto, UpdateOrganizationConstantDto } from '@dto/organization-constant.dto';
-// import { OrganizationConstants } from '../entities/organization_constants.entity';
+import { OrganizationConstant } from '../entities/organization_constants.entity';
 import { IsPublicGuard } from 'src/modules/org_environment_variables/is-public.guard';
 import { AppDecorator as App } from 'src/decorators/app.decorator';
+import { OrganizationConstantsAbilityFactory } from 'src/modules/casl/abilities/organization-constants.factory';
 
 @Controller('organization-constants')
 export class OrganizationConstantController {
-  constructor(private organizationConstantsService: OrganizationConstantsService) {}
+  constructor(
+    private organizationConstantsService: OrganizationConstantsService,
+    private organizationConstantsAbilityFactory: OrganizationConstantsAbilityFactory
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get()
@@ -45,6 +49,12 @@ export class OrganizationConstantController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@User() user, @Body() createOrganizationConstantDto: CreateOrganizationConstantDto) {
+    const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, {});
+
+    if (!ability.can('createOrganizationConstant', OrganizationConstant)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
     const { organizationId } = user;
     const result = await this.organizationConstantsService.create(createOrganizationConstantDto, organizationId);
 
