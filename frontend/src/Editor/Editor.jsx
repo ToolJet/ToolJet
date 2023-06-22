@@ -48,7 +48,6 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { resetAllStores } from '@/_stores/utils';
-import { shallow } from 'zustand/shallow';
 
 setAutoFreeze(false);
 enablePatches();
@@ -246,13 +245,6 @@ class EditorComponent extends React.Component {
       this.canvasContainerRef.current.scrollLeft += this.state.editorMarginLeft;
     }
   }
-
-  isVersionReleased = (version = useAppVersionStore?.getState()?.editingVersion) => {
-    if (isEmpty(version)) {
-      return false;
-    }
-    return this.state.app.current_version_id === version.id;
-  };
 
   initEventListeners() {
     this.socket?.addEventListener('message', (event) => {
@@ -1755,12 +1747,9 @@ class EditorComponent extends React.Component {
 }
 
 const withStore = (Component) => (props) => {
-  const { isVersionReleased } = useAppVersionStore(
-    (state) => ({
-      isVersionReleased: state.isVersionReleased,
-    }),
-    shallow
-  );
+  const { isVersionReleased } = useAppVersionStore((state) => ({
+    isVersionReleased: state.isVersionReleased,
+  }));
   return <Component {...props} isVersionReleased={isVersionReleased} />;
 };
 

@@ -1,5 +1,4 @@
 import '@/_styles/editor/comments.scss';
-import { shallow } from 'zustand/shallow';
 import React from 'react';
 import { isEmpty } from 'lodash';
 import Comment from './Comment';
@@ -10,7 +9,7 @@ import useRouter from '@/_hooks/use-router';
 const Comments = ({ newThread = {}, socket, canvasWidth, currentPageId }) => {
   const [threads, setThreads] = React.useState([]);
   const router = useRouter();
-  const { appVersionsId } = useAppVersionStore((state) => ({ appVersionsId: state?.editingVersion?.id }), shallow);
+  const { appVersionsId } = useAppVersionStore((state) => ({ appVersionsId: state?.editingVersion?.id }));
 
   async function fetchData() {
     const { data } = await commentsService.getThreads(router.query.id, appVersionsId);

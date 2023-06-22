@@ -4,7 +4,6 @@ import { appService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { shallow } from 'zustand/shallow';
 import { ConfirmDialog } from '@/_components/ConfirmDialog';
 
 export const ReleaseVersionButton = function DeployVersionButton({
@@ -16,12 +15,9 @@ export const ReleaseVersionButton = function DeployVersionButton({
   saveEditingVersion,
 }) {
   const [isReleasing, setIsReleasing] = useState(false);
-  const { isVersionReleased } = useAppVersionStore(
-    (state) => ({
-      isVersionReleased: state.isVersionReleased,
-    }),
-    shallow
-  );
+  const { isVersionReleased } = useAppVersionStore((state) => ({
+    isVersionReleased: state.isVersionReleased,
+  }));
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(false);
 
   const { t } = useTranslation();

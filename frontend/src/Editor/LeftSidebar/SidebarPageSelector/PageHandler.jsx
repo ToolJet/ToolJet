@@ -7,7 +7,6 @@ import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 import { toast } from 'react-hot-toast';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { shallow } from 'zustand/shallow';
 
 export const PageHandler = ({
   darkMode,
@@ -39,12 +38,9 @@ export const PageHandler = ({
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const { isVersionReleased } = useAppVersionStore(
-    (state) => ({
-      isVersionReleased: state.isVersionReleased,
-    }),
-    shallow
-  );
+  const { isVersionReleased } = useAppVersionStore((state) => ({
+    isVersionReleased: state.isVersionReleased,
+  }));
   const handleClose = () => {
     setShowEditModal(false);
     setShowPagehandlerMenu(true);

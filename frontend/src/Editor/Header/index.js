@@ -13,7 +13,6 @@ import config from 'config';
 // eslint-disable-next-line import/no-unresolved
 import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { shallow } from 'zustand/shallow';
 
 export default function EditorHeader({
   darkMode,
@@ -43,12 +42,9 @@ export default function EditorHeader({
   currentUser,
 }) {
   const { is_maintenance_on } = app;
-  const { isVersionReleased } = useAppVersionStore(
-    (state) => ({
-      isVersionReleased: state.isVersionReleased,
-    }),
-    shallow
-  );
+  const { isVersionReleased } = useAppVersionStore((state) => ({
+    isVersionReleased: state.isVersionReleased,
+  }));
   const updatePresence = useUpdatePresence();
   useEffect(() => {
     const initialPresence = {
