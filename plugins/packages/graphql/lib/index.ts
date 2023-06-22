@@ -101,8 +101,7 @@ export default class GraphqlQueryService implements QueryService {
 
     const searchParams = Object.fromEntries(sourceOptions['url_params']);
 
-    // Remove invalid entries from the headers and searchParams objects
-    Object.keys(headers).forEach((key) => (headers[key] === '' ? delete headers[key] : {}));
+    // Remove invalid entries from the searchParams objects
     Object.keys(searchParams).forEach((key) => (searchParams[key] === '' ? delete searchParams[key] : {}));
 
     if (authType === 'bearer') {
