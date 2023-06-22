@@ -100,7 +100,6 @@ export function CodeHinter({
     },
   });
   const { t } = useTranslation();
-  console.log(currentState, 'currentState');
   const { variablesExposedForPreview } = useContext(EditorContext);
 
   const prevCountRef = useRef(false);
@@ -272,7 +271,6 @@ export function CodeHinter({
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
-  console.log({ ElementToRender, codeShow, componentName, paramLabel });
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
