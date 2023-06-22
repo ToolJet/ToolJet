@@ -12,9 +12,10 @@ export const useDataSourcesStore = create(
     (set) => ({
       ...initialState,
       actions: {
-        fetchDataSources: (appId) => {
+        //DON'T REMOVE environmentId WHILE RESOLVING CONFLICTS !!!
+        fetchDataSources: (appId, environmentId) => {
           set({ loadingDataSources: true });
-          datasourceService.getAll(appId).then((data) => {
+          datasourceService.getAll(appId, environmentId).then((data) => {
             set({
               dataSources: data.data_sources,
               loadingDataSources: false,
