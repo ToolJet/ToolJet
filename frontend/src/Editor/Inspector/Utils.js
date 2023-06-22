@@ -1,6 +1,8 @@
 import React from 'react';
 import { Code } from './Elements/Code';
 import { QuerySelector } from './QuerySelector';
+import { resolveReferences } from '@/_helpers/utils';
+import { useCurrentStateStore } from '../../_stores/currentStateStore';
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
@@ -27,12 +29,27 @@ export function renderElement(
   components = {},
   darkMode = false
 ) {
-  const componentDefinition = component.component.definition;
+  const componentConfig = component.component;
+  const componentDefinition = componentConfig.definition;
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
-
   const meta = componentMeta[paramType][param];
-  console.log(darkMode, 'darkMode');
+  const currentState = useCurrentStateStore.getState();
+
+  if (componentConfig.component == 'DropDown') {
+    const paramTypeConfig = componentMeta[paramType] || {};
+    const paramConfig = paramTypeConfig[param] || {};
+    const { conditionallyRender = null } = paramConfig;
+
+    if (conditionallyRender) {
+      const { key, value } = conditionallyRender;
+      if (paramTypeDefinition?.[key] ?? value) {
+        const resolvedValue = paramTypeDefinition?.[key] && resolveReferences(paramTypeDefinition?.[key], currentState);
+        if (resolvedValue?.value !== value) return;
+      }
+    }
+  }
+
   return (
     <Code
       param={{ name: param, ...component.component.properties[param] }}

@@ -100,7 +100,7 @@ export function CodeHinter({
     },
   });
   const { t } = useTranslation();
-
+  console.log(currentState, 'currentState');
   const { variablesExposedForPreview } = useContext(EditorContext);
 
   const prevCountRef = useRef(false);

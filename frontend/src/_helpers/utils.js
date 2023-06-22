@@ -394,7 +394,6 @@ export async function executeMultilineJS(
   queryId,
   isPreview,
   // eslint-disable-next-line no-unused-vars
-  confirmed = undefined,
   mode = ''
 ) {
   //:: confirmed arg is unused
