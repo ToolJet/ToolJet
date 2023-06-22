@@ -394,7 +394,8 @@ export async function executeMultilineJS(
   isPreview,
   // eslint-disable-next-line no-unused-vars
   confirmed = undefined,
-  mode = ''
+  mode = '',
+  args
 ) {
   //:: confirmed arg is unused
   const { currentState } = _ref.state;
@@ -406,7 +407,7 @@ export async function executeMultilineJS(
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
       ...currentState.queries[key],
-      run: () => actions.runQuery(key),
+      run: (...args) => actions.runQuery(key, args),
     };
   }
 
@@ -424,6 +425,7 @@ export async function executeMultilineJS(
       'actions',
       'client',
       'server',
+      'args',
       code
     );
     result = {
@@ -439,7 +441,8 @@ export async function executeMultilineJS(
         currentState.variables,
         actions,
         currentState?.client,
-        currentState?.server
+        currentState?.server,
+        args
       ),
     };
   } catch (err) {
@@ -511,13 +514,18 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
   const currentComponents = _ref.state?.appDefinition?.pages[currentPageId]?.components
     ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
     : {};
-  const runQuery = (queryName = '') => {
+  const runQuery = (queryName = '', args) => {
     const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
+    const processedArgs = {};
 
     if (_.isEmpty(query) || queryId === query?.id) {
       const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
       toast.error(errorMsg);
       return;
+    }
+
+    if (!_.isEmpty(query?.options?.arguments)) {
+      query.options.arguments.forEach((arg, index) => (processedArgs[arg.name] = args[index]));
     }
 
     if (isPreview) {
@@ -528,7 +536,9 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
       actionId: 'run-query',
       queryId: query.id,
       queryName: query.name,
+      arguments: processedArgs,
     };
+
     return executeAction(_ref, event, mode, {});
   };
 

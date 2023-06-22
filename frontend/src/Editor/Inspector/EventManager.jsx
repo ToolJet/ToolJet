@@ -7,7 +7,7 @@ import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import useDraggableInPortal from '@/_hooks/useDraggableInPortal';
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 import { componentTypes } from '../WidgetManager/components';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
@@ -403,28 +403,57 @@ export const EventManager = ({
             )}
 
             {event.actionId === 'run-query' && (
-              <div className="row">
-                <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
-                <div className="col-9" data-cy="query-selection-field">
-                  <Select
-                    className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                    options={dataQueries.map((query) => {
-                      return { name: query.name, value: query.id };
-                    })}
-                    value={event.queryId}
-                    search={true}
-                    onChange={(value) => {
-                      const query = dataQueries.find((dataquery) => dataquery.id === value);
-                      handlerChanged(index, 'queryId', query.id);
-                      handlerChanged(index, 'queryName', query.name);
-                    }}
-                    placeholder={t('globals.select', 'Select') + '...'}
-                    styles={styles}
-                    useMenuPortal={false}
-                    useCustomStyles={true}
-                  />
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
+                  <div className="col-9" data-cy="query-selection-field">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                      options={dataQueries.map((query) => {
+                        return { name: query.name, value: query.id };
+                      })}
+                      value={event.queryId}
+                      search={true}
+                      onChange={(value) => {
+                        const query = dataQueries.find((dataquery) => dataquery.id === value);
+                        handlerChanged(index, 'queryId', query.id);
+                        handlerChanged(index, 'queryName', query.name);
+                      }}
+                      placeholder={t('globals.select', 'Select') + '...'}
+                      styles={styles}
+                      useMenuPortal={false}
+                      useCustomStyles={true}
+                    />
+                  </div>
                 </div>
-              </div>
+                {event.queryId &&
+                  !isEmpty(dataQueries.find((dataquery) => dataquery.id === event.queryId)?.options?.arguments) && (
+                    <div className="row mt-3">
+                      {dataQueries
+                        .find((dataquery) => dataquery.id === event.queryId)
+                        ?.options?.arguments.map((argument) => (
+                          <>
+                            <div className="col-3 p-2" key={argument.name}>
+                              {argument.name}
+                            </div>
+                            <div className="col-9 p-2">
+                              <CodeHinter
+                                theme={darkMode ? 'monokai' : 'default'}
+                                currentState={currentState}
+                                initialValue={event.url}
+                                onChange={(value) => {
+                                  const args = { ...events?.[index]?.arguments };
+                                  args[argument.name] = value;
+                                  handlerChanged(index, 'arguments', args);
+                                }}
+                                usePortalEditor={false}
+                              />
+                            </div>
+                          </>
+                        ))}
+                    </div>
+                  )}
+              </>
             )}
 
             {event.actionId === 'set-localstorage-value' && (

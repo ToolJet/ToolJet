@@ -10,7 +10,7 @@ import {
   loadPyodide,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
@@ -394,9 +394,13 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'run-query': {
         const { queryId, queryName } = event;
+        const args = isEmpty(customVariables) ? event['arguments'] : customVariables;
+        const resolvedArgs = Object.keys(args).map(
+          (k) => (args[k] = resolveReferences(args[k], _ref.state.currentState, undefined))
+        );
         const name =
           useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
-        return runQuery(_ref, queryId, name, undefined, mode);
+        return runQuery(_ref, queryId, name, undefined, mode, resolvedArgs);
       }
       case 'logout': {
         return logoutAction(_ref);
@@ -902,7 +906,7 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
   });
 }
 
-export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit') {
+export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit', args) {
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   let dataQuery = {};
 
@@ -954,7 +958,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
-        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, query?.id, false, confirmed, mode);
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, confirmed, mode, args);
       } else if (query.kind === 'runpy') {
         queryExecutionPromise = executeRunPycode(_self, query.options.code, query, _ref, false, mode);
       } else if (query.kind === 'tooljetdb') {
