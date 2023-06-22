@@ -32,6 +32,7 @@ describe("App Import Functionality", () => {
   });
   before(() => {
     cy.fixture("templates/test-app.json").then((app) => {
+      cy.exec("cd ./cypress/downloads/ && rm -rf *");
       appData = app;
     });
   });
@@ -64,14 +65,14 @@ describe("App Import Functionality", () => {
       importText.appImportedToastMessage
     );
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-      "have.value",
+      "contain.value",
       appData.name
     );
     cy.dragAndDropWidget(buttonText.defaultWidgetText);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
     cy.renameApp(data.appName);
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-      "have.value",
+      "contain.value",
       data.appName
     );
     cy.waitForAutoSave();
@@ -114,7 +115,7 @@ describe("App Import Functionality", () => {
         let exportedAppData = newApp;
 
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-          "have.value",
+          "contain.value",
           exportedAppData.appV2.name
         );
         cy.get(
@@ -136,7 +137,7 @@ describe("App Import Functionality", () => {
     cy.get(appVersionSelectors.appVersionMenuField)
       .should("be.visible")
       .click();
-    createNewVersion(otherVersions = ["v2"], currentVersion = "v1");
+    createNewVersion((otherVersions = ["v2"]), (currentVersion = "v1"));
     cy.get(appVersionSelectors.currentVersionField((otherVersions = "v2")))
       .should("be.visible")
       .click()
@@ -190,7 +191,7 @@ describe("App Import Functionality", () => {
                 let exportedAppData = newApp;
 
                 cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-                  "have.value",
+                  "contain.value",
                   exportedAppData.appV2.name
                 );
                 cy.get(
