@@ -54,9 +54,11 @@ describe("Table", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.createApp();
-    cy.modifyCanvasSize(900, 900);
+    cy.viewport(1200, 1200);
+    cy.modifyCanvasSize(900, 700);
     cy.dragAndDropWidget("Table", 50, 50);
     cy.resizeWidget(tableText.defaultWidgetName, 850, 600);
+    cy.get(`[data-cy="allow-selection-toggle-button"]`).click({ force: true });
   });
 
   it("Should verify the table components and labels", () => {
@@ -851,6 +853,8 @@ describe("Table", () => {
     cy.get('[data-cy="show-filter-button-toggle-button"]').click();
     verifyAndModifyToggleFx("Server-side filter", "{{false}}", true);
     verifyAndModifyToggleFx("Show update buttons", "{{true}}", true);
+
+    cy.get(`[data-cy="allow-selection-toggle-button"]`).click({ force: true });
     verifyAndModifyToggleFx("Bulk selection", "{{false}}", true);
     cy.get('[data-cy="checkbox-input"]').should("be.visible");
 
@@ -1002,6 +1006,7 @@ describe("Table", () => {
   it("should verify table CSA", () => {
     cy.get('[data-cy="column-id"]').click();
     cy.get('[data-cy="make-editable-toggle-button"]').click();
+    cy.get(`[data-cy="allow-selection-toggle-button"]`).click({ force: true });
 
     cy.get(
       '[data-cy="number-of-rows-per-page-input-field"]'
