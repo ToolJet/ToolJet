@@ -57,6 +57,12 @@ export const QueryManagerBody = forwardRef(
     const { changeDataQuery } = useDataQueriesActions();
 
     const [dataSourceMeta, setDataSourceMeta] = useState(null);
+    /* - Added the below line to cause re-rendering when the query is switched
+       - QueryEditors are not updating when the query is switched
+       - TODO: Remove the below line and make query editors update when the query is switched
+       - Ref PR #6763
+    */
+    const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
 
     const queryName = selectedQuery?.name ?? '';
     const sourcecomponentName = selectedDataSource?.kind.charAt(0).toUpperCase() + selectedDataSource?.kind.slice(1);
@@ -76,6 +82,7 @@ export const QueryManagerBody = forwardRef(
           ? selectedQuery?.manifestFile?.data?.source
           : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind)
       );
+      setSelectedQueryId(selectedQuery?.id);
       defaultOptions.current = selectedQuery?.options;
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedQuery?.id]);
@@ -404,6 +411,8 @@ export const QueryManagerBody = forwardRef(
         </div>
       );
     };
+
+    if (selectedQueryId !== selectedQuery?.id) return;
 
     return (
       <div
