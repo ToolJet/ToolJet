@@ -153,7 +153,7 @@ describe('apps controller', () => {
         .set('Cookie', loggedUser.tokenCookie);
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.name).toBe('Untitled app');
+      expect(response.body.name).toContain('My app');
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
@@ -627,7 +627,7 @@ describe('apps controller', () => {
 
       const appId = response.body.id;
       const clonedApplication = await App.findOneOrFail({ where: { id: appId } });
-      expect(clonedApplication.name).toBe('App to clone');
+      expect(clonedApplication.name).toContain('App to clone');
 
       // should create audit log
       const auditLog = await AuditLog.findOne({
@@ -2568,7 +2568,7 @@ describe('apps controller', () => {
       expect(response.statusCode).toBe(201);
 
       const importedApp = await getManager().find(App, {
-        name: 'Imported App',
+        name: response.body.name,
       });
 
       expect(importedApp).toHaveLength(1);

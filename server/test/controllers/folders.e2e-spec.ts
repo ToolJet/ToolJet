@@ -450,7 +450,7 @@ describe('folders controller', () => {
         .post(`/api/folders`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie'])
-        .send({ name: 'My folder' });
+        .send({ name: 'my folder' });
 
       expect(response.statusCode).toBe(201);
 
@@ -458,7 +458,7 @@ describe('folders controller', () => {
       expect(id).toBeDefined();
       expect(created_at).toBeDefined();
       expect(updated_at).toBeDefined();
-      expect(name).toEqual('My folder');
+      expect(name).toEqual('my folder');
       expect(organization_id).toEqual(adminUserData.user.organizationId);
     });
   });
