@@ -13,6 +13,7 @@ import config from 'config';
 import { LeftSidebarItem } from './SidebarItem';
 import Popover from '@/_ui/Popover';
 import { usePanelHeight } from '@/_stores/queryPanelStore';
+import { useDataSources } from '@/_stores/dataSourcesStore';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -52,8 +53,13 @@ export const LeftSidebar = forwardRef((props, ref) => {
     isVersionReleased,
     setReleasedVersionPopupState,
   } = props;
+
+  const dataSources = useDataSources();
+  const prevSelectedSidebarItem = localStorage.getItem('selectedSidebarItem');
   const queryPanelHeight = usePanelHeight();
-  const [selectedSidebarItem, setSelectedSidebarItem] = useState(localStorage.getItem('selectedSidebarItem'));
+  const [selectedSidebarItem, setSelectedSidebarItem] = useState(
+    dataSources?.length === 0 && prevSelectedSidebarItem === 'database' ? 'inspect' : prevSelectedSidebarItem
+  );
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
@@ -117,8 +123,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line no-unused-vars
       setUnReadErrorCount((prev) => ({ read: errorLogs.length, unread: 0 }));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   useEffect(() => {
@@ -126,6 +134,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     setUnReadErrorCount((prev) => {
       return { ...prev, unread: unReadErrors };
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [errorLogs.length]);
 
   useEffect(() => {
@@ -139,6 +148,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     } else {
       setEditorMarginLeft(350);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSidebarItem]);
 
   useImperativeHandle(ref, () => ({
@@ -222,6 +232,27 @@ export const LeftSidebar = forwardRef((props, ref) => {
         pinned={pinned}
       />
     ),
+    database: (
+      <LeftSidebarDataSources
+        darkMode={darkMode}
+        appId={appId}
+        editingVersionId={appVersionsId}
+        dataSourcesChanged={dataSourcesChanged}
+        globalDataSourcesChanged={globalDataSourcesChanged}
+        dataQueriesChanged={dataQueriesChanged}
+        toggleDataSourceManagerModal={toggleDataSourceManagerModal}
+        showDataSourceManagerModal={showDataSourceManagerModal}
+        isVersionReleased={isVersionReleased}
+        setReleasedVersionPopupState={setReleasedVersionPopupState}
+        onDeleteofAllDataSources={() => {
+          handleSelectedSidebarItem(null);
+          handlePin(false);
+          delete sideBarBtnRefs.current['database'];
+        }}
+        setPinned={handlePin}
+        pinned={pinned}
+      />
+    ),
     debugger: (
       <LeftSidebarDebugger
         darkMode={darkMode}
@@ -258,7 +289,16 @@ export const LeftSidebar = forwardRef((props, ref) => {
         tip="Inspector"
         ref={setSideBarBtnRefs('inspect')}
       />
-
+      {dataSources?.length > 0 && (
+        <LeftSidebarItem
+          selectedSidebarItem={selectedSidebarItem}
+          onClick={() => handleSelectedSidebarItem('database')}
+          icon="database"
+          className={`left-sidebar-item left-sidebar-layout sidebar-datasources`}
+          tip="Sources"
+          ref={setSideBarBtnRefs('database')}
+        />
+      )}
       <Popover
         onInteractOutside={handleInteractOutside}
         open={pinned || !!selectedSidebarItem}
@@ -266,22 +306,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         side="right"
         popoverContent={SELECTED_ITEMS[selectedSidebarItem]}
         popoverContentHeight={popoverContentHeight}
-      />
-
-      <LeftSidebarDataSources
-        darkMode={darkMode}
-        selectedSidebarItem={selectedSidebarItem}
-        setSelectedSidebarItem={handleSelectedSidebarItem}
-        appId={appId}
-        editingVersionId={appVersionsId}
-        dataSourcesChanged={dataSourcesChanged}
-        globalDataSourcesChanged={globalDataSourcesChanged}
-        dataQueriesChanged={dataQueriesChanged}
-        toggleDataSourceManagerModal={toggleDataSourceManagerModal}
-        showDataSourceManagerModal={showDataSourceManagerModal}
-        popoverContentHeight={popoverContentHeight}
-        isVersionReleased={isVersionReleased}
-        setReleasedVersionPopupState={setReleasedVersionPopupState}
       />
 
       {config.COMMENT_FEATURE_ENABLE && (
@@ -306,6 +330,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         <LeftSidebarItem
           icon="debugger"
           selectedSidebarItem={selectedSidebarItem}
+          // eslint-disable-next-line no-unused-vars
           onClick={(e) => handleSelectedSidebarItem('debugger')}
           className={`left-sidebar-item  left-sidebar-layout`}
           badge={true}
