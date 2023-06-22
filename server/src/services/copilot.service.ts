@@ -42,13 +42,13 @@ export class CopilotService {
     };
   }
 
-  async validateCopilotAPIKey(workspaceId: string, secretKey: string) {
+  async validateCopilotAPIKey(workspaceId: string, secretKey: string, adminEmailId: string) {
     const options = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ workspaceId: workspaceId, action: 'get', apiKey: secretKey }),
+      body: JSON.stringify({ workspaceId: workspaceId, action: 'get', apiKey: secretKey, admin: adminEmailId }),
     };
 
     const response = await fetch(`${process.env.COPILOT_API_ENDPOINT}/api-key`, options);
