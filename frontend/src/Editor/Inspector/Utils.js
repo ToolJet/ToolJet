@@ -24,7 +24,6 @@ export function renderElement(
   dataQueries,
   param,
   paramType,
-  currentState,
   components = {},
   darkMode = false
 ) {
@@ -33,7 +32,7 @@ export function renderElement(
   const definition = paramTypeDefinition[param] || {};
 
   const meta = componentMeta[paramType][param];
-
+  console.log(darkMode, 'darkMode');
   return (
     <Code
       param={{ name: param, ...component.component.properties[param] }}
@@ -43,7 +42,6 @@ export function renderElement(
       paramType={paramType}
       components={components}
       componentMeta={componentMeta}
-      currentState={currentState}
       darkMode={darkMode}
       componentName={component.component.name || null}
       type={meta.type}

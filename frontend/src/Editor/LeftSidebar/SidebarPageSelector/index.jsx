@@ -9,6 +9,7 @@ import SortableList from '@/_components/SortableList';
 import Popover from '@/_ui/Popover';
 // eslint-disable-next-line import/no-unresolved
 import EmptyIllustration from '@assets/images/no-results.svg';
+import { useCurrentStateStore } from '../../../_stores/currentStateStore';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -30,7 +31,6 @@ const LeftSidebarPageSelector = ({
   showHideViewerNavigationControls,
   updateOnSortingPages,
   updateOnPageLoadEvents,
-  currentState,
   apps,
   popoverContentHeight,
   isVersionReleased,
@@ -39,7 +39,7 @@ const LeftSidebarPageSelector = ({
   const [allpages, setPages] = useState(pages);
   const [pinned, setPinned] = useState(false);
   const [haveUserPinned, setHaveUserPinned] = useState(false);
-
+  const currentState = useCurrentStateStore();
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
 

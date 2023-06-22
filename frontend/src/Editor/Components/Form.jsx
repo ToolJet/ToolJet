@@ -4,6 +4,7 @@ import { SubContainer } from '../SubContainer';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { omit } from 'lodash';
+import { useCurrentStateStore } from '../../_stores/currentStateStore';
 
 export const Form = function Form(props) {
   const {
@@ -16,7 +17,6 @@ export const Form = function Form(props) {
     styles,
     setExposedVariable,
     darkMode,
-    currentState,
     fireEvent,
     properties,
     registerAction,
@@ -25,6 +25,8 @@ export const Form = function Form(props) {
     onEvent,
     dataCy,
   } = props;
+  const currentState = useCurrentStateStore();
+
   const { visibility, disabledState, borderRadius, borderColor } = styles;
   const { buttonToSubmit, loadingState } = properties;
   const backgroundColor =

@@ -66,6 +66,7 @@ import {
 import _ from 'lodash';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
+import { useCurrentStateStore } from '../_stores/currentStateStore';
 
 const AllComponents = {
   Button,
@@ -132,7 +133,6 @@ export const Box = function Box({
   inCanvas,
   onComponentClick,
   onEvent,
-  currentState,
   onComponentOptionChanged,
   onComponentOptionsChanged,
   paramUpdated,
@@ -150,6 +150,7 @@ export const Box = function Box({
 }) {
   const { t } = useTranslation();
   const backgroundColor = yellow ? 'yellow' : '';
+  const currentState = useCurrentStateStore();
 
   let styles = {
     height: '100%',

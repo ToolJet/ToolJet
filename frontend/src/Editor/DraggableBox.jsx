@@ -9,6 +9,7 @@ import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
+import { useCurrentStateStore } from '../_stores/currentStateStore';
 
 const resizerClasses = {
   topRight: 'top-right',
@@ -72,7 +73,6 @@ export const DraggableBox = function DraggableBox({
   inCanvas,
   onEvent,
   onComponentClick,
-  currentState,
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onResizeStop,
@@ -103,6 +103,7 @@ export const DraggableBox = function DraggableBox({
   const [isDragging2, setDragging] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
   const [mouseOver, setMouseOver] = useState(false);
+  const currentState = useCurrentStateStore();
 
   useEffect(() => {
     setMouseOver(hoveredComponent === id);
@@ -280,7 +281,6 @@ export const DraggableBox = function DraggableBox({
                   onComponentOptionChanged={onComponentOptionChanged}
                   onComponentOptionsChanged={onComponentOptionsChanged}
                   onComponentClick={onComponentClick}
-                  currentState={currentState}
                   containerProps={containerProps}
                   darkMode={darkMode}
                   removeComponent={removeComponent}
@@ -309,7 +309,6 @@ export const DraggableBox = function DraggableBox({
               onComponentOptionChanged={onComponentOptionChanged}
               onComponentOptionsChanged={onComponentOptionsChanged}
               onComponentClick={onComponentClick}
-              currentState={currentState}
               darkMode={darkMode}
               removeComponent={removeComponent}
               sideBarDebugger={sideBarDebugger}

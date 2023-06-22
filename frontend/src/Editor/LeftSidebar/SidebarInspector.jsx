@@ -9,6 +9,7 @@ import Popover from '@/_ui/Popover';
 
 import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { useCurrentStateStore } from '../../_stores/currentStateStore';
 const staticDataSources = [
   { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
   { kind: 'restapi', id: 'null', name: 'REST API' },
@@ -18,7 +19,6 @@ const staticDataSources = [
 
 export const LeftSidebarInspector = ({
   darkMode,
-  currentState,
   selectedSidebarItem,
   setSelectedSidebarItem,
   appDefinition,
@@ -38,7 +38,7 @@ export const LeftSidebarInspector = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appDefinition['selectedComponent']]);
-
+  const currentState = useCurrentStateStore();
   const queries = {};
 
   if (!_.isEmpty(dataQueries)) {
@@ -53,6 +53,7 @@ export const LeftSidebarInspector = ({
     delete jsontreeData.errors;
     delete jsontreeData.client;
     delete jsontreeData.server;
+    delete jsontreeData.actions;
 
     //*Sorted components and queries alphabetically
     const sortedComponents = Object.keys(jsontreeData['components'])
@@ -186,7 +187,6 @@ export const LeftSidebarInspector = ({
           enableCopyToClipboard={true}
           useActions={true}
           actionsList={callbackActions}
-          currentState={appDefinition}
           actionIdentifier="id"
           expandWithLabels={true}
           selectedComponent={selectedComponent}

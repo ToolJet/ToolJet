@@ -9,7 +9,7 @@ import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { resolveReferences } from '@/_helpers/utils';
-
+import { useCurrentStateStore } from '../_stores/currentStateStore';
 import { useMounted } from '@/_hooks/use-mount';
 
 export const SubContainer = ({
@@ -19,7 +19,6 @@ export const SubContainer = ({
   onEvent,
   appDefinition,
   appDefinitionChanged,
-  currentState,
   onComponentOptionChanged,
   onComponentOptionsChanged,
   appLoading,
@@ -56,6 +55,7 @@ export const SubContainer = ({
   });
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
+  const currentState = useCurrentStateStore();
 
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
@@ -489,7 +489,6 @@ export const SubContainer = ({
                 onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
                 onComponentOptionsChanged={onComponentOptionsChanged}
                 key={key}
-                currentState={currentState}
                 onResizeStop={onResizeStop}
                 onDragStop={onDragStop}
                 paramUpdated={paramUpdated}

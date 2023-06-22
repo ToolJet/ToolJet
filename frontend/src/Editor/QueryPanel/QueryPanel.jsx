@@ -12,7 +12,6 @@ const QueryPanel = ({
   dataQueriesChanged,
   fetchDataQueries,
   darkMode,
-  currentState,
   apps,
   allComponents,
   appId,
@@ -252,7 +251,6 @@ const QueryPanel = ({
                   dataQueriesChanged={updateDataQueries}
                   appId={appId}
                   editingVersionId={editingVersionId}
-                  currentState={currentState}
                   darkMode={darkMode}
                   apps={apps}
                   allComponents={allComponents}

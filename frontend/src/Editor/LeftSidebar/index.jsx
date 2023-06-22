@@ -27,7 +27,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     errorLogs,
     appVersionsId,
     debuggerActions,
-    currentState,
     appDefinition,
     setSelectedComponent,
     removeComponent,
@@ -95,7 +94,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         showHideViewerNavigationControls={showHideViewerNavigationControls}
         updateOnSortingPages={updateOnSortingPages}
         updateOnPageLoadEvents={updateOnPageLoadEvents}
-        currentState={currentState}
         apps={apps}
         popoverContentHeight={popoverContentHeight}
         isVersionReleased={isVersionReleased}
@@ -105,7 +103,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         darkMode={darkMode}
         selectedSidebarItem={selectedSidebarItem}
         setSelectedSidebarItem={handleSelectedSidebarItem}
-        currentState={currentState}
         appDefinition={appDefinition}
         setSelectedComponent={setSelectedComponent}
         removeComponent={removeComponent}

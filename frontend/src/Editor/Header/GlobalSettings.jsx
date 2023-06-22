@@ -10,6 +10,7 @@ import { resolveReferences } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import Popover from '@/_ui/Popover';
+import { useCurrentStateStore } from '../../_stores/currentStateStore';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -17,12 +18,12 @@ export const GlobalSettings = ({
   darkMode,
   toggleAppMaintenance,
   is_maintenance_on,
-  currentState,
 }) => {
   const { t } = useTranslation();
   const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } =
     globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
+  const currentState = useCurrentStateStore();
   const [forceCodeBox, setForceCodeBox] = React.useState(true);
   const [realState, setRealState] = React.useState(currentState);
   const [showConfirmation, setConfirmationShow] = React.useState(false);

@@ -26,6 +26,7 @@ import {
   useSelectedDataSource,
   useQueryPanelActions,
 } from '@/_stores/queryPanelStore';
+import { useCurrentStateStore } from '../../../_stores/currentStateStore';
 
 export const QueryManagerBody = forwardRef(
   (
@@ -34,7 +35,6 @@ export const QueryManagerBody = forwardRef(
       mode,
       dataSourceModalHandler,
       options,
-      currentState,
       previewLoading,
       queryPreviewData,
       allComponents,
@@ -57,7 +57,7 @@ export const QueryManagerBody = forwardRef(
     const { changeDataQuery } = useDataQueriesActions();
 
     const [dataSourceMeta, setDataSourceMeta] = useState(null);
-
+    const currentState = useCurrentStateStore();
     const queryName = selectedQuery?.name ?? '';
     const sourcecomponentName = selectedDataSource?.kind.charAt(0).toUpperCase() + selectedDataSource?.kind.slice(1);
     const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
@@ -236,7 +236,6 @@ export const QueryManagerBody = forwardRef(
         <Transformation
           changeOption={optionchanged}
           options={options ?? {}}
-          currentState={currentState}
           darkMode={darkMode}
           queryId={selectedQuery?.id}
         />
@@ -293,7 +292,6 @@ export const QueryManagerBody = forwardRef(
               eventsChanged={eventsChanged}
               component={queryComponent.component}
               componentMeta={queryComponent.componentMeta}
-              currentState={currentState}
               dataQueries={dataQueries}
               components={allComponents}
               apps={apps}
@@ -317,7 +315,6 @@ export const QueryManagerBody = forwardRef(
           </div>
           <div className="col">
             <CodeHinter
-              currentState={currentState}
               initialValue={options.successMessage}
               height="36px"
               theme={darkMode ? 'monokai' : 'default'}

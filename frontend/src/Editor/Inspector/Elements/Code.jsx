@@ -7,7 +7,6 @@ export const Code = ({
   onChange,
   paramType,
   componentMeta,
-  currentState,
   darkMode,
   componentName,
   onFxPress,
@@ -32,7 +31,6 @@ export const Code = ({
     <div className={`mb-2 field ${options.className}`}>
       <CodeHinter
         enablePreview={true}
-        currentState={currentState}
         initialValue={initialValue}
         mode={options.mode}
         theme={darkMode ? 'monokai' : options.theme}

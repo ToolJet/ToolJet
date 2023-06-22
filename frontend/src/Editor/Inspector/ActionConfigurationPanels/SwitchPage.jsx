@@ -3,13 +3,15 @@ import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { useTranslation } from 'react-i18next';
+import { useCurrentStateStore } from '../../../_stores/currentStateStore';
 
-export function SwitchPage({ getPages, currentState, event, handlerChanged, eventIndex, darkMode }) {
+export function SwitchPage({ getPages, event, handlerChanged, eventIndex, darkMode }) {
   const queryParamChangeHandler = (index, key, value) => {
     event.queryParams[index][key] = value;
     handlerChanged(eventIndex, 'queryParams', event.queryParams);
   };
   const { t } = useTranslation();
+  const currentState = useCurrentStateStore();
 
   const addQueryParam = () => {
     if (!event.queryParams) {

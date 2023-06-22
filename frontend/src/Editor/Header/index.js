@@ -15,7 +15,6 @@ import { useUpdatePresence } from '@y-presence/react';
 
 export default function EditorHeader({
   darkMode,
-  currentState,
   currentLayout,
   globalSettingsChanged,
   appDefinition,
@@ -81,7 +80,6 @@ export default function EditorHeader({
                 <div className="row p-2">
                   <div className="col global-settings-app-wrapper">
                     <GlobalSettings
-                      currentState={currentState}
                       globalSettingsChanged={globalSettingsChanged}
                       globalSettings={appDefinition.globalSettings}
                       darkMode={darkMode}

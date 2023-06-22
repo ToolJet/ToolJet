@@ -43,10 +43,10 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
-
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { resetAllStores } from '@/_stores/utils';
 
 setAutoFreeze(false);
@@ -111,22 +111,6 @@ class EditorComponent extends React.Component {
       currentLayout: 'desktop',
       deviceWindowWidth: 450,
       appDefinition: this.defaultDefinition,
-      currentState: {
-        queries: {},
-        components: {},
-        globals: {
-          theme: { name: props.darkMode ? 'dark' : 'light' },
-          urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
-        },
-        errors: {},
-        variables: {},
-        client: {},
-        server: {},
-        page: {
-          handle: pageHandle,
-          variables: {},
-        },
-      },
       apps: [],
       queryConfirmationList: [],
       showCreateVersionModalPrompt: false,
@@ -164,16 +148,11 @@ class EditorComponent extends React.Component {
           groups: currentSession.group_permissions?.map((group) => group.group),
         };
 
-        this.setState({
-          currentUser,
-          currentState: {
-            ...this.state.currentState,
-            globals: {
-              ...this.state.currentState.globals,
-              currentUser: userVars,
-            },
+        useCurrentStateStore.getState().actions.setCurrentState({
+          globals: {
+            ...useCurrentStateStore.getState().globals,
+            currentUser: userVars,
           },
-          userVars,
         });
       }
     });
@@ -227,12 +206,10 @@ class EditorComponent extends React.Component {
           client_variables[variable.variable_name] = variable.value;
         }
       });
-      this.setState({
-        currentState: {
-          ...this.state.currentState,
-          server: server_variables,
-          client: client_variables,
-        },
+
+      useCurrentStateStore.getState().actions.setCurrentState({
+        server: server_variables,
+        client: client_variables,
       });
     });
   };
@@ -338,7 +315,14 @@ class EditorComponent extends React.Component {
       const homePageId = startingPageId ?? dataDefinition.homePageId;
 
       useAppDataStore.getState().actions.updateEditingVersion(data.editing_version);
-
+      useCurrentStateStore.getState().actions.setCurrentState({
+        page: {
+          handle: dataDefinition.pages[homePageId]?.handle,
+          name: dataDefinition.pages[homePageId]?.name,
+          id: homePageId,
+          variables: {},
+        },
+      });
       this.setState(
         {
           app: data,
@@ -347,16 +331,8 @@ class EditorComponent extends React.Component {
           appDefinition: dataDefinition,
           slug: data.slug,
           currentPageId: homePageId,
-          currentState: {
-            ...this.state.currentState,
-            page: {
-              handle: dataDefinition.pages[homePageId]?.handle,
-              name: dataDefinition.pages[homePageId]?.name,
-              id: homePageId,
-              variables: {},
-            },
-          },
         },
+
         async () => {
           computeComponentState(this, this.state.appDefinition.pages[homePageId]?.components ?? {}).then(async () => {
             this.setWindowTitle(data.name);
@@ -369,6 +345,14 @@ class EditorComponent extends React.Component {
           });
         }
       );
+      useCurrentStateStore.getState().actions.setCurrentState({
+        page: {
+          handle: dataDefinition.pages[homePageId]?.handle,
+          name: dataDefinition.pages[homePageId]?.name,
+          id: homePageId,
+          variables: {},
+        },
+      });
 
       this.fetchDataSources(data.editing_version?.id);
       this.fetchDataQueries(data.editing_version?.id, true, true);
@@ -926,13 +910,10 @@ class EditorComponent extends React.Component {
   };
 
   changeDarkMode = (newMode) => {
-    this.setState({
-      currentState: {
-        ...this.state.currentState,
-        globals: {
-          ...this.state.currentState.globals,
-          theme: { name: newMode ? 'dark' : 'light' },
-        },
+    useCurrentStateStore.getState().actions.setCurrentState({
+      globals: {
+        ...useCurrentStateStore.getState().globals,
+        theme: { name: newMode ? 'dark' : 'light' },
       },
     });
     this.props.switchDarkMode(newMode);
@@ -1313,7 +1294,7 @@ class EditorComponent extends React.Component {
 
     this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.appId}/${handle}?${queryParamsString}`);
 
-    const { globals: existingGlobals } = this.state.currentState;
+    const { globals: existingGlobals } = useCurrentStateStore.getState();
 
     const page = {
       id: pageId,
@@ -1326,7 +1307,7 @@ class EditorComponent extends React.Component {
       ...existingGlobals,
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
     };
-
+    useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
     this.setState(
       {
         pages: {
@@ -1334,18 +1315,14 @@ class EditorComponent extends React.Component {
           [currentPageId]: {
             ...(this.state.pages?.[currentPageId] ?? {}),
             variables: {
-              ...(this.state.currentState?.page?.variables ?? {}),
+              ...(useCurrentStateStore.getState()?.page?.variables ?? {}),
             },
           },
-        },
-        currentState: {
-          ...this.state.currentState,
-          globals,
-          page,
         },
         currentPageId: pageId,
       },
       () => {
+        // Move this callback to zustand
         computeComponentState(this, this.state.appDefinition.pages[pageId]?.components ?? {}).then(async () => {
           for (const event of events ?? []) {
             await this.handleEvent(event.eventId, event);
@@ -1397,7 +1374,6 @@ class EditorComponent extends React.Component {
       slug,
       app,
       showLeftSidebar,
-      currentState,
       isLoading,
       zoomLevel,
       currentLayout,
@@ -1410,11 +1386,11 @@ class EditorComponent extends React.Component {
       hoveredComponent,
       queryConfirmationList,
     } = this.state;
-
+    console.log({ zustandState: useCurrentStateStore.getState(), localState: this.state.currentState });
+    const currentState = useCurrentStateStore.getState();
     const appVersionPreviewLink = editingVersion
-      ? `/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
+      ? `/applications/${app.id}/versions/${editingVersion.id}/${currentState.page.handle}`
       : '';
-
     return (
       <div className="editor wrapper">
         <Confirm
@@ -1449,7 +1425,6 @@ class EditorComponent extends React.Component {
         <EditorContextWrapper>
           <EditorHeader
             darkMode={this.props.darkMode}
-            currentState={currentState}
             currentLayout={this.state.currentLayout}
             globalSettingsChanged={this.globalSettingsChanged}
             appDefinition={appDefinition}
@@ -1492,7 +1467,6 @@ class EditorComponent extends React.Component {
                 onZoomChanged={this.onZoomChanged}
                 toggleComments={this.toggleComments}
                 switchDarkMode={this.changeDarkMode}
-                currentState={currentState}
                 debuggerActions={this.sideBarDebugger}
                 appDefinition={{
                   components: appDefinition.pages[this.state.currentPageId]?.components ?? {},
@@ -1619,7 +1593,6 @@ class EditorComponent extends React.Component {
                           onEvent={this.handleEvent}
                           onComponentOptionChanged={this.handleOnComponentOptionChanged}
                           onComponentOptionsChanged={this.handleOnComponentOptionsChanged}
-                          currentState={this.state.currentState}
                           setSelectedComponent={this.setSelectedComponent}
                           handleUndo={this.handleUndo}
                           handleRedo={this.handleRedo}
@@ -1645,7 +1618,6 @@ class EditorComponent extends React.Component {
                   dataQueriesChanged={this.dataQueriesChanged}
                   fetchDataQueries={this.fetchDataQueries}
                   darkMode={this.props.darkMode}
-                  currentState={currentState}
                   apps={apps}
                   allComponents={appDefinition.pages[this.state.currentPageId]?.components ?? {}}
                   appId={appId}
@@ -1677,7 +1649,6 @@ class EditorComponent extends React.Component {
                         componentDefinitionChanged={this.componentDefinitionChanged}
                         removeComponent={this.removeComponent}
                         selectedComponentId={selectedComponents[0].id}
-                        currentState={currentState}
                         allComponents={appDefinition.pages[this.state.currentPageId]?.components}
                         key={selectedComponents[0].id}
                         switchSidebarTab={this.switchSidebarTab}

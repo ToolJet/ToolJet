@@ -32,6 +32,7 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
+import { useCurrentStateStore } from '../../_stores/currentStateStore';
 
 const AllElements = {
   Color,
@@ -46,7 +47,6 @@ const AllElements = {
 export function CodeHinter({
   initialValue,
   onChange,
-  currentState,
   mode,
   theme,
   lineNumbers,
@@ -84,7 +84,7 @@ export function CodeHinter({
     highlightSelectionMatches: true,
     placeholder,
   };
-
+  const currentState = useCurrentStateStore();
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState(initialValue);
   const [isFocused, setFocused] = useState(false);
@@ -272,6 +272,7 @@ export function CodeHinter({
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
+  console.log({ ElementToRender, codeShow, componentName, paramLabel });
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>

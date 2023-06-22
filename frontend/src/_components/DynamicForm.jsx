@@ -16,6 +16,7 @@ import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatab
 
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
+import { useCurrentStateStore } from '../_stores/currentStateStore';
 
 const DynamicForm = ({
   schema,
@@ -24,14 +25,13 @@ const DynamicForm = ({
   options,
   isSaving,
   selectedDataSource,
-  currentState,
   isEditMode,
   optionsChanged,
   queryName,
   computeSelectStyles = false,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
-
+  const currentState = useCurrentStateStore();
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {

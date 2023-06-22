@@ -19,14 +19,13 @@ import Accordion from '@/_ui/Accordion';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
-
+import { useCurrentStateStore } from '../../_stores/currentStateStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 
 export const Inspector = ({
   selectedComponentId,
   componentDefinitionChanged,
   allComponents,
-  currentState,
   apps,
   darkMode,
   switchSidebarTab,
@@ -41,6 +40,7 @@ export const Inspector = ({
     layouts: allComponents[selectedComponentId].layouts,
     parent: allComponents[selectedComponentId].parent,
   };
+  const currentState = useCurrentStateStore();
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [tabHeight, setTabHeight] = React.useState(0);
@@ -54,6 +54,8 @@ export const Inspector = ({
   useHotkeys('escape', () => switchSidebarTab(2));
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
+
+  console.log({ componentMeta, componentTypes });
 
   const isMounted = useMounted();
 

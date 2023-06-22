@@ -13,6 +13,8 @@ import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUt
 import { useDataQueriesActions, useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource, useUnsavedChanges } from '@/_stores/queryPanelStore';
 import ToggleQueryEditorIcon from '../Icons/ToggleQueryEditorIcon';
+import { useCurrentStateStore } from '../../../_stores/currentStateStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryManagerHeader = forwardRef(
   (
@@ -23,7 +25,6 @@ export const QueryManagerHeader = forwardRef(
       updateDraftQueryName,
       toggleQueryEditor,
       previewLoading = false,
-      currentState,
       options,
       editingVersionId,
       appId,
@@ -41,7 +42,7 @@ export const QueryManagerHeader = forwardRef(
     const { t } = useTranslation();
     const queryName = selectedQuery?.name ?? '';
     const [renamingQuery, setRenamingQuery] = useState(false);
-
+    const { queries } = useCurrentStateStore((state) => ({ queries: state.queries }), shallow);
     const buttonText = mode === 'edit' ? 'Save' : 'Create';
     const buttonDisabled = isUpdationInProcess || isCreationInProcess;
 
@@ -183,7 +184,7 @@ export const QueryManagerHeader = forwardRef(
     };
 
     const renderRunButton = () => {
-      const { isLoading } = currentState?.queries[selectedQuery?.name] ?? false;
+      const { isLoading } = queries[selectedQuery?.name] ?? false;
       return (
         <button
           onClick={() => createOrUpdateDataQuery(true)}
