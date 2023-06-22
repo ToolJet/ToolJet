@@ -806,6 +806,7 @@ class EditorComponent extends React.Component {
   };
 
   onVersionRelease = (versionId) => {
+    useAppVersionStore.getState().actions.updateReleasedVersionId(versionId);
     this.setState(
       {
         app: {
