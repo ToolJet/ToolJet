@@ -2906,8 +2906,9 @@ input:focus-visible {
   .was-validated .form-control:invalid {
     border-color: #ffb0b0;
   }
-  .form-check-input{
-    cursor:pointer;
+
+  .form-check-input {
+    cursor: pointer;
   }
 }
 
@@ -7541,7 +7542,7 @@ tbody {
   .tj-text-xsm {
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;  
+    text-overflow: ellipsis;
   }
 
   .tj-folder-list {
@@ -9855,6 +9856,7 @@ tbody {
       border: 1px solid var(--slate8);
       border-radius: 6px;
       outline: none;
+      padding-left: 12px !important;
     }
 
     &:disabled {
@@ -10631,6 +10633,7 @@ tbody {
     padding: 4px 0px 20px 0px;
   }
 }
+
 .jet-container-loading {
   margin: 0 auto;
   justify-content: center;
