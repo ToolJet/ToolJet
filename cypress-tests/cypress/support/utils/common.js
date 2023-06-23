@@ -178,3 +178,12 @@ export const navigateToDatabase = () => {
 export const randomValue = () => {
   return Math.floor(Math.random() * (1000 - 100) + 100) / 100;
 };
+
+export const verifyTooltip = (selector, message) => {
+  cy.get(selector)
+    .trigger("mouseover", { timeout: 2000 })
+    .trigger("mouseover")
+    .then(() => {
+      cy.get(".tooltip-inner").last().should("have.text", message);
+    });
+};

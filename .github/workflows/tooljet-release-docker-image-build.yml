@@ -65,8 +65,8 @@ jobs:
 
   try-tooljet-image-build:
     runs-on: ubuntu-latest
-    needs: building-tooljet-ce-image
-    if: ${{ needs.building-tooljet-ce-image.result == 'success' }}
+    needs: build-tooljet-ce-image
+    if: ${{ needs.build-tooljet-ce-image.result == 'success' }}
 
     steps:
       - name: Checkout code
