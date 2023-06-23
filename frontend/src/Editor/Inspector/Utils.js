@@ -2,7 +2,6 @@ import React from 'react';
 import { Code } from './Elements/Code';
 import { QuerySelector } from './QuerySelector';
 import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentStateStore } from '../../_stores/currentStateStore';
 
 export function renderQuerySelector(component, dataQueries, eventOptionUpdated, eventName, eventMeta) {
   let definition = component.component.definition.events[eventName];
@@ -26,6 +25,7 @@ export function renderElement(
   dataQueries,
   param,
   paramType,
+  currentState,
   components = {},
   darkMode = false
 ) {
@@ -34,7 +34,6 @@ export function renderElement(
   const paramTypeDefinition = componentDefinition[paramType] || {};
   const definition = paramTypeDefinition[param] || {};
   const meta = componentMeta[paramType][param];
-  const currentState = useCurrentStateStore.getState();
 
   if (componentConfig.component == 'DropDown') {
     const paramTypeConfig = componentMeta[paramType] || {};
