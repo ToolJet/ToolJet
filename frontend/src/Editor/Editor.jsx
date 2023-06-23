@@ -709,7 +709,7 @@ class EditorComponent extends React.Component {
       setStateAsync(_self, newDefinition).then(() => {
         computeComponentState(_self, _self.state.appDefinition.pages[currentPageId].components);
         useAppDataStore.getState().actions.setIsSaving(true);
-        this.setState({ /* isSaving: true, */ appDefinitionLocalVersion: uuid() });
+        this.setState({ appDefinitionLocalVersion: uuid() });
         this.autoSave();
         this.props.ymap?.set('appDef', {
           newDefinition: newDefinition.appDefinition,
@@ -890,7 +890,6 @@ class EditorComponent extends React.Component {
   saveEditingVersion = (isUserSwitchedVersion = false) => {
     if (this.isVersionReleased() && !isUserSwitchedVersion) {
       useAppDataStore.getState().actions.setIsSaving(false);
-      // this.setState({ isSaving: false });
     } else if (!isEmpty(this.state.editingVersion)) {
       appVersionService
         .save(
@@ -915,7 +914,7 @@ class EditorComponent extends React.Component {
         })
         .catch(() => {
           useAppDataStore.getState().actions.setIsSaving(false);
-          this.setState({ saveError: true /* , isSaving: false */ }, () => {
+          this.setState({ saveError: true }, () => {
             toast.error('App could not save.');
           });
         });
