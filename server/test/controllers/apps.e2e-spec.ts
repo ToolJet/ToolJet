@@ -113,6 +113,8 @@ describe('apps controller', () => {
 
       const loggedUser = await authenticateUser(app);
 
+      await createAppEnvironments(app, adminUserData.organization.id);
+
       const response = await request(app.getHttpServer())
         .post(`/api/apps`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
