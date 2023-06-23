@@ -186,7 +186,7 @@
       "label": "App Builder",
       "items": [
         "app-builder/overview",
-        "app-builder/toolbar",
+        "app-builder/topbar",
         "app-builder/canvas",
         "app-builder/left-sidebar",
         "app-builder/components-library",
