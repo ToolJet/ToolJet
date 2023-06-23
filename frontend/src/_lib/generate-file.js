@@ -25,7 +25,6 @@ export default function generateFile(filename, data, fileType) {
 function generatePDF(filename, data) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 10;
   const x = margin;
   const y = margin;
