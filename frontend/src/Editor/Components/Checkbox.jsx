@@ -9,13 +9,12 @@ export const Checkbox = function Checkbox({
   registerAction,
   darkMode,
   dataCy,
-  boxShadow,
 }) {
   const defaultValueFromProperties = properties.defaultValue ?? false;
   const [defaultValue, setDefaultvalue] = React.useState(defaultValueFromProperties);
   const [checked, setChecked] = React.useState(defaultValueFromProperties);
   const { label } = properties;
-  const { visibility, disabledState, checkboxColor } = styles;
+  const { visibility, disabledState, checkboxColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
 
   function toggleValue(e) {

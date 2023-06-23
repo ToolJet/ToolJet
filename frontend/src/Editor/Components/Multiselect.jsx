@@ -22,10 +22,9 @@ export const Multiselect = function Multiselect({
   fireEvent,
   registerAction,
   dataCy,
-  boxShadow,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
-  const { borderRadius, visibility, disabledState } = styles;
+  const { borderRadius, visibility, disabledState, boxShadow } = styles;
   const [selected, setSelected] = useState([]);
 
   let selectOptions = [];

@@ -17,9 +17,8 @@ export const Tabs = function Tabs({
   styles,
   darkMode,
   dataCy,
-  boxShadow,
 }) {
-  const { tabWidth } = styles;
+  const { tabWidth, boxShadow } = styles;
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;

@@ -6,8 +6,8 @@ import { useDataQueries } from '@/_stores/dataQueriesStore';
 
 export const CustomComponent = (props) => {
   const dataQueries = useDataQueries();
-  const { height, properties, styles, id, setExposedVariable, exposedVariables, fireEvent, dataCy, boxShadow } = props;
-  const { visibility } = styles;
+  const { height, properties, styles, id, setExposedVariable, exposedVariables, fireEvent, dataCy } = props;
+  const { visibility, boxShadow } = styles;
   const { code, data } = properties;
   const [customProps, setCustomProps] = useState(data);
   const iFrameRef = useRef(null);

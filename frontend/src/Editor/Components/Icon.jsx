@@ -3,20 +3,9 @@ import React, { useState, useEffect } from 'react';
 import * as Icons from '@tabler/icons-react';
 import cx from 'classnames';
 
-export const Icon = ({
-  properties,
-  styles,
-  fireEvent,
-  width,
-  height,
-  registerAction,
-  darkMode,
-  dataCy,
-  component,
-  boxShadow,
-}) => {
+export const Icon = ({ properties, styles, fireEvent, width, height, registerAction, darkMode, dataCy, component }) => {
   const { icon } = properties;
-  const { iconColor, visibility } = styles;
+  const { iconColor, visibility, boxShadow } = styles;
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[icon];
   const { definition } = component;

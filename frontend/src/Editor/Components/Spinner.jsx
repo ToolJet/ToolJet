@@ -1,7 +1,7 @@
 import React from 'react';
 
-export const Spinner = ({ styles, height, dataCy, boxShadow }) => {
-  const { colour, size, visibility } = styles;
+export const Spinner = ({ styles, height, dataCy }) => {
+  const { colour, size, visibility, boxShadow } = styles;
 
   const baseStyle = {
     height,

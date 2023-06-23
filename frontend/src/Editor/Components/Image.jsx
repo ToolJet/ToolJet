@@ -12,10 +12,9 @@ export const Image = function Image({
   width,
   parentId = null,
   dataCy,
-  boxShadow,
 }) {
   const { source, loadingState, alternativeText, zoomButtons, rotateButton } = properties;
-  const { visibility, disabledState, borderType, backgroundColor, padding, imageFit } = styles;
+  const { visibility, disabledState, borderType, backgroundColor, padding, imageFit, boxShadow } = styles;
   const {
     definition: { events },
   } = component;

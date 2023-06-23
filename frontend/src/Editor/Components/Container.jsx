@@ -14,9 +14,8 @@ export const Container = function Container({
   darkMode,
   dataCy,
   properties,
-  boxShadow,
 }) {
-  const { visibility, disabledState, borderRadius, borderColor } = styles;
+  const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const computedStyles = {

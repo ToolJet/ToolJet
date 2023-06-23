@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export const TextArea = function TextArea({
-  height,
-  properties,
-  styles,
-  setExposedVariable,
-  registerAction,
-  dataCy,
-  boxShadow,
-}) {
+export const TextArea = function TextArea({ height, properties, styles, setExposedVariable, registerAction, dataCy }) {
   const [value, setValue] = useState(properties.value);
   useEffect(() => {
     setValue(properties.value);
@@ -47,7 +39,7 @@ export const TextArea = function TextArea({
         resize: 'none',
         display: styles.visibility ? '' : 'none',
         borderRadius: `${styles.borderRadius}px`,
-        boxShadow,
+        boxShadow: styles.boxShadow,
       }}
       value={value}
       data-cy={dataCy}

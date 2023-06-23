@@ -3,9 +3,9 @@ import React, { useRef } from 'react';
 import { KanbanBoard } from './KanbanBoard';
 
 export const Kanban = (props) => {
-  const { height, width, properties, styles, id, boxShadow } = props;
+  const { height, width, properties, styles, id } = props;
   const { showDeleteButton } = properties;
-  const { visibility, disabledState } = styles;
+  const { visibility, disabledState, boxShadow } = styles;
 
   const parentRef = useRef(null);
   const widgetHeight = showDeleteButton ? height - 100 : height - 20;

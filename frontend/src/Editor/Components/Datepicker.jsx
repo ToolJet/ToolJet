@@ -16,11 +16,10 @@ export const Datepicker = function Datepicker({
   darkMode,
   fireEvent,
   dataCy,
-  boxShadow,
 }) {
   const { enableTime, enableDate, defaultValue, disabledDates } = properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
-  const { visibility, disabledState, borderRadius } = styles;
+  const { visibility, disabledState, borderRadius, boxShadow } = styles;
 
   const [date, setDate] = useState(null);
   const [excludedDates, setExcludedDates] = useState([]);

@@ -18,7 +18,6 @@ export const Modal = function Modal({
   fireEvent,
   dataCy,
   height,
-  boxShadow,
 }) {
   const [showModal, setShowModal] = useState(false);
 
@@ -40,6 +39,7 @@ export const Modal = function Modal({
     visibility,
     triggerButtonBackgroundColor,
     triggerButtonTextColor,
+    boxShadow,
   } = styles;
   const parentRef = useRef(null);
 

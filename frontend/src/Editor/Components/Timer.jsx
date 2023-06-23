@@ -153,7 +153,11 @@ export const Timer = function Timer({
   };
 
   return (
-    <div className="card" style={{ height, display: styles.visibility ? '' : 'none', boxShadow }} data-cy={dataCy}>
+    <div
+      className="card"
+      style={{ height, display: styles.visibility ? '' : 'none', boxShadow: styles.boxShadow }}
+      data-cy={dataCy}
+    >
       <div className="timer-wrapper">
         <div className="counter-container">
           {`${prependZero(time.hour)}:${prependZero(time.minute)}:${prependZero(time.second)}:${prependZero(

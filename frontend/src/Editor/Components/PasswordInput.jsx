@@ -10,9 +10,8 @@ export const PasswordInput = ({
   component,
   fireEvent,
   dataCy,
-  boxShadow,
 }) => {
-  const { visibility, disabledState, borderRadius, backgroundColor } = styles;
+  const { visibility, disabledState, borderRadius, backgroundColor, boxShadow } = styles;
 
   const placeholder = properties.placeholder;
 

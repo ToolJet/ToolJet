@@ -1,8 +1,8 @@
 import React from 'react';
 import { isArray } from 'lodash';
 
-export const Timeline = function Timeline({ height, darkMode, properties, styles, dataCy, boxShadow }) {
-  const { visibility } = styles;
+export const Timeline = function Timeline({ height, darkMode, properties, styles, dataCy }) {
+  const { visibility, boxShadow } = styles;
   const { data, hideDate } = properties;
 
   const darkModeStyle = darkMode && 'text-white-50';

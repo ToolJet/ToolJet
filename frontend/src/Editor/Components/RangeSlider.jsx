@@ -2,17 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
-export const RangeSlider = function RangeSlider({
-  height,
-  properties,
-  styles,
-  setExposedVariable,
-  fireEvent,
-  dataCy,
-  boxShadow,
-}) {
+export const RangeSlider = function RangeSlider({ height, properties, styles, setExposedVariable, fireEvent, dataCy }) {
   const { value, min, max, enableTwoHandle } = properties;
-  const { trackColor, handleColor, lineColor, visibility } = styles;
+  const { trackColor, handleColor, lineColor, visibility, boxShadow } = styles;
   const sliderRef = useRef(null);
   const [sliderValue, setSliderValue] = useState(0);
   const [rangeValue, setRangeValue] = useState([0, 100]);

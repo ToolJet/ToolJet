@@ -1,7 +1,7 @@
 import React from 'react';
 
-export const Divider = function Divider({ styles, dataCy, boxShadow }) {
-  const { visibility, dividerColor } = styles;
+export const Divider = function Divider({ styles, dataCy }) {
+  const { visibility, dividerColor, boxShadow } = styles;
   const color = dividerColor ?? '#E7E8EA';
 
   return (

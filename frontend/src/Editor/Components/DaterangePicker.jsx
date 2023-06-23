@@ -14,9 +14,8 @@ export const DaterangePicker = function DaterangePicker({
   darkMode,
   fireEvent,
   dataCy,
-  boxShadow,
 }) {
-  const { borderRadius, visibility, disabledState } = styles;
+  const { borderRadius, visibility, disabledState, boxShadow } = styles;
   const { defaultStartDate, defaultEndDate } = properties;
   const formatProp = typeof properties.format === 'string' ? properties.format : '';
 

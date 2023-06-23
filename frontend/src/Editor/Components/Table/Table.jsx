@@ -72,7 +72,6 @@ export function Table({
   setProperty,
   mode,
   exposedVariables,
-  boxShadow,
 }) {
   const {
     color,
@@ -829,7 +828,7 @@ export function Table({
         display: parsedWidgetVisibility ? '' : 'none',
         overflow: 'hidden',
         borderRadius: Number.parseFloat(borderRadius),
-        boxShadow,
+        boxShadow: styles.boxShadow,
       }}
       onClick={(event) => {
         onComponentClick(id, component, event);

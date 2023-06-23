@@ -5,22 +5,14 @@ import { useTrail } from 'react-spring';
 
 import Star from './star';
 
-export const StarRating = function StarRating({
-  properties,
-  styles,
-  fireEvent,
-  setExposedVariable,
-  darkMode,
-  dataCy,
-  boxShadow,
-}) {
+export const StarRating = function StarRating({ properties, styles, fireEvent, setExposedVariable, darkMode, dataCy }) {
   const label = properties.label;
   const defaultSelected = properties.defaultSelected ?? 5;
   const maxRating = properties.maxRating ?? 5;
   const allowHalfStar = properties.allowHalfStar ?? false;
   const tooltips = properties.tooltips;
 
-  const { visibility, disabledState, textColor, labelColor } = styles;
+  const { visibility, disabledState, textColor, labelColor, boxShadow } = styles;
   const color = textColor ?? '#ffb400';
   const labelColorStyle = labelColor === '#333' ? (darkMode ? '#fff' : '#333') : labelColor;
 

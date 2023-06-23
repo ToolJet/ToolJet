@@ -1,5 +1,5 @@
 import React from 'react';
-export const Statistics = function Statistics({ width, height, properties, styles, darkMode, dataCy, boxShadow }) {
+export const Statistics = function Statistics({ width, height, properties, styles, darkMode, dataCy }) {
   const {
     primaryValueLabel,
     primaryValue,
@@ -9,7 +9,8 @@ export const Statistics = function Statistics({ width, height, properties, style
     hideSecondary,
     loadingState,
   } = properties;
-  const { primaryLabelColour, primaryTextColour, secondaryLabelColour, secondaryTextColour, visibility } = styles;
+  const { primaryLabelColour, primaryTextColour, secondaryLabelColour, secondaryTextColour, visibility, boxShadow } =
+    styles;
 
   const baseStyle = {
     borderRadius: 4,

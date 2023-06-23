@@ -15,10 +15,9 @@ export const DropDown = function DropDown({
   exposedVariables,
   registerAction,
   dataCy,
-  boxShadow,
 }) {
   let { label, value, advanced, schema, placeholder, display_values, values } = properties;
-  const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
+  const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent, boxShadow } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
 

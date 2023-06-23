@@ -11,10 +11,9 @@ export const RadioButton = function RadioButton({
   registerAction,
   darkMode,
   dataCy,
-  boxShadow,
 }) {
   const { label, value, values, display_values } = properties;
-  const { visibility, disabledState, activeColor } = styles;
+  const { visibility, disabledState, activeColor, boxShadow } = styles;
   const textColor = darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor;
   const [checkedValue, setValue] = useState(() => value);
   useEffect(() => setValue(value), [value]);

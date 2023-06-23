@@ -24,9 +24,8 @@ export const Form = function Form(props) {
     childComponents,
     onEvent,
     dataCy,
-    boxShadow,
   } = props;
-  const { visibility, disabledState, borderRadius, borderColor } = styles;
+  const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
   const { buttonToSubmit, loadingState } = properties;
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;

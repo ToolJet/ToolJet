@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 
-export const Html = function ({ height, properties, styles, darkMode, dataCy, boxShadow }) {
+export const Html = function ({ height, properties, styles, darkMode, dataCy }) {
   const { rawHtml: stringifyHTML } = properties;
   const baseStyle = {
     backgroundColor: darkMode ? '#47505D' : '#ffffff',
     color: darkMode ? 'white' : 'black',
   };
-  const { visibility } = styles;
+  const { visibility, boxShadow } = styles;
 
   const [rawHtml, setRawHtml] = useState('');
   useEffect(() => {

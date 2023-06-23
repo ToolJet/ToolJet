@@ -9,9 +9,8 @@ export const Pagination = ({
   fireEvent,
   darkMode,
   dataCy,
-  boxShadow,
 }) => {
-  const { visibility, disabledState } = styles;
+  const { visibility, disabledState, boxShadow } = styles;
   const [currentPage, setCurrentPage] = useState(() => properties?.defaultPageIndex ?? 1);
 
   useEffect(() => {

@@ -1,8 +1,8 @@
 import React from 'react';
 
-export const Tags = function Tags({ width, height, properties, styles, dataCy, boxShadow }) {
+export const Tags = function Tags({ width, height, properties, styles, dataCy }) {
   const { data } = properties;
-  const { visibility } = styles;
+  const { visibility, boxShadow } = styles;
 
   const computedStyles = {
     width,

@@ -8,9 +8,8 @@ export const NumberInput = function NumberInput({
   darkMode,
   fireEvent,
   dataCy,
-  boxShadow,
 }) {
-  const { visibility, borderRadius, borderColor, backgroundColor } = styles;
+  const { visibility, borderRadius, borderColor, backgroundColor, boxShadow } = styles;
 
   const textColor = darkMode && ['#232e3c', '#000000ff'].includes(styles.textColor) ? '#fff' : styles.textColor;
 

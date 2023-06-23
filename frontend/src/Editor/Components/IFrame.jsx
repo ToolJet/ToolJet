@@ -1,8 +1,8 @@
 import React from 'react';
 
-export const IFrame = function IFrame({ width, height, properties, styles, dataCy, boxShadow }) {
+export const IFrame = function IFrame({ width, height, properties, styles, dataCy }) {
   const source = properties.source;
-  const { visibility, disabledState } = styles;
+  const { visibility, disabledState, boxShadow } = styles;
 
   return (
     <div data-disabled={disabledState} style={{ display: visibility ? '' : 'none', boxShadow }} data-cy={dataCy}>

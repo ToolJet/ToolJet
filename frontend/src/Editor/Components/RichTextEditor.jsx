@@ -9,9 +9,8 @@ export const RichTextEditor = function RichTextEditor({
   styles,
   setExposedVariable,
   dataCy,
-  boxShadow,
 }) {
-  const { visibility, disabledState } = styles;
+  const { visibility, disabledState, boxShadow } = styles;
   const placeholder = properties.placeholder;
   const defaultValue = properties?.defaultValue ?? '';
 

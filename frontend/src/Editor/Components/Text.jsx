@@ -9,7 +9,6 @@ export const Text = function Text({
   registerAction,
   setExposedVariable,
   dataCy,
-  boxShadow,
 }) {
   let {
     textSize,
@@ -26,6 +25,7 @@ export const Text = function Text({
     wordSpacing,
     fontVariant,
     disabledState,
+    boxShadow,
   } = styles;
   const { loadingState } = properties;
   const [text, setText] = useState(() => computeText());

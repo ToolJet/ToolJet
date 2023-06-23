@@ -290,7 +290,6 @@ export const Box = function Box({
         {inCanvas ? (
           !resetComponent ? (
             <ComponentToRender
-              boxShadow={validatedGeneralStyles?.boxShadow}
               onComponentClick={onComponentClick}
               onComponentOptionChanged={onComponentOptionChanged}
               currentState={currentState}
@@ -308,7 +307,7 @@ export const Box = function Box({
               canvasWidth={canvasWidth}
               properties={validatedProperties}
               exposedVariables={exposedVariables}
-              styles={validatedStyles}
+              styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
               setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
               setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
               registerAction={(actionName, func, dependencies = []) => {

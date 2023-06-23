@@ -11,9 +11,8 @@ export const ColorPicker = function ({
   registerAction,
   fireEvent,
   dataCy,
-  boxShadow,
 }) {
-  const { visibility } = styles;
+  const { visibility, boxShadow } = styles;
   const defaultColor = properties.defaultColor;
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [color, setColor] = useState(defaultColor);
