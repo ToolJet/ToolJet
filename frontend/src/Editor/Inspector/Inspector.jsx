@@ -55,8 +55,6 @@ export const Inspector = ({
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
 
-  console.log({ componentMeta, componentTypes });
-
   const isMounted = useMounted();
 
   useEffect(() => {
