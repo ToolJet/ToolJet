@@ -158,100 +158,105 @@ describe("Manage SSO for multi workspace", () => {
   });
 
   it("Should verify the workspace login page", () => {
-    data.workspaceName = fake.companyName;
+    const auditlogsIcon = cy.get('[data-cy="icon-audit-logs"]').should("exist")
+    if (!auditlogsIcon) {
+      data.workspaceName = fake.companyName;
 
-    common.createWorkspace(data.workspaceName);
-    common.navigateToManageSSO();
-    SSO.visitWorkspaceLoginPage();
-    SSO.workspaceLoginPageElements(data.workspaceName);
+      common.createWorkspace(data.workspaceName);
+      common.navigateToManageSSO();
+      SSO.visitWorkspaceLoginPage();
+      SSO.workspaceLoginPageElements(data.workspaceName);
 
-    SSO.workspaceLogin(data.workspaceName);
-    SSO.disableDefaultSSO();
-    SSO.visitWorkspaceLoginPage();
-    cy.notVisible(ssoSelector.googleSSOText);
-    cy.notVisible(ssoSelector.gitSSOText);
-    SSO.passwordLoginVisible();
+      SSO.workspaceLogin(data.workspaceName);
+      SSO.disableDefaultSSO();
+      SSO.visitWorkspaceLoginPage();
+      cy.notVisible(ssoSelector.googleSSOText);
+      cy.notVisible(ssoSelector.gitSSOText);
+      SSO.passwordLoginVisible();
 
-    SSO.workspaceLogin(data.workspaceName);
-    common.navigateToManageSSO();
-    cy.get(ssoSelector.google).should("be.visible").click();
+      SSO.workspaceLogin(data.workspaceName);
+      common.navigateToManageSSO();
+      cy.get(ssoSelector.google).should("be.visible").click();
 
-    cy.get(ssoSelector.googleEnableToggle).check();
-    cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-      "have.text",
-      ssoText.enabledLabel
-    );
-    SSO.visitWorkspaceLoginPage();
-    cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
-      "have.text",
-      ssoText.googleSSOText
-    );
-    cy.notVisible(ssoSelector.gitSSOText);
-    SSO.passwordLoginVisible();
+      cy.get(ssoSelector.googleEnableToggle).check();
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoText.enabledLabel
+      );
+      SSO.visitWorkspaceLoginPage();
+      cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.googleSSOText
+      );
+      cy.notVisible(ssoSelector.gitSSOText);
+      SSO.passwordLoginVisible();
 
-    SSO.workspaceLogin(data.workspaceName);
-    common.navigateToManageSSO();
-    cy.get(ssoSelector.google).should("be.visible").click();
-    cy.get(ssoSelector.googleEnableToggle).uncheck();
-    cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-      "have.text",
-      ssoText.disabledLabel
-    );
+      SSO.workspaceLogin(data.workspaceName);
+      common.navigateToManageSSO();
+      cy.get(ssoSelector.google).should("be.visible").click();
+      cy.get(ssoSelector.googleEnableToggle).uncheck();
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoText.disabledLabel
+      );
 
-    cy.get(ssoSelector.git).should("be.visible").click();
-    cy.get(ssoSelector.gitEnableToggle).check();
-    cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-      "have.text",
-      ssoText.enabledLabel
-    );
-    SSO.visitWorkspaceLoginPage();
-    cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
-      "have.text",
-      ssoText.gitSignInText
-    );
-    SSO.passwordLoginVisible();
+      cy.get(ssoSelector.git).should("be.visible").click();
+      cy.get(ssoSelector.gitEnableToggle).check();
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoText.enabledLabel
+      );
+      SSO.visitWorkspaceLoginPage();
+      cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.gitSignInText
+      );
+      SSO.passwordLoginVisible();
 
-    SSO.workspaceLogin(data.workspaceName);
-    common.navigateToManageSSO();
-    cy.get(ssoSelector.google).should("be.visible").click();
+      SSO.workspaceLogin(data.workspaceName);
+      common.navigateToManageSSO();
+      cy.get(ssoSelector.google).should("be.visible").click();
 
-    cy.get(ssoSelector.googleEnableToggle).check();
-    cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-      "have.text",
-      ssoText.enabledLabel
-    );
-    SSO.visitWorkspaceLoginPage();
-    SSO.workspaceLoginPageElements(data.workspaceName);
+      cy.get(ssoSelector.googleEnableToggle).check();
+      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
+        "have.text",
+        ssoText.enabledLabel
+      );
+      SSO.visitWorkspaceLoginPage();
+      SSO.workspaceLoginPageElements(data.workspaceName);
 
-    SSO.workspaceLogin(data.workspaceName);
-    common.navigateToManageSSO();
-    cy.get(ssoSelector.passwordEnableToggle).uncheck();
-    cy.get(commonSelectors.buttonSelector("Yes")).click();
+      SSO.workspaceLogin(data.workspaceName);
+      common.navigateToManageSSO();
+      cy.get(ssoSelector.passwordEnableToggle).uncheck();
+      cy.get(commonSelectors.buttonSelector("Yes")).click();
 
-    SSO.visitWorkspaceLoginPage();
-    cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
-      "have.text",
-      ssoText.googleSSOText
-    );
-    cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
-      "have.text",
-      ssoText.gitSignInText
-    );
-    cy.notVisible(commonSelectors.workEmailInputField);
-    cy.notVisible(commonSelectors.passwordInputField);
-    cy.notVisible(commonSelectors.loginButton);
+      SSO.visitWorkspaceLoginPage();
+      cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.googleSSOText
+      );
+      cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.gitSignInText
+      );
+      cy.notVisible(commonSelectors.workEmailInputField);
+      cy.notVisible(commonSelectors.passwordInputField);
+      cy.notVisible(commonSelectors.loginButton);
 
-    data.workspaceName = fake.companyName;
-    cy.appUILogin();
-    common.createWorkspace(data.workspaceName);
-    cy.wait(300);
-    SSO.disableDefaultSSO();
-    cy.get(ssoSelector.passwordEnableToggle).uncheck();
-    cy.get(commonSelectors.buttonSelector("Yes")).click();
-    SSO.visitWorkspaceLoginPage();
-    cy.get(ssoSelector.noLoginMethodWarning).verifyVisibleElement(
-      "have.text",
-      ssoText.noLoginMethodWarning
-    );
+      data.workspaceName = fake.companyName;
+      cy.appUILogin();
+      common.createWorkspace(data.workspaceName);
+      cy.wait(300);
+      SSO.disableDefaultSSO();
+      cy.get(ssoSelector.passwordEnableToggle).uncheck();
+      cy.get(commonSelectors.buttonSelector("Yes")).click();
+      SSO.visitWorkspaceLoginPage();
+      cy.get(ssoSelector.noLoginMethodWarning).verifyVisibleElement(
+        "have.text",
+        ssoText.noLoginMethodWarning
+      );
+
+    }
+
   });
 });

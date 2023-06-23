@@ -34,7 +34,7 @@ describe("dashboard", () => {
   beforeEach(() => {
     cy.intercept("DELETE", "/api/folders/*").as("folderDeleted");
     cy.intercept("GET", "/api/apps").as("appEditor");
-    cy.intercept("GET", "/api/library_apps/").as("appLibrary");
+    cy.intercept("GET", "/api/library_apps").as("appLibrary");
   });
 
   before(() => {
