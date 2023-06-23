@@ -58,7 +58,8 @@
       "label": "API Key",
       "key": "api_key",
       "type": "text",
-      "description": "Enter API key"
+      "description": "Enter API key",
+      "encrypted": true
     },
     "protocol": {
       "label": "Protocol",

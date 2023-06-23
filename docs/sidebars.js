@@ -384,6 +384,7 @@ const sidebars = {
           'label': 'Troubleshooting',
           'items': [
             'contributing-guide/troubleshooting/eslint',
+            'contributing-guide/troubleshooting/runpy-limitations',
           ],
         },
         'contributing-guide/code-of-conduct',
