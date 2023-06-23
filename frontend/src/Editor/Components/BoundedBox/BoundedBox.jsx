@@ -19,7 +19,6 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
         }),
       ]
     : [];
-  let outerDiv = document.getElementsByClassName('lmGPCf');
 
   useEffect(() => {
     let selector = undefined;
@@ -46,6 +45,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       properties?.defaultValue?.length > 0 &&
       typeof properties?.defaultValue[0] === 'object'
     ) {
+      const outerDiv = document.getElementsByClassName('lmGPCf');
       const defaultValueAnnotation = properties?.defaultValue?.map((item) => {
         // Calculate the rightmost and bottommost coordinates of the inner div
         const innerDivRight = (item.x + item.width) * 6.25; //px -> %
