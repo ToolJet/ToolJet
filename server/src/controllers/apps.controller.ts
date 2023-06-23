@@ -236,14 +236,14 @@ export class AppsController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
   @Get(':id/versions')
-  async fetchVersions(@User() user, @AppDecorator() app: App, @Query('environment_id') environmentId: string) {
+  async fetchVersions(@User() user, @AppDecorator() app: App) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
 
     if (!ability.can('fetchVersions', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.appsService.fetchVersions(user, app.id, environmentId);
+    const result = await this.appsService.fetchVersions(user, app.id);
     return { versions: result };
   }
 

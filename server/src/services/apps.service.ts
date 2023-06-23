@@ -276,14 +276,9 @@ export class AppsService {
     return serializedUsers;
   }
 
-  async fetchVersions(user: any, appId: string, environmentId: string): Promise<AppVersion[]> {
-    const conditions = { appId };
-    if (environmentId) {
-      const env = await this.appEnvironmentService.get(user?.organizationId, environmentId);
-      if (env.priority !== 1) conditions['currentEnvironmentId'] = environmentId;
-    }
+  async fetchVersions(user: any, appId: string): Promise<AppVersion[]> {
     return await this.appVersionsRepository.find({
-      where: conditions,
+      where: { appId },
       order: {
         createdAt: 'DESC',
       },
@@ -305,6 +300,20 @@ export class AppsService {
           where: { id: versionFromId },
           relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
         });
+
+        if (defaultAppEnvironments.length > 1) {
+          const currentEnvironmentOfFromVersion = await this.appEnvironmentService.get(
+            app.organizationId,
+            versionFrom.currentEnvironmentId,
+            false,
+            manager
+          );
+
+          //check if the user is creating version from development environment only
+          if (currentEnvironmentOfFromVersion.priority !== 1) {
+            throw new BadRequestException('New versions can only be created in development environment');
+          }
+        }
       }
 
       const noOfVersions = await manager.count(AppVersion, { where: { appId: app?.id } });
@@ -321,15 +330,7 @@ export class AppsService {
         throw new BadRequestException('Version name already exists.');
       }
 
-      const firstPriorityEnv = await manager.findOne(AppEnvironment, {
-        where: {
-          organizationId: app.organizationId,
-        },
-        order: {
-          //Instead of checking priority == 1, this will help us to use the same code in EE and CE
-          priority: 'ASC',
-        },
-      });
+      const firstPriorityEnv = await this.appEnvironmentService.get(organizationId, null, true, manager);
 
       const appVersion = await manager.save(
         AppVersion,

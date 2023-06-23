@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { ForbiddenException } from '@nestjs/common';
@@ -16,7 +16,7 @@ export class AppEnvironmentsController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async index(@User() user) {
+  async index(@User() user, @Query('app_id') appId: string) {
     const ability = await this.globalDataSourcesAbilityFactory.globalDataSourceActions(user);
     const { organizationId } = user;
 
@@ -24,7 +24,7 @@ export class AppEnvironmentsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const environments = await this.appEnvironmentServices.getAll(organizationId);
+    const environments = await this.appEnvironmentServices.getAll(organizationId, null, appId);
     return decamelizeKeys({ environments });
   }
 }

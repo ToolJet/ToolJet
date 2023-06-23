@@ -3,6 +3,7 @@ import { EntityManager } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
+import { AppVersion } from 'src/entities/app_version.entity';
 
 @Injectable()
 export class AppEnvironmentService {
@@ -55,14 +56,31 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  async getAll(organizationId: string, manager?: EntityManager): Promise<AppEnvironment[]> {
+  async getAll(organizationId: string, manager?: EntityManager, appId?: string): Promise<AppEnvironment[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.find(AppEnvironment, {
-        where: { organizationId, enabled: true },
+      const appEnvironments = await manager.find(AppEnvironment, {
+        where: {
+          organizationId,
+        },
         order: {
           priority: 'ASC',
         },
       });
+
+      if (appId) {
+        for (const appEnvironment of appEnvironments) {
+          const versions = await manager.find(AppVersion, {
+            where: {
+              currentEnvironmentId: appEnvironment.id,
+              appId,
+            },
+          });
+
+          appEnvironment['appVersions'] = versions;
+        }
+      }
+
+      return appEnvironments;
     }, manager);
   }
 
