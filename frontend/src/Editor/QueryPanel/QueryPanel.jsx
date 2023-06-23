@@ -64,8 +64,6 @@ const QueryPanel = ({
     setDraftQuery(queryDetails);
     setSelectedDataSource(source);
     setEditingQuery(false);
-    // createDataQuery(queryDetails);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onMouseUp = () => {
@@ -120,7 +118,6 @@ const QueryPanel = ({
       draftQuery: null,
     };
     if (isUnsavedQueriesAvailable) {
-      // setSaveConfirmation(true);
       setCancelData(stateToBeUpdated);
     } else {
       setSelectedDataSource(null);
@@ -161,28 +158,6 @@ const QueryPanel = ({
 
   return (
     <>
-      {/* <Confirm
-        show={showSaveConfirmation}
-        message={`Query ${selectedQuery?.name} has unsaved changes`}
-        onConfirm={() => {
-          setSaveConfirmation(false);
-        }}
-        onCancel={(data) => {
-          setSaveConfirmation(false);
-          setDraftQuery(null);
-          setSelectedQuery(data?.selectedQuery?.id ?? null);
-          setSelectedDataSource(data?.selectedDataSource ?? null);
-          setUnSavedChanges(false);
-          if (data.hasOwnProperty('editingQuery')) {
-            setEditingQuery(data.editingQuery);
-          }
-        }}
-        confirmButtonText="Continue editing"
-        cancelButtonText="Discard changes"
-        callCancelFnOnConfirm={false}
-        queryCancelData={queryCancelData}
-        darkMode={darkMode}
-      /> */}
       <div
         className="query-pane"
         style={{

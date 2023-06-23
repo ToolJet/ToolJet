@@ -131,7 +131,6 @@ class EditorComponent extends React.Component {
       queryConfirmationList: [],
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
-      // isSaving: false,
       isUnsavedQueriesAvailable: false,
       selectionInProgress: false,
       scrollOptions: {},
@@ -259,7 +258,6 @@ class EditorComponent extends React.Component {
   closeCreateVersionModalPrompt = () => {
     useAppDataStore.getState().actions.setIsSaving(false);
     this.setState({
-      // isSaving: false,
       showCreateVersionModalPrompt: false,
     });
   };
@@ -412,7 +410,6 @@ class EditorComponent extends React.Component {
       this.setState(
         {
           editingVersion: version,
-          // isSaving: false,
         },
         () => {
           shouldWeEditVersion && this.saveEditingVersion(true);
@@ -520,7 +517,6 @@ class EditorComponent extends React.Component {
       this.setState(
         {
           appDefinition,
-          // isSaving: true,
         },
         () => {
           this.props.ymap?.set('appDef', {
@@ -552,7 +548,6 @@ class EditorComponent extends React.Component {
       this.setState(
         {
           appDefinition,
-          // isSaving: true,
         },
         () => {
           this.props.ymap?.set('appDef', {
@@ -578,7 +573,6 @@ class EditorComponent extends React.Component {
       useAppDataStore.getState().actions.setIsSaving(true);
       this.setState(
         {
-          // isSaving: true,
           currentPageId: currentPageId,
           appDefinition: newDefinition,
           appDefinitionLocalVersion: uuid(),
@@ -601,7 +595,6 @@ class EditorComponent extends React.Component {
     useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        // isSaving: true,
         appDefinition: newDefinition,
         appDefinitionLocalVersion: uuid(),
       },
@@ -796,7 +789,6 @@ class EditorComponent extends React.Component {
     useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        // isSaving: true,
         appDefinition,
       },
       () => {
@@ -904,7 +896,6 @@ class EditorComponent extends React.Component {
             },
             () => {
               useAppDataStore.getState().actions.setIsSaving(false);
-              // this.setState({ isSaving: false, });
             }
           );
         })
@@ -1046,7 +1037,6 @@ class EditorComponent extends React.Component {
     useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },
@@ -1107,7 +1097,6 @@ class EditorComponent extends React.Component {
     this.setState(
       {
         currentPageId: newCurrentPageId,
-        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
         isDeletingPage: false,
@@ -1125,7 +1114,6 @@ class EditorComponent extends React.Component {
     useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        // isSaving: true,
         appDefinition: {
           ...this.state.appDefinition,
           homePageId: pageId,
@@ -1175,7 +1163,6 @@ class EditorComponent extends React.Component {
     useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },
@@ -1201,7 +1188,6 @@ class EditorComponent extends React.Component {
     useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        // isSaving: true,
         appDefinition: {
           ...this.state.appDefinition,
           pages: {
@@ -1226,7 +1212,6 @@ class EditorComponent extends React.Component {
     useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        // isSaving: true,
         appDefinition: {
           ...this.state.appDefinition,
           pages: {
@@ -1254,7 +1239,6 @@ class EditorComponent extends React.Component {
     useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },
@@ -1282,7 +1266,6 @@ class EditorComponent extends React.Component {
     useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },
@@ -1307,7 +1290,6 @@ class EditorComponent extends React.Component {
     useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },
@@ -1332,7 +1314,6 @@ class EditorComponent extends React.Component {
     useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },
@@ -1411,7 +1392,6 @@ class EditorComponent extends React.Component {
     useAppDataStore.getState().actions.setIsSaving(true);
     this.setState(
       {
-        // isSaving: true,
         appDefinition: newAppDefinition,
         appDefinitionLocalVersion: uuid(),
       },

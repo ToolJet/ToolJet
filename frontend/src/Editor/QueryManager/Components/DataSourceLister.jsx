@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import Select from 'react-select';
 import RunjsIcon from '@/Editor/Icons/runjs.svg';
 import RunTooljetDbIcon from '@/Editor/Icons/tooljetdb.svg';
 import RunpyIcon from '@/Editor/Icons/runpy.svg';
 import AddIcon from '@assets/images/icons/add-source.svg';
 import { useTranslation } from 'react-i18next';
 import { getSvgIcon } from '@/_helpers/appUtils';
+import { groupBy } from 'lodash';
 
 function DataSourceLister({
   dataSources,
   staticDataSources,
+  globalDataSources,
   changeDataSource,
   handleBackButton,
   darkMode,
@@ -17,6 +20,7 @@ function DataSourceLister({
   dataSourceBtnComponent = null,
 }) {
   const [allSources, setAllSources] = useState([...dataSources, ...staticDataSources]);
+  const [globalDataSourcesOpts, setGlobalDataSourcesOpts] = useState([]);
   const { t } = useTranslation();
   const computedStyles = {
     background: darkMode ? '#2f3c4c' : 'white',
@@ -32,6 +36,24 @@ function DataSourceLister({
     setAllSources([...dataSources, ...staticDataSources]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSources]);
+
+  useEffect(() => {
+    setGlobalDataSourcesOpts(
+      Object.entries(groupBy(globalDataSources, 'kind')).map(([kind, sources]) => ({
+        label: (
+          <div>
+            {fetchIconForSource(sources?.[0])} {kind}
+          </div>
+        ),
+        options: sources.map((source) => ({
+          label: <div>{source.name}</div>,
+          value: source.id,
+          isNested: true,
+          source,
+        })),
+      }))
+    );
+  }, [globalDataSources]);
 
   const fetchIconForSource = (source) => {
     const iconFile = source?.plugin?.iconFile?.data ?? undefined;
@@ -49,33 +71,44 @@ function DataSourceLister({
     }
   };
 
+  const DataSourceOptions = [
+    { label: <span className="text-muted">Defaults</span>, isDisabled: true },
+    ...allSources.map((source) => ({
+      label: (
+        <div>
+          {fetchIconForSource(source)} {source.name}
+        </div>
+      ),
+      value: source.id,
+      source,
+    })),
+    { label: <span className="text-muted">Global datasources</span>, isDisabled: true },
+    ...globalDataSourcesOpts,
+  ];
+
   return (
     <div className="query-datasource-card-container">
       {showAddDatasourceBtn && dataSourceBtnComponent && dataSourceBtnComponent}
-      {allSources.map((source) => {
-        return (
-          <div
-            className="query-datasource-card"
-            style={computedStyles}
-            key={`${source.id}-${source.kind}`}
-            onClick={() => {
-              handleChangeDataSource(source);
-            }}
-          >
-            {fetchIconForSource(source)}
-            <p data-cy={`${String(source.name).toLocaleLowerCase().replace(/\s+/g, '-')}-add-query-card`}>
-              {' '}
-              {source.name}
-            </p>
-          </div>
-        );
-      })}
-      {showAddDatasourceBtn && !dataSourceBtnComponent && (
-        <div className="query-datasource-card" style={computedStyles} onClick={dataSourceModalHandler}>
-          <AddIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />
-          <p>{t('editor.queryManager.addDatasource', 'Add datasource')}</p>
-        </div>
-      )}
+
+      <Select
+        onChange={({ source } = {}) => handleChangeDataSource(source)}
+        styles={{
+          control: (style) => ({ ...style, width: '400px' }),
+          groupHeading: (style) => ({
+            ...style,
+            fontSize: '100%',
+            textTransform: '',
+            color: 'inherit',
+            fontWeight: '400',
+          }),
+          option: (style, { data: { isNested } }) => ({
+            ...style,
+            ...(isNested ? { paddingLeft: '20px', marginLeft: '40px', borderLeft: '1px solid #ccc' } : {}),
+          }),
+        }}
+        placeholder="Where do you want to connect to"
+        options={DataSourceOptions}
+      />
     </div>
   );
 }
