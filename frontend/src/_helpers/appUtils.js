@@ -886,23 +886,22 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     }
   }
 
-  useCurrentStateStore.getState().actions.setCurrentState({
-    queries: {
-      ...useCurrentStateStore.getState().queries,
-      [queryName]: {
-        ...useCurrentStateStore.getState().queries[queryName],
-        isLoading: true,
-        data: [],
-        rawData: [],
-      },
-    },
-    errors: {},
-  });
-
   let _self = _ref;
 
   // eslint-disable-next-line no-unused-vars
   return new Promise(function (resolve, reject) {
+    useCurrentStateStore.getState().actions.setCurrentState({
+      queries: {
+        ...useCurrentStateStore.getState().queries,
+        [queryName]: {
+          ...useCurrentStateStore.getState().queries[queryName],
+          isLoading: true,
+          data: [],
+          rawData: [],
+        },
+      },
+      errors: {},
+    });
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
       queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode);

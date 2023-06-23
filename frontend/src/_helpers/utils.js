@@ -397,7 +397,7 @@ export async function executeMultilineJS(
   mode = ''
 ) {
   //:: confirmed arg is unused
-  const { currentState } = useCurrentStateStore.getState();
+  const currentState = useCurrentStateStore.getState();
   let result = {},
     error = null;
 
