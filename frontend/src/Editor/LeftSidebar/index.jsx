@@ -15,6 +15,7 @@ import Popover from '@/_ui/Popover';
 import { usePanelHeight } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useDataSources } from '@/_stores/dataSourcesStore';
+import { shallow } from 'zustand/shallow';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -61,9 +62,12 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
-  const { isVersionReleased } = useAppVersionStore((state) => ({
-    isVersionReleased: state.isVersionReleased,
-  }));
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   const [pinned, setPinned] = useState(!!localStorage.getItem('selectedSidebarItem'));
   const [errorLogs, setErrorLogs] = useState([]);
   const [errorHistory, setErrorHistory] = useState({ appLevel: [], pageLevel: [] });

@@ -5,11 +5,12 @@ import Comment from './Comment';
 import { commentsService } from '@/_services';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import useRouter from '@/_hooks/use-router';
+import { shallow } from 'zustand/shallow';
 
 const Comments = ({ newThread = {}, socket, canvasWidth, currentPageId }) => {
   const [threads, setThreads] = React.useState([]);
   const router = useRouter();
-  const { appVersionsId } = useAppVersionStore((state) => ({ appVersionsId: state?.editingVersion?.id }));
+  const { appVersionsId } = useAppVersionStore((state) => ({ appVersionsId: state?.editingVersion?.id }), shallow);
 
   async function fetchData() {
     const { data } = await commentsService.getThreads(router.query.id, appVersionsId);

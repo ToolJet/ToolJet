@@ -232,9 +232,12 @@ const LeftSidebarDataSourcesContainer = ({
   pinned,
 }) => {
   const { t } = useTranslation();
-  const { isVersionReleased } = useAppVersionStore((state) => ({
-    isVersionReleased: state.isVersionReleased,
-  }));
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   return (
     <div>
       <HeaderSection darkMode={darkMode}>

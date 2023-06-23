@@ -4,12 +4,16 @@ import { LeftSidebarItem } from './SidebarItem';
 import { commentsService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const LeftSidebarComment = forwardRef(({ toggleComments, selectedSidebarItem, currentPageId }, ref) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { appVersionsId } = useAppVersionStore((state) => ({
-    appVersionsId: state?.editingVersion?.id,
-  }));
+  const { appVersionsId } = useAppVersionStore(
+    (state) => ({
+      appVersionsId: state?.editingVersion?.id,
+    }),
+    shallow
+  );
   const [isActive, toggleActive] = React.useState(false);
   const [notifications, setNotifications] = React.useState([]);
   const router = useRouter();

@@ -1,12 +1,16 @@
 import React from 'react';
 import cx from 'classnames';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const ReleasedVersionError = () => {
-  const { isUserEditingTheVersion, disableReleasedVersionPopupState } = useAppVersionStore((state) => ({
-    isUserEditingTheVersion: state.isUserEditingTheVersion,
-    disableReleasedVersionPopupState: state.actions.disableReleasedVersionPopupState,
-  }));
+  const { isUserEditingTheVersion, disableReleasedVersionPopupState } = useAppVersionStore(
+    (state) => ({
+      isUserEditingTheVersion: state.isUserEditingTheVersion,
+      disableReleasedVersionPopupState: state.actions.disableReleasedVersionPopupState,
+    }),
+    shallow
+  );
   const changeBackTheState = () => {
     isUserEditingTheVersion && disableReleasedVersionPopupState();
   };

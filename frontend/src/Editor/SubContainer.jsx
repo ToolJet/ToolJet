@@ -11,6 +11,7 @@ import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { resolveReferences } from '@/_helpers/utils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useMounted } from '@/_hooks/use-mount';
+import { shallow } from 'zustand/shallow';
 
 export const SubContainer = ({
   mode,
@@ -54,10 +55,13 @@ export const SubContainer = ({
   });
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
-  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore((state) => ({
-    enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
-    isVersionReleased: state.isVersionReleased,
-  }));
+  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
