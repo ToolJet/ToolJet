@@ -4,20 +4,26 @@ import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const CreateVersion = ({
   appId,
   appVersions,
   setAppVersions,
   setAppDefinitionFromVersion,
-  editingVersion,
   showCreateAppVersion,
   setShowCreateAppVersion,
 }) => {
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const { t } = useTranslation();
-
+  const { editingVersion } = useAppVersionStore(
+    (state) => ({
+      editingVersion: state.editingVersion,
+    }),
+    shallow
+  );
   const createVersion = () => {
     if (versionName.trim().length > 25) {
       toast.error('Version name should not be longer than 25 characters');

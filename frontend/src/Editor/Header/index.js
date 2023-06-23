@@ -13,6 +13,7 @@ import config from 'config';
 // eslint-disable-next-line import/no-unresolved
 import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export default function EditorHeader({
   darkMode,
@@ -21,7 +22,6 @@ export default function EditorHeader({
   globalSettingsChanged,
   appDefinition,
   toggleAppMaintenance,
-  editingVersion,
   app,
   appVersionPreviewLink,
   slug,
@@ -42,9 +42,14 @@ export default function EditorHeader({
   currentUser,
 }) {
   const { is_maintenance_on } = app;
-  const { isVersionReleased } = useAppVersionStore((state) => ({
-    isVersionReleased: state.isVersionReleased,
-  }));
+  const { isVersionReleased, editingVersion } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      editgingVersion: state.editingVersion,
+    }),
+    shallow
+  );
+
   const updatePresence = useUpdatePresence();
   useEffect(() => {
     const initialPresence = {
@@ -120,7 +125,6 @@ export default function EditorHeader({
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}
-                      editingVersion={editingVersion}
                       releasedVersionId={app.current_version_id}
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
                       onVersionDelete={onVersionDelete}
@@ -174,7 +178,6 @@ export default function EditorHeader({
                       appId={app.id}
                       appName={app.name}
                       onVersionRelease={onVersionRelease}
-                      editingVersion={editingVersion}
                       saveEditingVersion={saveEditingVersion}
                     />
                   )}

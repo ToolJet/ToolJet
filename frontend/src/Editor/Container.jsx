@@ -557,8 +557,6 @@ export const Container = ({
                 addDefaultChildren,
                 currentPageId,
                 childComponents,
-                isVersionReleased,
-                enableReleasedVersionPopupState,
               }}
             />
           );
