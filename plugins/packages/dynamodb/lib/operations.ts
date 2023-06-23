@@ -67,3 +67,43 @@ export function scanTable(client, scanCondition: object): Promise<object> {
     });
   });
 }
+
+export function updateItem(client, updateCondition: object): Promise<object> {
+  return new Promise((resolve, reject) => {
+    client.update(updateCondition, function (err, data) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    });
+  });
+}
+
+export function describeTable(client, table: string): Promise<object> {
+  const params = {
+    TableName: table,
+  };
+
+  return new Promise((resolve, reject) => {
+    client.describeTable(params, function (err, data) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    });
+  });
+}
+
+export function createTable(client, tableParameters: object) {
+  return new Promise((resolve, reject) => {
+    client.createTable(tableParameters, function (err, data) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    });
+  });
+}

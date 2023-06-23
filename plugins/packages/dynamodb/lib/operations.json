@@ -30,6 +30,18 @@
         {
           "value": "delete_item",
           "name": "Delete Item"
+        },
+        {
+          "value": "update_item",
+          "name": "Update Item"
+        },
+        {
+          "value": "describe_table",
+          "name": "Describe Table"
+        },
+        {
+          "value": "create_table",
+          "name": "Create Table"
         }
       ]
     },
@@ -93,6 +105,38 @@
         "mode": "javascript",
         "description": "Enter key name",
         "height": "150px"
+      }
+    },
+    "update_item": {
+      "update_condition": {
+        "label": "Update Condition",
+        "key": "update_condition",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter update condition",
+        "height": "150px"
+      }
+    },
+    "create_table": {
+      "table_parameters": {
+        "label": "Table Parameters",
+        "key": "table_parameters",
+        "type": "codehinter",
+        "mode": "javascript",
+        "description": "Enter table parameters",
+        "height": "200px"
+      }
+    },
+    "describe_table": {
+      "table": {
+        "label": "Table",
+        "key": "table",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter table",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter table"
       }
     }
   }
