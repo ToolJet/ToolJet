@@ -12,9 +12,11 @@ import Pagination from '@/_ui/Pagination';
 import { CustomToggleSwitch } from '../Editor/QueryManager/Components/CustomToggleSwitch';
 import { Button } from '@/_ui/LeftSidebar';
 import { BreadCrumbContext } from '@/App/App';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { getPrivateRoute } from '@/_helpers/routes';
 
 const AuditLogs = (props) => {
+  const navigate = useNavigate();
   const [auditLogs, setAuditLogs] = useState([]);
   const [isLoadingAuditLogs, setIsLoadingAuditLogs] = useState(false);
   const [totalPages, setTotalPages] = useState(null);
@@ -290,7 +292,18 @@ const AuditLogs = (props) => {
     }
   };
 
+  function handleAuditLogClick() {
+    auditLogsService
+      .getLicenseTerms()
+      .then(() => navigate(getPrivateRoute('audit_logs')))
+      .catch(() => navigate(getPrivateRoute('dashboard')));
+    document.activeElement.blur();
+    return;
+  }
+
   useEffect(() => {
+    handleAuditLogClick();
+
     updateSidebarNAV('');
     const urlSearchParams = new URLSearchParams(props.location.search);
 
