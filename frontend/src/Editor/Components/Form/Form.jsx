@@ -49,6 +49,7 @@ export const Form = function Form(props) {
   const [childrenData, setChildrenData] = useState({});
   const [isValid, setValidation] = useState(true);
   const [uiComponents, setUIComponents] = useState([]);
+  const [jsonSubmitBtn, setJsonSubmitBtn] = useState('');
 
   registerAction('resetForm', async function () {
     resetComponent();

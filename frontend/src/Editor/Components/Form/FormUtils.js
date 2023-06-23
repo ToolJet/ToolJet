@@ -8,11 +8,12 @@ export function generateUIComponents(JSONSchema, advanced, componentTypes) {
     // eslint-disable-next-line no-unused-vars
     Object.entries(JSONSchema?.properties).forEach(([key, value]) => {
       uiComponentsDraft.push(structuredClone(componentTypes.find((component) => component?.component == 'Text')));
-      uiComponentsDraft.push(structuredClone(componentTypes.find((component) => component?.component == value?.type)));
+      const itemType = typeResolver(value?.type);
+      uiComponentsDraft.push(structuredClone(componentTypes.find((component) => component?.component == itemType)));
     });
     Object.entries(JSONSchema?.properties).forEach(([key, value], index) => {
       if (uiComponentsDraft?.length > 0 && uiComponentsDraft[index * 2 + 1]) {
-        switch (value?.type) {
+        switch (typeResolver(value?.type)) {
           case 'TextInput':
             uiComponentsDraft[index * 2 + 1]['definition']['styles']['backgroundColor']['value'] =
               value?.styles?.backgroundColor ||
@@ -108,7 +109,8 @@ export function generateUIComponents(JSONSchema, advanced, componentTypes) {
               value?.styles?.disabledState ||
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'];
 
-            uiComponentsDraft[index * 2 + 1]['definition']['properties']['text']['value'] = value?.text;
+            uiComponentsDraft[index * 2 + 1]['definition']['properties']['text']['value'] =
+              value?.value || uiComponentsDraft[index * 2 + 1]['definition']['properties']['text']['value'];
             break;
           case 'Text':
             uiComponentsDraft[index * 2 + 1]['definition']['styles']['backgroundColor']['value'] =
@@ -124,7 +126,7 @@ export function generateUIComponents(JSONSchema, advanced, componentTypes) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['fontWeight']['value'];
 
             uiComponentsDraft[index * 2 + 1]['definition']['properties']['text']['value'] =
-              value?.text || uiComponentsDraft[index * 2 + 1]['definition']['properties']['text']['value'];
+              value?.value || uiComponentsDraft[index * 2 + 1]['definition']['properties']['text']['value'];
             break;
           case 'NumberInput':
             uiComponentsDraft[index * 2 + 1]['definition']['styles']['backgroundColor']['value'] =
@@ -204,8 +206,7 @@ export function generateUIComponents(JSONSchema, advanced, componentTypes) {
               value?.customRule || uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'];
 
             uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'] =
-              value?.defaultValue ||
-              uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'];
+              value?.value || uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'];
             uiComponentsDraft[index * 2 + 1]['definition']['properties']['disabledDates']['value'] =
               value?.disabledDates ||
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['disabledDates']['value'];
@@ -232,8 +233,7 @@ export function generateUIComponents(JSONSchema, advanced, componentTypes) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'];
 
             uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'] =
-              value?.defaultValue ||
-              uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'];
+              value?.value || uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'];
             uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] =
               value?.label || uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'];
             break;
@@ -250,7 +250,7 @@ export function generateUIComponents(JSONSchema, advanced, componentTypes) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'];
 
             uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values']['value'] =
-              value?.display_values ||
+              value?.displayValues ||
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values']['value'];
             uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] =
               value?.label || uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'];
@@ -277,8 +277,7 @@ export function generateUIComponents(JSONSchema, advanced, componentTypes) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['toggleSwitchColor']['value'];
 
             uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'] =
-              value?.defaultValue ||
-              uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'];
+              value?.value || uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'];
             uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] =
               value?.label || uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'];
             break;
@@ -334,7 +333,7 @@ export function generateUIComponents(JSONSchema, advanced, componentTypes) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'];
 
             uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values']['value'] =
-              value?.display_values ||
+              value?.displayValues ||
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values']['value'];
             uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] =
               value?.label || uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'];
@@ -456,7 +455,7 @@ export function generateUIComponents(JSONSchema, advanced, componentTypes) {
         JSONSchema?.submitButton?.styles?.disabledState ||
         uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['disabledState']['value'];
       uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['properties']['text']['value'] =
-        JSONSchema?.submitButton?.text;
+        JSONSchema?.submitButton?.value;
     }
     // filtering out undefined items
     return uiComponentsDraft.filter(function (element) {
@@ -464,3 +463,40 @@ export function generateUIComponents(JSONSchema, advanced, componentTypes) {
     });
   }
 }
+
+const typeResolver = (type) => {
+  switch (type) {
+    case 'textinput':
+      return 'TextInput';
+    case 'dropdown':
+      return 'DropDown';
+    case 'button':
+      return 'Button';
+    case 'text':
+      return 'Text';
+    case 'numberinput':
+      return 'NumberInput';
+    case 'passwordinput':
+      return 'PasswordInput';
+    case 'datepicker':
+      return 'Datepicker';
+    case 'Checkbox':
+      return 'checkbox';
+    case 'RadioButton':
+      return 'radiobutton';
+    case 'ToggleSwitch':
+      return 'ToggleSwitch';
+    case 'TextArea':
+      return 'textarea';
+    case 'DaterangePicker':
+      return 'daterangepicker';
+    case 'Multiselect':
+      return 'multiselect';
+    case 'StarRating':
+      return 'starrating';
+    case 'FilePicker':
+      return 'filepicker';
+    default:
+      break;
+  }
+};
