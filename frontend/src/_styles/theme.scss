@@ -9199,7 +9199,8 @@ tbody {
 
 .manage-groups-permission-apps,
 .apps-folder-permission-wrap,
-.apps-variable-permission-wrap {
+.apps-variable-permission-wrap,
+.apps-constant-permission-wrap {
   display: flex;
   align-items: center;
   padding: 12px;
@@ -9216,7 +9217,7 @@ tbody {
   height: 72px;
 }
 
-.apps-folder-permission-wrap {
+.apps-folder-permission-wrap, .apps-constant-permission-wrap, .apps-variable-permission-wrap {
   height: 44px;
   border-bottom: 1px solid var(--slate5);
 }

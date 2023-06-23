@@ -325,6 +325,10 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         groupPermission.org_environment_variable_delete
       : false;
 
+    const orgEnvironmentConstantPermission = groupPermission
+      ? groupPermission.org_environment_constant_create && groupPermission.org_environment_constant_delete
+      : false;
+
     return (
       <ErrorBoundary showFallback={false}>
         <div className="org-users-page animation-fade">
@@ -886,6 +890,36 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                               org_environment_variable_create: !orgEnvironmentPermission,
                                               org_environment_variable_update: !orgEnvironmentPermission,
                                               org_environment_variable_delete: !orgEnvironmentPermission,
+                                            });
+                                          }}
+                                          checked={orgEnvironmentPermission}
+                                          disabled={groupPermission.group === 'admin'}
+                                          data-cy="env-variable-checkbox"
+                                        />
+                                        <span className="form-check-label" data-cy="workspace-variable-create-label">
+                                          {this.props.t(
+                                            'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
+                                            'Create/Update/Delete'
+                                          )}
+                                        </span>
+                                      </label>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="apps-constant-permission-wrap">
+                                  <div data-cy="resource-workspace-variable">
+                                    {this.props.t('globals.environmentConstant', 'Workspace Constants')}
+                                  </div>
+                                  <div className="text-muted">
+                                    <div>
+                                      <label className="form-check form-check-inline">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          onChange={() => {
+                                            this.updateGroupPermission(groupPermission.id, {
+                                              org_environment_constant_create: !orgEnvironmentConstantPermission,
+                                              org_environment_constant_delete: !orgEnvironmentConstantPermission,
                                             });
                                           }}
                                           checked={orgEnvironmentPermission}
