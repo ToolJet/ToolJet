@@ -8,6 +8,7 @@ import Fuse from 'fuse.js';
 import cx from 'classnames';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryDataPane = ({
   setSaveConfirmation,
@@ -23,9 +24,12 @@ export const QueryDataPane = ({
   const { loadingDataQueries } = useDataQueriesStore();
   const dataQueries = useDataQueries();
   const [filteredQueries, setFilteredQueries] = useState(dataQueries);
-  const { isVersionReleased } = useAppVersionStore((state) => ({
-    isVersionReleased: state.isVersionReleased,
-  }));
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   useEffect(() => {
     setFilteredQueries(dataQueries);
     // eslint-disable-next-line react-hooks/exhaustive-deps

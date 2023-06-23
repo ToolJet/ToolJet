@@ -13,6 +13,7 @@ import { useDataQueriesActions, useQueryCreationLoading, useQueryUpdationLoading
 import { useSelectedQuery, useSelectedDataSource, useUnsavedChanges } from '@/_stores/queryPanelStore';
 import ToggleQueryEditorIcon from '../Icons/ToggleQueryEditorIcon';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryManagerHeader = forwardRef(
   (
@@ -40,9 +41,12 @@ export const QueryManagerHeader = forwardRef(
     const { t } = useTranslation();
     const queryName = selectedQuery?.name ?? '';
     const [renamingQuery, setRenamingQuery] = useState(false);
-    const { isVersionReleased } = useAppVersionStore((state) => ({
-      isVersionReleased: state.isVersionReleased,
-    }));
+    const { isVersionReleased } = useAppVersionStore(
+      (state) => ({
+        isVersionReleased: state.isVersionReleased,
+      }),
+      shallow
+    );
 
     const buttonText = mode === 'edit' ? 'Save' : 'Create';
     const buttonDisabled = isUpdationInProcess || isCreationInProcess;

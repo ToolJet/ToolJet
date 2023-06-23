@@ -16,6 +16,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const Container = ({
   canvasWidth,
@@ -56,11 +57,14 @@ export const Container = ({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const components = appDefinition.pages[currentPageId]?.components ?? {};
-  const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore((state) => ({
-    appVersionsId: state?.editingVersion?.id,
-    enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
-    isVersionReleased: state.isVersionReleased,
-  }));
+  const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      appVersionsId: state?.editingVersion?.id,
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);

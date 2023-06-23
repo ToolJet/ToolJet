@@ -3,10 +3,11 @@ import cx from 'classnames';
 import { appVersionService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 import { toast } from 'react-hot-toast';
+import { shallow } from 'zustand/shallow';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 export const AppVersionsManager = function ({
   appId,
-  editingVersion,
   releasedVersionId,
   setAppDefinitionFromVersion,
   onVersionDelete,
@@ -19,6 +20,12 @@ export const AppVersionsManager = function ({
     showModal: false,
   });
 
+  const { editingVersion } = useAppVersionStore(
+    (state) => ({
+      editingVersion: state.editingVersion,
+    }),
+    shallow
+  );
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {

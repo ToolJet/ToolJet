@@ -45,7 +45,7 @@ export default function EditorHeader({
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
-      editgingVersion: state.editingVersion,
+      editingVersion: state.editingVersion,
     }),
     shallow
   );

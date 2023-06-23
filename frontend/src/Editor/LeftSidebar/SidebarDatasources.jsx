@@ -16,6 +16,7 @@ import VerticalIcon from '@assets/images/icons/vertical-menu.svg';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { useDataSources } from '@/_stores/dataSourcesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const LeftSidebarDataSources = ({
   appId,
@@ -33,9 +34,12 @@ export const LeftSidebarDataSources = ({
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
-  const { isVersionReleased } = useAppVersionStore((state) => ({
-    isVersionReleased: state.isVersionReleased,
-  }));
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   useEffect(() => {
     if (dataSources.length === 0) {
       onDeleteofAllDataSources();

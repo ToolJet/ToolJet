@@ -26,6 +26,7 @@ import {
   useQueryPanelActions,
 } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryManagerBody = forwardRef(
   (
@@ -68,9 +69,12 @@ export const QueryManagerBody = forwardRef(
     const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
 
     const defaultOptions = useRef({});
-    const { isVersionReleased } = useAppVersionStore((state) => ({
-      isVersionReleased: state.isVersionReleased,
-    }));
+    const { isVersionReleased } = useAppVersionStore(
+      (state) => ({
+        isVersionReleased: state.isVersionReleased,
+      }),
+      shallow
+    );
 
     useEffect(() => {
       setDataSourceMeta(
