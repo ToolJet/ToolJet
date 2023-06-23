@@ -6,7 +6,6 @@ import { capitalize, isEqual, debounce } from 'lodash';
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
 import DataSourceLister from './DataSourceLister';
-import DataSourceListerV2 from './DataSourceListerV2';
 import { Transformation } from './Transformation';
 import Preview from './Preview';
 import { ChangeDataSource } from './ChangeDataSource';
@@ -59,6 +58,12 @@ export const QueryManagerBody = forwardRef(
     const { changeDataQuery, updateDataQuery, createDataQuery } = useDataQueriesActions();
 
     const [dataSourceMeta, setDataSourceMeta] = useState(null);
+    /* - Added the below line to cause re-rendering when the query is switched
+       - QueryEditors are not updating when the query is switched
+       - TODO: Remove the below line and make query editors update when the query is switched
+       - Ref PR #6763
+    */
+    const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
 
     const autoUpdateDataQuery = debounce(updateDataQuery, 500);
 
@@ -75,6 +80,7 @@ export const QueryManagerBody = forwardRef(
           ? selectedQuery?.manifestFile?.data?.source
           : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind)
       );
+      setSelectedQueryId(selectedQuery?.id);
       defaultOptions.current = selectedQuery?.options;
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedQuery]);
@@ -120,13 +126,8 @@ export const QueryManagerBody = forwardRef(
       const newQueryName = computeQueryName(source.kind);
       defaultOptions.current = { ...newOptions };
 
-      // setSelectedDataSource(source);
       setOptions({ ...newOptions });
 
-      // createDraftQuery(
-      //   { ...source, data_source_id: source.id, name: newQueryName, id: 'draftQuery', options: { ...newOptions } },
-      //   source
-      // );
       createDataQuery(appId, editingVersionId, options, source.kind, newQueryName, source, false);
     };
 
@@ -163,12 +164,6 @@ export const QueryManagerBody = forwardRef(
       }
       setOptions((options) => ({ ...options, ...updatedOptions }));
       updateDataQuery({ ...options, ...updatedOptions });
-      // if (isFieldsChanged !== isUnsavedQueriesAvailable) {
-      //   setUnSavedChanges(isFieldsChanged);
-      //   if (!shouldNotAutoSave) {
-      //     updateDataQuery({ ...options, ...updatedOptions });
-      //   }
-      // }
     };
 
     const optionchanged = (option, value, shouldNotAutoSave) => {
@@ -193,49 +188,7 @@ export const QueryManagerBody = forwardRef(
       optionchanged(option, !currentValue);
     };
 
-    // const renderDataSources = (labelText, dataSourcesList, staticList = [], isGlobalDataSource = false) => {
-    //   return (
-    //     <div
-    //       className={cx(`datasource-picker`, {
-    //         'disabled ': isVersionReleased,
-    //       })}
-    //     >
-    //       <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
-    //         {labelText}
-    //       </label>
-    //       {isGlobalDataSource && dataSourcesList?.length < 1 ? (
-    //         <EmptyGlobalDataSources darkMode={darkMode} />
-    //       ) : (
-    //         <DataSourceLister
-    //           dataSources={dataSourcesList}
-    //           staticDataSources={staticList}
-    //           changeDataSource={changeDataSource}
-    //           handleBackButton={handleBackButton}
-    //           darkMode={darkMode}
-    //           dataSourceModalHandler={dataSourceModalHandler}
-    //           showAddDatasourceBtn={isGlobalDataSource}
-    //           dataSourceBtnComponent={isGlobalDataSource ? <AddGlobalDataSourceButton /> : null}
-    //         />
-    //       )}
-    //     </div>
-    //   );
-    // };
-
     const renderDataSourcesList = () => (
-      // <>
-      //   {renderDataSources(
-      //     t('editor.queryManager.selectDatasource', 'Select Datasource'),
-      //     dataSources,
-      //     staticDataSources
-      //   )}
-      //   {renderDataSources(
-      //     t('editor.queryManager.selectGlobalDatasource', 'Select Global Datasource'),
-      //     globalDataSources,
-      //     [],
-      //     true
-      //   )}
-      // </>
-
       <div
         className={cx(`datasource-picker`, {
           'disabled ': isVersionReleased,
@@ -245,7 +198,7 @@ export const QueryManagerBody = forwardRef(
           Datasource
         </label>
 
-        <DataSourceListerV2
+        <DataSourceLister
           dataSources={dataSources}
           staticDataSources={staticDataSources}
           globalDataSources={globalDataSources}
@@ -253,8 +206,6 @@ export const QueryManagerBody = forwardRef(
           handleBackButton={handleBackButton}
           darkMode={darkMode}
           dataSourceModalHandler={dataSourceModalHandler}
-          // showAddDatasourceBtn={isGlobalDataSource}
-          // dataSourceBtnComponent={isGlobalDataSource ? <AddGlobalDataSourceButton /> : null}
         />
       </div>
     );
@@ -417,6 +368,8 @@ export const QueryManagerBody = forwardRef(
         </div>
       );
     };
+
+    if (selectedQueryId !== selectedQuery?.id) return;
 
     return (
       <div

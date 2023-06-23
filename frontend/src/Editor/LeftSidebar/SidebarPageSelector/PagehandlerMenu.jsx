@@ -54,6 +54,7 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                   iconSrc={'assets/images/icons/home.svg'}
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
+                  disabled={isHidden}
                 />
 
                 <Field
@@ -62,15 +63,16 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                   iconSrc={`assets/images/icons/${isHidden ? 'eye' : 'eye-off'}.svg`}
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
+                  disabled={isHome && !isHidden}
                 />
 
-                <Field
+                {/* <Field
                   id="clone-page"
                   text="Duplicate page"
                   iconSrc={`assets/images/icons/clone.svg`}
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
-                />
+                /> */}
 
                 <Field
                   id="settings"

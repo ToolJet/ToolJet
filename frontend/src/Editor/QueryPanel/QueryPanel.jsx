@@ -5,6 +5,7 @@ import { QueryDataPane } from './QueryDataPane';
 import { Confirm } from '../Viewer/Confirm';
 import QueryManager from '../QueryManager/QueryManager';
 
+import useWindowResize from '@/_hooks/useWindowResize';
 import { useQueryPanelActions, useUnsavedChanges, useSelectedQuery } from '@/_stores/queryPanelStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 import Maximize from '../../_ui/Icon/solidIcons/Maximize';
@@ -21,7 +22,9 @@ const QueryPanel = ({
   appDefinition,
   dataSourceModalHandler,
   editorRef,
+  onQueryPaneDragging,
   isVersionReleased,
+  handleQueryPaneExpanding,
 }) => {
   const { setSelectedQuery, updateQueryPanelHeight, setUnSavedChanges, setSelectedDataSource } = useQueryPanelActions();
   const isUnsavedQueriesAvailable = useUnsavedChanges();
@@ -41,6 +44,7 @@ const QueryPanel = ({
   const [queryCancelData, setCancelData] = useState({});
   const [draftQuery, setDraftQuery] = useState(null);
   const [editingQuery, setEditingQuery] = useState(dataQueries.length > 0);
+  const [windowSize, isWindowResizing] = useWindowResize();
 
   useEffect(() => {
     if (!editingQuery && selectedQuery !== null && selectedQuery?.id !== 'draftQuery') {
@@ -50,27 +54,38 @@ const QueryPanel = ({
   }, [selectedQuery?.id, editingQuery]);
 
   useEffect(() => {
+    handleQueryPaneExpanding(isExpanded);
+  }, [isExpanded]);
+
+  useEffect(() => {
     setEditingQuery(dataQueries.length > 0);
   }, [dataQueries.length]);
 
   useEffect(() => {
-    if (!isDragging && isExpanded) {
-      updateQueryPanelHeight(height);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    onQueryPaneDragging(isDragging);
   }, [isDragging]);
+
+  useEffect(() => {
+    updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
+    if (isWindowResizing) {
+      onQueryPaneDragging(true);
+    } else {
+      onQueryPaneDragging(false);
+    }
+  }, [windowSize.height, isExpanded, isWindowResizing]);
 
   const createDraftQuery = useCallback((queryDetails, source) => {
     setSelectedQuery(queryDetails.id, queryDetails);
     setDraftQuery(queryDetails);
     setSelectedDataSource(source);
     setEditingQuery(false);
-    // createDataQuery(queryDetails);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onMouseUp = () => {
     setDragging(false);
+
+    /* Updated queryPanelHeight here instead of using a useEffect on height to avoid continuous rerendering during window dragging which causes screen to act sluggish */
+    updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
   };
 
   const onMouseDown = () => {
@@ -121,7 +136,6 @@ const QueryPanel = ({
       draftQuery: null,
     };
     if (isUnsavedQueriesAvailable) {
-      // setSaveConfirmation(true);
       setCancelData(stateToBeUpdated);
     } else {
       setSelectedDataSource(null);
@@ -138,7 +152,7 @@ const QueryPanel = ({
     if (isExpanded) {
       updateQueryPanelHeight(95);
     } else {
-      updateQueryPanelHeight(height);
+      updateQueryPanelHeight(queryPaneRef?.current?.offsetHeight);
     }
     setExpanded(!isExpanded);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -162,28 +176,6 @@ const QueryPanel = ({
 
   return (
     <>
-      {/* <Confirm
-        show={showSaveConfirmation}
-        message={`Query ${selectedQuery?.name} has unsaved changes`}
-        onConfirm={() => {
-          setSaveConfirmation(false);
-        }}
-        onCancel={(data) => {
-          setSaveConfirmation(false);
-          setDraftQuery(null);
-          setSelectedQuery(data?.selectedQuery?.id ?? null);
-          setSelectedDataSource(data?.selectedDataSource ?? null);
-          setUnSavedChanges(false);
-          if (data.hasOwnProperty('editingQuery')) {
-            setEditingQuery(data.editingQuery);
-          }
-        }}
-        confirmButtonText="Continue editing"
-        cancelButtonText="Discard changes"
-        callCancelFnOnConfirm={false}
-        queryCancelData={queryCancelData}
-        darkMode={darkMode}
-      /> */}
       <div
         className="query-pane"
         style={{

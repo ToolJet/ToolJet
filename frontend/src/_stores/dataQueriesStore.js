@@ -51,7 +51,6 @@ export const useDataQueriesStore = create(
           dataqueryService
             .del(queryId)
             .then(() => {
-              // toast.success('Query Deleted');
               const { actions, selectedQuery } = useQueryPanelStore.getState();
               if (queryId === selectedQuery?.id) {
                 actions.setUnSavedChanges(false);
@@ -62,19 +61,11 @@ export const useDataQueriesStore = create(
                 isDeletingQueryInProcess: false,
                 dataQueries: state.dataQueries.filter((query) => query.id !== queryId),
               }));
-
-              // get().actions.fetchDataQueries(
-              //   useAppDataStore.getState().editingVersion?.id,
-              //   selectedQuery?.id === queryId,
-              //   false,
-              //   editorRef
-              // );
             })
             .catch(({ error }) => {
               set({
                 isDeletingQueryInProcess: false,
               });
-              // toast.error(error);
             })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
@@ -95,60 +86,26 @@ export const useDataQueriesStore = create(
             }),
           }));
           actions.setSelectedQuery(selectedQuery.id);
-          // dataqueryService
-          //   .update(selectedQuery?.id, selectedQuery?.name, options)
-          //   .then((data) => {
-          //     actions.setUnSavedChanges(false);
-          //     localStorage.removeItem('transformation');
-          //     // toast.success('Query Saved');
-          //     set((state) => ({
-          //       isUpdatingQueryInProcess: false,
-          //       dataQueries: state.dataQueries.map((query) => {
-          //         if (query.id === data.id) {
-          //           return {
-          //             ...query,
-          //             ...data,
-          //           };
-          //         }
-          //         return query;
-          //       }),
-          //     }));
-          //     actions.setSelectedQuery(data.id);
-          //     // if (shouldRunQuery) actions.setQueryToBeRun(data);
-          //   })
-          //   .catch(({ error }) => {
-          //     actions.setUnSavedChanges(false);
-          //     // toast.error(error);
-          //     set({
-          //       isUpdatingQueryInProcess: false,
-          //     });
-          //   })
-          //   .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
         createDataQuery: (appId, appVersionId, options, kind, name, selectedDataSource, shouldRunQuery) => {
           set({ isCreatingQueryInProcess: true });
           const { actions, selectedQuery } = useQueryPanelStore.getState();
-          // const { name, kind } = selectedQuery;
           const dataSourceId = selectedDataSource?.id !== 'null' ? selectedDataSource?.id : null;
           const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
           useAppDataStore.getState().actions.setIsSaving(true);
           dataqueryService
             .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId)
             .then((data) => {
-              // actions.setUnSavedChanges(false);
-              // toast.success('Query Added');
               set((state) => ({
                 isCreatingQueryInProcess: false,
                 dataQueries: [{ ...selectedQuery, ...data }, ...state.dataQueries],
               }));
               actions.setSelectedQuery(data.id, data);
-              // actions.setSelectedDataSource(selectedDataSource);
               if (shouldRunQuery) actions.setQueryToBeRun(data);
             })
             .catch((error) => {
               console.error('error', error);
               actions.setUnSavedChanges(false);
-              // toast.error(error.message);
               set({
                 isCreatingQueryInProcess: false,
               });
@@ -160,8 +117,6 @@ export const useDataQueriesStore = create(
           dataqueryService
             .update(id, newName)
             .then(() => {
-              // toast.success('Query Name Updated');
-              // get().actions.fetchDataQueries(useAppDataStore.getState().editingVersion?.id, false, false, editorRef);
               set((state) => ({
                 dataQueries: sortByAttribute(
                   state.dataQueries.map((query) => {
@@ -176,9 +131,7 @@ export const useDataQueriesStore = create(
               }));
               useQueryPanelStore.getState().actions.setSelectedQuery(id);
             })
-            .catch(({ error }) => {
-              // toast.error(error);
-            })
+            .catch(({ error }) => {})
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
         changeDataQuery: (newDataSource) => {
@@ -200,10 +153,8 @@ export const useDataQueriesStore = create(
                 }),
               }));
               useQueryPanelStore.getState().actions.setSelectedDataSource(newDataSource);
-              // toast.success('Data source changed');
             })
             .catch((error) => {
-              // toast.error(error);
               set({
                 isUpdatingQueryInProcess: false,
               });
@@ -217,7 +168,6 @@ export const useDataQueriesStore = create(
           dataqueryService
             .updateStatus(selectedQuery?.id, status)
             .then((data) => {
-              // toast.success('Query Published');
               set((state) => ({
                 isUpdatingQueryInProcess: false,
                 dataQueries: state.dataQueries.map((query) => {
@@ -230,7 +180,6 @@ export const useDataQueriesStore = create(
               useQueryPanelStore.getState().actions.setSelectedQuery(data.id);
             })
             .catch(({ error }) => {
-              // toast.error(error);
               set({
                 isUpdatingQueryInProcess: false,
               });
@@ -270,12 +219,10 @@ export const useDataQueriesStore = create(
                 dataQueries: [{ ...data }, ...state.dataQueries],
               }));
               actions.setSelectedQuery(data.id, { ...data });
-              // if (shouldRunQuery) actions.setQueryToBeRun(data);
             })
             .catch((error) => {
               console.error('error', error);
               actions.setUnSavedChanges(false);
-              // toast.error(error.message);
               set({
                 isCreatingQueryInProcess: false,
               });
@@ -290,16 +237,12 @@ export const useDataQueriesStore = create(
             .then((data) => {
               actions.setUnSavedChanges(false);
               localStorage.removeItem('transformation');
-              // toast.success('Query Saved');
               set((state) => ({
                 isUpdatingQueryInProcess: false,
               }));
-              // actions.setSelectedQuery(data.id);
-              // if (shouldRunQuery) actions.setQueryToBeRun(data);
             })
             .catch(({ error }) => {
               actions.setUnSavedChanges(false);
-              // toast.error(error);
               set({
                 isUpdatingQueryInProcess: false,
               });
