@@ -41,13 +41,13 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
           focusModal();
           updateSelectedDatasource(dataSource?.name);
         }}
-        className="col d-flex align-items-center"
+        className="col d-flex align-items-center overflow-hidden"
         data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-button`}
       >
         {icon}
-        <span className="font-400 tj-text-xsm" style={{ paddingLeft: '6px' }}>
-          {dataSource.name}
-        </span>
+        <div className="font-400 tj-text-xsm text-truncate" style={{ paddingLeft: '6px' }}>
+          {dataSource.name.length > 30 ? `${dataSource.name.slice(0, 35)}` : dataSource.name}
+        </div>
       </div>
       <div className="col-auto">
         <button
