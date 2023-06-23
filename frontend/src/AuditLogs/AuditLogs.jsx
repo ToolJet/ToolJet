@@ -12,6 +12,7 @@ import Pagination from '@/_ui/Pagination';
 import { CustomToggleSwitch } from '../Editor/QueryManager/Components/CustomToggleSwitch';
 import { Button } from '@/_ui/LeftSidebar';
 import { BreadCrumbContext } from '@/App/App';
+import { Navigate } from 'react-router-dom';
 
 const AuditLogs = (props) => {
   const [auditLogs, setAuditLogs] = useState([]);
@@ -30,6 +31,7 @@ const AuditLogs = (props) => {
   const minDate = DateRangePicker.setMinDate(dateRangePicketValue[0], 30, 'days');
 
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
+  const { super_admin, admin, current_organization_id } = authenticationService.currentSessionValue;
 
   const perPage = 7;
 
@@ -475,354 +477,361 @@ const AuditLogs = (props) => {
     return false;
   }
 
-  return (
-    <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
-      <div className={`wrapper audit-log ${props.darkMode || 'bg-light-gray'}`}>
-        <div
-          style={{
-            height: '100vh',
-            overflowY: 'none',
-            padding: '0rem 4rem',
-          }}
-          className="row gx-0"
-        >
-          <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
-            <div className="w-100">
-              <div className="wrapper animation-fade">
-                <div className="page-wrapper">
-                  <div className="container-xl">
-                    <div>
-                      <div className="row align-items-center ">
-                        <div className="row">
-                          <div className="col">
-                            <DateRangePicker
-                              dateRange={dateRangePicketValue}
-                              showCalenderIcon={true}
-                              autoFocus={false}
-                              classNames="tooljet-range-picker"
-                              onChange={handleDateChange}
-                              maxRange={15}
-                              maxDate={maxDate}
-                              minDate={minDate}
-                              type="datetime"
-                              customLabel={<RangePickerLabel />}
-                              format="dd-MM-yyyy hh:mm a"
-                            />
-                          </div>
-                          <div className="mb-0 d-flex col-auto">
-                            <CustomToggleSwitch
-                              isChecked={showLatestLogs}
-                              toggleSwitchFunction={showRecentLogs}
-                              action="enableAuditRecentActivity"
-                              dataCy={'audit-recent-activity'}
-                              disabled={showLatestLogs}
-                            />
-
-                            <span
-                              className="mx-2 mt-3 font-weight-400 tranformation-label"
-                              data-cy={'label-query-transformation'}
-                            >
-                              Show Latest activity
-                              <small className="text-muted" style={{ display: 'block' }}>
-                                (Last 24 hours)
-                              </small>
-                            </span>
-                          </div>
-                        </div>
-                        <div className="row align-items-center mt-3 mb-1">
-                          <div className="col" data-cy="select-users-dropdown">
-                            <span className="font-500 mb-1">Users</span>
-                            <MultiSelectUser
-                              className={{
-                                container: searchSelectClass,
-                                value: `${searchSelectClass}__value`,
-                                input: `${searchSelectClass}__input`,
-                                select: `${searchSelectClass}__select`,
-                                options: `${searchSelectClass}__options`,
-                                row: `${searchSelectClass}__row`,
-                                option: `${searchSelectClass}__option`,
-                                group: `${searchSelectClass}__group`,
-                                'group-header': `${searchSelectClass}__group-header`,
-                                'is-selected': 'is-selected',
-                                'is-highlighted': 'is-highlighted',
-                                'is-loading': 'is-loading',
-                                'is-multiple': 'is-multiple',
-                                'has-focus': 'has-focus',
-                                'not-found': `${searchSelectClass}__not-found`,
-                              }}
-                              onSelect={(value) => setSelectedSearchOptions((prev) => ({ ...prev, users: value }))}
-                              onSearch={searchUser}
-                              selectedValues={selectedSearchOptions.users}
-                              onReset={() => setSelectedSearchOptions((prev) => ({ ...prev, users: [] }))}
-                              placeholder="Select Users"
-                              searchLabel="Enter name or email"
-                              allowCustomRender={false}
-                            />
-                          </div>
-                          <div className="col" data-cy="select-users-dropdown">
-                            <span className="font-500 mb-1">Apps</span>
-                            <MultiSelectUser
-                              className={{
-                                container: searchSelectClass,
-                                value: `${searchSelectClass}__value`,
-                                input: `${searchSelectClass}__input`,
-                                select: `${searchSelectClass}__select`,
-                                options: `${searchSelectClass}__options`,
-                                row: `${searchSelectClass}__row`,
-                                option: `${searchSelectClass}__option`,
-                                group: `${searchSelectClass}__group`,
-                                'group-header': `${searchSelectClass}__group-header`,
-                                'is-selected': 'is-selected',
-                                'is-highlighted': 'is-highlighted',
-                                'is-loading': 'is-loading',
-                                'is-multiple': 'is-multiple',
-                                'has-focus': 'has-focus',
-                                'not-found': `${searchSelectClass}__not-found`,
-                              }}
-                              onSelect={(value) =>
-                                setSelectedSearchOptions((prev) => ({
-                                  ...prev,
-                                  apps: value,
-                                  resources: value.length ? [{ name: 'App', value: 'APP' }] : [],
-                                  actions: [],
-                                }))
-                              }
-                              selectedValues={selectedSearchOptions.apps}
-                              options={fetchAppsOptions()}
-                              onReset={() =>
-                                setSelectedSearchOptions((prev) => ({ ...prev, apps: [], resources: [], actions: [] }))
-                              }
-                              placeholder="Select Apps"
-                              disabled={isLoadingApps}
-                              allowCustomRender={false}
-                            />
-                          </div>
-                          <div className="col" data-cy="select-users-dropdown">
-                            <span className="font-500 mb-1">Resources</span>
-                            <MultiSelectUser
-                              className={{
-                                container: searchSelectClass,
-                                value: `${searchSelectClass}__value`,
-                                input: `${searchSelectClass}__input`,
-                                select: `${searchSelectClass}__select`,
-                                options: `${searchSelectClass}__options`,
-                                row: `${searchSelectClass}__row`,
-                                option: `${searchSelectClass}__option`,
-                                group: `${searchSelectClass}__group`,
-                                'group-header': `${searchSelectClass}__group-header`,
-                                'is-selected': 'is-selected',
-                                'is-highlighted': 'is-highlighted',
-                                'is-loading': 'is-loading',
-                                'is-multiple': 'is-multiple',
-                                'has-focus': 'has-focus',
-                                'not-found': `${searchSelectClass}__not-found`,
-                              }}
-                              onSelect={(value) =>
-                                setSelectedSearchOptions((prev) => ({
-                                  ...prev,
-                                  resources: value,
-                                  actions: [],
-                                }))
-                              }
-                              selectedValues={selectedSearchOptions.resources}
-                              options={resourceTypeOptions()}
-                              onReset={() =>
-                                setSelectedSearchOptions((prev) => ({ ...prev, actions: [], resources: [] }))
-                              }
-                              placeholder="Select Resources"
-                              disabled={isLoading()}
-                              allowCustomRender={false}
-                            />
-                          </div>
-                          <div className="col" data-cy="select-users-dropdown">
-                            <span className="font-500 mb-1">Actions</span>
-                            <MultiSelectUser
-                              className={{
-                                container: searchSelectClass,
-                                value: `${searchSelectClass}__value`,
-                                input: `${searchSelectClass}__input`,
-                                select: `${searchSelectClass}__select`,
-                                options: `${searchSelectClass}__options`,
-                                row: `${searchSelectClass}__row`,
-                                option: `${searchSelectClass}__option`,
-                                group: `${searchSelectClass}__group`,
-                                'group-header': `${searchSelectClass}__group-header`,
-                                'is-selected': 'is-selected',
-                                'is-highlighted': 'is-highlighted',
-                                'is-loading': 'is-loading',
-                                'is-multiple': 'is-multiple',
-                                'has-focus': 'has-focus',
-                                'not-found': `${searchSelectClass}__not-found`,
-                              }}
-                              onSelect={(value) => setSelectedSearchOptions((prev) => ({ ...prev, actions: value }))}
-                              selectedValues={selectedSearchOptions.actions}
-                              options={fetchActionTypesOptionsForResource(selectedSearchOptions.resources)}
-                              onReset={() =>
-                                setSelectedSearchOptions((prev) => ({ ...prev, actions: [], resources: [] }))
-                              }
-                              placeholder="Select Actions"
-                              disabled={isLoading()}
-                              allowCustomRender={false}
-                            />
-                          </div>
-                          <div className="col-auto d-flex pt-3" data-cy="select-users-dropdown">
-                            <ButtonSolid
-                              data-cy=""
-                              vaiant="primary"
-                              className=""
-                              size="md"
-                              customStyles={{
-                                height: '32px',
-                                width: '67px',
-                              }}
-                              onClick={performSearch}
-                            >
-                              Filter
-                            </ButtonSolid>
-                          </div>
-                        </div>
-
-                        <div className="row mt-2" data-cy="filter-by-section">
-                          <div className="filter-by-section">
-                            <div className="filter-by-text" data-cy="filter-by-label">
-                              Filter By:
+  if (super_admin || admin) {
+    return (
+      <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
+        <div className={`wrapper audit-log ${props.darkMode || 'bg-light-gray'}`}>
+          <div
+            style={{
+              height: '100vh',
+              overflowY: 'none',
+              padding: '0rem 4rem',
+            }}
+            className="row gx-0"
+          >
+            <div className={cx('col workspace-content-wrapper')} style={{ paddingTop: '40px' }}>
+              <div className="w-100">
+                <div className="wrapper animation-fade">
+                  <div className="page-wrapper">
+                    <div className="container-xl">
+                      <div>
+                        <div className="row align-items-center ">
+                          <div className="row">
+                            <div className="col">
+                              <DateRangePicker
+                                dateRange={dateRangePicketValue}
+                                showCalenderIcon={true}
+                                autoFocus={false}
+                                classNames="tooljet-range-picker"
+                                onChange={handleDateChange}
+                                maxRange={15}
+                                maxDate={maxDate}
+                                minDate={minDate}
+                                type="datetime"
+                                customLabel={<RangePickerLabel />}
+                                format="dd-MM-yyyy hh:mm a"
+                              />
                             </div>
-                            <div
-                              style={{
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                                minHeight: '50px',
-                                maxHeight: '100px',
-                                overflowY: 'auto',
-                                alignItems: 'center',
-                              }}
-                              className="selected-section d-flex"
-                            >
-                              {isFilterApplied() ? (
-                                <Button
-                                  onClick={clearAllFilters}
-                                  darkMode={props.darkMode}
-                                  size="md"
-                                  styles={{
-                                    border: 'none',
-                                    backgroundColor: '#F0F4FF',
-                                    color: props.darkMode ? '#64748B' : '#3E63DD',
-                                    height: '32px',
-                                  }}
-                                >
-                                  <Button.Content title={'Clear all filters'} />
-                                </Button>
-                              ) : (
-                                <div className="d-flex align-items-center">
-                                  <div>
-                                    <svg
-                                      width="22"
-                                      height="22"
-                                      viewBox="0 0 22 22"
-                                      fill="none"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                      <rect width="22" height="22" rx="2" fill="#F1F3F5" />
-                                      <path
-                                        opacity="0.4"
-                                        d="M9.81465 6.43012C10.3313 5.52329 11.6687 5.52329 12.1853 6.43012L16.6607 14.2856C17.1628 15.1669 16.5093 16.25 15.4754 16.25H6.52459C5.49067 16.25 4.83713 15.1669 5.33925 14.2856L9.81465 6.43012Z"
-                                        fill="#889096"
-                                      />
-                                      <path
-                                        d="M11.5833 13.9154C11.5833 14.2375 11.3222 14.4987 11 14.4987C10.6778 14.4987 10.4167 14.2375 10.4167 13.9154C10.4167 13.5932 10.6778 13.332 11 13.332C11.3222 13.332 11.5833 13.5932 11.5833 13.9154Z"
-                                        fill="#889096"
-                                      />
-                                      <path
-                                        fill-rule="evenodd"
-                                        clip-rule="evenodd"
-                                        d="M11 8.8125C11.2416 8.8125 11.4375 9.00838 11.4375 9.25V12.1667C11.4375 12.4083 11.2416 12.6042 11 12.6042C10.7584 12.6042 10.5625 12.4083 10.5625 12.1667V9.25C10.5625 9.00838 10.7584 8.8125 11 8.8125Z"
-                                        fill="#889096"
-                                      />
-                                    </svg>
-                                  </div>
+                            <div className="mb-0 d-flex col-auto">
+                              <CustomToggleSwitch
+                                isChecked={showLatestLogs}
+                                toggleSwitchFunction={showRecentLogs}
+                                action="enableAuditRecentActivity"
+                                dataCy={'audit-recent-activity'}
+                                disabled={showLatestLogs}
+                              />
 
-                                  <div className="filter-by-text mx-2" data-cy="filter-by-label">
-                                    No filters applied
-                                  </div>
-                                </div>
-                              )}
+                              <span
+                                className="mx-2 mt-3 font-weight-400 tranformation-label"
+                                data-cy={'label-query-transformation'}
+                              >
+                                Show Latest activity
+                                <small className="text-muted" style={{ display: 'block' }}>
+                                  (Last 24 hours)
+                                </small>
+                              </span>
+                            </div>
+                          </div>
+                          <div className="row align-items-center mt-3 mb-1">
+                            <div className="col" data-cy="select-users-dropdown">
+                              <span className="font-500 mb-1">Users</span>
+                              <MultiSelectUser
+                                className={{
+                                  container: searchSelectClass,
+                                  value: `${searchSelectClass}__value`,
+                                  input: `${searchSelectClass}__input`,
+                                  select: `${searchSelectClass}__select`,
+                                  options: `${searchSelectClass}__options`,
+                                  row: `${searchSelectClass}__row`,
+                                  option: `${searchSelectClass}__option`,
+                                  group: `${searchSelectClass}__group`,
+                                  'group-header': `${searchSelectClass}__group-header`,
+                                  'is-selected': 'is-selected',
+                                  'is-highlighted': 'is-highlighted',
+                                  'is-loading': 'is-loading',
+                                  'is-multiple': 'is-multiple',
+                                  'has-focus': 'has-focus',
+                                  'not-found': `${searchSelectClass}__not-found`,
+                                }}
+                                onSelect={(value) => setSelectedSearchOptions((prev) => ({ ...prev, users: value }))}
+                                onSearch={searchUser}
+                                selectedValues={selectedSearchOptions.users}
+                                onReset={() => setSelectedSearchOptions((prev) => ({ ...prev, users: [] }))}
+                                placeholder="Select Users"
+                                searchLabel="Enter name or email"
+                                allowCustomRender={false}
+                              />
+                            </div>
+                            <div className="col" data-cy="select-users-dropdown">
+                              <span className="font-500 mb-1">Apps</span>
+                              <MultiSelectUser
+                                className={{
+                                  container: searchSelectClass,
+                                  value: `${searchSelectClass}__value`,
+                                  input: `${searchSelectClass}__input`,
+                                  select: `${searchSelectClass}__select`,
+                                  options: `${searchSelectClass}__options`,
+                                  row: `${searchSelectClass}__row`,
+                                  option: `${searchSelectClass}__option`,
+                                  group: `${searchSelectClass}__group`,
+                                  'group-header': `${searchSelectClass}__group-header`,
+                                  'is-selected': 'is-selected',
+                                  'is-highlighted': 'is-highlighted',
+                                  'is-loading': 'is-loading',
+                                  'is-multiple': 'is-multiple',
+                                  'has-focus': 'has-focus',
+                                  'not-found': `${searchSelectClass}__not-found`,
+                                }}
+                                onSelect={(value) =>
+                                  setSelectedSearchOptions((prev) => ({
+                                    ...prev,
+                                    apps: value,
+                                    resources: value.length ? [{ name: 'App', value: 'APP' }] : [],
+                                    actions: [],
+                                  }))
+                                }
+                                selectedValues={selectedSearchOptions.apps}
+                                options={fetchAppsOptions()}
+                                onReset={() =>
+                                  setSelectedSearchOptions((prev) => ({
+                                    ...prev,
+                                    apps: [],
+                                    resources: [],
+                                    actions: [],
+                                  }))
+                                }
+                                placeholder="Select Apps"
+                                disabled={isLoadingApps}
+                                allowCustomRender={false}
+                              />
+                            </div>
+                            <div className="col" data-cy="select-users-dropdown">
+                              <span className="font-500 mb-1">Resources</span>
+                              <MultiSelectUser
+                                className={{
+                                  container: searchSelectClass,
+                                  value: `${searchSelectClass}__value`,
+                                  input: `${searchSelectClass}__input`,
+                                  select: `${searchSelectClass}__select`,
+                                  options: `${searchSelectClass}__options`,
+                                  row: `${searchSelectClass}__row`,
+                                  option: `${searchSelectClass}__option`,
+                                  group: `${searchSelectClass}__group`,
+                                  'group-header': `${searchSelectClass}__group-header`,
+                                  'is-selected': 'is-selected',
+                                  'is-highlighted': 'is-highlighted',
+                                  'is-loading': 'is-loading',
+                                  'is-multiple': 'is-multiple',
+                                  'has-focus': 'has-focus',
+                                  'not-found': `${searchSelectClass}__not-found`,
+                                }}
+                                onSelect={(value) =>
+                                  setSelectedSearchOptions((prev) => ({
+                                    ...prev,
+                                    resources: value,
+                                    actions: [],
+                                  }))
+                                }
+                                selectedValues={selectedSearchOptions.resources}
+                                options={resourceTypeOptions()}
+                                onReset={() =>
+                                  setSelectedSearchOptions((prev) => ({ ...prev, actions: [], resources: [] }))
+                                }
+                                placeholder="Select Resources"
+                                disabled={isLoading()}
+                                allowCustomRender={false}
+                              />
+                            </div>
+                            <div className="col" data-cy="select-users-dropdown">
+                              <span className="font-500 mb-1">Actions</span>
+                              <MultiSelectUser
+                                className={{
+                                  container: searchSelectClass,
+                                  value: `${searchSelectClass}__value`,
+                                  input: `${searchSelectClass}__input`,
+                                  select: `${searchSelectClass}__select`,
+                                  options: `${searchSelectClass}__options`,
+                                  row: `${searchSelectClass}__row`,
+                                  option: `${searchSelectClass}__option`,
+                                  group: `${searchSelectClass}__group`,
+                                  'group-header': `${searchSelectClass}__group-header`,
+                                  'is-selected': 'is-selected',
+                                  'is-highlighted': 'is-highlighted',
+                                  'is-loading': 'is-loading',
+                                  'is-multiple': 'is-multiple',
+                                  'has-focus': 'has-focus',
+                                  'not-found': `${searchSelectClass}__not-found`,
+                                }}
+                                onSelect={(value) => setSelectedSearchOptions((prev) => ({ ...prev, actions: value }))}
+                                selectedValues={selectedSearchOptions.actions}
+                                options={fetchActionTypesOptionsForResource(selectedSearchOptions.resources)}
+                                onReset={() =>
+                                  setSelectedSearchOptions((prev) => ({ ...prev, actions: [], resources: [] }))
+                                }
+                                placeholder="Select Actions"
+                                disabled={isLoading()}
+                                allowCustomRender={false}
+                              />
+                            </div>
+                            <div className="col-auto d-flex pt-3" data-cy="select-users-dropdown">
+                              <ButtonSolid
+                                data-cy=""
+                                vaiant="primary"
+                                className=""
+                                size="md"
+                                customStyles={{
+                                  height: '32px',
+                                  width: '67px',
+                                }}
+                                onClick={performSearch}
+                              >
+                                Filter
+                              </ButtonSolid>
+                            </div>
+                          </div>
 
-                              <AuditLogs.GenerateFilterBy data={selectedSearchOptions} closeFilter={closeFilter} />
+                          <div className="row mt-2" data-cy="filter-by-section">
+                            <div className="filter-by-section">
+                              <div className="filter-by-text" data-cy="filter-by-label">
+                                Filter By:
+                              </div>
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  flexWrap: 'wrap',
+                                  minHeight: '50px',
+                                  maxHeight: '100px',
+                                  overflowY: 'auto',
+                                  alignItems: 'center',
+                                }}
+                                className="selected-section d-flex"
+                              >
+                                {isFilterApplied() ? (
+                                  <Button
+                                    onClick={clearAllFilters}
+                                    darkMode={props.darkMode}
+                                    size="md"
+                                    styles={{
+                                      border: 'none',
+                                      backgroundColor: '#F0F4FF',
+                                      color: props.darkMode ? '#64748B' : '#3E63DD',
+                                      height: '32px',
+                                    }}
+                                  >
+                                    <Button.Content title={'Clear all filters'} />
+                                  </Button>
+                                ) : (
+                                  <div className="d-flex align-items-center">
+                                    <div>
+                                      <svg
+                                        width="22"
+                                        height="22"
+                                        viewBox="0 0 22 22"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <rect width="22" height="22" rx="2" fill="#F1F3F5" />
+                                        <path
+                                          opacity="0.4"
+                                          d="M9.81465 6.43012C10.3313 5.52329 11.6687 5.52329 12.1853 6.43012L16.6607 14.2856C17.1628 15.1669 16.5093 16.25 15.4754 16.25H6.52459C5.49067 16.25 4.83713 15.1669 5.33925 14.2856L9.81465 6.43012Z"
+                                          fill="#889096"
+                                        />
+                                        <path
+                                          d="M11.5833 13.9154C11.5833 14.2375 11.3222 14.4987 11 14.4987C10.6778 14.4987 10.4167 14.2375 10.4167 13.9154C10.4167 13.5932 10.6778 13.332 11 13.332C11.3222 13.332 11.5833 13.5932 11.5833 13.9154Z"
+                                          fill="#889096"
+                                        />
+                                        <path
+                                          fill-rule="evenodd"
+                                          clip-rule="evenodd"
+                                          d="M11 8.8125C11.2416 8.8125 11.4375 9.00838 11.4375 9.25V12.1667C11.4375 12.4083 11.2416 12.6042 11 12.6042C10.7584 12.6042 10.5625 12.4083 10.5625 12.1667V9.25C10.5625 9.00838 10.7584 8.8125 11 8.8125Z"
+                                          fill="#889096"
+                                        />
+                                      </svg>
+                                    </div>
+
+                                    <div className="filter-by-text mx-2" data-cy="filter-by-label">
+                                      No filters applied
+                                    </div>
+                                  </div>
+                                )}
+
+                                <AuditLogs.GenerateFilterBy data={selectedSearchOptions} closeFilter={closeFilter} />
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="container-xl mt-2">
-                    <div
-                      style={{
-                        maxHeight: '440px',
-                        minHeight: '400px',
-                        marginTop: '2rem',
-                      }}
-                      className="card"
-                    >
-                      <div className="row mt-1">
-                        <div className="col-12">
-                          <div className="table-responsive px-2" style={{ maxHeight: '400px', overflow: 'auto' }}>
-                            <table
-                              style={{ height: auditLogs?.length === 0 || !auditLogs ? '400px' : 'inherit' }}
-                              data-testid="usersTable"
-                              className="table table-vcenter"
-                              disabled={true}
-                            >
-                              {isLoadingAuditLogs ? (
-                                <tbody className="w-100">
-                                  {Array.from(Array(10)).map((index) => (
-                                    <tr key={index}>
-                                      <td className="col-auto">
-                                        <div className="row">
-                                          <div className="skeleton-line w-10 col mx-3"></div>
-                                        </div>
-                                      </td>
-                                      <td className="col-auto">
-                                        <div className="skeleton-line w-10"></div>
-                                      </td>
-                                      <td className="col-auto">
-                                        <div className="skeleton-line w-10"></div>
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              ) : auditLogs?.length ? (
-                                <tbody>
-                                  {auditLogs.map((auditLog, index) => (
-                                    <tr key={auditLog.id} data-cy={`audit-table-row-${index}`}>
+                    <div className="container-xl mt-2">
+                      <div
+                        style={{
+                          maxHeight: '440px',
+                          minHeight: '400px',
+                          marginTop: '2rem',
+                        }}
+                        className="card"
+                      >
+                        <div className="row mt-1">
+                          <div className="col-12">
+                            <div className="table-responsive px-2" style={{ maxHeight: '400px', overflow: 'auto' }}>
+                              <table
+                                style={{ height: auditLogs?.length === 0 || !auditLogs ? '400px' : 'inherit' }}
+                                data-testid="usersTable"
+                                className="table table-vcenter"
+                                disabled={true}
+                              >
+                                {isLoadingAuditLogs ? (
+                                  <tbody className="w-100">
+                                    {Array.from(Array(10)).map((index) => (
+                                      <tr key={index}>
+                                        <td className="col-auto">
+                                          <div className="row">
+                                            <div className="skeleton-line w-10 col mx-3"></div>
+                                          </div>
+                                        </td>
+                                        <td className="col-auto">
+                                          <div className="skeleton-line w-10"></div>
+                                        </td>
+                                        <td className="col-auto">
+                                          <div className="skeleton-line w-10"></div>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                ) : auditLogs?.length ? (
+                                  <tbody>
+                                    {auditLogs.map((auditLog, index) => (
+                                      <tr key={auditLog.id} data-cy={`audit-table-row-${index}`}>
+                                        <td>
+                                          {humanizeLog(auditLog)}
+                                          <ReactJson
+                                            src={auditLog}
+                                            theme={props.darkMode ? 'shapeshifter' : 'rjv-default'}
+                                            name={'log'}
+                                            style={{ fontSize: '0.7rem' }}
+                                            enableClipboard={false}
+                                            displayDataTypes={false}
+                                            collapsed={true}
+                                            displayObjectSize={false}
+                                            quotesOnKeys={false}
+                                            sortKeys={true}
+                                          />
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                ) : (
+                                  <tbody className="">
+                                    <tr>
                                       <td>
-                                        {humanizeLog(auditLog)}
-                                        <ReactJson
-                                          src={auditLog}
-                                          theme={props.darkMode ? 'shapeshifter' : 'rjv-default'}
-                                          name={'log'}
-                                          style={{ fontSize: '0.7rem' }}
-                                          enableClipboard={false}
-                                          displayDataTypes={false}
-                                          collapsed={true}
-                                          displayObjectSize={false}
-                                          quotesOnKeys={false}
-                                          sortKeys={true}
-                                        />
+                                        <div className="text-center">No results found</div>
                                       </td>
                                     </tr>
-                                  ))}
-                                </tbody>
-                              ) : (
-                                <tbody className="">
-                                  <tr>
-                                    <td>
-                                      <div className="text-center">No results found</div>
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              )}
-                            </table>
+                                  </tbody>
+                                )}
+                              </table>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -832,18 +841,20 @@ const AuditLogs = (props) => {
               </div>
             </div>
           </div>
+          <AuditLogs.Footer
+            darkMode={props.darkMode}
+            totalPage={totalPages}
+            pageCount={currentPage}
+            dataLoading={isLoadingAuditLogs}
+            gotoNextPage={goToNextPageAuditLogs}
+            gotoPreviousPage={goToPreviousPageAuditLogs}
+          />
         </div>
-        <AuditLogs.Footer
-          darkMode={props.darkMode}
-          totalPage={totalPages}
-          pageCount={currentPage}
-          dataLoading={isLoadingAuditLogs}
-          gotoNextPage={goToNextPageAuditLogs}
-          gotoPreviousPage={goToPreviousPageAuditLogs}
-        />
-      </div>
-    </Layout>
-  );
+      </Layout>
+    );
+  } else {
+    return <Navigate to={`/${current_organization_id}`} />;
+  }
 };
 
 const Footer = ({ darkMode, totalPage, pageCount, dataLoading, gotoNextPage, gotoPreviousPage }) => {
