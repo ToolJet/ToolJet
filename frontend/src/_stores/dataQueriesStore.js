@@ -17,9 +17,9 @@ export const useDataQueriesStore = create(
     ...initialState,
     actions: {
       // TODO: Remove editor state while refactoring QueryManager
-      fetchDataQueries: (appId, selectFirstQuery = false, runQueriesOnAppLoad = false, editorState) => {
+      fetchDataQueries: async (appId, selectFirstQuery = false, runQueriesOnAppLoad = false, editorState) => {
         set({ loadingDataQueries: true });
-        dataqueryService.getAll(appId).then((data) => {
+        await dataqueryService.getAll(appId).then((data) => {
           set({
             dataQueries: data.data_queries,
             loadingDataQueries: false,
