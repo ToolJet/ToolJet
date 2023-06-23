@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { GroupPermission } from '../src/entities/group_permission.entity';
 
-export class BackfillAddOrgEnvironmentConstantsGroupPermissions1687384710638 implements MigrationInterface {
+export class BackfillAddOrgEnvironmentConstantsGroupPermissions1687549314611 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const entityManager = queryRunner.manager;
     const GroupPermissionRepository = entityManager.getRepository(GroupPermission);

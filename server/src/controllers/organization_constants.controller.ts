@@ -20,7 +20,7 @@ import { CreateOrganizationConstantDto, UpdateOrganizationConstantDto } from '@d
 import { OrganizationConstant } from '../entities/organization_constants.entity';
 import { IsPublicGuard } from 'src/modules/org_environment_variables/is-public.guard';
 import { AppDecorator as App } from 'src/decorators/app.decorator';
-import { OrganizationConstantsAbilityFactory } from 'src/modules/casl/abilities/organization-constants.factory';
+import { OrganizationConstantsAbilityFactory } from 'src/modules/casl/abilities/organization-constants-ability.factory';
 
 @Controller('organization-constants')
 export class OrganizationConstantController {
@@ -64,6 +64,12 @@ export class OrganizationConstantController {
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(@Body() body: UpdateOrganizationConstantDto, @User() user, @Param('id') constantId) {
+    const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, {});
+
+    if (!ability.can('createOrganizationConstant', OrganizationConstant)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
     const { organizationId } = user;
     const result = await this.organizationConstantsService.update(constantId, organizationId, body);
 
@@ -73,6 +79,12 @@ export class OrganizationConstantController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async delete(@User() user, @Param('id') constantId) {
+    const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, {});
+
+    if (!ability.can('deleteOrganizationConstant', OrganizationConstant)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
     const { organizationId } = user;
     const result = await this.organizationConstantsService.delete(constantId, organizationId);
 

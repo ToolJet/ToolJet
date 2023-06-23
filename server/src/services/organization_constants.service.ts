@@ -141,9 +141,9 @@ export class OrganizationConstantsService {
       await manager.save(constantToUpdate);
 
       const environmentToUpdate = await this.appEnvironmentService.get(organizationId, environment_id, manager);
-
+      const encryptedValue = await this.encryptSecret(organizationId, value);
       await this.appEnvironmentService.updateOrgEnvironmentConstant(
-        value,
+        encryptedValue,
         environmentToUpdate.id,
         constantToUpdate.id,
         manager
