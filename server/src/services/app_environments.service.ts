@@ -61,6 +61,7 @@ export class AppEnvironmentService {
       const appEnvironments = await manager.find(AppEnvironment, {
         where: {
           organizationId,
+          enabled: true,
         },
         order: {
           priority: 'ASC',
