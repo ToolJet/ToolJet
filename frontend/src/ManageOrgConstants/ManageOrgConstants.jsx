@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { authenticationService, orgEnvironmentConstantService, appEnvironmentService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
-import Pagination from '@/_ui/Pagination';
 import { capitalize } from 'lodash';
 import cx from 'classnames';
 
+import Pagination from '@/_ui/Pagination';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { Alert } from '../_ui/Alert/Alert';
 import { Button } from '@/_ui/LeftSidebar';
@@ -18,7 +18,94 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [activeTabEnvironment, setActiveTabEnvironment] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const canCreateVariable = () => true;
+  const perPage = 8;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [activeTabContants, setActiveTabContants] = useState([]);
+
+  const computeTotalPages = (totalItems) => {
+    const totalPages = Math.ceil(totalItems / perPage);
+    setTotalPages(totalPages);
+  };
+
+  const updateActiveEnvironmentTab = (environment, allConstants = []) => {
+    setActiveTabEnvironment(environment);
+    setCurrentPage(1);
+
+    const constantsForEnvironment = allConstants.slice(0, perPage).map((constant) => {
+      return {
+        id: constant.id,
+        name: constant.name,
+        value: findValueForEnvironment(constant.values, environment.name),
+      };
+    });
+
+    setActiveTabContants(constantsForEnvironment);
+    computeTotalPages(constantsForEnvironment.length + 1);
+  };
+
+  const goToNextPage = () => {
+    setCurrentPage(currentPage + 1);
+
+    const start = (currentPage + 1 - 1) * perPage;
+    const end = start + perPage;
+
+    const constantsForEnvironment = constants.slice(start, end).map((constant) => {
+      return {
+        id: constant.id,
+        name: constant.name,
+        value: findValueForEnvironment(constant.values, activeTabEnvironment?.name),
+      };
+    });
+
+    setActiveTabContants(constantsForEnvironment);
+  };
+
+  const goToPreviousPage = () => {
+    setCurrentPage(currentPage - 1);
+
+    const start = (currentPage - 1 - 1) * perPage;
+    const end = start + perPage;
+
+    const constantsForEnvironment = constants.slice(start, end).map((constant) => {
+      return {
+        id: constant.id,
+        name: constant.name,
+        value: findValueForEnvironment(constant.values, activeTabEnvironment?.name),
+      };
+    });
+
+    setActiveTabContants(constantsForEnvironment);
+  };
+
+  const canAnyGroupPerformAction = (action, permissions) => {
+    if (!permissions) {
+      return false;
+    }
+
+    return permissions.some((p) => p[action]);
+  };
+
+  const canCreateVariable = () => {
+    return canAnyGroupPerformAction(
+      'org_environment_constant_create',
+      authenticationService.currentSessionValue.group_permissions
+    );
+  };
+
+  const canUpdateVariable = () => {
+    return canAnyGroupPerformAction(
+      'org_environment_constant_create',
+      authenticationService.currentSessionValue.group_permissions
+    );
+  };
+
+  const canDeleteVariable = () => {
+    return canAnyGroupPerformAction(
+      'org_environment_constant_delete',
+      authenticationService.currentSessionValue.group_permissions
+    );
+  };
 
   const fetchOnMount = async () => {
     const orgConstants = await orgEnvironmentConstantService.getAll();
@@ -26,7 +113,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
     setConstants(orgConstants?.constants);
     setEnvironments(orgEnvironments?.environments);
-    setActiveTabEnvironment(orgEnvironments?.environments?.find((env) => env?.is_default === true));
+
+    const currentEnvironment = orgEnvironments?.environments?.find((env) => env?.is_default === true);
+
+    updateActiveEnvironmentTab(currentEnvironment, orgConstants?.constants);
     setIsLoading(false);
   };
 
@@ -39,6 +129,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
   useEffect(() => {
     fetchOnMount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -120,25 +211,24 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
               {constants.length === 0 ? (
                 <span className="no-vars-text" data-cy="no-variable-text">
-                  You haven&apos;t configured any environment variables, press the &apos;Add new variable&apos; button
-                  to create one
+                  You haven&apos;t configured any environment variables, press the &apos;Create new constanr&apos;
+                  button to create one
                 </span>
               ) : (
                 <ConstantTable
-                  constants={constants}
-                  findValueForEnvironment={findValueForEnvironment}
-                  activeTabEnvironment={activeTabEnvironment}
+                  constants={activeTabContants}
                   isLoading={isLoading}
+                  canUpdateDeleteConstant={() => canUpdateVariable() || canDeleteVariable()}
                 />
               )}
 
               <Footer
-                darkMode={false}
-                totalPage={3}
-                pageCount={1}
+                darkMode={darkMode}
+                totalPage={totalPages}
+                pageCount={currentPage}
                 dataLoading={false}
-                gotoNextPage={console.log('next')}
-                gotoPreviousPage={console.log('prev')}
+                gotoNextPage={goToNextPage}
+                gotoPreviousPage={goToPreviousPage}
               />
             </div>
           </div>
@@ -192,7 +282,7 @@ const Footer = ({ darkMode, totalPage, pageCount, dataLoading, gotoNextPage, got
           currentPage={pageCount}
           totalPage={totalPage}
           isDisabled={dataLoading}
-          disableInput={false}
+          disableInput={true}
         />
       </div>
     </div>

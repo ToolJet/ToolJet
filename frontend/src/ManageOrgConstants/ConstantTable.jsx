@@ -3,8 +3,6 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const ConstantTable = ({
   constants = [],
-  findValueForEnvironment,
-  activeTabEnvironment,
   canUpdateDeleteConstant = true,
   onEditBtnClicked,
   onDeleteBtnClicked,
@@ -25,7 +23,7 @@ const ConstantTable = ({
           ref={tableRef}
           style={{ maxHeight: tableRef.current && calculateOffset() }}
         >
-          <table className="table table-vcenter variables-table-wrapper" disabled={true}>
+          <table className="table table-vcenter constant-table-wrapper mt-2" disabled={true}>
             <thead>
               <tr>
                 <th data-cy="workspace-variable-table-name-header">Name</th>
@@ -66,7 +64,7 @@ const ConstantTable = ({
                         className="text-reset user-email"
                         data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-value`}
                       >
-                        {findValueForEnvironment(constant.values, activeTabEnvironment?.name)}
+                        {constant.value}
                       </a>
                     </td>
 
