@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { authenticationService, orgEnvironmentVariableService } from '@/_services';
+import React, { useEffect, useState } from 'react';
+import { authenticationService, orgEnvironmentConstantService, appEnvironmentService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import Pagination from '@/_ui/Pagination';
@@ -13,58 +13,33 @@ import ConstantTable from './ConstantTable';
 
 const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [isManageVarDrawerOpen, setIsManageVarDrawerOpen] = useState(false);
-  const [variables, setVariables] = useState([]);
+  const [constants, setConstants] = useState([]);
+  const [environments, setEnvironments] = useState([]);
+  const [activeTabEnvironment, setActiveTabEnvironment] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const canCreateVariable = () => true;
 
-  const allEnvironment = [
-    {
-      id: 1,
-      name: 'development',
-    },
-    {
-      id: 2,
-      name: 'staging',
-    },
-    {
-      id: 3,
-      name: 'production',
-    },
-  ];
+  const fetchOnMount = async () => {
+    const orgConstants = await orgEnvironmentConstantService.getAll();
+    const orgEnvironments = await appEnvironmentService.getAllEnvironments();
 
-  const orgConstants = [
-    {
-      id: '45d140b5-c0a3-4a5b-bee4-e60a544d3279',
-      name: 'psql_database_name',
-      values: [
-        {
-          environmentName: 'production',
-          value: 'tj_development_test',
-        },
-      ],
-    },
-    {
-      id: '45d140b5-c0a3-4a5b-bee4-e60a544d3299',
-      name: 'psql_database_host',
-      values: [
-        {
-          environmentName: 'production',
-          value: 'prod_host',
-        },
-      ],
-    },
+    setConstants(orgConstants?.constants);
+    setEnvironments(orgEnvironments?.environments);
+    setActiveTabEnvironment(orgEnvironments?.environments?.find((env) => env?.is_default === true));
+    setIsLoading(false);
+  };
 
-    {
-      id: '45d140b5-c0a3-4a5b-bee4-e60a544d3259',
-      name: 'psql_database_port',
-      values: [
-        {
-          environmentName: 'production',
-          value: '5432',
-        },
-      ],
-    },
-  ];
+  const findValueForEnvironment = (constantValues, environmentName) => {
+    if (!Array.isArray(constantValues)) return;
+
+    const value = constantValues?.find((value) => value.environmentName === environmentName);
+    return value?.value;
+  };
+
+  useEffect(() => {
+    fetchOnMount();
+  }, []);
 
   return (
     <div className="wrapper org-constant-page org-variables-page animation-fade">
@@ -104,9 +79,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           <div className="container-xl">
             <div className="card workspace-variable-table-card">
               <RenderEnvironmentsTab
-                isMultiEnvironment={allEnvironment.length > 1}
-                allEnvironments={allEnvironment}
-                currentEnvironment={allEnvironment[0]}
+                isMultiEnvironment={environments.length > 1}
+                allEnvironments={environments}
+                currentEnvironment={activeTabEnvironment}
+                setActiveTabEnvironment={setActiveTabEnvironment}
               />
 
               <div className="p-4 pb-1">
@@ -142,13 +118,18 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                 </Alert>
               </div>
 
-              {orgConstants.length === 0 ? (
+              {constants.length === 0 ? (
                 <span className="no-vars-text" data-cy="no-variable-text">
                   You haven&apos;t configured any environment variables, press the &apos;Add new variable&apos; button
                   to create one
                 </span>
               ) : (
-                <ConstantTable constants={orgConstants} />
+                <ConstantTable
+                  constants={constants}
+                  findValueForEnvironment={findValueForEnvironment}
+                  activeTabEnvironment={activeTabEnvironment}
+                  isLoading={isLoading}
+                />
               )}
 
               <Footer
@@ -167,11 +148,16 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   );
 };
 
-const RenderEnvironmentsTab = ({ isMultiEnvironment = false, allEnvironments = [], currentEnvironment = {} }) => {
+const RenderEnvironmentsTab = ({
+  isMultiEnvironment = false,
+  allEnvironments = [],
+  currentEnvironment = {},
+  setActiveTabEnvironment,
+}) => {
   if (!isMultiEnvironment) return null;
 
   const updateCurrentEnvironment = (env) => {
-    console.log('currentEnvironment', env);
+    setActiveTabEnvironment(env);
   };
 
   return (

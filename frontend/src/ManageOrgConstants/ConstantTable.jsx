@@ -3,8 +3,9 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const ConstantTable = ({
   constants = [],
-  canUpdateVariable = true,
-  canDeleteVariable = true,
+  findValueForEnvironment,
+  activeTabEnvironment,
+  canUpdateDeleteConstant = true,
   onEditBtnClicked,
   onDeleteBtnClicked,
   isLoading = false,
@@ -13,11 +14,8 @@ const ConstantTable = ({
 
   const calculateOffset = () => {
     const elementHeight = tableRef.current.getBoundingClientRect().top;
-
     return window.innerHeight - elementHeight;
   };
-
-  const variables = constants;
 
   return (
     <div className="container-xl">
@@ -32,8 +30,7 @@ const ConstantTable = ({
               <tr>
                 <th data-cy="workspace-variable-table-name-header">Name</th>
                 <th data-cy="workspace-variable-table-value-header">Value</th>
-
-                {(canUpdateVariable || canDeleteVariable) && <th className="w-1"></th>}
+                {canUpdateDeleteConstant && <th className="w-1"></th>}
               </tr>
             </thead>
             {isLoading ? (
@@ -57,75 +54,56 @@ const ConstantTable = ({
               </tbody>
             ) : (
               <tbody>
-                {variables.map((variable) => (
-                  <tr key={variable.id}>
+                {constants.map((constant) => (
+                  <tr key={constant.id}>
                     <td>
-                      <span data-cy={`${variable.name.toLowerCase().replace(/\s+/g, '-')}-workspace-variable-name`}>
-                        {variable.name}
+                      <span data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-name`}>
+                        {constant.name}
                       </span>
                     </td>
                     <td className="text-muted">
                       <a
                         className="text-reset user-email"
-                        data-cy={`${variable.name.toLowerCase().replace(/\s+/g, '-')}-workspace-variable-value`}
+                        data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-value`}
                       >
-                        {variable.encrypted ? (
-                          <small className="text-green">
-                            <img
-                              className="encrypted-icon"
-                              src="assets/images/icons/padlock.svg"
-                              width="12"
-                              height="12"
-                              data-cy="encrypted-workspace-variable-icon"
-                            />
-                            <span className="text-success mx-2" data-cy="encrypted-workspace-variable-text">
-                              secret
-                            </span>
-                          </small>
-                        ) : (
-                          variable.values[0].value
-                        )}
+                        {findValueForEnvironment(constant.values, activeTabEnvironment?.name)}
                       </a>
                     </td>
 
-                    {(canUpdateVariable || canDeleteVariable) && (
+                    {canUpdateDeleteConstant && (
                       <td>
                         <div
                           style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}
-                          data-cy={`${variable.name.toLowerCase().replace(/\s+/g, '-')}-workspace-variable-update`}
+                          data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-update`}
                         >
-                          {canUpdateVariable && (
-                            <td>
-                              <ButtonSolid
-                                variant="secondary"
-                                style={{ minWidth: '100px' }}
-                                className="workspace-user-archive-btn tj-text-xsm"
-                                leftIcon="editrectangle"
-                                fill="#3b5ccc"
-                                iconWidth="12"
-                                onClick={() => onEditBtnClicked(variable)}
-                                data-cy="button-user-status-change"
-                              >
-                                Edit
-                              </ButtonSolid>
-                            </td>
-                          )}
-                          {canDeleteVariable && (
-                            <td>
-                              <ButtonSolid
-                                variant="dangerSecondary"
-                                style={{ minWidth: '100px' }}
-                                className="workspace-user-archive-btn tj-text-xsm"
-                                leftIcon="trash"
-                                fill="#E54D2E"
-                                iconWidth="12"
-                                onClick={() => onDeleteBtnClicked(variable)}
-                                data-cy="button-user-status-change"
-                              >
-                                Delete
-                              </ButtonSolid>
-                            </td>
-                          )}
+                          <td>
+                            <ButtonSolid
+                              variant="secondary"
+                              style={{ minWidth: '100px' }}
+                              className="workspace-user-archive-btn tj-text-xsm"
+                              leftIcon="editrectangle"
+                              fill="#3b5ccc"
+                              iconWidth="12"
+                              onClick={() => onEditBtnClicked(constant)}
+                              data-cy="button-user-status-change"
+                            >
+                              Edit
+                            </ButtonSolid>
+                          </td>
+                          <td>
+                            <ButtonSolid
+                              variant="dangerSecondary"
+                              style={{ minWidth: '100px' }}
+                              className="workspace-user-archive-btn tj-text-xsm"
+                              leftIcon="trash"
+                              fill="#E54D2E"
+                              iconWidth="12"
+                              onClick={() => onDeleteBtnClicked(constant)}
+                              data-cy="button-user-status-change"
+                            >
+                              Delete
+                            </ButtonSolid>
+                          </td>
                         </div>
                       </td>
                     )}
