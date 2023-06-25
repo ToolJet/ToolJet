@@ -51,5 +51,9 @@
     "deploy": "cp -a frontend/build/. public/",
     "heroku-postbuild": "./heroku-postbuild.sh",
     "prepare": "husky install"
+  },
+  "dependencies": {
+    "@wojtekmaj/react-daterange-picker": "^5.2.0",
+    "@wojtekmaj/react-datetimerange-picker": "^5.2.0"
   }
 }
