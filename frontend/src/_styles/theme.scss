@@ -5777,6 +5777,13 @@ div#driver-page-overlay {
   }
 }
 
+.org-constant-page {
+  .card-footer {
+    background: var(--base);
+    color: var(--slate12);
+  }
+}
+
 //Kanban board
 .kanban-container.dark-themed {
   background-color: $bg-dark-light !important;

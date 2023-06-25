@@ -25,6 +25,7 @@ export const ButtonBase = function ButtonBase(props) {
     fill,
     iconCustomClass,
     iconWidth,
+    customStyles = {},
     ...restProps
   } = props;
 
@@ -36,7 +37,10 @@ export const ButtonBase = function ButtonBase(props) {
       {...restProps}
       className={`tj-base-btn ${mapBaseSize[size]}  ${className}`}
       disabled={disabled}
-      style={backgroundColor && { backgroundColor }}
+      style={{
+        ...customStyles,
+        backgroundColor: backgroundColor && backgroundColor,
+      }}
       type={isAnchor ? undefined : type || 'button'}
     >
       {!isLoading && leftIcon && (

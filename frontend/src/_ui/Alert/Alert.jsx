@@ -3,7 +3,7 @@ import React from 'react';
 export const Alert = ({ children, svg, cls = '' }) => {
   return (
     <Alert.Container cls={cls}>
-      <div className="d-flex">
+      <div className="d-flex align-items-center">
         {svg && (
           <span>
             <img src={`assets/images/icons/${svg}.svg`} alt="alert" />
@@ -22,7 +22,7 @@ const Container = ({ children, cls = '' }) => {
 
 const Message = ({ children }) => {
   return (
-    <div data-cy={`alert-info-text`} style={{ fontWeight: 400 }} className="mx-2">
+    <div data-cy={`alert-info-text`} style={{ fontWeight: 400, width: '100%' }} className="mx-2">
       {children}
     </div>
   );

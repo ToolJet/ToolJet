@@ -10,13 +10,14 @@ import { CopilotSetting } from '@/CopilotSettings';
 import { BreadCrumbContext } from '../App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
+import { ManageOrgConstants } from '@/ManageOrgConstants';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
   const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Copilot'];
+  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Copilot', 'Workspace Constants'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'Users':
@@ -29,6 +30,8 @@ export function OrganizationSettings(props) {
         return 'manageEnvVars';
       case 'Copilot':
         return 'manageCopilot';
+      case 'Workspace Constants':
+        return 'manageOrgConstants';
       default:
         return groupName;
     }
@@ -82,6 +85,7 @@ export function OrganizationSettings(props) {
               {selectedTab === 'manageSSO' && <ManageSSO />}
               {selectedTab === 'manageEnvVars' && <ManageOrgVars darkMode={props.darkMode} />}
               {selectedTab === 'manageCopilot' && <CopilotSetting />}
+              {selectedTab === 'manageOrgConstants' && <ManageOrgConstants darkMode={props.darkMode} />}
             </div>
           </div>
         </div>
