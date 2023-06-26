@@ -18,6 +18,7 @@
         "setup/kubernetes",
         "setup/kubernetes-gke",
         "setup/kubernetes-aks",
+        "setup/azure-container",
         "setup/google-cloud-run",
         "setup/client",
         "setup/env-vars",
