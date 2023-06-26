@@ -15,7 +15,11 @@ export const useAppVersionStore = create(
         set({ editingVersion: version, isVersionReleased: get().releasedVersionId === version?.id }),
       enableReleasedVersionPopupState: () => set({ isUserEditingTheVersion: true }),
       disableReleasedVersionPopupState: () => set({ isUserEditingTheVersion: false }),
-      updateReleasedVersionId: (versionId) => set({ releasedVersionId: versionId }),
+      updateReleasedVersionId: (versionId) =>
+        set({
+          releasedVersionId: versionId,
+          isVersionReleased: get().editingVersion?.id ? get().editingVersion?.id === versionId : false,
+        }),
     },
   }))
 );
