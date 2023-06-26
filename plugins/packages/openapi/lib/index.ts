@@ -64,6 +64,11 @@ export default class Openapi implements QueryService {
   // to prevent SSRF attacks. Making the request first to infer if
   // from GOT resp.
   private async makeRequest(url, requestOptions) {
+    const urlContainsForbiddenIp = url.includes('169.254.169.254');
+    if (urlContainsForbiddenIp) {
+      throw new ForbiddenRequestError('Forbidden', {}, {});
+    }
+
     const response = await got(url, requestOptions);
     const remoteIp = response?.socket?.remoteAddress;
     if (!!remoteIp && remoteIp.indexOf('169.254.169.254') != -1) {
