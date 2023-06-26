@@ -132,7 +132,7 @@ function InviteUsersForm({
                       </span>
                     </div>
                   </div>
-                  <div className="form-group mb-3 manage-groups-invite-form">
+                  <div className="form-group mb-3 manage-groups-invite-form manage-groups-app-dropdown">
                     <label className="form-label" data-cy="label-email-input-field">
                       {t('header.organization.menus.manageUsers.selectGroup', 'Select Group')}
                     </label>
