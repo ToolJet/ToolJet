@@ -1801,24 +1801,6 @@ button {
     .td-container {
       margin-top: auto;
       margin-bottom: auto;
-      .global-filter-span-cell{
-        &:focus {
-          outline: none;
-          position: relative;
-        }
-        /* Create a pseudo-element for the custom outline */
-        &:focus::before {
-          content: '';
-          position: absolute;
-          top: -4px;
-          left: -4px;
-          right: -4px;
-          bottom: -4px;
-          border: 1px solid #dadcde;
-          border-radius: 4px; 
-          pointer-events: none;
-        }
-      }
     }
   }
 
@@ -10583,6 +10565,30 @@ tbody {
   .react-select__menu {
     .react-select__menu-list {
       max-height: 150px;
+    }
+  }
+}
+.generate-cell-value-component-div-wrapper{
+  
+  .form-control-plaintext:focus-visible {
+    outline-color: #dadcde;
+    border-radius: 4px;
+  }
+  
+  .form-control-plaintext:hover {
+    outline-color: #dadcde;
+    border-radius: 4px;
+  }
+}
+.dark-theme{
+  .generate-cell-value-component-div-wrapper{
+  
+    .form-control-plaintext:focus-visible {
+      filter: invert(-1);
+    }
+    
+    .form-control-plaintext:hover {
+      filter: invert(-1);
     }
   }
 }
