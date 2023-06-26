@@ -9200,7 +9200,7 @@ tbody {
 
 }
 
-.manage-groups-permission-apps {
+.manage-groups-permission-apps, .apps-constant-permission-wrap {
   border-bottom: 1px solid var(--slate5);
 }
 
@@ -9219,12 +9219,13 @@ tbody {
 }
 
 .manage-groups-permission-apps,
-.apps-variable-permission-wrap {
+.apps-variable-permission-wrap,
+.apps-constant-permission-wrap {
   gap: 10px;
   height: 72px;
 }
 
-.apps-folder-permission-wrap, .apps-constant-permission-wrap, .apps-variable-permission-wrap {
+.apps-folder-permission-wrap, .apps-variable-permission-wrap {
   height: 44px;
   border-bottom: 1px solid var(--slate5);
 }
