@@ -45,6 +45,7 @@ export class OrganizationConstantsService {
             id: constant.id,
             name: constant.constantName,
             values,
+            createdAt: constant.createdAt,
           };
         })
       );

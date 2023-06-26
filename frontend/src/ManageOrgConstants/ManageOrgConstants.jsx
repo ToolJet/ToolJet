@@ -11,6 +11,9 @@ import { Alert } from '../_ui/Alert/Alert';
 import { Button } from '@/_ui/LeftSidebar';
 import ConstantTable from './ConstantTable';
 
+import Drawer from '@/_ui/Drawer';
+import ConstantForm from './ConstantForm';
+
 const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [isManageVarDrawerOpen, setIsManageVarDrawerOpen] = useState(false);
   const [constants, setConstants] = useState([]);
@@ -22,6 +25,24 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [activeTabContants, setActiveTabContants] = useState([]);
+
+  const [errors, setErrors] = useState([]);
+  const [showConstantDeleteConfirmation, setShowConstantDeleteConfirmation] = useState(false);
+  const [selectedConstant, setSelectedConstant] = useState(null);
+
+  const onCancelBtnClicked = () => {
+    setIsManageVarDrawerOpen(false);
+  };
+
+  const onEditBtnClicked = (constant) => {
+    setSelectedConstant(constant);
+    setIsManageVarDrawerOpen(true);
+  };
+
+  const onDeleteBtnClicked = (constant) => {
+    setSelectedConstant(constant);
+    setShowConstantDeleteConfirmation(true);
+  };
 
   const computeTotalPages = (totalItems) => {
     const totalPages = Math.ceil(totalItems / perPage);
@@ -132,17 +153,69 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     });
   };
 
-  const fetchOnMount = async () => {
+  const fetchConstantsAndEnvironments = async () => {
     const orgConstants = await orgEnvironmentConstantService.getAll();
-    let orgEnvironments = await fetchEnvironments();
+
+    if (orgConstants?.constants?.length > 1) {
+      orgConstants.constants.sort((a, b) => {
+        return new Date(b.createdAt).getTime().toString().localeCompare(new Date(a.createdAt).getTime().toString());
+      });
+    }
 
     setConstants(orgConstants?.constants);
+
+    let orgEnvironments = await fetchEnvironments();
     setEnvironments(orgEnvironments?.environments);
-
     const currentEnvironment = orgEnvironments?.environments?.find((env) => env?.is_default === true);
-
     updateActiveEnvironmentTab(currentEnvironment, orgConstants?.constants);
+
     setIsLoading(false);
+    setSelectedConstant(null);
+  };
+
+  const createOrUpdate = (variable, isUpdate = false) => {
+    if (isUpdate) {
+      return orgEnvironmentConstantService
+        .update(variable.id, variable.value, variable.environment)
+        .then(() => {
+          toast.success('Constant updated successfully');
+          setIsManageVarDrawerOpen(false);
+        })
+        .catch(({ error }) => {
+          setErrors(error);
+        })
+        .finally(() => fetchConstantsAndEnvironments());
+    }
+
+    return orgEnvironmentConstantService
+      .create(variable)
+      .then(() => {
+        toast.success('Constant created successfully');
+        setIsManageVarDrawerOpen(false);
+      })
+      .catch(({ error }) => {
+        setErrors(error);
+      })
+      .finally(() => fetchConstantsAndEnvironments());
+  };
+
+  const handleOnCancelDelete = () => {
+    setShowConstantDeleteConfirmation(false);
+    setSelectedConstant(null);
+  };
+
+  const handleExecuteDelete = () => {
+    setShowConstantDeleteConfirmation(false);
+
+    return orgEnvironmentConstantService
+      .remove(selectedConstant.id)
+      .then(() => {
+        toast.success('Constant deleted successfully');
+      })
+      .catch(({ error }) => {
+        toast.error(error);
+      })
+      .finally(() => fetchConstantsAndEnvironments());
   };
 
   const findValueForEnvironment = (constantValues, environmentName) => {
@@ -153,32 +226,49 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   };
 
   useEffect(() => {
-    fetchOnMount();
+    fetchConstantsAndEnvironments(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="wrapper org-constant-page org-variables-page animation-fade">
       <ConfirmDialog
-        //   show={this.state.showVariableDeleteConfirmation}
+        show={showConstantDeleteConfirmation}
         message={'Variable will be deleted, do you want to continue?'}
-        onConfirm={() => console.log('onConfirm')}
-        onCancel={() => console.log('onConfirm')}
+        onConfirm={handleExecuteDelete}
+        onCancel={handleOnCancelDelete}
         darkMode={false}
       />
+
+      <Drawer
+        disableFocus={true}
+        isOpen={isManageVarDrawerOpen}
+        onClose={() => setIsManageVarDrawerOpen(false)}
+        position="right"
+      >
+        <ConstantForm
+          errors={errors}
+          selectedConstant={selectedConstant}
+          createOrUpdate={createOrUpdate}
+          onCancelBtnClicked={onCancelBtnClicked}
+          isLoading={isLoading}
+          environments={environments}
+          currentEnvironment={selectedConstant ? activeTabEnvironment : environments[0]}
+        />
+      </Drawer>
 
       <div className="page-wrapper">
         <div className="container-xl">
           <div>
             <div className="page-header workspace-page-header">
               <div className="align-items-center d-flex">
-                <div className="tj-text-sm font-weight-500">10 users</div>
+                <div className="tj-text-sm font-weight-500">{constants.length} constants</div>
                 <div className=" workspace-setting-buttons-wrap">
                   {!isManageVarDrawerOpen && canCreateVariable() && (
                     <ButtonSolid
                       data-cy="add-new-constant-button"
                       vaiant="primary"
-                      // onClick={() => this.setState({ isManageVarDrawerOpen: true, errors: {} })}
+                      onClick={() => setIsManageVarDrawerOpen(true)}
                       className="add-new-constant-button"
                       customStyles={{ minWidth: '200px', height: '32px' }}
                     >
@@ -242,6 +332,8 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
               ) : (
                 <ConstantTable
                   constants={activeTabContants}
+                  onEditBtnClicked={onEditBtnClicked}
+                  onDeleteBtnClicked={onDeleteBtnClicked}
                   isLoading={isLoading}
                   canUpdateDeleteConstant={canUpdateVariable() || canDeleteVariable()}
                 />
