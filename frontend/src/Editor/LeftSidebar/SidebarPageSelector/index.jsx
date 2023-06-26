@@ -164,7 +164,6 @@ const LeftSidebarPageSelector = ({
                 apps={apps}
                 allpages={pages}
                 components={appDefinition?.components ?? {}}
-                setReleasedVersionPopupState={enableReleasedVersionPopupState}
                 pinPagesPopover={pinPagesPopover}
                 haveUserPinned={haveUserPinned}
               />
