@@ -324,9 +324,9 @@ class EditorComponent extends React.Component {
     useDataSourcesStore.getState().actions.fetchDataSources(id, environmentId);
   };
 
-  fetchGlobalDataSources = () => {
+  fetchGlobalDataSources = (appVersionId, environmentId) => {
     const { current_organization_id: organizationId } = this.state.currentUser;
-    useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
+    useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId, appVersionId, environmentId);
   };
 
   fetchDataQueries = async (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
@@ -403,7 +403,7 @@ class EditorComponent extends React.Component {
 
       this.fetchDataSources(data.editing_version?.id, this.state.currentAppEnvironmentId);
       await this.fetchDataQueries(data.editing_version?.id, true, true);
-      this.fetchGlobalDataSources();
+      this.fetchGlobalDataSources(data.editing_version?.id, this.state.currentAppEnvironmentId);
       initEditorWalkThrough();
       for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
         await this.handleEvent(event.eventId, event);
@@ -464,7 +464,7 @@ class EditorComponent extends React.Component {
   };
 
   globalDataSourcesChanged = () => {
-    this.fetchGlobalDataSources();
+    this.fetchGlobalDataSources(this.state.editingVersion?.id, this.state.currentAppEnvironmentId);
   };
 
   /**

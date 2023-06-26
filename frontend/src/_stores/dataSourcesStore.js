@@ -22,8 +22,8 @@ export const useDataSourcesStore = create(
             });
           });
         },
-        fetchGlobalDataSources: (organizationId) => {
-          globalDatasourceService.getAll(organizationId).then((data) => {
+        fetchGlobalDataSources: (organizationId, appVersionId, environmentId) => {
+          globalDatasourceService.getAll(organizationId, appVersionId, environmentId).then((data) => {
             set({
               globalDataSources: data.data_sources,
             });
