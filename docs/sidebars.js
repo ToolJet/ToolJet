@@ -366,6 +366,7 @@ const sidebars = {
             'contributing-guide/setup/macos',
             'contributing-guide/setup/docker',
             'contributing-guide/setup/ubuntu',
+            'contributing-guide/setup/windows',
           ],
         },
         {
