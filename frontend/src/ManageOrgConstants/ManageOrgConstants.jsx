@@ -107,9 +107,34 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     );
   };
 
+  const fetchEnvironments = () => {
+    return new Promise((resolve, reject) => {
+      appEnvironmentService
+        .getAllEnvironments()
+        .then((response) => {
+          resolve(response);
+        })
+        .catch(({ error }) => {
+          if (error === 'You do not have permissions to perform this action') {
+            resolve({
+              environments: [
+                {
+                  id: 1,
+                  name: 'production',
+                  is_default: true,
+                },
+              ],
+            });
+          }
+
+          reject(error);
+        });
+    });
+  };
+
   const fetchOnMount = async () => {
     const orgConstants = await orgEnvironmentConstantService.getAll();
-    const orgEnvironments = await appEnvironmentService.getAllEnvironments();
+    let orgEnvironments = await fetchEnvironments();
 
     setConstants(orgConstants?.constants);
     setEnvironments(orgEnvironments?.environments);
@@ -170,7 +195,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
           <div className="container-xl">
             <div className="card workspace-variable-table-card">
               <RenderEnvironmentsTab
-                isMultiEnvironment={environments.length > 1}
+                isMultiEnvironment={environments?.length > 1}
                 allEnvironments={environments}
                 currentEnvironment={activeTabEnvironment}
                 setActiveTabEnvironment={setActiveTabEnvironment}
@@ -218,7 +243,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                 <ConstantTable
                   constants={activeTabContants}
                   isLoading={isLoading}
-                  canUpdateDeleteConstant={() => canUpdateVariable() || canDeleteVariable()}
+                  canUpdateDeleteConstant={canUpdateVariable() || canDeleteVariable()}
                 />
               )}
 
