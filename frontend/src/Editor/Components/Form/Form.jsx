@@ -49,7 +49,6 @@ export const Form = function Form(props) {
   const [childrenData, setChildrenData] = useState({});
   const [isValid, setValidation] = useState(true);
   const [uiComponents, setUIComponents] = useState([]);
-  const [jsonSubmitBtn, setJsonSubmitBtn] = useState('');
 
   registerAction('resetForm', async function () {
     resetComponent();
@@ -151,7 +150,7 @@ export const Form = function Form(props) {
     document.addEventListener('submitForm', handleFormSubmission);
     return () => document.removeEventListener('submitForm', handleFormSubmission);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buttonToSubmit, isValid, advanced]);
+  }, [buttonToSubmit, isValid, advanced, JSON.stringify(uiComponents)]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -166,7 +165,7 @@ export const Form = function Form(props) {
           fireEvent('onInvalid');
         }
       }
-    } else {
+    } else if (buttonComponentId == uiComponents.length - 1 && JSONSchema.hasOwnProperty('submitButton')) {
       if (isValid) {
         onEvent('onSubmit', { component }).then(() => resetComponent());
       } else {
@@ -186,7 +185,7 @@ export const Form = function Form(props) {
     return keys.find((key) => obj[key].label === label);
   }
   const onOptionChange = ({ component, optionName, value, componentId }) => {
-    let keyValue = findKeyByLabel(JSONSchema.properties, value);
+    let keyValue = JSONSchema?.properties && findKeyByLabel(JSONSchema.properties, value);
 
     const optionData = {
       ...(childDataRef.current[componentId] ?? {}),
