@@ -10,10 +10,11 @@ export const globalDatasourceService = {
   getDataSourceByEnvironmentId,
 };
 
-function getAll(organizationId, appVersionId) {
+function getAll(organizationId, appVersionId, environmentId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   let searchParams = new URLSearchParams({
     organization_id: organizationId,
+    ...(environmentId && { environment_id: environmentId }),
     ...(appVersionId && { app_version_id: appVersionId }),
   });
   return fetch(`${config.apiUrl}/v2/data_sources?` + searchParams, requestOptions).then(handleResponse);
