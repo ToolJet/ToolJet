@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import cx from 'classnames';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
@@ -15,7 +15,7 @@ export const ReleasedVersionError = () => {
     isUserEditingTheVersion && disableReleasedVersionPopupState();
   }, [isUserEditingTheVersion, disableReleasedVersionPopupState]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const intervalId = setInterval(() => changeBackTheState(), 2000);
     return () => intervalId && clearInterval(intervalId);
   }, [isUserEditingTheVersion, changeBackTheState]);

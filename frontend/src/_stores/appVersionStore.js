@@ -8,18 +8,21 @@ const initialState = {
 };
 
 export const useAppVersionStore = create(
-  zustandDevTools((set, get) => ({
-    ...initialState,
-    actions: {
-      updateEditingVersion: (version) =>
-        set({ editingVersion: version, isVersionReleased: get().releasedVersionId === version?.id }),
-      enableReleasedVersionPopupState: () => set({ isUserEditingTheVersion: true }),
-      disableReleasedVersionPopupState: () => set({ isUserEditingTheVersion: false }),
-      updateReleasedVersionId: (versionId) =>
-        set({
-          releasedVersionId: versionId,
-          isVersionReleased: get().editingVersion?.id ? get().editingVersion?.id === versionId : false,
-        }),
-    },
-  }))
+  zustandDevTools(
+    (set, get) => ({
+      ...initialState,
+      actions: {
+        updateEditingVersion: (version) =>
+          set({ editingVersion: version, isVersionReleased: get().releasedVersionId === version?.id }),
+        enableReleasedVersionPopupState: () => set({ isUserEditingTheVersion: true }),
+        disableReleasedVersionPopupState: () => set({ isUserEditingTheVersion: false }),
+        updateReleasedVersionId: (versionId) =>
+          set({
+            releasedVersionId: versionId,
+            isVersionReleased: get().editingVersion?.id ? get().editingVersion?.id === versionId : false,
+          }),
+      },
+    }),
+    { name: 'App Version Manager Store' }
+  )
 );
