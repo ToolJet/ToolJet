@@ -1,6 +1,5 @@
 {
-  "name": "@tooljet-plugins/oracledb",
-  "private": true,
+  "name": "@tooljet-marketplace/harperdb",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,17 +12,16 @@
   ],
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
-    "build": "tsc -b",
-    "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
+    "build": "ncc build lib/index.ts -o dist",
+    "watch": "ncc build lib/index.ts -o dist --watch"
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
-    "@tooljet-plugins/common": "file:../common",
-    "knex": "^0.95.14",
-    "oracledb": "^6.0.0",
-    "react": "^17.0.2"
+    "@tooljet-marketplace/common": "^1.0.0",
+    "harperive": "^2.0.1"
   },
   "devDependencies": {
-    "@types/oracledb": "^5.2.2"
+    "@vercel/ncc": "^0.34.0",
+    "typescript": "^4.7.4"
   }
 }
