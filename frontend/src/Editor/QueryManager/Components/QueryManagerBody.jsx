@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
-import { capitalize, isEqual, debounce } from 'lodash';
+import { capitalize, isEqual, debounce, isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
@@ -346,6 +346,12 @@ export const QueryManagerBody = forwardRef(
     };
 
     const renderChangeDataSource = () => {
+      const selectableDataSources = [...globalDataSources, ...dataSources].filter(
+        (ds) => ds.kind === selectedQuery?.kind
+      );
+      if (isEmpty(selectableDataSources)) {
+        return '';
+      }
       return (
         <div className="mt-2 row">
           <div
@@ -357,7 +363,7 @@ export const QueryManagerBody = forwardRef(
           </div>
           <div className="col-md-9">
             <ChangeDataSource
-              dataSources={[...globalDataSources, ...dataSources]}
+              dataSources={selectableDataSources}
               value={selectedDataSource}
               selectedQuery={selectedQuery}
               onChange={(newDataSource) => {

@@ -5,9 +5,7 @@ export const ChangeDataSource = ({ dataSources, onChange, value, selectedQuery }
   return (
     <Select
       className="px-3"
-      options={dataSources
-        .filter((ds) => ds.kind === selectedQuery?.kind)
-        .map((ds) => ({ label: ds.name, value: ds.id }))}
+      options={dataSources.map((ds) => ({ label: ds.name, value: ds.id }))}
       value={value?.id}
       onChange={(value) => {
         const dataSource = dataSources.find((ds) => ds.id === value);
