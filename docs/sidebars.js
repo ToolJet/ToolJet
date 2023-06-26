@@ -26,6 +26,7 @@ const sidebars = {
         'setup/ec2',
         'setup/ecs',
         'setup/openshift',
+        'setup/helm',
         'setup/kubernetes',
         'setup/kubernetes-gke',
         'setup/kubernetes-aks',

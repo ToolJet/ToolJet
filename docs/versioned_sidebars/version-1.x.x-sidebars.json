@@ -15,6 +15,7 @@
         "setup/heroku",
         "setup/ec2",
         "setup/ecs",
+        "setup/helm",
         "setup/kubernetes",
         "setup/kubernetes-gke",
         "setup/kubernetes-aks",
