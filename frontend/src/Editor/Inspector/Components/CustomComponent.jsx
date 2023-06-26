@@ -26,7 +26,7 @@ export const CustomComponent = function CustomComponent({
         initialValue={args.value ?? {}}
         theme={darkMode ? 'monokai' : 'base16-light'}
         onChange={(value) => paramUpdated({ name: 'data' }, 'value', value, 'properties')}
-        componentName={`widget/${component.component.name}/data`}
+        componentName={`component/${component.component.name}/data`}
       />
     ),
   });
@@ -42,7 +42,7 @@ export const CustomComponent = function CustomComponent({
         lineNumbers
         className="custom-component"
         onChange={(value) => paramUpdated({ name: 'code' }, 'value', value, 'properties')}
-        componentName={`widget/${component.component.name}/code`}
+        componentName={`component/${component.component.name}/code`}
         enablePreview={false}
         height={400}
         hideSuggestion

@@ -387,6 +387,7 @@ export class AppImportExportService {
           kind: source.kind,
           type: source.type || DataSourceTypes.DEFAULT,
           appVersionId: appVersionMapping[appVersion.id],
+          pluginId: source?.pluginId || null,
         });
         await manager.save(newSource);
 
@@ -473,6 +474,7 @@ export class AppImportExportService {
           name: source.name,
           kind: source.kind,
           type: source.type || DataSourceTypes.DEFAULT,
+          pluginId: source?.pluginId || null,
           appVersionId: appVersionMapping[appVersion.id],
         });
         await manager.save(newSource);
