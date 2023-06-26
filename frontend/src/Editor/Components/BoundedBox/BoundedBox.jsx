@@ -60,7 +60,6 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
         if (item.y < 0) {
           item.y = 0;
         }
-        console.log('xxx', innerDivRight, outerDivWidth, innerDivBottom, outerDivHeight);
         if (exceedsBoundaries) {
           if (innerDivRight > outerDivWidth) {
             item.x = 100 - item.width;
