@@ -414,7 +414,7 @@ class ViewerComponent extends React.Component {
   }
 
   getCanvasWidth = () => {
-    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect();
     return canvasBoundingRect?.width;
   };
 
@@ -536,6 +536,7 @@ class ViewerComponent extends React.Component {
         //checking if page is hidden
         if (
           pageArray.find((page) => page.handle === this.props.params.pageHandle)?.hidden &&
+          this.state.currentPageId !== this.state.appDefinition?.homePageId && //Prevent page crashing when home page is hidden
           this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
         ) {
           const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
@@ -556,7 +557,7 @@ class ViewerComponent extends React.Component {
           if (this.state.slug) {
             url = `/applications/${this.state.slug}/${homeHandle}`;
           }
-          return <Navigate to={url} replace />;
+          return <Navigate to={`${url}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
         }
 
         return (

@@ -20,6 +20,6 @@
     "@tooljet-plugins/common": "file:../common",
     "@types/snowflake-sdk": "^1.6.12",
     "react": "^17.0.2",
-    "snowflake-sdk": "^1.6.22"
+    "snowflake-sdk": "^1.6.23"
   }
 }
