@@ -117,7 +117,7 @@ export class AppsService {
       );
 
       //create default app version
-      await this.createVersion(user, app, 'v1', null, manager);
+      await this.createVersion(user, app, 'v1', null, null, manager);
 
       await manager.save(
         manager.create(AppUser, {
@@ -290,6 +290,7 @@ export class AppsService {
     app: App,
     versionName: string,
     versionFromId: string,
+    environmentId: string,
     manager?: EntityManager
   ): Promise<AppVersion> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -302,15 +303,15 @@ export class AppsService {
         });
 
         if (defaultAppEnvironments.length > 1) {
-          const currentEnvironmentOfFromVersion = await this.appEnvironmentService.get(
+          const environmentWhereUserCreatingVersion = await this.appEnvironmentService.get(
             app.organizationId,
-            versionFrom.currentEnvironmentId,
+            environmentId,
             false,
             manager
           );
 
           //check if the user is creating version from development environment only
-          if (currentEnvironmentOfFromVersion.priority !== 1) {
+          if (environmentWhereUserCreatingVersion.priority !== 1) {
             throw new BadRequestException('New versions can only be created in development environment');
           }
         }
