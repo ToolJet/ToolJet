@@ -100,7 +100,7 @@ export default function GenerateEachCellValue({
       }}
       className="w-100 h-100"
     >
-      {showHighlightedCells && !isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) ? (
+      {!isColumnTypeAction && columnTypeAllowToRenderMarkElement.includes(columnType) && showHighlightedCells ? (
         <div className="d-flex justify-content-center flex-column w-100 h-100 generate-cell-value-component-div-wrapper">
           <div
             style={{
