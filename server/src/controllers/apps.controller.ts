@@ -262,7 +262,7 @@ export class AppsController {
       app,
       versionCreateDto.versionName,
       versionCreateDto.versionFromId,
-      versionCreateDto.envrionmentId
+      versionCreateDto.environmentId
     );
     return decamelizeKeys(appUser);
   }

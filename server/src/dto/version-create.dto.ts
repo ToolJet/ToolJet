@@ -15,5 +15,5 @@ export class VersionCreateDto {
 
   @IsUUID()
   @IsOptional()
-  envrionmentId: string;
+  environmentId: string;
 }
