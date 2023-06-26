@@ -30,6 +30,7 @@ const sidebars = {
         'setup/kubernetes',
         'setup/kubernetes-gke',
         'setup/kubernetes-aks',
+        'setup/azure-container',
         'setup/google-cloud-run',
         'setup/client',
         'setup/env-vars',
@@ -367,6 +368,7 @@ const sidebars = {
             'contributing-guide/setup/macos',
             'contributing-guide/setup/docker',
             'contributing-guide/setup/ubuntu',
+            'contributing-guide/setup/windows',
           ],
         },
         {
