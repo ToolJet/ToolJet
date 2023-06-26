@@ -387,17 +387,7 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(
-  _ref,
-  code,
-  queryId,
-  isPreview,
-  // eslint-disable-next-line no-unused-vars
-  confirmed = undefined,
-  mode = '',
-  args
-) {
-  //:: confirmed arg is unused
+export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', args) {
   const { currentState } = _ref.state;
   let result = {},
     error = null;

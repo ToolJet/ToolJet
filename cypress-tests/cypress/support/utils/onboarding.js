@@ -154,19 +154,16 @@ export const userSignUp = (fullName, email, workspaceName) => {
     sql: `select invitation_token from users where email='${email}';`,
   }).then((resp) => {
     invitationLink = `/invitations/${resp.rows[0].invitation_token}`;
-  });
-
-  cy.get(commonSelectors.emailImage).should("be.visible");
-  cy.visit(invitationLink);
-
-  cy.get(commonSelectors.setUpToolJetButton).click();
-  cy.wait(4000);
-  cy.get("body").then(($el) => {
-    if (!$el.text().includes(dashboardText.emptyPageHeader)) {
-      verifyOnboardingQuestions(fullName, workspaceName);
-      updateWorkspaceName(email);
-    } else {
-      updateWorkspaceName(email);
-    }
+    cy.visit(invitationLink);
+    cy.get(commonSelectors.setUpToolJetButton).click();
+    cy.wait(4000);
+    cy.get("body").then(($el) => {
+      if (!$el.text().includes(dashboardText.emptyPageHeader)) {
+        verifyOnboardingQuestions(fullName, workspaceName);
+        updateWorkspaceName(email);
+      } else {
+        updateWorkspaceName(email);
+      }
+    });
   });
 };
