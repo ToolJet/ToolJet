@@ -66,7 +66,7 @@ export const DaterangePicker = function DaterangePicker({
   return (
     <div
       className={`daterange-picker-widget ${darkMode && 'theme-dark'} p-0`}
-      style={{ height, display: visibility ? '' : 'none', boxShadow }}
+      style={{ height, display: visibility ? '' : 'none', boxShadow, borderRadius }}
       data-cy={dataCy}
     >
       <DateRangePicker

@@ -129,7 +129,7 @@ export const Multiselect = function Multiselect({
     <div
       className="multiselect-widget row g-0"
       data-cy={dataCy}
-      style={{ height, display: visibility ? '' : 'none', boxShadow }}
+      style={{ height, display: visibility ? '' : 'none' }}
       onFocus={() => {
         onComponentClick(this, id, component);
       }}
@@ -143,7 +143,7 @@ export const Multiselect = function Multiselect({
           {label}
         </label>
       </div>
-      <div className="col px-0 h-100" style={{ borderRadius: parseInt(borderRadius) }}>
+      <div className="col px-0 h-100" style={{ borderRadius: parseInt(borderRadius), boxShadow }}>
         <MultiSelect
           hasSelectAll={showAllOption ?? false}
           options={selectOptions}

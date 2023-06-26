@@ -161,7 +161,7 @@ export const DropDown = function DropDown({
       background: darkMode ? 'rgb(31,40,55)' : 'white',
       minHeight: height,
       height: height,
-      boxShadow: state.isFocused ? null : null,
+      boxShadow: state.isFocused ? boxShadow : boxShadow,
       borderRadius: Number.parseFloat(borderRadius),
     }),
 
@@ -228,7 +228,7 @@ export const DropDown = function DropDown({
     <>
       <div
         className="dropdown-widget row g-0"
-        style={{ height, display: visibility ? '' : 'none', boxShadow }}
+        style={{ height, display: visibility ? '' : 'none' }}
         onMouseDown={(event) => {
           onComponentClick(id, component, event);
         }}
