@@ -61,7 +61,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
       };
     });
 
-    setActiveTabContants(constantsForEnvironment);
+    setActiveTabContants(
+      constantsForEnvironment.filter((constant) => constant.value !== null && constant.value !== '')
+    );
+
     computeTotalPages(constantsForEnvironment.length + 1);
   };
 
@@ -176,7 +179,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const createOrUpdate = (variable, isUpdate = false) => {
     if (isUpdate) {
       return orgEnvironmentConstantService
-        .update(variable.id, variable.value, variable.environment)
+        .update(variable.id, variable.value, variable.environments)
         .then(() => {
           toast.success('Constant updated successfully');
           setIsManageVarDrawerOpen(false);
@@ -188,7 +191,11 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     }
 
     return orgEnvironmentConstantService
-      .create(variable)
+      .create(
+        variable.name,
+        variable.value,
+        variable.environments.map((env) => env.value)
+      )
       .then(() => {
         toast.success('Constant created successfully');
         setIsManageVarDrawerOpen(false);
@@ -230,6 +237,13 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (constants.length > 0 && environments.length > 0) {
+      updateActiveEnvironmentTab(activeTabEnvironment, constants);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTabEnvironment]);
+
   return (
     <div className="wrapper org-constant-page org-variables-page animation-fade">
       <ConfirmDialog
@@ -243,7 +257,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
       <Drawer
         disableFocus={true}
         isOpen={isManageVarDrawerOpen}
-        onClose={() => setIsManageVarDrawerOpen(false)}
+        onClose={() => {
+          setIsManageVarDrawerOpen(false);
+          setSelectedConstant(null);
+        }}
         position="right"
       >
         <ConstantForm
@@ -360,6 +377,7 @@ const RenderEnvironmentsTab = ({
   allEnvironments = [],
   currentEnvironment = {},
   setActiveTabEnvironment,
+  updateTableData,
 }) => {
   if (!isMultiEnvironment) return null;
 

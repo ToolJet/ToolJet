@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import Select from '@/_ui/Select';
+// import Select from '@/_ui/Select';
+import Multiselect from '@/_ui/Multiselect/Multiselect';
 import { withTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+
 const ConstantForm = ({
   errors,
   selectedConstant,
@@ -11,9 +13,13 @@ const ConstantForm = ({
   environments,
   currentEnvironment,
 }) => {
-  const [fields, setFields] = useState(() => ({ ...selectedConstant, environment: currentEnvironment?.id } || {}));
+  const [fields, setFields] = useState(() => ({
+    ...selectedConstant,
+    environments: [{ label: currentEnvironment.name, value: currentEnvironment.id }],
+  }));
 
   const handleFieldChange = (e) => {
+    console.log('from ConstantForm.jsx, handleFieldChange, e: ', e);
     const { name, value } = e.target;
     setFields((prevFields) => ({
       ...prevFields,
@@ -65,14 +71,27 @@ const ConstantForm = ({
               <div className="col tj-app-input">
                 <div className="form-group">
                   <label className="form-label">Type</label>
-                  <Select
+                  {/* <Select
                     options={selectOptions}
                     hasSearch={false}
-                    value={fields['environment'] ?? 'client'}
+                    value={fields['environment']}
                     onChange={(value) => handleFieldChange({ target: { name: 'environment', value } })}
                     useMenuPortal={false}
                     customWrap={true}
-                  />
+                  /> */}
+
+                  <div className={'manage-constants-dropdown'} data-cy="select-search">
+                    <Multiselect
+                      value={fields['environments']}
+                      onChange={(values) => handleFieldChange({ target: { name: 'environments', value: values } })}
+                      options={selectOptions}
+                      disableSearch={true}
+                      overrideStrings={{
+                        selectSomeItems: 'Select Environments',
+                        allItemsAreSelected: 'All Environments are selected',
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

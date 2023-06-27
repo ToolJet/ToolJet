@@ -13,11 +13,11 @@ function getAll() {
   return fetch(`${config.apiUrl}/organization-constants`, requestOptions).then(handleResponse);
 }
 
-function create({ name, value, environment }) {
+function create(name, value, environments) {
   const body = {
     constant_name: name,
     value: value,
-    environment_id: environment,
+    environments: environments,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
