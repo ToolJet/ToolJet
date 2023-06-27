@@ -185,7 +185,7 @@ export const QueryDataPane = ({
               selectedDataSources={dataSourcesForFilters}
             />
             <button
-              onClick={() => setShowSearchBox(true)}
+              onClick={() => setShowSearchBox((showSearchBox) => !showSearchBox)}
               // className={`toggle-query-editor-svg`}
               className="bg-transparent border-0"
               data-tooltip-id="tooltip-for-quick-search-query"
