@@ -1149,7 +1149,18 @@ class EditorComponent extends React.Component {
 
       Object.values(newPageData.components).map((comp) => {
         if (comp.parent) {
-          comp.parent = oldToNewIdMapping[comp.parent];
+          let newParentId = oldToNewIdMapping[comp.parent];
+          if (newParentId) {
+            comp.parent = newParentId;
+          } else {
+            const oldParentId = Object.keys(oldToNewIdMapping).find(
+              (parentId) =>
+                comp.parent.startsWith(parentId) &&
+                ['Tabs', 'Calendar'].includes(currentPage?.components[parentId]?.component?.component)
+            );
+            const childTabId = comp.parent.split('-').at(-1);
+            comp.parent = `${oldToNewIdMapping[oldParentId]}-${childTabId}`;
+          }
         }
         return comp;
       });
@@ -1341,9 +1352,9 @@ class EditorComponent extends React.Component {
 
     if (!name || !handle) return;
 
-    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value} `).join('&');
 
-    this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.appId}/${handle}?${queryParamsString}`);
+    this.props.navigate(`/ ${getWorkspaceId()} /apps/${this.state.appId} /${handle}?${queryParamsString}`);
 
     const { globals: existingGlobals } = this.state.currentState;
 
