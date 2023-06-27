@@ -3,7 +3,7 @@ import { fake } from "Fixtures/fake";
 import { logout, navigateToAppEditor } from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { addNewUserMW } from "Support/utils/userPermissions";
-import { userSignUp } from "../../support/utils/onboarding";
+import { userSignUp } from "Support/utils/onboarding";
 
 describe("App share functionality", () => {
   const data = {};
@@ -96,7 +96,7 @@ describe("App share functionality", () => {
     );
   });
 
-  it.skip("Verify app private and public app visisbility for the same instance user", () => {
+  it("Verify app private and public app visisbility for the same instance user", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase();
 

@@ -4,6 +4,7 @@ import { profileSelector } from "Selectors/profile";
 import { commonSelectors } from "Selectors/common";
 import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
+import { groupsSelector } from "Selectors/manageGroups";
 
 export const navigateToProfile = () => {
   cy.get(commonSelectors.profileSettings).click();
@@ -24,7 +25,12 @@ export const navigateToManageUsers = () => {
 export const navigateToManageGroups = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.manageGroupsOption).click();
+  cy.get(groupsSelector.groupLink("Admin")).click();
+  cy.get(groupsSelector.groupLink("All users")).click();
+  cy.get(groupsSelector.groupLink("Admin")).click();
+  cy.get(groupsSelector.groupLink("All users")).click();
 };
+
 export const navigateToWorkspaceVariable = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.workspaceVariableOption).click();
@@ -83,7 +89,7 @@ export const navigateToAppEditor = (appName) => {
 };
 
 export const viewAppCardOptions = (appName) => {
-  cy.reloadAppForTheElement(appName)
+  cy.reloadAppForTheElement(appName);
   cy.contains("div", appName)
     .parent()
     .within(() => {
@@ -92,7 +98,7 @@ export const viewAppCardOptions = (appName) => {
 };
 
 export const viewFolderCardOptions = (folderName) => {
-  cy.reloadAppForTheElement(folderName)
+  cy.reloadAppForTheElement(folderName);
   cy.get(commonSelectors.folderListcard(folderName))
     .parent()
     .within(() => {

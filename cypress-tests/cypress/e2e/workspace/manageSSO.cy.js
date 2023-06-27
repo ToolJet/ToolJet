@@ -8,6 +8,7 @@ import { commonText } from "Texts/common";
 
 describe("Manage SSO for multi workspace", () => {
   const data = {};
+  const envVar = Cypress.env("environment");
   beforeEach(() => {
     cy.appUILogin();
   });
@@ -157,9 +158,8 @@ describe("Manage SSO for multi workspace", () => {
     );
   });
 
-  it("Should verify the workspace login page", () => {
-    const auditlogsIcon = cy.get('[data-cy="icon-audit-logs"]').should("exist")
-    if (!auditlogsIcon) {
+  if (envVar === "Community") {
+    it("Should verify the workspace login page", () => {
       data.workspaceName = fake.companyName;
 
       common.createWorkspace(data.workspaceName);
@@ -255,8 +255,6 @@ describe("Manage SSO for multi workspace", () => {
         "have.text",
         ssoText.noLoginMethodWarning
       );
-
-    }
-
-  });
+    });
+  }
 });
