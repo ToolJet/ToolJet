@@ -234,7 +234,9 @@ export function CodeHinter({
           </div>
         </div>
         {/* Todo: Remove this when workspace variables are deprecated */}
-        {enablePreview && <CodeHinter.DepericatedAlerForWorkspaceVariable text={'Deprecating soon'} />}
+        {enablePreview && isWorkspaceVariable && (
+          <CodeHinter.DepericatedAlerForWorkspaceVariable text={'Deprecating soon'} />
+        )}
       </animated.div>
     );
   };
