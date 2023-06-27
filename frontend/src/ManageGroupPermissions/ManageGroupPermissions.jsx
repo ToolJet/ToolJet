@@ -261,8 +261,8 @@ class ManageGroupPermissionsComponent extends React.Component {
                         required
                         className="form-control"
                         placeholder={this.props.t(
-                          'header.organization.menus.manageGroups.permissions.enterName',
-                          'Enter Name'
+                          'header.organization.menus.manageGroups.permissions.addNewGroup',
+                          'Add new group'
                         )}
                         onChange={(e) => {
                           this.changeNewGroupName(e.target.value);
