@@ -8,6 +8,8 @@ import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import ManageOrgVarsDrawer from './ManageOrgVarsDrawer';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { Alert } from '../_ui/Alert/Alert';
+import { Button } from '@/_ui/LeftSidebar';
 class ManageOrgVarsComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -253,6 +255,7 @@ class ManageOrgVarsComponent extends React.Component {
 
   render() {
     const { isLoading, addingVar, variables, isManageVarDrawerOpen } = this.state;
+
     return (
       <div className="wrapper org-variables-page animation-fade">
         <ConfirmDialog
@@ -278,19 +281,33 @@ class ManageOrgVarsComponent extends React.Component {
             <div>
               <div className="row align-items-center ">
                 <div className="workspace-variable-header">
-                  {!isManageVarDrawerOpen && this.canCreateVariable() && (
-                    <ButtonSolid
-                      data-cy="add-new-variables-button"
-                      vaiant="primary"
-                      onClick={() => this.setState({ isManageVarDrawerOpen: true, errors: {} })}
-                      className="add-new-variables-button"
-                    >
-                      {this.props.t(
-                        'header.organization.menus.manageSSO.environmentVar.addNewVariable',
-                        'Add new variable'
-                      )}
-                    </ButtonSolid>
-                  )}
+                  <Alert svg="tj-info-warnning" cls="workspace-variables-alert-banner" data-cy={``}>
+                    <div className="d-flex align-items-center">
+                      <div class="text-muted">
+                        Can&apos;t add or edit workspace workspace as we are deprecating them soon. Please use workspace
+                        constant instead.
+                      </div>
+                      <div>
+                        <Button
+                          onClick={this.props.goTooOrgConstantsDashboard}
+                          darkMode={this.props.darkMode}
+                          size="sm"
+                          styles={{
+                            width: '100%',
+                            fontSize: '12px',
+                            fontWeight: 500,
+                            borderColor: true && 'transparent',
+                          }}
+                        >
+                          <Button.Content
+                            iconSrc="assets/images/icons/arrow-right.svg"
+                            title={'Go to workspace constants'}
+                            direction="right"
+                          />
+                        </Button>
+                      </div>
+                    </div>
+                  </Alert>
                 </div>
               </div>
             </div>

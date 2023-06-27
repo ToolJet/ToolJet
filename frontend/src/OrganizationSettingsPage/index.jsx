@@ -47,6 +47,10 @@ export function OrganizationSettings(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticationService.currentSessionValue?.admin]);
 
+  const goTooOrgConstantsDashboard = () => {
+    setSelectedTab('manageOrgConstants');
+  };
+
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper organization-settings-page">
@@ -83,7 +87,9 @@ export function OrganizationSettings(props) {
               {selectedTab === 'Users & permissions' && <ManageOrgUsers darkMode={props.darkMode} />}
               {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
               {selectedTab === 'manageSSO' && <ManageSSO />}
-              {selectedTab === 'manageEnvVars' && <ManageOrgVars darkMode={props.darkMode} />}
+              {selectedTab === 'manageEnvVars' && (
+                <ManageOrgVars darkMode={props.darkMode} goTooOrgConstantsDashboard={goTooOrgConstantsDashboard} />
+              )}
               {selectedTab === 'manageCopilot' && <CopilotSetting />}
               {selectedTab === 'manageOrgConstants' && <ManageOrgConstants darkMode={props.darkMode} />}
             </div>

@@ -8716,11 +8716,16 @@ tbody {
 }
 
 .workspace-variable-header {
-  width: 880px;
-  justify-content: end;
+  width: 880px;;
   margin: 0 auto;
   display: flex;
   padding: 0;
+
+  .workspace-variables-alert-banner {
+    width: inherit;
+    background-color: #FFF9ED;
+    border-color: #FFE3A2;
+  }
 }
 
 .add-new-variables-button {
