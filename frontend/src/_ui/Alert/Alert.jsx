@@ -1,12 +1,14 @@
 import React from 'react';
 
-export const Alert = ({ children, svg, cls = '' }) => {
+export const Alert = ({ children, svg, cls = '', imgHeight = null, imgWidth = null, useDarkMode = true }) => {
+  const imgStyles = imgHeight && imgWidth ? { height: imgHeight, width: imgWidth } : {};
+  const darkMode = useDarkMode ? localStorage.getItem('darkMode') === 'true' : false;
   return (
-    <Alert.Container cls={cls}>
+    <Alert.Container cls={cls} useDarkMode={darkMode}>
       <div className="d-flex align-items-center">
         {svg && (
           <span>
-            <img src={`assets/images/icons/${svg}.svg`} alt="alert" />
+            <img style={imgStyles} src={`assets/images/icons/${svg}.svg`} alt="alert" />
           </span>
         )}
         <Alert.Message>{children}</Alert.Message>
@@ -15,8 +17,7 @@ export const Alert = ({ children, svg, cls = '' }) => {
   );
 };
 
-const Container = ({ children, cls = '' }) => {
-  const darkMode = localStorage.getItem('darkMode') === 'true';
+const Container = ({ children, cls = '', darkMode }) => {
   return <div className={`alert alert-component ${darkMode && 'dark'} ${cls}`}>{children}</div>;
 };
 

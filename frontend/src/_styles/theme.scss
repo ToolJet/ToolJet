@@ -8720,12 +8720,17 @@ tbody {
   margin: 0 auto;
   display: flex;
   padding: 0;
+}
 
-  .workspace-variables-alert-banner {
-    width: inherit;
-    background-color: #FFF9ED;
-    border-color: #FFE3A2;
-  }
+.workspace-variables-alert-banner {
+  width: inherit;
+  background-color: #FFF9ED;
+  border-color: #FFE3A2;
+}
+
+.codehinter.alert-component.workspace-variables-alert-banner {
+  color: var(--amber8);
+  border-color: var(--amber3);
 }
 
 .add-new-variables-button {
@@ -10144,6 +10149,12 @@ tbody {
     .left-sidebar {
       background-color: #232e3c !important;
     }
+  }
+
+  .codehinter.alert-component.workspace-variables-alert-banner {
+    color: #ffecbb !important;
+    background-color: #3a3f41 !important;
+    border-color: #4d5156 !important;
   }
 }
 

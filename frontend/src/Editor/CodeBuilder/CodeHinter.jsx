@@ -32,6 +32,7 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
+import { Alert } from '@/_ui/Alert/Alert';
 
 const AllElements = {
   Color,
@@ -91,12 +92,17 @@ export function CodeHinter({
   const [heightRef, currentHeight] = useHeight();
   const isPreviewFocused = useRef(false);
   const wrapperRef = useRef(null);
+
+  // Todo: Remove this when workspace variables are deprecated
+  const isWorkspaceVariable =
+    typeof currentValue === 'string' && (currentValue.includes('%%client') || currentValue.includes('%%server'));
+
   const slideInStyles = useSpring({
     config: { ...config.stiff },
     from: { opacity: 0, height: 0 },
     to: {
       opacity: isFocused ? 1 : 0,
-      height: isFocused ? currentHeight : 0,
+      height: isFocused ? currentHeight + (isWorkspaceVariable ? 30 : 0) : 0,
     },
   });
   const { t } = useTranslation();
@@ -227,6 +233,8 @@ export function CodeHinter({
             {content}
           </div>
         </div>
+        {/* Todo: Remove this when workspace variables are deprecated */}
+        {enablePreview && <CodeHinter.DepericatedAlerForWorkspaceVariable text={'Deprecating soon'} />}
       </animated.div>
     );
   };
@@ -274,6 +282,10 @@ export function CodeHinter({
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
+      {/* Todo: Remove this when workspace variables are deprecated */}
+      {!enablePreview && (
+        <CodeHinter.DepericatedAlerForWorkspaceVariable text={' Workspace variable deprecating soon'} />
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
           <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
@@ -419,5 +431,22 @@ const Portal = ({ children, ...restProps }) => {
   return <React.Fragment>{renderPortal}</React.Fragment>;
 };
 
+const DepericatedAlerForWorkspaceVariable = ({ text }) => {
+  return (
+    <Alert
+      svg="tj-info-warnning"
+      cls="codehinter workspace-variables-alert-banner p-1 mb-0"
+      data-cy={``}
+      imgHeight={18}
+      imgWidth={18}
+    >
+      <div className="d-flex align-items-center">
+        <div class="">{text}</div>
+      </div>
+    </Alert>
+  );
+};
+
 CodeHinter.PopupIcon = PopupIcon;
 CodeHinter.Portal = Portal;
+CodeHinter.DepericatedAlerForWorkspaceVariable = DepericatedAlerForWorkspaceVariable;

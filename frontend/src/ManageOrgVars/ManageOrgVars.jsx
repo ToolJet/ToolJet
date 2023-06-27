@@ -7,8 +7,7 @@ import VariablesTable from './VariablesTable';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import ManageOrgVarsDrawer from './ManageOrgVarsDrawer';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { Alert } from '../_ui/Alert/Alert';
+import { Alert } from '@/_ui/Alert/Alert';
 import { Button } from '@/_ui/LeftSidebar';
 class ManageOrgVarsComponent extends React.Component {
   constructor(props) {
