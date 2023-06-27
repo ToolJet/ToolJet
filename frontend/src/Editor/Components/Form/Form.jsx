@@ -1,11 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { SubCustomDragLayer } from '../../SubCustomDragLayer';
-import { SubContainer } from '../../SubContainer';
+import { SubCustomDragLayer } from '@/Editor/SubCustomDragLayer';
+import { SubContainer } from '@/Editor/SubContainer';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import _, { omit } from 'lodash';
-import { Box } from '../../Box';
-import { componentTypes } from '@/Editor/WidgetManager/components';
+import { Box } from '@/Editor/Box';
 import { generateUIComponents } from './FormUtils';
 
 export const Form = function Form(props) {
@@ -86,15 +85,13 @@ export const Form = function Form(props) {
   };
 
   useEffect(() => {
-    setUIComponents(generateUIComponents(JSONSchema, advanced, componentTypes));
+    setUIComponents(generateUIComponents(JSONSchema, advanced));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(JSONSchema), advanced]);
 
   const checkJsonChildrenValidtion = () => {
-    for (const key in childrenData) {
-      if (childrenData[key]?.isValid == false) return false;
-    }
-    return true;
+    const isValid = Object.values(childrenData).every((item) => item?.isValid !== false);
+    return isValid;
   };
 
   useEffect(() => {
@@ -155,22 +152,21 @@ export const Form = function Form(props) {
   const handleSubmit = (event) => {
     event.preventDefault();
   };
+  const fireSubmissionEvent = () => {
+    if (isValid) {
+      onEvent('onSubmit', { component }).then(() => resetComponent());
+    } else {
+      fireEvent('onInvalid');
+    }
+  };
 
   const handleFormSubmission = ({ detail: { buttonComponentId } }) => {
     if (!advanced) {
       if (buttonToSubmit === buttonComponentId) {
-        if (isValid) {
-          onEvent('onSubmit', { component }).then(() => resetComponent());
-        } else {
-          fireEvent('onInvalid');
-        }
+        fireSubmissionEvent();
       }
     } else if (buttonComponentId == uiComponents.length - 1 && JSONSchema.hasOwnProperty('submitButton')) {
-      if (isValid) {
-        onEvent('onSubmit', { component }).then(() => resetComponent());
-      } else {
-        fireEvent('onInvalid');
-      }
+      fireSubmissionEvent();
     }
   };
   function onComponentOptionChangedForSubcontainer(component, optionName, value, componentId = '') {

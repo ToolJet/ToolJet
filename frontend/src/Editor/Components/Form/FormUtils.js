@@ -1,4 +1,5 @@
-export function generateUIComponents(JSONSchema, advanced, componentTypes) {
+import { componentTypes } from '@/Editor/WidgetManager/components';
+export function generateUIComponents(JSONSchema, advanced) {
   if (advanced) {
     if (typeof JSONSchema?.properties !== 'object' || JSONSchema?.properties == null) {
       return;
