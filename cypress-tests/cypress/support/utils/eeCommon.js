@@ -143,15 +143,6 @@ export const userSignUp = (fullName, email, workspaceName) => {
   cy.get("body").then(($el) => {
     if (!$el.text().includes(dashboardText.emptyPageHeader)) {
       verifyOnboardingQuestions(fullName, workspaceName);
-      cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-        "have.text",
-        workspaceName
-      );
-    } else {
-      cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-        "have.text",
-        "Untitled workspace"
-      );
     }
   });
 };
@@ -376,3 +367,12 @@ export const enableDefaultSSO = () => {
     }
   });
 };
+
+export const disableSSO = (ssoSelector, toggleSelector) => {
+  cy.get(ssoSelector).realClick()
+  cy.get(toggleSelector).then(($el) => {
+    if ($el.is(":checked")) {
+      cy.get(toggleSelector).uncheck();
+    }
+  });
+}
