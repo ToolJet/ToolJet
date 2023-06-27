@@ -14,7 +14,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 
 import { useDataQueries } from '@/_stores/dataQueriesStore';
-import AddRectangle from '../../_ui/Icon/bulkIcons/AddRectangle';
+import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 
 export const EventManager = ({
   component,
