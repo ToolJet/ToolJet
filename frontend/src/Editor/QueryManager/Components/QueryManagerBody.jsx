@@ -63,8 +63,6 @@ export const QueryManagerBody = forwardRef(
     */
     const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
 
-    const autoUpdateDataQuery = debounce(updateDataQuery, 500);
-
     const queryName = selectedQuery?.name ?? '';
     const sourcecomponentName = selectedDataSource?.kind?.charAt(0).toUpperCase() + selectedDataSource?.kind?.slice(1);
 
@@ -146,7 +144,7 @@ export const QueryManagerBody = forwardRef(
       return options;
     };
 
-    const validateNewOptions = (newOptions, shouldNotAutoSave) => {
+    const validateNewOptions = (newOptions) => {
       const headersChanged = newOptions.arrayValuesChanged ?? false;
       const updatedOptions = cleanFocusedFields(newOptions);
       let isFieldsChanged = false;
@@ -164,9 +162,9 @@ export const QueryManagerBody = forwardRef(
       updateDataQuery({ ...options, ...updatedOptions });
     };
 
-    const optionchanged = (option, value, shouldNotAutoSave) => {
+    const optionchanged = (option, value) => {
       const newOptions = { ...options, [option]: value };
-      validateNewOptions(newOptions, shouldNotAutoSave);
+      validateNewOptions(newOptions);
     };
 
     const optionsChanged = (newOptions) => {

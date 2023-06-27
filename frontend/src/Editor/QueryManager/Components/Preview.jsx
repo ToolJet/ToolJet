@@ -41,14 +41,10 @@ const Preview = ({ previewPanelRef, darkMode }) => {
   };
 
   return (
-    // <div>
     <div
       className="preview-header preview-section d-flex align-items-baseline font-weight-500 row"
       ref={previewPanelRef}
     >
-      {/* <div className={`py-2 font-weight-400 col-md-3 ${darkMode ? 'color-dark-slate12' : 'color-light-slate-12'}`}>
-          {t('editor.preview', 'Preview')}
-        </div> */}
       <div className="col-md-12 border rounded-top">
         <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
           <div className="position-relative">

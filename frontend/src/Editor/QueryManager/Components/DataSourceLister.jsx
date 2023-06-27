@@ -7,6 +7,7 @@ import AddIcon from '@assets/images/icons/add-source.svg';
 import { useTranslation } from 'react-i18next';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import { groupBy } from 'lodash';
+import DataSourceIcon from './DataSourceIcon';
 
 function DataSourceLister({
   dataSources,
@@ -42,7 +43,7 @@ function DataSourceLister({
       Object.entries(groupBy(globalDataSources, 'kind')).map(([kind, sources]) => ({
         label: (
           <div>
-            {fetchIconForSource(sources?.[0])} {kind}
+            <DataSourceIcon source={sources?.[0]} /> {kind}
           </div>
         ),
         options: sources.map((source) => ({
@@ -55,28 +56,12 @@ function DataSourceLister({
     );
   }, [globalDataSources]);
 
-  const fetchIconForSource = (source) => {
-    const iconFile = source?.plugin?.iconFile?.data ?? undefined;
-    const Icon = () => getSvgIcon(source.kind, 20, 20, iconFile);
-
-    switch (source.kind) {
-      case 'runjs':
-        return <RunjsIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />;
-      case 'runpy':
-        return <RunpyIcon style={{ height: 25, width: 25, marginTop: '-3px' }} />;
-      case 'tooljetdb':
-        return <RunTooljetDbIcon />;
-      default:
-        return <Icon />;
-    }
-  };
-
   const DataSourceOptions = [
     { label: <span className="text-muted">Defaults</span>, isDisabled: true },
     ...allSources.map((source) => ({
       label: (
         <div>
-          {fetchIconForSource(source)} {source.name}
+          <DataSourceIcon source={source} /> {source.name}
         </div>
       ),
       value: source.id,
