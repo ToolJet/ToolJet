@@ -10642,3 +10642,11 @@ tbody {
     overflow: hidden;
   }
 }
+
+.custom-bg-secondary {
+  background-color: var(--slate3) !important;
+}
+
+.custom-text-dark {
+  color: var(--slate12) !important;
+}
