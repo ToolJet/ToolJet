@@ -2,17 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import {
-  useQueryToBeRun,
-  usePreviewLoading,
-  usePreviewData,
-  useSelectedQuery,
-  useQueryPanelActions,
-} from '@/_stores/queryPanelStore';
+import { usePreviewLoading, usePreviewData, useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { getTheme, tabs } from '../constants';
 
 const Preview = ({ previewPanelRef, darkMode }) => {
-  const { t } = useTranslation();
   const [key, setKey] = useState('raw');
   const [isJson, setIsJson] = useState(false);
   const [theme, setTheme] = useState(() => getTheme(darkMode));

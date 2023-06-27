@@ -30,7 +30,6 @@ export const QueryManagerBody = forwardRef(
   (
     {
       darkMode,
-      mode,
       dataSourceModalHandler,
       options,
       currentState,
@@ -322,7 +321,6 @@ export const QueryManagerBody = forwardRef(
                 darkMode={darkMode}
               />
             ))}
-            {/* <CustomToggleFlags options={selectedQuery?.options} darkMode={darkMode} toggleOption={toggleOption} /> */}
           </div>
           {renderEventManager()}
           <Preview previewPanelRef={ref} darkMode={darkMode} />
@@ -368,9 +366,7 @@ export const QueryManagerBody = forwardRef(
           selectedDataSource?.kind === 'tooljetdb' ? 'tooljetdb-query-details' : ''
         }`}
       >
-        {selectedQuery?.data_source_id && mode === 'edit' && selectedDataSource !== null
-          ? renderChangeDataSource()
-          : null}
+        {selectedQuery?.data_source_id && selectedDataSource !== null ? renderChangeDataSource() : null}
 
         {selectedDataSource === null ? renderDataSourcesList() : renderQueryElement()}
         {selectedDataSource !== null ? renderQueryOptions() : null}

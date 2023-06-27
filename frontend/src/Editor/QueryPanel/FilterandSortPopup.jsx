@@ -42,7 +42,6 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
   }, [JSON.stringify({ page, showMenu })]);
 
   React.useState(() => {
-    console.log('searchBoxRef.current ->', searchBoxRef.current);
     if (action === 'filter-by-datasource' && searchBoxRef.current) {
       searchBoxRef.current.focus();
     }
@@ -74,8 +73,8 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
       default:
         return (
           <div className="card-body">
-            <div className="text-muted px-3 pb-2 w-100">
-              <small className="text-muted">Filter By</small>
+            <div className="color-slate9 px-3 pb-2 w-100">
+              <small>Filter By</small>
             </div>
             <MenuButton
               id="filter-by-datasource"
@@ -85,8 +84,8 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
               disabled={isHome}
             />
             <div class="border-bottom"></div>
-            <div className="text-muted px-3 pb-2 pt-1 w-100">
-              <small className="text-muted">Sort By</small>
+            <div className="color-slate9 px-3 pb-2 pt-1 w-100">
+              <small>Sort By</small>
             </div>
             <MenuButton
               id="name"
@@ -141,11 +140,12 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
       <span>
         <button
           onClick={() => setShowMenu(true)}
-          className={cx('border-0 position-relative', { 'bg-light': showMenu, 'bg-transparent': !showMenu })}
+          className={cx('border-0 position-relative', { 'bg-transparent': !showMenu })}
+          style={{ ...(showMenu && { background: 'var(--slate5)' }) }}
           data-tooltip-id="tooltip-for-open-filter"
           data-tooltip-content="Show sort/filter"
         >
-          <Filter width="13" height="13" fill="#343a40" />
+          <Filter width="13" height="13" fill="var(--slate12)" />
           {selectedDataSources.length > 0 && <div className="notification-dot"></div>}
         </button>
       </span>

@@ -6,7 +6,6 @@ import PreviewIcon from '../Icons/PreviewIcon';
 import CreateIcon from '../Icons/CreateIcon';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
-import { Tooltip } from 'react-tooltip';
 import { useTranslation } from 'react-i18next';
 import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUtils';
 

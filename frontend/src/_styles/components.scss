@@ -235,9 +235,9 @@ $btn-dark-color: #FFFFFF;
   right: -4px;
   width: 14px;
   height: 14px;
-  background-color: #3E63DD;
+  background-color: var(--indigo9);
   border-radius: 50%;
-  border: 3px solid #ffff;
+  border: 3px solid var(--base);
 }
 
 .query-manager-sort-filter-popup {

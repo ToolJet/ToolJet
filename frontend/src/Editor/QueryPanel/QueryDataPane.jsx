@@ -113,6 +113,7 @@ export const QueryDataPane = ({
             <FilterandSortPopup
               onFilterDatasourcesChange={handleFilterDatasourcesChange}
               selectedDataSources={dataSourcesForFilters}
+              darkMode={darkMode}
             />
             <button
               onClick={() => setShowSearchBox((showSearchBox) => !showSearchBox)}
@@ -120,7 +121,7 @@ export const QueryDataPane = ({
               data-tooltip-id="tooltip-for-quick-search-query"
               data-tooltip-content="Open quick search"
             >
-              <Search width="12" height="12" fill="#343a40" />
+              <Search width="12" height="12" fill="var(--slate12)" />
             </button>
             <Tooltip id="tooltip-for-search-query" className="tooltip" />
             <button
@@ -129,7 +130,7 @@ export const QueryDataPane = ({
               data-tooltip-id="tooltip-for-hide-query-editor"
               data-tooltip-content="Hide query editor"
             >
-              <Minimize width="14" height="14" viewBox="0 0 25 14" stroke="#343a40" />
+              <Minimize width="14" height="14" viewBox="0 0 25 14" stroke="var(--slate12)" />
             </button>
             <Tooltip id="tooltip-for-hide-query-editor" className="tooltip" />
           </div>
