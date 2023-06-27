@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
-import { appVersionService } from '@/_services';
+import { appVersionService, appEnvironmentService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 import { toast } from 'react-hot-toast';
 
@@ -24,10 +24,10 @@ export const AppVersionsManager = function ({
 
   useEffect(() => {
     setGetAppVersionStatus('loading');
-    appVersionService
-      .getAll(appId)
+    appEnvironmentService
+      .getVersionsByEnvironment(appId)
       .then((data) => {
-        setAppVersions(data.versions);
+        setAppVersions(data.app_versions);
         setGetAppVersionStatus('success');
       })
       .catch((error) => {

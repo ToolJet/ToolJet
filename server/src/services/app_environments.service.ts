@@ -56,9 +56,9 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  async getAll(organizationId: string, manager?: EntityManager, appId?: string): Promise<AppEnvironment[]> {
+  async getAll(organizationId: string, manager?: EntityManager): Promise<AppEnvironment[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const appEnvironments = await manager.find(AppEnvironment, {
+      return await manager.find(AppEnvironment, {
         where: {
           organizationId,
           enabled: true,
@@ -67,22 +67,24 @@ export class AppEnvironmentService {
           priority: 'ASC',
         },
       });
+    }, manager);
+  }
 
-      if (appId) {
-        for (const appEnvironment of appEnvironments) {
-          const versions = await manager.find(AppVersion, {
-            where: {
-              currentEnvironmentId: appEnvironment.id,
-              appId,
-            },
-          });
-
-          appEnvironment['appVersions'] = versions;
-        }
+  async getVersionsByEnvironment(organizationId: string, appId: string, currentEnvironmentId?: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const conditions = { appId };
+      if (currentEnvironmentId) {
+        const env = await this.get(organizationId, currentEnvironmentId, false, manager);
+        if (env.priority !== 1) conditions['currentEnvironmentId'] = currentEnvironmentId;
       }
 
-      return appEnvironments;
-    }, manager);
+      return await manager.find(AppVersion, {
+        where: { ...conditions },
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    });
   }
 
   async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {
