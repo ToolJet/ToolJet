@@ -38,7 +38,6 @@ function DataSourceLister({
   }, [dataSources]);
 
   useEffect(() => {
-    console.log('globalDataSources >>>>>', globalDataSources);
     setGlobalDataSourcesOpts(
       Object.entries(groupBy(globalDataSources, 'kind')).map(([kind, sources]) => ({
         label: (
