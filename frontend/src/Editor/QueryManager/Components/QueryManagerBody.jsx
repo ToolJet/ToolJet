@@ -34,8 +34,6 @@ export const QueryManagerBody = forwardRef(
       dataSourceModalHandler,
       options,
       currentState,
-      previewLoading,
-      queryPreviewData,
       allComponents,
       apps,
       appDefinition,
@@ -256,12 +254,6 @@ export const QueryManagerBody = forwardRef(
               />
               {renderTransformation()}
             </div>
-            {/* <Preview
-              previewPanelRef={ref}
-              previewLoading={previewLoading}
-              queryPreviewData={queryPreviewData}
-              darkMode={darkMode}
-            /> */}
           </div>
         </div>
       );
@@ -329,17 +321,13 @@ export const QueryManagerBody = forwardRef(
                 value={selectedQuery?.options?.[customToggles[toggle]?.action]}
                 index={index}
                 key={toggle}
+                darkMode={darkMode}
               />
             ))}
             {/* <CustomToggleFlags options={selectedQuery?.options} darkMode={darkMode} toggleOption={toggleOption} /> */}
           </div>
           {renderEventManager()}
-          <Preview
-            previewPanelRef={ref}
-            previewLoading={previewLoading}
-            queryPreviewData={queryPreviewData}
-            darkMode={darkMode}
-          />
+          <Preview previewPanelRef={ref} darkMode={darkMode} />
         </div>
       );
     };

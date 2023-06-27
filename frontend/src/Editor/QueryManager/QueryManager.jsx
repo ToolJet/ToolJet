@@ -7,13 +7,7 @@ import { defaultSources } from './constants';
 
 import { useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
 import { useDataSources, useGlobalDataSources, useLoadingDataSources } from '@/_stores/dataSourcesStore';
-import {
-  useQueryToBeRun,
-  usePreviewLoading,
-  usePreviewData,
-  useSelectedQuery,
-  useQueryPanelActions,
-} from '@/_stores/queryPanelStore';
+import { useQueryToBeRun, useSelectedQuery, useQueryPanelActions } from '@/_stores/queryPanelStore';
 
 const QueryManager = ({
   addNewQueryAndDeselectSelectedQuery,
@@ -39,8 +33,6 @@ const QueryManager = ({
   const queryToBeRun = useQueryToBeRun();
   const isCreationInProcess = useQueryCreationLoading();
   const isUpdationInProcess = useQueryUpdationLoading();
-  const previewLoading = usePreviewLoading();
-  const queryPreviewData = usePreviewData();
   const selectedQuery = useSelectedQuery();
   const { setSelectedDataSource, setQueryToBeRun } = useQueryPanelActions();
 
@@ -94,7 +86,6 @@ const QueryManager = ({
         addNewQueryAndDeselectSelectedQuery={addNewQueryAndDeselectSelectedQuery}
         updateDraftQueryName={updateDraftQueryName}
         toggleQueryEditor={toggleQueryEditor}
-        previewLoading={previewLoading}
         currentState={currentState}
         options={options}
         editingVersionId={editingVersionId}
@@ -110,8 +101,6 @@ const QueryManager = ({
         dataSourceModalHandler={dataSourceModalHandler}
         options={options}
         currentState={currentState}
-        previewLoading={previewLoading}
-        queryPreviewData={queryPreviewData}
         allComponents={allComponents}
         apps={apps}
         appId={appId}

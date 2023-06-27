@@ -2,13 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import {
+  useQueryToBeRun,
+  usePreviewLoading,
+  usePreviewData,
+  useSelectedQuery,
+  useQueryPanelActions,
+} from '@/_stores/queryPanelStore';
 import { getTheme, tabs } from '../constants';
 
-const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, darkMode }) => {
+const Preview = ({ previewPanelRef, darkMode }) => {
   const { t } = useTranslation();
   const [key, setKey] = useState('raw');
   const [isJson, setIsJson] = useState(false);
   const [theme, setTheme] = useState(() => getTheme(darkMode));
+  const queryPreviewData = usePreviewData();
+  const previewLoading = usePreviewLoading();
+  const { setPreviewData } = useQueryPanelActions();
 
   useEffect(() => {
     setTheme(() => getTheme(darkMode));
@@ -41,8 +51,13 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, darkMode }
         </div> */}
       <div className="col-md-12 border rounded-top">
         <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
-          <div>
-            <Row className="py-2 border-bottom" style={{ backgroundColor: '#F8F9FA' }}>
+          <div className="position-relative">
+            {previewLoading && (
+              <center className="position-absolute w-100">
+                <div className="spinner-border text-azure mt-5" role="status"></div>
+              </center>
+            )}
+            <Row className="py-2 border-bottom preview-section-header">
               <Col className="d-flex align-items-center">Preview</Col>
               <Col className="keys text-center d-flex align-items-center">
                 <ListGroup
@@ -69,13 +84,15 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, darkMode }
                   ))}
                 </ListGroup>
               </Col>
-              <Col className="text-right d-flex align-items-center justify-content-end">Dismiss</Col>
+              <Col className="text-right d-flex align-items-center justify-content-end">
+                <button
+                  className={`bg-transparent border-0 ${darkMode ? 'theme-dark' : ''}`}
+                  onClick={() => setPreviewData()}
+                >
+                  Dismiss
+                </button>
+              </Col>
             </Row>
-            {previewLoading && (
-              <center>
-                <div className="spinner-border text-azure mt-5" role="status"></div>
-              </center>
-            )}
             <Row>
               <Tab.Content style={{ overflowWrap: 'anywhere', padding: 0 }}>
                 {!queryPreviewData && <div className="col preview-default-container"></div>}
@@ -97,7 +114,6 @@ const Preview = ({ previewPanelRef, previewLoading, queryPreviewData, darkMode }
         </Tab.Container>
       </div>
     </div>
-    // </div>
   );
 };
 

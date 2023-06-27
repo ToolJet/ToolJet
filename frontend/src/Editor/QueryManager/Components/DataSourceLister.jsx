@@ -86,7 +86,6 @@ function DataSourceLister({
     ...globalDataSourcesOpts,
   ];
 
-
   return (
     <div className="query-datasource-card-container">
       {showAddDatasourceBtn && dataSourceBtnComponent && dataSourceBtnComponent}
@@ -104,11 +103,14 @@ function DataSourceLister({
           }),
           option: (style, { data: { isNested } }) => ({
             ...style,
-            ...(isNested ? { paddingLeft: '20px', marginLeft: '40px', borderLeft: '1px solid #ccc' } : {}),
+            ...(isNested
+              ? { paddingLeft: '20px', marginLeft: '40px', borderLeft: '1px solid #ccc', width: 'auto' }
+              : {}),
           }),
         }}
         placeholder="Where do you want to connect to"
         options={DataSourceOptions}
+        menuIsOpen
       />
     </div>
   );

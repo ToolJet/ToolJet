@@ -11,7 +11,12 @@ import { useTranslation } from 'react-i18next';
 import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUtils';
 
 import { useDataQueriesActions, useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
-import { useSelectedQuery, useSelectedDataSource, useUnsavedChanges } from '@/_stores/queryPanelStore';
+import {
+  useSelectedQuery,
+  useSelectedDataSource,
+  useUnsavedChanges,
+  usePreviewLoading,
+} from '@/_stores/queryPanelStore';
 import ToggleQueryEditorIcon from '../Icons/ToggleQueryEditorIcon';
 
 export const QueryManagerHeader = forwardRef(
@@ -22,7 +27,6 @@ export const QueryManagerHeader = forwardRef(
       addNewQueryAndDeselectSelectedQuery,
       updateDraftQueryName,
       toggleQueryEditor,
-      previewLoading = false,
       currentState,
       options,
       editingVersionId,
@@ -148,21 +152,6 @@ export const QueryManagerHeader = forwardRef(
         });
     };
 
-    const renderPreviewButton = () => {
-      return (
-        <button
-          onClick={previewButtonOnClick}
-          className={`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading)}`}
-          data-cy={'query-preview-button'}
-        >
-          <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
-            <PreviewIcon />
-          </span>
-          <span>{t('editor.queryManager.preview', 'Preview')}</span>
-        </button>
-      );
-    };
-
     const renderSaveButton = () => {
       return (
         <button
@@ -184,7 +173,8 @@ export const QueryManagerHeader = forwardRef(
       const { isLoading } = currentState?.queries[selectedQuery?.name] ?? false;
       return (
         <button
-          onClick={() => updateDataQueryStatus('published')}
+          // onClick={() => updateDataQueryStatus('published')}
+          onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name)}
           className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(
             isLoading,
             isVersionReleased
@@ -208,7 +198,7 @@ export const QueryManagerHeader = forwardRef(
       return (
         <>
           {selectedQuery?.status === 'draft' && renderSaveButton()}
-          {renderPreviewButton()}
+          <PreviewButton onClick={previewButtonOnClick} buttonLoadingState={buttonLoadingState} />
           {renderRunButton()}
         </>
       );
@@ -217,19 +207,26 @@ export const QueryManagerHeader = forwardRef(
     return (
       <div className="row header">
         <div className="col font-weight-500">{renderBreadcrumb()}</div>
-        <div className="query-header-buttons me-3">
-          {renderButtons()}
-          {/* <span
-            onClick={toggleQueryEditor}
-            className={`toggle-query-editor-svg m-3`}
-            data-tooltip-id="tooltip-for-hide-query-editor"
-            data-tooltip-content="Hide query editor"
-          >
-            <ToggleQueryEditorIcon />
-          </span>
-          <Tooltip id="tooltip-for-hide-query-editor" className="tooltip" /> */}
-        </div>
+        <div className="query-header-buttons me-3">{renderButtons()}</div>
       </div>
     );
   }
 );
+
+const PreviewButton = ({ buttonLoadingState, onClick }) => {
+  const previewLoading = usePreviewLoading();
+  const { t } = useTranslation();
+
+  return (
+    <button
+      onClick={onClick}
+      className={`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading)}`}
+      data-cy={'query-preview-button'}
+    >
+      <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
+        <PreviewIcon />
+      </span>
+      <span>{t('editor.queryManager.preview', 'Preview')}</span>
+    </button>
+  );
+};

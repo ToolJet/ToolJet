@@ -1102,20 +1102,24 @@ $border-radius: 4px;
 
     .preview-default-container {
       user-select: text;
-      background-color: #F8F9FA;
+      background-color: #FBFCFD;
       border: 0 0 6px 6px;
       height: 52px,
     }
 
     .tab-pane.active {
       div {
-        background-color: #F8F9FA !important;
+        background-color: #FBFCFD !important;
         border-radius: 0 0 6px 6px !important;
       }
 
       ul {
         background-color: transparent !important;
       }
+    }
+
+    .preview-section-header {
+      background-color: var(--slate2);
     }
   }
 
