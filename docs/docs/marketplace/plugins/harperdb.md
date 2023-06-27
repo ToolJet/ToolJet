@@ -18,8 +18,8 @@ Before following this guide, it is recommended to check the following doc: **[Us
 ## Connection
 
 To establish a connection with HarperDB, you need the following credentials:
-1. **Host**: The hostname or IP address of your HarperDB instance (e.g., `https://myinstance.harperdbcloud.com`).
-2. **Port**: The port number configured for your server (default is `9255`).
+1. **Host**: The hostname or IP address of your HarperDB instance (e.g., `55.22.285.222` or `myinstance.harperdbcloud.com`).
+2. **Port**: The port number configured for your server (default is `9925`). If you are using HarperDB Studio(cloud), leave the field empty.
 3. **SSL**: Indicates whether the connection requires SSL encryption.
 4. **Username**: Your authentication username for HarperDB instance.
 5. **Password**: Your password for authentication (hidden for security purposes).
