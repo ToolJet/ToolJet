@@ -132,6 +132,8 @@ export default class Openapi implements QueryService {
     }
 
     try {
+      // CAUTION: Make sure all the requests goes through this.makeRequest function
+      // so that AWS SSRF attacks don't happen
       const response = await this.makeRequest(url, {
         method: operation,
         headers: header,
@@ -218,6 +220,8 @@ export default class Openapi implements QueryService {
     const accessTokenDetails = {};
 
     try {
+      // CAUTION: Make sure all the requests goes through this.makeRequest function
+      // so that AWS SSRF attacks don't happen
       response = await this.makeRequest(accessTokenUrl, {
         method: 'post',
         headers: {
