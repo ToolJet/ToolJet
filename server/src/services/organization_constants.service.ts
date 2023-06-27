@@ -36,7 +36,7 @@ export class OrganizationConstantsService {
 
               return {
                 environmentName: env.name,
-                value: value ? await this.decryptSecret(organizationId, value.value) : '',
+                value: value && value.value.length > 0 ? await this.decryptSecret(organizationId, value.value) : '',
               };
             })
           );
@@ -80,7 +80,7 @@ export class OrganizationConstantsService {
   async create(
     organizationConstant: CreateOrganizationConstantDto,
     organizationId: string
-  ): Promise<OrganizationConstant> {
+  ): Promise<OrganizationConstant | []> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const newOrganizationConstant = manager.create(OrganizationConstant, {
         constantName: organizationConstant.constant_name,
@@ -96,19 +96,25 @@ export class OrganizationConstantsService {
         manager
       );
 
-      const environmentToUpdate = await this.appEnvironmentService.get(
-        organizationId,
-        organizationConstant.environment_id,
-        manager
-      );
+      const environmentsIds = organizationConstant.environments;
+
+      const environmentToUpdate = environmentsIds.map(async (environmentId) => {
+        return await this.appEnvironmentService.get(organizationId, environmentId, manager);
+      });
 
       const encryptedValue = await this.encryptSecret(organizationId, organizationConstant.value);
 
-      await this.appEnvironmentService.updateOrgEnvironmentConstant(
-        encryptedValue,
-        environmentToUpdate.id,
-        savedOrganizationConstant.id,
-        manager
+      await Promise.all(
+        environmentToUpdate.map(async (environment) => {
+          await this.appEnvironmentService.updateOrgEnvironmentConstant(
+            encryptedValue,
+            (
+              await environment
+            ).id,
+            savedOrganizationConstant.id,
+            manager
+          );
+        })
       );
 
       return savedOrganizationConstant;
