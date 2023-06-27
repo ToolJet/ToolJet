@@ -62,8 +62,9 @@ const ConstantForm = ({
                   onChange={handleFieldChange}
                   value={fields['name']}
                   data
-                  autoFocus
+                  autoFocus={!selectedConstant}
                   style={{ height: '32px' }}
+                  disabled={!!selectedConstant}
                 />
                 <span className="text-danger">{errors['name']}</span>
               </div>
