@@ -21,7 +21,6 @@ const QueryManager = ({
   mode,
   dataQueriesChanged,
   appId,
-  editingVersionId,
   currentState,
   darkMode,
   apps,
@@ -95,7 +94,6 @@ const QueryManager = ({
         previewLoading={previewLoading}
         currentState={currentState}
         options={options}
-        editingVersionId={editingVersionId}
         appId={appId}
         ref={previewPanelRef}
         editorRef={editorRef}

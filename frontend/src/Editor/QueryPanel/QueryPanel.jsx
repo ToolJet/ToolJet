@@ -17,7 +17,6 @@ const QueryPanel = ({
   apps,
   allComponents,
   appId,
-  editingVersionId,
   appDefinition,
   dataSourceModalHandler,
   editorRef,
@@ -266,7 +265,6 @@ const QueryPanel = ({
                   mode={editingQuery ? 'edit' : 'create'}
                   dataQueriesChanged={updateDataQueries}
                   appId={appId}
-                  editingVersionId={editingVersionId}
                   currentState={currentState}
                   darkMode={darkMode}
                   apps={apps}

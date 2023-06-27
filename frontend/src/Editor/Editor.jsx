@@ -1678,7 +1678,6 @@ class EditorComponent extends React.Component {
                   apps={apps}
                   allComponents={appDefinition.pages[this.state.currentPageId]?.components ?? {}}
                   appId={appId}
-                  editingVersionId={editingVersion?.id}
                   appDefinition={appDefinition}
                   dataSourceModalHandler={this.dataSourceModalHandler}
                   editorRef={this}

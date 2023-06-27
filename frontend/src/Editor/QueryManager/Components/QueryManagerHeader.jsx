@@ -26,7 +26,6 @@ export const QueryManagerHeader = forwardRef(
       previewLoading = false,
       currentState,
       options,
-      editingVersionId,
       appId,
       editorRef,
     },
@@ -41,9 +40,10 @@ export const QueryManagerHeader = forwardRef(
     const { t } = useTranslation();
     const queryName = selectedQuery?.name ?? '';
     const [renamingQuery, setRenamingQuery] = useState(false);
-    const { isVersionReleased } = useAppVersionStore(
+    const { isVersionReleased, editingVersionId } = useAppVersionStore(
       (state) => ({
         isVersionReleased: state.isVersionReleased,
+        editingVersionId: state.editingVersion?.id,
       }),
       shallow
     );
