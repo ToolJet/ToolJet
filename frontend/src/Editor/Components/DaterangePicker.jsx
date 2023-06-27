@@ -39,8 +39,10 @@ export const DaterangePicker = function DaterangePicker({
     )}px`;
     dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.height = `${height}px`;
     dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.width = `${width - 3}px`;
+    dateRangeRef.current.container.querySelector('.DateRangePickerInput').style.boxShadow = boxShadow;
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateRangeRef.current, borderRadius, height, width]);
+  }, [dateRangeRef.current, borderRadius, height, width, boxShadow]);
 
   function onDateChange(dates) {
     const start = dates.startDate;
@@ -66,7 +68,7 @@ export const DaterangePicker = function DaterangePicker({
   return (
     <div
       className={`daterange-picker-widget ${darkMode && 'theme-dark'} p-0`}
-      style={{ height, display: visibility ? '' : 'none', boxShadow, borderRadius }}
+      style={{ height, display: visibility ? '' : 'none', borderRadius, background: 'transparent' }}
       data-cy={dataCy}
     >
       <DateRangePicker
