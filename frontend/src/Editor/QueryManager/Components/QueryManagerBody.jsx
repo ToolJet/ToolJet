@@ -275,7 +275,6 @@ export const QueryManagerBody = forwardRef(
             className={`col-md-3 query-manager-border-color hr-text-left ${
               darkMode ? 'color-white' : 'color-light-slate-12'
             }`}
-            // style={{ paddingTop: '28px' }}
           >
             {t('editor.queryManager.eventsHandler', 'Events Handler')}
           </div>
