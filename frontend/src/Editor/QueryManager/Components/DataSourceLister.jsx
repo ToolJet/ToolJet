@@ -86,7 +86,6 @@ function DataSourceLister({
     ...globalDataSourcesOpts,
   ];
 
-  console.log('globalDataSources >>>>>>>>>>', globalDataSources);
 
   return (
     <div className="query-datasource-card-container">
