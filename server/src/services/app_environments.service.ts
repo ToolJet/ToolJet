@@ -56,9 +56,9 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  async getAll(organizationId: string, manager?: EntityManager): Promise<AppEnvironment[]> {
+  async getAll(organizationId: string, manager?: EntityManager, appId?: string): Promise<AppEnvironment[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.find(AppEnvironment, {
+      const appEnvironments = await manager.find(AppEnvironment, {
         where: {
           organizationId,
           enabled: true,
@@ -67,6 +67,21 @@ export class AppEnvironmentService {
           priority: 'ASC',
         },
       });
+
+      if (appId) {
+        for (const appEnvironment of appEnvironments) {
+          const count = await manager.count(AppVersion, {
+            where: {
+              ...(appEnvironment.priority !== 1 && { currentEnvironmentId: appEnvironment.id }),
+              appId,
+            },
+          });
+
+          appEnvironment['appVersionsCount'] = count;
+        }
+      }
+
+      return appEnvironments;
     }, manager);
   }
 
