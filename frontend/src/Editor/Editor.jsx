@@ -1352,9 +1352,9 @@ class EditorComponent extends React.Component {
 
     if (!name || !handle) return;
 
-    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value} `).join('&');
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    this.props.navigate(`/ ${getWorkspaceId()} /apps/${this.state.appId} /${handle}?${queryParamsString}`);
+    this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.appId}/${handle}?${queryParamsString}`);
 
     const { globals: existingGlobals } = this.state.currentState;
 
