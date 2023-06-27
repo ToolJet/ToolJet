@@ -37,6 +37,7 @@ export class OrganizationConstantsService {
               return {
                 environmentName: env.name,
                 value: value && value.value.length > 0 ? await this.decryptSecret(organizationId, value.value) : '',
+                id: value.environmentId,
               };
             })
           );

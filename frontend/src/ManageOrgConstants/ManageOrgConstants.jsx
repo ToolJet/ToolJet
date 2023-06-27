@@ -32,6 +32,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 
   const onCancelBtnClicked = () => {
     setIsManageVarDrawerOpen(false);
+    setSelectedConstant(null);
   };
 
   const onEditBtnClicked = (constant) => {
@@ -179,10 +180,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const createOrUpdate = (variable, isUpdate = false) => {
     if (isUpdate) {
       return orgEnvironmentConstantService
-        .update(variable.id, variable.value, variable.environments)
+        .update(variable.id, variable.value, variable.environments[0]['value'])
         .then(() => {
           toast.success('Constant updated successfully');
-          setIsManageVarDrawerOpen(false);
+          onCancelBtnClicked();
         })
         .catch(({ error }) => {
           setErrors(error);
@@ -198,7 +199,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
       )
       .then(() => {
         toast.success('Constant created successfully');
-        setIsManageVarDrawerOpen(false);
+        onCancelBtnClicked();
       })
       .catch(({ error }) => {
         setErrors(error);
@@ -254,17 +255,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
         darkMode={false}
       />
 
-      <Drawer
-        disableFocus={true}
-        isOpen={isManageVarDrawerOpen}
-        onClose={() => {
-          setIsManageVarDrawerOpen(false);
-          setSelectedConstant(null);
-        }}
-        position="right"
-      >
+      <Drawer disableFocus={true} isOpen={isManageVarDrawerOpen} onClose={onCancelBtnClicked} position="right">
         <ConstantForm
           errors={errors}
+          allConstants={constants}
           selectedConstant={selectedConstant}
           createOrUpdate={createOrUpdate}
           onCancelBtnClicked={onCancelBtnClicked}
@@ -377,7 +371,6 @@ const RenderEnvironmentsTab = ({
   allEnvironments = [],
   currentEnvironment = {},
   setActiveTabEnvironment,
-  updateTableData,
 }) => {
   if (!isMultiEnvironment) return null;
 

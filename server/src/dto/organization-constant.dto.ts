@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '../helpers/utils.helper';
 
@@ -28,5 +28,6 @@ export class UpdateOrganizationConstantDto {
 
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   constant_name?: string;
 }

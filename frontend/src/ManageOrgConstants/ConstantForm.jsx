@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-// import Select from '@/_ui/Select';
+import Select from '@/_ui/Select';
 import Multiselect from '@/_ui/Multiselect/Multiselect';
 import { withTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const ConstantForm = ({
   errors,
+  allConstants = [],
   selectedConstant,
   createOrUpdate,
   onCancelBtnClicked,
@@ -19,11 +20,27 @@ const ConstantForm = ({
   }));
 
   const handleFieldChange = (e) => {
-    console.log('from ConstantForm.jsx, handleFieldChange, e: ', e);
     const { name, value } = e.target;
-    setFields((prevFields) => ({
-      ...prevFields,
-      [name]: value,
+
+    const isUpdate = !!selectedConstant;
+
+    const constantValue = isUpdate && name === 'environments' ? [value] : value;
+
+    if (isUpdate && name === 'environments') {
+      const constantValueInSelectedValue = allConstants
+        .find((constant) => constant.id === selectedConstant.id)
+        ?.values?.find((v) => v.id === constantValue[0].value)?.value;
+
+      return setFields((fields) => ({
+        ...fields,
+        value: constantValueInSelectedValue,
+        [name]: constantValue,
+      }));
+    }
+
+    setFields((fields) => ({
+      ...fields,
+      [name]: constantValue,
     }));
   };
 
@@ -72,27 +89,31 @@ const ConstantForm = ({
               <div className="col tj-app-input">
                 <div className="form-group">
                   <label className="form-label">Type</label>
-                  {/* <Select
-                    options={selectOptions}
-                    hasSearch={false}
-                    value={fields['environment']}
-                    onChange={(value) => handleFieldChange({ target: { name: 'environment', value } })}
-                    useMenuPortal={false}
-                    customWrap={true}
-                  /> */}
-
-                  <div className={'manage-constants-dropdown'} data-cy="select-search">
-                    <Multiselect
-                      value={fields['environments']}
-                      onChange={(values) => handleFieldChange({ target: { name: 'environments', value: values } })}
+                  {selectedConstant ? (
+                    <Select
                       options={selectOptions}
-                      disableSearch={true}
-                      overrideStrings={{
-                        selectSomeItems: 'Select Environments',
-                        allItemsAreSelected: 'All Environments are selected',
-                      }}
+                      hasSearch={false}
+                      value={fields['environments'][0]['value']}
+                      onChange={(value) =>
+                        handleFieldChange({ target: { name: 'environments', value: { name: value, value } } })
+                      }
+                      useMenuPortal={false}
+                      customWrap={true}
                     />
-                  </div>
+                  ) : (
+                    <div className={'manage-constants-dropdown'} data-cy="select-search">
+                      <Multiselect
+                        value={fields['environments']}
+                        onChange={(values) => handleFieldChange({ target: { name: 'environments', value: values } })}
+                        options={selectOptions}
+                        disableSearch={true}
+                        overrideStrings={{
+                          selectSomeItems: 'Select Environments',
+                          allItemsAreSelected: 'All Environments are selected',
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
