@@ -156,7 +156,6 @@ export const QueryManagerHeader = forwardRef(
       return (
         <button
           className={`default-tertiary-button ${buttonLoadingState(false, isVersionReleased)}`}
-          // onClick={() => createOrUpdateDataQuery(false)}
           onClick={() => updateDataQueryStatus('published')}
           disabled={buttonDisabled}
           data-cy={`query-publish-button`}
@@ -173,7 +172,6 @@ export const QueryManagerHeader = forwardRef(
       const { isLoading } = currentState?.queries[selectedQuery?.name] ?? false;
       return (
         <button
-          // onClick={() => updateDataQueryStatus('published')}
           onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name)}
           className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(
             isLoading,

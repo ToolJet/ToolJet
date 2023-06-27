@@ -57,7 +57,14 @@ function DataSourceLister({
   }, [globalDataSources]);
 
   const DataSourceOptions = [
-    { label: <span className="text-muted">Defaults</span>, isDisabled: true },
+    {
+      label: (
+        <span className="color-slate9" style={{ fontWeight: 500 }}>
+          Defaults
+        </span>
+      ),
+      isDisabled: true,
+    },
     ...allSources.map((source) => ({
       label: (
         <div>
@@ -67,7 +74,14 @@ function DataSourceLister({
       value: source.id,
       source,
     })),
-    { label: <span className="text-muted">Global datasources</span>, isDisabled: true },
+    {
+      label: (
+        <span className="color-slate9" style={{ fontWeight: 500 }}>
+          Global datasources
+        </span>
+      ),
+      isDisabled: true,
+    },
     ...globalDataSourcesOpts,
   ];
 
@@ -78,16 +92,20 @@ function DataSourceLister({
       <Select
         onChange={({ source } = {}) => handleChangeDataSource(source)}
         styles={{
-          control: (style) => ({ ...style, width: '400px' }),
+          control: (style) => ({ ...style, width: '400px', ...(darkMode ? { background: '#22272E' } : {}) }),
+          menuList: (style) => ({ ...style, ...(darkMode ? { background: '#22272E' } : {}) }),
+          input: (style) => ({ ...style, ...(darkMode ? { color: '#ffffff' } : {}) }),
           groupHeading: (style) => ({
             ...style,
             fontSize: '100%',
             textTransform: '',
             color: 'inherit',
             fontWeight: '400',
+            ...(darkMode ? { background: '#22272E' } : {}),
           }),
           option: (style, { data: { isNested } }) => ({
             ...style,
+            ...(darkMode ? { background: '#22272E' } : {}),
             ...(isNested
               ? { paddingLeft: '20px', marginLeft: '40px', borderLeft: '1px solid #ccc', width: 'auto' }
               : {}),
@@ -95,7 +113,6 @@ function DataSourceLister({
         }}
         placeholder="Where do you want to connect to"
         options={DataSourceOptions}
-        menuIsOpen
       />
     </div>
   );

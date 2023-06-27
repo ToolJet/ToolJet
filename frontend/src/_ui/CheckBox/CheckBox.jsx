@@ -8,11 +8,9 @@ export const Checkbox = ({ label, isChecked, onChange, key = '', value }) => {
   return (
     <div key={key} className="form-check mx-1">
       <input
-        style={
-          {
-            // backgroundColor: '#D7DBDF',
-          }
-        }
+        style={{
+          backgroundColor: '#D7DBDF',
+        }}
         className="form-check-input"
         type="checkbox"
         onChange={handleOnchange}

@@ -155,3 +155,7 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 .bg-color-primary {
   background-color: $primary !important;
 }
+
+.color-slate9 {
+  color: var(--slate9) !important;
+}

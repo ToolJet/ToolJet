@@ -80,7 +80,6 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
             <MenuButton
               id="filter-by-datasource"
               text="Data Source"
-              // iconSrc={'assets/images/icons/delete.svg'}
               closeMenu={closeMenu}
               callback={handlePageCallback}
               disabled={isHome}
@@ -92,7 +91,6 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
             <MenuButton
               id="name"
               text="A-Z"
-              // iconSrc={'assets/images/icons/delete.svg'}
               closeMenu={closeMenu}
               callback={handleSort}
               disabled={isHome}
@@ -102,7 +100,6 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
             <MenuButton
               id="kind"
               text="Type"
-              // iconSrc={'assets/images/icons/delete.svg'}
               closeMenu={closeMenu}
               callback={handleSort}
               disabled={isHome}
@@ -112,21 +109,12 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
             <MenuButton
               id="updated_at"
               text="Last modified"
-              // iconSrc={'assets/images/icons/delete.svg'}
               closeMenu={closeMenu}
               callback={handleSort}
               disabled={isHome}
               customClass={sortBy === 'updated_at' ? 'text-info' : ''}
               sortOrder={sortBy === 'updated_at' && sortOrder}
             />
-            {/* <MenuButton
-                            id="delete-page"
-                            text="My order"
-                            // iconSrc={'assets/images/icons/delete.svg'}
-                            closeMenu={closeMenu}
-                            callback={handlePageCallback}
-                            disabled={isHome}
-                        /> */}
           </div>
         );
     }
@@ -136,7 +124,6 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
     <OverlayTrigger
       trigger={'click'}
       placement={'bottom-end'}
-      // rootClose={false}
       rootClose={true}
       show={showMenu}
       overlay={
@@ -154,7 +141,6 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
       <span>
         <button
           onClick={() => setShowMenu(true)}
-          // className={`toggle-query-editor-svg`}
           className={cx('border-0 position-relative', { 'bg-light': showMenu, 'bg-transparent': !showMenu })}
           data-tooltip-id="tooltip-for-open-filter"
           data-tooltip-content="Show sort/filter"
@@ -162,7 +148,6 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
           <Filter width="13" height="13" fill="#343a40" />
           {selectedDataSources.length > 0 && <div className="notification-dot"></div>}
         </button>
-        {/* <Tooltip id="tooltip-for-open-filter" className="tooltip" /> */}
       </span>
     </OverlayTrigger>
   );

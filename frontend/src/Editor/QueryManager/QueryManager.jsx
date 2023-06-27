@@ -64,7 +64,6 @@ const QueryManager = ({
       if (defaultSources?.[selectedQuery?.kind]) {
         return setSelectedDataSource(defaultSources[selectedQuery?.kind]);
       }
-      // mode === 'edit' &&
       setSelectedDataSource(
         [...dataSources, ...globalDataSources].find((datasource) => datasource.id === selectedQuery?.data_source_id) ||
           null

@@ -234,25 +234,6 @@ return [row for row in data if row['amount'] > 1000]
                   <span className="ps-1">Enable</span>
                 </span>
               </div>
-
-              {/* <OverlayTrigger trigger="click" placement="top" overlay={popover} rootClose>
-              <svg
-                width="16.7"
-                height="16.7"
-                viewBox="0 0 20 21"
-                fill="#3E63DD"
-                xmlns="http://www.w3.org/2000/svg"
-                style={{ cursor: 'pointer' }}
-                data-cy={`transformation-info-icon`}
-              >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M10 2.5C5.58172 2.5 2 6.08172 2 10.5C2 14.9183 5.58172 18.5 10 18.5C14.4183 18.5 18 14.9183 18 10.5C18 6.08172 14.4183 2.5 10 2.5ZM0 10.5C0 4.97715 4.47715 0.5 10 0.5C15.5228 0.5 20 4.97715 20 10.5C20 16.0228 15.5228 20.5 10 20.5C4.47715 20.5 0 16.0228 0 10.5ZM9 6.5C9 5.94772 9.44771 5.5 10 5.5H10.01C10.5623 5.5 11.01 5.94772 11.01 6.5C11.01 7.05228 10.5623 7.5 10.01 7.5H10C9.44771 7.5 9 7.05228 9 6.5ZM8 10.5C8 9.94771 8.44772 9.5 9 9.5H10C10.5523 9.5 11 9.94771 11 10.5V13.5C11.5523 13.5 12 13.9477 12 14.5C12 15.0523 11.5523 15.5 11 15.5H10C9.44771 15.5 9 15.0523 9 14.5V11.5C8.44772 11.5 8 11.0523 8 10.5Z"
-                  fill="#3E63DD"
-                />
-              </svg>
-            </OverlayTrigger> */}
               <EducativeLebel />
             </div>
             <div></div>

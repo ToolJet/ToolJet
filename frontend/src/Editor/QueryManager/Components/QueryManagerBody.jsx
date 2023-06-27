@@ -190,7 +190,7 @@ export const QueryManagerBody = forwardRef(
           'disabled ': isVersionReleased,
         })}
       >
-        <label className="form-label col-md-3" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
+        <label className="form-label col-md-3 pb-1" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
           Datasource
         </label>
 

@@ -270,9 +270,8 @@ class EditorComponent extends React.Component {
   initEventListeners() {
     this.socket?.addEventListener('message', (event) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
-      if (data === 'versionReleased') this.fetchApp();
-      else if (data === 'dataQueriesChanged') {
-        // this.fetchDataQueries(this.state.editingVersion?.id);
+      if (data === 'versionReleased') {
+        this.fetchApp();
       } else if (data === 'dataSourcesChanged') {
         this.fetchDataSources(this.state.editingVersion?.id);
       }
@@ -457,8 +456,6 @@ class EditorComponent extends React.Component {
           data: { message: 'dataQueriesChanged', appId: this.state.appId },
         })
       );
-    } else {
-      // this.fetchDataQueries(this.state.editingVersion?.id);
     }
   };
 
