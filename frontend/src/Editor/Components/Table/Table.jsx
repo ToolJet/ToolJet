@@ -459,11 +459,11 @@ export function Table({
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
   }, [
     tableData.length,
-    tableDetails.changeSet,
+    // tableDetails.changeSet, // why we added this long back ago ? need to disucss about this
     component.definition.properties.data.value,
     JSON.stringify(properties.data),
-    showBulkSelector,
-    allowSelection,
+    // showBulkSelector,
+    // allowSelection,
   ]);
 
   useEffect(() => {
