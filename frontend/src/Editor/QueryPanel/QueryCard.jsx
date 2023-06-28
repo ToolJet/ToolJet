@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
+import { Tooltip } from 'react-tooltip';
 import { checkExistingQueryName } from '@/_helpers/appUtils';
 import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
@@ -105,7 +105,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, isVersionRel
               className={`col-auto ${renamingQuery && 'display-none'} rename-query`}
               onClick={() => setRenamingQuery(true)}
             >
-              <span className="d-flex">
+              <span className="d-flex" data-tooltip-id="query-card-btn-tooltip" data-tooltip-content="Rename query">
                 <svg
                   data-cy={`edit-query-${dataQuery.name.toLowerCase()}`}
                   width="auto"
@@ -124,7 +124,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, isVersionRel
               </span>
             </div>
             <div className={`col-auto rename-query`} onClick={() => duplicateQuery(dataQuery?.id, appId)}>
-              <span className="d-flex">
+              <span className="d-flex" data-tooltip-id="query-card-btn-tooltip" data-tooltip-content="Duplicate query">
                 <Copy height={16} width={16} viewBox="0 5 20 20" />
               </span>
             </div>
@@ -134,7 +134,12 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, isVersionRel
                   <div className="text-center spinner-border spinner-border-sm" role="status"></div>
                 </div>
               ) : (
-                <span className="delete-query" onClick={deleteDataQuery}>
+                <span
+                  className="delete-query"
+                  onClick={deleteDataQuery}
+                  data-tooltip-id="query-card-btn-tooltip"
+                  data-tooltip-content="Delete query"
+                >
                   <span className="d-flex">
                     <svg
                       data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}
@@ -155,6 +160,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, isVersionRel
                 </span>
               )}
             </div>
+            <Tooltip id="query-card-btn-tooltip" className="tooltip" />
           </div>
         )}
       </div>

@@ -9,7 +9,7 @@ import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg'
 import { QueryCard } from './QueryCard';
 import Fuse from 'fuse.js';
 import cx from 'classnames';
-import { Tooltip } from 'react-bootstrap';
+import { Tooltip } from 'react-tooltip';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 import FilterandSortPopup from './FilterandSortPopup';
 
@@ -111,21 +111,20 @@ export const QueryDataPane = ({
             <button
               onClick={() => setShowSearchBox((showSearchBox) => !showSearchBox)}
               className="bg-transparent border-0"
-              data-tooltip-id="tooltip-for-quick-search-query"
+              data-tooltip-id="tooltip-for-query-panel-header-btn"
               data-tooltip-content="Open quick search"
             >
               <Search width="12" height="12" fill="var(--slate12)" />
             </button>
-            <Tooltip id="tooltip-for-search-query" className="tooltip" />
             <button
               onClick={toggleQueryEditor}
               className="bg-transparent border-0"
-              data-tooltip-id="tooltip-for-hide-query-editor"
+              data-tooltip-id="tooltip-for-query-panel-header-btn"
               data-tooltip-content="Hide query editor"
             >
               <Minimize width="14" height="14" viewBox="0 0 25 14" stroke="var(--slate12)" />
             </button>
-            <Tooltip id="tooltip-for-hide-query-editor" className="tooltip" />
+            <Tooltip id="tooltip-for-query-panel-header-btn" className="tooltip" />
           </div>
         </div>
         <div

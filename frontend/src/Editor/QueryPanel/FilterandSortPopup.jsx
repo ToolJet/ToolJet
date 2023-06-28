@@ -12,6 +12,7 @@ import SortArrowDown from '@/_ui/Icon/bulkIcons/SortArrowDown';
 import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { staticDataSources } from '../QueryManager/constants';
+import { Tooltip } from 'react-tooltip';
 
 const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFilterDatasourcesChange }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-sort-filter-popover');
@@ -96,7 +97,6 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
 
   return (
     <OverlayTrigger
-      trigger={'click'}
       placement={'bottom-end'}
       rootClose={true}
       show={showMenu}
@@ -123,6 +123,7 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
           <Filter width="13" height="13" fill="var(--slate12)" />
           {selectedDataSources.length > 0 && <div className="notification-dot"></div>}
         </button>
+        <Tooltip id="tooltip-for-open-filter" className="tooltip" />
       </span>
     </OverlayTrigger>
   );
