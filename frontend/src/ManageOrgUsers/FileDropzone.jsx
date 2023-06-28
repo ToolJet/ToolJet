@@ -64,7 +64,7 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
             {errors['file']}
           </span>
           <ul>{acceptedFiles}</ul>
-          {fileData?.name && <ul>{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>}
+          {fileData?.name && <ul data-cy="uploaded-file-data">{` ${fileData?.name} - ${fileData?.size} bytes`}</ul>}
         </div>
       </div>
     </form>

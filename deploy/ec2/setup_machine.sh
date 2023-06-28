@@ -28,16 +28,17 @@ sudo mkdir /etc/resty-auto-ssl /var/log/openresty /etc/fallback-certs
 sudo chown -R www-data:www-data /etc/resty-auto-ssl
 
 # Oracle db client library setup
-sudo apt install -y libaio1
+sudo apt install -y libaio1 
 curl -o instantclient-basiclite.zip https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip -SL && \
+curl -o instantclient-basiclite-11.zip https://tooljet-plugins-production.s3.us-east-2.amazonaws.com/marketplace-assets/oracledb/instantclients/instantclient-basiclite-linux.x64-11.2.0.4.0.zip -SL && \
     unzip instantclient-basiclite.zip && \
-    sudo mv instantclient*/ /usr/lib/instantclient && \
+    unzip instantclient-basiclite-11.zip && \
+    sudo mkdir -p /usr/lib/instantclient && sudo mv instantclient*/ /usr/lib/instantclient && \
     rm instantclient-basiclite.zip && \
-    sudo ln -s /usr/lib/instantclient/libclntsh.so.19.1 /usr/lib/libclntsh.so && \
-    sudo ln -s /usr/lib/instantclient/libocci.so.19.1 /usr/lib/libocci.so && \
-    sudo ln -s /lib/libc.so.6 /usr/lib/libresolv.so.2 && \
-    sudo ln -s /lib64/ld-linux-x86-64.so.2 /usr/lib/ld-linux-x86-64.so.2
-export LD_LIBRARY_PATH="/usr/lib/instantclient"
+    rm instantclient-basiclite-11.zip && \
+    echo /usr/lib/instantclient/* | sudo tee /etc/ld.so.conf.d/oracle-instantclient.conf > /dev/null && sudo ldconfig
+# Set the Instant Client library paths
+export LD_LIBRARY_PATH="/usr/lib/instantclient/instantclient_11_2:/usr/lib/instantclient/instantclient_21_10${LD_LIBRARY_PATH}" 
 
 # Gen fallback certs
 sudo openssl rand -out /home/ubuntu/.rnd -hex 256
