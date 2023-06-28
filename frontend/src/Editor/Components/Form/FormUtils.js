@@ -460,28 +460,28 @@ const typeResolver = (type) => {
       return 'Button';
     case 'text':
       return 'Text';
-    case 'numberinput':
+    case 'number':
       return 'NumberInput';
-    case 'passwordinput':
+    case 'password':
       return 'PasswordInput';
     case 'datepicker':
       return 'Datepicker';
-    case 'Checkbox':
-      return 'checkbox';
-    case 'RadioButton':
-      return 'radiobutton';
-    case 'ToggleSwitch':
+    case 'checkbox':
+      return 'Checkbox';
+    case 'radio':
+      return 'RadioButton';
+    case 'toggle':
       return 'ToggleSwitch';
-    case 'TextArea':
-      return 'textarea';
-    case 'DaterangePicker':
-      return 'daterangepicker';
-    case 'Multiselect':
-      return 'multiselect';
-    case 'StarRating':
-      return 'starrating';
-    case 'FilePicker':
-      return 'filepicker';
+    case 'textarea':
+      return 'TextArea';
+    case 'daterangepicker':
+      return 'DaterangePicker';
+    case 'multiselect':
+      return 'Multiselect';
+    case 'starrating':
+      return 'StarRating';
+    case 'filepicker':
+      return 'FilePicker';
     default:
       break;
   }
