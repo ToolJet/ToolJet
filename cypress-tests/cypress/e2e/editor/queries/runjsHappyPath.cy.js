@@ -161,7 +161,7 @@ describe("RunJS", () => {
     query("run");
     cy.intercept("GET", "api/data_queries?**").as("addQuery");
     cy.wait("@addQuery");
-    cy.wait(200);
+    cy.wait(1000);
     cy.notVisible('[data-cy="modal-title"]');
 
     addInputOnQueryField(

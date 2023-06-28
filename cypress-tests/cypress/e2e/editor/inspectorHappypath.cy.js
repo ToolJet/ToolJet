@@ -30,7 +30,7 @@ describe("Editor- Inspector", () => {
     openNode("globals");
     verifyNodeData("theme", "Object", "1 entry ");
     verifyNodeData("urlparams", "Object", "0 entry ");
-    verifyNodeData("currentUser", "Object", "4 entries ");
+    verifyNodeData("currentUser", "Object", "5 entries "); //only on ee-4 WIP
 
     openNode("theme");
     verifyValue("name", "String", `"light"`);
