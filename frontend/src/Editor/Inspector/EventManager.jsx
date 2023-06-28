@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ActionTypes } from '../ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -28,12 +28,17 @@ export const EventManager = ({
   popOverCallback,
   popoverPlacement,
   pages,
+  hideEmptyEventsAlert,
 }) => {
   const dataQueries = useDataQueries();
   const [events, setEvents] = useState(() => component.component.definition.events || []);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
   const router = useRouter();
+
+  useEffect(() => {
+    setEvents(component.component.definition.events || []);
+  }, [component?.component?.definition?.events]);
 
   let actionOptions = ActionTypes.map((action) => {
     return { name: action.name, value: action.id };
@@ -216,6 +221,23 @@ export const EventManager = ({
     eventsChanged(newEvents);
     posthog.capture('click_add_event_handler', { widget: component.component.component, appId: router.query.id });
   }
+
+  //following two are functions responsible for on change and value for the control specific actions
+  const onChangeHandlerForComponentSpecificActionHandle = (value, index, param, event) => {
+    const newParam = { ...param, value: value };
+    const params = event?.componentSpecificActionParams ?? [];
+    const newParams = params.map((paramOfParamList) =>
+      paramOfParamList.handle === param.handle ? newParam : paramOfParamList
+    );
+    return handlerChanged(index, 'componentSpecificActionParams', newParams);
+  };
+  const valueForComponentSpecificActionHandle = (event, param) => {
+    return (
+      event?.componentSpecificActionParams?.find((paramItem) => paramItem.handle === param.handle)?.value ??
+      param.defaultValue
+    );
+  };
+
   function eventPopover(event, index) {
     return (
       <Popover
@@ -681,34 +703,44 @@ export const EventManager = ({
                       <div className="col-3 p-1" data-cy={`action-options-${param.displayName}-field-label`}>
                         {param.displayName}
                       </div>
-                      <div
-                        className={`${
-                          param?.type ? 'col-7' : 'col-9 fx-container-eventmanager-code'
-                        } fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
-                        data-cy="action-options-text-input-field"
-                      >
-                        <CodeHinter
-                          theme={darkMode ? 'monokai' : 'default'}
-                          currentState={currentState}
-                          mode="javascript"
-                          initialValue={
-                            event?.componentSpecificActionParams?.find((paramItem) => paramItem.handle === param.handle)
-                              ?.value ?? param.defaultValue
-                          }
-                          onChange={(value) => {
-                            const newParam = { ...param, value: value };
-                            const params = event?.componentSpecificActionParams ?? [];
-                            const newParams = params.map((paramOfParamList) =>
-                              paramOfParamList.handle === param.handle ? newParam : paramOfParamList
-                            );
-                            handlerChanged(index, 'componentSpecificActionParams', newParams);
-                          }}
-                          enablePreview={true}
-                          type={param?.type}
-                          fieldMeta={{ options: param?.options }}
-                          cyLabel={param.displayName}
-                        />
-                      </div>
+                      {param.type === 'select' ? (
+                        <div className="col-9" data-cy="action-options-action-selection-field">
+                          <Select
+                            className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                            options={param.options}
+                            value={valueForComponentSpecificActionHandle(event, param)}
+                            search={true}
+                            onChange={(value) => {
+                              onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
+                            }}
+                            placeholder={t('globals.select', 'Select') + '...'}
+                            styles={styles}
+                            useMenuPortal={false}
+                            useCustomStyles={true}
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          className={`${
+                            param?.type ? 'col-7' : 'col-9 fx-container-eventmanager-code'
+                          } fx-container-eventmanager ${param.type == 'select' && 'component-action-select'}`}
+                          data-cy="action-options-text-input-field"
+                        >
+                          <CodeHinter
+                            theme={darkMode ? 'monokai' : 'default'}
+                            currentState={currentState}
+                            mode="javascript"
+                            initialValue={valueForComponentSpecificActionHandle(event, param)}
+                            onChange={(value) => {
+                              onChangeHandlerForComponentSpecificActionHandle(value, index, param, event);
+                            }}
+                            enablePreview={true}
+                            type={param?.type}
+                            fieldMeta={{ options: param?.options }}
+                            cyLabel={param.displayName}
+                          />
+                        </div>
+                      )}
                     </div>
                   ))}
               </>
@@ -898,13 +930,19 @@ export const EventManager = ({
             {t('editor.inspector.eventManager.addEventHandler', '+ Add event handler')}
           </button>
         </div>
-        <div className="text-left">
-          <small className="color-disabled" data-cy="no-event-handler-message">
-            {t('editor.inspector.eventManager.emptyMessage', "This {{componentName}} doesn't have any event handlers", {
-              componentName: componentName.toLowerCase(),
-            })}
-          </small>
-        </div>
+        {!hideEmptyEventsAlert ? (
+          <div className="text-left">
+            <small className="color-disabled" data-cy="no-event-handler-message">
+              {t(
+                'editor.inspector.eventManager.emptyMessage',
+                "This {{componentName}} doesn't have any event handlers",
+                {
+                  componentName: componentName.toLowerCase(),
+                }
+              )}
+            </small>
+          </div>
+        ) : null}
       </>
     );
   }

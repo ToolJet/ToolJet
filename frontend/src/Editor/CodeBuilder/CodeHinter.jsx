@@ -31,6 +31,7 @@ import { toast } from 'react-hot-toast';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import cx from 'classnames';
 
 const AllElements = {
   Color,
@@ -100,7 +101,7 @@ export function CodeHinter({
   });
   const { t } = useTranslation();
 
-  const { variablesExposedForPreview } = useContext(EditorContext);
+  const { variablesExposedForPreview } = useContext(EditorContext) || {};
 
   const prevCountRef = useRef(false);
 
@@ -159,7 +160,7 @@ export function CodeHinter({
   };
 
   const getCustomResolvables = () => {
-    if (variablesExposedForPreview.hasOwnProperty(component?.id)) {
+    if (variablesExposedForPreview?.hasOwnProperty(component?.id)) {
       if (component?.component?.component === 'Table' && fieldMeta?.name) {
         return {
           ...variablesExposedForPreview[component?.id],
@@ -271,9 +272,8 @@ export function CodeHinter({
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
-
   return (
-    <div ref={wrapperRef}>
+    <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
           <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
@@ -298,7 +298,7 @@ export function CodeHinter({
         </div>
       </div>
       <div
-        className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''}`}
+        className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''} custom-row`}
         style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col code-hinter-col`} style={{ marginBottom: '0.5rem' }}>

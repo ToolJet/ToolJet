@@ -11,6 +11,17 @@ Canvas is the center area of the ToolJet app builder where the application is bu
 
 </div>
 
+:::info
+- The Canvas height and width can be adjusted from the [Global Settings](/docs/app-builder/toolbar#global-settings).
+- When the [Pages drawer](/docs/tutorial/pages) on the left is opened or pinned, the canvas becomes scrollable.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/app-builder/canvas/canvasscroll.gif" alt="App Builder: Canvas"/>
+
+</div>
+:::
+
 ### Arrange Components
 
 All the components are fully interactive in editor mode - to prevent interaction you can **click and hold** the **[Component Handle](docs/app-builder/components-library)** to change component's position.

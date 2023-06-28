@@ -57,8 +57,18 @@ jobs:
         with:
           command: build
           #The the below argument is specific for building EE AMI image
-          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_bionic -var ssh_private_key=${{ secrets.SSH_PRIVATE_KEY }}
+          arguments: -color=false -on-error=abort -var ami_name=tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal -var ssh_private_key=${{ secrets.SSH_PRIVATE_KEY }}
           target: .
           working_directory: deploy/ec2
         env:
           PACKER_LOG: 1
+
+      - name: Send Slack Notification
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            message="Job '${{ env.JOB_NAME }}' succeeded! AMI = tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal"
+          else
+            message="Job '${{ env.JOB_NAME }}' failed! AMI = tooljet_${{ env.RELEASE_VERSION }}.ubuntu_focal"
+          fi
+
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }} 

@@ -183,7 +183,7 @@ export async function createUser(
     status,
     invitationToken,
     formLoginStatus = true,
-    organizationName = 'Test Organization',
+    organizationName = `${email}'s workspace`,
     ssoConfigs = [],
     enableSignUp = false,
     userStatus = 'active',

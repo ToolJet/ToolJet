@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ApiKeyContainer } from './ApiKeyContainer';
 import { copilotService, orgEnvironmentVariableService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { CustomToggleSwitch } from '@/Editor/QueryManager/CustomToggleSwitch';
+import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
 import { useLocalStorageState } from '@/_hooks/use-local-storage';
