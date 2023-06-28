@@ -251,7 +251,7 @@ class EditorComponent extends React.Component {
       constants.map((constant) => {
         const { admin } = authenticationService.currentSessionValue;
         const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
-        orgConstants[constant.name] = admin ? constantValue : 'HiddenEnvironmentConstant';
+        orgConstants[constant.name] = constantValue;
 
         this.setState({
           currentState: {

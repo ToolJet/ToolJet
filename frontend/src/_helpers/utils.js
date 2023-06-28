@@ -417,6 +417,7 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
       'actions',
       'client',
       'server',
+      'constants',
       code
     );
     result = {
@@ -432,7 +433,8 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
         currentState.variables,
         actions,
         currentState?.client,
-        currentState?.server
+        currentState?.server,
+        currentState?.constants
       ),
     };
   } catch (err) {
