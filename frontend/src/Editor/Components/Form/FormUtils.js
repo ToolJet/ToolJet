@@ -69,9 +69,9 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] = value?.customRule;
 
-            if (value?.display_values)
+            if (value?.displayValues)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values']['value'] =
-                value?.display_values;
+                value?.displayValues;
             if (value?.label)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = value?.label;
             if (value?.value)
