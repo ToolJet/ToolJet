@@ -96,6 +96,7 @@ export const CalendarEventPopover = function ({
                 {...containerProps}
                 parentRef={parentRef}
                 removeComponent={removeComponent}
+                restrictedChildWidgets={['Calendar', 'Kanban']}
               />
               <SubCustomDragLayer
                 parent={calendarWidgetId}

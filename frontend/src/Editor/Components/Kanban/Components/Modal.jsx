@@ -50,6 +50,7 @@ export const Modal = function Modal({ showModal, setShowModal, kanbanProps }) {
           {...containerProps}
           parentRef={parentRef}
           customResolvables={{ cardData: exposedVariables?.lastSelectedCard }}
+          restrictedChildWidgets={['Calendar', 'Kanban']}
         />
       </BootstrapModal.Body>
     </BootstrapModal>
