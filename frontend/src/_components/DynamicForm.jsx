@@ -65,6 +65,7 @@ const DynamicForm = ({
     return () => {
       setWorkspaceVariables([]);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
