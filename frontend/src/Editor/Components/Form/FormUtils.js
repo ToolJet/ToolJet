@@ -16,7 +16,7 @@ export function generateUIComponents(JSONSchema, advanced) {
       if (uiComponentsDraft?.length > 0 && uiComponentsDraft[index * 2 + 1]) {
         switch (typeResolver(value?.type)) {
           case 'TextInput':
-            if (value?.styles?.backgroundColor !== '')
+            if (value?.styles?.backgroundColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['backgroundColor']['value'] =
                 value?.styles?.backgroundColor;
             if (value?.styles?.borderRadius)
