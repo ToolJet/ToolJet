@@ -22,7 +22,7 @@ export const QueryCard = ({
   const isUnsavedChangesAvailable = useUnsavedChanges();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
   const { deleteDataQueries, renameQuery, duplicateQuery } = useDataQueriesActions();
-  const { setSelectedQuery, setSelectedDataSource, setUnSavedChanges, setPreviewData } = useQueryPanelActions();
+  const { setSelectedQuery, setPreviewData } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [renamingQuery, setRenamingQuery] = useState(false);
 
@@ -36,12 +36,8 @@ export const QueryCard = ({
     setShowDeleteConfirmation(true);
   };
 
-  const cancelDeleteDataQuery = () => {
-    setShowDeleteConfirmation(false);
-  };
-
   const updateQueryName = (selectedQuery, newName) => {
-    const { id, name } = selectedQuery;
+    const { name } = selectedQuery;
     if (name === newName) {
       return setRenamingQuery(false);
     }
@@ -69,7 +65,6 @@ export const QueryCard = ({
         key={dataQuery.id}
         onClick={() => {
           if (selectedQuery?.id === dataQuery?.id) return;
-          const stateToBeUpdated = { editingQuery: true, selectedQuery: dataQuery };
           if (isUnsavedChangesAvailable) {
             setSaveConfirmation(true);
           } else {

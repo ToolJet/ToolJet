@@ -5,7 +5,7 @@ import { QueryDataPane } from './QueryDataPane';
 import QueryManager from '../QueryManager/QueryManager';
 
 import useWindowResize from '@/_hooks/useWindowResize';
-import { useQueryPanelActions, useUnsavedChanges, useSelectedQuery } from '@/_stores/queryPanelStore';
+import { useQueryPanelActions, useUnsavedChanges } from '@/_stores/queryPanelStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 import Maximize from '../../_ui/Icon/solidIcons/Maximize';
 
@@ -27,7 +27,6 @@ const QueryPanel = ({
 }) => {
   const { setSelectedQuery, updateQueryPanelHeight, setSelectedDataSource } = useQueryPanelActions();
   const isUnsavedQueriesAvailable = useUnsavedChanges();
-  const selectedQuery = useSelectedQuery();
   const dataQueries = useDataQueries();
   const queryManagerPreferences = useRef(JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {});
   const queryPaneRef = useRef(null);

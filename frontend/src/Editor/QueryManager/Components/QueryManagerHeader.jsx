@@ -16,14 +16,12 @@ import {
   useUnsavedChanges,
   usePreviewLoading,
 } from '@/_stores/queryPanelStore';
-import ToggleQueryEditorIcon from '../Icons/ToggleQueryEditorIcon';
 
 export const QueryManagerHeader = forwardRef(
   (
     {
       darkMode,
       addNewQueryAndDeselectSelectedQuery,
-      toggleQueryEditor,
       currentState,
       options,
       editingVersionId,

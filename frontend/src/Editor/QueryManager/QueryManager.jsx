@@ -11,7 +11,6 @@ import { useQueryToBeRun, useSelectedQuery, useQueryPanelActions } from '@/_stor
 
 const QueryManager = ({
   addNewQueryAndDeselectSelectedQuery,
-  toggleQueryEditor,
   mode,
   dataQueriesChanged,
   appId,
@@ -80,7 +79,6 @@ const QueryManager = ({
       <QueryManagerHeader
         darkMode={darkMode}
         addNewQueryAndDeselectSelectedQuery={addNewQueryAndDeselectSelectedQuery}
-        toggleQueryEditor={toggleQueryEditor}
         currentState={currentState}
         options={options}
         editingVersionId={editingVersionId}
