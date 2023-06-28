@@ -49,7 +49,6 @@ export const LeftSidebarInspector = ({
     delete jsontreeData.errors;
     delete jsontreeData.client;
     delete jsontreeData.server;
-    delete jsontreeData.constants;
 
     //*Sorted components and queries alphabetically
     const sortedComponents = Object.keys(jsontreeData['components'])

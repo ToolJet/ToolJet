@@ -782,7 +782,9 @@ export function getQueryVariables(options, state) {
       options = options.replace(/\n/g, ' ');
       // check if {{var}} and %%var%% are present in the string
 
-      if (options.includes('{{') && options.includes('%%')) {
+      if (options.includes('{{constants.')) {
+        queryVariables[options] = 'HiddenOrganizationConstant';
+      } else if (options.includes('{{') && options.includes('%%')) {
         const vars = resolveReferences(options, state);
         console.log('queryVariables', { options, vars });
         queryVariables[options] = vars;

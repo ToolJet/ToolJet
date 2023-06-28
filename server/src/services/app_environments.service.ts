@@ -4,6 +4,7 @@ import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
+import { OrganizationConstant } from 'src/entities/organization_constants.entity';
 
 @Injectable()
 export class AppEnvironmentService {
@@ -129,6 +130,26 @@ export class AppEnvironmentService {
         },
         { value: constantValue, updatedAt: new Date() }
       );
+    }, manager);
+  }
+
+  async getOrgEnvironmentConstant(
+    constantName: string,
+    organizationId: string,
+    environmentId: string,
+    manager?: EntityManager
+  ) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      let envId: string = environmentId;
+      if (!environmentId) {
+        envId = (await this.get(organizationId, null, manager)).id;
+      }
+
+      const constantId = (await manager.findOneOrFail(OrganizationConstant, {}, { where: { constantName } })).id;
+
+      return await manager.findOneOrFail(OrgEnvironmentConstantValue, {
+        where: { organizationConstantId: constantId, environmentId: envId },
+      });
     }, manager);
   }
 }

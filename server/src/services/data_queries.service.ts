@@ -88,9 +88,15 @@ export class DataQueriesService {
     return dataQuery;
   }
 
-  async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id) {
+  async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id, environmentId = undefined) {
     const sourceOptions = await this.parseSourceOptions(dataSource.options);
-    const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions, organization_id);
+
+    const parsedQueryOptions = await this.parseQueryOptions(
+      dataQuery.options,
+      queryOptions,
+      organization_id,
+      environmentId
+    );
     const service = await this.pluginsHelper.getService(dataSource.pluginId, dataSource.kind);
 
     return { service, sourceOptions, parsedQueryOptions };
@@ -124,7 +130,8 @@ export class DataQueriesService {
       dataSource,
       dataQuery,
       queryOptions,
-      organizationId
+      organizationId,
+      environmentId
     );
 
     try {
@@ -210,7 +217,8 @@ export class DataQueriesService {
             dataSource,
             dataQuery,
             queryOptions,
-            organizationId
+            organizationId,
+            environmentId
           ));
 
           return await service.run(
@@ -401,7 +409,40 @@ export class DataQueriesService {
     return result;
   }
 
-  async parseQueryOptions(object: any, options: object, organization_id: string): Promise<object> {
+  async resolveConstants(str: string, organization_id: string, environmentId: string) {
+    const tempStr: string = str.match(/\{\{(.*?)\}\}/g)[0].replace(/[{}]/g, '');
+    let result = tempStr;
+
+    if (new RegExp('^constants.[A-Za-z0-9]+$').test(tempStr)) {
+      const splitArray = tempStr.split('.');
+      const constantName = splitArray[splitArray.length - 1];
+
+      const constant = await this.appEnvironmentService.getOrgEnvironmentConstant(
+        constantName,
+        organization_id,
+        environmentId
+      );
+
+      const decryptedValue = constant?.value
+        ? await this.encryptionService.decryptColumnValue(
+            'org_environment_constant_values',
+            organization_id,
+            constant.value
+          )
+        : null;
+
+      result = decryptedValue;
+    }
+
+    return result;
+  }
+
+  async parseQueryOptions(
+    object: any,
+    options: object,
+    organization_id: string,
+    environmentId?: string
+  ): Promise<object> {
     if (typeof object === 'object' && object !== null) {
       for (const key of Object.keys(object)) {
         object[key] = await this.parseQueryOptions(object[key], options, organization_id);
@@ -439,6 +480,11 @@ export class DataQueriesService {
         }
 
         return resolvedvar;
+      }
+
+      if (object.includes('{{constants.')) {
+        const resolvingConstant = await this.resolveConstants(object, organization_id, environmentId);
+        options[object] = resolvingConstant;
       }
 
       if (object.startsWith('{{') && object.endsWith('}}') && (object.match(/{{/g) || []).length === 1) {
