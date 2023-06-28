@@ -132,7 +132,6 @@ class EditorComponent extends React.Component {
       queryConfirmationList: [],
       showCreateVersionModalPrompt: false,
       isSourceSelected: false,
-      isUnsavedQueriesAvailable: false,
       selectionInProgress: false,
       scrollOptions: {},
       currentPageId: defaultPageId,
@@ -271,6 +270,8 @@ class EditorComponent extends React.Component {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
       if (data === 'versionReleased') {
         this.fetchApp();
+      } else if (data === 'dataQueriesChanged') {
+        this.fetchDataQueries(this.state.editingVersion?.id);
       } else if (data === 'dataSourcesChanged') {
         this.fetchDataSources(this.state.editingVersion?.id);
       }
@@ -965,10 +966,6 @@ class EditorComponent extends React.Component {
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'edit');
 
   runQuery = (queryId, queryName) => runQuery(this, queryId, queryName);
-
-  dataSourceModalHandler = () => {
-    this.dataSourceModalRef.current.dataSourceModalToggleStateHandler();
-  };
 
   onAreaSelectionStart = (e) => {
     const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 0;
@@ -1726,7 +1723,6 @@ class EditorComponent extends React.Component {
                   appId={appId}
                   editingVersionId={editingVersion?.id}
                   appDefinition={appDefinition}
-                  dataSourceModalHandler={this.dataSourceModalHandler}
                   isVersionReleased={this.isVersionReleased()}
                   editorRef={this}
                 />

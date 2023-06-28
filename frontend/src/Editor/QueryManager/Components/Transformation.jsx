@@ -133,22 +133,6 @@ return [row for row in data if row['amount'] > 1000]
     };
   };
 
-  const popover = (
-    <Popover id="transformation-popover-container">
-      <p className="transformation-popover" data-cy={`transformation-popover`}>
-        {t(
-          'editor.queryManager.transformation.transformationToolTip',
-          'Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python'
-        )}
-        <br />
-        <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
-          {t('globals.readDocumentation', 'Read documentation')}
-        </a>
-        .
-      </p>
-    </Popover>
-  );
-
   const popoverForRecommendation = (
     <Popover id="transformation-popover-container">
       <div className="transformation-popover card text-center">

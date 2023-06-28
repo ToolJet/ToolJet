@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
-import RunjsIcon from '@/Editor/Icons/runjs.svg';
-import RunTooljetDbIcon from '@/Editor/Icons/tooljetdb.svg';
-import RunpyIcon from '@/Editor/Icons/runpy.svg';
-import AddIcon from '@assets/images/icons/add-source.svg';
-import { useTranslation } from 'react-i18next';
-import { getSvgIcon } from '@/_helpers/appUtils';
 import { groupBy } from 'lodash';
 import DataSourceIcon from './DataSourceIcon';
 
@@ -16,18 +10,9 @@ function DataSourceLister({
   changeDataSource,
   handleBackButton,
   darkMode,
-  dataSourceModalHandler,
-  showAddDatasourceBtn = true,
-  dataSourceBtnComponent = null,
 }) {
   const [allSources, setAllSources] = useState([...dataSources, ...staticDataSources]);
   const [globalDataSourcesOpts, setGlobalDataSourcesOpts] = useState([]);
-  const { t } = useTranslation();
-  const computedStyles = {
-    background: darkMode ? '#2f3c4c' : 'white',
-    color: darkMode ? 'white' : '#1f2936',
-    border: darkMode && '1px solid #2f3c4c',
-  };
   const handleChangeDataSource = (source) => {
     changeDataSource(source);
     handleBackButton();
@@ -87,8 +72,6 @@ function DataSourceLister({
 
   return (
     <div className="query-datasource-card-container">
-      {showAddDatasourceBtn && dataSourceBtnComponent && dataSourceBtnComponent}
-
       <Select
         onChange={({ source } = {}) => handleChangeDataSource(source)}
         styles={{

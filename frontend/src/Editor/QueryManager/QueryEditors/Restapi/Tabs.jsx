@@ -81,7 +81,6 @@ function ControlledTabs({
                 currentState={currentState}
                 theme={theme}
                 bodyToggle={bodyToggle}
-                setBodyToggle={setBodyToggle}
                 darkMode={darkMode}
                 componentName={componentName}
               />

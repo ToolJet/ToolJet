@@ -7257,6 +7257,12 @@ tbody {
     }
   }
 
+  &:disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: .65;
+  }
+
   .query-run-svg {
     padding: 4px 2.67px;
   }

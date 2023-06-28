@@ -19,7 +19,6 @@ const QueryManager = ({
   darkMode,
   apps,
   allComponents,
-  dataSourceModalHandler,
   appDefinition,
   editorRef,
   isVersionReleased,
@@ -81,16 +80,12 @@ const QueryManager = ({
         addNewQueryAndDeselectSelectedQuery={addNewQueryAndDeselectSelectedQuery}
         currentState={currentState}
         options={options}
-        editingVersionId={editingVersionId}
-        appId={appId}
         ref={previewPanelRef}
         editorRef={editorRef}
         isVersionReleased={isVersionReleased}
-        status={selectedQuery?.status}
       />
       <QueryManagerBody
         darkMode={darkMode}
-        dataSourceModalHandler={dataSourceModalHandler}
         options={options}
         currentState={currentState}
         allComponents={allComponents}

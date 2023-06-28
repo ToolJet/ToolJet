@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isEmpty } from 'lodash';
 import { SearchBox } from '@/_components/SearchBox';
+import Minimize from '@/_ui/Icon/solidIcons/Minimize';
+import Search from '@/_ui/Icon/solidIcons/Search';
 import Skeleton from 'react-loading-skeleton';
 import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import { QueryCard } from './QueryCard';
@@ -9,9 +12,6 @@ import cx from 'classnames';
 import { Tooltip } from 'react-bootstrap';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 import FilterandSortPopup from './FilterandSortPopup';
-import Minimize from '../../_ui/Icon/solidIcons/Minimize';
-import Search from '../../_ui/Icon/solidIcons/Search';
-import { isEmpty } from 'lodash';
 
 export const QueryDataPane = ({
   setSaveConfirmation,
@@ -32,11 +32,9 @@ export const QueryDataPane = ({
   const [dataSourcesForFilters, setDataSourcesForFilters] = useState([]);
 
   useEffect(() => {
-    console.log(dataSourcesForFilters);
     if (isEmpty(dataSourcesForFilters)) {
       setFilteredQueries(dataQueries);
     } else {
-      console.log('dataSourcesForFilters >>', dataSourcesForFilters);
       setFilteredQueries(dataQueries.filter((query) => dataSourcesForFilters.includes(query.kind)));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -162,7 +160,6 @@ export const QueryDataPane = ({
                 <QueryCard
                   key={query.id}
                   dataQuery={query}
-                  setSaveConfirmation={setSaveConfirmation}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
                   editorRef={editorRef}

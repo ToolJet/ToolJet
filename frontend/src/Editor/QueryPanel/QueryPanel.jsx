@@ -5,7 +5,7 @@ import { QueryDataPane } from './QueryDataPane';
 import QueryManager from '../QueryManager/QueryManager';
 
 import useWindowResize from '@/_hooks/useWindowResize';
-import { useQueryPanelActions, useUnsavedChanges } from '@/_stores/queryPanelStore';
+import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 import Maximize from '../../_ui/Icon/solidIcons/Maximize';
 
@@ -19,14 +19,12 @@ const QueryPanel = ({
   appId,
   editingVersionId,
   appDefinition,
-  dataSourceModalHandler,
   editorRef,
   onQueryPaneDragging,
   isVersionReleased,
   handleQueryPaneExpanding,
 }) => {
   const { setSelectedQuery, updateQueryPanelHeight, setSelectedDataSource } = useQueryPanelActions();
-  const isUnsavedQueriesAvailable = useUnsavedChanges();
   const dataQueries = useDataQueries();
   const queryManagerPreferences = useRef(JSON.parse(localStorage.getItem('queryManagerPreferences')) ?? {});
   const queryPaneRef = useRef(null);
@@ -104,13 +102,10 @@ const QueryPanel = ({
   useEventListener('mousemove', onMouseMove);
   useEventListener('mouseup', onMouseUp);
 
-  const handleAddNewQuery = useCallback(() => {
-    if (!isUnsavedQueriesAvailable) {
-      setSelectedDataSource(null);
-      setSelectedQuery(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isUnsavedQueriesAvailable]);
+  const handleAddNewQuery = () => {
+    setSelectedDataSource(null);
+    setSelectedQuery(null);
+  };
 
   const toggleQueryEditor = useCallback(() => {
     queryManagerPreferences.current = { ...queryManagerPreferences.current, isExpanded: !isExpanded };
@@ -192,10 +187,8 @@ const QueryPanel = ({
                   darkMode={darkMode}
                   apps={apps}
                   allComponents={allComponents}
-                  dataSourceModalHandler={dataSourceModalHandler}
                   appDefinition={appDefinition}
                   editorRef={editorRef}
-                  isUnsavedQueriesAvailable={isUnsavedQueriesAvailable}
                   isVersionReleased={isVersionReleased}
                 />
               </div>

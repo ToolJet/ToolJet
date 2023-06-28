@@ -1,7 +1,7 @@
 import React from 'react';
 import Select from '@/_ui/Select';
 
-export const ChangeDataSource = ({ dataSources, onChange, value, selectedQuery }) => {
+export const ChangeDataSource = ({ dataSources, onChange, value }) => {
   return (
     <Select
       className="px-3"

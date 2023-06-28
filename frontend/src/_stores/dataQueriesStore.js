@@ -1,12 +1,11 @@
 import { create, zustandDevTools } from './utils';
 import { dataqueryService } from '@/_services';
-import { toast } from 'react-hot-toast';
 import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { runQueries, computeQueryState } from '@/_helpers/appUtils';
-import { source } from '../Editor/QueryManager/QueryEditors';
+import { isEmpty } from 'lodash';
 
 const initialState = {
   dataQueries: [],
@@ -20,7 +19,7 @@ const initialState = {
 
 export const useDataQueriesStore = create(
   zustandDevTools(
-    (set, get) => ({
+    (set) => ({
       ...initialState,
       actions: {
         // TODO: Remove editor state while changing currentState
@@ -45,7 +44,7 @@ export const useDataQueriesStore = create(
           });
         },
         setDataQueries: (dataQueries) => set({ dataQueries }),
-        deleteDataQueries: (queryId, editorRef) => {
+        deleteDataQueries: (queryId) => {
           set({ isDeletingQueryInProcess: true });
           useAppDataStore.getState().actions.setIsSaving(true);
           dataqueryService
@@ -53,7 +52,6 @@ export const useDataQueriesStore = create(
             .then(() => {
               const { actions, selectedQuery } = useQueryPanelStore.getState();
               if (queryId === selectedQuery?.id) {
-                actions.setUnSavedChanges(false);
                 actions.setSelectedDataSource(null);
                 actions.setSelectedQuery(null);
               }
@@ -62,14 +60,14 @@ export const useDataQueriesStore = create(
                 dataQueries: state.dataQueries.filter((query) => query.id !== queryId),
               }));
             })
-            .catch(({ error }) => {
+            .catch(() => {
               set({
                 isDeletingQueryInProcess: false,
               });
             })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
-        updateDataQuery: (options, shouldRunQuery) => {
+        updateDataQuery: (options) => {
           set({ isUpdatingQueryInProcess: true });
           const { actions, selectedQuery } = useQueryPanelStore.getState();
           useAppDataStore.getState().actions.setIsSaving(true);
@@ -105,14 +103,13 @@ export const useDataQueriesStore = create(
             })
             .catch((error) => {
               console.error('error', error);
-              actions.setUnSavedChanges(false);
               set({
                 isCreatingQueryInProcess: false,
               });
             })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
-        renameQuery: (id, newName, editorRef) => {
+        renameQuery: (id, newName) => {
           useAppDataStore.getState().actions.setIsSaving(true);
           dataqueryService
             .update(id, newName)
@@ -131,7 +128,6 @@ export const useDataQueriesStore = create(
               }));
               useQueryPanelStore.getState().actions.setSelectedQuery(id);
             })
-            .catch(({ error }) => {})
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
         changeDataQuery: (newDataSource) => {
@@ -154,7 +150,7 @@ export const useDataQueriesStore = create(
               }));
               useQueryPanelStore.getState().actions.setSelectedDataSource(newDataSource);
             })
-            .catch((error) => {
+            .catch(() => {
               set({
                 isUpdatingQueryInProcess: false,
               });
@@ -179,7 +175,7 @@ export const useDataQueriesStore = create(
               }));
               useQueryPanelStore.getState().actions.setSelectedQuery(data.id);
             })
-            .catch(({ error }) => {
+            .catch(() => {
               set({
                 isUpdatingQueryInProcess: false,
               });
@@ -212,8 +208,6 @@ export const useDataQueriesStore = create(
               queryToClone.pluginId
             )
             .then((data) => {
-              actions.setUnSavedChanges(false);
-              // toast.success('Query Added');
               set((state) => ({
                 isCreatingQueryInProcess: false,
                 dataQueries: [{ ...data }, ...state.dataQueries],
@@ -222,7 +216,6 @@ export const useDataQueriesStore = create(
             })
             .catch((error) => {
               console.error('error', error);
-              actions.setUnSavedChanges(false);
               set({
                 isCreatingQueryInProcess: false,
               });
@@ -231,18 +224,15 @@ export const useDataQueriesStore = create(
         },
         saveData: debounce((newValues) => {
           set({ isUpdatingQueryInProcess: true });
-          const { actions } = useQueryPanelStore.getState();
           dataqueryService
             .update(newValues?.id, newValues?.name, newValues?.options)
-            .then((data) => {
-              actions.setUnSavedChanges(false);
+            .then(() => {
               localStorage.removeItem('transformation');
-              set((state) => ({
+              set(() => ({
                 isUpdatingQueryInProcess: false,
               }));
             })
-            .catch(({ error }) => {
-              actions.setUnSavedChanges(false);
+            .catch(() => {
               set({
                 isUpdatingQueryInProcess: false,
               });
@@ -263,16 +253,26 @@ export const useDataQueriesStore = create(
 );
 
 useQueryPanelStore.subscribe(({ selectedQuery }, prevState) => {
+  if (isEmpty(prevState?.selectedQuery) || isEmpty(selectedQuery)) {
+    return;
+  }
+
   console.log(
-    'CHANGES ->',
-    isEqual(selectedQuery, prevState?.selectedQuery),
-    selectedQuery?.options,
-    prevState?.selectedQuery?.options
+    'prevState?.selectedQuery?.id, selectedQuery.id',
+    prevState?.selectedQuery?.id !== selectedQuery.id,
+    isEqual(formattedQuery, formattedPrevQuery)
   );
-  if (!isEqual(selectedQuery, prevState?.selectedQuery)) {
+
+  if (prevState?.selectedQuery?.id !== selectedQuery.id) {
+    return;
+  }
+
+  //removing updated_at since this value changes whenever the data is updated in the BE
+  const { updated_at, ...formattedQuery } = selectedQuery;
+  const { updated_at: prevUpdatedAt, ...formattedPrevQuery } = prevState?.selectedQuery || {};
+
+  if (!isEqual(formattedQuery, formattedPrevQuery)) {
     useDataQueriesStore.getState().actions.saveData(selectedQuery);
-  } else {
-    useAppDataStore.getState().actions.setIsSaving(false);
   }
 });
 

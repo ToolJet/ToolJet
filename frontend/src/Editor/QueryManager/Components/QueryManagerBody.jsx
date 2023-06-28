@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
-import { capitalize, isEqual, debounce, isEmpty } from 'lodash';
+import { capitalize, isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
@@ -10,8 +10,6 @@ import { Transformation } from './Transformation';
 import Preview from './Preview';
 import { ChangeDataSource } from './ChangeDataSource';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
-import AddGlobalDataSourceButton from './AddGlobalDataSourceButton';
-import EmptyGlobalDataSources from './EmptyGlobalDataSources';
 import { EventManager } from '@/Editor/Inspector/EventManager';
 import { allOperations } from '@tooljet/plugins/client';
 import { staticDataSources, customToggles, mockDataQueryAsComponent, schemaUnavailableOptions } from '../constants';
@@ -19,18 +17,12 @@ import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
 
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueries, useDataQueriesActions } from '@/_stores/dataQueriesStore';
-import {
-  useUnsavedChanges,
-  useSelectedQuery,
-  useSelectedDataSource,
-  useQueryPanelActions,
-} from '@/_stores/queryPanelStore';
+import { useSelectedQuery, useSelectedDataSource, useQueryPanelActions } from '@/_stores/queryPanelStore';
 
 export const QueryManagerBody = forwardRef(
   (
     {
       darkMode,
-      dataSourceModalHandler,
       options,
       currentState,
       allComponents,
@@ -48,9 +40,8 @@ export const QueryManagerBody = forwardRef(
     const dataSources = useDataSources();
     const globalDataSources = useGlobalDataSources();
     const selectedQuery = useSelectedQuery();
-    const isUnsavedQueriesAvailable = useUnsavedChanges();
     const selectedDataSource = useSelectedDataSource();
-    const { setSelectedDataSource, setUnSavedChanges, setPreviewData } = useQueryPanelActions();
+    const { setPreviewData } = useQueryPanelActions();
     const { changeDataQuery, updateDataQuery, createDataQuery } = useDataQueriesActions();
 
     const [dataSourceMeta, setDataSourceMeta] = useState(null);
@@ -137,25 +128,8 @@ export const QueryManagerBody = forwardRef(
       return updatedOptions;
     };
 
-    const removeRestKey = (options) => {
-      delete options.arrayValuesChanged;
-      return options;
-    };
-
     const validateNewOptions = (newOptions) => {
-      const headersChanged = newOptions.arrayValuesChanged ?? false;
       const updatedOptions = cleanFocusedFields(newOptions);
-      let isFieldsChanged = false;
-      if (selectedQuery) {
-        const isQueryChanged = !isEqual(removeRestKey(updatedOptions), removeRestKey(defaultOptions.current));
-        if (isQueryChanged) {
-          isFieldsChanged = true;
-        } else if (selectedQuery?.kind === 'restapi') {
-          if (headersChanged) {
-            isFieldsChanged = true;
-          }
-        }
-      }
       setOptions((options) => ({ ...options, ...updatedOptions }));
       updateDataQuery({ ...options, ...updatedOptions });
     };
@@ -199,7 +173,6 @@ export const QueryManagerBody = forwardRef(
           changeDataSource={changeDataSource}
           handleBackButton={handleBackButton}
           darkMode={darkMode}
-          dataSourceModalHandler={dataSourceModalHandler}
         />
       </div>
     );
@@ -285,19 +258,6 @@ export const QueryManagerBody = forwardRef(
       );
     };
 
-    const renderCustomToggle = ({ dataCy, action, translatedLabel, label }, index) => (
-      <div className={cx('mx-4', { 'pb-3 pt-3': index === 1 })}>
-        <CustomToggleSwitch
-          dataCy={dataCy}
-          isChecked={selectedQuery?.options?.[action]}
-          toggleSwitchFunction={toggleOption}
-          action={action}
-          darkMode={darkMode}
-          label={t(translatedLabel, label)}
-        />
-      </div>
-    );
-
     const renderQueryOptions = () => {
       return (
         <div
@@ -347,7 +307,6 @@ export const QueryManagerBody = forwardRef(
             <ChangeDataSource
               dataSources={selectableDataSources}
               value={selectedDataSource}
-              selectedQuery={selectedQuery}
               onChange={(newDataSource) => {
                 changeDataQuery(newDataSource);
               }}

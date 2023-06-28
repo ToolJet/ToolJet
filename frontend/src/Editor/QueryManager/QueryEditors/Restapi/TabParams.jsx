@@ -1,5 +1,4 @@
 import React from 'react';
-import GroupHeader from './GroupHeader';
 import TabContent from './TabContent';
 
 export default ({

@@ -1,6 +1,5 @@
 import React from 'react';
 import TabContent from './TabContent';
-import GroupHeader from './GroupHeader';
 
 export default ({
   options = [],

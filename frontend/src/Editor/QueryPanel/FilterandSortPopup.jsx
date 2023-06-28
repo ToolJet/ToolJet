@@ -4,16 +4,17 @@ import cx from 'classnames';
 import { Checkbox } from '@/_ui/CheckBox';
 import { Button } from '@/_ui/LeftSidebar';
 import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
-import Filter from '../../_ui/Icon/bulkIcons/Filter';
-import Arrowleft from '../../_ui/Icon/bulkIcons/Arrowleft';
-import { staticDataSources } from '../QueryManager/constants';
-import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
+import Filter from '@/_ui/Icon/bulkIcons/Filter';
+import Arrowleft from '@/_ui/Icon/bulkIcons/Arrowleft';
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import SortArrowUp from '../../_ui/Icon/bulkIcons/SortArrowUp';
-import SortArrowDown from '../../_ui/Icon/bulkIcons/SortArrowDown';
+import SortArrowUp from '@/_ui/Icon/bulkIcons/SortArrowUp';
+import SortArrowDown from '@/_ui/Icon/bulkIcons/SortArrowDown';
+import useShowPopover from '@/_hooks/useShowPopover';
+import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
+import { staticDataSources } from '../QueryManager/constants';
 
 const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFilterDatasourcesChange }) => {
-  const [showMenu, setShowMenu] = useState(false);
+  const [showMenu, setShowMenu] = useShowPopover(false, '#query-sort-filter-popover');
   const closeMenu = () => setShowMenu(false);
   const [action, setAction] = useState();
   const [search, setSearch] = useState('');
@@ -24,21 +25,7 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
   const { sortBy, sortOrder } = useDataQueriesStore();
   const globalDataSources = useGlobalDataSources();
 
-  React.useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showMenu && event.target.closest('#page-handler-menu') === null) {
-        closeMenu();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ page, showMenu })]);
-
-  React.useState(() => {
+  useState(() => {
     if (action === 'filter-by-datasource' && searchBoxRef.current) {
       searchBoxRef.current.focus();
     }
@@ -116,7 +103,7 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
       overlay={
         <Popover
           key={'page.i'}
-          id="page-handler-menu"
+          id="query-sort-filter-popover"
           className={`query-manager-sort-filter-popup ${darkMode && 'popover-dark-themed'}`}
         >
           <Popover.Body key={'1'} bsPrefix="popover-body" className="pt-2 p-0">

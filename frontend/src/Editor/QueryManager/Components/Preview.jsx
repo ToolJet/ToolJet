@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
-import { useTranslation } from 'react-i18next';
 import { usePreviewLoading, usePreviewData, useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { getTheme, tabs } from '../constants';
+import RemoveRectangle from '../../../_ui/Icon/solidIcons/RemoveRectangle';
 
 const Preview = ({ previewPanelRef, darkMode }) => {
   const [key, setKey] = useState('raw');
@@ -74,12 +74,14 @@ const Preview = ({ previewPanelRef, darkMode }) => {
                 </ListGroup>
               </Col>
               <Col className="text-right d-flex align-items-center justify-content-end">
-                <button
-                  className={`bg-transparent border-0 ${darkMode ? 'theme-dark' : ''}`}
-                  onClick={() => setPreviewData()}
-                >
-                  Dismiss
-                </button>
+                {queryPreviewData && (
+                  <button
+                    className={`bg-transparent border-0 ${darkMode ? 'theme-dark' : ''}`}
+                    onClick={() => setPreviewData()}
+                  >
+                    <RemoveRectangle width={17} viewBox="0 0 28 28" fill="var(--slate8)" /> Clear
+                  </button>
+                )}
               </Col>
             </Row>
             <Row>

@@ -11,7 +11,7 @@ export const useAppDataStore = create(
       ...initialState,
       actions: {
         updateEditingVersion: (version) => set(() => ({ editingVersion: version })),
-        setIsSaving: (isSaving) => set(() => ({ isSaving })),
+        setIsSaving: (isSaving) => set(() => console.trace(isSaving) || { isSaving }),
       },
     }),
     { name: 'App Data Store' }

@@ -10,42 +10,24 @@ import { useTranslation } from 'react-i18next';
 import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUtils';
 
 import { useDataQueriesActions, useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
-import {
-  useSelectedQuery,
-  useSelectedDataSource,
-  useUnsavedChanges,
-  usePreviewLoading,
-} from '@/_stores/queryPanelStore';
+import { useSelectedQuery, useSelectedDataSource, usePreviewLoading } from '@/_stores/queryPanelStore';
+import { Tooltip } from 'react-tooltip';
 
 export const QueryManagerHeader = forwardRef(
-  (
-    {
-      darkMode,
-      addNewQueryAndDeselectSelectedQuery,
-      currentState,
-      options,
-      editingVersionId,
-      appId,
-      editorRef,
-      isVersionReleased,
-      status,
-    },
-    ref
-  ) => {
-    const { renameQuery, updateDataQuery, createDataQuery, updateDataQueryStatus } = useDataQueriesActions();
+  ({ darkMode, addNewQueryAndDeselectSelectedQuery, currentState, options, editorRef, isVersionReleased }, ref) => {
+    const { renameQuery, updateDataQueryStatus } = useDataQueriesActions();
     const selectedQuery = useSelectedQuery();
     const isCreationInProcess = useQueryCreationLoading();
     const isUpdationInProcess = useQueryUpdationLoading();
-    const isUnsavedQueriesAvailable = useUnsavedChanges();
     const selectedDataSource = useSelectedDataSource();
-    const { t } = useTranslation();
     const queryName = selectedQuery?.name ?? '';
     const [renamingQuery, setRenamingQuery] = useState(false);
 
     const buttonDisabled = isUpdationInProcess || isCreationInProcess;
+    const isInDraft = selectedQuery?.status === 'draft';
 
     const executeQueryNameUpdation = (newName) => {
-      const { id, name } = selectedQuery;
+      const { name } = selectedQuery;
       if (name === newName) {
         return setRenamingQuery(false);
       }
@@ -155,23 +137,36 @@ export const QueryManagerHeader = forwardRef(
     const renderRunButton = () => {
       const { isLoading } = currentState?.queries[selectedQuery?.name] ?? false;
       return (
-        <button
-          onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name)}
-          className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(
-            isLoading,
-            isVersionReleased
-          )}`}
-          data-cy="query-run-button"
+        <span
+          {...(isInDraft && {
+            'data-tooltip-id': 'query-header-btn-run',
+            'data-tooltip-content': 'Publish the query to run',
+          })}
         >
-          <span
-            className={cx('query-manager-btn-svg-wrapper d-flex align-item-center query-icon-wrapper query-run-svg', {
-              invisible: isLoading,
+          <button
+            onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name)}
+            className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(
+              isLoading,
+              isVersionReleased
+            )}`}
+            data-cy="query-run-button"
+            disabled={isInDraft}
+            {...(isInDraft && {
+              'data-tooltip-id': 'query-header-btn-run',
+              'data-tooltip-content': 'Publish the query to run',
             })}
           >
-            <RunIcon />
-          </span>
-          <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
-        </button>
+            <span
+              className={cx('query-manager-btn-svg-wrapper d-flex align-item-center query-icon-wrapper query-run-svg', {
+                invisible: isLoading,
+              })}
+            >
+              <RunIcon />
+            </span>
+            <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
+          </button>
+          {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
+        </span>
       );
     };
 
@@ -179,7 +174,7 @@ export const QueryManagerHeader = forwardRef(
       if (selectedQuery === null) return;
       return (
         <>
-          {selectedQuery?.status === 'draft' && renderSaveButton()}
+          {isInDraft && renderSaveButton()}
           <PreviewButton onClick={previewButtonOnClick} buttonLoadingState={buttonLoadingState} />
           {renderRunButton()}
         </>

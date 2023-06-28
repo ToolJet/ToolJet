@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
+import { Tooltip } from 'react-tooltip';
 
 export const EventManager = ({
   component,
@@ -823,7 +824,7 @@ export const EventManager = ({
                             {...provided.dragHandleProps}
                             className="mb-1"
                           >
-                            <div className="card column-sort-row bg-light border-0">
+                            <div className="card column-sort-row border-0 bg-slate2">
                               <div className={rowClassName} data-cy="event-handler-card">
                                 <div className="row p-2" role="button">
                                   <div className="col-auto" style={{ cursor: 'grab' }}>
@@ -869,7 +870,7 @@ export const EventManager = ({
                                   <div className="col text-truncate" data-cy="event-handler">
                                     {componentMeta.events[event.eventId]['displayName']}
                                   </div>
-                                  <div className="col text-truncate" data-cy="event-name">
+                                  <div className="col text-truncate color-slate11" data-cy="event-name">
                                     <small className="event-action font-weight-light text-truncate">
                                       {actionMeta.name}
                                     </small>
@@ -882,6 +883,8 @@ export const EventManager = ({
                                         removeHandler(index);
                                       }}
                                       data-cy="delete-button"
+                                      data-tooltip-id="event-delete-btn-icon"
+                                      data-tooltip-content="Delete"
                                     >
                                       <svg
                                         width="10"
@@ -892,10 +895,11 @@ export const EventManager = ({
                                       >
                                         <path
                                           d="M0 13.8333C0 14.75 0.75 15.5 1.66667 15.5H8.33333C9.25 15.5 10 14.75 10 13.8333V3.83333H0V13.8333ZM1.66667 5.5H8.33333V13.8333H1.66667V5.5ZM7.91667 1.33333L7.08333 0.5H2.91667L2.08333 1.33333H0V3H10V1.33333H7.91667Z"
-                                          fill="#8092AC"
+                                          fill="var(--slate8)"
                                         />
                                       </svg>
                                     </span>
+                                    <Tooltip id="event-delete-btn-icon" className="tooltip" />
                                   </div>
                                 </div>
                               </div>

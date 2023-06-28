@@ -6,20 +6,12 @@ import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { useQueryPanelActions, useSelectedQuery, useUnsavedChanges } from '@/_stores/queryPanelStore';
+import { useQueryPanelActions, useSelectedQuery } from '@/_stores/queryPanelStore';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 
-export const QueryCard = ({
-  dataQuery,
-  setSaveConfirmation,
-  darkMode = false,
-  editorRef,
-  isVersionReleased,
-  appId,
-}) => {
+export const QueryCard = ({ dataQuery, darkMode = false, editorRef, isVersionReleased, appId }) => {
   const selectedQuery = useSelectedQuery();
-  const isUnsavedChangesAvailable = useUnsavedChanges();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
   const { deleteDataQueries, renameQuery, duplicateQuery } = useDataQueriesActions();
   const { setSelectedQuery, setPreviewData } = useQueryPanelActions();
@@ -65,12 +57,8 @@ export const QueryCard = ({
         key={dataQuery.id}
         onClick={() => {
           if (selectedQuery?.id === dataQuery?.id) return;
-          if (isUnsavedChangesAvailable) {
-            setSaveConfirmation(true);
-          } else {
-            setSelectedQuery(dataQuery?.id);
-            setPreviewData(null);
-          }
+          setSelectedQuery(dataQuery?.id);
+          setPreviewData(null);
         }}
         role="button"
       >
