@@ -53,6 +53,7 @@ export const Container = function Container({
             {...containerProps}
             parentRef={parentRef}
             removeComponent={removeComponent}
+            restrictedChildWidgets={['Calendar', 'Kanban']}
           />
           <SubCustomDragLayer
             containerCanvasWidth={width}

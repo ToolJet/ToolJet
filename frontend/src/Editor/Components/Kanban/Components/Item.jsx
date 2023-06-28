@@ -88,6 +88,7 @@ export const Item = React.memo(
                 {...containerProps}
                 readOnly={isDragActive || !isFirstItem}
                 parentRef={parentRef}
+                restrictedChildWidgets={['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container']}
               />
             </div>
             <span className="handle-container">

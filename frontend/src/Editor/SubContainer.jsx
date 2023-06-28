@@ -9,6 +9,7 @@ import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { resolveReferences } from '@/_helpers/utils';
+import { toast } from 'react-hot-toast';
 
 import { useMounted } from '@/_hooks/use-mount';
 
@@ -48,6 +49,7 @@ export const SubContainer = ({
   childComponents = null,
   isVersionReleased,
   setReleasedVersionPopupState,
+  restrictedChildWidgets = [],
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -271,33 +273,36 @@ export const SubContainer = ({
         const componentMeta = componentTypes.find((component) => component.component === item.component.component);
 
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+        if (!restrictedChildWidgets.includes(componentMeta?.component)) {
+          const newComponent = addNewWidgetToTheEditor(
+            componentMeta,
+            monitor,
+            boxes,
+            canvasBoundingRect,
+            item.currentLayout,
+            snapToGrid,
+            zoomLevel,
+            true
+          );
 
-        const newComponent = addNewWidgetToTheEditor(
-          componentMeta,
-          monitor,
-          boxes,
-          canvasBoundingRect,
-          item.currentLayout,
-          snapToGrid,
-          zoomLevel,
-          true
-        );
-
-        setBoxes({
-          ...boxes,
-          [newComponent.id]: {
-            component: newComponent.component,
-            parent: parentRef.current.id,
-            layouts: {
-              ...newComponent.layout,
+          setBoxes({
+            ...boxes,
+            [newComponent.id]: {
+              component: newComponent.component,
+              parent: parentRef.current.id,
+              layouts: {
+                ...newComponent.layout,
+              },
+              withDefaultChildren: newComponent.withDefaultChildren,
             },
-            withDefaultChildren: newComponent.withDefaultChildren,
-          },
-        });
+          });
 
-        setSelectedComponent(newComponent.id, newComponent.component);
+          setSelectedComponent(newComponent.id, newComponent.component);
 
-        return undefined;
+          return undefined;
+        } else {
+          toast.error(`Cannot add ${componentMeta?.component} as a child widget of ${parentComponent?.component}`);
+        }
       },
     }),
     [moveBox]

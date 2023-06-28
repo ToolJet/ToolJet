@@ -158,6 +158,7 @@ export const Form = function Form(props) {
                 setChildrenData(childDataRef.current);
               }
             }}
+            restrictedChildWidgets={['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container']}
           />
           <SubCustomDragLayer
             containerCanvasWidth={width}

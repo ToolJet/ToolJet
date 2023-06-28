@@ -127,6 +127,7 @@ export const Listview = function Listview({
                   return { ...prevData, ...newChildrenData };
                 });
               }}
+              restrictedChildWidgets={['Calendar', 'Kanban']}
             />
           </div>
         ))}

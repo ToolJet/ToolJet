@@ -215,7 +215,12 @@ export const Modal = function Modal({
       >
         {!loadingState ? (
           <>
-            <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
+            <SubContainer
+              parent={id}
+              {...containerProps}
+              parentRef={parentRef}
+              restrictedChildWidgets={['Calendar', 'Kanban']}
+            />
             <SubCustomDragLayer
               snapToGrid={true}
               parentRef={parentRef}
