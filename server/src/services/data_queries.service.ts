@@ -127,6 +127,8 @@ export class DataQueriesService {
       organizationId
     );
 
+    // console.log('sourceOptions ===> ', sourceOptions);
+
     try {
       // multi-auth will not work with public apps
       if (app?.isPublic && sourceOptions['multiple_auth_enabled']) {
@@ -366,9 +368,9 @@ export class DataQueriesService {
       const currentOption = options[key]?.['value'];
       const variablesMatcher = /(%%.+?%%)/g;
       const matched = variablesMatcher.exec(currentOption);
-
       if (matched) {
         const resolved = await this.resolveVariable(currentOption, organization_id);
+
         options[key]['value'] = resolved;
       }
     }
@@ -381,7 +383,14 @@ export class DataQueriesService {
       if (encrypted) {
         const credentialId = option['credential_id'];
         const value = await this.credentialsService.getValue(credentialId);
-        parsedOptions[key] = value;
+
+        if (value.includes('%%server')) {
+          const resolved = await this.resolveVariable(value, organization_id);
+          parsedOptions[key] = resolved;
+          continue;
+        } else {
+          parsedOptions[key] = value;
+        }
       } else {
         parsedOptions[key] = option['value'];
       }
@@ -396,10 +405,9 @@ export class DataQueriesService {
 
     const isServerVariable = new RegExp('^server').test(tempStr);
     const isClientVariable = new RegExp('^client').test(tempStr);
-
+    // console.log('sourceOptions ===> [result] ', { str, isServerVariable, isClientVariable });
     if (isServerVariable || isClientVariable) {
       const splitArray = tempStr.split('.');
-
       const variableType = splitArray[0];
       const variableName = splitArray[splitArray.length - 1];
 
@@ -421,6 +429,7 @@ export class DataQueriesService {
         );
       }
     }
+
     return result;
   }
 
