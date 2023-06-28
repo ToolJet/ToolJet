@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions, useSelectedQuery, useUnsavedChanges } from '@/_stores/queryPanelStore';
-import Copy from '../../_ui/Icon/solidIcons/Copy';
+import Copy from '@/_ui/Icon/solidIcons/Copy';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 
 export const QueryCard = ({
