@@ -249,7 +249,6 @@ class EditorComponent extends React.Component {
     orgEnvironmentConstantService.getAll().then(({ constants }) => {
       const orgConstants = {};
       constants.map((constant) => {
-        const { admin } = authenticationService.currentSessionValue;
         const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
         orgConstants[constant.name] = constantValue;
 
@@ -1477,7 +1476,7 @@ class EditorComponent extends React.Component {
       hoveredComponent,
       queryConfirmationList,
     } = this.state;
-    console.log('---currentapp env', { state: this.state });
+
     const appVersionPreviewLink = editingVersion
       ? `/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
       : '';

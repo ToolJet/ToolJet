@@ -7,9 +7,8 @@ import {
   Param,
   Patch,
   Delete,
-  //   BadRequestException,
+  BadRequestException,
   ForbiddenException,
-  //   Query,
 } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
@@ -18,8 +17,6 @@ import { User } from 'src/decorators/user.decorator';
 import { OrganizationConstantsService } from '@services/organization_constants.service';
 import { CreateOrganizationConstantDto, UpdateOrganizationConstantDto } from '@dto/organization-constant.dto';
 import { OrganizationConstant } from '../entities/organization_constants.entity';
-import { IsPublicGuard } from 'src/modules/org_environment_variables/is-public.guard';
-import { AppDecorator as App } from 'src/decorators/app.decorator';
 import { OrganizationConstantsAbilityFactory } from 'src/modules/casl/abilities/organization-constants-ability.factory';
 
 @Controller('organization-constants')
@@ -88,13 +85,10 @@ export class OrganizationConstantController {
     const { organizationId } = user;
     const result = await this.organizationConstantsService.delete(constantId, organizationId);
 
-    return decamelizeKeys({ result });
-  }
-
-  @UseGuards(IsPublicGuard)
-  @Get(':app_slug')
-  async getVariablesFromApp(@App() app) {
-    // const result = await this.organizationConstantsService.fetchVariables(app.organizationId);
-    return decamelizeKeys({ result: 'from slug' });
+    if (result.affected == 1) {
+      return;
+    } else {
+      throw new BadRequestException();
+    }
   }
 }

@@ -6,7 +6,7 @@ import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EncryptionService } from './encryption.service';
 import { AppEnvironmentService } from './app_environments.service';
 
-import { EntityManager, Repository } from 'typeorm';
+import { DeleteResult, EntityManager, Repository } from 'typeorm';
 import { CreateOrganizationConstantDto, UpdateOrganizationConstantDto } from '@dto/organization-constant.dto';
 
 @Injectable()
@@ -161,7 +161,7 @@ export class OrganizationConstantsService {
     });
   }
 
-  async delete(constantId: string, organizationId: string): Promise<void> {
+  async delete(constantId: string, organizationId: string): Promise<DeleteResult> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const constantToDelete = await manager.findOne(OrganizationConstant, {
         where: { id: constantId, organizationId },
@@ -171,9 +171,7 @@ export class OrganizationConstantsService {
         throw new Error('Constant not found');
       }
 
-      await manager.delete(OrganizationConstant, { id: constantId });
-
-      return { message: 'OK' };
+      return await manager.delete(OrganizationConstant, { id: constantId });
     });
   }
 
