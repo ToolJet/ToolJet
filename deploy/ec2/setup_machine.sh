@@ -73,7 +73,6 @@ sudo chmod 400 ~/.ssh/id_rsa
 ssh-keyscan github.com >> .ssh/known_hosts
 git clone -b develop git@github.com:ToolJet/tj-ee.git ~/app && cd ~/app
 
-# need to revert the branch from v2.8.0-ee2.1.4 to develop
 
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
