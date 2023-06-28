@@ -679,11 +679,9 @@ export function Table({
     ]
   );
   useEffect(() => {
-    console.log('arpit', { selectedFlatRows });
     if (showBulkSelector) {
       const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
       const selectedRowsId = selectedFlatRows.map((row) => row.id);
-      console.log('arpit inside if of bulk selector on', { selectedRowsOriginalData, selectedRowsId });
       setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId }).then(() => {
         const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
           accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
@@ -725,7 +723,6 @@ export function Table({
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
 
   useEffect(() => {
-    console.log('inside use', { page });
     const pageData = page.map((row) => row.original);
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
@@ -733,13 +730,12 @@ export function Table({
       ['selectedRow', []],
       ['selectedRowId', null],
     ]).then(() => {
-      console.log('kavin', { tableDetails });
       if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
         toggleAllRowsSelected(false);
         mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
       }
     });
-  }, [tableData.length, page, _.toString(data)]);
+  }, [tableData.length, _.toString(page), pageIndex, _.toString(data)]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
