@@ -127,13 +127,14 @@ async function bootstrap() {
     defaultVersion: VERSION_NEUTRAL,
   });
 
+  const listen_addr = process.env.LISTEN_ADDR || '::';
   const port = parseInt(process.env.PORT) || 3000;
 
   if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
     replaceSubpathPlaceHoldersInStaticAssets();
   }
 
-  await app.listen(port, '0.0.0.0', async function () {
+  await app.listen(port, listen_addr, async function () {
     const licenseService = app.get<LicenseService>(LicenseService);
     await licenseService.init();
     const tooljetHost = configService.get<string>('TOOLJET_HOST');

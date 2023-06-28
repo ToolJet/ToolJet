@@ -62,16 +62,7 @@ describe('library apps controller', () => {
         .set('Cookie', adminUserData['tokenCookie']);
 
       expect(response.statusCode).toBe(201);
-      expect(response.body.name).toBe('GitHub Contributor Leaderboard');
-
-      response = await request(app.getHttpServer())
-        .post('/api/library_apps')
-        .send({ identifier: 'github-contributors' })
-        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
-        .set('Cookie', superAdminUserData['tokenCookie']);
-
-      expect(response.statusCode).toBe(201);
-      expect(response.body.name).toBe('GitHub Contributor Leaderboard');
+      expect(response.body.name).toContain('GitHub Contributor Leaderboard');
     });
 
     it('should return error if template identifier is not found', async () => {

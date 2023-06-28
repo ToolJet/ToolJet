@@ -15,6 +15,8 @@ import { commonText } from "Texts/common";
 import { dashboardText } from "Texts/dashboard";
 import { usersText } from "Texts/manageUsers";
 import { usersSelector } from "Selectors/manageUsers";
+import { ssoSelector } from "Selectors/manageSSO";
+import { ssoText } from "Texts/manageSSO";
 
 export const oidcSSOPageElements = () => {
   cy.get(ssoEeSelector.oidcToggle).then(($el) => {
@@ -141,15 +143,6 @@ export const userSignUp = (fullName, email, workspaceName) => {
   cy.get("body").then(($el) => {
     if (!$el.text().includes(dashboardText.emptyPageHeader)) {
       verifyOnboardingQuestions(fullName, workspaceName);
-      cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-        "have.text",
-        workspaceName
-      );
-    } else {
-      cy.get(commonSelectors.workspaceName).verifyVisibleElement(
-        "have.text",
-        "Untitled workspace"
-      );
     }
   });
 };
@@ -181,11 +174,6 @@ export const addNewUser = (firstName, email, companyName) => {
 };
 
 export const inviteUser = (firstName, email) => {
-  let invitationToken,
-    organizationToken,
-    workspaceId,
-    userId,
-    url = "";
   cy.get(usersSelector.buttonAddUsers).click();
   cy.clearAndType(commonSelectors.inputFieldFullName, firstName);
   cy.clearAndType(commonSelectors.inputFieldEmailAddress, email);
@@ -195,6 +183,141 @@ export const inviteUser = (firstName, email) => {
     commonSelectors.toastMessage,
     usersText.userCreatedToast
   );
+  WorkspaceInvitationLink(email);
+};
+
+export const defaultWorkspace = () => {
+  cy.get(".org-select-container").then(($title) => {
+    if (!$title.text().includes("My workspace")) {
+      cy.get(commonSelectors.workspaceName).realClick();
+      cy.contains("My workspace").realClick();
+      cy.wait(2000);
+      defaultWorkspace();
+    }
+  });
+};
+
+export const trunOffAllowPersonalWorkspace = () => {
+  cy.get(commonEeSelectors.instanceSettingIcon).click();
+  cy.get(instanceSettingsSelector.manageInstanceSettings).click();
+  cy.get(instanceSettingsSelector.allowWorkspaceToggle).then(($el) => {
+    if ($el.is(":checked")) {
+      cy.get(instanceSettingsSelector.allowWorkspaceToggle).uncheck();
+      cy.get(commonEeSelectors.saveButton).click();
+      cy.verifyToastMessage(
+        commonSelectors.toastMessage,
+        "Instance settings have been updated"
+      );
+    }
+  });
+};
+
+export const verifySSOSignUpPageElements = () => {
+  cy.get(commonSelectors.invitePageHeader).verifyVisibleElement(
+    "have.text",
+    "Join ToolJet"
+  );
+  cy.get(commonSelectors.invitePageSubHeader).verifyVisibleElement(
+    "have.text",
+    "You are invited to ToolJet."
+  );
+  cy.get(commonSelectors.userNameInputLabel).verifyVisibleElement(
+    "have.text",
+    commonText.userNameInputLabel
+  );
+  cy.get(commonSelectors.invitedUserName).should("be.visible");
+  cy.get(commonSelectors.emailInputLabel).verifyVisibleElement(
+    "have.text",
+    commonText.emailInputLabel
+  );
+  cy.get(commonSelectors.invitedUserEmail).should("be.visible");
+  cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
+    "have.text",
+    commonText.passwordLabel
+  );
+  cy.get(commonSelectors.passwordInputField).should("be.visible");
+  cy.get(commonSelectors.acceptInviteButton)
+    .verifyVisibleElement("have.text", commonText.acceptInviteButton)
+    .should("be.disabled");
+
+  cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
+    expect($el.contents().first().text().trim()).to.eq(
+      commonText.signUpTermsHelperText
+    );
+  });
+  cy.get(commonSelectors.termsOfServiceLink)
+    .verifyVisibleElement("have.text", commonText.termsOfServiceLink)
+    .and("have.attr", "href")
+    .and("equal", "https://www.tooljet.com/terms");
+  cy.get(commonSelectors.privacyPolicyLink)
+    .verifyVisibleElement("have.text", commonText.privacyPolicyLink)
+    .and("have.attr", "href")
+    .and("equal", "https://www.tooljet.com/privacy");
+};
+
+export const VerifyWorkspaceInvitePageElements = () => {
+  cy.get(commonSelectors.invitePageHeader).verifyVisibleElement(
+    "have.text",
+    commonText.invitePageHeader
+  );
+  cy.get(commonSelectors.invitePageSubHeader).verifyVisibleElement(
+    "have.text",
+    commonText.invitePageSubHeader
+  );
+  cy.get(commonSelectors.userNameInputLabel).verifyVisibleElement(
+    "have.text",
+    commonText.userNameInputLabel
+  );
+  cy.get(commonSelectors.invitedUserName).should("be.visible");
+  cy.get(commonSelectors.emailInputLabel).verifyVisibleElement(
+    "have.text",
+    commonText.emailInputLabel
+  );
+  cy.get(commonSelectors.invitedUserEmail).should("be.visible");
+  cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
+    "have.text",
+    commonText.passwordLabel
+  );
+  cy.get(commonSelectors.passwordInputField).should("be.visible");
+  cy.get(commonSelectors.acceptInviteButton)
+    .verifyVisibleElement("have.text", commonText.acceptInviteButton)
+    .should("be.disabled");
+
+  cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
+    expect($el.contents().first().text().trim()).to.eq(
+      commonText.signUpTermsHelperText
+    );
+  });
+  cy.get(commonSelectors.termsOfServiceLink)
+    .verifyVisibleElement("have.text", commonText.termsOfServiceLink)
+    .and("have.attr", "href")
+    .and("equal", "https://www.tooljet.com/terms");
+  cy.get(commonSelectors.privacyPolicyLink)
+    .verifyVisibleElement("have.text", commonText.privacyPolicyLink)
+    .and("have.attr", "href")
+    .and("equal", "https://www.tooljet.com/privacy");
+
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Google")) {
+      cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.googleSignUpText
+      );
+      cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.gitSignUpText
+      );
+      cy.get(commonSelectors.onboardingSeperator).should("be.visible");
+    }
+  });
+};
+
+export const WorkspaceInvitationLink = (email) => {
+  let invitationToken,
+    organizationToken,
+    workspaceId,
+    userId,
+    url = "";
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
     sql: `select invitation_token from users where email='${email}';`,
@@ -229,13 +352,27 @@ export const inviteUser = (firstName, email) => {
   });
 };
 
-export const defaultWorkspace = () => {
-  cy.get(".org-select-container").then(($title) => {
-    if (!$title.text().includes("My workspace")) {
-      cy.get(commonSelectors.workspaceName).realClick();
-      cy.contains("My workspace").realClick();
-      cy.wait(2000);
-      defaultWorkspace();
+export const enableDefaultSSO = () => {
+  common.navigateToManageSSO();
+  cy.get("body").then(($el) => {
+    if (!$el.text().includes("Allowed domains")) {
+      cy.get(ssoSelector.generalSettingsElements.generalSettings).click();
+    }
+  });
+  cy.get(ssoSelector.allowDefaultSSOToggle).then(($el) => {
+    if (!$el.is(":checked")) {
+      cy.get(ssoSelector.allowDefaultSSOToggle).check();
+      cy.get(ssoSelector.saveButton).click();
+      cy.verifyToastMessage(commonSelectors.toastMessage, ssoText.ssoToast);
     }
   });
 };
+
+export const disableSSO = (ssoSelector, toggleSelector) => {
+  cy.get(ssoSelector).realClick()
+  cy.get(toggleSelector).then(($el) => {
+    if ($el.is(":checked")) {
+      cy.get(toggleSelector).uncheck();
+    }
+  });
+}

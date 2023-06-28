@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { SearchBox } from '@/_components/SearchBox';
+import React, { useState } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { getSvgIcon, checkExistingQueryName } from '@/_helpers/appUtils';
@@ -16,9 +14,7 @@ export const QueryCard = ({
   setSaveConfirmation,
   setCancelData,
   setDraftQuery,
-  setSelectedDataSource,
   darkMode = false,
-  fetchDataQueries,
   editorRef,
   isVersionReleased,
 }) => {
@@ -26,7 +22,7 @@ export const QueryCard = ({
   const isUnsavedChangesAvailable = useUnsavedChanges();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
   const { deleteDataQueries, renameQuery } = useDataQueriesActions();
-  const { setSelectedQuery, setUnSavedChanges } = useQueryPanelActions();
+  const { setSelectedQuery, setSelectedDataSource, setUnSavedChanges } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [renamingQuery, setRenamingQuery] = useState(false);
 
@@ -68,7 +64,7 @@ export const QueryCard = ({
         setDraftQuery((query) => ({ ...query, name: newName }));
         setSelectedQuery('draftQuery', { ...dataQuery, name: newName });
       } else {
-        renameQuery(dataQuery?.id, newName, fetchDataQueries);
+        renameQuery(dataQuery?.id, newName, editorRef);
       }
       setRenamingQuery(false);
     } else {

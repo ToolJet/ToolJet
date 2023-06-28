@@ -6,6 +6,7 @@ import { EditOrganization } from './EditOrganization';
 import { CreateOrganization } from './CreateOrganization';
 import { useTranslation } from 'react-i18next';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ToolTip } from '@/_components';
 
 const Menu = (props) => {
   const { t } = useTranslation();
@@ -60,11 +61,13 @@ const Menu = (props) => {
 
 const SingleValue = ({ selectProps }) => {
   return (
-    <div className="d-inline-flex align-items-center">
-      <div data-cy="workspace-name" className="tj-text-xsm">
-        {selectProps.value.name}
+    <ToolTip message={selectProps?.value?.name}>
+      <div className="d-inline-flex align-items-center">
+        <div data-cy="workspace-name" className="tj-text-xsm">
+          {selectProps.value.name}
+        </div>
       </div>
-    </div>
+    </ToolTip>
   );
 };
 
@@ -72,11 +75,12 @@ export const CustomSelect = ({ ...props }) => {
   const [showEditOrg, setShowEditOrg] = useState(false);
   const [showCreateOrg, setShowCreateOrg] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
+  const currentValue = props?.options.find((option) => option?.value === props?.value);
 
   return (
     <>
       <CreateOrganization showCreateOrg={showCreateOrg} setShowCreateOrg={setShowCreateOrg} />
-      <EditOrganization showEditOrg={showEditOrg} setShowEditOrg={setShowEditOrg} />
+      <EditOrganization showEditOrg={showEditOrg} setShowEditOrg={setShowEditOrg} currentValue={currentValue} />
 
       <Select
         className={`react-select-container ${darkMode && 'dark-theme'}`}

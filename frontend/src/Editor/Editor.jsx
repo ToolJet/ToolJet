@@ -8,14 +8,14 @@ import {
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit, snakeCase } from 'lodash';
+import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
 import { LeftSidebar } from './LeftSidebar';
 import { componentTypes } from './WidgetManager/components';
 import { Inspector } from './Inspector/Inspector';
-import { QueryManager, QueryPanel } from './QueryManager';
+import QueryPanel from './QueryPanel/QueryPanel';
 import {
   onComponentOptionChanged,
   onComponentOptionsChanged,
@@ -52,6 +52,7 @@ import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError'
 
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { resetAllStores } from '@/_stores/utils';
 
@@ -61,6 +62,7 @@ enablePatches();
 class EditorComponent extends React.Component {
   constructor(props) {
     super(props);
+    resetAllStores();
 
     const appId = this.props.params.id;
 
@@ -145,10 +147,6 @@ class EditorComponent extends React.Component {
       pages: {},
       draftQuery: null,
       selectedDataSource: null,
-      queryPanelHeight: this.queryManagerPreferences?.isExpanded
-        ? this.queryManagerPreferences?.queryPanelHeight
-        : 95 ?? 70,
-      isUserEditingTheVersion: false,
     };
 
     this.autoSave = debounce(this.saveEditingVersion, 3000);
@@ -156,7 +154,7 @@ class EditorComponent extends React.Component {
   }
 
   setWindowTitle(name) {
-    document.title = name ? `${name} - ${retrieveWhiteLabelText()}` : `Untitled App - ${retrieveWhiteLabelText()}`;
+    document.title = name ? `${name} - ${retrieveWhiteLabelText()}` : `My App - ${retrieveWhiteLabelText()}`;
   }
 
   onVersionDelete = () => {
@@ -272,6 +270,10 @@ class EditorComponent extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (!isEqual(prevState.appDefinition, this.state.appDefinition)) {
       computeComponentState(this, this.state.appDefinition.pages[this.state.currentPageId]?.components);
+    }
+
+    if (!isEqual(prevState.editorMarginLeft, this.state.editorMarginLeft)) {
+      this.canvasContainerRef.current.scrollLeft += this.state.editorMarginLeft;
     }
   }
 
@@ -890,6 +892,15 @@ class EditorComponent extends React.Component {
     return canvasBackgroundColor;
   };
 
+  computeCanvasContainerHeight = () => {
+    // 45 = (height of header)
+    // 85 = (the height of the query panel header when minimised) + (height of header)
+    return `calc(${100}% - ${Math.max(useQueryPanelStore.getState().queryPanelHeight + 45, 85)}px)`;
+  };
+
+  handleQueryPaneDragging = (isQueryPaneDragging) => this.setState({ isQueryPaneDragging });
+  handleQueryPaneExpanding = (isQueryPaneExpanded) => this.setState({ isQueryPaneExpanded });
+
   saveEditingVersion = (isUserSwitchedVersion = false) => {
     if (this.isVersionReleased() && !isUserSwitchedVersion) {
       this.setState({ isSaving: false });
@@ -1178,8 +1189,16 @@ class EditorComponent extends React.Component {
       i++;
     }
 
+    const newPageData = cloneDeep(currentPage);
+    if (!isEmpty(currentPage?.components)) {
+      newPageData.components = Object.keys(newPageData.components).reduce((acc, key) => {
+        acc[uuid()] = newPageData.components[key];
+        return acc;
+      }, {});
+    }
+
     const newPage = {
-      ...cloneDeep(currentPage),
+      ...newPageData,
       name: newPageName,
       handle: newPageHandle,
     };
@@ -1443,6 +1462,25 @@ class EditorComponent extends React.Component {
     });
   };
 
+  getCanvasMinWidth = () => {
+    /**
+     * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
+     * default canvas min width = calc((total view width - width component editor side bar) - width of editor sidebar on left)
+     **/
+    const defaultCanvasMinWidth = `calc((100vw - 300px) - 48px)`;
+    const canvasMaxWidthType = this.state.appDefinition.globalSettings.canvasMaxWidthType || 'px';
+    const canvasMaxWidth = this.state.appDefinition.globalSettings.canvasMaxWidth;
+    const currentLayout = this.state.currentLayout;
+
+    const userSetMaxWidth = currentLayout === 'desktop' ? `${+canvasMaxWidth + canvasMaxWidthType}` : '450px';
+
+    if (this.state.appDefinition.globalSettings.canvasMaxWidth && canvasMaxWidthType !== '%') {
+      return `min(${defaultCanvasMinWidth}, ${userSetMaxWidth})`;
+    } else {
+      return defaultCanvasMinWidth;
+    }
+  };
+  handleEditorMarginLeftChange = (value) => this.setState({ editorMarginLeft: value });
   formCustomPageSelectorClass = () => {
     const handle = this.state.appDefinition?.pages[this.state.currentPageId]?.handle;
     return `_tooljet-page-${handle}`;
@@ -1584,6 +1622,7 @@ class EditorComponent extends React.Component {
                 showHideViewerNavigationControls={this.showHideViewerNavigation}
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
+                setEditorMarginLeft={this.handleEditorMarginLeftChange}
                 isVersionReleased={this.isVersionReleased()}
                 setReleasedVersionPopupState={this.setReleasedVersionPopupState}
               />
@@ -1607,10 +1646,21 @@ class EditorComponent extends React.Component {
                   }}
                 />
               )}
-              <div className="main main-editor-canvas" id="main-editor-canvas">
+              <div
+                className={`main main-editor-canvas ${
+                  this.state.isQueryPaneDragging || this.state.isDragging ? 'hide-scrollbar' : ''
+                }`}
+                id="main-editor-canvas"
+              >
                 <div
                   className={`canvas-container page-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}
-                  style={{ transform: `scale(${zoomLevel})` }}
+                  style={{
+                    transform: `scale(${zoomLevel})`,
+                    borderLeft:
+                      (this.state.editorMarginLeft ? this.state.editorMarginLeft - 1 : this.state.editorMarginLeft) +
+                      `px solid ${this.computeCanvasBackgroundColor()}`,
+                    height: this.computeCanvasContainerHeight(),
+                  }}
                   onMouseUp={(e) => {
                     if (['real-canvas', 'modal'].includes(e.target.className)) {
                       this.setState({ selectedComponents: [], currentSidebarTab: 2, hoveredComponent: false });
@@ -1621,148 +1671,115 @@ class EditorComponent extends React.Component {
                     this.selectionRef.current.checkScroll();
                   }}
                 >
-                  <div
-                    className={`canvas-area ${this.formCustomPageSelectorClass()}`}
-                    style={{
-                      width: currentLayout === 'desktop' ? '100%' : '450px',
-                      minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
-                      maxWidth:
-                        +this.state.appDefinition.globalSettings.canvasMaxWidth +
-                        this.state.appDefinition.globalSettings.canvasMaxWidthType,
-                      maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
-                      backgroundColor: this.computeCanvasBackgroundColor(),
-                    }}
-                  >
-                    {config.ENABLE_MULTIPLAYER_EDITING && (
-                      <RealtimeCursors
-                        editingVersionId={this.state?.editingVersion?.id}
-                        editingPageId={this.state.currentPageId}
-                      />
-                    )}
-                    {isLoading && (
-                      <div className="apploader">
-                        <div className="col col-* editor-center-wrapper">
-                          <div className="editor-center">
-                            <div className="canvas">
-                              <div className="mt-5 d-flex flex-column">
-                                <div className="mb-1">
-                                  <Skeleton width={'150px'} height={15} className="skeleton" />
+                  <div style={{ minWidth: `calc((100vw - 300px) - 48px)` }}>
+                    <div
+                      className={`canvas-area ${this.formCustomPageSelectorClass()}`}
+                      style={{
+                        width: currentLayout === 'desktop' ? '100%' : '450px',
+                        minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
+                        maxWidth:
+                          +this.state.appDefinition.globalSettings.canvasMaxWidth +
+                          this.state.appDefinition.globalSettings.canvasMaxWidthType,
+                        maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
+                        /**
+                         * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
+                         * default canvas min width = calc(((screen width - width component editor side bar) - width of editor sidebar on left) - width of left sidebar popover)
+                         **/
+                        // minWidth: this.state.editorMarginLeft ? this.getCanvasMinWidth() : 'auto',
+                        backgroundColor: this.computeCanvasBackgroundColor(),
+                        transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
+                      }}
+                    >
+                      {config.ENABLE_MULTIPLAYER_EDITING && (
+                        <RealtimeCursors
+                          editingVersionId={this.state?.editingVersion?.id}
+                          editingPageId={this.state.currentPageId}
+                        />
+                      )}
+                      {isLoading && (
+                        <div className="apploader">
+                          <div className="col col-* editor-center-wrapper">
+                            <div className="editor-center">
+                              <div className="canvas">
+                                <div className="mt-5 d-flex flex-column">
+                                  <div className="mb-1">
+                                    <Skeleton width={'150px'} height={15} className="skeleton" />
+                                  </div>
+                                  {Array.from(Array(4)).map((_item, index) => (
+                                    <Skeleton key={index} width={'300px'} height={10} className="skeleton" />
+                                  ))}
+                                  <div className="align-self-end">
+                                    <Skeleton width={'100px'} className="skeleton" />
+                                  </div>
+                                  <Skeleton className="skeleton mt-4" />
+                                  <Skeleton height={'150px'} className="skeleton mt-2" />
                                 </div>
-                                {Array.from(Array(4)).map((_item, index) => (
-                                  <Skeleton key={index} width={'300px'} height={10} className="skeleton" />
-                                ))}
-                                <div className="align-self-end">
-                                  <Skeleton width={'100px'} className="skeleton" />
-                                </div>
-                                <Skeleton className="skeleton mt-4" />
-                                <Skeleton height={'150px'} className="skeleton mt-2" />
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                    {defaultComponentStateComputed && (
-                      <>
-                        <Container
-                          canvasWidth={this.getCanvasWidth()}
-                          canvasHeight={this.getCanvasHeight()}
-                          socket={this.socket}
-                          showComments={showComments}
-                          appVersionsId={this.state?.editingVersion?.id}
-                          appDefinition={appDefinition}
-                          appDefinitionChanged={this.appDefinitionChanged}
-                          snapToGrid={true}
-                          darkMode={this.props.darkMode}
-                          mode={'edit'}
-                          zoomLevel={zoomLevel}
-                          currentLayout={currentLayout}
-                          deviceWindowWidth={deviceWindowWidth}
-                          selectedComponents={selectedComponents}
-                          appLoading={isLoading}
-                          onEvent={this.handleEvent}
-                          onComponentOptionChanged={this.handleOnComponentOptionChanged}
-                          onComponentOptionsChanged={this.handleOnComponentOptionsChanged}
-                          currentState={this.state.currentState}
-                          setSelectedComponent={this.setSelectedComponent}
-                          handleUndo={this.handleUndo}
-                          handleRedo={this.handleRedo}
-                          removeComponent={this.removeComponent}
-                          onComponentClick={this.handleComponentClick}
-                          onComponentHover={this.handleComponentHover}
-                          hoveredComponent={hoveredComponent}
-                          sideBarDebugger={this.sideBarDebugger}
-                          currentPageId={this.state.currentPageId}
-                          setReleasedVersionPopupState={this.setReleasedVersionPopupState}
-                          isVersionReleased={this.isVersionReleased()}
-                        />
-                        <CustomDragLayer
-                          snapToGrid={true}
-                          currentLayout={currentLayout}
-                          canvasWidth={this.getCanvasWidth()}
-                        />
-                      </>
-                    )}
+                      )}
+                      {defaultComponentStateComputed && (
+                        <>
+                          <Container
+                            canvasWidth={this.getCanvasWidth()}
+                            canvasHeight={this.getCanvasHeight()}
+                            socket={this.socket}
+                            showComments={showComments}
+                            appVersionsId={this.state?.editingVersion?.id}
+                            appDefinition={appDefinition}
+                            appDefinitionChanged={this.appDefinitionChanged}
+                            snapToGrid={true}
+                            darkMode={this.props.darkMode}
+                            mode={'edit'}
+                            zoomLevel={zoomLevel}
+                            currentLayout={currentLayout}
+                            deviceWindowWidth={deviceWindowWidth}
+                            selectedComponents={selectedComponents}
+                            appLoading={isLoading}
+                            onEvent={this.handleEvent}
+                            onComponentOptionChanged={this.handleOnComponentOptionChanged}
+                            onComponentOptionsChanged={this.handleOnComponentOptionsChanged}
+                            currentState={this.state.currentState}
+                            setSelectedComponent={this.setSelectedComponent}
+                            handleUndo={this.handleUndo}
+                            handleRedo={this.handleRedo}
+                            removeComponent={this.removeComponent}
+                            onComponentClick={this.handleComponentClick}
+                            onComponentHover={this.handleComponentHover}
+                            hoveredComponent={hoveredComponent}
+                            sideBarDebugger={this.sideBarDebugger}
+                            currentPageId={this.state.currentPageId}
+                            setReleasedVersionPopupState={this.setReleasedVersionPopupState}
+                            isVersionReleased={this.isVersionReleased()}
+                          />
+                          <CustomDragLayer
+                            snapToGrid={true}
+                            currentLayout={currentLayout}
+                            canvasWidth={this.getCanvasWidth()}
+                            onDragging={(isDragging) => this.setState({ isDragging })}
+                          />
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <QueryPanel
+                  onQueryPaneDragging={this.handleQueryPaneDragging}
+                  handleQueryPaneExpanding={this.handleQueryPaneExpanding}
                   dataQueriesChanged={this.dataQueriesChanged}
                   fetchDataQueries={this.fetchDataQueries}
                   darkMode={this.props.darkMode}
+                  currentState={currentState}
+                  apps={apps}
+                  allComponents={appDefinition.pages[this.state.currentPageId]?.components ?? {}}
+                  appId={appId}
+                  editingVersionId={editingVersion?.id}
+                  appDefinition={appDefinition}
+                  dataSourceModalHandler={this.dataSourceModalHandler}
                   isVersionReleased={this.isVersionReleased()}
                   editorRef={this}
-                >
-                  {({
-                    toggleQueryEditor,
-                    selectedDataSource,
-                    createDraftQuery,
-                    isUnsavedQueriesAvailable,
-                    selectedQuery,
-                    dataQueries,
-                    handleAddNewQuery,
-                    editingQuery,
-                    updateDataQueries,
-                    updateDraftQueryName,
-                  }) => (
-                    <>
-                      <div className="query-definition-pane-wrapper">
-                        <div className="query-definition-pane">
-                          <div>
-                            <QueryManager
-                              addNewQueryAndDeselectSelectedQuery={handleAddNewQuery}
-                              toggleQueryEditor={toggleQueryEditor}
-                              dataQueries={dataQueries}
-                              mode={editingQuery ? 'edit' : 'create'}
-                              selectedQuery={selectedQuery}
-                              selectedDataSource={selectedDataSource}
-                              dataQueriesChanged={updateDataQueries}
-                              appId={appId}
-                              editingVersionId={editingVersion?.id}
-                              addingQuery={!editingQuery || dataQueries?.length === 0}
-                              editingQuery={editingQuery}
-                              currentState={currentState}
-                              darkMode={this.props.darkMode}
-                              apps={apps}
-                              allComponents={appDefinition.pages[this.state.currentPageId]?.components ?? {}}
-                              isSourceSelected={selectedDataSource !== null}
-                              isQueryPaneDragging={this.state.isQueryPaneDragging}
-                              runQuery={this.runQuery}
-                              dataSourceModalHandler={this.dataSourceModalHandler}
-                              appDefinition={appDefinition}
-                              editorState={this}
-                              showQueryConfirmation={queryConfirmationList.length > 0}
-                              createDraftQuery={createDraftQuery}
-                              clearDraftQuery={this.clearDraftQuery}
-                              isUnsavedQueriesAvailable={isUnsavedQueriesAvailable}
-                              updateDraftQueryName={updateDraftQueryName}
-                              isVersionReleased={this.isVersionReleased()}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </QueryPanel>
+                />
                 <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
               </div>
               <div className="editor-sidebar">

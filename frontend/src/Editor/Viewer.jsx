@@ -437,12 +437,12 @@ class ViewerComponent extends React.Component {
   }
 
   getCanvasWidth = () => {
-    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect();
     return canvasBoundingRect?.width;
   };
 
   setWindowTitle(name) {
-    document.title = name ?? 'Untitled App';
+    document.title = name ?? 'My App';
   }
 
   computeCanvasBackgroundColor = () => {
@@ -559,6 +559,35 @@ class ViewerComponent extends React.Component {
         if (errorDetails) {
           this.handleError(errorDetails, errorAppId, errorVersionId);
         }
+
+        const pageArray = Object.values(this.state.appDefinition?.pages || {});
+        //checking if page is hidden
+        if (
+          pageArray.find((page) => page.handle === this.props.params.pageHandle)?.hidden &&
+          this.state.currentPageId !== this.state.appDefinition?.homePageId && //Prevent page crashing when home page is hidden
+          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
+        ) {
+          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
+          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/${homeHandle}`;
+          if (this.state.slug) {
+            url = `/applications/${this.state.slug}/${homeHandle}`;
+          }
+          return <Navigate to={url} replace />;
+        }
+
+        //checking if page exists
+        if (
+          !pageArray.find((page) => page.handle === this.props.params.pageHandle) &&
+          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
+        ) {
+          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
+          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/${homeHandle}`;
+          if (this.state.slug) {
+            url = `/applications/${this.state.slug}/${homeHandle}`;
+          }
+          return <Navigate to={`${url}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
+        }
+
         return (
           <div className="viewer wrapper">
             <Confirm
