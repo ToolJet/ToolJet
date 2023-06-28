@@ -24,8 +24,6 @@ export const useQueryPanelStore = create(
           set((state) => {
             if (queryId === null) {
               return { selectedQuery: null };
-            } else if (queryId === 'draftQuery') {
-              return { selectedQuery: dataQuery };
             }
             const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
             return { selectedQuery: query ? cloneDeep(query) : null };

@@ -36,7 +36,6 @@ export const QueryManagerBody = forwardRef(
       allComponents,
       apps,
       appDefinition,
-      createDraftQuery,
       setOptions,
       isVersionReleased,
       appId,

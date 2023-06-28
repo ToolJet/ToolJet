@@ -40,24 +40,11 @@ const QueryPanel = ({
   );
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
   const [showSaveConfirmation, setSaveConfirmation] = useState(false);
-  const [draftQuery, setDraftQuery] = useState(null);
-  const [editingQuery, setEditingQuery] = useState(dataQueries.length > 0);
   const [windowSize, isWindowResizing] = useWindowResize();
-
-  useEffect(() => {
-    if (!editingQuery && selectedQuery !== null && selectedQuery?.id !== 'draftQuery') {
-      setEditingQuery(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedQuery?.id, editingQuery]);
 
   useEffect(() => {
     handleQueryPaneExpanding(isExpanded);
   }, [isExpanded]);
-
-  useEffect(() => {
-    setEditingQuery(dataQueries.length > 0);
-  }, [dataQueries.length]);
 
   useEffect(() => {
     onQueryPaneDragging(isDragging);
@@ -71,13 +58,6 @@ const QueryPanel = ({
       onQueryPaneDragging(false);
     }
   }, [windowSize.height, isExpanded, isWindowResizing]);
-
-  const createDraftQuery = useCallback((queryDetails, source) => {
-    setSelectedQuery(queryDetails.id, queryDetails);
-    setDraftQuery(queryDetails);
-    setSelectedDataSource(source);
-    setEditingQuery(false);
-  }, []);
 
   const onMouseUp = () => {
     setDragging(false);
@@ -129,8 +109,6 @@ const QueryPanel = ({
     if (!isUnsavedQueriesAvailable) {
       setSelectedDataSource(null);
       setSelectedQuery(null);
-      setDraftQuery(null);
-      setEditingQuery(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isUnsavedQueriesAvailable]);
@@ -148,20 +126,9 @@ const QueryPanel = ({
   }, [isExpanded]);
 
   const updateDataQueries = useCallback(() => {
-    setEditingQuery(true);
-    setDraftQuery(null);
     dataQueriesChanged();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const updateDraftQueryName = useCallback(
-    (newName) => {
-      setDraftQuery((query) => ({ ...query, name: newName }));
-      setSelectedQuery(draftQuery.id, { ...draftQuery, name: newName });
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [draftQuery]
-  );
 
   return (
     <>
@@ -205,9 +172,7 @@ const QueryPanel = ({
           <QueryDataPane
             showSaveConfirmation={showSaveConfirmation}
             setSaveConfirmation={setSaveConfirmation}
-            draftQuery={draftQuery}
             handleAddNewQuery={handleAddNewQuery}
-            setDraftQuery={setDraftQuery}
             fetchDataQueries={fetchDataQueries}
             darkMode={darkMode}
             editorRef={editorRef}
@@ -221,7 +186,6 @@ const QueryPanel = ({
                   addNewQueryAndDeselectSelectedQuery={handleAddNewQuery}
                   toggleQueryEditor={toggleQueryEditor}
                   dataQueries={dataQueries}
-                  mode={editingQuery ? 'edit' : 'create'}
                   dataQueriesChanged={updateDataQueries}
                   appId={appId}
                   editingVersionId={editingVersionId}
@@ -232,9 +196,7 @@ const QueryPanel = ({
                   dataSourceModalHandler={dataSourceModalHandler}
                   appDefinition={appDefinition}
                   editorRef={editorRef}
-                  createDraftQuery={createDraftQuery}
                   isUnsavedQueriesAvailable={isUnsavedQueriesAvailable}
-                  updateDraftQueryName={updateDraftQueryName}
                   isVersionReleased={isVersionReleased}
                 />
               </div>

@@ -75,10 +75,6 @@ return [row for row in data if row['amount'] > 1000]
   useEffect(() => {
     const selectedQueryId = localStorage.getItem('selectedQuery') ?? null;
 
-    if (queryId === 'draftQuery') {
-      setState(defaultValue);
-      return;
-    }
     if (selectedQueryId !== queryId) {
       const nonLangdefaultCode = getNonActiveTransformations(options?.transformationLanguage ?? 'javascript');
       const finalState = _.merge(

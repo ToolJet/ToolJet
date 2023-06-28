@@ -15,9 +15,7 @@ import { isEmpty } from 'lodash';
 
 export const QueryDataPane = ({
   setSaveConfirmation,
-  draftQuery,
   handleAddNewQuery,
-  setDraftQuery,
   darkMode,
   fetchDataQueries,
   editorRef,
@@ -160,26 +158,11 @@ export const QueryDataPane = ({
         ) : (
           <div className="query-list">
             <div>
-              {draftQuery !== null ? (
-                <QueryCard
-                  key={draftQuery.id}
-                  dataQuery={draftQuery}
-                  setSaveConfirmation={setSaveConfirmation}
-                  setDraftQuery={setDraftQuery}
-                  fetchDataQueries={fetchDataQueries}
-                  darkMode={darkMode}
-                  editorRef={editorRef}
-                  isVersionReleased={isVersionReleased}
-                />
-              ) : (
-                ''
-              )}
               {filteredQueries.map((query) => (
                 <QueryCard
                   key={query.id}
                   dataQuery={query}
                   setSaveConfirmation={setSaveConfirmation}
-                  setDraftQuery={setDraftQuery}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
                   editorRef={editorRef}
@@ -188,7 +171,7 @@ export const QueryDataPane = ({
                 />
               ))}
             </div>
-            {filteredQueries.length === 0 && draftQuery === null && (
+            {filteredQueries.length === 0 && (
               <div className=" d-flex  flex-column align-items-center justify-content-start">
                 <EmptyQueriesIllustration />
                 <span data-cy="no-query-message" className="mute-text pt-3">

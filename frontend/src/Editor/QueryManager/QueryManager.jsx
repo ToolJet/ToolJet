@@ -23,8 +23,6 @@ const QueryManager = ({
   dataSourceModalHandler,
   appDefinition,
   editorRef,
-  createDraftQuery,
-  updateDraftQueryName,
   isVersionReleased,
 }) => {
   const loadingDataSources = useLoadingDataSources();
@@ -82,7 +80,6 @@ const QueryManager = ({
       <QueryManagerHeader
         darkMode={darkMode}
         addNewQueryAndDeselectSelectedQuery={addNewQueryAndDeselectSelectedQuery}
-        updateDraftQueryName={updateDraftQueryName}
         toggleQueryEditor={toggleQueryEditor}
         currentState={currentState}
         options={options}
@@ -103,7 +100,6 @@ const QueryManager = ({
         appId={appId}
         editingVersionId={editingVersionId}
         appDefinition={appDefinition}
-        createDraftQuery={createDraftQuery}
         setOptions={setOptions}
         ref={previewPanelRef}
         isVersionReleased={isVersionReleased}

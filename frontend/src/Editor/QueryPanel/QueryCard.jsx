@@ -13,7 +13,6 @@ import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 export const QueryCard = ({
   dataQuery,
   setSaveConfirmation,
-  setDraftQuery,
   darkMode = false,
   editorRef,
   isVersionReleased,
@@ -48,13 +47,7 @@ export const QueryCard = ({
     }
     const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
     if (newName && !isNewQueryNameAlreadyExists) {
-      if (id === 'draftQuery') {
-        toast.success('Query Name Updated');
-        setDraftQuery((query) => ({ ...query, name: newName }));
-        setSelectedQuery('draftQuery', { ...dataQuery, name: newName });
-      } else {
-        renameQuery(dataQuery?.id, newName, editorRef);
-      }
+      renameQuery(dataQuery?.id, newName, editorRef);
       setRenamingQuery(false);
     } else {
       if (isNewQueryNameAlreadyExists) {
@@ -66,14 +59,6 @@ export const QueryCard = ({
 
   const executeDataQueryDeletion = () => {
     setShowDeleteConfirmation(false);
-    if (dataQuery?.id === 'draftQuery') {
-      toast.success('Query Deleted');
-      setDraftQuery(null);
-      setSelectedQuery(null);
-      setUnSavedChanges(false);
-      setSelectedDataSource(null);
-      return;
-    }
     deleteDataQueries(dataQuery?.id, editorRef);
   };
 
@@ -84,12 +69,11 @@ export const QueryCard = ({
         key={dataQuery.id}
         onClick={() => {
           if (selectedQuery?.id === dataQuery?.id) return;
-          const stateToBeUpdated = { editingQuery: true, selectedQuery: dataQuery, draftQuery: null };
+          const stateToBeUpdated = { editingQuery: true, selectedQuery: dataQuery };
           if (isUnsavedChangesAvailable) {
             setSaveConfirmation(true);
           } else {
             setSelectedQuery(dataQuery?.id);
-            setDraftQuery(null);
             setPreviewData(null);
           }
         }}
@@ -167,7 +151,7 @@ export const QueryCard = ({
                   <div className="text-center spinner-border spinner-border-sm" role="status"></div>
                 </div>
               ) : (
-                <span className="delete-query" onClick={deleteDataQuery} disabled={dataQuery?.id === 'draftQuery'}>
+                <span className="delete-query" onClick={deleteDataQuery}>
                   <span className="d-flex">
                     <svg
                       data-cy={`delete-query-${dataQuery.name.toLowerCase()}`}

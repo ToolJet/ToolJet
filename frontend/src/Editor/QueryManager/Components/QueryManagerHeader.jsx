@@ -23,7 +23,6 @@ export const QueryManagerHeader = forwardRef(
     {
       darkMode,
       addNewQueryAndDeselectSelectedQuery,
-      updateDraftQueryName,
       toggleQueryEditor,
       currentState,
       options,
@@ -54,12 +53,7 @@ export const QueryManagerHeader = forwardRef(
       }
       const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
       if (newName && !isNewQueryNameAlreadyExists) {
-        if (id === 'draftQuery') {
-          toast.success('Query Name Updated');
-          updateDraftQueryName(newName);
-        } else {
-          renameQuery(selectedQuery?.id, newName, editorRef);
-        }
+        renameQuery(selectedQuery?.id, newName, editorRef);
         setRenamingQuery(false);
       } else {
         if (isNewQueryNameAlreadyExists) {
@@ -67,12 +61,6 @@ export const QueryManagerHeader = forwardRef(
         }
         setRenamingQuery(false);
       }
-    };
-
-    const createOrUpdateDataQuery = (shouldRunQuery = false) => {
-      if (selectedQuery?.id === 'draftQuery') return createDataQuery(appId, editingVersionId, options, shouldRunQuery);
-      if (isUnsavedQueriesAvailable) return updateDataQuery(options, shouldRunQuery);
-      shouldRunQuery && runQuery(editorRef, selectedQuery?.id, selectedQuery?.name);
     };
 
     const renderRenameInput = () => (

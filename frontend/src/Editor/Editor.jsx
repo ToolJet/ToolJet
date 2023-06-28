@@ -137,7 +137,6 @@ class EditorComponent extends React.Component {
       scrollOptions: {},
       currentPageId: defaultPageId,
       pages: {},
-      draftQuery: null,
       selectedDataSource: null,
     };
 
