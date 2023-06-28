@@ -74,6 +74,7 @@ ssh-keyscan github.com >> .ssh/known_hosts
 git clone -b develop git@github.com:ToolJet/tj-ee.git ~/app && cd ~/app
 
 
+
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
 sudo chmod +x ~/app/setup_app
