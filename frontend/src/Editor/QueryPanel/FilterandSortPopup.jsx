@@ -1,14 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import cx from 'classnames';
-import { Tooltip } from 'react-tooltip';
 import { Checkbox } from '@/_ui/CheckBox';
 import { Button } from '@/_ui/LeftSidebar';
-import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
-import { SearchBox } from '@/_components/SearchBox';
+import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import Filter from '../../_ui/Icon/bulkIcons/Filter';
 import Arrowleft from '../../_ui/Icon/bulkIcons/Arrowleft';
-import Search from '../../_ui/Icon/solidIcons/Search';
 import { staticDataSources } from '../QueryManager/constants';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
@@ -76,13 +73,7 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
             <div className="color-slate9 px-3 pb-2 w-100">
               <small>Filter By</small>
             </div>
-            <MenuButton
-              id="filter-by-datasource"
-              text="Data Source"
-              closeMenu={closeMenu}
-              callback={handlePageCallback}
-              disabled={isHome}
-            />
+            <MenuButton id="filter-by-datasource" text="Data Source" callback={handlePageCallback} disabled={isHome} />
             <div class="border-bottom"></div>
             <div className="color-slate9 px-3 pb-2 pt-1 w-100">
               <small>Sort By</small>
@@ -90,7 +81,6 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
             <MenuButton
               id="name"
               text="A-Z"
-              closeMenu={closeMenu}
               callback={handleSort}
               disabled={isHome}
               customClass={sortBy === 'name' ? 'text-info' : ''}
@@ -99,7 +89,6 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
             <MenuButton
               id="kind"
               text="Type"
-              closeMenu={closeMenu}
               callback={handleSort}
               disabled={isHome}
               customClass={sortBy === 'kind' ? 'text-info' : ''}
@@ -108,7 +97,6 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
             <MenuButton
               id="updated_at"
               text="Last modified"
-              closeMenu={closeMenu}
               callback={handleSort}
               disabled={isHome}
               customClass={sortBy === 'updated_at' ? 'text-info' : ''}
@@ -213,16 +201,7 @@ const DataSourceSelector = ({
   );
 };
 
-const MenuButton = ({
-  id,
-  text,
-  iconSrc,
-  customClass = '',
-  closeMenu,
-  disabled = false,
-  callback = () => null,
-  sortOrder,
-}) => {
+const MenuButton = ({ id, text, iconSrc, customClass = '', disabled = false, callback = () => null, sortOrder }) => {
   const handleOnClick = (e) => {
     e.stopPropagation();
     callback(id);

@@ -81,7 +81,6 @@ const QueryManager = ({
     >
       <QueryManagerHeader
         darkMode={darkMode}
-        mode={mode}
         addNewQueryAndDeselectSelectedQuery={addNewQueryAndDeselectSelectedQuery}
         updateDraftQueryName={updateDraftQueryName}
         toggleQueryEditor={toggleQueryEditor}
@@ -96,7 +95,6 @@ const QueryManager = ({
       />
       <QueryManagerBody
         darkMode={darkMode}
-        mode={mode}
         dataSourceModalHandler={dataSourceModalHandler}
         options={options}
         currentState={currentState}

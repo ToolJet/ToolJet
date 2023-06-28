@@ -8,16 +8,13 @@ import Fuse from 'fuse.js';
 import cx from 'classnames';
 import { Tooltip } from 'react-bootstrap';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
-import ToggleQueryEditorIcon from '../QueryManager/Icons/ToggleQueryEditorIcon';
 import FilterandSortPopup from './FilterandSortPopup';
 import Minimize from '../../_ui/Icon/solidIcons/Minimize';
 import Search from '../../_ui/Icon/solidIcons/Search';
-import Filter from '../../_ui/Icon/bulkIcons/Filter';
 import { isEmpty } from 'lodash';
 
 export const QueryDataPane = ({
   setSaveConfirmation,
-  setCancelData,
   draftQuery,
   handleAddNewQuery,
   setDraftQuery,
@@ -168,7 +165,6 @@ export const QueryDataPane = ({
                   key={draftQuery.id}
                   dataQuery={draftQuery}
                   setSaveConfirmation={setSaveConfirmation}
-                  setCancelData={setCancelData}
                   setDraftQuery={setDraftQuery}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
@@ -183,7 +179,6 @@ export const QueryDataPane = ({
                   key={query.id}
                   dataQuery={query}
                   setSaveConfirmation={setSaveConfirmation}
-                  setCancelData={setCancelData}
                   setDraftQuery={setDraftQuery}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}

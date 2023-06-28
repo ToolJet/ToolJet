@@ -22,7 +22,6 @@ export const QueryManagerHeader = forwardRef(
   (
     {
       darkMode,
-      mode,
       addNewQueryAndDeselectSelectedQuery,
       updateDraftQueryName,
       toggleQueryEditor,
@@ -103,7 +102,7 @@ export const QueryManagerHeader = forwardRef(
             onClick={addNewQueryAndDeselectSelectedQuery}
             data-cy={`query-type-header`}
           >
-            {mode === 'create' ? 'New Query' : 'Queries'}
+            {'Queries'}
           </span>
           <span className="breadcrum">
             <BreadcrumbsIcon />

@@ -2,7 +2,6 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useEventListener } from '@/_hooks/use-event-listener';
 import { Tooltip } from 'react-tooltip';
 import { QueryDataPane } from './QueryDataPane';
-import { Confirm } from '../Viewer/Confirm';
 import QueryManager from '../QueryManager/QueryManager';
 
 import useWindowResize from '@/_hooks/useWindowResize';
@@ -26,7 +25,7 @@ const QueryPanel = ({
   isVersionReleased,
   handleQueryPaneExpanding,
 }) => {
-  const { setSelectedQuery, updateQueryPanelHeight, setUnSavedChanges, setSelectedDataSource } = useQueryPanelActions();
+  const { setSelectedQuery, updateQueryPanelHeight, setSelectedDataSource } = useQueryPanelActions();
   const isUnsavedQueriesAvailable = useUnsavedChanges();
   const selectedQuery = useSelectedQuery();
   const dataQueries = useDataQueries();
@@ -41,7 +40,6 @@ const QueryPanel = ({
   );
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
   const [showSaveConfirmation, setSaveConfirmation] = useState(false);
-  const [queryCancelData, setCancelData] = useState({});
   const [draftQuery, setDraftQuery] = useState(null);
   const [editingQuery, setEditingQuery] = useState(dataQueries.length > 0);
   const [windowSize, isWindowResizing] = useWindowResize();
@@ -128,16 +126,7 @@ const QueryPanel = ({
   useEventListener('mouseup', onMouseUp);
 
   const handleAddNewQuery = useCallback(() => {
-    const stateToBeUpdated = {
-      selectedDataSource: null,
-      selectedQuery: null,
-      editingQuery: false,
-      isSourceSelected: false,
-      draftQuery: null,
-    };
-    if (isUnsavedQueriesAvailable) {
-      setCancelData(stateToBeUpdated);
-    } else {
+    if (!isUnsavedQueriesAvailable) {
       setSelectedDataSource(null);
       setSelectedQuery(null);
       setDraftQuery(null);
@@ -216,7 +205,6 @@ const QueryPanel = ({
           <QueryDataPane
             showSaveConfirmation={showSaveConfirmation}
             setSaveConfirmation={setSaveConfirmation}
-            setCancelData={setCancelData}
             draftQuery={draftQuery}
             handleAddNewQuery={handleAddNewQuery}
             setDraftQuery={setDraftQuery}

@@ -1,22 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { SearchBox } from '@/_components/SearchBox';
+import React, { useState } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
-import { getSvgIcon, checkExistingQueryName } from '@/_helpers/appUtils';
-import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
+import { checkExistingQueryName } from '@/_helpers/appUtils';
 import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
 
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions, useSelectedQuery, useUnsavedChanges } from '@/_stores/queryPanelStore';
-import { Badge } from 'react-bootstrap';
 import Copy from '../../_ui/Icon/solidIcons/Copy';
+import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 
 export const QueryCard = ({
   dataQuery,
   setSaveConfirmation,
-  setCancelData,
   setDraftQuery,
   darkMode = false,
   editorRef,
@@ -30,18 +26,6 @@ export const QueryCard = ({
   const { setSelectedQuery, setSelectedDataSource, setUnSavedChanges, setPreviewData } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [renamingQuery, setRenamingQuery] = useState(false);
-
-  const getSourceMetaData = (dataSource) => {
-    if (dataSource?.plugin_id) {
-      return dataSource.plugin?.manifest_file?.data.source;
-    }
-
-    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
-  };
-
-  const sourceMeta = getSourceMetaData(dataQuery);
-  const iconFile = dataQuery?.plugin?.iconFile?.data || dataQuery?.plugin?.icon_file?.data;
-  const icon = getSvgIcon(sourceMeta?.kind.toLowerCase(), 20, 20, iconFile);
 
   let isSeletedQuery = false;
   if (selectedQuery) {
@@ -103,7 +87,6 @@ export const QueryCard = ({
           const stateToBeUpdated = { editingQuery: true, selectedQuery: dataQuery, draftQuery: null };
           if (isUnsavedChangesAvailable) {
             setSaveConfirmation(true);
-            setCancelData(stateToBeUpdated);
           } else {
             setSelectedQuery(dataQuery?.id);
             setDraftQuery(null);
@@ -112,7 +95,9 @@ export const QueryCard = ({
         }}
         role="button"
       >
-        <div className="col-auto query-icon d-flex">{icon}</div>
+        <div className="col-auto query-icon d-flex">
+          <DataSourceIcon source={dataQuery} />
+        </div>
         <div className="col query-row-query-name">
           {renamingQuery ? (
             <input
@@ -212,7 +197,6 @@ export const QueryCard = ({
           message={'Do you really want to delete this query?'}
           confirmButtonLoading={isDeletingQueryInProcess}
           onConfirm={executeDataQueryDeletion}
-          onCancel={cancelDeleteDataQuery}
           darkMode={darkMode}
         />
       ) : null}
