@@ -2,6 +2,7 @@ import { Folder } from 'src/entities/folder.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { EntityManager, MigrationInterface, QueryRunner, TableUnique } from 'typeorm';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { addWait } from 'src/helpers/migration.helper';
 
 export class AddUniqueConstraintToFolderName1684145489093 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -33,6 +34,8 @@ export class AddUniqueConstraintToFolderName1684145489093 implements MigrationIn
             { id: folderToChange.id },
             { name: `${folderToChange.name} ${Date.now()}` }
           );
+          // Add 1 millisecond wait to prevent duplicate timestamp generation
+          addWait(1);
         }
       }
     }

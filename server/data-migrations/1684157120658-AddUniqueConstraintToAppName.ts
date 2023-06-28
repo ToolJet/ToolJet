@@ -1,6 +1,7 @@
 import { App } from 'src/entities/app.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { addWait } from 'src/helpers/migration.helper';
 import { MigrationInterface, QueryRunner, TableUnique, EntityManager } from 'typeorm';
 
 export class AddUniqueConstraintToAppName1684145489093 implements MigrationInterface {
@@ -29,6 +30,8 @@ export class AddUniqueConstraintToAppName1684145489093 implements MigrationInter
         const sameApps = await entityManager.find(App, { where: { name, organizationId } });
         for (const appToChange of sameApps.slice(1)) {
           await entityManager.update(App, { id: appToChange.id }, { name: `${appToChange.name} ${Date.now()}` });
+          // Add 1 millisecond wait to prevent duplicate timestamp generation
+          addWait(1);
         }
       }
     }

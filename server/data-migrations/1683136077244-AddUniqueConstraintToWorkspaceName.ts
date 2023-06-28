@@ -1,5 +1,6 @@
 import { Organization } from 'src/entities/organization.entity';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { addWait } from 'src/helpers/migration.helper';
 import { EntityManager, MigrationInterface, QueryRunner, TableUnique } from 'typeorm';
 
 export class AddUniqueConstraintToWorkspaceName1683136077244 implements MigrationInterface {
@@ -28,6 +29,8 @@ export class AddUniqueConstraintToWorkspaceName1683136077244 implements Migratio
           { id: workspaceToChange.id },
           { name: `${workspaceToChange.name} ${Date.now()}` }
         );
+        // Add 1 millisecond wait to prevent duplicate timestamp generation
+        addWait(1);
       }
     }
   }
