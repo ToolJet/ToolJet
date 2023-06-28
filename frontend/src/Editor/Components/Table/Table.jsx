@@ -457,14 +457,7 @@ export function Table({
       }
     }
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
-  }, [
-    tableData.length,
-    // tableDetails.changeSet, // why we added this long back ago ? need to disucss about this
-    component.definition.properties.data.value,
-    JSON.stringify(properties.data),
-    // showBulkSelector,
-    // allowSelection,
-  ]);
+  }, [tableData.length, component.definition.properties.data.value, JSON.stringify(properties.data)]);
 
   useEffect(() => {
     if (
@@ -686,9 +679,11 @@ export function Table({
     ]
   );
   useEffect(() => {
+    console.log('arpit', { selectedFlatRows });
     if (showBulkSelector) {
       const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
       const selectedRowsId = selectedFlatRows.map((row) => row.id);
+      console.log('arpit inside if of bulk selector on', { selectedRowsOriginalData, selectedRowsId });
       setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId }).then(() => {
         const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
           accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
@@ -730,14 +725,21 @@ export function Table({
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
 
   useEffect(() => {
+    console.log('inside use', { page });
     const pageData = page.map((row) => row.original);
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
       ['currentData', data],
       ['selectedRow', []],
       ['selectedRowId', null],
-    ]);
-  }, [tableData.length, tableDetails.changeSet, page, data]);
+    ]).then(() => {
+      console.log('kavin', { tableDetails });
+      if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
+        toggleAllRowsSelected(false);
+        mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
+      }
+    });
+  }, [tableData.length, page, _.toString(data)]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
