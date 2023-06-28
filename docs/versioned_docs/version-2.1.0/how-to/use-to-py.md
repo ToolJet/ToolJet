@@ -19,15 +19,17 @@ Check **[RunPy](/docs/data-sources/run-py)** doc to learn more.
 
 Here's an example demonstrating the usage of to_py():
 
-```js
-from js import Object
-from pyodide import to_py
+```python
+import pyodide
 
-my_js_object = Object.fromEntries([("name", "John"), ("age", 25), ("country", "USA")])
+def to_py(js_object):
+  return dict(js_object)
+
+my_js_object = {"name": "John", "age": 25, "country": "USA"}
 
 my_py_dict = to_py(my_js_object)
 
-print(my_py_dict)
+my_py_dict
 ```
 
 In this example, a JavaScript object my_js_object is created using the Object.fromEntries() method from JavaScript. It represents a dictionary-like structure. The to_py() function is then used to convert the JavaScript object into a Python dictionary my_py_dict.

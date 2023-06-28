@@ -45,7 +45,7 @@ jobs:
           name: "cypress.env.json"
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: './cypress-tests'
-
+          
       - name: Cypress Integration Test
         if: ${{ github.event.label.name == 'run-cypress' }}
         uses: cypress-io/github-action@v5
