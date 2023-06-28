@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, ButtonGroup, Col, Form, OverlayTrigger, Popover, Row } from 'react-bootstrap';
 import cx from 'classnames';
 import { Tooltip } from 'react-tooltip';
@@ -28,7 +28,6 @@ const ArgumentFormPopup = ({
   useEffect(() => {
     const getParents = (el) => {
       for (var parents = []; el; el = el.parentNode) {
-        console.log('el', el, el.parentNode);
         parents.push(el);
       }
 
@@ -36,25 +35,14 @@ const ArgumentFormPopup = ({
     };
 
     const handleClickOutside = (event) => {
-      console.log(event.target, event.target.closest('#page-handler-menu'));
-      console.log(
-        'Parents-->',
-        getParents(event.target)
-          .reverse()
-          .map((e) => e.nodeName)
-      );
-      if (
-        showModal &&
-        event.target.closest('#page-handler-menu') === null &&
-        event.target.closest('.query_argument_input') === null
-      ) {
+      if (showModal && event.target.closest('#argument-form-popover') === null) {
         closeMenu();
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mouseup', handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mouseup', handleClickOutside);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
@@ -74,7 +62,7 @@ const ArgumentFormPopup = ({
       show={showModal}
       overlay={
         <Popover
-          id="page-handler-menu"
+          id="argument-form-popover"
           className={`query-manager-sort-filter-popup ${darkMode && 'popover-dark-themed'}`}
           style={{ width: '268px' }}
         >
@@ -105,16 +93,11 @@ const ArgumentFormPopup = ({
                     onChange={(value) => setDefaultValue(value)}
                     theme={darkMode ? 'monokai' : 'default'}
                     currentState={currentState}
-                    // className="query_argument_input"
                     usePortalEditor={false}
+                    height={36}
+                    initialValue={defaultValue}
+                    // enablePreview={false}
                   />
-                  {/* <Form.Control
-										type="text"
-										aria-describedby="default"
-										id="defaultValue"
-										onChange={(event) => setDefaultValue(event.target.value)}
-										value={defaultValue}
-									/> */}
                   <Form.Text id="defaultValue" muted>
                     Expression resolved once on save.
                   </Form.Text>
@@ -151,7 +134,7 @@ const ArgumentFormPopup = ({
 };
 
 const PillButton = ({ name, onClick, onRemove }) => (
-  <ButtonGroup aria-label="Argument Badge">
+  <ButtonGroup aria-label="Argument Badge" className="ms-2">
     <Button
       size="sm"
       className="custom-bg-secondary custom-text-dark"

@@ -394,6 +394,8 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
 
   const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
+  console.trace(args);
+
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
       ...currentState.queries[key],

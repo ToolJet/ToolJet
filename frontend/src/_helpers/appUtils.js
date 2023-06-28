@@ -395,9 +395,12 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       case 'run-query': {
         const { queryId, queryName } = event;
         const args = isEmpty(customVariables) ? event['arguments'] : customVariables;
-        const resolvedArgs = Object.keys(args).map(
-          (k) => (args[k] = resolveReferences(args[k], _ref.state.currentState, undefined))
-        );
+        const resolvedArgs = {};
+        if (args) {
+          Object.keys(args).map(
+            (k) => (resolvedArgs[k] = resolveReferences(args[k], _ref.state.currentState, undefined))
+          );
+        }
         const name =
           useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
         return runQuery(_ref, queryId, name, undefined, mode, resolvedArgs);

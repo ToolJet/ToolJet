@@ -431,19 +431,19 @@ export const EventManager = ({
                     <div className="row mt-3">
                       {dataQueries
                         .find((dataquery) => dataquery.id === event.queryId)
-                        ?.options?.arguments.map((argument) => (
+                        ?.options?.arguments.map((args) => (
                           <>
-                            <div className="col-3 p-2" key={argument.name}>
-                              {argument.name}
+                            <div className="col-3 p-2" key={args.name}>
+                              {args.name}
                             </div>
                             <div className="col-9 p-2">
                               <CodeHinter
                                 theme={darkMode ? 'monokai' : 'default'}
                                 currentState={currentState}
-                                initialValue={event.url}
+                                initialValue={event.arguments[args.name] || args.defaultValue}
                                 onChange={(value) => {
                                   const args = { ...events?.[index]?.arguments };
-                                  args[argument.name] = value;
+                                  args[args.name] = value;
                                   handlerChanged(index, 'arguments', args);
                                 }}
                                 usePortalEditor={false}
