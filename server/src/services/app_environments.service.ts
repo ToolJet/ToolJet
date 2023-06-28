@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { EntityManager, In } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
@@ -90,7 +90,22 @@ export class AppEnvironmentService {
       const conditions = { appId };
       if (currentEnvironmentId) {
         const env = await this.get(organizationId, currentEnvironmentId, false, manager);
-        if (env.priority !== 1) conditions['currentEnvironmentId'] = currentEnvironmentId;
+        if (env.priority !== 1) {
+          /* staging environment
+           * this logic will change in future if there is more than 3 environments
+           */
+          if (env.priority === 2) {
+            const productionEnv = await manager.findOne(AppEnvironment, {
+              where: {
+                isDefault: true,
+              },
+              select: ['id'],
+            });
+            conditions['currentEnvironmentId'] = In([productionEnv.id, currentEnvironmentId]);
+          } else {
+            conditions['currentEnvironmentId'] = currentEnvironmentId;
+          }
+        }
       }
 
       return await manager.find(AppVersion, {
