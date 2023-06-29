@@ -49,6 +49,11 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
   };
 
   const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      editOrganization();
+    }
+  };
     if (e.keyCode === 13) {
       editOrganization();
     }
