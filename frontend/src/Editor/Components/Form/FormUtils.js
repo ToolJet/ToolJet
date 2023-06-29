@@ -5,7 +5,6 @@ export function generateUIComponents(JSONSchema, advanced) {
       return;
     }
     const uiComponentsDraft = [];
-
     // eslint-disable-next-line no-unused-vars
     Object.entries(JSONSchema?.properties).forEach(([key, value]) => {
       uiComponentsDraft.push(structuredClone(componentTypes.find((component) => component?.component == 'Text')));
@@ -65,15 +64,13 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.styles?.justifyContent)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['justifyContent']['value'] =
                 value?.styles?.justifyContent;
-
             if (value?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] = value?.customRule;
-
             if (value?.displayValues)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values']['value'] =
                 value?.displayValues;
-            //keeping label as empty
-            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
+            if (value?.label)
+              uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = value?.label;
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
             if (value?.values)
@@ -102,7 +99,6 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.styles?.disabled)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
-
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['text']['value'] = value?.value;
             break;
@@ -117,7 +113,6 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.styles?.fontWeight)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['fontWeight']['value'] =
                 value?.styles?.fontWeight;
-
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['text']['value'] = value?.value;
             break;
@@ -139,7 +134,6 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.styles?.visibility)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
                 value?.styles?.visibility;
-
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
             if (value?.maxValue)
@@ -149,7 +143,6 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.placeholder)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder']['value'] = value?.placeholder;
             break;
-
           case 'PasswordInput':
             if (value?.styles?.backgroundColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['backgroundColor']['value'] =
@@ -163,7 +156,6 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.styles?.visibility)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
                 value?.styles?.visibility;
-
             if (value?.validation?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] =
                 value?.validation?.customRule;
@@ -175,11 +167,9 @@ export function generateUIComponents(JSONSchema, advanced) {
                 value?.validation?.minLength;
             if (value?.validation?.regex)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['regex']['value'] = value?.validation?.regex;
-
             if (value?.placeholder)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder']['value'] = value?.placeholder;
             break;
-
           case 'Datepicker':
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
@@ -192,7 +182,6 @@ export function generateUIComponents(JSONSchema, advanced) {
                 value?.styles?.visibility;
             if (value?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] = value?.customRule;
-
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'] = value?.value;
             if (value?.disabledDates)
@@ -205,7 +194,6 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.format)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['format']['value'] = value?.format;
             break;
-
           case 'Checkbox':
             if (value?.styles?.checkboxColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['checkboxColor']['value'] =
@@ -221,8 +209,8 @@ export function generateUIComponents(JSONSchema, advanced) {
 
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'] = value?.value;
-            //keeping label as empty
-            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
+            if (value?.label)
+              uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = value?.label;
             break;
 
           case 'RadioButton':
@@ -234,12 +222,11 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.styles?.visibility)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
                 value?.styles?.visibility;
-
             if (value?.displayValues)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values']['value'] =
                 value?.displayValues;
-            //keeping label as empty
-            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
+            if (value?.label)
+              uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = value?.label;
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
             if (value?.values)
@@ -247,7 +234,6 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.visible)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['visible']['value'] = value?.visible;
             break;
-
           case 'ToggleSwitch':
             if (value?.styles?.textColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor']['value'] = value?.styles?.textColor;
@@ -263,8 +249,8 @@ export function generateUIComponents(JSONSchema, advanced) {
 
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'] = value?.value;
-            //keeping label as empty
-            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
+            if (value?.label)
+              uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = value?.label;
             break;
 
           case 'TextArea':
@@ -277,13 +263,11 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
                 value?.styles?.borderRadius;
-
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
             if (value?.placeholder)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder']['value'] = value?.placeholder;
             break;
-
           case 'DaterangePicker':
             if (value?.styles?.disabled)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
@@ -294,7 +278,6 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
                 value?.styles?.borderRadius;
-
             if (value?.defaultEndDate)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultEndDate']['value'] =
                 value?.defaultEndDate;
@@ -304,7 +287,6 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.format)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['format']['value'] = value?.format;
             break;
-
           case 'Multiselect':
             if (value?.styles?.disabled)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
@@ -315,12 +297,11 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
                 value?.styles?.borderRadius;
-
             if (value?.displayValues)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values']['value'] =
                 value?.displayValues;
-            //keeping label as empty
-            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
+            if (value?.label)
+              uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = value?.label;
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
             if (value?.values)
@@ -329,7 +310,6 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['showAllOption']['value'] =
                 value?.showAllOption;
             break;
-
           case 'StarRating':
             if (value?.styles?.disabled)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
@@ -342,15 +322,14 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.styles?.labelColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['labelColor']['value'] =
                 value?.styles?.labelColor;
-
             if (value?.allowHalfStar)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['allowHalfStar']['value'] =
                 value?.allowHalfStar;
             if (value?.defaultSelected)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultSelected']['value'] =
                 value?.defaultSelected;
-            //keeping label as empty
-            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
+            if (value?.label)
+              uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = value?.label;
             if (value?.maxRating)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['maxRating']['value'] = value?.maxRating;
             if (value?.tooltips)
@@ -358,7 +337,6 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.visible)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['visible']['value'] = value?.visible;
             break;
-
           case 'FilePicker':
             if (value?.styles?.disabled)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
@@ -369,7 +347,6 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
                 value?.styles?.borderRadius;
-
             if (value?.enableDropzone)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['enableDropzone']['value'] =
                 value?.enableDropzone;
@@ -405,7 +382,6 @@ export function generateUIComponents(JSONSchema, advanced) {
         uiComponentsDraft[index * 2]['definition']['properties']['text']['value'] = value?.label ?? key;
       }
     });
-
     // adding title as first item
     if (JSONSchema?.title) {
       uiComponentsDraft.unshift(structuredClone(componentTypes.find((component) => component?.component == 'Text')));
@@ -425,7 +401,6 @@ export function generateUIComponents(JSONSchema, advanced) {
       if (JSONSchema?.submitButton?.styles?.borderRadius)
         uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['borderRadius']['value'] =
           JSONSchema?.submitButton?.styles?.borderRadius;
-
       if (JSONSchema?.submitButton?.styles?.borderColor)
         uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['borderColor']['value'] =
           JSONSchema?.submitButton?.styles?.borderColor;
@@ -445,14 +420,12 @@ export function generateUIComponents(JSONSchema, advanced) {
         uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['properties']['loadingState']['value'] =
           JSONSchema?.submitButton?.loading;
     }
-
     // filtering out undefined items
     return uiComponentsDraft.filter(function (element) {
       return element !== undefined;
     });
   }
 }
-
 const typeResolver = (type) => {
   switch (type) {
     case 'textinput':

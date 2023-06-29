@@ -69,6 +69,7 @@ export const Form = function Form(props) {
 
     for (const key in data) {
       const item = data[key];
+
       if (item.name === 'Text') {
         const textKey = item?.keyValue ?? item?.text;
         const nextItem = data[parseInt(key) + 1];
@@ -236,8 +237,20 @@ export const Form = function Form(props) {
           )}
           {advanced &&
             uiComponents?.map((item, index) => {
+              console.log('xxx', uiComponents?.[index + 1]?.component);
+
               return (
-                <div className="json-form-wrapper" key={index}>
+                <div
+                  //check to avoid labels for these widgets as label is already present for them
+                  className={
+                    !['Checkbox', 'StarRating', 'Multiselect', 'DropDown', 'RadioButton', 'ToggleSwitch'].includes(
+                      uiComponents?.[index + 1]?.component
+                    )
+                      ? `json-form-wrapper`
+                      : `json-form-wrapper  form-label-restricted`
+                  }
+                  key={index}
+                >
                   <Box
                     component={item}
                     id={index}
