@@ -60,7 +60,7 @@ In addition, violations of this code outside our spaces may affect a person’s 
 - If violations occur, organizers will take any action they deem appropriate for the infraction, up to and including expulsion.
 
 :::info
-Portions derived from the [Django Code of Conduct](https://www.djangoproject.com/conduct/), [The Rust Code of Conduct](https://www.rust-lang.org/conduct.html) and [The Ada Initiative](http://adainitiative.org/) under a Creative Commons Attribution-ShareAlike license.
+Portions derived from the [Django Code of Conduct](https://www.djangoproject.com/conduct/), [The Rust Code of Conduct](https://www.rust-lang.org/conduct.html) and [The Ada Initiative](https://adainitiative.org) under a Creative Commons Attribution-ShareAlike license.
 :::
 
 ---

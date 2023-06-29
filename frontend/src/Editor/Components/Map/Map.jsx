@@ -15,6 +15,7 @@ export const Map = function Map({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onEvent,
+  styles,
   // canvasWidth,
   registerAction,
   dataCy,
@@ -137,7 +138,7 @@ export const Map = function Map({
   return (
     <div
       data-disabled={parsedDisabledState}
-      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ height, display: parsedWidgetVisibility ? '' : 'none', boxShadow: styles.boxShadow }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component, event);

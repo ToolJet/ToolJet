@@ -5,7 +5,6 @@ on:
 env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-  MARKETPLACE_TAG: ${{ contains(github.event.pull_request.labels.*.name, 'marketplace') }}
 
 permissions:
   pull-requests: write
@@ -13,7 +12,7 @@ permissions:
 
 jobs:
   create-review-app:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'create-review-app' && !env.MARKETPLACE_TAG }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'create-review-app' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -132,7 +131,7 @@ jobs:
               },
               {
                 "key": "ENABLE_MARKETPLACE_FEATURE",
-                "value": "${{ env.MARKETPLACE_TAG }}"
+                "value": "true"
               }
             ],
             "serviceDetails": {
@@ -149,7 +148,7 @@ jobs:
                 "port": 80,
                 "protocol": "TCP"
                 }],
-                "plan": "pro",
+                "plan": "starter",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
@@ -259,7 +258,7 @@ jobs:
           PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
           PGDATABASE: ${{ env.PR_NUMBER }}
         run: |
-          PGPASSWORD: ${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "DROP DATABASE $PGDATABASE;"
+          PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
 
   suspend-review-app:
     if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-app' }}

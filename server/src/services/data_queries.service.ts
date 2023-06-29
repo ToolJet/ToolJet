@@ -409,6 +409,38 @@ export class DataQueriesService {
       return object;
     } else if (typeof object === 'string') {
       object = object.replace(/\n/g, ' ');
+
+      //if object has {{}} and %%%% then resolve %% in a single string
+      if (object.includes('{{') && object.includes('}}') && object.includes('%%') && object.includes('%%')) {
+        let resolvedvar = options[object];
+
+        if (object.includes(`server.`)) {
+          // find all server variables in the string
+          const serverVariables = object.match(/server.(.*?)%%/g);
+
+          serverVariables?.map((variable) => {
+            return variable
+              .match(/server.(.*?)%%/g)[0]
+              .replace('%%', '')
+              .replace('server.', '');
+          });
+
+          const resolvedOrgVar = [];
+
+          for (const variable of serverVariables) {
+            const resolvedVariable = await this.resolveVariable(variable, organization_id);
+            resolvedOrgVar.push(resolvedVariable);
+          }
+
+          //replace the HiddenEnvironmentVariable with the resolved value
+          for (let i = 0; i < serverVariables.length; i++) {
+            resolvedvar = resolvedvar.replace('HiddenEnvironmentVariable', resolvedOrgVar[i]);
+          }
+        }
+
+        return resolvedvar;
+      }
+
       if (object.startsWith('{{') && object.endsWith('}}') && (object.match(/{{/g) || []).length === 1) {
         object = options[object];
         return object;

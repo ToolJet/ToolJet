@@ -15,6 +15,8 @@ import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const Container = ({
   canvasWidth,
@@ -37,7 +39,6 @@ export const Container = ({
   selectedComponents,
   darkMode,
   showComments,
-  appVersionsId,
   socket,
   handleUndo,
   handleRedo,
@@ -45,8 +46,6 @@ export const Container = ({
   hoveredComponent,
   sideBarDebugger,
   currentPageId,
-  isVersionReleased,
-  setReleasedVersionPopupState,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -58,6 +57,14 @@ export const Container = ({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const components = appDefinition.pages[currentPageId]?.components ?? {};
+  const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      appVersionsId: state?.editingVersion?.id,
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
@@ -68,10 +75,8 @@ export const Container = ({
   const router = useRouter();
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
-
   useHotkeys('meta+z, control+z', () => handleUndo());
   useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
-
   useHotkeys(
     'meta+v, control+v',
     () => {
@@ -90,7 +95,7 @@ export const Container = ({
           }
         });
       }
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
     },
     [isContainerFocused, appDefinition, focusedParentIdRef]
   );
@@ -238,7 +243,7 @@ export const Container = ({
 
   function onDragStop(e, componentId, direction, currentLayout) {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
     // const id = componentId ? componentId : uuidv4();
@@ -276,7 +281,7 @@ export const Container = ({
 
   function onResizeStop(id, e, direction, ref, d, position) {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
     const deltaWidth = d.width;
@@ -468,13 +473,7 @@ export const Container = ({
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>
-          <Comments
-            socket={socket}
-            newThread={newThread}
-            appVersionsId={appVersionsId}
-            canvasWidth={canvasWidth}
-            currentPageId={currentPageId}
-          />
+          <Comments socket={socket} newThread={newThread} canvasWidth={canvasWidth} currentPageId={currentPageId} />
           {commentsPreviewList.map((previewComment, index) => (
             <div
               key={index}
@@ -562,10 +561,7 @@ export const Container = ({
                 addDefaultChildren,
                 currentPageId,
                 childComponents,
-                isVersionReleased,
-                setReleasedVersionPopupState,
               }}
-              isVersionReleased={isVersionReleased}
             />
           );
         }
