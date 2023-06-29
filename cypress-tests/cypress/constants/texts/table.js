@@ -27,4 +27,8 @@ export const tableText = {
   email: "email",
   name: "name",
   optionEquals: "equals",
+
+  labelDynamicColumn: "Use dynamic column",
+  makeEditable: "make editable",
+  lableDisableActionButton: "Disable action button",
 };
