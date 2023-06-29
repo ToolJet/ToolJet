@@ -70,7 +70,7 @@ export const Pagination = function Pagination({
         {serverSide && <strong>{pageIndex}</strong>}
         {!serverSide && (
           <strong>
-            {pageIndex} of {autoPageOptions.length}
+            {pageIndex} of {autoPageOptions.length || 1}
           </strong>
         )}
       </small>
