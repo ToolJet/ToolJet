@@ -85,7 +85,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   return (
     <div
       onMouseDown={(e) => e.stopPropagation()}
-      style={{ display: styles.visibility ? 'block' : 'none', height: height }}
+      style={{ display: styles.visibility ? 'block' : 'none', height: height, boxShadow: styles.boxShadow }}
       className="bounded-box relative"
     >
       <Annotation

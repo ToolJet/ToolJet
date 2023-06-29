@@ -3,12 +3,13 @@ import cx from 'classnames';
 
 export const Link = ({ height, properties, styles, fireEvent, registerAction, dataCy }) => {
   const { linkTarget, linkText, targetType } = properties;
-  const { textColor, textSize, underline, visibility } = styles;
+  const { textColor, textSize, underline, visibility, boxShadow } = styles;
   const clickRef = useRef();
 
   const computedStyles = {
     fontSize: textSize,
     height,
+    boxShadow,
   };
 
   registerAction(
