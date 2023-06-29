@@ -370,8 +370,13 @@ function debounce(func) {
 export const executeAction = debounce(executeActionWithDebounce);
 
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
-  console.log('nopski', customVariables);
   if (event) {
+    if (event.runOnlyIf) {
+      const shouldRun = resolveReferences(event.runOnlyIf, _ref.state.currentState, undefined, customVariables);
+      if (!shouldRun) {
+        return false;
+      }
+    }
     switch (event.actionId) {
       case 'show-alert': {
         const message = resolveReferences(event.message, _ref.state.currentState, undefined, customVariables);
@@ -576,7 +581,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
 export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
-  console.log('Event: ', eventName);
+  console.log('Event: ', _ref, eventName, options, (mode = 'edit'));
 
   const { customVariables } = options;
 
