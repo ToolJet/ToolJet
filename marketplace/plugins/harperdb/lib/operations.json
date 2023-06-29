@@ -68,14 +68,20 @@
         "schema": {
           "label": "Schema",
           "key": "schema",
-          "type": "text",
-          "description": "Enter schema"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter schema",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "table": {
           "label": "Table",
           "key": "table",
-          "type": "text",
-          "description": "Enter table name"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "records": {
           "label": "Records",
@@ -91,14 +97,20 @@
         "schema": {
           "label": "Schema",
           "key": "schema",
-          "type": "text",
-          "description": "Enter schema"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter schema",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "table": {
           "label": "Table",
           "key": "table",
-          "type": "text",
-          "description": "Enter table name"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "records": {
           "label": "Records",
@@ -114,14 +126,20 @@
         "schema": {
           "label": "Schema",
           "key": "schema",
-          "type": "text",
-          "description": "Enter Schema"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Schema",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "table": {
           "label": "Table",
           "key": "table",
-          "type": "text",
-          "description": "Enter table name"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "hash_values": {
           "label": "Hash Values",
@@ -137,14 +155,20 @@
         "schema": {
           "label": "Schema",
           "key": "schema",
-          "type": "text",
-          "description": "Enter Schema"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Schema",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "table": {
           "label": "Table",
           "key": "table",
-          "type": "text",
-          "description": "Enter table name"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "hash_values": {
           "label": "Hash Values",
@@ -169,26 +193,38 @@
         "schema": {
           "label": "Schema",
           "key": "schema",
-          "type": "text",
-          "description": "Enter Schema"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Schema",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "table": {
           "label": "Table",
           "key": "table",
-          "type": "text",
-          "description": "Enter table name"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "search_attribute": {
           "label": "Search Attribute",
           "key": "search_attribute",
-          "type": "text",
-          "description": "Attribute you wish to search"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Attribute you wish to search",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "search_value": {
           "label": "Search Value",
           "key": "search_value",
-          "type": "text",
-          "description": "Value you wish to search"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Value you wish to search",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "attributes": {
           "label": "Table Attributes",
@@ -204,14 +240,20 @@
         "schema": {
           "label": "Schema",
           "key": "schema",
-          "type": "text",
-          "description": "Enter Schema"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Schema",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "table": {
           "label": "Table",
           "key": "table",
-          "type": "text",
-          "description": "Enter table name"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter table name",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "operator": {
           "label": "Operator Inbetween Each condition",
@@ -232,14 +274,20 @@
         "offset": {
           "label": "Offset",
           "key": "offset",
-          "type": "text",
-          "description": "Enter Offset"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Offset",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "limit": {
           "label": "Limit",
           "key": "limit",
-          "type": "text",
-          "description": "Enter Limit"
+          "type": "codehinter",
+          "lineNumbers": false,
+          "description": "Enter Limit",
+          "height": "36px",
+          "className": "codehinter-plugins"
         },
         "attributes": {
           "label": "Table Attributes",
@@ -261,5 +309,16 @@
         }
       }
     }
-  }
+  },
+  "required": [
+    "schema",
+    "table",
+    "mode",
+    "records",
+    "hash_values",
+    "attributes",
+    "search_attribute",
+    "search_value",
+    "conditions"
+  ]
 }
