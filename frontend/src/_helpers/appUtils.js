@@ -27,9 +27,9 @@ import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetD
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
 import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
-
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -841,7 +841,11 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit');
     } else {
-      queryExecutionPromise = dataqueryService.preview(query, options, _ref?.state?.editingVersion?.id);
+      queryExecutionPromise = dataqueryService.preview(
+        query,
+        options,
+        useAppVersionStore.getState().editingVersion?.id
+      );
     }
 
     queryExecutionPromise
@@ -865,13 +869,13 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
           setPreviewLoading(false);
           setPreviewData(finalData);
         }
-
         const queryStatus =
           query.kind === 'tooljetdb'
             ? data.statusText
             : query.kind === 'runpy'
             ? data?.data?.status ?? 'ok'
             : data.status;
+
         switch (queryStatus) {
           case 'Bad Request':
           case 'failed': {
