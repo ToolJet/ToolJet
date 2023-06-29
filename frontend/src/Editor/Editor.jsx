@@ -1591,7 +1591,6 @@ class EditorComponent extends React.Component {
                   this.state.isQueryPaneDragging || this.state.isDragging ? 'hide-scrollbar' : ''
                 }`}
                 id="main-editor-canvas"
-                style={{ backgroundColor: this.computeCanvasBackgroundColor() }}
               >
                 <div
                   className={`canvas-container align-items-center ${!showLeftSidebar && 'hide-sidebar'}`}

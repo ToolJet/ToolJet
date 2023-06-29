@@ -36,8 +36,9 @@ describe("List view widget", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.createApp();
-    cy.dragAndDropWidget("List View");
-    cy.modifyCanvasSize(1200, 780);
+    cy.viewport(1200, 1200);
+    cy.dragAndDropWidget("List View", 200, 200);
+    cy.modifyCanvasSize(1200, 700);
     cy.intercept("PUT", "/api/apps/**").as("apps");
   });
 
