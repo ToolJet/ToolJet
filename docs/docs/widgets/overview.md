@@ -51,15 +51,50 @@ Each Component can be modified and styled from the Properties Panel such as the 
 
 ## Component Event Handlers
 
-Event Handlers can be found in the Component's **Property Panel** or in the **Advanced** section of the Query. Event handlers can be used to trigger the queries, perform **[Component Specific Actions - CSA](/docs/actions/control-component)** or for setting a variable.
+Event Handlers can be found in the Component's **Property Panel** or in the **Advanced** section of the Query. Event handlers can be used to trigger **[Actions](/docs/category/actions-reference)** such as executing the queries, perform Component Specific Actions(CSA) or for setting a variable.
 
-:::info Actions
-Check all the available Actions **[here](/docs/category/actions-reference)**.
-:::
+Event handlers for components have the following properties:
+
+1. **Event**: Each component has its own set of exclusive events. You can refer to the component reference to find the specific events available for each component. These events are triggered by user interactions or other actions within the application.
+
+2. **Action**: Actions are the operations that can be performed when an event is triggered. There is a comprehensive list of available actions, which can be found in the **[actions reference documentation](/docs/category/actions-reference)**. In addition to general actions, each component may also have its own set of **Component Specific Actions (CSA)** that are specific to that particular component. The CSA can be found in the respective component reference.
+
+3. **Run Only If**: The "Run Only If" property allows you to define a condition that must be satisfied before the event handler's action is executed. By specifying a condition, you can control the flow of execution and ensure that the action is only performed when the condition is met. 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/overview/events.png" alt="Components: Overview" />
+<img className="screenshot-full" src="/img/widgets/overview/isvalid.png" alt="Event Handler" />
+
+</div>
+
+### Using Run only if
+
+With this option in Event Handlers, users can specify a condition that must be met before the event handler's action is executed. This allows for more fine-grained control over when certain actions should be triggered in response to component events.
+
+For example, let's consider a button component with an `OnClick` event handler. By specifying a "Run Only If" condition for the event handler, users can control when the associated action should be executed. Here's an example:
+
+```javascript
+Button Component
+  └─ OnClick Event Handler: runQuery()
+                      │
+                      ├─ Run Only If: expression/condition
+```
+
+In this case, the action `runQuery()` will only be triggered if the `expression/condition` is truthy. The `expression/condition` can utilize the values dynamically from other parts of the application or exposed variables.
+
+**Example expressions:**
+
+```js
+{{globals.currentUser.groups[1] === 'admin'}} // returns true if the current user is admin
+
+or
+
+{{components.form1.isValid}} // isValid holds the boolean value true or false
+```
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/overview/admin.png" alt="Components: Run only if" />
 
 </div>
 
