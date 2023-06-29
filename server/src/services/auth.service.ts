@@ -37,7 +37,7 @@ import {
 import { dbTransactionWrap, isSuperAdmin, generateNextName } from 'src/helpers/utils.helper';
 import { InstanceSettingsService } from './instance_settings.service';
 import { MetadataService } from './metadata.service';
-import { Response } from 'express';
+import { CookieOptions, Response } from 'express';
 import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
@@ -679,11 +679,19 @@ export class AuthService {
     };
     user.organizationId = organization.id;
 
-    response.cookie('tj_auth_token', this.jwtService.sign(JWTPayload), {
+    const cookieOptions: CookieOptions = {
       httpOnly: true,
       sameSite: 'strict',
       maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
-    });
+    };
+
+    if (this.configService.get<string>('ENABLE_PRIVATE_APP_EMBED') === 'true') {
+      // disable cookie security
+      cookieOptions.sameSite = 'none';
+      cookieOptions.secure = true;
+    }
+
+    response.cookie('tj_auth_token', this.jwtService.sign(JWTPayload), cookieOptions);
 
     return decamelizeKeys({
       id: user.id,

@@ -33,6 +33,7 @@ export class AppConfigService {
       'WHITE_LABEL_FAVICON',
       'ENABLE_TOOLJET_DB',
       'LANGUAGE',
+      'ENABLE_PRIVATE_APP_EMBED',
     ];
   }
 
