@@ -18,7 +18,6 @@ export const Link = ({ height, properties, styles, fireEvent, registerAction, da
     },
     []
   );
-
   return (
     <div
       className={cx('link-widget', { 'd-none': !visibility }, `${underline}`)}
@@ -26,7 +25,7 @@ export const Link = ({ height, properties, styles, fireEvent, registerAction, da
       data-cy={dataCy}
     >
       <a
-        href={linkTarget}
+        {...(linkTarget != '' ? { href: linkTarget } : {})}
         target={targetType === 'new' && '_blank'}
         onClick={(event) => {
           event.stopPropagation();
