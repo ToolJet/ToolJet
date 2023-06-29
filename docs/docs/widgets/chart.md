@@ -98,11 +98,13 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 This field is used to add a title to your selected chart.
 
-### Plotly JSON chart schema
+### Plotly JSON Chart Schema
 
-In the chart widget, you can also plot a chart with JSON data. So the JSON will contain the information about the chart type, chart data, etc. You can learn more about the JSON properties from [here](https://plotly.com/javascript/reference/). 
+You have the option to plot a chart using JSON data in the chart component. This JSON data contains information about the chart type, chart data, and more. You can find details about the JSON properties [here](https://plotly.com/javascript/reference/).
 
-Anyway, to work with the JSON you need to enable the `Use Plotly JSON schema` toggle from the properties section.
+To work with the JSON data, you need to enable the **Plotly JSON chart schema** toggle in the properties section. Once enabled, you can provide the JSON data in the **JSON description** field.
+
+The resulting chart will be generated based on the provided JSON data, allowing you to customize the chart's appearance and functionality.
 
 <div style={{textAlign: 'center'}}>
 
@@ -110,13 +112,33 @@ Anyway, to work with the JSON you need to enable the `Use Plotly JSON schema` to
 
 </div>
 
-It will show the [JSON description](https://plotly.com/chart-studio-help/json-chart-schema/) field to put the JSON data.
-
-The result will be like this:
+You can refer to the [JSON Chart Schema](https://plotly.com/chart-studio-help/json-chart-schema/) for more information on constructing the JSON data structure.
 
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/widgets/chart/jsonschema.png" alt="ToolJet - Widget Reference - Chart" />
+
+</div>
+
+### Bar Mode
+
+The **Bar Mode** option allows you to customize the layout and display style specifically for bar charts. This option becomes available when the **Plotly JSON chart schema** toggle is enabled and a JSON schema specific to bar charts is provided. This option provide different modes for organizing and presenting bars within the chart.
+
+Please note that the **Bar Mode** option only affects the layout of bar charts, and it requires a JSON schema specifically designed for bar charts. It cannot be used to modify the layout of other chart types such as line charts or pie charts.
+
+It offers four different modes:
+
+**1. Stack Mode:** Bars are stacked on top of each other, displaying the total value of each category as well as the individual values within the stack.
+
+**2. Group Mode:** Bars of different categories are grouped together side by side, facilitating direct comparison between the groups and their subcategories.
+
+**3. Overlay Mode:** Bars from different categories overlap with slight offsets, allowing for detailed visual comparison of individual values across categories.
+
+**4. Relative Mode:** Bars represent proportions or percentages relative to a reference value, emphasizing the relative significance of each category.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/chart/barmodes.png" alt="ToolJet - Widget Reference - Chart" />
 
 </div>
 
