@@ -69,7 +69,6 @@ export const Form = function Form(props) {
 
     for (const key in data) {
       const item = data[key];
-
       if (item.name === 'Text') {
         const textKey = item?.keyValue ?? item?.text;
         const nextItem = data[parseInt(key) + 1];

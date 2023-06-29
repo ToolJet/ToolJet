@@ -72,6 +72,8 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.displayValues)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values']['value'] =
                 value?.displayValues;
+            //keeping label as empty
+            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
             if (value?.values)
@@ -219,6 +221,8 @@ export function generateUIComponents(JSONSchema, advanced) {
 
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'] = value?.value;
+            //keeping label as empty
+            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
             break;
 
           case 'RadioButton':
@@ -234,6 +238,8 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.displayValues)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values']['value'] =
                 value?.displayValues;
+            //keeping label as empty
+            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
             if (value?.values)
@@ -257,6 +263,8 @@ export function generateUIComponents(JSONSchema, advanced) {
 
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'] = value?.value;
+            //keeping label as empty
+            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
             break;
 
           case 'TextArea':
@@ -311,6 +319,8 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.displayValues)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values']['value'] =
                 value?.displayValues;
+            //keeping label as empty
+            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
             if (value?.values)
@@ -339,6 +349,8 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.defaultSelected)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultSelected']['value'] =
                 value?.defaultSelected;
+            //keeping label as empty
+            uiComponentsDraft[index * 2 + 1]['definition']['properties']['label']['value'] = '';
             if (value?.maxRating)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['maxRating']['value'] = value?.maxRating;
             if (value?.tooltips)
