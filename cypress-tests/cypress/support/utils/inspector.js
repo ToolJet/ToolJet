@@ -1,15 +1,16 @@
-export const verifyNodeData = (node, type, children) => {
+export const verifyNodeData = (node, type, children, index = 0) => {
   cy.get(
     `[data-cy="inspector-node-${node.toLowerCase()}"] > .node-length-color`
   )
+    .eq(index)
     .realHover()
     .verifyVisibleElement("have.text", `${children}`);
-  cy.get(
-    `[data-cy="inspector-node-${node.toLowerCase()}"] > .node-key`
-  ).verifyVisibleElement("have.text", node);
-  cy.get(
-    `[data-cy="inspector-node-${node.toLowerCase()}"] > .node-type`
-  ).verifyVisibleElement("have.text", type);
+  cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .node-key`)
+    .eq(index)
+    .verifyVisibleElement("have.text", node);
+  cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .node-type`)
+    .eq(index)
+    .verifyVisibleElement("have.text", type);
 };
 
 export const openNode = (node, index = 0) => {
@@ -18,14 +19,15 @@ export const openNode = (node, index = 0) => {
     .click();
 };
 
-export const verifyValue = (node, type, children) => {
+export const verifyValue = (node, type, children, index = 0) => {
   cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .mx-2`)
+    .eq(index)
     .realHover()
     .verifyVisibleElement("have.text", `${children}`);
-  cy.get(
-    `[data-cy="inspector-node-${node.toLowerCase()}"] > .node-key`
-  ).verifyVisibleElement("have.text", node);
-  cy.get(
-    `[data-cy="inspector-node-${node.toLowerCase()}"] > .mx-1`
-  ).verifyVisibleElement("have.text", type);
+  cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .node-key`)
+    .eq(index)
+    .verifyVisibleElement("have.text", node);
+  cy.get(`[data-cy="inspector-node-${node.toLowerCase()}"] > .mx-1`)
+    .eq(index)
+    .verifyVisibleElement("have.text", type);
 };

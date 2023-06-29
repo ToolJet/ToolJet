@@ -125,7 +125,7 @@ class Chart extends React.Component {
             lineNumbers={false}
             className="chart-input pr-2"
             onChange={(value) => this.props.paramUpdated({ name: 'jsonDescription' }, 'value', value, 'properties')}
-            componentName={`widget/${this.props.component.component.name}::${chartType}`}
+            componentName={`component/${this.props.component.component.name}::${chartType}`}
           />
         ),
       });
@@ -155,7 +155,7 @@ class Chart extends React.Component {
             lineNumbers={false}
             className="chart-input pr-2"
             onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
-            componentName={`widget/${this.props.component.component.name}::${chartType}`}
+            componentName={`component/${this.props.component.component.name}::${chartType}`}
           />
         ),
       });

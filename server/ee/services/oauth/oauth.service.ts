@@ -17,7 +17,7 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, generateNextName } from 'src/helpers/utils.helper';
 import { DeepPartial, EntityManager } from 'typeorm';
 import { GitOAuthService } from './git_oauth.service';
 import { GoogleOAuthService } from './google_oauth.service';
@@ -79,7 +79,8 @@ export class OauthService {
     }
 
     if (!user) {
-      defaultOrganization = await this.organizationService.create('Untitled workspace', null, manager);
+      const organizationName = generateNextName('My workspace');
+      defaultOrganization = await this.organizationService.create(organizationName, null, manager);
     }
 
     const groups = ['all_users'];
@@ -220,7 +221,8 @@ export class OauthService {
           let defaultOrganization: DeepPartial<Organization> = organization;
 
           // Not logging in to specific organization, creating new
-          defaultOrganization = await this.organizationService.create('Untitled workspace', null, manager);
+          const organizationName = generateNextName('My workspace');
+          defaultOrganization = await this.organizationService.create(organizationName, null, manager);
 
           const groups = ['all_users', 'admin'];
           userDetails = await this.usersService.create(
@@ -261,7 +263,8 @@ export class OauthService {
             organizationDetails = organizationList[0];
           } else {
             // no SSO login enabled organization available for user - creating new one
-            organizationDetails = await this.organizationService.create('Untitled workspace', userDetails, manager);
+            const organizationName = generateNextName('My workspace');
+            organizationDetails = await this.organizationService.create(organizationName, userDetails, manager);
           }
         } else if (!userDetails) {
           throw new UnauthorizedException('User does not exist, please sign up');

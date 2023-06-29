@@ -436,6 +436,7 @@ class TableComponent extends React.Component {
                     },
                   },
                 }}
+                hideEmptyEventsAlert={true}
                 componentMeta={{ events: { onChange: { displayName: 'On change' } } }}
                 currentState={this.props.currentState}
                 dataQueries={this.props.dataQueries}
@@ -684,6 +685,19 @@ class TableComponent extends React.Component {
               paramType="properties"
             />
           )}
+
+          <ProgramaticallyHandleToggleSwitch
+            label="Column visibility"
+            currentState={this.state.currentState}
+            index={index}
+            darkMode={this.props.darkMode}
+            callbackFunction={this.onColumnItemChange}
+            property="columnVisibility"
+            props={column}
+            component={this.props.component}
+            paramMeta={{ type: 'toggle', displayName: 'Column visibility' }}
+            paramType="properties"
+          />
         </Popover.Body>
       </Popover>
     );
@@ -894,7 +908,7 @@ class TableComponent extends React.Component {
   }
 
   getPopoverFieldSource = (column, field) =>
-    `widget/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
+    `component/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
 
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
@@ -923,7 +937,11 @@ class TableComponent extends React.Component {
     const useDynamicColumn = component.component.definition.properties.useDynamicColumn?.value
       ? resolveReferences(component.component.definition.properties.useDynamicColumn?.value, currentState) ?? false
       : false;
-
+    //from app definition values are of string data type if defined or else,undefined
+    const allowSelection = component.component.definition.properties?.allowSelection?.value
+      ? resolveReferences(component.component.definition.properties.allowSelection?.value, currentState)
+      : resolveReferences(component.component.definition.properties.highlightSelectedRow.value, currentState) ||
+        resolveReferences(component.component.definition.properties.showBulkSelector.value, currentState);
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
     };
@@ -1074,10 +1092,11 @@ class TableComponent extends React.Component {
       ...(enabledSort ? ['serverSideSort'] : []),
       'showDownloadButton',
       'showFilterButton',
+      'showAddNewRowButton',
       ...(displayServerSideFilter ? ['serverSideFilter'] : []),
       'showBulkUpdateActions',
-      'showBulkSelector',
-      'highlightSelectedRow',
+      'allowSelection',
+      ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector'] : []),
       'hideColumnSelectorButton',
     ];
 

@@ -1,0 +1,348 @@
+name: Render cypress app deploy
+on:
+  pull_request_target:
+    types: [labeled, unlabeled, closed]
+env:
+  PR_NUMBER: ${{ github.event.number }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  create-review-cypress-app:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'create-review-cypress-app' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create deployment
+        id: create-deployment
+        run: |
+          export RESPONSE=$(curl --request POST \
+          --url https://api.render.com/v1/services \
+          --header 'accept: application/json' \
+          --header 'content-type: application/json' \
+          --header 'Authorization: Bearer ${{ secrets.RENDER_API_KEY }}' \
+          --data '
+          {
+            "autoDeploy": "yes",
+            "branch": "${{ env.BRANCH_NAME }}",
+            "name": "ToolJet PR CYPRESS #${{ env.PR_NUMBER }}",
+            "notifyOnFail": "default",
+            "ownerId": "tea-caeo4bj19n072h3dddc0",
+            "repo": "${{ github.event.pull_request.head.repo.git_url }}",
+            "slug": "tooljet-pr-cypress-${{ env.PR_NUMBER }}",
+            "suspended": "not_suspended",
+            "suspenders": [],
+            "type": "web_service",
+            "envVars": [
+              {
+                "key": "PG_HOST",
+                "value": "${{ secrets.RENDER_PG_HOST }}"
+              },
+              {
+                "key": "PG_PORT",
+                "value": "5432"
+              },
+              {
+                "key": "PG_USER",
+                "value": "${{ secrets.RENDER_PG_USER }}"
+              },
+              {
+                "key": "PG_PASS",
+                "value": "${{ secrets.RENDER_PG_PASS }}"
+              },
+              {
+                "key": "PG_DB",
+                "value": "${{ env.PR_NUMBER }}_cypress"
+              },
+              {
+                "key": "ENABLE_TOOLJET_DB",
+                "value": "true"
+              },
+              {
+                "key": "TOOLJET_DB",
+                "value": "${{ env.PR_NUMBER }}_cypress"
+              },
+              {
+                "key": "TOOLJET_DB_HOST",
+                "value": "${{ secrets.RENDER_PG_HOST }}"
+              },
+              {
+                "key": "TOOLJET_DB_USER",
+                "value": "${{ secrets.RENDER_PG_USER }}"
+              },              
+              {
+                "key": "TOOLJET_DB_PASS",
+                "value": "${{ secrets.RENDER_PG_PASS }}"
+              },
+              {
+                "key": "TOOLJET_DB_PORT",
+                "value": "5432"
+              },              
+              {
+                "key": "PGRST_DB_URI",
+                "value": "postgres://${{ secrets.RENDER_PG_USER }}:${{ secrets.RENDER_PG_PASS }}@${{ secrets.RENDER_PG_HOST }}/${{ env.PR_NUMBER }}_cypress"
+              },
+              {
+                "key": "PGRST_HOST",
+                "value": "127.0.0.1:3000"
+              },
+              {
+                "key": "PGRST_JWT_SECRET",
+                "value": "r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj"
+              },
+              {
+                "key": "PGRST_LOG_LEVEL",
+                "value": "info"
+              },
+              {
+                "key": "PORT",
+                "value": "80"
+              },
+              {
+                "key": "TOOLJET_HOST",
+                "value": "https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com"
+              },
+              {
+                "key": "DISABLE_TOOLJET_TELEMETRY",
+                "value": "true"
+              },
+              {
+                "key": "SMTP_ADDRESS",
+                "value": "smtp.mailtrap.io"
+              },
+              {
+                "key": "SMTP_DOMAIN",
+                "value": "smtp.mailtrap.io"
+              },
+              {
+                "key": "SMTP_PORT",
+                "value": "2525"
+              },
+              {
+                "key": "SMTP_USERNAME",
+                "value": "${{ secrets.RENDER_SMTP_USERNAME }}"
+              },
+              {
+                "key": "SMTP_PASSWORD",
+                "value": "${{ secrets.RENDER_SMTP_PASSWORD }}"
+              },
+              {
+                "key": "ENABLE_MARKETPLACE_FEATURE",
+                "value": "true"
+              },
+              {
+                "key": "SSO_GIT_OAUTH2_CLIENT_ID",
+                "value": "dummy"
+              },
+              {
+                "key": "SSO_GIT_OAUTH2_CLIENT_SECRET",
+                "value": "dummy"
+              },
+              {
+                "key": "SSO_GIT_OAUTH2_HOST",
+                "value": "dummy"
+              },
+              {
+                "key": "SSO_GOOGLE_OAUTH2_CLIENT_ID",
+                "value": "dummy"
+              }                                          
+            ],
+            "serviceDetails": {
+              "disk": null,
+              "env": "docker",
+              "envSpecificDetails": {
+                "dockerCommand": "",
+                "dockerContext": "./",
+                "dockerfilePath": "./docker/preview.Dockerfile"
+                },
+                "healthCheckPath": "/api/health",
+                "numInstances": 1,
+                "openPorts": [{
+                "port": 80,
+                "protocol": "TCP"
+                }],
+                "plan": "pro",
+                "pullRequestPreviewsEnabled": "no",
+                "region": "oregon",
+                "url": "https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com"
+            }
+          }')
+
+          echo "response: $RESPONSE"
+          export SERVICE_ID=$(echo $RESPONSE | jq -r '.service.id')
+          echo "SERVICE_ID=$SERVICE_ID" >> $GITHUB_ENV
+
+      - name: Comment deployment URL
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Deployment: https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com \n Dashboard: https://dashboard.render.com/web/${{ env.SERVICE_ID }}'
+            })
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'create-review-cypress-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-review-cypress-app']
+            })
+
+  destroy-review-cypress-app:
+    if: ${{ (github.event.action == 'labeled' && github.event.label.name == 'destroy-review-cypress-app') || github.event.action == 'closed' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete service
+        run: |
+          export SERVICE_ID=$(curl --request GET \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20CYPRESS%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+           jq -r '.[0].service.id')
+
+          curl --request DELETE \
+          --url https://api.render.com/v1/services/$SERVICE_ID \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'destroy-review-cypress-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'suspend-review-cypress-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-review-cypress-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt update
+          sudo apt install postgresql-client -y
+
+      - name: Drop PostgreSQL PR database
+        env:
+          PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
+          PGPORT: 5432
+          PGUSER: ${{ secrets.RENDER_DS_PG_USER }}
+          PGDATABASE: ${{ env.PR_NUMBER }}_cypress
+        run: |
+          PGPASSWORD=${{ secrets.RENDER_DS_PG_PASS }} psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "drop database \"$PGDATABASE\" ;"
+
+  suspend-review-cypress-app:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'suspend-review-cypress-app' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Suspend service
+        run: |
+          export SERVICE_ID=$(curl --request GET \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20CYPRESS%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+           jq -r '.[0].service.id')
+
+          curl --request POST \
+          --url https://api.render.com/v1/services/$SERVICE_ID/suspend \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'active-review-cypress-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
+
+  resume-review-cypress-app:
+    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'suspend-review-cypress-app' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resume service
+        run: |
+          export SERVICE_ID=$(curl --request GET \
+          --url 'https://api.render.com/v1/services?name=ToolJet%20PR%20CYPRESS%20%23${{ env.PR_NUMBER }}&limit=1' \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}' | \
+           jq -r '.[0].service.id')
+
+          curl --request POST \
+          --url https://api.render.com/v1/services/$SERVICE_ID/resume \
+          --header 'accept: application/json' \
+          --header 'authorization: Bearer ${{ secrets.RENDER_API_KEY }}'
+
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['active-review-cypress-app']
+            })
+
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'suspend-review-cypress-app'
+              })
+            } catch (e) {
+              console.log(e)
+            }
