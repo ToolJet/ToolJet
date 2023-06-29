@@ -19,7 +19,7 @@ export const Datepicker = function Datepicker({
 }) {
   const { enableTime, enableDate, defaultValue, disabledDates } = properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
-  const { visibility, disabledState, borderRadius } = styles;
+  const { visibility, disabledState, borderRadius, boxShadow } = styles;
 
   const [date, setDate] = useState(null);
   const [excludedDates, setExcludedDates] = useState([]);
@@ -85,6 +85,7 @@ export const Datepicker = function Datepicker({
       style={{
         height,
         display: visibility ? '' : 'none',
+        background: 'none',
       }}
     >
       <DatePickerComponent
@@ -103,7 +104,7 @@ export const Datepicker = function Datepicker({
         showYearDropdown
         dropdownMode="select"
         excludeDates={excludedDates}
-        customInput={<input style={{ borderRadius: `${borderRadius}px`, height }} />}
+        customInput={<input style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />}
       />
 
       <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>

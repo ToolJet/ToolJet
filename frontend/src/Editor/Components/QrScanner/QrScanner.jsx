@@ -17,10 +17,10 @@ export const QrScanner = function QrScanner({ styles, fireEvent, setExposedVaria
 
   const [errorOccured, setErrorOccured] = useState(false);
 
-  const { visibility, disabledState } = styles;
+  const { visibility, disabledState, boxShadow } = styles;
 
   return (
-    <div data-disabled={disabledState} style={{ display: visibility ? '' : 'none' }} data-cy={dataCy}>
+    <div data-disabled={disabledState} style={{ display: visibility ? '' : 'none', boxShadow }} data-cy={dataCy}>
       {errorOccured ? <ErrorModal /> : <QrReader onError={handleError} onScan={handleScan} />}
     </div>
   );

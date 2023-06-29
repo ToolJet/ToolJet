@@ -828,6 +828,7 @@ export function Table({
         display: parsedWidgetVisibility ? '' : 'none',
         overflow: 'hidden',
         borderRadius: Number.parseFloat(borderRadius),
+        boxShadow: styles.boxShadow,
       }}
       onClick={(event) => {
         onComponentClick(id, component, event);
