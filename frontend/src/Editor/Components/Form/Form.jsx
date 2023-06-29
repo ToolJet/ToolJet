@@ -237,8 +237,6 @@ export const Form = function Form(props) {
           )}
           {advanced &&
             uiComponents?.map((item, index) => {
-              console.log('xxx', uiComponents?.[index + 1]?.component);
-
               return (
                 <div
                   //check to avoid labels for these widgets as label is already present for them
