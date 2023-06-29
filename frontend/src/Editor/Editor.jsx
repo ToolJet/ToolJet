@@ -1014,11 +1014,19 @@ class EditorComponent extends React.Component {
 
   addNewPage = ({ name, handle }) => {
     // check for unique page handles
-    const pageExists = Object.values(this.state.appDefinition.pages).some((page) => page.handle === handle);
+    const pageExists = Object.values(this.state.appDefinition.pages).some((page) => page.name === name);
 
     if (pageExists) {
-      toast.error('Page with same handle already exists');
+      toast.error('Page name already exists');
       return;
+    }
+
+    const pageHandles = Object.values(this.state.appDefinition.pages).map((page) => page.handle);
+
+    let newHandle = handle;
+    // If handle already exists, finds a unique handle by incrementing a number until it is not found in the array of existing page handles.
+    for (let handleIndex = 1; pageHandles.includes(newHandle); handleIndex++) {
+      newHandle = `${handle}-${handleIndex}`;
     }
 
     const newAppDefinition = {
@@ -1027,7 +1035,7 @@ class EditorComponent extends React.Component {
         ...this.state.appDefinition.pages,
         [uuid()]: {
           name,
-          handle,
+          handle: newHandle,
           components: {},
         },
       },
@@ -1267,6 +1275,9 @@ class EditorComponent extends React.Component {
   };
 
   renamePage = (pageId, newName) => {
+    if (Object.entries(this.state.appDefinition.pages).some(([pId, { name }]) => newName === name && pId !== pageId)) {
+      return toast.error('Page name already exists');
+    }
     if (newName.trim().length === 0) {
       toast.error('Page name cannot be empty');
       return;
