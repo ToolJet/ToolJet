@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSpring, config, animated } from 'react-spring';
 import { resolveReferences } from '../../_helpers/utils';
+import { Alert } from '../Alert';
 
 const Input = ({ helpText, ...props }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -41,7 +42,7 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
     from: { opacity: 0, height: 0 },
     to: {
       opacity: isFocused ? 1 : 0,
-      height: isFocused ? 60 : 0,
+      height: isFocused ? 77 : 0,
     },
   });
 
@@ -63,21 +64,36 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
   const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
 
   return (
-    <animated.div className={themeCls} style={{ ...slideInStyles, overflow: 'hidden' }}>
-      <div className={`dynamic-variable-preview px-1 py-1 ${isValidError ? 'bg-red-lt' : 'bg-green-lt'}`}>
-        <div>
-          <div className="d-flex my-1">
-            <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
-              {type}
+    <React.Fragment>
+      <animated.div className={themeCls} style={{ ...slideInStyles, overflow: 'hidden' }}>
+        <div className={`dynamic-variable-preview px-1 py-1 ${isValidError ? 'bg-red-lt' : 'bg-green-lt'}`}>
+          <div className="alert-banner-type-text">
+            <div className="d-flex my-1">
+              <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
+                {type}
+              </div>
             </div>
-            <div className="" style={{ overflow: 'hidden' }}>
-              <span class="badge badge-warning">Deprecating soon</span>
-            </div>
+            {resolvedValue}
           </div>
-          {resolvedValue}
         </div>
+        <DepericatedAlerForWorkspaceVariable text="Workspace variables deprecating soon" />
+      </animated.div>
+    </React.Fragment>
+  );
+};
+
+const DepericatedAlerForWorkspaceVariable = ({ text }) => {
+  return (
+    <Alert
+      svg="tj-info-warning"
+      cls="codehinter workspace-variables-alert-banner p-1 mb-0"
+      imgHeight={16}
+      imgWidth={16}
+    >
+      <div className="d-flex align-items-center">
+        <div class="">{text}</div>
       </div>
-    </animated.div>
+    </Alert>
   );
 };
 
