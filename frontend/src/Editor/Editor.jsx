@@ -1138,11 +1138,32 @@ class EditorComponent extends React.Component {
     }
 
     const newPageData = cloneDeep(currentPage);
+    const oldToNewIdMapping = {};
     if (!isEmpty(currentPage?.components)) {
       newPageData.components = Object.keys(newPageData.components).reduce((acc, key) => {
-        acc[uuid()] = newPageData.components[key];
+        const newComponentId = uuid();
+        acc[newComponentId] = newPageData.components[key];
+        oldToNewIdMapping[key] = newComponentId;
         return acc;
       }, {});
+
+      Object.values(newPageData.components).map((comp) => {
+        if (comp.parent) {
+          let newParentId = oldToNewIdMapping[comp.parent];
+          if (newParentId) {
+            comp.parent = newParentId;
+          } else {
+            const oldParentId = Object.keys(oldToNewIdMapping).find(
+              (parentId) =>
+                comp.parent.startsWith(parentId) &&
+                ['Tabs', 'Calendar'].includes(currentPage?.components[parentId]?.component?.component)
+            );
+            const childTabId = comp.parent.split('-').at(-1);
+            comp.parent = `${oldToNewIdMapping[oldParentId]}-${childTabId}`;
+          }
+        }
+        return comp;
+      });
     }
 
     const newPage = {
