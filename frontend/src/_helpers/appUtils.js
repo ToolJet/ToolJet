@@ -68,9 +68,10 @@ export function onComponentOptionsChanged(_ref, component, options) {
     componentData[option[0]] = option[1];
   }
 
-  return useCurrentStateStore.getState().actions.setCurrentState({
+  useCurrentStateStore.getState().actions.setCurrentState({
     components: { ...components, [componentName]: componentData },
   });
+  return Promise.resolve();
 }
 
 export function onComponentOptionChanged(_ref, component, option_name, value) {
@@ -80,10 +81,10 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
   let componentData = components[componentName];
   componentData = componentData || {};
   componentData[option_name] = value;
-
-  return useCurrentStateStore.getState().actions.setCurrentState({
+  useCurrentStateStore.getState().actions.setCurrentState({
     components: { ...components, [componentName]: componentData },
   });
+  return Promise.resolve();
 }
 
 export function fetchOAuthToken(authUrl, dataSourceId) {
