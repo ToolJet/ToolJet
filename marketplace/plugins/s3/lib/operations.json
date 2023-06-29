@@ -14,6 +14,10 @@
       "description": "Single select dropdown for operation",
       "list": [
         {
+          "value": "create_bucket",
+          "name": "Create a new bucket"
+        },
+        {
           "value": "get_object",
           "name": "Read object"
         },
@@ -42,6 +46,19 @@
           "name": "Signed url for upload"
         }
       ]
+    },
+    "create_bucket": {
+      "bucket": {
+        "label": "Bucket Name",
+        "key": "bucket",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enters a name for the new bucket",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins",
+        "placeholder": "Enter New Bucket Name"
+      }
     },
     "get_object": {
       "bucket": {

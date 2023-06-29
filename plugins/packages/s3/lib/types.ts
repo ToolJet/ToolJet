@@ -19,6 +19,7 @@ export type QueryOptions = {
 };
 
 export enum Operation {
+  CreateBucket = 'create_bucket',
   ListBuckets = 'list_buckets',
   ListObjects = 'list_objects',
   GetObject = 'get_object',

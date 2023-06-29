@@ -4,6 +4,7 @@ import {
   PutObjectCommand,
   DeleteObjectCommand,
   S3Client,
+  CreateBucketCommand,
   ListObjectsV2Command,
 } from '@aws-sdk/client-s3';
 // https://aws.amazon.com/blogs/developer/generate-presigned-url-modular-aws-sdk-javascript/
@@ -37,7 +38,12 @@ export async function signedUrlForGet(client: S3Client, options: QueryOptions): 
   });
   return { url };
 }
-
+export async function createBucket(client: S3Client, options: QueryOptions): Promise<object> {
+  const createBucketCommand = new CreateBucketCommand({
+    Bucket: options.bucket,
+  });
+  return await client.send(createBucketCommand);
+}
 export async function getObject(client: S3Client, options: QueryOptions): Promise<object> {
   // Create a helper function to convert a ReadableStream to a string.
   const streamToString = (stream) =>
