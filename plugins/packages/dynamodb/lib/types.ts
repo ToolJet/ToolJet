@@ -13,6 +13,7 @@ export type QueryOptions = {
   operation: string;
   update_condition: string;
   table_parameters: string;
+  new_item_details: string;
 };
 
 export type AssumeRoleCredentials = {

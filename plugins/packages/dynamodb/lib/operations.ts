@@ -107,3 +107,15 @@ export function createTable(client, tableParameters: object) {
     });
   });
 }
+
+export function putItem(client, newItemDetails: object): Promise<object> {
+  return new Promise((resolve, reject) => {
+    client.put(newItemDetails, function (err, data) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    });
+  });
+}

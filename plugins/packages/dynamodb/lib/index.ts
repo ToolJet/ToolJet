@@ -8,6 +8,7 @@ import {
   describeTable,
   updateItem,
   createTable,
+  putItem,
 } from './operations';
 const AWS = require('aws-sdk');
 import { AssumeRoleCredentials, SourceOptions, QueryOptions } from './types';
@@ -43,6 +44,9 @@ export default class DynamodbQueryService implements QueryService {
           break;
         case 'describe_table':
           result = await describeTable(client, queryOptions.table);
+          break;
+        case 'put_item':
+          result = await putItem(client, JSON.parse(queryOptions.new_item_details));
           break;
       }
     } catch (err) {
