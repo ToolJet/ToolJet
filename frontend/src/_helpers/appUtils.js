@@ -817,7 +817,7 @@ export function getQueryVariables(options, state) {
 }
 
 export function previewQuery(_ref, query, calledFromQuery = false) {
-  const options = getQueryVariables(query.options, _ref.props.currentState);
+  const options = getQueryVariables(query.options, _ref?.state?.currentState);
 
   const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
   setPreviewLoading(true);
