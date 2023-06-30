@@ -33,6 +33,7 @@ export class CreateDataQueryDto {
   options: object;
 
   @IsObject()
+  @IsOptional()
   variables: object;
 }
 
