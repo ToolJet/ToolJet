@@ -5,9 +5,10 @@ import { QueryDataPane } from './QueryDataPane';
 import QueryManager from '../QueryManager/QueryManager';
 
 import useWindowResize from '@/_hooks/useWindowResize';
-import { useQueryPanelActions } from '@/_stores/queryPanelStore';
-import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { useQueryPanelStore, useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 import Maximize from '../../_ui/Icon/solidIcons/Maximize';
+import { cloneDeep, isEmpty, isEqual } from 'lodash';
 
 const QueryPanel = ({
   dataQueriesChanged,
@@ -37,6 +38,31 @@ const QueryPanel = ({
   );
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
   const [windowSize, isWindowResizing] = useWindowResize();
+
+  useEffect(() => {
+    const queryPanelStoreListner = useQueryPanelStore.subscribe(({ selectedQuery }, prevState) => {
+      if (isEmpty(prevState?.selectedQuery) || isEmpty(selectedQuery)) {
+        return;
+      }
+
+      if (prevState?.selectedQuery?.id !== selectedQuery.id) {
+        return;
+      }
+
+      //removing updated_at since this value changes whenever the data is updated in the BE
+      const formattedQuery = cloneDeep(selectedQuery);
+      delete formattedQuery.updated_at;
+
+      const formattedPrevQuery = cloneDeep(prevState?.selectedQuery || {});
+      delete formattedPrevQuery.updated_at;
+
+      if (!isEqual(formattedQuery, formattedPrevQuery)) {
+        useDataQueriesStore.getState().actions.saveData(selectedQuery);
+      }
+    });
+
+    return queryPanelStoreListner;
+  }, []);
 
   useEffect(() => {
     handleQueryPaneExpanding(isExpanded);

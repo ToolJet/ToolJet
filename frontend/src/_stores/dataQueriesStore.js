@@ -251,27 +251,6 @@ export const useDataQueriesStore = create(
   )
 );
 
-useQueryPanelStore.subscribe(({ selectedQuery }, prevState) => {
-  if (isEmpty(prevState?.selectedQuery) || isEmpty(selectedQuery)) {
-    return;
-  }
-
-  if (prevState?.selectedQuery?.id !== selectedQuery.id) {
-    return;
-  }
-
-  //removing updated_at since this value changes whenever the data is updated in the BE
-  const formattedQuery = cloneDeep(selectedQuery);
-  delete formattedQuery.updated_at;
-
-  const formattedPrevQuery = cloneDeep(prevState?.selectedQuery || {});
-  delete formattedPrevQuery.updated_at;
-
-  if (!isEqual(formattedQuery, formattedPrevQuery)) {
-    useDataQueriesStore.getState().actions.saveData(selectedQuery);
-  }
-});
-
 const sortByAttribute = (data, sortBy, order) => {
   if (order === 'asc') {
     return data.sort((a, b) => (a[sortBy] > b[sortBy] ? 1 : -1));
