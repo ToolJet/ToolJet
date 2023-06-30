@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
-import { capitalize, isEmpty } from 'lodash';
+import { capitalize, cloneDeep, isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
@@ -131,7 +131,8 @@ export const QueryManagerBody = forwardRef(
     const validateNewOptions = (newOptions) => {
       const updatedOptions = cleanFocusedFields(newOptions);
       setOptions((options) => ({ ...options, ...updatedOptions }));
-      updateDataQuery({ ...options, ...updatedOptions });
+      //Cloning and passing the updated `options` to prevent premature updates of the Zustand store before invoking actions.
+      updateDataQuery(cloneDeep({ ...options, ...updatedOptions }));
     };
 
     const optionchanged = (option, value) => {

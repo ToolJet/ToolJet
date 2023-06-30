@@ -1621,7 +1621,7 @@ export const checkExistingQueryName = (newName) =>
 
 export const runQueries = (queries, _ref) => {
   queries.forEach((query) => {
-    if (query.options.runOnPageLoad) {
+    if (query.options.runOnPageLoad && query.status === 'published') {
       runQuery(_ref, query.id, query.name);
     }
   });

@@ -282,11 +282,12 @@ export const EventManager = ({
             </div>
           </div>
 
-          {actionLookup[event.actionId].options?.length > 0 && (
-            <div className="hr-text" data-cy="action-option">
-              {t('editor.inspector.eventManager.actionOptions', 'Action options')}
-            </div>
-          )}
+          {console.log(actionLookup, event, event.actionId, actionLookup[event.actionId]) ||
+            (actionLookup[event.actionId]?.options?.length > 0 && (
+              <div className="hr-text" data-cy="action-option">
+                {t('editor.inspector.eventManager.actionOptions', 'Action options')}
+              </div>
+            ))}
           <div>
             {event.actionId === 'show-alert' && (
               <>

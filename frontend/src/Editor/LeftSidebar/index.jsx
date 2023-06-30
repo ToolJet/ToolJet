@@ -211,7 +211,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         updateOnPageLoadEvents={updateOnPageLoadEvents}
         currentState={currentState}
         apps={apps}
-        popoverContentHeight={popoverContentHeight}
         setPinned={handlePin}
         pinned={pinned}
         isVersionReleased={isVersionReleased}

@@ -4,8 +4,8 @@ import debounce from 'lodash/debounce';
 import isEqual from 'lodash/isEqual';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
-import { runQueries, computeQueryState } from '@/_helpers/appUtils';
-import { isEmpty } from 'lodash';
+import { runQueries } from '@/_helpers/appUtils';
+import { isEmpty, cloneDeep } from 'lodash';
 
 const initialState = {
   dataQueries: [],
@@ -33,7 +33,6 @@ export const useDataQueriesStore = create(
             // Runs query on loading application
             if (runQueriesOnAppLoad) runQueries(data.data_queries, editorRef);
             // Compute query state to be added in the current state
-            computeQueryState(data.data_queries, editorRef);
             const { actions, selectedQuery } = useQueryPanelStore.getState();
             if (selectFirstQuery) {
               actions.setSelectedQuery(data.data_queries[0]?.id, data.data_queries[0]);
@@ -257,19 +256,16 @@ useQueryPanelStore.subscribe(({ selectedQuery }, prevState) => {
     return;
   }
 
-  console.log(
-    'prevState?.selectedQuery?.id, selectedQuery.id',
-    prevState?.selectedQuery?.id !== selectedQuery.id,
-    isEqual(formattedQuery, formattedPrevQuery)
-  );
-
   if (prevState?.selectedQuery?.id !== selectedQuery.id) {
     return;
   }
 
   //removing updated_at since this value changes whenever the data is updated in the BE
-  const { updated_at, ...formattedQuery } = selectedQuery;
-  const { updated_at: prevUpdatedAt, ...formattedPrevQuery } = prevState?.selectedQuery || {};
+  const formattedQuery = cloneDeep(selectedQuery);
+  delete formattedQuery.updated_at;
+
+  const formattedPrevQuery = cloneDeep(prevState?.selectedQuery || {});
+  delete formattedPrevQuery.updated_at;
 
   if (!isEqual(formattedQuery, formattedPrevQuery)) {
     useDataQueriesStore.getState().actions.saveData(selectedQuery);

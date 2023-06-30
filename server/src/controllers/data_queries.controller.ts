@@ -128,7 +128,12 @@ export class DataQueriesController {
         appVersionId,
         manager
       );
-      return decamelizeKeys({ ...dataQuery, kind });
+
+      const decamelizedQuery = decamelizeKeys({ ...dataQuery, kind });
+
+      decamelizedQuery['options'] = dataQuery.options;
+
+      return decamelizedQuery;
     });
   }
 

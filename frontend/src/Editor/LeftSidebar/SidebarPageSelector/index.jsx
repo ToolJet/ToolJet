@@ -30,7 +30,6 @@ const LeftSidebarPageSelector = ({
   apps,
   pinned,
   setPinned,
-  popoverContentHeight,
   isVersionReleased,
   setReleasedVersionPopupState,
 }) => {

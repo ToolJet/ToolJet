@@ -3,6 +3,7 @@ import { appService, authenticationService, appVersionService, orgEnvironmentVar
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
+import { shallow } from 'zustand/shallow';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -21,6 +22,7 @@ import {
   debuggerActions,
   cloneComponents,
   removeSelectedComponent,
+  computeQueryState,
 } from '@/_helpers/appUtils';
 import { Confirm } from './Viewer/Confirm';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
@@ -196,11 +198,16 @@ class EditorComponent extends React.Component {
       },
     });
 
-    useAppDataStore.subscribe(({ isSaving }) => {
+    this.appDataStoreListner = useAppDataStore.subscribe(({ isSaving } = {}) => {
       if (isSaving !== this.state.isSaving) {
         this.setState({ isSaving });
       }
     });
+
+    this.dataQueriesStoreListner = useDataQueriesStore.subscribe(({ dataQueries }) => {
+      const publishedQueries = dataQueries.filter(({ status }) => status === 'published');
+      computeQueryState(publishedQueries, this);
+    }, shallow);
   }
 
   /**
@@ -270,8 +277,8 @@ class EditorComponent extends React.Component {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
       if (data === 'versionReleased') {
         this.fetchApp();
-      } else if (data === 'dataQueriesChanged') {
-        this.fetchDataQueries(this.state.editingVersion?.id);
+        // } else if (data === 'dataQueriesChanged') {                //Commented since this need additional BE changes to work.
+        //   this.fetchDataQueries(this.state.editingVersion?.id);    //Also needs revamping to exclude notifying the client of their own changes.
       } else if (data === 'dataSourcesChanged') {
         this.fetchDataSources(this.state.editingVersion?.id);
       }
@@ -283,6 +290,8 @@ class EditorComponent extends React.Component {
     this.socket && this.socket?.close();
     this.subscription && this.subscription.unsubscribe();
     if (config.ENABLE_MULTIPLAYER_EDITING) this.props?.provider?.disconnect();
+    this.appDataStoreListner && this.appDataStoreListner();
+    this.dataQueriesStoreListner && this.dataQueriesStoreListner();
   }
 
   // 1. When we receive an undoable action – we can always undo but cannot redo anymore.
@@ -445,10 +454,10 @@ class EditorComponent extends React.Component {
     this.fetchGlobalDataSources();
   };
 
-  /**
-   * https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState
-   */
   dataQueriesChanged = () => {
+    /**
+     * https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState
+     */
     if (this.socket instanceof WebSocket && this.socket?.readyState === WebSocket.OPEN) {
       this.socket?.send(
         JSON.stringify({

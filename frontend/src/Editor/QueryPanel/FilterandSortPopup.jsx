@@ -14,7 +14,7 @@ import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { staticDataSources } from '../QueryManager/constants';
 import { Tooltip } from 'react-tooltip';
 
-const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFilterDatasourcesChange }) => {
+const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasourcesChange }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-sort-filter-popover');
   const closeMenu = () => setShowMenu(false);
   const [action, setAction] = useState();
@@ -61,7 +61,7 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
             <div className="color-slate9 px-3 pb-2 w-100">
               <small>Filter By</small>
             </div>
-            <MenuButton id="filter-by-datasource" text="Data Source" callback={handlePageCallback} disabled={isHome} />
+            <MenuButton id="filter-by-datasource" text="Data Source" callback={handlePageCallback} />
             <div class="border-bottom"></div>
             <div className="color-slate9 px-3 pb-2 pt-1 w-100">
               <small>Sort By</small>
@@ -70,7 +70,6 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
               id="name"
               text="A-Z"
               callback={handleSort}
-              disabled={isHome}
               customClass={sortBy === 'name' ? 'text-info' : ''}
               sortOrder={sortBy === 'name' && sortOrder}
             />
@@ -78,7 +77,6 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
               id="kind"
               text="Type"
               callback={handleSort}
-              disabled={isHome}
               customClass={sortBy === 'kind' ? 'text-info' : ''}
               sortOrder={sortBy === 'kind' && sortOrder}
             />
@@ -86,7 +84,6 @@ const FilterandSortPopup = ({ page, darkMode, isHome, selectedDataSources, onFil
               id="updated_at"
               text="Last modified"
               callback={handleSort}
-              disabled={isHome}
               customClass={sortBy === 'updated_at' ? 'text-info' : ''}
               sortOrder={sortBy === 'updated_at' && sortOrder}
             />

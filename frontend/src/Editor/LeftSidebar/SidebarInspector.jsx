@@ -25,6 +25,7 @@ export const LeftSidebarInspector = ({
   pinned,
 }) => {
   const dataSources = useGlobalDataSources();
+
   const dataQueries = useDataQueries();
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
   const selectedComponent = React.useMemo(() => {
@@ -35,17 +36,19 @@ export const LeftSidebarInspector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appDefinition['selectedComponent']]);
 
-  const queries = {};
-
-  if (!_.isEmpty(dataQueries)) {
-    dataQueries.forEach((query) => {
-      queries[query.name] = { id: query.id };
-    });
-  }
-
   const memoizedJSONData = React.useMemo(() => {
-    const data = _.merge(currentState, { queries });
-    const jsontreeData = { ...data };
+    // debugger;
+    const updatedQueries = {};
+    const { queries: currentQueries } = currentState;
+    if (!_.isEmpty(dataQueries)) {
+      dataQueries.forEach((query) => {
+        if (query.status === 'published') {
+          updatedQueries[query.name] = _.merge(currentQueries[query.name], { id: query.id });
+        }
+      });
+    }
+    // const data = _.merge(currentState, { queries: updatedQueries });
+    const jsontreeData = { ...currentState, queries: updatedQueries };
     delete jsontreeData.errors;
     delete jsontreeData.client;
     delete jsontreeData.server;
@@ -76,7 +79,7 @@ export const LeftSidebarInspector = ({
 
     return jsontreeData;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentState]);
+  }, [currentState, JSON.stringify(dataQueries)]);
 
   const queryIcons = Object.entries(currentState['queries']).map(([key, value]) => {
     const allDs = [...staticDataSources, ...dataSources];

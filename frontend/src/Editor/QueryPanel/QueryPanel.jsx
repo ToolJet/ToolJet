@@ -36,7 +36,6 @@ const QueryPanel = ({
       : queryManagerPreferences.current?.queryPanelHeight ?? 70
   );
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
-  const [showSaveConfirmation, setSaveConfirmation] = useState(false);
   const [windowSize, isWindowResizing] = useWindowResize();
 
   useEffect(() => {
@@ -164,8 +163,6 @@ const QueryPanel = ({
       >
         <div className="row main-row">
           <QueryDataPane
-            showSaveConfirmation={showSaveConfirmation}
-            setSaveConfirmation={setSaveConfirmation}
             handleAddNewQuery={handleAddNewQuery}
             fetchDataQueries={fetchDataQueries}
             darkMode={darkMode}

@@ -14,7 +14,6 @@ import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore'
 import FilterandSortPopup from './FilterandSortPopup';
 
 export const QueryDataPane = ({
-  setSaveConfirmation,
   handleAddNewQuery,
   darkMode,
   fetchDataQueries,
