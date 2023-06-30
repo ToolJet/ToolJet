@@ -9,6 +9,7 @@ import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { useTranslation } from 'react-i18next';
 import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUtils';
+import { posthog } from 'posthog-js';
 
 import { useDataQueriesActions, useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource, useUnsavedChanges } from '@/_stores/queryPanelStore';
@@ -68,7 +69,11 @@ export const QueryManagerHeader = forwardRef(
     };
 
     const createOrUpdateDataQuery = (shouldRunQuery = false) => {
-      if (selectedQuery?.id === 'draftQuery') return createDataQuery(appId, editingVersionId, options, shouldRunQuery);
+      if (selectedQuery?.id === 'draftQuery') {
+        /* posthog event [save_query] */
+        posthog.capture('save_query', { dataSource: selectedDataSource?.kind, appId });
+        return createDataQuery(appId, editingVersionId, options, shouldRunQuery);
+      }
       if (isUnsavedQueriesAvailable) return updateDataQuery(options, shouldRunQuery);
       shouldRunQuery && runQuery(editorRef, selectedQuery?.id, selectedQuery?.name);
     };
@@ -132,6 +137,8 @@ export const QueryManagerHeader = forwardRef(
     };
 
     const previewButtonOnClick = () => {
+      /* posthog event [click_preview] */
+      posthog.capture('click_preview', { dataSource: selectedDataSource?.kind, appId });
       const _options = { ...options };
       const query = {
         data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,

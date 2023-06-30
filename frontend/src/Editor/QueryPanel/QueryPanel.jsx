@@ -8,6 +8,7 @@ import QueryManager from '../QueryManager/QueryManager';
 import useWindowResize from '@/_hooks/useWindowResize';
 import { useQueryPanelActions, useUnsavedChanges, useSelectedQuery } from '@/_stores/queryPanelStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { posthog } from 'posthog-js';
 
 const QueryPanel = ({
   dataQueriesChanged,
@@ -128,6 +129,8 @@ const QueryPanel = ({
   useEventListener('mouseup', onMouseUp);
 
   const handleAddNewQuery = useCallback(() => {
+    /* posthog event [click_create_query] */
+    posthog.capture('click_create_query', { appId });
     const stateToBeUpdated = {
       selectedDataSource: null,
       selectedQuery: null,
