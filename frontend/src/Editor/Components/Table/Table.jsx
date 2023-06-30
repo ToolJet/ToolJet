@@ -258,7 +258,7 @@ export function Table({
         if (header.key && header.key !== header.exportValue) {
           value = _.get(row.original, header.key);
         } else {
-          value = row.original[header.exportValue];
+          value = _.get(row.original, header.exportValue);
         }
         accumulator.push(value);
         return accumulator;
