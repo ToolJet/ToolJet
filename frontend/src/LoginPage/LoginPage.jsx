@@ -45,7 +45,26 @@ class LoginPageComponent extends React.Component {
   };
 
   componentDidMount() {
-    this.setRedirectUrlToCookie();
+    // Page is loaded inside an iframe
+    const appInsideIframe = window !== window.top;
+
+    if (appInsideIframe) {
+      const params = new URL(window.location.href).searchParams;
+
+      const redirectPath = params.get('redirectTo') || '/';
+      window.parent.postMessage(
+        {
+          type: 'redirectTo',
+          payload: {
+            redirectPath: redirectPath,
+          },
+        },
+        '*'
+      );
+    }
+
+    this.setRedirectUrlToCookie(appInsideIframe);
+
     authenticationService.deleteLoginOrganizationId();
     this.currentSessionObservable = authenticationService.currentSession.subscribe((newSession) => {
       if (newSession?.current_organization_name)
@@ -155,10 +174,11 @@ class LoginPageComponent extends React.Component {
     this.setState((prev) => ({ showPassword: !prev.showPassword }));
   };
 
-  setRedirectUrlToCookie() {
-    const params = new URL(location.href).searchParams;
+  setRedirectUrlToCookie(iframe) {
+    const params = iframe ? new URL(window.location.href).searchParams : new URL(location.href).searchParams;
     const redirectPath = params.get('redirectTo');
-    redirectPath && setCookie('redirectPath', redirectPath);
+
+    redirectPath && setCookie('redirectPath', redirectPath, iframe);
   }
 
   authUser = (e) => {
