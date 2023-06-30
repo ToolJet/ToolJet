@@ -10,7 +10,9 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
   const [loadingState, setLoadingState] = useState(false);
 
   const { padding, visibility, disabledState, boxShadow } = styles;
-  const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson, showAxes } = properties;
+  const { title, markerColor, showGridLines, type, data, jsonDescription, plotFromJson, showAxes, barmode } =
+    properties;
+
   useEffect(() => {
     const loadingStateProperty = properties.loadingState;
     if (loadingStateProperty != undefined) {
@@ -25,7 +27,6 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
     background: darkMode ? '#1f2936' : 'white',
     boxShadow,
   };
-
   const dataString = data ?? [];
 
   const chartType = type;
@@ -77,6 +78,7 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
       b: padding,
       t: padding,
     },
+    barmode: barmode,
     hoverlabel: { namelength: -1 },
   };
 
