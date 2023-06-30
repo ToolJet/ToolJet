@@ -49,6 +49,7 @@ import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { resetAllStores } from '@/_stores/utils';
+import { setCookie } from '@/_helpers/cookie';
 
 setAutoFreeze(false);
 enablePatches();
@@ -188,7 +189,24 @@ class EditorComponent extends React.Component {
     });
   }
 
+  /**
+   *
+   * ThandleMessage event listener in the login component fir iframe communication.
+   * It now checks if the received message has a type of 'redirectTo' and extracts the redirectPath value from the payload.
+   * If the value is present, it sets a cookie named 'redirectPath' with the received value and a one-day expiration.
+   * This allows for redirection to a specific path after the login process is completed.
+   */
+  handleMessage = (event) => {
+    const { data } = event;
+
+    if (data?.type === 'redirectTo') {
+      const redirectCookie = data?.payload['redirectPath'];
+      setCookie('redirectPath', redirectCookie, 1);
+    }
+  };
+
   componentDidMount() {
+    window.addEventListener('message', this.handleMessage);
     resetAllStores();
     this.getCurrentOrganizationDetails();
     this.autoSave();

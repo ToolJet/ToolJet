@@ -236,31 +236,34 @@ class ManageAppUsersComponent extends React.Component {
                   </div>
                 </div>
                 <hr />
-                <div className="shareable-link mb-3">
-                  <label className="form-label">
-                    <small>
-                      {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
-                    </small>
-                  </label>
-                  <div className="input-group">
-                    <Textarea
-                      disabled
-                      className={`input-with-icon ${this.props.darkMode && 'text-light'}`}
-                      rows={5}
-                      value={embeddableLink}
-                    />
-                    <span className="input-group-text">
-                      <CopyToClipboard
-                        text={embeddableLink}
-                        onCopy={() => toast.success('Embeddable link copied to clipboard')}
-                      >
-                        <button className="btn btn-secondary btn-sm">
-                          {this.props.t('editor.shareModal.copy', 'copy')}
-                        </button>
-                      </CopyToClipboard>
-                    </span>
+                {(this.state.app.is_public || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+                  <div className="shareable-link mb-3">
+                    <label className="form-label" data-cy="iframe-link-label">
+                      <small>
+                        {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
+                      </small>
+                    </label>
+                    <div className="input-group">
+                      <Textarea
+                        disabled
+                        className={`input-with-icon ${this.props.darkMode && 'text-light'}`}
+                        rows={5}
+                        value={embeddableLink}
+                        data-cy="iframe-link"
+                      />
+                      <span className="input-group-text">
+                        <CopyToClipboard
+                          text={embeddableLink}
+                          onCopy={() => toast.success('Embeddable link copied to clipboard')}
+                        >
+                          <button className="btn btn-secondary btn-sm" data-cy="iframe-link-copy-button">
+                            {this.props.t('editor.shareModal.copy', 'copy')}
+                          </button>
+                        </CopyToClipboard>
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </Modal.Body>
