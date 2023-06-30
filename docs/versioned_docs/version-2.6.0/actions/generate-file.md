@@ -6,7 +6,7 @@ title: Generate file
 # Generate file
 
 This action allows you to construct files on the fly and let users download it.
-Presently, the only file type supported is `CSV`.
+Presently, the only file type supported are `csv` and `text`.
 
 ## Options
 
@@ -16,7 +16,8 @@ Presently, the only file type supported is `CSV`.
 | File name | Name of the file to be generated |
 | Data | Data that will be used to construct the file. Its format will depend on the file type, as specified in the following section |
 | Debounce | Debounce field is empty by default, you can enter a numerical value to specify the time in milliseconds after which the action will be performed. ex: `300` |
-
+## Info
+Check the how-to guide to [run actions using RunJS](https://docs.tooljet.com/docs/how-to/run-actions-from-runjs)
 ### Data format for CSV
 
 For `CSV` file type, the data field should be supplied with an array objects. ToolJet assumes that the keys of each of

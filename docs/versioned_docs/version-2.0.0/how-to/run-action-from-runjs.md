@@ -143,7 +143,7 @@ actions.copyToClipboard('contentToCopy')
 actions.generateFile('fileName', 'fileType', 'data')
 ```
 
-**Example:** `fileName` is the name that you want to give the file(string), `fileType` can be `csv` or `text`, and `data` is the data that you want to store in the file.
+**Example:** `fileName` is the name that you want to give the file(string), `fileType` can be `csv` or `plaintext`, and `data` is the data that you want to store in the file.
 
 <div style={{textAlign: 'center'}}>
 
