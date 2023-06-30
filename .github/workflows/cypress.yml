@@ -92,17 +92,43 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
+      # Run Cypress tests and collect the Cypress job ID
+      - name: Run Cypress Tests and Collect Job ID
+        id: cypress_tests
+        run: |
+          # Example: Run your Cypress tests here
+          npx cypress run --headless --reporter junit
+          # Collect the Cypress job ID from the generated test report
+          job_id=$(cat ./cypress_test/junit-report.xml | grep -oPm1 "(?<=<testsuite\s*id=)[^/]*" | head -1)
+          echo "::set-output name=job_id::$job_id"
 
-      # Fetch the job summary using the job ID and store it in a file
+
+  Fetch-Job-Summary:
+    runs-on: ubuntu-22.04
+    needs: Run-Cypress
+    steps:
+      - name: Export job URLs
+        id: exp
+        uses: pl-strflt/export-job-urls@v1
+
+      - name: Run Cypress Tests and Collect Job ID
+        id: cypress_tests
+        run: |
+          # Example: Run your Cypress tests here
+          npx cypress run --headless --reporter junit
+          # Collect the Cypress job ID from the generated test report
+          job_id=$(cat ./cypress/report/junit-report.xml | grep -oPm1 "(?<=<testsuite\s*id=)[^/]*" | head -1)
+          echo "::set-output name=job_id::$job_id"
+
       - name: Fetch Job Summary
         id: fetch_job_summary
         run: |
-          job_id=${{ steps.run-cypress-workspace.outputs.job_id }}
-          job_summary_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs/${job_id}/summary_raw"
+          job_id=${{ steps.cypress_tests.outputs.job_id }}
+          job_summary_url="${{ steps.exp.outputs.job_urls }}/${job_id}/summary_raw"
           curl -L "$job_summary_url" > job_summary.md
 
       - name: Send Slack Notification
-        if: always()  # This step will run even if previous steps fail
+        if: always()
         run: |
           slack_webhook_url="${{ secrets.SLACK_WEBHOOK_QA_URL }}"
           if [[ "${{ job.status }}" == "success" ]]; then
