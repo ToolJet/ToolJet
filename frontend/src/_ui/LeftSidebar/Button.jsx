@@ -57,7 +57,12 @@ const Content = ({ title = null, iconSrc = null, direction = 'left', dataCy }) =
   ) : typeof title === 'function' ? (
     title()
   ) : (
-    <span data-cy={`${String(btnTitle).toLowerCase().replace(/\s+/g, '-')}-option-button`} className="mx-1">
+    <span
+      data-cy={`${String(typeof title === 'function' ? title() : title)
+        .toLowerCase()
+        .replace(/\s+/g, '-')}-option-button`}
+      className="mx-1"
+    >
       {title}
     </span>
   );

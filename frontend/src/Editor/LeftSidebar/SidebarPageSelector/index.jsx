@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
 import Fuse from 'fuse.js';
-import { LeftSidebarItem } from '../SidebarItem';
 import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import { PageHandler, AddingPageHandler } from './PageHandler';
 import { GlobalSettings } from './GlobalSettings';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
-import Popover from '@/_ui/Popover';
 // eslint-disable-next-line import/no-unresolved
 import EmptyIllustration from '@assets/images/no-results.svg';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
-  selectedSidebarItem,
-  setSelectedSidebarItem,
   darkMode,
   currentPageId,
   addNewPage,
@@ -32,16 +30,21 @@ const LeftSidebarPageSelector = ({
   updateOnPageLoadEvents,
   currentState,
   apps,
+  pinned,
+  setPinned,
   popoverContentHeight,
-  isVersionReleased,
-  setReleasedVersionPopupState,
 }) => {
   const [allpages, setPages] = useState(pages);
-  const [pinned, setPinned] = useState(false);
   const [haveUserPinned, setHaveUserPinned] = useState(false);
-
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const filterPages = (value) => {
     if (!value || value.length === 0) return clearSearch();
@@ -69,7 +72,7 @@ const LeftSidebarPageSelector = ({
     }
   };
 
-  const popoverContent = (
+  return (
     <div>
       <div className="card-body p-0 pb-5">
         <HeaderSection darkMode={darkMode}>
@@ -80,8 +83,6 @@ const LeftSidebarPageSelector = ({
                 darkMode={darkMode}
                 showHideViewerNavigationControls={showHideViewerNavigationControls}
                 showPageViwerPageNavitation={appDefinition?.showViewerNavigation || false}
-                isVersionReleased={isVersionReleased}
-                setReleasedVersionPopupState={setReleasedVersionPopupState}
               />
             }
           >
@@ -90,7 +91,7 @@ const LeftSidebarPageSelector = ({
                 title={'Add Page'}
                 onClick={() => {
                   if (isVersionReleased) {
-                    setReleasedVersionPopupState();
+                    enableReleasedVersionPopupState();
                     return;
                   }
                   setNewPageBeingCreated(true);
@@ -138,7 +139,7 @@ const LeftSidebarPageSelector = ({
           )}
         </HeaderSection>
 
-        <div className={`${darkMode && 'dark'} page-selector-panel-body`}>
+        <div className={`${darkMode && 'dark theme-dark'} page-selector-panel-body`}>
           <div>
             {allpages.length > 0 ? (
               <SortableList
@@ -163,8 +164,6 @@ const LeftSidebarPageSelector = ({
                 apps={apps}
                 allpages={pages}
                 components={appDefinition?.components ?? {}}
-                isVersionReleased={isVersionReleased}
-                setReleasedVersionPopupState={setReleasedVersionPopupState}
                 pinPagesPopover={pinPagesPopover}
                 haveUserPinned={haveUserPinned}
               />
@@ -193,27 +192,6 @@ const LeftSidebarPageSelector = ({
         </div>
       </div>
     </div>
-  );
-
-  return (
-    <Popover
-      handleToggle={(open) => {
-        if (!open) setSelectedSidebarItem('');
-      }}
-      {...(pinned && { open: true })}
-      popoverContentClassName="p-0 sidebar-h-100-popover"
-      side="right"
-      popoverContent={popoverContent}
-      popoverContentHeight={popoverContentHeight}
-    >
-      <LeftSidebarItem
-        selectedSidebarItem={selectedSidebarItem}
-        onClick={() => setSelectedSidebarItem('page')}
-        icon="page"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-page-selector`}
-        tip="Pages"
-      />
-    </Popover>
   );
 };
 

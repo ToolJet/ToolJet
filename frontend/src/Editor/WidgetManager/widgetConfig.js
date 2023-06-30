@@ -264,6 +264,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      allowSelection: {
+        type: 'toggle',
+        displayName: 'Allow selection',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       showBulkSelector: {
         type: 'toggle',
         displayName: 'Bulk selection',
@@ -274,6 +281,13 @@ export const widgets = [
       highlightSelectedRow: {
         type: 'toggle',
         displayName: 'Highlight selected row',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      showAddNewRowButton: {
+        type: 'toggle',
+        displayName: 'Show add new row button',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -402,6 +416,23 @@ export const widgets = [
         handle: 'discardNewlyAddedRows',
         displayName: 'Discard newly added rows',
       },
+      {
+        displayName: 'Download table data',
+        handle: 'downloadTableData',
+        params: [
+          {
+            handle: 'type',
+            displayName: 'Type',
+            options: [
+              { name: 'Download as Excel', value: 'xlsx' },
+              { name: 'Download as CSV', value: 'csv' },
+              { name: 'Download as PDF', value: 'pdf' },
+            ],
+            defaultValue: `{{Download as Excel}}`,
+            type: 'select',
+          },
+        ],
+      },
     ],
     definition: {
       others: {
@@ -458,6 +489,8 @@ export const widgets = [
         actions: { value: [] },
         enabledSort: { value: '{{true}}' },
         hideColumnSelectorButton: { value: '{{false}}' },
+        showAddNewRowButton: { value: '{{true}}' },
+        allowSelection: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -707,6 +740,21 @@ export const widgets = [
           },
         },
       },
+      barmode: {
+        type: 'select',
+        displayName: 'Bar mode',
+        options: [
+          { name: 'Stack', value: 'stack' },
+          { name: 'Group', value: 'group' },
+          { name: 'Overlay', value: 'overlay' },
+          { name: 'Relative', value: 'relative' },
+        ],
+        validation: {
+          schema: {
+            schemas: { type: 'string' },
+          },
+        },
+      },
     },
     events: {},
     styles: {
@@ -754,6 +802,7 @@ export const widgets = [
         showGridLines: { value: '{{true}}' },
         plotFromJson: { value: '{{false}}' },
         loadingState: { value: `{{false}}` },
+        barmode: { value: `group` },
         jsonDescription: {
           value: `{
             "data": [
@@ -797,7 +846,7 @@ export const widgets = [
     component: 'Modal',
     defaultSize: {
       width: 10,
-      height: 400,
+      height: 34,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -849,6 +898,13 @@ export const widgets = [
           { name: 'medium', value: 'lg' },
           { name: 'large', value: 'xl' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      modalHeight: {
+        type: 'code',
+        displayName: 'Modal Height',
         validation: {
           schema: { type: 'string' },
         },
@@ -940,6 +996,7 @@ export const widgets = [
         hideCloseButton: { value: '{{false}}' },
         hideOnEsc: { value: '{{true}}' },
         closeOnClickingOutside: { value: '{{false}}' },
+        modalHeight: { value: '400px' },
       },
       events: [],
       styles: {
@@ -2180,7 +2237,15 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
-    properties: {},
+    properties: {
+      loadingState: {
+        type: 'toggle',
+        displayName: 'loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+    },
     events: {},
     styles: {
       backgroundColor: {
@@ -2230,6 +2295,7 @@ export const widgets = [
       },
       properties: {
         visible: { value: '{{true}}' },
+        loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
@@ -2265,9 +2331,29 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          validation: {
+            schema: { type: 'string' },
+          },
+        },
+      },
+      advanced: {
+        type: 'toggle',
+        displayName: 'Advanced',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       value: {
         type: 'code',
         displayName: 'Default value',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
         validation: {
           schema: {
             type: 'union',
@@ -2278,6 +2364,10 @@ export const widgets = [
       values: {
         type: 'code',
         displayName: 'Option values',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
         validation: {
           schema: {
             type: 'array',
@@ -2288,11 +2378,24 @@ export const widgets = [
       display_values: {
         type: 'code',
         displayName: 'Option labels',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
         validation: {
           schema: {
             type: 'array',
             element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
           },
+        },
+      },
+
+      schema: {
+        type: 'code',
+        displayName: 'Schema',
+        conditionallyRender: {
+          key: 'advanced',
+          value: true,
         },
       },
       loadingState: {
@@ -2376,12 +2479,18 @@ export const widgets = [
         customRule: { value: null },
       },
       properties: {
+        advanced: { value: `{{false}}` },
+        schema: {
+          value:
+            "{{[\t{label: 'One',value: 1,disable: false,visible: true,default: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}\t]}}",
+        },
+
         label: { value: 'Select' },
         value: { value: '{{2}}' },
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
-        visible: { value: '{{true}}' },
         loadingState: { value: '{{false}}' },
+        placeholder: { value: 'Select an option' },
       },
       events: [],
       styles: {

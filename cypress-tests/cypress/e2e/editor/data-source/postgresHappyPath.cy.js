@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText, commonText } from "Texts/common";
@@ -13,6 +14,9 @@ import {
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
 import { deleteDatasource } from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
@@ -117,7 +121,7 @@ describe("Data sources", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      postgreSqlText.psqlName
+      `cypress-${data.lastName}-postgresql`
     );
 
     fillDataSourceTextField(
@@ -157,13 +161,12 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-      cy.get(commonSelectors.globalDataSourceIcon).click();
-      cy.get('[data-cy="cypress-postgresql-button"]').verifyVisibleElement(
-        "have.text",
-        postgreSqlText.psqlName
-      );
-  
-      deleteDatasource("cypress-postgresql");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-postgresql-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-postgresql`);
+
+    deleteDatasource(`cypress-${data.lastName}-postgresql`);
   });
 
   it.skip("Should verify elements of the Query section.", () => {

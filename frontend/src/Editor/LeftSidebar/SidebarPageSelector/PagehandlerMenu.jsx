@@ -54,12 +54,22 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                   iconSrc={'assets/images/icons/home.svg'}
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
+                  disabled={isHidden}
                 />
 
                 <Field
                   id={isHidden ? 'unhide-page' : 'hide-page'}
                   text={isHidden ? 'Unhide page' : 'Hide page'}
                   iconSrc={`assets/images/icons/${isHidden ? 'eye' : 'eye-off'}.svg`}
+                  closeMenu={closeMenu}
+                  callback={handlePageCallback}
+                  disabled={isHome && !isHidden}
+                />
+
+                <Field
+                  id="clone-page"
+                  text="Duplicate page"
+                  iconSrc={`assets/images/icons/clone.svg`}
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
                 />
@@ -114,7 +124,7 @@ const PageHandleField = ({ page, updatePageHandle }) => {
 
   const content = () => {
     return (
-      <div className="col">
+      <div className="col text-truncate pe-3">
         <span style={{ color: '#889096' }}>.../</span>
         <span data-cy={`page-handle-text`}>{page.handle}</span>
       </div>

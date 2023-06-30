@@ -26,9 +26,11 @@ const sidebars = {
         'setup/ec2',
         'setup/ecs',
         'setup/openshift',
+        'setup/helm',
         'setup/kubernetes',
         'setup/kubernetes-gke',
         'setup/kubernetes-aks',
+        'setup/azure-container',
         'setup/google-cloud-run',
         'setup/client',
         'setup/env-vars',
@@ -198,7 +200,7 @@ const sidebars = {
       'label': 'App Builder',
       'items': [
         'app-builder/overview',
-        'app-builder/toolbar',
+        'app-builder/topbar',
         'app-builder/canvas',
         'app-builder/left-sidebar',
         'app-builder/components-library',
@@ -305,6 +307,7 @@ const sidebars = {
           'items': [
             'marketplace/plugins/marketplace-plugin-textract',
             'marketplace/plugins/marketplace-plugin-github',
+            'marketplace/plugins/marketplace-plugin-harperdb',
             'marketplace/plugins/marketplace-plugin-openai',
             'marketplace/plugins/marketplace-plugin-plivo',
           ],
@@ -334,6 +337,7 @@ const sidebars = {
         'how-to/run-actions-from-runjs',
         'how-to/intentionally-fail-js-query',
         'how-to/run-query-at-specified-intervals',
+        'how-to/use-to-py-function-in-runpy',
         'how-to/access-users-location',
         'how-to/use-s3-signed-url-to-upload-docs',
         'how-to/s3-custom-endpoints',
@@ -365,6 +369,7 @@ const sidebars = {
             'contributing-guide/setup/macos',
             'contributing-guide/setup/docker',
             'contributing-guide/setup/ubuntu',
+            'contributing-guide/setup/windows',
           ],
         },
         {
@@ -375,6 +380,7 @@ const sidebars = {
             'contributing-guide/marketplace/creating-a-plugin',
           ],
         },
+        'tooljet-cli',
         'contributing-guide/testing',
         'contributing-guide/l10n',
         {
@@ -382,6 +388,7 @@ const sidebars = {
           'label': 'Troubleshooting',
           'items': [
             'contributing-guide/troubleshooting/eslint',
+            'contributing-guide/troubleshooting/runpy-limitations',
           ],
         },
         'contributing-guide/code-of-conduct',

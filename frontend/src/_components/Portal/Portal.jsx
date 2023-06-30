@@ -81,7 +81,7 @@ const Modal = ({
   const includeGPT = ['Runjs', 'Runpy', 'transformation'].includes(componentName) && isCopilotEnabled;
 
   const renderModalContent = () => (
-    <div className="modal-content" style={{ ...portalStyles, ...styles }}>
+    <div className="modal-content" style={{ ...portalStyles, ...styles }} onClick={(e) => e.stopPropagation()}>
       <div
         className={`resize-handle portal-header d-flex ${darkMode ? 'dark-mode-border' : ''}`}
         style={{ ...portalStyles }}
@@ -92,6 +92,7 @@ const Modal = ({
               textTransform: 'none',
             }}
             className="badge tj-badge"
+            data-cy="codehinder-popup-badge"
           >
             {componentName ?? 'Editor'}
           </span>
@@ -118,7 +119,11 @@ const Modal = ({
           size="sm"
           styles={{ width: '50px', padding: '2px' }}
         >
-          <Button.Content iconSrc={'assets/images/icons/portal-close.svg'} direction="left" />
+          <Button.Content
+            iconSrc={'assets/images/icons/portal-close.svg'}
+            direction="left"
+            dataCy={`codehinder-popup-close`}
+          />
         </Button>
       </div>
       <div

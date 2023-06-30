@@ -1,9 +1,10 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonText } from "Texts/common";
-import { closeDSModal,deleteDatasource } from "Support/utils/dataSource";
+import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 
 import {
   addQuery,
@@ -15,6 +16,9 @@ import {
   addGuiQuery,
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
@@ -116,7 +120,7 @@ describe("Data sources", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      "cypress-couchDb"
+      `cypress-${data.lastName}-couchdb`
     );
 
     fillDataSourceTextField(
@@ -135,9 +139,7 @@ describe("Data sources", () => {
       "username for couchDB",
       Cypress.env("couchdb_user")
     );
-    cy.get(".react-select__input-container").type(
-      "HTTP{enter}"
-    );
+    cy.get(".react-select__input-container").type("HTTP{enter}");
 
     cy.get(postgreSqlSelector.passwordTextField).type(
       Cypress.env("couchdb_password"),
@@ -155,10 +157,9 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-      cy.get('[data-cy="cypress-couchdb-button"]').verifyVisibleElement(
-        "have.text",
-        "cypress-couchDb"
-      );
-      deleteDatasource("cypress-couchdb");
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-couchdb-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-couchdb`);
+    deleteDatasource(`cypress-${data.lastName}-couchdb`);
   });
 });

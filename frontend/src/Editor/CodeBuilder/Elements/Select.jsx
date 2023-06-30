@@ -9,7 +9,7 @@ export const Select = ({ value, onChange, forceCodeBox, meta }) => {
       data-cy={`dropdown-${meta.displayName ? String(meta.displayName).toLowerCase().replace(/\s+/g, '-') : 'common'}`}
     >
       <div className="col">
-        <div className="field mb-3">
+        <div className="field mb-3" onClick={(e) => e.stopPropagation()}>
           <SelectComponent
             options={meta.options}
             value={value}

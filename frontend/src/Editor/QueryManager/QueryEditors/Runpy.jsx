@@ -30,6 +30,7 @@ export class Runpy extends React.Component {
           isMultiLineJs={false}
           enablePreview={false}
           componentName="Runpy"
+          cyLabel={`runpy`}
         />
       </div>
     );
