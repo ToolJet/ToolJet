@@ -105,7 +105,7 @@ jobs:
       - name: Add comment to PR
         uses: actions/github-script@v5
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.TJ_BOT_PAT }}
           script: |
             const fs = require('fs');
             const prNumber = context.payload.pull_request.number;
