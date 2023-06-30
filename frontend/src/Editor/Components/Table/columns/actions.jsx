@@ -17,7 +17,7 @@ const generateActionsData = ({ actions: actionItems, columnSizes, defaultColumn,
               return leftActions(actionButtonsArray).map((action) => (
                 <button
                   key={action.name}
-                  className="btn btn-sm m-1 btn-light"
+                  className="btn btn-sm m-1 btn-light action-button"
                   style={{
                     background: action.backgroundColor,
                     color: action.textColor,
@@ -57,7 +57,7 @@ const generateActionsData = ({ actions: actionItems, columnSizes, defaultColumn,
               return rightActions(actionButtonsArray).map((action) => (
                 <button
                   key={action.name}
-                  className="btn btn-sm m-1 btn-light"
+                  className="btn btn-sm m-1 btn-light action-button"
                   style={{
                     background: action.backgroundColor,
                     color: action.textColor,
