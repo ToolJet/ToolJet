@@ -172,8 +172,8 @@ export class DataQueriesController {
       throw new ForbiddenException('you do not have permissions to perform this action');
     }
 
-    const result = await this.dataQueriesService.updateStatus(dataQueryId, status);
-    return decamelizeKeys(result);
+    await this.dataQueriesService.updateStatus(dataQueryId, status);
+    return updateDataQueryStatusDto;
   }
 
   @UseGuards(JwtAuthGuard)

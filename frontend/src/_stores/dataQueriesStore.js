@@ -166,13 +166,13 @@ export const useDataQueriesStore = create(
               set((state) => ({
                 isUpdatingQueryInProcess: false,
                 dataQueries: state.dataQueries.map((query) => {
-                  if (query.id === data.id) {
-                    return { ...query, status: data.status };
+                  if (query.id === selectedQuery.id) {
+                    return { ...query, status };
                   }
                   return query;
                 }),
               }));
-              useQueryPanelStore.getState().actions.setSelectedQuery(data.id);
+              useQueryPanelStore.getState().actions.setSelectedQuery(selectedQuery.id);
             })
             .catch(() => {
               set({
