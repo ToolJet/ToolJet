@@ -6,7 +6,7 @@ title: Generate file
 # Generate file
 
 This action allows you to construct files on the fly and let users download it.
-Presently, the only file type supported are `csv` and `text`.
+Presently, the only file type supported is `csv` and `text`.
 
 ## Options
 
