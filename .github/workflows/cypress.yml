@@ -97,7 +97,7 @@ jobs:
           # Example: Run your Cypress tests here
           npx cypress run --headless --reporter junit
           # Collect the Cypress job ID from the generated test report
-          job_id=$(cat ./cypress/report/junit-report.xml | grep -oPm1 "(?<=<testsuite\s*id=)[^/]*" | head -1)
+          job_id=$(cat ./cypress-tests/report/junit-report.xml | grep -oPm1 "(?<=<testsuite\s*id=)[^/]*" | head -1)
           echo "::set-output name=job_id::$job_id"
 
       # Fetch the job summary using the job ID and store it in a file
@@ -105,8 +105,12 @@ jobs:
         id: fetch_job_summary
         run: |
           job_id=${{ steps.cypress_tests.outputs.job_id }}
-          job_summary_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs/${job_id}/summary_raw"
-          curl -L "$job_summary_url" > job_summary.md
+          if [ -n "$job_id" ]; then
+            job_summary_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs/${job_id}/summary_raw"
+            curl -L "$job_summary_url" > job_summary.md
+          else
+            echo "Cypress job ID not found."
+          fi
 
       # Add the job summary as a comment to the Pull Request
       - name: Add comment to PR
@@ -119,7 +123,7 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const jobSummary = fs.readFileSync('job_summary.md', 'utf8');
-            
+
             // Post the job summary as a comment on the PR
             const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
             await octokit.issues.createComment({
