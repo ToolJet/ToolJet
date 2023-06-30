@@ -69,3 +69,8 @@ export function getFolderQuery(
     .orderBy('folders.name', 'ASC');
   return query;
 }
+
+export enum DATA_QUERY_STATUS {
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+}

@@ -1,3 +1,4 @@
+import { DATA_QUERY_STATUS } from 'src/helpers/queries';
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
 export class AddStatusColumnToDataQueries1684719751591 implements MigrationInterface {
@@ -8,8 +9,8 @@ export class AddStatusColumnToDataQueries1684719751591 implements MigrationInter
         name: 'status',
         type: 'enum',
         enumName: 'data_queries_status_enum',
-        enum: ['draft', 'published'],
-        default: `'published'`,
+        enum: Object.values(DATA_QUERY_STATUS),
+        default: `'${DATA_QUERY_STATUS.PUBLISHED}'`,
         isNullable: false,
       })
     );
@@ -21,8 +22,8 @@ export class AddStatusColumnToDataQueries1684719751591 implements MigrationInter
         name: 'status',
         type: 'enum',
         enumName: 'data_queries_status_enum',
-        enum: ['draft', 'published'],
-        default: `'draft'`,
+        enum: Object.values(DATA_QUERY_STATUS),
+        default: `'${DATA_QUERY_STATUS.DRAFT}'`,
         isNullable: false,
       })
     );

@@ -15,6 +15,7 @@ import { App } from './app.entity';
 import { AppVersion } from './app_version.entity';
 import { DataSource } from './data_source.entity';
 import { Plugin } from './plugin.entity';
+import { DATA_QUERY_STATUS } from 'src/helpers/queries';
 
 @Entity({ name: 'data_queries' })
 export class DataQuery extends BaseEntity {
@@ -36,7 +37,7 @@ export class DataQuery extends BaseEntity {
   @Column({
     type: 'enum',
     name: 'status',
-    enum: ['draft', 'published'],
+    enum: Object.values(DATA_QUERY_STATUS),
     default: 'draft',
   })
   status: string;
