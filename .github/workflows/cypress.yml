@@ -101,23 +101,23 @@ jobs:
           job_summary_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs/${job_id}/summary_raw"
           curl -L "$job_summary_url" > job_summary.md
 
-      # Add the job summary as a comment to the Pull Request
-      - name: Add comment to PR
+      - name: Add comment to PR using TJ_BOT_PAT
         uses: actions/github-script@v5
         with:
           github-token: ${{ secrets.TJ_BOT_PAT }}
           script: |
-            const fs = require('fs');
+            const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
             const prNumber = context.payload.pull_request.number;
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const jobSummary = fs.readFileSync('job_summary.md', 'utf8');
             
             // Post the job summary as a comment on the PR
-            const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
             await octokit.issues.createComment({
               owner: owner,
               repo: repo,
               issue_number: prNumber,
               body: `**Job Summary:**\n${jobSummary}`
             });
+
+
