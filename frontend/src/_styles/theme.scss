@@ -8413,6 +8413,11 @@ tbody {
   }
 }
 
+.workspace-constant-header {
+  width: 880px;
+  margin: 0 auto !important;
+}
+
 .workspace-user-archive-btn {
   width: 95px;
   height: 28px;
@@ -10442,6 +10447,21 @@ tbody {
 .workspace-variable-table-card {
   height: calc(100vh - 208px);
 }
+.workspace-constant-table-card {
+  margin: 0 auto;
+  width: 880px;
+  min-height: calc(100vh - 308px);
+
+  .card-footer {
+    border-top: none !important;
+  }
+
+  .left-menu .tj-list-item {
+    width: 148px
+  }
+}
+
+
 
 .variables-table-wrapper {
   tr {

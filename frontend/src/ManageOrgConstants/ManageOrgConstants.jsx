@@ -13,6 +13,7 @@ import ConstantTable from './ConstantTable';
 
 import Drawer from '@/_ui/Drawer';
 import ConstantForm from './ConstantForm';
+import FolderList from '@/_ui/FolderList/FolderList';
 
 const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [isManageVarDrawerOpen, setIsManageVarDrawerOpen] = useState(false);
@@ -21,7 +22,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [activeTabEnvironment, setActiveTabEnvironment] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const perPage = 8;
+  const perPage = 7;
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [activeTabContants, setActiveTabContants] = useState([]);
@@ -65,7 +66,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     setActiveTabContants(
       constantsForEnvironment.filter((constant) => constant.value !== null && constant.value !== '')
     );
-
+    console.log('activeTabEnvironment ==> ', { x: constantsForEnvironment.length });
     computeTotalPages(constantsForEnvironment.length + 1);
   };
 
@@ -171,6 +172,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     let orgEnvironments = await fetchEnvironments();
     setEnvironments(orgEnvironments?.environments);
     const currentEnvironment = orgEnvironments?.environments?.find((env) => env?.is_default === true);
+    console.log('fetchConstantsAndEnvironments -- called', { currentEnvironment, x: orgConstants?.constants });
     updateActiveEnvironmentTab(currentEnvironment, orgConstants?.constants);
 
     setIsLoading(false);
@@ -271,39 +273,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
       <div className="page-wrapper">
         <div className="container-xl">
           <div>
-            <div className="page-header workspace-page-header">
-              <div className="align-items-center d-flex">
-                <div className="tj-text-sm font-weight-500">{constants.length} constants</div>
-                <div className=" workspace-setting-buttons-wrap">
-                  {!isManageVarDrawerOpen && canCreateVariable() && (
-                    <ButtonSolid
-                      data-cy="add-new-constant-button"
-                      vaiant="primary"
-                      onClick={() => setIsManageVarDrawerOpen(true)}
-                      className="add-new-constant-button"
-                      customStyles={{ minWidth: '200px', height: '32px' }}
-                    >
-                      Create new constant
-                    </ButtonSolid>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="workspace-variable-container-wrap mt-2">
-          <div className="container-xl">
-            <div className="card workspace-variable-table-card">
-              <RenderEnvironmentsTab
-                isMultiEnvironment={environments?.length > 1}
-                allEnvironments={environments}
-                currentEnvironment={activeTabEnvironment}
-                setActiveTabEnvironment={setActiveTabEnvironment}
-              />
-
-              <div className="p-4 pb-1">
-                <Alert svg="tj-info" cls="" data-cy={``}>
+            <div className="page-header workspace-constant-header">
+              <div className="tj-text-sm font-weight-500">{constants.length} constants</div>
+              <div className="mt-3">
+                <Alert svg="tj-info">
                   <div
                     className="d-flex align-items-center"
                     style={{
@@ -334,30 +307,65 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                   </div>
                 </Alert>
               </div>
+            </div>
+          </div>
+        </div>
 
-              {constants.length === 0 ? (
-                <span className="no-vars-text" data-cy="no-variable-text">
-                  You haven&apos;t configured any environment variables, press the &apos;Create new constanr&apos;
-                  button to create one
-                </span>
-              ) : (
-                <ConstantTable
-                  constants={activeTabContants}
-                  onEditBtnClicked={onEditBtnClicked}
-                  onDeleteBtnClicked={onDeleteBtnClicked}
-                  isLoading={isLoading}
-                  canUpdateDeleteConstant={canUpdateVariable() || canDeleteVariable()}
-                />
-              )}
-
-              <Footer
-                darkMode={darkMode}
-                totalPage={totalPages}
-                pageCount={currentPage}
-                dataLoading={false}
-                gotoNextPage={goToNextPage}
-                gotoPreviousPage={goToPreviousPage}
-              />
+        <div className="workspace-variable-container-wrap mt-2">
+          <div className="container-xl">
+            <div className="workspace-constant-table-card">
+              <div className="manage-sso-container h-100">
+                <div className="d-flex manage-sso-wrapper-card h-100">
+                  <RenderEnvironmentsTab
+                    allEnvironments={environments}
+                    currentEnvironment={activeTabEnvironment}
+                    setActiveTabEnvironment={setActiveTabEnvironment}
+                    isLoading={isLoading}
+                    allConstants={constants}
+                  />
+                  <div className="w-100">
+                    <div className="align-items-center d-flex p-3 justify-content-between">
+                      <div className="tj-text-sm font-weight-500">{capitalize(activeTabEnvironment?.name)}</div>
+                      <div className="workspace-setting-buttons-wrap">
+                        {!isManageVarDrawerOpen && canCreateVariable() && (
+                          <ButtonSolid
+                            data-cy="add-new-constant-button"
+                            vaiant="primary"
+                            onClick={() => setIsManageVarDrawerOpen(true)}
+                            className="add-new-constant-button"
+                            customStyles={{ minWidth: '200px', height: '32px' }}
+                          >
+                            Create new constant
+                          </ButtonSolid>
+                        )}
+                      </div>
+                    </div>
+                    {constants.length === 0 ? (
+                      <span className="no-vars-text" data-cy="no-variable-text">
+                        You haven&apos;t configured any environment variables, press the &apos;Create new constanr&apos;
+                        button to create one
+                      </span>
+                    ) : (
+                      <ConstantTable
+                        constants={activeTabContants}
+                        onEditBtnClicked={onEditBtnClicked}
+                        onDeleteBtnClicked={onDeleteBtnClicked}
+                        isLoading={isLoading}
+                        canUpdateDeleteConstant={canUpdateVariable() || canDeleteVariable()}
+                      />
+                    )}
+                    <Footer
+                      darkMode={darkMode}
+                      totalPage={totalPages}
+                      pageCount={currentPage}
+                      dataLoading={false}
+                      gotoNextPage={goToNextPage}
+                      gotoPreviousPage={goToPreviousPage}
+                    />
+                  </div>
+                  {/* <div>{showPage()}</div> */}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -367,29 +375,54 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
 };
 
 const RenderEnvironmentsTab = ({
-  isMultiEnvironment = false,
   allEnvironments = [],
   currentEnvironment = {},
   setActiveTabEnvironment,
+  isLoading,
+  allConstants,
 }) => {
-  if (!isMultiEnvironment) return null;
+  if (!currentEnvironment) return null;
 
-  const updateCurrentEnvironment = (env) => {
-    setActiveTabEnvironment(env);
+  const constantCount = (constants, envId) => {
+    const envConstant = constants
+      .map((constant) => constant.values.filter((v) => v.id === envId && v.value !== ''))
+      .filter((constantValues) => constantValues.length > 0);
+
+    const finalEnvConstant = envConstant.length > 0 ? envConstant : null;
+
+    if (!finalEnvConstant) return 0;
+
+    return finalEnvConstant.length;
   };
 
+  const updateCurrentEnvironment = (env) => {
+    const selectedEnv = allEnvironments.find((e) => e.id === env.id);
+    setActiveTabEnvironment(selectedEnv);
+  };
+
+  const menuItems = allEnvironments.map((env) => ({
+    id: env.id,
+    label: `${capitalize(env.name)} (${constantCount(allConstants, env?.id)})`,
+  }));
+
   return (
-    <nav className="nav nav-tabs">
-      {allEnvironments.map((env) => (
-        <a
-          key={env?.id}
-          onClick={() => updateCurrentEnvironment(env)}
-          className={cx('nav-item nav-link', { active: currentEnvironment?.name === env.name })}
-        >
-          {capitalize(env.name)}
-        </a>
-      ))}
-    </nav>
+    <div className="left-menu">
+      <ul data-cy="left-menu-items tj-text-xsm">
+        {menuItems.map((item, index) => {
+          return (
+            <FolderList
+              onClick={() => updateCurrentEnvironment(item)}
+              key={index}
+              selectedItem={currentEnvironment.id === item.id}
+              items={menuItems}
+              isLoading={isLoading}
+            >
+              {item.label}
+            </FolderList>
+          );
+        })}
+      </ul>
+    </div>
   );
 };
 
