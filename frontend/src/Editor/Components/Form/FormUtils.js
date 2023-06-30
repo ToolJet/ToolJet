@@ -7,8 +7,11 @@ export function generateUIComponents(JSONSchema, advanced) {
     const uiComponentsDraft = [];
     // eslint-disable-next-line no-unused-vars
     Object.entries(JSONSchema?.properties).forEach(([key, value]) => {
-      uiComponentsDraft.push(structuredClone(componentTypes.find((component) => component?.component == 'Text')));
       const itemType = typeResolver(value?.type);
+      if (itemType) {
+        uiComponentsDraft.push(structuredClone(componentTypes.find((component) => component?.component == 'Text')));
+        //only add if there is a valid item type
+      }
       uiComponentsDraft.push(structuredClone(componentTypes.find((component) => component?.component == itemType)));
     });
     Object.entries(JSONSchema?.properties).forEach(([key, value], index) => {
@@ -33,8 +36,9 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
-                value?.styles?.visibility;
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = JSON.parse(
+                value?.styles?.visibility
+              );
             if (value?.validation?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] =
                 value?.validation?.customRule;
@@ -56,8 +60,9 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
-                value?.styles?.visibility;
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = JSON.parse(
+                value?.styles?.visibility
+              );
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
                 value?.styles?.borderRadius;
@@ -94,8 +99,9 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['loaderColor']['value'] =
                 value?.styles?.loaderColor;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
-                value?.styles?.visibility;
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = JSON.parse(
+                value?.styles?.visibility
+              );
             if (value?.styles?.disabled)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
@@ -132,8 +138,9 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
-                value?.styles?.visibility;
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = JSON.parse(
+                value?.styles?.visibility
+              );
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
             if (value?.maxValue)
@@ -154,8 +161,9 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
-                value?.styles?.visibility;
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = JSON.parse(
+                value?.styles?.visibility
+              );
             if (value?.validation?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] =
                 value?.validation?.customRule;
@@ -178,8 +186,9 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
-                value?.styles?.visibility;
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = JSON.parse(
+                value?.styles?.visibility
+              );
             if (value?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] = value?.customRule;
             if (value?.value)
@@ -204,8 +213,9 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.styles?.textColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor']['value'] = value?.styles?.textColor;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
-                value?.styles?.visibility;
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = JSON.parse(
+                value?.styles?.visibility
+              );
 
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'] = value?.value;
@@ -220,8 +230,9 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
-                value?.styles?.visibility;
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = JSON.parse(
+                value?.styles?.visibility
+              );
             if (value?.displayValues)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values']['value'] =
                 value?.displayValues;
@@ -231,8 +242,6 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
             if (value?.values)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['values']['value'] = value?.values;
-            if (value?.visible)
-              uiComponentsDraft[index * 2 + 1]['definition']['properties']['visible']['value'] = value?.visible;
             break;
           case 'ToggleSwitch':
             if (value?.styles?.textColor)
@@ -241,8 +250,9 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
-                value?.styles?.visibility;
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = JSON.parse(
+                value?.styles?.visibility
+              );
             if (value?.styles?.toggleSwitchColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['toggleSwitchColor']['value'] =
                 value?.styles?.toggleSwitchColor;
@@ -258,8 +268,9 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
-                value?.styles?.visibility;
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = JSON.parse(
+                value?.styles?.visibility
+              );
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
                 value?.styles?.borderRadius;
@@ -273,8 +284,9 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
-                value?.styles?.visibility;
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = JSON.parse(
+                value?.styles?.visibility
+              );
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
                 value?.styles?.borderRadius;
@@ -292,8 +304,9 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
-                value?.styles?.visibility;
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = JSON.parse(
+                value?.styles?.visibility
+              );
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
                 value?.styles?.borderRadius;
@@ -315,8 +328,9 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
-                value?.styles?.visibility;
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = JSON.parse(
+                value?.styles?.visibility
+              );
             if (value?.styles?.textColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor']['value'] = value?.styles?.textColor;
             if (value?.styles?.labelColor)
@@ -334,16 +348,15 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['maxRating']['value'] = value?.maxRating;
             if (value?.tooltips)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['tooltips']['value'] = value?.tooltips;
-            if (value?.visible)
-              uiComponentsDraft[index * 2 + 1]['definition']['properties']['visible']['value'] = value?.visible;
             break;
           case 'FilePicker':
             if (value?.styles?.disabled)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] =
-                value?.styles?.visibility;
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = JSON.parse(
+                value?.styles?.visibility
+              );
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
                 value?.styles?.borderRadius;
@@ -459,6 +472,6 @@ const typeResolver = (type) => {
     case 'filepicker':
       return 'FilePicker';
     default:
-      break;
+      return null;
   }
 };

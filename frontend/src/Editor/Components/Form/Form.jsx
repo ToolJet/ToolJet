@@ -6,6 +6,7 @@ import { diff } from 'deep-object-diff';
 import _, { omit } from 'lodash';
 import { Box } from '@/Editor/Box';
 import { generateUIComponents } from './FormUtils';
+import { useMounted } from '@/_hooks/use-mount';
 
 export const Form = function Form(props) {
   const {
@@ -48,7 +49,7 @@ export const Form = function Form(props) {
   const [childrenData, setChildrenData] = useState({});
   const [isValid, setValidation] = useState(true);
   const [uiComponents, setUIComponents] = useState([]);
-
+  const mounted = useMounted();
   registerAction('resetForm', async function () {
     resetComponent();
   });
@@ -83,6 +84,12 @@ export const Form = function Form(props) {
 
     return result;
   };
+
+  useEffect(() => {
+    // resetComponent()
+    if (mounted) resetComponent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(JSONSchema)]);
 
   useEffect(() => {
     setUIComponents(generateUIComponents(JSONSchema, advanced));
@@ -192,6 +199,7 @@ export const Form = function Form(props) {
     childDataRef.current = { ...childDataRef.current, [componentId]: optionData };
     setChildrenData(childDataRef.current);
   };
+
   return (
     <form
       className={`jet-container ${advanced && 'jet-container-json-form'}`}
