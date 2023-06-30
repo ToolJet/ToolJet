@@ -59,7 +59,6 @@ jobs:
 
 
       - name: Cypress Integration Test
-        id: run-cypress
         if: ${{ github.event.label.name == 'run-cypress' }}
         uses: cypress-io/github-action@v5
         with:
@@ -68,7 +67,6 @@ jobs:
           config-file: cypress-run.config.js
 
       - name: Cypress Integration Test (App Builder)
-        id: run-cypress-app-builder
         if: ${{ github.event.label.name == 'run-cypress-app-builder' }}
         uses: cypress-io/github-action@v5
         with:
@@ -77,7 +75,6 @@ jobs:
           config-file: cypress-app-builder.config.js
 
       - name: Cypress Integration Test (Workspace)
-        id: run-cypress-workspace
         if: ${{ github.event.label.name == 'run-cypress-workspace' }}
         uses: cypress-io/github-action@v5
         with:
@@ -91,60 +88,5 @@ jobs:
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
-
-      # Run Cypress tests and collect the Cypress job ID
-      - name: Run Cypress Tests and Collect Job ID
-        id: cypress_tests
-        run: |
-          # Example: Run your Cypress tests here
-          npx cypress run --headless --reporter junit
-          # Collect the Cypress job ID from the generated test report
-          job_id=$(cat ./cypress_test/junit-report.xml | grep -oPm1 "(?<=<testsuite\s*id=)[^/]*" | head -1)
-          echo "::set-output name=job_id::$job_id"
-
-
-  Fetch-Job-Summary:
-    runs-on: ubuntu-22.04
-    needs: Run-Cypress
-    steps:
-      - name: Export job URLs
-        id: exp
-        uses: pl-strflt/export-job-urls@v1
-
-      - name: Run Cypress Tests and Collect Job ID
-        id: cypress_tests
-        run: |
-          # Example: Run your Cypress tests here
-          npx cypress run --headless --reporter junit
-          # Collect the Cypress job ID from the generated test report
-          job_id=$(cat ./cypress/report/junit-report.xml | grep -oPm1 "(?<=<testsuite\s*id=)[^/]*" | head -1)
-          echo "::set-output name=job_id::$job_id"
-
-      - name: Fetch Job Summary
-        id: fetch_job_summary
-        run: |
-          job_id=${{ steps.cypress_tests.outputs.job_id }}
-          job_summary_url="${{ steps.exp.outputs.job_urls }}/${job_id}/summary_raw"
-          curl -L "$job_summary_url" > job_summary.md
-
-      - name: Send Slack Notification
-        if: always()
-        run: |
-          slack_webhook_url="${{ secrets.SLACK_WEBHOOK_QA_URL }}"
-          if [[ "${{ job.status }}" == "success" ]]; then
-            message="Job succeeded! Here is the summary:"
-          else
-            message="Job failed! Here is the summary:"
-          fi
-
-          # Read the content of the job summary file
-          job_summary=$(cat job_summary.md)
-
-          # Prepare the payload for the Slack notification
-          payload="{\"text\":\"$message\n$job_summary\"}"
-
-          # Send the notification using curl
-          curl -X POST -H 'Content-type: application/json' --data "$payload" "$slack_webhook_url"
-
 
 
