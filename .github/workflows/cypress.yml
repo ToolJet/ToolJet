@@ -101,23 +101,24 @@ jobs:
           job_summary_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs/${job_id}/summary_raw"
           curl -L "$job_summary_url" > job_summary.md
 
-      - name: Add comment to PR using TJ_BOT_PAT
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{ secrets.TJ_BOT_PAT }}
-          script: |
-            const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
-            const prNumber = context.payload.pull_request.number;
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const jobSummary = fs.readFileSync('job_summary.md', 'utf8');
-            
-            // Post the job summary as a comment on the PR
-            await octokit.issues.createComment({
-              owner: owner,
-              repo: repo,
-              issue_number: prNumber,
-              body: `**Job Summary:**\n${jobSummary}`
-            });
+      - name: Send Slack Notification
+        if: always()  # This step will run even if previous steps fail
+        run: |
+          slack_webhook_url="${{ secrets.SLACK_WEBHOOK_QA_URL }}"
+          if [[ "${{ job.status }}" == "success" ]]; then
+            message="Job succeeded! Here is the summary:"
+          else
+            message="Job failed! Here is the summary:"
+          fi
+
+          # Read the content of the job summary file
+          job_summary=$(cat job_summary.md)
+
+          # Prepare the payload for the Slack notification
+          payload="{\"text\":\"$message\n$job_summary\"}"
+
+          # Send the notification using curl
+          curl -X POST -H 'Content-type: application/json' --data "$payload" "$slack_webhook_url"
+
 
 
