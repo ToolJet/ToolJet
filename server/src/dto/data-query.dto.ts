@@ -31,6 +31,9 @@ export class CreateDataQueryDto {
 
   @IsObject()
   options: object;
+
+  @IsObject()
+  variables: object;
 }
 
 export class UpdateDataQueryDto extends PartialType(CreateDataQueryDto) {}

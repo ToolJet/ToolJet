@@ -965,7 +965,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           _self.state.currentState
         );
       } else {
-        queryExecutionPromise = dataqueryService.run(queryId, options);
+        queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
       }
 
       queryExecutionPromise

@@ -28,6 +28,7 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { App } from 'src/entities/app.entity';
 import { UpdateDataQueryStatusDto } from '@dto/data-query-update-status.dto';
+import { isEmpty } from 'class-validator';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -197,7 +198,7 @@ export class DataQueriesController {
     @Param('environmentId') environmentId,
     @Body() updateDataQueryDto: UpdateDataQueryDto
   ) {
-    const { options } = updateDataQueryDto;
+    const { options, variables } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
 
@@ -207,12 +208,17 @@ export class DataQueriesController {
       if (!ability.can('runQuery', dataQuery.app)) {
         throw new ForbiddenException('you do not have permissions to perform this action');
       }
+
+      if (ability.can('updateQuery', dataQuery.app) && !isEmpty(options)) {
+        await this.dataQueriesService.update(dataQueryId, dataQuery.name, options);
+        dataQuery['options'] = options;
+      }
     }
 
     let result = {};
 
     try {
-      result = await this.dataQueriesService.runQuery(user, dataQuery, options, environmentId);
+      result = await this.dataQueriesService.runQuery(user, dataQuery, variables, environmentId);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {
