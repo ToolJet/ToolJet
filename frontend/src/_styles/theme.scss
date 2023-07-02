@@ -10452,6 +10452,14 @@ tbody {
   width: 880px;
   min-height: calc(100vh - 308px);
 
+  .workspace-constant-card-body {
+    min-height: calc(100vh - 408px);
+  }
+
+  .constant-table-card {
+    min-height: 370px;
+  }
+
   .card-footer {
     border-top: none !important;
   }

@@ -323,7 +323,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                     isLoading={isLoading}
                     allConstants={constants}
                   />
-                  <div className="w-100">
+                  <div className="w-100 workspace-constant-card-body">
                     <div className="align-items-center d-flex p-3 justify-content-between">
                       <div className="tj-text-sm font-weight-500">{capitalize(activeTabEnvironment?.name)}</div>
                       <div className="workspace-setting-buttons-wrap">
@@ -363,7 +363,6 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                       gotoPreviousPage={goToPreviousPage}
                     />
                   </div>
-                  {/* <div>{showPage()}</div> */}
                 </div>
               </div>
             </div>
