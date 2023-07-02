@@ -73,60 +73,63 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       properties?.defaultValue?.length > 0 &&
       properties?.defaultValue.some((item) => typeof item === 'object' && item !== null)
     ) {
-      const defaultValueAnnotation = properties?.defaultValue?.map((item) => {
-        // Calculate the rightmost and bottommost coordinates of the inner div
-        const innerDivRight = item.x * 6.25 + item.width; //px -> %
-        const innerDivBottom = item.y * 6.25 + item.height;
-        // Check if the inner div exceeds the boundaries of the outer div
-        const exceedsBoundaries = innerDivRight > outerDivWidth || innerDivBottom > outerDivHeight;
+      if (outerDivWidth && outerDivHeight) {
+        const defaultValueAnnotation = properties?.defaultValue?.map((item) => {
+          // Calculate the rightmost and bottommost coordinates of the inner div
 
-        if (item.x < 0) {
-          item.x = 0;
-        }
-        if (item.y < 0) {
-          item.y = 0;
-        }
-        if (item.width < 0) item.width = 0;
-        if (item.height < 0) item.height = 0;
+          const innerDivRight = (item.x + item.width) * (1 / 100) * outerDivWidth; //px -> %
+          const innerDivBottom = (item.y + item.height) * (1 / 100) * outerDivHeight;
+          // Check if the inner div exceeds the boundaries of the outer div
+          const exceedsBoundaries = innerDivRight > outerDivWidth || innerDivBottom > outerDivHeight;
 
-        if (exceedsBoundaries) {
-          if (innerDivRight > outerDivWidth) {
-            if (item.width <= 100) item.x = 100 - item.width;
-            else {
-              const newWidth = 100 - item.x;
-              item.width = newWidth;
+          // keeping coordinates inside boundary
+          if (item.x < 0) item.x = 0;
+          if (item.y < 0) item.y = 0;
+          if (item.x > 100) item.x = 100;
+          if (item.y > 100) item.y = 100;
+
+          if (item.width < 0) item.width = 0;
+          if (item.height < 0) item.height = 0;
+
+          if (exceedsBoundaries) {
+            if (innerDivRight > outerDivWidth) {
+              if (item.width <= 100) item.x = 100 - item.width;
+              else {
+                const newWidth = 100 - item.x;
+                item.width = newWidth;
+              }
+            }
+            if (innerDivBottom > outerDivHeight) {
+              if (item.height <= 100) item.y = 100 - item.height;
+              else {
+                const newHeight = 100 - item.y;
+                item.height = newHeight;
+              }
             }
           }
-          if (innerDivBottom > outerDivHeight) {
-            if (item.height <= 100) item.y = 100 - item.height;
-            else {
-              const newHeight = 100 - item.y;
-              item.height = newHeight;
-            }
-          }
-        }
 
-        return {
-          geometry: {
-            type: item.type,
-            x: item.x,
-            y: item.y,
-            width: item.width,
-            height: item.height,
-          },
-          data: {
-            text: item.text,
-            id: uuid(),
-          },
-        };
-      });
+          return {
+            geometry: {
+              type: item.type,
+              x: item.x,
+              y: item.y,
+              width: item.width,
+              height: item.height,
+            },
+            data: {
+              text: item.text,
+              id: uuid(),
+            },
+          };
+        });
 
-      setExposedVariable('annotations', getExposedAnnotations(defaultValueAnnotation));
-      setAnnotations(defaultValueAnnotation || []);
+        setExposedVariable('annotations', getExposedAnnotations(defaultValueAnnotation));
+        setAnnotations(defaultValueAnnotation || []);
+      }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(properties?.defaultValue), properties?.imageUrl]);
+  }, [JSON.stringify(properties?.defaultValue), properties?.imageUrl, outerDivWidth, outerDivHeight]);
 
   const onChange = (annotation) => {
     setAnnotation(annotation);
