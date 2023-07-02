@@ -29,8 +29,8 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [selectedConstant, setSelectedConstant] = useState(null);
 
   const onCancelBtnClicked = () => {
-    setIsManageVarDrawerOpen(false);
     setSelectedConstant(null);
+    setIsManageVarDrawerOpen(false);
   };
 
   const onEditBtnClicked = (constant) => {
@@ -49,14 +49,18 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   };
 
   const updateActiveEnvironmentTab = (environment, allConstants = []) => {
-    setActiveTabEnvironment(environment);
+    if (!activeTabEnvironment) {
+      setActiveTabEnvironment(environment);
+    }
     setCurrentPage(1);
+
+    const envName = activeTabEnvironment ? activeTabEnvironment.name : environment.name;
 
     const constantsForEnvironment = allConstants.map((constant) => {
       return {
         id: constant.id,
         name: constant.name,
-        value: findValueForEnvironment(constant.values, environment.name),
+        value: findValueForEnvironment(constant.values, envName),
       };
     });
     computeTotalPages(constantsForEnvironment.length);
@@ -168,7 +172,6 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     let orgEnvironments = await fetchEnvironments();
     setEnvironments(orgEnvironments?.environments);
     const currentEnvironment = orgEnvironments?.environments?.find((env) => env?.is_default === true);
-    console.log('fetchConstantsAndEnvironments -- called', { currentEnvironment, x: orgConstants?.constants });
     updateActiveEnvironmentTab(currentEnvironment, orgConstants?.constants);
 
     setIsLoading(false);
@@ -176,9 +179,11 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   };
 
   const createOrUpdate = (variable, isUpdate = false) => {
+    const currentEnv = activeTabEnvironment;
+
     if (isUpdate) {
       return orgEnvironmentConstantService
-        .update(variable.id, variable.value, variable.environments[0]['value'])
+        .update(variable.id, variable.value, currentEnv['id'])
         .then(() => {
           toast.success('Constant updated successfully');
           onCancelBtnClicked();
@@ -190,13 +195,9 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     }
 
     return orgEnvironmentConstantService
-      .create(
-        variable.name,
-        variable.value,
-        variable.environments.map((env) => env.value)
-      )
+      .create(variable.name, variable.value, [currentEnv['id']])
       .then(() => {
-        toast.success('Constant created successfully');
+        toast.success('Constant has been created');
         onCancelBtnClicked();
       })
       .catch(({ error }) => {
@@ -253,18 +254,18 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
         darkMode={false}
       />
 
-      <Drawer disableFocus={true} isOpen={isManageVarDrawerOpen} onClose={onCancelBtnClicked} position="right">
-        <ConstantForm
-          errors={errors}
-          allConstants={constants}
-          selectedConstant={selectedConstant}
-          createOrUpdate={createOrUpdate}
-          onCancelBtnClicked={onCancelBtnClicked}
-          isLoading={isLoading}
-          environments={environments}
-          currentEnvironment={selectedConstant ? activeTabEnvironment : environments[0]}
-        />
-      </Drawer>
+      {isManageVarDrawerOpen && (
+        <Drawer disableFocus={true} isOpen={isManageVarDrawerOpen} onClose={onCancelBtnClicked} position="right">
+          <ConstantForm
+            errors={errors}
+            selectedConstant={selectedConstant}
+            createOrUpdate={createOrUpdate}
+            onCancelBtnClicked={onCancelBtnClicked}
+            isLoading={isLoading}
+            currentEnvironment={activeTabEnvironment}
+          />
+        </Drawer>
+      )}
 
       <div className="page-wrapper">
         <div className="container-xl">
@@ -326,13 +327,14 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                     <div className="align-items-center d-flex p-3 justify-content-between">
                       <div className="tj-text-sm font-weight-500">{capitalize(activeTabEnvironment?.name)}</div>
                       <div className="workspace-setting-buttons-wrap">
-                        {!isManageVarDrawerOpen && canCreateVariable() && (
+                        {canCreateVariable() && (
                           <ButtonSolid
                             data-cy="add-new-constant-button"
                             vaiant="primary"
                             onClick={() => setIsManageVarDrawerOpen(true)}
                             className="add-new-constant-button"
                             customStyles={{ minWidth: '200px', height: '32px' }}
+                            disabled={isManageVarDrawerOpen}
                           >
                             Create new constant
                           </ButtonSolid>
@@ -360,6 +362,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                       dataLoading={false}
                       gotoNextPage={goToNextPage}
                       gotoPreviousPage={goToPreviousPage}
+                      showPagination={constants.length > 0}
                     />
                   </div>
                 </div>
@@ -424,7 +427,9 @@ const RenderEnvironmentsTab = ({
   );
 };
 
-const Footer = ({ darkMode, totalPage, pageCount, dataLoading, gotoNextPage, gotoPreviousPage }) => {
+const Footer = ({ darkMode, totalPage, pageCount, dataLoading, gotoNextPage, gotoPreviousPage, showPagination }) => {
+  if (!showPagination) return null;
+
   return (
     <div
       style={{

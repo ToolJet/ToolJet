@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
-import Select from '@/_ui/Select';
-import Multiselect from '@/_ui/Multiselect/Multiselect';
 import { withTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const ConstantForm = ({
   errors,
-  allConstants = [],
   selectedConstant,
   createOrUpdate,
   onCancelBtnClicked,
   isLoading,
-  environments,
   currentEnvironment,
 }) => {
   const [fields, setFields] = useState(() => ({
@@ -22,32 +18,11 @@ const ConstantForm = ({
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
 
-    const isUpdate = !!selectedConstant;
-
-    const constantValue = isUpdate && name === 'environments' ? [value] : value;
-
-    if (isUpdate && name === 'environments') {
-      const constantValueInSelectedValue = allConstants
-        .find((constant) => constant.id === selectedConstant.id)
-        ?.values?.find((v) => v.id === constantValue[0].value)?.value;
-
-      return setFields((fields) => ({
-        ...fields,
-        value: constantValueInSelectedValue,
-        [name]: constantValue,
-      }));
-    }
-
     setFields((fields) => ({
       ...fields,
-      [name]: constantValue,
+      [name]: value,
     }));
   };
-
-  const selectOptions = environments.map((env) => ({
-    name: env.name,
-    value: env.id,
-  }));
 
   const handlecreateOrUpdate = (e) => {
     e.preventDefault();
@@ -55,10 +30,15 @@ const ConstantForm = ({
     createOrUpdate(fields, isUpdate);
   };
 
+  const shouldDisbaleButton =
+    fields['name'] && fields['value'] && (fields['name'].length > 0 || fields['value'].length > 0) ? false : true;
+
   return (
     <div className="variable-form-wrap">
       <div className="card-header">
-        <h3 className="card-title">{!selectedConstant ? 'Add new constant' : 'Update constant'}</h3>
+        <h3 className="card-title">
+          {!selectedConstant ? 'Add new constant' : 'Update constant'} in {currentEnvironment?.name}{' '}
+        </h3>
       </div>
       <div className="card-body">
         <form noValidate>
@@ -85,37 +65,6 @@ const ConstantForm = ({
                 />
                 <span className="text-danger">{errors['name']}</span>
               </div>
-
-              <div className="col tj-app-input">
-                <div className="form-group">
-                  <label className="form-label">Type</label>
-                  {selectedConstant ? (
-                    <Select
-                      options={selectOptions}
-                      hasSearch={false}
-                      value={fields['environments'][0]['value']}
-                      onChange={(value) =>
-                        handleFieldChange({ target: { name: 'environments', value: { name: value, value } } })
-                      }
-                      useMenuPortal={false}
-                      customWrap={true}
-                    />
-                  ) : (
-                    <div className={'manage-constants-dropdown'} data-cy="select-search">
-                      <Multiselect
-                        value={fields['environments']}
-                        onChange={(values) => handleFieldChange({ target: { name: 'environments', value: values } })}
-                        options={selectOptions}
-                        disableSearch={true}
-                        overrideStrings={{
-                          selectSomeItems: 'Select Environments',
-                          allItemsAreSelected: 'All Environments are selected',
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
             <div className="col tj-app-input">
               <label className="form-label">Value</label>
@@ -140,10 +89,10 @@ const ConstantForm = ({
           type="submit"
           onClick={handlecreateOrUpdate}
           isLoading={isLoading}
-          disabled={isLoading}
+          disabled={isLoading || shouldDisbaleButton}
           data-cy="add-constant-button"
         >
-          {!selectedConstant ? 'Add constant' : 'Save'}
+          {!selectedConstant ? 'Add constant' : 'Update'}
         </ButtonSolid>
       </div>
     </div>
