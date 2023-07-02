@@ -287,7 +287,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                     </div>
                     <div>
                       <Button
-                        // onClick={() => window.open('https://tooljet.com/copilot', '_blank')}
+                        // Todo: Update link to documentation: workspace constants
+                        onClick={() =>
+                          window.open('https://docs.tooljet.com/docs/tutorial/workspace-variables', '_blank')
+                        }
                         darkMode={darkMode}
                         size="sm"
                         styles={{
@@ -376,7 +379,7 @@ const RenderEnvironmentsTab = ({
   isLoading,
   allConstants,
 }) => {
-  if (!currentEnvironment) return null;
+  if (!currentEnvironment || allEnvironments.length <= 1) return null;
 
   const constantCount = (constants, envId) => {
     const envConstant = constants
