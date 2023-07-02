@@ -284,7 +284,6 @@ export const Box = function Box({
         style={{
           ...styles,
           backgroundColor,
-          boxShadow: validatedGeneralStyles?.boxShadow,
         }}
         role={preview ? 'BoxPreview' : 'Box'}
       >
@@ -308,7 +307,7 @@ export const Box = function Box({
               canvasWidth={canvasWidth}
               properties={validatedProperties}
               exposedVariables={exposedVariables}
-              styles={validatedStyles}
+              styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
               setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
               setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
               registerAction={(actionName, func, dependencies = []) => {

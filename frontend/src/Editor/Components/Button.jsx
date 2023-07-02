@@ -4,7 +4,7 @@ var tinycolor = require('tinycolor2');
 
 export const Button = function Button(props) {
   const { height, properties, styles, fireEvent, registerAction, id, dataCy } = props;
-  const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor } = styles;
+  const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor, boxShadow } = styles;
 
   const [label, setLabel] = useState(properties.text);
   const [disable, setDisable] = useState(disabledState);
@@ -38,6 +38,7 @@ export const Button = function Button(props) {
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
     borderColor: borderColor,
+    boxShadow: boxShadow,
   };
 
   registerAction(

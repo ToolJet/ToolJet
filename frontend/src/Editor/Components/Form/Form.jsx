@@ -29,7 +29,7 @@ export const Form = function Form(props) {
     dataCy,
     paramUpdated,
   } = props;
-  const { visibility, disabledState, borderRadius, borderColor } = styles;
+  const { visibility, disabledState, borderRadius, borderColor, boxShadow } = styles;
   const { buttonToSubmit, loadingState, advanced, JSONSchema } = properties;
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
@@ -41,6 +41,7 @@ export const Form = function Form(props) {
     display: visibility ? 'flex' : 'none',
     position: 'relative',
     overflow: 'hidden auto',
+    boxShadow,
   };
 
   const parentRef = useRef(null);

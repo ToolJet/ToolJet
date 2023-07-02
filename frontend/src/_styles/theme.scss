@@ -860,11 +860,15 @@ button {
         box-sizing: border-box;
         border-radius: 6px;
         color: $primary-light;
-        width: 136px;
+        width: 113px;
         height: 28px;
         background: var(--indigo11) !important;
         border: none;
         color: var(--indigo4);
+        padding: 4px 16px;
+        gap: 6px;
+        height: 28px;
+
 
         &:hover {
           background: var(--indigo10);
@@ -885,15 +889,18 @@ button {
       }
 
       .launch-button {
-
         box-sizing: border-box;
         border-radius: 6px;
         color: var(--base);
-        width: 92px;
+        width: 113px;
         height: 28px;
         background: var(--base);
         border: 1px solid var(--slate7);
         color: var(--slate12);
+        padding: 4px 16px;
+        gap: 6px;
+        height: 28px !important;
+
 
         &:hover {
           background: var(--slate8);
@@ -8477,24 +8484,16 @@ tbody {
 }
 
 .edit-button {
-  width: 135px;
-  height: 28px;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 4px 16px;
-  gap: 6px;
-  width: 135px;
   height: 28px;
 }
 
 .launch-button {
   display: flex;
-  width: 93px;
   height: 28px;
-  padding: 4px 16px;
-  gap: 6px;
   align-items: center;
   color: var(--slate12);
   justify-content: center;
@@ -10386,10 +10385,25 @@ tbody {
   max-width: 880px;
 }
 
+@media only screen and (min-width: 1584px) and (max-width: 1727px) {
+
+  .edit-button,
+  .launch-button {
+    width: 113px !important;
+  }
+}
+
+
+
 @media only screen and (max-width: 1583px) and (min-width: 1312px) {
 
   .homepage-app-card-list-item {
     max-width: 264px;
+
+    .edit-button,
+    .launch-button {
+      width: 109px !important;
+    }
   }
 
 }
@@ -10398,6 +10412,11 @@ tbody {
 
   .homepage-app-card-list-item {
     max-width: 304px;
+
+    .edit-button,
+    .launch-button {
+      width: 129px !important;
+    }
   }
 
   .home-page-content-container {
@@ -10422,6 +10441,11 @@ tbody {
   .homepage-app-card-list-item {
     max-width: 304px !important;
     flex-basis: 100%;
+
+    .edit-button,
+    .launch-button {
+      width: 129px !important;
+    }
   }
 }
 
@@ -10437,6 +10461,11 @@ tbody {
   .homepage-app-card-list-item {
     max-width: 269px;
     flex-basis: 100%;
+
+    .edit-button,
+    .launch-button {
+      width: 111.5px !important;
+    }
   }
 
   .liner {
