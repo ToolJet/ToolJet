@@ -5784,6 +5784,53 @@ div#driver-page-overlay {
   }
 }
 
+.tj-input-error-state {
+  border: 1px solid var(--tomato9) !important;
+}
+
+
+
+.tj-input-element {
+  gap: 16px;
+  background: var(--base);
+  border: 1px solid var(--slate7);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  display: block;
+  width: 100%;
+  padding: .4375rem .75rem;
+  font-size: .875rem;
+  font-weight: 400;
+  line-height: 1.4285714;
+  color: #232e3c;
+  background-clip: padding-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+
+  &:hover {
+      background: var(--slate1);
+      border: 1px solid var(--slate8);
+      -webkit-box-shadow: none;
+      box-shadow: none;
+      outline: none;
+  }
+
+  &:focus-visible {
+      background: var(--slate1);
+      border: 1px solid var(--slate8);
+      outline: none;
+  }
+
+  &:active {
+      background: var(--indigo2);
+      border: 1px solid var(--indigo9);
+      box-shadow: none;
+  }
+}
+
+
 //Kanban board
 .kanban-container.dark-themed {
   background-color: $bg-dark-light !important;

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '../helpers/utils.helper';
 
@@ -14,12 +14,14 @@ export class CreateOrganizationConstantDto {
 
   @IsString()
   @IsNotEmpty()
+  @MinLength(1, { message: 'Column name must be at least 1 character' })
   value: string;
 }
 
 export class UpdateOrganizationConstantDto {
   @IsString()
   @IsNotEmpty()
+  @MinLength(1, { message: 'Column name must be at least 1 character' })
   value?: string;
 
   @IsString()
@@ -29,5 +31,7 @@ export class UpdateOrganizationConstantDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
+  @MaxLength(20, { message: 'Column name must be less than 32 characters' })
+  @MinLength(1, { message: 'Column name must be at least 1 character' })
   constant_name?: string;
 }

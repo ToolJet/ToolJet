@@ -176,18 +176,38 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     setSelectedConstant(null);
   };
 
+  const checkIfConstantNameExists = (name, environementId) => {
+    if (!environementId) {
+      return constants.some((constant) => constant.name === name);
+    }
+
+    const envConstants = constants.filter((constant) => {
+      return constant.values.some((value) => value.id === environementId && value.value !== '');
+    });
+
+    return envConstants.some((constant) => constant.name === name);
+  };
+
   const createOrUpdate = (variable, isUpdate = false) => {
     const currentEnv = activeTabEnvironment;
 
-    if (isUpdate) {
+    const constantExistsInDiffEnv = checkIfConstantNameExists(variable.name);
+    const shouldUpdateConstant = isUpdate ? true : constantExistsInDiffEnv;
+
+    if (shouldUpdateConstant) {
+      const variableId = constantExistsInDiffEnv
+        ? constants.find((constant) => constant.name === variable.name).id
+        : variable.id;
+
       return orgEnvironmentConstantService
-        .update(variable.id, variable.value, currentEnv['id'])
+        .update(variableId, variable.value, currentEnv['id'])
         .then(() => {
           toast.success('Constant updated successfully');
           onCancelBtnClicked();
         })
         .catch(({ error }) => {
           setErrors(error);
+          toast.error(error);
         })
         .finally(() => fetchConstantsAndEnvironments());
     }
@@ -200,6 +220,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
       })
       .catch(({ error }) => {
         setErrors(error);
+        toast.error('Constant could not be created');
       })
       .finally(() => fetchConstantsAndEnvironments());
   };
@@ -261,6 +282,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
             onCancelBtnClicked={onCancelBtnClicked}
             isLoading={isLoading}
             currentEnvironment={activeTabEnvironment}
+            checkIfConstantNameExists={checkIfConstantNameExists}
           />
         </Drawer>
       )}
