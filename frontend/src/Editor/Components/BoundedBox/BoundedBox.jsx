@@ -11,6 +11,9 @@ import { v4 as uuid } from 'uuid';
 export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles }) => {
   const [annotationState, setAnnotation] = useState({});
   const [annotationsState, setAnnotations] = useState([]);
+  const [outerDivHeight, setOuterDivHeight] = useState();
+  const [outerDivWidth, setOuterDivWidth] = useState();
+
   const [typeState, setType] = useState(properties.selector);
   const labels = _.isArray(properties.labels)
     ? [
@@ -19,6 +22,31 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
         }),
       ]
     : [];
+  const annotateRef = useRef(null);
+
+  useEffect(() => {
+    const handleImageLoad = () => {
+      const wrapperElement = document.getElementsByClassName('lmGPCf')[0];
+
+      if (wrapperElement) {
+        const { width, height } = wrapperElement.getBoundingClientRect();
+        // Use the width and height of bounding image for further calculations
+        setOuterDivWidth(width);
+        setOuterDivHeight(height);
+      }
+    };
+
+    const imageElement = document.getElementsByClassName('gVmiLs')[0];
+    if (imageElement) {
+      imageElement.addEventListener('load', handleImageLoad);
+    }
+
+    return () => {
+      if (imageElement) {
+        imageElement.removeEventListener('load', handleImageLoad);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let selector = undefined;
@@ -43,30 +71,38 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
     } else if (
       Array.isArray(properties?.defaultValue) &&
       properties?.defaultValue?.length > 0 &&
-      typeof properties?.defaultValue[0] === 'object'
+      properties?.defaultValue.some((item) => typeof item === 'object' && item !== null)
     ) {
-      const outerDiv = document.getElementsByClassName('lmGPCf');
       const defaultValueAnnotation = properties?.defaultValue?.map((item) => {
         // Calculate the rightmost and bottommost coordinates of the inner div
-        const innerDivRight = (item.x + item.width) * 6.25; //px -> %
-        const innerDivBottom = (item.y + item.height) * 6.25;
-        const outerDivWidth = outerDiv[0].offsetWidth;
-        const outerDivHeight = outerDiv[0].offsetHeight;
+        const innerDivRight = item.x * 6.25 + item.width; //px -> %
+        const innerDivBottom = item.y * 6.25 + item.height;
         // Check if the inner div exceeds the boundaries of the outer div
         const exceedsBoundaries = innerDivRight > outerDivWidth || innerDivBottom > outerDivHeight;
+
         if (item.x < 0) {
           item.x = 0;
         }
         if (item.y < 0) {
           item.y = 0;
         }
+        if (item.width < 0) item.width = 0;
+        if (item.height < 0) item.height = 0;
+
         if (exceedsBoundaries) {
           if (innerDivRight > outerDivWidth) {
-            item.x = 100 - item.width;
+            if (item.width <= 100) item.x = 100 - item.width;
+            else {
+              const newWidth = 100 - item.x;
+              item.width = newWidth;
+            }
           }
-
           if (innerDivBottom > outerDivHeight) {
-            item.y = 100 - item.height;
+            if (item.height <= 100) item.y = 100 - item.height;
+            else {
+              const newHeight = 100 - item.y;
+              item.height = newHeight;
+            }
           }
         }
 
@@ -84,6 +120,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
           },
         };
       });
+
       setExposedVariable('annotations', getExposedAnnotations(defaultValueAnnotation));
       setAnnotations(defaultValueAnnotation || []);
     }
@@ -149,6 +186,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
         src={`${properties.imageUrl}`}
         annotations={annotationsState}
         type={typeState}
+        ref={annotateRef}
         value={annotationState}
         onChange={(annotation) => onChange(annotation)}
         renderSelector={({ annotation, active }) => (
