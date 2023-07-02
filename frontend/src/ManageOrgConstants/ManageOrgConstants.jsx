@@ -22,7 +22,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const perPage = 7;
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [activeTabContants, setActiveTabContants] = useState([]);
+  const [currentTableData, setTableData] = useState([]);
 
   const [errors, setErrors] = useState([]);
   const [showConstantDeleteConfirmation, setShowConstantDeleteConfirmation] = useState(false);
@@ -55,19 +55,31 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     setCurrentPage(1);
 
     const envName = activeTabEnvironment ? activeTabEnvironment.name : environment.name;
+    updateTableData(allConstants, envName, 0, perPage, true);
+  };
 
-    const constantsForEnvironment = allConstants.map((constant) => {
-      return {
-        id: constant.id,
-        name: constant.name,
-        value: findValueForEnvironment(constant.values, envName),
-      };
-    });
-    computeTotalPages(constantsForEnvironment.length);
+  const updateTableData = (orgContants, envName, start, end, activeTabChanged = false) => {
+    const constantsForEnvironment = orgContants
+      .filter((constant) => {
+        const envConstant = constant?.values.find((value) => value.environmentName === envName);
 
-    const envConstantants = constantsForEnvironment.slice(0, perPage);
+        return envConstant && envConstant.value !== '';
+      })
+      .map((constant) => {
+        return {
+          id: constant.id,
+          name: constant.name,
+          value: findValueForEnvironment(constant.values, envName),
+        };
+      });
 
-    setActiveTabContants(() => envConstantants.filter((constant) => constant.value !== null && constant.value !== ''));
+    if (activeTabChanged) {
+      computeTotalPages(constantsForEnvironment.length);
+    }
+
+    const envConstantants = constantsForEnvironment.slice(start, end);
+
+    setTableData(envConstantants);
   };
 
   const goToNextPage = () => {
@@ -76,15 +88,8 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     const start = (currentPage + 1 - 1) * perPage;
     const end = start + perPage;
 
-    const constantsForEnvironment = constants.slice(start, end).map((constant) => {
-      return {
-        id: constant.id,
-        name: constant.name,
-        value: findValueForEnvironment(constant.values, activeTabEnvironment?.name),
-      };
-    });
-
-    setActiveTabContants(constantsForEnvironment);
+    const envName = activeTabEnvironment.name;
+    updateTableData(constants, envName, start, end);
   };
 
   const goToPreviousPage = () => {
@@ -93,15 +98,8 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     const start = (currentPage - 1 - 1) * perPage;
     const end = start + perPage;
 
-    const constantsForEnvironment = constants.slice(start, end).map((constant) => {
-      return {
-        id: constant.id,
-        name: constant.name,
-        value: findValueForEnvironment(constant.values, activeTabEnvironment?.name),
-      };
-    });
-
-    setActiveTabContants(constantsForEnvironment);
+    const envName = activeTabEnvironment.name;
+    updateTableData(constants, envName, start, end);
   };
 
   const canAnyGroupPerformAction = (action, permissions) => {
@@ -348,7 +346,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                       </span>
                     ) : (
                       <ConstantTable
-                        constants={activeTabContants}
+                        constants={currentTableData}
                         onEditBtnClicked={onEditBtnClicked}
                         onDeleteBtnClicked={onDeleteBtnClicked}
                         isLoading={isLoading}
