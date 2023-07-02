@@ -3,14 +3,11 @@ import { authenticationService, orgEnvironmentConstantService, appEnvironmentSer
 import { ConfirmDialog } from '@/_components';
 import { toast } from 'react-hot-toast';
 import { capitalize } from 'lodash';
-import cx from 'classnames';
-
-import Pagination from '@/_ui/Pagination';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { Alert } from '../_ui/Alert/Alert';
 import { Button } from '@/_ui/LeftSidebar';
 import ConstantTable from './ConstantTable';
-
+import Pagination from '@/_ui/Pagination';
 import Drawer from '@/_ui/Drawer';
 import ConstantForm from './ConstantForm';
 import FolderList from '@/_ui/FolderList/FolderList';
@@ -55,19 +52,18 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     setActiveTabEnvironment(environment);
     setCurrentPage(1);
 
-    const constantsForEnvironment = allConstants.slice(0, perPage).map((constant) => {
+    const constantsForEnvironment = allConstants.map((constant) => {
       return {
         id: constant.id,
         name: constant.name,
         value: findValueForEnvironment(constant.values, environment.name),
       };
     });
+    computeTotalPages(constantsForEnvironment.length);
 
-    setActiveTabContants(
-      constantsForEnvironment.filter((constant) => constant.value !== null && constant.value !== '')
-    );
-    console.log('activeTabEnvironment ==> ', { x: constantsForEnvironment.length });
-    computeTotalPages(constantsForEnvironment.length + 1);
+    const envConstantants = constantsForEnvironment.slice(0, perPage);
+
+    setActiveTabContants(() => envConstantants.filter((constant) => constant.value !== null && constant.value !== ''));
   };
 
   const goToNextPage = () => {
