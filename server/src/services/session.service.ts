@@ -70,7 +70,7 @@ export class SessionService {
   }
 
   private getSessionExpiry(): Date {
-    // default expiry 2 days (2880 minutes)
+    // default expiry 10 days (14400 minutes)
     const now = new Date();
     return new Date(
       now.getTime() +
