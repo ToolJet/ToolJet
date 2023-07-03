@@ -64,7 +64,6 @@ class LoginPageComponent extends React.Component {
     }
 
     this.setRedirectUrlToCookie(appInsideIframe);
-
     authenticationService.deleteLoginOrganizationId();
     this.currentSessionObservable = authenticationService.currentSession.subscribe((newSession) => {
       if (newSession?.current_organization_name)

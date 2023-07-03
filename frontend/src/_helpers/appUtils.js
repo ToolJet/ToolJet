@@ -817,7 +817,7 @@ export function getQueryVariables(options, state) {
 }
 
 export function previewQuery(_ref, query, calledFromQuery = false) {
-  const options = getQueryVariables(query.options, _ref.props.currentState);
+  const options = getQueryVariables(query.options, _ref?.state?.currentState);
 
   // passing current env through props only for querymanager
   const currentAppEnvironmentId = _ref.state?.currentAppEnvironmentId;

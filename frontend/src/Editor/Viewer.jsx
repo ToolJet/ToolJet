@@ -36,7 +36,9 @@ import { Navigate } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 import { toast } from 'react-hot-toast';
 import { withRouter } from '@/_hoc/withRouter';
+
 import { setCookie } from '@/_helpers/cookie';
+
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 
 class ViewerComponent extends React.Component {
