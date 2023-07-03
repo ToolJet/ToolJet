@@ -20,7 +20,7 @@
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
     "knex": "^0.95.14",
-    "oracledb": "^6.0.0",
+    "oracledb": "https://github.com/oracle/node-oracledb/releases/download/v5.3.0/oracledb-src-5.3.0.tgz",
     "react": "^17.0.2"
   },
   "devDependencies": {

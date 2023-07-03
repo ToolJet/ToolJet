@@ -132,23 +132,7 @@ jobs:
               {
                 "key": "ENABLE_MARKETPLACE_FEATURE",
                 "value": "true"
-              },
-              {
-                "key": "SSO_GIT_OAUTH2_CLIENT_ID",
-                "value": "dummy"
-              },
-              {
-                "key": "SSO_GIT_OAUTH2_CLIENT_SECRET",
-                "value": "dummy"
-              },
-              {
-                "key": "SSO_GIT_OAUTH2_HOST",
-                "value": "dummy"
-              },
-              {
-                "key": "SSO_GOOGLE_OAUTH2_CLIENT_ID",
-                "value": "dummy"
-              }                                          
+              }
             ],
             "serviceDetails": {
               "disk": null,
@@ -266,9 +250,6 @@ jobs:
         run: |
           sudo apt update
           sudo apt install postgresql-client -y
-
-      - name: Wait after installing PostgreSQL
-        run: sleep 10          
 
       - name: Drop PostgreSQL PR database
         env:

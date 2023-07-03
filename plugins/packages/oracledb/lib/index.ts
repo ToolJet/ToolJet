@@ -65,24 +65,19 @@ export default class OracledbQueryService implements QueryService {
     };
   }
 
-  // If in Windows, you use backslashes in the libDir string, you will
-  // need to double them.
-  // clientOpts = { libDir: 'C:\\oracle\\instantclient_19_19' };
-  // else on other platforms like Linux
-  // the system library search path MUST always be
-  // set before Node.js is started, for example with ldconfig or LD_LIBRARY_PATH.
-  initOracleClient(clientPathType: string, customPath: string, instantClientVersion: string) {
+  initOracleClient(clientPathType: string, customPath: string) {
     try {
-      let clientOpts = {};
-
       if (clientPathType === 'custom') {
-        clientOpts = { libDir: customPath };
-      } else if (clientPathType === 'default') {
-        clientOpts = { libDir: `/opt/oracle/instantclient_${instantClientVersion}` };
+        if (process.platform === 'darwin') {
+          oracledb.initOracleClient({ libDir: process.env.HOME + customPath });
+        } else if (process.platform === 'win32') {
+          oracledb.initOracleClient({
+            libDir: customPath,
+          }); // note the double backslashes
+        }
+      } else {
+        oracledb.initOracleClient();
       }
-
-      // enable node-oracledb Thick mode
-      oracledb.initOracleClient(clientOpts);
     } catch (err) {
       console.error(err);
       throw err;
@@ -95,7 +90,7 @@ export default class OracledbQueryService implements QueryService {
       oracledb.oracleClientVersion;
     } catch (err) {
       console.log('Oracle client is not initailized');
-      this.initOracleClient(sourceOptions.client_path_type, sourceOptions.path, sourceOptions.instant_client_version);
+      this.initOracleClient(sourceOptions.client_path_type, sourceOptions.path);
     }
 
     const config: Knex.Config = {

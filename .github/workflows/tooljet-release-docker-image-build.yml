@@ -3,6 +3,8 @@ name: Tooljet release docker images build
 on:
   release: 
     types: [published]
+    branches:
+      - main
 
   workflow_dispatch:
     inputs:

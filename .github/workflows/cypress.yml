@@ -46,18 +46,6 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: './cypress-tests'
 
-      - name: Update "database" value in cypress.env.json
-        run: |
-          # Set the new value for the "database" field
-          new_database_value="${{ env.PR_NUMBER }}_cypress"
-
-          # Read the content of cypress.env.json and update the "database" field using jq
-          cat ./cypress-tests/cypress.env.json | jq --arg new_value "$new_database_value" '.app_db.database = $new_value' > tmp_cypress.env.json
-
-          # Move the updated file back to the original location
-          mv tmp_cypress.env.json ./cypress-tests/cypress.env.json
-
-
       - name: Cypress Integration Test
         if: ${{ github.event.label.name == 'run-cypress' }}
         uses: cypress-io/github-action@v5
@@ -87,6 +75,4 @@ jobs:
         if: always()
         with:
           name: screenshots
-          path: cypress-tests/cypress/screenshots
-
-
+          path: cypress-tests/cypress/screenshots          

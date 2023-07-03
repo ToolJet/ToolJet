@@ -1813,9 +1813,6 @@ button {
       margin-top: auto;
       margin-bottom: auto;
     }
-    .td-container:has(.action-button){
-      height: inherit !important;
-    }
   }
 
   td {
@@ -1838,7 +1835,6 @@ button {
     .text-container:hover {
       outline: none;
     }
-
   }
 
   td {

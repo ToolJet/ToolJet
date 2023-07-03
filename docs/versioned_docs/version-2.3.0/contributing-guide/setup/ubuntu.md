@@ -83,12 +83,8 @@ Follow these steps to setup and run ToolJet on Ubuntu. Open terminal and run the
 
 5. Set up database
     ```bash
-    npm run --prefix server db:create
     npm run --prefix server db:reset
     ```
-    :::info
-    If at any point you need to reset the database, use this command `npm run --prefix server db:reset`
-    :::
 
 6. Run plugins compilation in watch mode
     ```bash
