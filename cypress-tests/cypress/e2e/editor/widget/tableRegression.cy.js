@@ -28,6 +28,7 @@ import {
   selectCSA,
   selectEvent,
   addSupportCSAData,
+  selectSupportCSAData,
 } from "Support/utils/events";
 import {
   openAccordion,
@@ -49,13 +50,15 @@ import {
 } from "Support/utils/commonWidget";
 import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
 import { textInputText } from "Texts/textInput";
+import { deleteDownloadsFolder } from "Support/utils/common";
 
 describe("Table", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.createApp();
+    deleteDownloadsFolder();
     cy.viewport(1200, 1200);
-    cy.modifyCanvasSize(900, 700);
+    cy.modifyCanvasSize(900, 800);
     cy.dragAndDropWidget("Table", 50, 50);
     cy.resizeWidget(tableText.defaultWidgetName, 850, 600);
     cy.get(`[data-cy="allow-selection-toggle-button"]`).click({ force: true });
@@ -581,6 +584,8 @@ describe("Table", () => {
       .scrollIntoView()
       .verifyVisibleElement("have.text", "User email");
     cy.get('[data-cy*="-cell-1"]').should("not.have.class", "has-text");
+
+    openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(
       "Column data",
       codeMirrorInputLabel(
@@ -1036,6 +1041,29 @@ describe("Table", () => {
     selectEvent("On click", "Control Component");
     selectCSA("table1", "Discard Changes");
 
+    cy.get('[data-cy="real-canvas"]').click("topRight");
+    cy.dragAndDropWidget("Button", 870, 250);
+    selectEvent("On click", "Control Component");
+    selectCSA("table1", "Discard newly added rows");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight");
+    cy.dragAndDropWidget("Button", 870, 300);
+    selectEvent("On click", "Control Component");
+    selectCSA("table1", "Download table data");
+    selectSupportCSAData("Download as Excel");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight");
+    cy.dragAndDropWidget("Button", 870, 350);
+    selectEvent("On click", "Control Component");
+    selectCSA("table1", "Download table data");
+    selectSupportCSAData("Download as CSV");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight");
+    cy.dragAndDropWidget("Button", 870, 400);
+    selectEvent("On click", "Control Component");
+    selectCSA("table1", "Download table data");
+    selectSupportCSAData("Download as PDF");
+
     cy.get(commonWidgetSelector.draggableWidget("button2")).click();
     cy.get('[role="row"]').eq(2).should("have.class", "selected");
 
@@ -1058,15 +1086,45 @@ describe("Table", () => {
       .should("have.value", "test123");
     cy.get(commonWidgetSelector.draggableWidget("button4")).click();
     cy.get('[data-cy*="-cell-0"]').eq(0).should("have.text", "3");
+
+    addNewRow();
+    cy.get(commonWidgetSelector.draggableWidget("button5")).click();
+    cy.get(commonWidgetSelector.sidebarinspector).click();
+    cy.get(".tooltip-inner").invoke("hide");
+    verifyNodeData("components", "Object", "9 entries ");
+    openNode("components");
+    verifyNodeData(tableText.defaultWidgetName, "Object", "20 entries ");
+    openNode(tableText.defaultWidgetName);
+    verifyNodeData("newRows", "Array", "0 item ");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight");
+    cy.get(commonWidgetSelector.draggableWidget("button6")).click();
+    cy.task("readXlsx", "cypress/downloads/all-data.xlsx")
+      .should("contain", dataCsvAssertionHelper(tableText.defaultInput)[0])
+      .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[1])
+      .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[2]);
+
+    cy.get(commonWidgetSelector.draggableWidget("button7")).click();
+    cy.readFile("cypress/downloads/all-data.csv", "utf-8")
+      .should("contain", dataCsvAssertionHelper(tableText.defaultInput)[0])
+      .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[1])
+      .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[2]);
+
+    cy.get(commonWidgetSelector.draggableWidget("button8")).click();
+    cy.task("readPdf", "cypress/downloads/all-data.pdf")
+      .should("contain", dataPdfAssertionHelper(tableText.defaultInput)[0])
+      .and("contain", dataPdfAssertionHelper(tableText.defaultInput)[1])
+      .and("contain", dataPdfAssertionHelper(tableText.defaultInput)[2]);
   });
 
   it("should verify add new row", () => {
     addNewRow();
+    cy.contains("Save").click();
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(".tooltip-inner").invoke("hide");
     verifyNodeData("components", "Object", "1 entry ");
     openNode("components");
-    verifyNodeData(tableText.defaultWidgetName, "Object", "15 entries ");
+    verifyNodeData(tableText.defaultWidgetName, "Object", "19 entries ");
     openNode(tableText.defaultWidgetName);
     verifyNodeData("newRows", "Array", "1 item ");
     openNode("newRows");
@@ -1100,10 +1158,10 @@ describe("Table", () => {
     cy.get('[data-cy="add-event-handler"]').eq(1).click();
     cy.get('[data-cy="event-handler-card"]').click();
     cy.forceClickOnCanvas();
-
-    cy.get(tableSelector.columnHeader("actions"))
-      .scrollIntoView()
-      .verifyVisibleElement("have.text", "Actions");
+    cy.get(tableSelector.columnHeader("actions")).verifyVisibleElement(
+      "have.text",
+      "Actions"
+    );
     cy.get(`${tableSelector.column(2)} > > > button`)
       .eq("0")
       .click();
@@ -1117,7 +1175,7 @@ describe("Table", () => {
       "{{false}}",
       true
     );
-
+    cy.forceClickOnCanvas();
     cy.get(tableSelector.columnHeader("actions"))
       .scrollIntoView()
       .verifyVisibleElement("have.text", "Actions");
@@ -1125,9 +1183,8 @@ describe("Table", () => {
       .eq("0")
       .should("have.text", "Button")
       .and("have.attr", "disabled");
-    cy.get('[data-cy="inspector-close-icon"]').click();
 
-    cy.dragAndDropWidget("Toggle Switch", 800, 300);
+    cy.dragAndDropWidget("Toggle Switch", 870, 300);
     openEditorSidebar(tableText.defaultWidgetName);
     cy.get('[data-cy="action-button-button-0"]').click();
     cy.get(tableSelector.fxButton(tableText.lableDisableActionButton))
@@ -1163,7 +1220,7 @@ describe("Table", () => {
 
   it("should verify Programatically actions on table column", () => {
     cy.get('[data-cy="inspector-close-icon"]').click();
-    cy.dragAndDropWidget("Text", 800, 200);
+    cy.dragAndDropWidget("Text", 870, 200);
     openEditorSidebar(commonWidgetText.text1);
     verifyAndModifyParameter("Text", "Column Email");
     cy.get('[data-cy="inspector-close-icon"]').click();
@@ -1192,7 +1249,7 @@ describe("Table", () => {
       .verifyVisibleElement("have.text", "Column Email");
     cy.get('[data-cy="inspector-close-icon"]').click();
 
-    cy.dragAndDropWidget("Toggle Switch", 800, 300);
+    cy.dragAndDropWidget("Toggle Switch", 870, 300);
     openEditorSidebar(tableText.defaultWidgetName);
     cy.get(tableSelector.draggableHandleColumn("name"))
       .should("be.visible")

@@ -82,7 +82,6 @@ module.exports = defineConfig({
     numTestsKeptInMemory: 25,
     redirectionLimit: 10,
     experimentalRunAllSpecs: true,
-    downloadsFolder: "cypress/downloads",
     trashAssetsBeforeRuns: true,
     experimentalMemoryManagement: true,
   },
