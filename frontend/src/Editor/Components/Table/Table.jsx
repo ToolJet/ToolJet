@@ -457,14 +457,7 @@ export function Table({
       }
     }
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
-  }, [
-    tableData.length,
-    tableDetails.changeSet,
-    component.definition.properties.data.value,
-    JSON.stringify(properties.data),
-    showBulkSelector,
-    allowSelection,
-  ]);
+  }, [tableData.length, component.definition.properties.data.value, JSON.stringify(properties.data)]);
 
   useEffect(() => {
     if (
@@ -736,8 +729,13 @@ export function Table({
       ['currentData', data],
       ['selectedRow', []],
       ['selectedRowId', null],
-    ]);
-  }, [tableData.length, tableDetails.changeSet, page, data]);
+    ]).then(() => {
+      if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
+        toggleAllRowsSelected(false);
+        mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
+      }
+    });
+  }, [tableData.length, _.toString(page), pageIndex, _.toString(data)]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
