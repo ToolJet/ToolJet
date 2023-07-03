@@ -15,6 +15,7 @@ export class CreateOrganizationConstantDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(1, { message: 'Column name must be at least 1 character' })
+  @MaxLength(10000, { message: 'Column name must be less than 10000 characters' })
   value: string;
 }
 
@@ -22,6 +23,7 @@ export class UpdateOrganizationConstantDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(1, { message: 'Column name must be at least 1 character' })
+  @MaxLength(10000, { message: 'Column name must be less than 10000 characters' })
   value?: string;
 
   @IsString()

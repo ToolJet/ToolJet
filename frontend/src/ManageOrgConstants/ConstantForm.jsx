@@ -27,6 +27,8 @@ const ConstantForm = ({
     const invalidNameLength = name === 'name' && value.length > 32;
     const maxNameLengthReached = name === 'name' && value.length === 32;
 
+    const invalidValueLength = name === 'value' && value.length > 10000;
+
     if (isNameAlreadyExists) {
       setError({
         name: `Constant with this name already exists in ${capitalize(currentEnvironment.name)} environment`,
@@ -42,6 +44,12 @@ const ConstantForm = ({
     if (maxNameLengthReached) {
       setError({
         name: `Maxmimum length has been reached`,
+      });
+    }
+
+    if (invalidValueLength) {
+      setError({
+        value: `Value should be less than 10000 characters`,
       });
     }
 
