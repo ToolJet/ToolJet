@@ -235,7 +235,7 @@ export function CodeHinter({
         </div>
         {/* Todo: Remove this when workspace variables are deprecated */}
         {enablePreview && isWorkspaceVariable && (
-          <CodeHinter.DepericatedAlerForWorkspaceVariable text={'Deprecating soon'} />
+          <CodeHinter.DepericatedAlertForWorkspaceVariable text={'Deprecating soon'} />
         )}
       </animated.div>
     );
@@ -282,11 +282,22 @@ export function CodeHinter({
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
+
+  const [showDepericatedAlert, setShowDepericatedAlert] = useState(!enablePreview);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowDepericatedAlert(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
       {/* Todo: Remove this when workspace variables are deprecated */}
-      {!enablePreview && (
-        <CodeHinter.DepericatedAlerForWorkspaceVariable text={' Workspace variable deprecating soon'} />
+      {showDepericatedAlert && (
+        <CodeHinter.DepericatedAlertForWorkspaceVariable text={' Workspace variable deprecating soon'} />
       )}
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
@@ -433,7 +444,7 @@ const Portal = ({ children, ...restProps }) => {
   return <React.Fragment>{renderPortal}</React.Fragment>;
 };
 
-const DepericatedAlerForWorkspaceVariable = ({ text }) => {
+const DepericatedAlertForWorkspaceVariable = ({ text }) => {
   return (
     <Alert
       svg="tj-info-warnning"
@@ -451,4 +462,4 @@ const DepericatedAlerForWorkspaceVariable = ({ text }) => {
 
 CodeHinter.PopupIcon = PopupIcon;
 CodeHinter.Portal = Portal;
-CodeHinter.DepericatedAlerForWorkspaceVariable = DepericatedAlerForWorkspaceVariable;
+CodeHinter.DepericatedAlertForWorkspaceVariable = DepericatedAlertForWorkspaceVariable;
