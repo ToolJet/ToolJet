@@ -4608,6 +4608,10 @@ input[type="text"] {
     color: #fff;
     background-color: #232e3c !important;
   }
+
+  .btn-close {
+    filter: brightness(0) invert(1);
+  }
 }
 
 .modal-content.home-modal-component.dark-theme {
