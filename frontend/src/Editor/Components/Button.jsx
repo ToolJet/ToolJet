@@ -88,7 +88,7 @@ export const Button = function Button(props) {
     [setLoading]
   );
 
-  const hasCustomBackground = backgroundColor.charAt() === '#';
+  const hasCustomBackground = backgroundColor?.charAt() === '#';
   if (hasCustomBackground) {
     computedStyles['--tblr-btn-color-darker'] = tinycolor(backgroundColor).darken(8).toString();
   }
