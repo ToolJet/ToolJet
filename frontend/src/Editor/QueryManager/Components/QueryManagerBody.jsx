@@ -71,20 +71,6 @@ export const QueryManagerBody = forwardRef(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedQuery]);
 
-    const computeQueryName = (kind) => {
-      const currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
-      let currentNumber = currentQueriesForKind.length + 1;
-
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        const newName = `${kind}${currentNumber}`;
-        if (dataQueries.find((query) => query.name === newName) === undefined) {
-          return newName;
-        }
-        currentNumber += 1;
-      }
-    };
-
     const changeDataSource = (source) => {
       const isSchemaUnavailable = Object.keys(schemaUnavailableOptions).includes(source.kind);
       let newOptions = {};
@@ -109,7 +95,6 @@ export const QueryManagerBody = forwardRef(
         }
       }
 
-      // const newQueryName = computeQueryName(source.kind);
       defaultOptions.current = { ...newOptions };
 
       setOptions({ ...newOptions });

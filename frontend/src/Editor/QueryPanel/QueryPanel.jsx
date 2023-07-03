@@ -200,7 +200,6 @@ const QueryPanel = ({
             <div className="query-definition-pane">
               <div>
                 <QueryManager
-                  addNewQueryAndDeselectSelectedQuery={handleAddNewQuery}
                   toggleQueryEditor={toggleQueryEditor}
                   dataQueries={dataQueries}
                   dataQueriesChanged={updateDataQueries}

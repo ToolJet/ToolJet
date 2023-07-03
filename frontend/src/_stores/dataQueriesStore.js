@@ -1,11 +1,9 @@
 import { create, zustandDevTools } from './utils';
 import { dataqueryService } from '@/_services';
 import debounce from 'lodash/debounce';
-import isEqual from 'lodash/isEqual';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { runQueries } from '@/_helpers/appUtils';
-import { isEmpty, cloneDeep } from 'lodash';
 
 const initialState = {
   dataQueries: [],
@@ -162,7 +160,7 @@ export const useDataQueriesStore = create(
           useAppDataStore.getState().actions.setIsSaving(true);
           dataqueryService
             .updateStatus(selectedQuery?.id, status)
-            .then((data) => {
+            .then(() => {
               set((state) => ({
                 isUpdatingQueryInProcess: false,
                 dataQueries: state.dataQueries.map((query) => {

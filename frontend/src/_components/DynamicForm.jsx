@@ -319,6 +319,7 @@ const DynamicForm = ({
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className } = obj[key];
           const Element = getElement(type);
+          const isSpecificComponent = ['tooljetdb-operations'].includes(type);
 
           return (
             <div
@@ -330,51 +331,57 @@ const DynamicForm = ({
               })}
               key={key}
             >
-              <div
-                className={cx('d-flex', { 'col-md-3': isHorizontalLayout, 'align-items-center': !isHorizontalLayout })}
-              >
-                {label && (
-                  <label
-                    className="form-label"
-                    data-cy={`label-${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}`}
-                  >
-                    {label}
-                  </label>
-                )}
-                {(type === 'password' || encrypted) && selectedDataSource?.id && (
-                  <div className="mx-1 col">
-                    <ButtonSolid
-                      className="datasource-edit-btn mb-2"
-                      type="a"
-                      variant="tertiary"
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={(event) => handleEncryptedFieldsToggle(event, key)}
+              {!isSpecificComponent && (
+                <div
+                  className={cx('d-flex', {
+                    'col-md-3': isHorizontalLayout,
+                    'align-items-center': !isHorizontalLayout,
+                  })}
+                >
+                  {label && (
+                    <label
+                      className="form-label"
+                      data-cy={`label-${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}`}
                     >
-                      {computedProps?.[key]?.['disabled'] ? 'Edit' : 'Cancel'}
-                    </ButtonSolid>
-                  </div>
-                )}
-                {(type === 'password' || encrypted) && (
-                  <div className="col-auto mb-2">
-                    <small className="text-green">
-                      <img
-                        className="mx-2 encrypted-icon"
-                        src="assets/images/icons/padlock.svg"
-                        width="12"
-                        height="12"
-                      />
-                      Encrypted
-                    </small>
-                  </div>
-                )}
-              </div>
-              <div className={cx({ 'col-md-9': isHorizontalLayout })}>
+                      {label}
+                    </label>
+                  )}
+                  {(type === 'password' || encrypted) && selectedDataSource?.id && (
+                    <div className="mx-1 col">
+                      <ButtonSolid
+                        className="datasource-edit-btn mb-2"
+                        type="a"
+                        variant="tertiary"
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(event) => handleEncryptedFieldsToggle(event, key)}
+                      >
+                        {computedProps?.[key]?.['disabled'] ? 'Edit' : 'Cancel'}
+                      </ButtonSolid>
+                    </div>
+                  )}
+                  {(type === 'password' || encrypted) && (
+                    <div className="col-auto mb-2">
+                      <small className="text-green">
+                        <img
+                          className="mx-2 encrypted-icon"
+                          src="assets/images/icons/padlock.svg"
+                          width="12"
+                          height="12"
+                        />
+                        Encrypted
+                      </small>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className={cx({ 'col-md-9': isHorizontalLayout && !isSpecificComponent })}>
                 <Element
                   {...getElementProps(obj[key])}
                   {...computedProps[key]}
                   data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
                   customWrap={true} //to be removed after whole ui is same
+                  isHorizontalLayout={isHorizontalLayout}
                 />
               </div>
             </div>

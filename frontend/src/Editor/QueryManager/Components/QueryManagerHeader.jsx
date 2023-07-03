@@ -1,6 +1,5 @@
 import React, { useState, forwardRef, useRef, useEffect } from 'react';
 import RunIcon from '../Icons/RunIcon';
-import BreadcrumbsIcon from '../Icons/BreadcrumbsIcon';
 import RenameIcon from '../Icons/RenameIcon';
 import PreviewIcon from '../Icons/PreviewIcon';
 import CreateIcon from '../Icons/CreateIcon';
@@ -19,21 +18,9 @@ import { useSelectedQuery, useSelectedDataSource, usePreviewLoading } from '@/_s
 import { Tooltip } from 'react-tooltip';
 
 export const QueryManagerHeader = forwardRef(
-  (
-    {
-      darkMode,
-      addNewQueryAndDeselectSelectedQuery,
-      currentState,
-      options,
-      editorRef,
-      isVersionReleased,
-      onNameChange,
-    },
-    ref
-  ) => {
+  ({ darkMode, currentState, options, editorRef, isVersionReleased, onNameChange }, ref) => {
     const { renameQuery, updateDataQueryStatus } = useDataQueriesActions();
     const selectedQuery = useSelectedQuery();
-    const dataQueries = useDataQueries();
     const isCreationInProcess = useQueryCreationLoading();
     const isUpdationInProcess = useQueryUpdationLoading();
     const selectedDataSource = useSelectedDataSource();
@@ -78,7 +65,6 @@ export const QueryManagerHeader = forwardRef(
     );
 
     const renderBreadcrumb = () => {
-      // if (selectedQuery === null) return;
       return (
         <>
           <div className="query-name-breadcrum d-flex align-items-center ms-3">
@@ -89,7 +75,7 @@ export const QueryManagerHeader = forwardRef(
               data-cy={`query-name-label`}
             >
               {renamingQuery ? renderRenameInput() : queryName}
-              {selectedQuery === null ? <NewQueryNameInput onNameChange={onNameChange} darkMode={darkMode} /> : ''}
+              {!selectedQuery ? <NewQueryNameInput onNameChange={onNameChange} darkMode={darkMode} /> : ''}
             </span>
             {selectedQuery ? (
               <span
@@ -227,7 +213,8 @@ const NewQueryNameInput = ({ darkMode, onNameChange }) => {
   const [value, setValue] = useState();
 
   useEffect(() => {
-    setValue(computeQueryName());
+    const name = computeQueryName();
+    setValue(name);
     onNameChange(name);
   }, []);
 

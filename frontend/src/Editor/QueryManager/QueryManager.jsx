@@ -10,7 +10,6 @@ import { useDataSources, useGlobalDataSources, useLoadingDataSources } from '@/_
 import { useQueryToBeRun, useSelectedQuery, useQueryPanelActions } from '@/_stores/queryPanelStore';
 
 const QueryManager = ({
-  addNewQueryAndDeselectSelectedQuery,
   mode,
   dataQueriesChanged,
   appId,
@@ -78,7 +77,6 @@ const QueryManager = ({
     >
       <QueryManagerHeader
         darkMode={darkMode}
-        addNewQueryAndDeselectSelectedQuery={addNewQueryAndDeselectSelectedQuery}
         currentState={currentState}
         options={options}
         ref={previewPanelRef}
