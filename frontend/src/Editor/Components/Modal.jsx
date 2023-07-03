@@ -3,6 +3,7 @@ import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { ConfigHandle } from '../ConfigHandle';
+import { restrictedChildWidgets } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
 var tinycolor = require('tinycolor2');
 
 export const Modal = function Modal({
@@ -219,7 +220,7 @@ export const Modal = function Modal({
               parent={id}
               {...containerProps}
               parentRef={parentRef}
-              restrictedChildWidgets={['Calendar', 'Kanban']}
+              restrictedChildWidgets={restrictedChildWidgets.KanbanPopout}
             />
             <SubCustomDragLayer
               snapToGrid={true}

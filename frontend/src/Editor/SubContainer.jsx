@@ -301,7 +301,9 @@ export const SubContainer = ({
 
           return undefined;
         } else {
-          toast.error(`Cannot add ${componentMeta?.component} as a child widget`);
+          toast.error(
+            ` ${componentMeta?.component} is not compatible as a child component of ${allComponents[parent]?.component?.component}`
+          );
         }
       },
     }),

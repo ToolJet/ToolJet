@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
 import { Pagination } from '@/_components/Pagination';
+import { restrictedChildWidgets } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
 
 export const Listview = function Listview({
   id,
@@ -41,7 +42,6 @@ export const Listview = function Listview({
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
   };
-
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
   function onRowClicked(index) {
     setSelectedRowIndex(index);
@@ -127,7 +127,7 @@ export const Listview = function Listview({
                   return { ...prevData, ...newChildrenData };
                 });
               }}
-              restrictedChildWidgets={['Calendar', 'Kanban']}
+              restrictedChildWidgets={restrictedChildWidgets.Listview}
             />
           </div>
         ))}

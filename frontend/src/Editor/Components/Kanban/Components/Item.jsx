@@ -1,7 +1,7 @@
 import React, { useEffect, forwardRef } from 'react';
 import '@/_styles/widgets/kanban.scss';
 import cx from 'classnames';
-
+import { restrictedChildWidgets } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
 import { Handle } from './Handle';
 import { SubContainer } from '@/Editor/SubContainer';
 
@@ -88,7 +88,7 @@ export const Item = React.memo(
                 {...containerProps}
                 readOnly={isDragActive || !isFirstItem}
                 parentRef={parentRef}
-                restrictedChildWidgets={['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container']}
+                restrictedChildWidgets={restrictedChildWidgets.KanbanCard}
               />
             </div>
             <span className="handle-container">
