@@ -1185,6 +1185,20 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      decimalPlaces: {
+        type: 'code',
+        displayName: 'Decimal places',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -1241,6 +1255,8 @@ export const widgets = [
         maxValue: { value: '' },
         minValue: { value: '' },
         placeholder: { value: '0' },
+        decimalPlaces: { value: '{{2}}' },
+        loadingState: { value: '{{false}}' },
       },
       events: [],
       styles: {
