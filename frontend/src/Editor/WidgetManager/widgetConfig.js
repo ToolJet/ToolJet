@@ -5700,6 +5700,14 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
           schema: { type: 'string' },
         },
       },
+
+      defaultValue: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'array', element: { type: 'object' } }] },
+        },
+      },
       selector: {
         type: 'select',
         displayName: 'Selector',
@@ -5742,7 +5750,26 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
     exposedVariables: {
-      annotations: [],
+      annotations: [
+        {
+          type: 'RECTANGLE',
+          x: 41,
+          y: 62,
+          width: 40,
+          height: 24,
+          text: 'Car',
+          id: 'ce103db2-b2a6-46f5-a4f0-5f4eaa6f3663',
+        },
+        {
+          type: 'RECTANGLE',
+          x: 41,
+          y: 12,
+          width: 40,
+          height: 24,
+          text: 'Tree',
+          id: 'b1a7315e-2b15-4bc8-a1c6-a042dab44f27',
+        },
+      ],
     },
     actions: [],
     definition: {
@@ -5751,6 +5778,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
+        defaultValue: {
+          value:
+            "{{[\t{type: 'RECTANGLE',width: 40,height:24, x:41,y:62,text:'Car'},{type: 'RECTANGLE',width: 40,height:24, x:41,y:12,text:'Tree'}\t]}}",
+        },
         imageUrl: {
           value: `https://burst.shopifycdn.com/photos/three-cars-are-parked-on-stone-paved-street.jpg?width=746&format=pjpg&exif=1&iptc=1`,
         },
