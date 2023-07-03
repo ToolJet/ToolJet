@@ -52,7 +52,7 @@ export const CustomComponent = function CustomComponent({
 
   items.push({
     title: 'Layout',
-    isOpen: false,
+    isOpen: true,
     children: (
       <>
         {renderElement(
