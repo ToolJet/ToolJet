@@ -36,11 +36,10 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = /^(true|false)$/i.test(
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
-              )
-                ? JSON.parse(value?.styles?.visibility)
-                : true;
+              );
+
             if (value?.validation?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] =
                 value?.validation?.customRule;
@@ -63,11 +62,9 @@ export function generateUIComponents(JSONSchema, advanced) {
                 value?.styles?.disabled;
             if (value?.styles?.visibility) {
               console.log('value--', value?.styles?.visibility, typeof value?.styles?.visibility);
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = /^(true|false)$/i.test(
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
-              )
-                ? JSON.parse(value?.styles?.visibility)
-                : true;
+              );
             }
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
@@ -105,11 +102,10 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['loaderColor']['value'] =
                 value?.styles?.loaderColor;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = /^(true|false)$/i.test(
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
-              )
-                ? JSON.parse(value?.styles?.visibility)
-                : true;
+              );
+
             if (value?.styles?.disabled)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
@@ -146,11 +142,10 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = /^(true|false)$/i.test(
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
-              )
-                ? JSON.parse(value?.styles?.visibility)
-                : true;
+              );
+
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
             if (value?.maxValue)
@@ -171,11 +166,10 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = /^(true|false)$/i.test(
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
-              )
-                ? JSON.parse(value?.styles?.visibility)
-                : true;
+              );
+
             if (value?.validation?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] =
                 value?.validation?.customRule;
@@ -198,11 +192,10 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = /^(true|false)$/i.test(
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
-              )
-                ? JSON.parse(value?.styles?.visibility)
-                : true;
+              );
+
             if (value?.customRule)
               uiComponentsDraft[index * 2 + 1]['definition']['validation']['customRule']['value'] = value?.customRule;
             if (value?.value)
@@ -227,11 +220,9 @@ export function generateUIComponents(JSONSchema, advanced) {
             if (value?.styles?.textColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor']['value'] = value?.styles?.textColor;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = /^(true|false)$/i.test(
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
-              )
-                ? JSON.parse(value?.styles?.visibility)
-                : true;
+              );
 
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['defaultValue']['value'] = value?.value;
@@ -246,11 +237,10 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = /^(true|false)$/i.test(
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
-              )
-                ? JSON.parse(value?.styles?.visibility)
-                : true;
+              );
+
             if (value?.displayValues)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['display_values']['value'] =
                 value?.displayValues;
@@ -268,11 +258,10 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = /^(true|false)$/i.test(
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
-              )
-                ? JSON.parse(value?.styles?.visibility)
-                : true;
+              );
+
             if (value?.styles?.toggleSwitchColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['toggleSwitchColor']['value'] =
                 value?.styles?.toggleSwitchColor;
@@ -288,11 +277,10 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = /^(true|false)$/i.test(
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
-              )
-                ? JSON.parse(value?.styles?.visibility)
-                : true;
+              );
+
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
                 value?.styles?.borderRadius;
@@ -306,11 +294,10 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = /^(true|false)$/i.test(
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
-              )
-                ? JSON.parse(value?.styles?.visibility)
-                : true;
+              );
+
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
                 value?.styles?.borderRadius;
@@ -328,11 +315,10 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = /^(true|false)$/i.test(
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
-              )
-                ? JSON.parse(value?.styles?.visibility)
-                : true;
+              );
+
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
                 value?.styles?.borderRadius;
@@ -354,11 +340,10 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = /^(true|false)$/i.test(
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
-              )
-                ? JSON.parse(value?.styles?.visibility)
-                : true;
+              );
+
             if (value?.styles?.textColor)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['textColor']['value'] = value?.styles?.textColor;
             if (value?.styles?.labelColor)
@@ -382,11 +367,10 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility)
-              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = /^(true|false)$/i.test(
+              uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
-              )
-                ? JSON.parse(value?.styles?.visibility)
-                : true;
+              );
+
             if (value?.styles?.borderRadius)
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['borderRadius']['value'] =
                 value?.styles?.borderRadius;
@@ -452,9 +436,8 @@ export function generateUIComponents(JSONSchema, advanced) {
           JSONSchema?.submitButton?.styles?.loaderColor;
       if (JSONSchema?.submitButton?.styles?.visibility)
         uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['visibility']['value'] =
-          /^(true|false)$/i.test(JSONSchema?.submitButton?.styles?.visibility)
-            ? JSON.parse(JSONSchema?.submitButton?.styles?.visibility)
-            : true;
+          validBooleanChecker(JSONSchema?.submitButton?.styles?.visibility);
+
       if (JSONSchema?.submitButton?.styles?.disabled)
         uiComponentsDraft[uiComponentsDraft.length - 1]['definition']['styles']['disabledState']['value'] =
           JSONSchema?.submitButton?.styles?.disabled;
@@ -506,4 +489,9 @@ const typeResolver = (type) => {
     default:
       return null;
   }
+};
+
+const validBooleanChecker = (input) => {
+  if (/^(true|false)$/i.test(input) == true) return JSON.parse(input);
+  return true;
 };
