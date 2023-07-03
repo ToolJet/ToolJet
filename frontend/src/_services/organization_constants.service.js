@@ -34,7 +34,9 @@ function update(id, value, envronmentId) {
   return fetch(`${config.apiUrl}/organization-constants/${id}`, requestOptions).then(handleResponse);
 }
 
-function remove(id) {
+function remove(id, environmentId) {
   const requestOptions = { method: 'DELETE', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/organization-constants/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/organization-constants/${id}?environmentId=${environmentId}`, requestOptions).then(
+    handleResponse
+  );
 }

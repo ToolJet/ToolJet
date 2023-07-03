@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrganizationConstant } from '../entities/organization_constants.entity';
-// import { User } from '../entities/user.entity';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
 import { EncryptionService } from './encryption.service';
 import { AppEnvironmentService } from './app_environments.service';
@@ -161,7 +160,7 @@ export class OrganizationConstantsService {
     });
   }
 
-  async delete(constantId: string, organizationId: string): Promise<DeleteResult> {
+  async delete(constantId: string, organizationId: string, environmentId?: string): Promise<DeleteResult> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const constantToDelete = await manager.findOne(OrganizationConstant, {
         where: { id: constantId, organizationId },
@@ -171,7 +170,11 @@ export class OrganizationConstantsService {
         throw new Error('Constant not found');
       }
 
-      return await manager.delete(OrganizationConstant, { id: constantId });
+      return await this.appEnvironmentService.deleteOrgEnvironmentConstant(
+        constantToDelete.id,
+        organizationId,
+        environmentId
+      );
     });
   }
 

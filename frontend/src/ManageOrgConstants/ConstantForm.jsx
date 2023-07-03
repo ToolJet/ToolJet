@@ -18,7 +18,7 @@ const ConstantForm = ({
 
   const [error, setError] = useState({});
   const handleConstantNameError = (name, value) => {
-    const isNameAlreadyExists = name === 'name' && checkIfConstantNameExists(value);
+    const isNameAlreadyExists = name === 'name' && checkIfConstantNameExists(value, currentEnvironment.id);
     const invalidNameLength = name === 'name' && value.length > 32;
     const maxNameLengthReached = name === 'name' && value.length === 32;
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { DeleteResult, EntityManager } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
@@ -151,5 +151,40 @@ export class AppEnvironmentService {
         where: { organizationConstantId: constantId, environmentId: envId },
       });
     }, manager);
+  }
+
+  async deleteOrgEnvironmentConstant(
+    constantId: string,
+    organizationId: string,
+    environmentId: string
+  ): Promise<DeleteResult> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const constantToDelete = await manager.findOne(OrganizationConstant, {
+        where: { id: constantId, organizationId },
+        relations: ['orgEnvironmentConstantValues'],
+      });
+
+      if (!constantToDelete) {
+        throw new Error('Constant not found');
+      }
+
+      if (constantToDelete.orgEnvironmentConstantValues.length === 1) {
+        return await manager.delete(OrganizationConstant, { id: constantId });
+      } else {
+        const environmentValueToDelete = constantToDelete.orgEnvironmentConstantValues.find(
+          (value) => value.environmentId === environmentId
+        );
+
+        if (!environmentValueToDelete) {
+          throw new Error('Environment value not found');
+        }
+
+        return await manager.update(
+          OrgEnvironmentConstantValue,
+          { id: environmentValueToDelete.id },
+          { value: '', updatedAt: new Date() }
+        );
+      }
+    });
   }
 }

@@ -9,6 +9,7 @@ import {
   Delete,
   BadRequestException,
   ForbiddenException,
+  Query,
 } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
@@ -75,7 +76,7 @@ export class OrganizationConstantController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async delete(@User() user, @Param('id') constantId) {
+  async delete(@User() user, @Param('id') constantId, @Query('environmentId') environmentId) {
     const ability = await this.organizationConstantsAbilityFactory.organizationConstantActions(user, {});
 
     if (!ability.can('deleteOrganizationConstant', OrganizationConstant)) {
@@ -83,7 +84,7 @@ export class OrganizationConstantController {
     }
 
     const { organizationId } = user;
-    const result = await this.organizationConstantsService.delete(constantId, organizationId);
+    const result = await this.organizationConstantsService.delete(constantId, organizationId, environmentId);
 
     if (result.affected == 1) {
       return;

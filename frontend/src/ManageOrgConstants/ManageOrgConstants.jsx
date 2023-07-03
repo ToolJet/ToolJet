@@ -185,6 +185,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
       return constant.values.some((value) => value.id === environementId && value.value !== '');
     });
 
+    console.log('envConstants', envConstants);
     return envConstants.some((constant) => constant.name === name);
   };
 
@@ -234,7 +235,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     setShowConstantDeleteConfirmation(false);
 
     return orgEnvironmentConstantService
-      .remove(selectedConstant.id)
+      .remove(selectedConstant.id, activeTabEnvironment.id)
       .then(() => {
         toast.success('Constant deleted successfully');
       })
@@ -263,11 +264,16 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTabEnvironment]);
 
+  const confirmMessage = (
+    <span>
+      Are you sure you want to delete <b>{selectedConstant?.name}</b> from <b>{activeTabEnvironment?.name}</b>?
+    </span>
+  );
   return (
     <div className="wrapper org-constant-page org-variables-page animation-fade">
       <ConfirmDialog
         show={showConstantDeleteConfirmation}
-        message={'Variable will be deleted, do you want to continue?'}
+        message={confirmMessage}
         onConfirm={handleExecuteDelete}
         onCancel={handleOnCancelDelete}
         darkMode={false}
