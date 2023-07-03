@@ -225,6 +225,4 @@ export const addNewRow = () => {
     .click()
     .clear()
     .type("nick@example.com");
-  cy.get(".card-footer > .btn-primary").click();
-  cy.contains("Save").click();
 };
