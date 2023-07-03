@@ -47,6 +47,7 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
   });
 
   const [preview, error] = resolveReferences(value, state, null, {}, true, true);
+  const previewType = typeof preview;
 
   let resolvedValue = preview;
 
@@ -63,6 +64,23 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
 
   const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
 
+  const getPreviewContent = (content, type) => {
+    if (!content) return value;
+
+    try {
+      switch (type) {
+        case 'object':
+          return JSON.stringify(content);
+        case 'boolean':
+          return content.toString();
+        default:
+          return content;
+      }
+    } catch (e) {
+      return undefined;
+    }
+  };
+
   return (
     <React.Fragment>
       <animated.div className={themeCls} style={{ ...slideInStyles, overflow: 'hidden' }}>
@@ -73,7 +91,7 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
                 {type}
               </div>
             </div>
-            {resolvedValue}
+            {getPreviewContent(resolvedValue, previewType)}
           </div>
         </div>
         <DepericatedAlerForWorkspaceVariable text="Workspace variables deprecating soon" />
