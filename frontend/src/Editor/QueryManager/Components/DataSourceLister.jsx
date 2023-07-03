@@ -10,6 +10,7 @@ function DataSourceLister({
   changeDataSource,
   handleBackButton,
   darkMode,
+  isDisabled,
 }) {
   const [allSources, setAllSources] = useState([...dataSources, ...staticDataSources]);
   const [globalDataSourcesOpts, setGlobalDataSourcesOpts] = useState([]);
@@ -96,6 +97,7 @@ function DataSourceLister({
         }}
         placeholder="Where do you want to connect to"
         options={DataSourceOptions}
+        isDisabled={isDisabled}
       />
     </div>
   );

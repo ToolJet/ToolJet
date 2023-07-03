@@ -31,6 +31,7 @@ const QueryManager = ({
   const isUpdationInProcess = useQueryUpdationLoading();
   const selectedQuery = useSelectedQuery();
   const { setSelectedDataSource, setQueryToBeRun } = useQueryPanelActions();
+  const [newQueryName, setNewQueryName] = useState('');
 
   const [options, setOptions] = useState({});
   const mounted = useRef(false);
@@ -83,6 +84,7 @@ const QueryManager = ({
         ref={previewPanelRef}
         editorRef={editorRef}
         isVersionReleased={isVersionReleased}
+        onNameChange={setNewQueryName}
       />
       <QueryManagerBody
         darkMode={darkMode}
@@ -96,6 +98,7 @@ const QueryManager = ({
         setOptions={setOptions}
         ref={previewPanelRef}
         isVersionReleased={isVersionReleased}
+        newQueryName={newQueryName}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState, forwardRef } from 'react';
+import React, { useState, forwardRef, useRef, useEffect } from 'react';
 import RunIcon from '../Icons/RunIcon';
 import BreadcrumbsIcon from '../Icons/BreadcrumbsIcon';
 import RenameIcon from '../Icons/RenameIcon';
@@ -9,14 +9,31 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUtils';
 
-import { useDataQueriesActions, useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
+import {
+  useDataQueriesActions,
+  useQueryCreationLoading,
+  useQueryUpdationLoading,
+  useDataQueries,
+} from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource, usePreviewLoading } from '@/_stores/queryPanelStore';
 import { Tooltip } from 'react-tooltip';
 
 export const QueryManagerHeader = forwardRef(
-  ({ darkMode, addNewQueryAndDeselectSelectedQuery, currentState, options, editorRef, isVersionReleased }, ref) => {
+  (
+    {
+      darkMode,
+      addNewQueryAndDeselectSelectedQuery,
+      currentState,
+      options,
+      editorRef,
+      isVersionReleased,
+      onNameChange,
+    },
+    ref
+  ) => {
     const { renameQuery, updateDataQueryStatus } = useDataQueriesActions();
     const selectedQuery = useSelectedQuery();
+    const dataQueries = useDataQueries();
     const isCreationInProcess = useQueryCreationLoading();
     const isUpdationInProcess = useQueryUpdationLoading();
     const selectedDataSource = useSelectedDataSource();
@@ -61,33 +78,29 @@ export const QueryManagerHeader = forwardRef(
     );
 
     const renderBreadcrumb = () => {
-      if (selectedQuery === null) return;
+      // if (selectedQuery === null) return;
       return (
         <>
-          <span
-            className={`${darkMode ? 'color-light-gray-c3c3c3' : 'color-light-slate-11'} 
-          cursor-pointer font-weight-400`}
-            onClick={addNewQueryAndDeselectSelectedQuery}
-            data-cy={`query-type-header`}
-          >
-            {'Queries'}
-          </span>
-          <span className="breadcrum">
-            <BreadcrumbsIcon />
-          </span>
-          <div className="query-name-breadcrum d-flex align-items-center">
+          <div className="query-name-breadcrum d-flex align-items-center ms-3">
             <span
-              className={cx('query-manager-header-query-name font-weight-400', { ellipsis: !renamingQuery })}
+              className={cx('query-manager-header-query-name font-weight-400', {
+                ellipsis: !renamingQuery && !!selectedQuery,
+              })}
               data-cy={`query-name-label`}
             >
               {renamingQuery ? renderRenameInput() : queryName}
+              {selectedQuery === null ? <NewQueryNameInput onNameChange={onNameChange} darkMode={darkMode} /> : ''}
             </span>
-            <span
-              className={cx('breadcrum-rename-query-icon', { 'd-none': renamingQuery && isVersionReleased })}
-              onClick={() => setRenamingQuery(true)}
-            >
-              <RenameIcon />
-            </span>
+            {selectedQuery ? (
+              <span
+                className={cx('breadcrum-rename-query-icon', { 'd-none': renamingQuery && isVersionReleased })}
+                onClick={() => setRenamingQuery(true)}
+              >
+                <RenameIcon />
+              </span>
+            ) : (
+              ''
+            )}
           </div>
         </>
       );
@@ -205,5 +218,66 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
       </span>
       <span>{t('editor.queryManager.preview', 'Preview')}</span>
     </button>
+  );
+};
+
+const NewQueryNameInput = ({ darkMode, onNameChange }) => {
+  const dataQueries = useDataQueries();
+  const inputRef = useRef();
+  const [value, setValue] = useState();
+
+  useEffect(() => {
+    setValue(computeQueryName());
+  }, []);
+
+  useEffect(() => {
+    inputRef.current?.select();
+  }, []);
+
+  const handleNameInput = (name) => {
+    if (dataQueries.find((query) => query.name === name) !== undefined) {
+      onNameChange(null);
+      return toast.error('Query name taken');
+    }
+    onNameChange(name);
+  };
+
+  const handleChange = (event) => {
+    const sanitizedValue = event.target.value.replace(/[ \t&]/g, '');
+    setValue(sanitizedValue);
+  };
+
+  const computeQueryName = () => {
+    let currentNumber = dataQueries.length + 1;
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const newName = `query_${currentNumber}`;
+      if (dataQueries.find((query) => query.name === newName) === undefined) {
+        return newName;
+      }
+      currentNumber += 1;
+    }
+  };
+
+  return (
+    <input
+      data-cy={`query-rename-input`}
+      type="text"
+      className={cx('border-indigo-09 bg-transparent', { 'text-white': darkMode })}
+      autoFocus
+      ref={inputRef}
+      value={value}
+      defaultValue={computeQueryName()}
+      onChange={handleChange}
+      onKeyUp={(event) => {
+        event.persist();
+        if (event.keyCode === 13) {
+          handleNameInput(event.target.value);
+          // executeQueryNameUpdation(event.target.value);
+        }
+      }}
+      onBlur={({ target }) => handleNameInput(target.value)}
+    />
   );
 };

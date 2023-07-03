@@ -32,6 +32,7 @@ export const QueryManagerBody = forwardRef(
       isVersionReleased,
       appId,
       editingVersionId,
+      newQueryName,
     },
     ref
   ) => {
@@ -108,7 +109,7 @@ export const QueryManagerBody = forwardRef(
         }
       }
 
-      const newQueryName = computeQueryName(source.kind);
+      // const newQueryName = computeQueryName(source.kind);
       defaultOptions.current = { ...newOptions };
 
       setOptions({ ...newOptions });
@@ -174,6 +175,7 @@ export const QueryManagerBody = forwardRef(
           changeDataSource={changeDataSource}
           handleBackButton={handleBackButton}
           darkMode={darkMode}
+          isDisabled={!newQueryName}
         />
       </div>
     );
