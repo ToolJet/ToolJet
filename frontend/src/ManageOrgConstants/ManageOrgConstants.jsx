@@ -185,7 +185,6 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
       return constant.values.some((value) => value.id === environementId && value.value !== '');
     });
 
-    console.log('envConstants', envConstants);
     return envConstants.some((constant) => constant.name === name);
   };
 
