@@ -17,48 +17,48 @@ const ConstantForm = ({
   }));
 
   const [error, setError] = useState({});
-
-  const handleFieldChange = (e) => {
-    setError({});
-    const { name, value } = e.target;
-
+  const handleConstantNameError = (name, value) => {
     const isNameAlreadyExists = name === 'name' && checkIfConstantNameExists(value);
-
     const invalidNameLength = name === 'name' && value.length > 32;
     const maxNameLengthReached = name === 'name' && value.length === 32;
-
-    const invalidValueLength = name === 'value' && value.length > 10000;
 
     if (isNameAlreadyExists) {
       setError({
         name: `Constant with this name already exists in ${capitalize(currentEnvironment.name)} environment`,
       });
-    }
-
-    if (invalidNameLength) {
+    } else if (invalidNameLength) {
       setError({
         name: `Constant name should be between 1 and 32 characters`,
       });
-    }
-
-    if (maxNameLengthReached) {
+    } else if (maxNameLengthReached) {
       setError({
-        name: `Maxmimum length has been reached`,
+        name: `Maximum length has been reached`,
       });
     }
+  };
+
+  const handleConstantValueError = (name, value) => {
+    const invalidValueLength = name === 'value' && value.length > 10000;
 
     if (invalidValueLength) {
       setError({
         value: `Value should be less than 10000 characters`,
       });
     }
+  };
+
+  const handleFieldChange = (e) => {
+    setError({});
+    const { name, value } = e.target;
+
+    handleConstantNameError(name, value);
+    handleConstantValueError(name, value);
 
     setFields((fields) => ({
       ...fields,
       [name]: value,
     }));
   };
-
   const handlecreateOrUpdate = (e) => {
     e.preventDefault();
     const isUpdate = !!selectedConstant;
