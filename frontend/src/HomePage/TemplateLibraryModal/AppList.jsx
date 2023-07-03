@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ListGroup } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
+import FolderList from '@/_ui/FolderList/FolderList';
 
 export default function AppList(props) {
   const { apps, selectedApp, selectApp } = props;
@@ -21,9 +22,9 @@ export default function AppList(props) {
           <div></div>
         )}
         {filteredApps.map((app) => (
-          <ListGroup.Item key={app.id} action active={app.id === selectedApp?.id} onClick={() => selectApp(app)}>
+          <FolderList key={app.id} action selectedItem={app.id === selectedApp?.id} onClick={() => selectApp(app)}>
             {app.name}
-          </ListGroup.Item>
+          </FolderList>
         ))}
       </ListGroup>
     </div>
@@ -57,8 +58,10 @@ const SearchBoxContainer = ({ onChange, queryString }) => {
     }
 
     return () => {
-      document.querySelector('.template-search-box .input-icon .form-control:not(:first-child)').style.paddingLeft =
-        '2.5rem';
+      if (document.querySelector('.template-search-box .input-icon .form-control:not(:first-child)')) {
+        document.querySelector('.template-search-box .input-icon .form-control:not(:first-child)').style.paddingLeft =
+          '2.5rem';
+      }
     };
   }, [searchText]);
 

@@ -5,14 +5,14 @@ import { useTrail } from 'react-spring';
 
 import Star from './star';
 
-export const StarRating = function StarRating({ properties, styles, fireEvent, setExposedVariable, darkMode }) {
+export const StarRating = function StarRating({ properties, styles, fireEvent, setExposedVariable, darkMode, dataCy }) {
   const label = properties.label;
   const defaultSelected = properties.defaultSelected ?? 5;
   const maxRating = properties.maxRating ?? 5;
   const allowHalfStar = properties.allowHalfStar ?? false;
   const tooltips = properties.tooltips;
 
-  const { visibility, disabledState, textColor, labelColor } = styles;
+  const { visibility, disabledState, textColor, labelColor, boxShadow } = styles;
   const color = textColor ?? '#ffb400';
   const labelColorStyle = labelColor === '#333' ? (darkMode ? '#fff' : '#333') : labelColor;
 
@@ -68,8 +68,13 @@ export const StarRating = function StarRating({ properties, styles, fireEvent, s
   };
 
   return (
-    <div data-disabled={disabledState} className="star-rating" style={{ display: visibility ? '' : 'none' }}>
-      <span className="label form-check-label col-auto" style={{ color: labelColorStyle }}>
+    <div
+      data-disabled={disabledState}
+      className="star-rating"
+      style={{ display: visibility ? '' : 'none', boxShadow }}
+      data-cy={dataCy}
+    >
+      <span className={label && `label form-check-label col-auto`} style={{ color: labelColorStyle }}>
         {label}
       </span>
       <div className="col px-1 py-0 mt-0">

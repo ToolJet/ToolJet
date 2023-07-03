@@ -17,9 +17,10 @@
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
+    "@aws-sdk/credential-providers": "^3.267.0",
     "@tooljet-plugins/common": "file:../common",
     "athena-express": "^7.1.5",
-    "aws-sdk": "^2.1153.0",
+    "aws-sdk": "^2.1309.0",
     "react": "^17.0.2"
   }
 }

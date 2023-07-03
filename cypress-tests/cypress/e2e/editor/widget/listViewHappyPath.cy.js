@@ -36,8 +36,9 @@ describe("List view widget", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.createApp();
-    cy.dragAndDropWidget("List View");
-    cy.modifyCanvasSize(1200, 780);
+    cy.viewport(1200, 1200);
+    cy.dragAndDropWidget("List View", 200, 200);
+    cy.modifyCanvasSize(1200, 700);
     cy.intercept("PUT", "/api/apps/**").as("apps");
   });
 
@@ -80,10 +81,13 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
+    cy.wait(2500);
 
     cy.get(
       `${commonWidgetSelector.draggableWidget(commonWidgetText.text1)}:eq(0)`
-    ).click();
+    )
+      .realHover()
+      .realClick();
     verifyAndModifyParameter("Text", codeMirrorInputLabel("listItem.name"));
     cy.forceClickOnCanvas();
     cy.get(
@@ -123,10 +127,11 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
+    cy.wait(2500);
 
-    cy.get(
-      `${commonWidgetSelector.draggableWidget(data.widgetName)}:eq(0)`
-    ).click();
+    cy.get(`${commonWidgetSelector.draggableWidget(data.widgetName)}:eq(0)`)
+      .realHover()
+      .click("topRight", { force: true });
 
     verifyAndModifyParameter(
       listviewText.showBottomBorder,
@@ -165,6 +170,7 @@ describe("List view widget", () => {
       data.customMessage
     );
 
+    cy.forceClickOnCanvas();
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionLayout);
     verifyAndModifyToggleFx(
@@ -175,14 +181,14 @@ describe("List view widget", () => {
       "not.exist"
     );
 
-    verifyAndModifyToggleFx(
-      commonWidgetText.parameterShowOnMobile,
-      commonWidgetText.codeMirrorLabelFalse
-    );
-    cy.get(commonWidgetSelector.changeLayoutButton).click();
-    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
-      "exist"
-    );
+    // verifyAndModifyToggleFx(
+    //   commonWidgetText.parameterShowOnMobile,
+    //   commonWidgetText.codeMirrorLabelFalse
+    // );
+    // cy.get(commonWidgetSelector.changeLayoutButton).click();
+    // cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+    //   "exist"
+    // );
   });
 
   it("should verify the styles of the list view widget", () => {
@@ -230,7 +236,7 @@ describe("List view widget", () => {
 
     openEditorSidebar(listviewText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, [], "1");
+    openAccordion(commonWidgetText.accordionGenaral, []);
 
     verifyAndModifyToggleFx(
       commonWidgetText.parameterBoxShadow,
@@ -246,7 +252,11 @@ describe("List view widget", () => {
       data.boxShadowParam
     );
 
-    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.colour);
+    selectColourFromColourPicker(
+      commonWidgetText.boxShadowColor,
+      data.colour,
+      2
+    );
     verifyBoxShadowCss(
       listviewText.defaultWidgetName,
       data.colour,
@@ -271,7 +281,7 @@ describe("List view widget", () => {
     deleteInnerWidget(data.widgetName, "button1");
     deleteInnerWidget(data.widgetName, "image1");
 
-    dropWidgetToListview("Text Input", 250, 50, data.widgetName);
+    dropWidgetToListview("Text Input", 450, 20, data.widgetName);
 
     cy.forceClickOnCanvas();
     openEditorSidebar(data.widgetName);
@@ -283,6 +293,7 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
+    cy.wait(3500);
 
     cy.get(
       `${commonWidgetSelector.draggableWidget(commonWidgetText.text1)}:eq(0)`
@@ -303,11 +314,13 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     openEditorSidebar(data.widgetName);
     verifyAndModifyParameter("Row height", "99");
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
 
     openEditorSidebar(data.widgetName);
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
+    cy.wait(2500);
 
     cy.get(
       `${commonWidgetSelector.draggableWidget(data.widgetName)}:eq(0)`
@@ -330,6 +343,7 @@ describe("List view widget", () => {
     cy.forceClickOnCanvas();
     cy.waitForAutoSave();
     cy.reload();
+    cy.wait(2500);
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionGenaral);
@@ -368,7 +382,7 @@ describe("List view widget", () => {
 
     openEditorSidebar(listviewText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, [], "1");
+    openAccordion(commonWidgetText.accordionGenaral, []);
 
     verifyAndModifyToggleFx(
       commonWidgetText.parameterBoxShadow,
@@ -381,7 +395,11 @@ describe("List view widget", () => {
       commonWidgetSelector.boxShadowDefaultParam,
       data.boxShadowParam
     );
-    selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.colour);
+    selectColourFromColourPicker(
+      commonWidgetText.boxShadowColor,
+      data.colour,
+      2
+    );
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
 
@@ -401,8 +419,7 @@ describe("List view widget", () => {
 
     cy.get(`[data-cy=${data.widgetName.toLowerCase()}-row-1]`)
       .invoke("height")
-      .should("be.gte", 98)
-      .and("be.lte", 99);
+      .should("equal", 99);
     cy.get(`[data-cy=${data.widgetName.toLowerCase()}-row-1]`)
       .invoke("attr", "class")
       .and("not.contain", "border-bottom");

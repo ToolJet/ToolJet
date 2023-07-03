@@ -19,6 +19,6 @@
     "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2",
     "rimraf": "^3.0.2",
-    "twilio": "^3.72.0"
+    "twilio": "^3.84.1"
   }
 }

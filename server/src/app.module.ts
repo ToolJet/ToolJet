@@ -38,11 +38,13 @@ import { EventsModule } from './events/events.module';
 import { GroupPermissionsModule } from './modules/group_permissions/group_permissions.module';
 import { TooljetDbModule } from './modules/tooljet_db/tooljet_db.module';
 import { PluginsModule } from './modules/plugins/plugins.module';
-import * as path from 'path';
-import * as fs from 'fs';
+import { CopilotModule } from './modules/copilot/copilot.module';
 import { AppEnvironmentsModule } from './modules/app_environments/app_environments.module';
+import { RequestContextModule } from './modules/request_context/request-context.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 const imports = [
+  ScheduleModule.forRoot(),
   ConfigModule.forRoot({
     isGlobal: true,
     envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
@@ -74,6 +76,7 @@ const imports = [
     },
   }),
   TypeOrmModule.forRoot(ormconfig),
+  RequestContextModule,
   AppConfigModule,
   SeedsModule,
   AuthModule,
@@ -93,33 +96,10 @@ const imports = [
   PluginsModule,
   EventsModule,
   AppEnvironmentsModule,
+  CopilotModule,
 ];
 
-if (process.env.SERVE_CLIENT !== 'false') {
-  const filesToReplaceAssetPath = ['index.html', 'runtime.js', 'main.js'];
-
-  for (const fileName of filesToReplaceAssetPath) {
-    const file = join(__dirname, '../../../', 'frontend/build', fileName);
-
-    let newValue = process.env.SUB_PATH;
-
-    if (process.env.SUB_PATH === undefined) {
-      newValue = fileName === 'index.html' ? '/' : '';
-    }
-
-    fs.readFile(file, 'utf8', function (err, data) {
-      if (err) {
-        return console.log(err);
-      }
-      const result = data
-        .replace(/__REPLACE_SUB_PATH__\/api/g, path.join(newValue, '/api'))
-        .replace(/__REPLACE_SUB_PATH__/g, newValue);
-      fs.writeFile(file, result, 'utf8', function (err) {
-        if (err) return console.log(err);
-      });
-    });
-  }
-
+if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {
   imports.unshift(
     ServeStaticModule.forRoot({
       // Have to remove trailing slash of SUB_PATH.

@@ -7,8 +7,8 @@ export const Text = function Text({
   styles,
   darkMode,
   registerAction,
-  component,
   setExposedVariable,
+  dataCy,
 }) {
   let {
     textSize,
@@ -25,6 +25,7 @@ export const Text = function Text({
     wordSpacing,
     fontVariant,
     disabledState,
+    boxShadow,
   } = styles;
   const { loadingState } = properties;
   const [text, setText] = useState(() => computeText());
@@ -80,15 +81,11 @@ export const Text = function Text({
     textIndent: `${textIndent}px` ?? '0px',
     letterSpacing: `${letterSpacing}px` ?? '0px',
     wordSpacing: `${wordSpacing}px` ?? '0px',
+    boxShadow,
   };
 
   return (
-    <div
-      data-disabled={disabledState}
-      className="text-widget"
-      style={computedStyles}
-      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
-    >
+    <div data-disabled={disabledState} className="text-widget" style={computedStyles} data-cy={dataCy}>
       {!loadingState && (
         <div
           style={{ width: '100%', fontSize: textSize }}

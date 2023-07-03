@@ -29,7 +29,6 @@
     font-weight: 400;
     font-size: 14px;
     line-height: 20px;
-    font-family: 'Roboto';
     text-align: center;
     margin-bottom: 32px;
 }
@@ -41,6 +40,9 @@
     line-height: 48px;
     margin-bottom: 4px;
     text-align: center;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .onboarding-page-continue-button {
@@ -195,7 +197,6 @@
 
 .info-screen-description {
     margin-bottom: 0px !important;
-    font-family: 'Roboto';
     font-style: normal;
     font-weight: 400;
     font-size: 14px;
@@ -608,9 +609,12 @@
 }
 
 .org-invite-header {
-    margin-left: auto !important;
-    margin-right: auto !important;
     text-align: center;
+    display: flex;
+    justify-content: center;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .reset-password-header {
@@ -638,6 +642,9 @@
 
 .signup-email-name {
     font-weight: 700;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .verification-success-card {
@@ -847,7 +854,7 @@
     }
 }
 
-// DESIGN SYSTEM BUTTOM END-------------->>
+// DESIGN SYSTEM BUTTON END-------------->>
 
 // Onbarding-btn styles
 .signup-btn,

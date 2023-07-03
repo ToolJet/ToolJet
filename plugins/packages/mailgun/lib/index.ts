@@ -1,38 +1,46 @@
 import { QueryError, QueryResult, QueryService } from '@tooljet-plugins/common';
-import { SourceOptions, QueryOptions, EmailOptions } from './types';
-import MailgunSdk from 'mailgun.js';
-import FormData from 'form-data';
+import { SourceOptions, QueryOptions } from './types';
 
 export default class Mailgun implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    if (!(queryOptions && sourceOptions.api_key)) {
-      throw new QueryError('Query could not be completed as API key is not set', 'Missing API key', {});
-    }
+    let result: any = {};
+    let response = null;
+    let BASE_URL = '';
+    const { operation } = queryOptions;
 
-    const sdk = new MailgunSdk(FormData);
-    const mailgunOptions = { username: 'api', key: sourceOptions.api_key, url: null };
     if (sourceOptions.eu_hosted) {
-      mailgunOptions.url = 'https://api.eu.mailgun.net';
-    }
-    const mailGunClient = sdk.client(mailgunOptions);
+      BASE_URL = 'https://api.eu.mailgun.net';
+    } else BASE_URL = 'https://api.mailgun.net';
 
-    let result = {};
-    const emailOptions: EmailOptions = {
-      to: queryOptions.send_mail_to,
-      from: queryOptions.send_mail_from,
-      subject: queryOptions.subject,
-      text: queryOptions.text,
-    };
-
+    const form = new FormData();
+    queryOptions.send_mail_to.forEach((item) => form.append('to[]', item));
+    form.append('from', queryOptions.send_mail_from);
+    form.append('subject', queryOptions.subject);
+    form.append('text', queryOptions.text);
     if (queryOptions.html && queryOptions.html.length > 0) {
-      emailOptions.html = queryOptions.html;
+      form.append('html', queryOptions.html);
     }
 
     try {
-      result = await mailGunClient.messages.create(sourceOptions.domain, emailOptions);
+      switch (operation) {
+        case 'mail_service': {
+          response = await fetch(`${BASE_URL}/v3/${sourceOptions.domain}/messages`, {
+            method: 'POST',
+            headers: {
+              Authorization: 'Basic ' + Buffer.from(`api:${sourceOptions.api_key}`).toString('base64'),
+            },
+            body: form,
+          });
+          result = await response.json();
+
+          if (response.status !== 200) {
+            throw new Error(`${result?.message}`);
+          }
+          break;
+        }
+      }
     } catch (error) {
-      console.error(error);
-      throw new QueryError('Query could not be completed', error.message, {});
+      throw new QueryError(`Query could not be completed ${error}`, error, {});
     }
     return {
       status: 'ok',

@@ -3,15 +3,19 @@ import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
 export const Button = function Button(props) {
-  const { height, properties, styles, fireEvent, registerAction, component, id } = props;
-  const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor } = styles;
+  const { height, properties, styles, fireEvent, registerAction, id, dataCy, setExposedVariable } = props;
+  const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor, boxShadow } = styles;
 
   const [label, setLabel] = useState(properties.text);
   const [disable, setDisable] = useState(disabledState);
   const [visibility, setVisibility] = useState(styles.visibility);
   const [loading, setLoading] = useState(properties.loadingState);
 
-  useEffect(() => setLabel(properties.text), [properties.text]);
+  useEffect(() => {
+    setLabel(properties.text);
+    setExposedVariable('buttonText', properties.text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.text]);
 
   useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
@@ -38,16 +42,24 @@ export const Button = function Button(props) {
     '--tblr-btn-color-darker': tinycolor(backgroundColor).darken(8).toString(),
     '--loader-color': tinycolor(loaderColor ?? '#fff').toString(),
     borderColor: borderColor,
+    boxShadow: boxShadow,
   };
 
-  registerAction('click', async function () {
-    fireEvent('onClick');
-  });
+  registerAction(
+    'click',
+    async function () {
+      if (!disable) {
+        fireEvent('onClick');
+      }
+    },
+    [disable]
+  );
 
   registerAction(
     'setText',
     async function (text) {
       setLabel(text);
+      setExposedVariable('buttonText', text);
     },
     [setLabel]
   );
@@ -76,15 +88,14 @@ export const Button = function Button(props) {
     [setLoading]
   );
 
-  const hasCustomBackground = backgroundColor.charAt() === '#';
+  const hasCustomBackground = backgroundColor?.charAt() === '#';
   if (hasCustomBackground) {
     computedStyles['--tblr-btn-color-darker'] = tinycolor(backgroundColor).darken(8).toString();
   }
 
-  const handleClick = (event) => {
+  const handleClick = () => {
     const event1 = new CustomEvent('submitForm', { detail: { buttonComponentId: id } });
     document.dispatchEvent(event1);
-    event.stopPropagation();
     fireEvent('onClick');
   };
 
@@ -101,7 +112,7 @@ export const Button = function Button(props) {
         onMouseOver={() => {
           fireEvent('onHover');
         }}
-        data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+        data-cy={dataCy}
         type="default"
       >
         {label}

@@ -1,13 +1,14 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  authHeaderForUser,
   createThread,
   clearDB,
   createApplication,
   createUser,
   createNestAppInstance,
   createApplicationVersion,
+  authenticateUser,
+  logoutUser,
 } from '../test.helper';
 
 describe('comment controller', () => {
@@ -46,10 +47,19 @@ describe('comment controller', () => {
       appVersionsId: version.id,
     });
 
+    const loggedUser = await authenticateUser(app, user.email);
+
     const response = await request(app.getHttpServer())
       .get(`/api/comments/${thread.id}/all`)
-      .set('Authorization', authHeaderForUser(user));
+      .set('tj-workspace-id', user.defaultOrganizationId)
+      .set('Cookie', loggedUser.tokenCookie);
 
     expect(response.statusCode).toBe(200);
+
+    await logoutUser(app, loggedUser.tokenCookie, user.defaultOrganizationId);
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 });

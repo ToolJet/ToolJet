@@ -1,17 +1,24 @@
 {
   "name": "@tooljet-marketplace/plivo",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "directories": {
-    "lib": "lib"
+    "lib": "lib",
+    "test": "__tests__"
   },
+  "files": [
+    "lib"
+  ],
   "scripts": {
-    "build": "ncc build lib/index.ts -o dist"
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "build": "ncc build lib/index.ts -o dist",
+    "watch": "ncc build lib/index.ts -o dist --watch"
   },
+  "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-marketplace/common": "^1.0.0",
-    "plivo": "^4.33.0"
+    "plivo": "^4.40.0"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.34.0",

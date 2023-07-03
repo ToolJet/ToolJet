@@ -5,6 +5,7 @@ import { SubContainer } from '../SubContainer';
 export const CalendarEventPopover = function ({
   show,
   offset,
+  darkMode,
   calendarWidgetId,
   containerProps,
   removeComponent,
@@ -22,7 +23,7 @@ export const CalendarEventPopover = function ({
   const calendarElement = document.getElementById(calendarWidgetId);
 
   const handleClickOutside = (event) => {
-    if (parentRef.current && !parentRef.current.contains(event.target)) {
+    if (parentRef.current && !parentRef.current.contains(event.target) && !event.target.closest('.editor-sidebar')) {
       popoverClosed();
     }
   };
@@ -83,7 +84,7 @@ export const CalendarEventPopover = function ({
         }}
         role="tooltip"
         x-placement="left"
-        className="popover bs-popover-left shadow-lg"
+        className={`popover bs-popover-left shadow-lg ${darkMode ? 'dark' : ''}`}
         ref={parentRef}
         id={`${calendarWidgetId}-popover`}
       >

@@ -1,0 +1,81 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "GRPC datasource",
+  "description": "A schema defining GRPC datasource",
+  "type": "api",
+  "source": {
+    "name": "gRPC",
+    "kind": "grpc",
+    "options": {
+      "url": {
+        "type": "string"
+      },
+      "auth_type": {
+        "type": "string"
+      },
+      "password": {
+        "encrypted": true
+      },
+      "bearer_token": {
+        "encrypted": true
+      },
+      "grpc_apikey_key": {
+        "type": "string"
+      },
+      "grpc_apikey_value": {
+        "encrypted": true
+      },
+      "protobuf" : {
+        "type": "string"
+      }
+    },
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "customTesting": true
+  },
+  "defaults": {
+    "url": {
+      "value": ""
+    },
+    "auth_type": {
+      "value": "none"
+    },
+    "username": {
+      "value": ""
+    },
+    "password": {
+      "value": ""
+    },
+    "bearer_token": {
+      "value": ""
+    },
+    "grpc_apikey_key": {
+      "value": ""
+    },
+    "grpc_apikey_value": {
+      "value": ""
+    },
+    "protobuf": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "url": {
+      "label": "Server URL",
+      "key": "url",
+      "type": "text",
+      "description": "0.0.0.0:50051"
+    },
+    "auth_type": {
+      "label": "Authentication Type",
+      "key": "auth_type",
+      "type": "react-component-oauth-authentication",
+      "description": "key-value pair headers for rest api"
+    }
+  },
+  "required": ["url"]
+}

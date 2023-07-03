@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "minio": "^7.0.25",
+    "minio": "^7.0.32",
     "react": "^17.0.2"
   }
 }

@@ -57,7 +57,6 @@ class Chart extends React.Component {
 
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState } = this.state;
-
     const data = this.state.component.component.definition.properties.data;
 
     const jsonDescription = this.state.component.component.definition.properties.jsonDescription;
@@ -101,7 +100,22 @@ class Chart extends React.Component {
 
     if (plotFromJson) {
       items.push({
-        title: 'Json description',
+        title: 'Bar mode',
+        children: renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          'barmode',
+          'properties',
+          currentState
+        ),
+      });
+    }
+
+    if (plotFromJson) {
+      items.push({
+        title: 'JSON description',
         children: (
           <CodeHinter
             currentState={this.props.currentState}
@@ -111,7 +125,7 @@ class Chart extends React.Component {
             lineNumbers={false}
             className="chart-input pr-2"
             onChange={(value) => this.props.paramUpdated({ name: 'jsonDescription' }, 'value', value, 'properties')}
-            componentName={`widget/${this.props.component.component.name}::${chartType}`}
+            componentName={`component/${this.props.component.component.name}::${chartType}`}
           />
         ),
       });
@@ -141,7 +155,7 @@ class Chart extends React.Component {
             lineNumbers={false}
             className="chart-input pr-2"
             onChange={(value) => this.props.paramUpdated({ name: 'data' }, 'value', value, 'properties')}
-            componentName={`widget/${this.props.component.component.name}::${chartType}`}
+            componentName={`component/${this.props.component.component.name}::${chartType}`}
           />
         ),
       });

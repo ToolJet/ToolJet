@@ -3,9 +3,11 @@ import moment from 'moment';
 import _ from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
-import urlJoin from 'url-join';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
+import { authenticationService } from '@/_services/authentication.service';
+
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -89,8 +91,62 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
   if (withError) return [result, error];
   return result;
 }
+export function resolveString(str, state, customObjects, reservedKeyword, withError, forPreviewBox) {
+  let resolvedStr = str;
 
-export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
+  // Resolve {{object}}
+  const codeRegex = /(\{\{.+?\}\})/g;
+  const codeMatches = resolvedStr.match(codeRegex);
+
+  if (codeMatches) {
+    codeMatches.forEach((codeMatch) => {
+      const code = codeMatch.replace('{{', '').replace('}}', '');
+
+      if (reservedKeyword.includes(code)) {
+        resolvedStr = resolvedStr.replace(codeMatch, '');
+      } else {
+        const resolvedCode = resolveCode(code, state, customObjects, withError, reservedKeyword, true);
+        if (forPreviewBox) {
+          resolvedStr = resolvedStr.replace(codeMatch, resolvedCode[0]);
+        } else {
+          resolvedStr = resolvedStr.replace(codeMatch, resolvedCode);
+        }
+      }
+    });
+  }
+
+  // Resolve %%object%%
+  const serverRegex = /(%%.+?%%)/g;
+  const serverMatches = resolvedStr.match(serverRegex);
+
+  if (serverMatches) {
+    serverMatches.forEach((serverMatch) => {
+      const code = serverMatch.replace(/%%/g, '');
+
+      if (code.includes('server.') && !/^server\.[A-Za-z0-9]+$/.test(code)) {
+        resolvedStr = resolvedStr.replace(serverMatch, '');
+      } else {
+        const resolvedCode = resolveCode(code, state, customObjects, withError, reservedKeyword, false);
+        if (forPreviewBox) {
+          resolvedStr = resolvedStr.replace(serverMatch, resolvedCode[0]);
+        } else {
+          resolvedStr = resolvedStr.replace(serverMatch, resolvedCode);
+        }
+      }
+    });
+  }
+
+  return resolvedStr;
+}
+
+export function resolveReferences(
+  object,
+  state,
+  defaultValue,
+  customObjects = {},
+  withError = false,
+  forPreviewBox = false
+) {
   if (object === '{{{}}}') return '';
   const reservedKeyword = ['app']; //Keywords that slows down the app
   object = _.clone(object);
@@ -98,6 +154,10 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
   let error;
   switch (objectType) {
     case 'string': {
+      if (object.includes('{{') && object.includes('}}') && object.includes('%%') && object.includes('%%')) {
+        object = resolveString(object, state, customObjects, reservedKeyword, withError, forPreviewBox);
+      }
+
       if (object.startsWith('{{') && object.endsWith('}}')) {
         const code = object.replace('{{', '').replace('}}', '');
 
@@ -291,7 +351,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 
   const resolvedMinValue = resolveWidgetFieldValue(minValue, currentState, undefined, customResolveObjects);
   if (resolvedMinValue !== undefined) {
-    if (widgetValue < parseInt(resolvedMinValue)) {
+    if (widgetValue === undefined || widgetValue < parseInt(resolvedMinValue)) {
       return {
         isValid: false,
         validationError: `Minimum value is ${resolvedMinValue}`,
@@ -301,7 +361,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
 
   const resolvedMaxValue = resolveWidgetFieldValue(maxValue, currentState, undefined, customResolveObjects);
   if (resolvedMaxValue !== undefined) {
-    if (widgetValue > parseInt(resolvedMaxValue)) {
+    if (widgetValue === undefined || widgetValue > parseInt(resolvedMaxValue)) {
       return {
         isValid: false,
         validationError: `Maximum value is ${resolvedMaxValue}`,
@@ -327,22 +387,12 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(
-  _ref,
-  code,
-  editorState,
-  queryId,
-  isPreview,
-  // eslint-disable-next-line no-unused-vars
-  confirmed = undefined,
-  mode = ''
-) {
-  //:: confirmed arg is unused
+export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '') {
   const { currentState } = _ref.state;
   let result = {},
     error = null;
 
-  const actions = generateAppActions(_ref, queryId, mode, editorState, isPreview);
+  const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
@@ -447,11 +497,13 @@ export const hightlightMentionedUserInComment = (comment) => {
   return comment.replace(regex, '<span class=mentioned-user>$2</span>');
 };
 
-export const generateAppActions = (_ref, queryId, mode, editorState, isPreview = false) => {
+export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
+  const currentPageId = _ref.state.currentPageId;
+  const currentComponents = _ref.state?.appDefinition?.pages[currentPageId]?.components
+    ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
+    : {};
   const runQuery = (queryName = '') => {
-    const query = isPreview
-      ? _ref.state.dataQueries.find((query) => query.name === queryName)
-      : _ref.state.app.data_queries.find((query) => query.name === queryName);
+    const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
 
     if (_.isEmpty(query) || queryId === query?.id) {
       const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
@@ -460,7 +512,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
     }
 
     if (isPreview) {
-      return previewQuery(_ref, query, editorState, true);
+      return previewQuery(_ref, query, true);
     }
 
     const event = {
@@ -510,7 +562,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
 
   const showModal = (modalName = '') => {
     let modal = '';
-    for (const [key, value] of Object.entries(_ref.state.appDefinition.components)) {
+    for (const [key, value] of currentComponents) {
       if (value.component.name === modalName) {
         modal = key;
       }
@@ -520,12 +572,12 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
       actionId: 'show-modal',
       modal,
     };
-    return executeAction(editorState, event, mode, {});
+    return executeAction(_ref, event, mode, {});
   };
 
   const closeModal = (modalName = '') => {
     let modal = '';
-    for (const [key, value] of Object.entries(_ref.state.appDefinition.components)) {
+    for (const [key, value] of currentComponents) {
       if (value.component.name === modalName) {
         modal = key;
       }
@@ -535,7 +587,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
       actionId: 'close-modal',
       modal,
     };
-    return executeAction(editorState, event, mode, {});
+    return executeAction(_ref, event, mode, {});
   };
 
   const setLocalStorage = (key = '', value = '') => {
@@ -555,7 +607,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
     return executeAction(_ref, event, mode, {});
   };
 
-  const gotToApp = (slug = '', queryParams = []) => {
+  const goToApp = (slug = '', queryParams = []) => {
     const event = {
       actionId: 'go-to-app',
       slug,
@@ -632,7 +684,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
     closeModal,
     setLocalStorage,
     copyToClipboard,
-    gotToApp,
+    goToApp,
     generateFile,
     setPageVariable,
     unsetPageVariable,
@@ -641,11 +693,12 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
 };
 
 export const loadPyodide = async () => {
-  const subpath = window?.public_config?.SUB_PATH ?? '';
-  const assetPath = urlJoin(window.location.origin, subpath, '/assets');
-  const pyodide = await window.loadPyodide({ indexURL: `${assetPath}/py-v0.21.3` });
-
-  return pyodide;
+  try {
+    const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.2/full/' });
+    return pyodide;
+  } catch (error) {
+    console.log('loadPyodide error', error);
+  }
 };
 export function safelyParseJSON(json) {
   try {
@@ -661,4 +714,193 @@ export const getuserName = (formData) => {
   if (nameArray?.length > 0)
     return `${nameArray?.[0][0]}${nameArray?.[1] != undefined && nameArray?.[1] != '' ? nameArray?.[1][0] : ''} `;
   return '';
+};
+
+export const pathnameWithoutSubpath = (path) => {
+  const subpath = getSubpath();
+  if (subpath) return path.replace(subpath, '');
+  return path;
+};
+
+// will replace or append workspace-id in a path
+export const appendWorkspaceId = (workspaceId, path, replaceId = false) => {
+  const subpath = getSubpath();
+  path = pathnameWithoutSubpath(path);
+
+  let newPath = path;
+  if (path === '/:workspaceId' || path.split('/').length === 2) {
+    newPath = `/${workspaceId}`;
+  } else {
+    const paths = path.split('/').filter((path) => path !== '');
+    if (replaceId) {
+      paths[0] = workspaceId;
+    } else {
+      paths.unshift(workspaceId);
+    }
+    newPath = `/${paths.join('/')}`;
+  }
+  return subpath ? `${subpath}${newPath}` : newPath;
+};
+
+export const getWorkspaceIdFromURL = () => {
+  const pathname = window.location.pathname;
+  const pathnameArray = pathname.split('/').filter((path) => path !== '');
+  const subpath = window?.public_config?.SUB_PATH;
+  const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
+  const existedPaths = [
+    'forgot-password',
+    'switch-workspace',
+    'reset-password',
+    'invitations',
+    'organization-invitations',
+    'sso',
+    'setup',
+    'confirm',
+    ':workspaceId',
+    'confirm-invite',
+    'oauth2',
+    'applications',
+    'integrations',
+  ];
+
+  const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
+  if (workspaceId === 'login') {
+    return subpath ? pathnameArray[subpathArray.length + 1] : pathnameArray[1];
+  }
+
+  return !existedPaths.includes(workspaceId) ? workspaceId : '';
+};
+
+export const getWorkspaceId = () =>
+  getWorkspaceIdFromURL() || authenticationService.currentSessionValue?.current_organization_id;
+
+export const excludeWorkspaceIdFromURL = (pathname) => {
+  if (!pathname.includes('/applications/')) {
+    const paths = pathname?.split('/').filter((path) => path !== '');
+    paths.shift();
+    const newPath = paths.join('/');
+    return newPath ? `/${newPath}` : '/';
+  }
+  return pathname;
+};
+
+export const handleUnSubscription = (subsciption) => {
+  setTimeout(() => {
+    subsciption.unsubscribe();
+  }, 5000);
+};
+
+export const getAvatar = (organization) => {
+  if (!organization) return;
+
+  const orgName = organization.split(' ').filter((e) => e && !!e.trim());
+  if (orgName.length > 1) {
+    return `${orgName[0]?.[0]}${orgName[1]?.[0]}`;
+  } else if (organization.length >= 2) {
+    return `${organization[0]}${organization[1]}`;
+  } else {
+    return `${organization[0]}${organization[0]}`;
+  }
+};
+
+export const getSubpath = () =>
+  window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
+export function isExpectedDataType(data, expectedDataType) {
+  function getCurrentDataType(node) {
+    return Object.prototype.toString.call(node).slice(8, -1).toLowerCase();
+  }
+
+  const currentDataType = getCurrentDataType(data);
+
+  if (currentDataType !== expectedDataType) {
+    switch (expectedDataType) {
+      case 'string':
+        return String(data) ? data : undefined;
+      case 'number':
+        return Object.prototype.toString.call(data).slice(8, -1).toLowerCase() === 'number' ? data : undefined;
+      case 'boolean':
+        return Boolean();
+      case 'array':
+        return Object.prototype.toString.call(data).slice(8, -1).toLowerCase() === 'array' ? data : [];
+      case 'object':
+        return Object.prototype.toString.call(data).slice(8, -1).toLowerCase() === 'object' ? data : {};
+      default:
+        return null;
+    }
+  }
+
+  return data;
+}
+
+export const validateName = (name, nameType, showError = false, allowSpecialChars = true) => {
+  const newName = name.trim();
+  let errorMsg = '';
+  if (!newName) {
+    errorMsg = `${nameType} can't be empty`;
+    showError &&
+      toast.error(errorMsg, {
+        id: '1',
+      });
+    return {
+      status: false,
+      errorMsg,
+    };
+  }
+
+  //check for alphanumeric
+  if (!allowSpecialChars && newName.match(/^[a-z0-9 -]+$/) === null) {
+    if (/[A-Z]/.test(newName)) {
+      errorMsg = 'Only lowercase letters are accepted.';
+    } else {
+      errorMsg = `Special characters are not accepted.`;
+    }
+    showError &&
+      toast.error(errorMsg, {
+        id: '2',
+      });
+    return {
+      status: false,
+      errorMsg,
+    };
+  }
+
+  if (newName.length > 50) {
+    errorMsg = `Maximum length has been reached.`;
+    showError &&
+      toast.error(errorMsg, {
+        id: '3',
+      });
+    return {
+      status: false,
+      errorMsg,
+    };
+  }
+
+  return {
+    status: true,
+    errorMsg: '',
+  };
+};
+
+export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => {
+  switch (statusCode) {
+    case 500: {
+      toast.error(
+        `Something went wrong on our end and this ${feature_name} could not be created. Please try \n again or contact our support team if the \n problem persists.`
+      );
+      break;
+    }
+    case 503: {
+      toast.error(
+        `We weren't able to connect to our servers to complete this request. Please check your \n internet connection and try again.`
+      );
+      break;
+    }
+    default: {
+      toast.error(error ? error : 'Something went wrong. please try again.', {
+        position: 'top-center',
+      });
+      break;
+    }
+  }
 };

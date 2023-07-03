@@ -26,6 +26,6 @@ You will be redirected to the visual app editor once the app has been created. C
 
 The main components of an app: 
 
-- **[Widgets](https://docs.tooljet.com/docs/tutorial/adding-widget)** - UI components such as tables, buttons, dropdowns.
+- **[Widgets](https://docs.tooljet.com/docs/tutorial/adding-widget)** - UI components such as tables, buttons, and dropdowns etc.
 - **[Data sources](https://docs.tooljet.com/docs/tutorial/adding-a-datasource)** - ToolJet can connect to databases, APIs and external services to fetch and modify data.
 - **[Queries](https://docs.tooljet.com/docs/tutorial/building-queries)** - Queries are used to access the connected data sources.

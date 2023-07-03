@@ -1,62 +1,89 @@
-import React, { useState } from 'react';
-import { authenticationService, organizationService } from '@/_services';
+import React, { useState, useEffect } from 'react';
+import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { validateName, handleHttpErrorMessages } from '@/_helpers/utils';
 
-export const EditOrganization = ({ showEditOrg, setShowEditOrg }) => {
+export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
+  const [errorText, setErrorText] = useState('');
   const { t } = useTranslation();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => setNewOrgName(currentValue?.name), currentValue);
+
   const editOrganization = () => {
-    if (!(newOrgName && newOrgName.trim())) {
-      toast.error('Workspace name can not be empty.');
+    const trimmedName = newOrgName?.trim();
+    if (errorText) {
       return;
     }
+    if (currentValue?.name !== trimmedName) {
+      setIsCreating(true);
+      organizationService.editOrganization({ name: trimmedName }).then(
+        () => {
+          toast.success('Workspace updated');
+          setIsCreating(false);
+          setShowEditOrg(false);
+          window.location.reload();
+        },
+        (error) => {
+          handleHttpErrorMessages(error, 'Workspace');
+          setIsCreating(false);
+        }
+      );
+    } else {
+      setShowEditOrg(false);
+    }
+  };
 
-    setIsCreating(true);
-    organizationService.editOrganization({ name: newOrgName }).then(
-      () => {
-        authenticationService.updateCurrentUserDetails({ organization: newOrgName });
-        toast.success('Workspace updated');
-        window.location.reload();
-      },
-      () => {
-        toast.error('Error while editing workspace');
-      }
-    );
-    setIsCreating(false);
+  const handleInputChange = (e) => {
+    setErrorText('');
+    const error = validateName(e.target.value, 'Workspace name');
+    if (!error.status) {
+      setErrorText(error.errorMsg);
+    }
+    setNewOrgName(e.target.value);
+  };
+
+  const closeModal = () => {
     setShowEditOrg(false);
+    setErrorText('');
+    setNewOrgName(currentValue.name);
   };
 
   return (
     <AlertDialog
       show={showEditOrg}
-      closeModal={() => setShowEditOrg(false)}
+      closeModal={closeModal}
       title={t('header.organization.editWorkspace', 'Edit workspace')}
+      checkForBackground={false}
     >
-      <div className="row mb-3">
-        <div className="col modal-main">
+      <div className="row mb-3 workspace-folder-modal">
+        <div className="col modal-main tj-app-input">
           <input
             type="text"
-            onChange={(e) => setNewOrgName(e.target.value)}
+            onChange={handleInputChange}
             className="form-control"
             placeholder={t('header.organization.workspaceName', 'workspace name')}
             disabled={isCreating}
             value={newOrgName}
-            maxLength={25}
+            maxLength={50}
+            autoFocus
           />
+          <label className="tj-input-error">{errorText || ''}</label>
         </div>
       </div>
       <div className="row">
-        <div className="col d-flex justify-content-end">
-          <button className="btn mx-1" onClick={() => setShowEditOrg(false)}>
+        <div className="col d-flex justify-content-end gap-2">
+          <ButtonSolid variant="tertiary" onClick={closeModal}>
             {t('globals.cancel', 'Cancel')}
-          </button>
-          <button className={`btn btn-primary ${isCreating ? 'btn-loading' : ''}`} onClick={editOrganization}>
+          </ButtonSolid>
+          <ButtonSolid isLoading={isCreating} onClick={editOrganization}>
             {t('globals.save', 'Save')}
-          </button>
+          </ButtonSolid>
         </div>
       </div>
     </AlertDialog>

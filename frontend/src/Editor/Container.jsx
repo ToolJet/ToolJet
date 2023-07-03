@@ -13,8 +13,10 @@ import { commentsService } from '@/_services';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
-import produce from 'immer';
+const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const Container = ({
   canvasWidth,
@@ -37,14 +39,12 @@ export const Container = ({
   selectedComponents,
   darkMode,
   showComments,
-  appVersionsId,
   socket,
   handleUndo,
   handleRedo,
   onComponentHover,
   hoveredComponent,
   sideBarDebugger,
-  dataQueries,
   currentPageId,
 }) => {
   const styles = {
@@ -55,7 +55,16 @@ export const Container = ({
     backgroundSize: `${canvasWidth / 43}px 10px`,
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const components = appDefinition.pages[currentPageId]?.components ?? {};
+  const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      appVersionsId: state?.editingVersion?.id,
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
@@ -66,14 +75,12 @@ export const Container = ({
   const router = useRouter();
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
-
-  useHotkeys('⌘+z, control+z', () => handleUndo());
-  useHotkeys('⌘+shift+z, control+shift+z', () => handleRedo());
-
+  useHotkeys('meta+z, control+z', () => handleUndo());
+  useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
   useHotkeys(
-    '⌘+v, control+v',
+    'meta+v, control+v',
     () => {
-      if (isContainerFocused) {
+      if (isContainerFocused && !isVersionReleased) {
         navigator.clipboard.readText().then((cliptext) => {
           try {
             addComponents(
@@ -88,6 +95,7 @@ export const Container = ({
           }
         });
       }
+      enableReleasedVersionPopupState();
     },
     [isContainerFocused, appDefinition, focusedParentIdRef]
   );
@@ -115,6 +123,7 @@ export const Container = ({
 
   useEffect(() => {
     setBoxes(components);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(components)]);
 
   const moveBox = useCallback(
@@ -233,6 +242,10 @@ export const Container = ({
   );
 
   function onDragStop(e, componentId, direction, currentLayout) {
+    if (isVersionReleased) {
+      enableReleasedVersionPopupState();
+      return;
+    }
     // const id = componentId ? componentId : uuidv4();
 
     // Get the width of the canvas
@@ -267,6 +280,10 @@ export const Container = ({
   }
 
   function onResizeStop(id, e, direction, ref, d, position) {
+    if (isVersionReleased) {
+      enableReleasedVersionPopupState();
+      return;
+    }
     const deltaWidth = d.width;
     const deltaHeight = d.height;
 
@@ -456,13 +473,7 @@ export const Container = ({
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>
-          <Comments
-            socket={socket}
-            newThread={newThread}
-            appVersionsId={appVersionsId}
-            canvasWidth={canvasWidth}
-            currentPageId={currentPageId}
-          />
+          <Comments socket={socket} newThread={newThread} canvasWidth={canvasWidth} currentPageId={currentPageId} />
           {commentsPreviewList.map((previewComment, index) => (
             <div
               key={index}
@@ -525,7 +536,6 @@ export const Container = ({
               hoveredComponent={hoveredComponent}
               sideBarDebugger={sideBarDebugger}
               isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
-              dataQueries={dataQueries}
               childComponents={childComponents[key]}
               containerProps={{
                 mode,
@@ -548,7 +558,6 @@ export const Container = ({
                 onComponentHover,
                 hoveredComponent,
                 sideBarDebugger,
-                dataQueries,
                 addDefaultChildren,
                 currentPageId,
                 childComponents,
@@ -565,7 +574,7 @@ export const Container = ({
             <a href="https://docs.tooljet.com/docs#the-very-quick-quickstart" target="_blank" rel="noreferrer">
               guide
             </a>{' '}
-            on adding widgets.
+            on adding components.
           </center>
         </div>
       )}

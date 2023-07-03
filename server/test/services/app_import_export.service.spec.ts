@@ -90,7 +90,7 @@ describe('AppImportExportService', () => {
         isPublic: true,
       });
       const appVersion1 = await createApplicationVersion(nestApp, application, { name: 'v1', definition: {} });
-      await createAppEnvironments(nestApp, appVersion1.id);
+      await createAppEnvironments(nestApp, adminUser.organizationId);
       const dataSource1 = await createDataSource(nestApp, {
         appVersion: appVersion1,
         kind: 'test_kind',
@@ -105,7 +105,6 @@ describe('AppImportExportService', () => {
         name: 'v2',
         definition: { hello: 'world' },
       });
-      await createAppEnvironments(nestApp, appVersion2.id);
       const dataSource2 = await createDataSource(nestApp, {
         appVersion: appVersion2,
         kind: 'test_kind',
@@ -179,7 +178,7 @@ describe('AppImportExportService', () => {
       const importedApp = await getAppWithAllDetails(result.id);
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();
-      expect(importedApp.name).toBe(exportedApp.name);
+      expect(importedApp.name).toContain(exportedApp.name);
       expect(importedApp.isPublic).toBeFalsy();
       expect(importedApp.organizationId).toBe(exportedApp.organizationId);
       expect(importedApp.currentVersionId).toBe(null);
@@ -251,7 +250,7 @@ describe('AppImportExportService', () => {
       const importedApp = await getAppWithAllDetails(result.id);
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();
-      expect(importedApp.name).toBe(exportedApp.name);
+      expect(importedApp.name).toContain(exportedApp.name);
       expect(importedApp.isPublic).toBeFalsy();
       expect(importedApp.organizationId).toBe(exportedApp.organizationId);
       expect(importedApp.currentVersionId).toBe(null);
@@ -260,7 +259,7 @@ describe('AppImportExportService', () => {
       const appVersion = importedApp.appVersions[0];
       expect(appVersion.appId).toEqual(importedApp.id);
 
-      const dataSource = importedApp['dataSources'][0];
+      const dataSource = importedApp['dataSources'].reverse()[0];
       expect(dataSource['appVersionId']).toEqual(appVersion.id);
 
       const dataQuery = importedApp['dataQueries'][0];

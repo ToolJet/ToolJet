@@ -3,7 +3,7 @@ export const profileSelector = {
   profileLink: "[data-cy=profile-link]",
   logoutLink: "[data-cy=logout-link]",
   profileElements: {
-    pageTitle: "[data-cy=page-title]",
+    pageTitle: '[data-cy="dashboard-section-header"]',
     profileCard: "[data-cy=card-title-profile]",
     firstNameLabel: "[data-cy=first-name-label]",
     lastNameLabel: "[data-cy=last-name-label]",
@@ -23,5 +23,4 @@ export const profileSelector = {
   currentPasswordField: "[data-cy=current-password-input]",
   newPasswordField: "[data-cy=new-password-input]",
   confirmPasswordField: '[data-cy="confirm-password-input"]',
-  userAvatar: '[data-cy="user-avatar"]',
 };

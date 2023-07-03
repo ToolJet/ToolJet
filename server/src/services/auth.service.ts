@@ -9,6 +9,7 @@ import { UsersService } from './users.service';
 import { OrganizationsService } from './organizations.service';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../entities/user.entity';
+import { UserSessions } from '../entities/user_sessions.entity';
 import { OrganizationUsersService } from './organization_users.service';
 import { EmailService } from './email.service';
 import { decamelizeKeys } from 'humps';
@@ -20,7 +21,7 @@ import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, generateNextName } from 'src/helpers/utils.helper';
 import {
   getUserErrorMessages,
   getUserStatusAndSource,
@@ -32,6 +33,10 @@ import {
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
 import { MetadataService } from './metadata.service';
+import { Response } from 'express';
+import { SessionService } from './session.service';
+import { RequestContext } from 'src/models/request-context.model';
+import * as requestIp from 'request-ip';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -48,7 +53,8 @@ export class AuthService {
     private organizationUsersService: OrganizationUsersService,
     private emailService: EmailService,
     private metadataService: MetadataService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private sessionService: SessionService
   ) {}
 
   verifyToken(token: string) {
@@ -91,7 +97,7 @@ export class AuthService {
     return user;
   }
 
-  async login(email: string, password: string, organizationId?: string) {
+  async login(response: Response, email: string, password: string, organizationId?: string, loggedInUser?: User) {
     let organization: Organization;
 
     const user = await this.validateUser(email, password, organizationId);
@@ -100,34 +106,24 @@ export class AuthService {
       if (!organizationId) {
         // Global login
         // Determine the organization to be loaded
-        if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
-          // Single organization
-          if (user?.organizationUsers?.[0].status !== WORKSPACE_USER_STATUS.ACTIVE) {
-            throw new UnauthorizedException('Your account is not active');
-          }
-          organization = await this.organizationsService.getSingleOrganization();
-          if (!organization?.ssoConfigs?.find((oc) => oc.sso == 'form' && oc.enabled)) {
-            throw new UnauthorizedException();
-          }
-        } else {
-          // Multi organization
-          const organizationList: Organization[] = await this.organizationsService.findOrganizationWithLoginSupport(
-            user,
-            'form'
-          );
 
-          const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
-          if (defaultOrgDetails) {
-            // default organization form login enabled
-            organization = defaultOrgDetails;
-          } else if (organizationList?.length > 0) {
-            // default organization form login not enabled, picking first one from form enabled list
-            organization = organizationList[0];
-          } else {
-            // no form login enabled organization available for user - creating new one
-            organization = await this.organizationsService.create('Untitled workspace', user, manager);
-          }
+        const organizationList: Organization[] = await this.organizationsService.findOrganizationWithLoginSupport(
+          user,
+          'form'
+        );
+
+        const defaultOrgDetails: Organization = organizationList?.find((og) => og.id === user.defaultOrganizationId);
+        if (defaultOrgDetails) {
+          // default organization form login enabled
+          organization = defaultOrgDetails;
+        } else if (organizationList?.length > 0) {
+          // default organization form login not enabled, picking first one from form enabled list
+          organization = organizationList[0];
+        } else {
+          // no form login enabled organization available for user - creating new one
+          organization = await this.organizationsService.create(generateNextName('My workspace'), user, manager);
         }
+
         user.organizationId = organization.id;
       } else {
         // organization specific login
@@ -152,15 +148,12 @@ export class AuthService {
         manager
       );
 
-      return await this.generateLoginResultPayload(user, organization, false, true, manager);
+      return await this.generateLoginResultPayload(response, user, organization, false, true, loggedInUser);
     });
   }
 
-  async switchOrganization(newOrganizationId: string, user: User, isNewOrganization?: boolean) {
+  async switchOrganization(response: Response, newOrganizationId: string, user: User, isNewOrganization?: boolean) {
     if (!(isNewOrganization || user.isPasswordLogin || user.isSSOLogin)) {
-      throw new UnauthorizedException();
-    }
-    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
       throw new UnauthorizedException();
     }
     const newUser = await this.usersService.findByEmail(user.email, newOrganizationId, WORKSPACE_USER_STATUS.ACTIVE);
@@ -183,7 +176,34 @@ export class AuthService {
       // Updating default organization Id
       await this.usersService.updateUser(newUser.id, { defaultOrganizationId: newUser.organizationId }, manager);
 
-      return await this.generateLoginResultPayload(user, organization, user.isSSOLogin, user.isPasswordLogin, manager);
+      return await this.generateLoginResultPayload(
+        response,
+        user,
+        organization,
+        user.isSSOLogin,
+        user.isPasswordLogin,
+        user
+      );
+    });
+  }
+
+  async authorizeOrganization(user: User) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      if (user.defaultOrganizationId !== user.organizationId)
+        await this.usersService.updateUser(user.id, { defaultOrganizationId: user.organizationId }, manager);
+
+      return decamelizeKeys({
+        admin: await this.usersService.hasGroup(user, 'admin', null, manager),
+        groupPermissions: await this.usersService.groupPermissions(user, manager),
+        appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+        currentUser: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatarId: user.avatarId,
+        },
+      });
     });
   }
 
@@ -221,18 +241,8 @@ export class AuthService {
 
     let organization: Organization;
     // Check if the configs allows user signups
-    if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true') {
-      // Single organization checking if organization exist
-      organization = await this.organizationsService.getSingleOrganization();
-
-      if (organization) {
-        throw new NotAcceptableException('Multi organization not supported - organization exist');
-      }
-    } else {
-      // Multi organization
-      if (this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
-        throw new NotAcceptableException();
-      }
+    if (this.configService.get<string>('DISABLE_SIGNUPS') === 'true') {
+      throw new NotAcceptableException();
     }
 
     const names = { firstName: '', lastName: '' };
@@ -247,7 +257,10 @@ export class AuthService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Create default organization
-      organization = await this.organizationsService.create('Untitled workspace', null, manager);
+      //TODO: check if there any case available that the firstname will be nil
+
+      const organizationName = generateNextName('My workspace');
+      organization = await this.organizationsService.create(organizationName, null, manager);
       const user = await this.usersService.create(
         {
           email,
@@ -306,14 +319,14 @@ export class AuthService {
     return nameObj;
   }
 
-  async setupAdmin(userCreateDto: CreateAdminDto): Promise<any> {
-    const { companyName, companySize, name, role, workspace, password, email } = userCreateDto;
+  async setupAdmin(response: Response, userCreateDto: CreateAdminDto): Promise<any> {
+    const { companyName, companySize, name, role, workspace, password, email, phoneNumber } = userCreateDto;
 
     const nameObj = this.splitName(name);
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       // Create first organization
-      const organization = await this.organizationsService.create(workspace || 'Untitled workspace', null, manager);
+      const organization = await this.organizationsService.create(workspace || 'My workspace', null, manager);
       const user = await this.usersService.create(
         {
           email,
@@ -324,6 +337,7 @@ export class AuthService {
           companyName,
           companySize,
           role,
+          phoneNumber,
         },
         organization.id,
         ['all_users', 'admin'],
@@ -333,15 +347,15 @@ export class AuthService {
         manager
       );
       await this.organizationUsersService.create(user, organization, false, manager);
-      return this.generateLoginResultPayload(user, organization, false, true, manager);
+      return this.generateLoginResultPayload(response, user, organization, false, true, null, manager);
     });
 
     await this.metadataService.finishOnboarding(name, email, companyName, companySize, role);
     return result;
   }
 
-  async setupAccountFromInvitationToken(userCreateDto: CreateUserDto) {
-    const { companyName, companySize, token, role, organizationToken, password, source } = userCreateDto;
+  async setupAccountFromInvitationToken(response: Response, userCreateDto: CreateUserDto) {
+    const { companyName, companySize, token, role, organizationToken, password, source, phoneNumber } = userCreateDto;
 
     if (!token) {
       throw new BadRequestException('Invalid token');
@@ -384,6 +398,7 @@ export class AuthService {
             ...(role ? { role } : {}),
             companySize,
             companyName,
+            phoneNumber,
             invitationToken: null,
             ...(isPasswordMandatory(user.source) ? { password } : {}),
             ...lifecycleParams,
@@ -394,17 +409,11 @@ export class AuthService {
 
         // Activate default workspace
         await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
-
-        if (companyName) {
-          await manager.update(Organization, user.defaultOrganizationId, {
-            name: companyName,
-          });
-        }
       } else {
         throw new BadRequestException('Invalid invitation link');
       }
 
-      if (this.configService.get<string>('DISABLE_MULTI_WORKSPACE') !== 'true' && organizationUser) {
+      if (organizationUser) {
         // Activate invited workspace
         await this.organizationUsersService.activateOrganization(organizationUser, manager);
 
@@ -424,13 +433,12 @@ export class AuthService {
 
       const isInstanceSSOLogin = !organizationUser && isSSOVerify;
 
-      return this.generateLoginResultPayload(user, organization, isInstanceSSOLogin, !isSSOVerify, manager);
+      return this.generateLoginResultPayload(response, user, organization, isInstanceSSOLogin, !isSSOVerify);
     });
   }
 
   async acceptOrganizationInvite(acceptInviteDto: AcceptInviteDto) {
-    const { password, token } = acceptInviteDto;
-    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
+    const { token } = acceptInviteDto;
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const organizationUser = await manager.findOne(OrganizationUser, {
@@ -443,7 +451,7 @@ export class AuthService {
       }
       const user: User = organizationUser.user;
 
-      if (!isSingleWorkspace && user.invitationToken) {
+      if (user.invitationToken) {
         // User sign up link send - not activated account
         this.emailService
           .sendWelcomeEmail(
@@ -457,38 +465,9 @@ export class AuthService {
           'Please setup your account using account setup link shared via email before accepting the invite'
         );
       }
+      await this.usersService.updateUser(user.id, { defaultOrganizationId: organizationUser.organizationId }, manager);
 
-      if (isSingleWorkspace) {
-        if (user.invitationToken && !password) {
-          // user in invited state, password mandatory
-          throw new BadRequestException('Please enter password');
-        }
-        // set new password
-        await this.usersService.updateUser(
-          user.id,
-          {
-            ...(password ? { password } : {}),
-            invitationToken: null,
-            passwordRetryCount: 0,
-            ...getUserStatusAndSource(lifecycleEvents.USER_REDEEM),
-          },
-          manager
-        );
-      } else {
-        await this.usersService.updateUser(
-          user.id,
-          { defaultOrganizationId: organizationUser.organizationId },
-          manager
-        );
-      }
       await this.organizationUsersService.activateOrganization(organizationUser, manager);
-
-      if (isSingleWorkspace) {
-        // Sign in
-        return {
-          user: await this.generateLoginResultPayload(user, organizationUser.organization, false, true, manager),
-        };
-      }
       return;
     });
   }
@@ -540,7 +519,6 @@ export class AuthService {
   }
 
   async verifyOrganizationToken(token: string) {
-    const isSingleWorkspace = this.configService.get<string>('DISABLE_MULTI_WORKSPACE') === 'true';
     const organizationUser: OrganizationUser = await this.organizationUsersRepository.findOne({
       where: { invitationToken: token },
       relations: ['user'],
@@ -550,58 +528,92 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException('Invalid token');
     }
-    if (user.status === USER_STATUS.ARCHIVED || (!isSingleWorkspace && user.status !== USER_STATUS.ACTIVE)) {
+    if (user.status !== USER_STATUS.ACTIVE) {
       throw new BadRequestException(getUserErrorMessages(user.status));
-    }
-
-    if (isSingleWorkspace) {
-      await this.usersService.updateUser(user.id, getUserStatusAndSource(lifecycleEvents.USER_VERIFY));
     }
 
     return {
       email: user.email,
       name: `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`,
       onboarding_details: {
-        password: isSingleWorkspace && user.invitationToken, // Should accept password for Single workspace if initial setup
+        password: false, // Should not accept password for organization token
       },
     };
   }
 
+  generateSessionPayload(user: User, appOrganizationId: string) {
+    return decamelizeKeys({
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      currentOrganizationId: appOrganizationId
+        ? appOrganizationId
+        : user?.organizationIds?.includes(user?.defaultOrganizationId)
+        ? user.defaultOrganizationId
+        : user?.organizationIds?.[0],
+    });
+  }
+
   async generateLoginResultPayload(
+    response: Response,
     user: User,
     organization: DeepPartial<Organization>,
     isInstanceSSO: boolean,
     isPasswordLogin: boolean,
+    loggedInUser?: User,
     manager?: EntityManager
   ): Promise<any> {
+    const request = RequestContext?.currentContext?.req;
+    const organizationIds = new Set([
+      ...(loggedInUser?.id === user.id ? loggedInUser?.organizationIds || [] : []),
+      organization.id,
+    ]);
+    let sessionId = loggedInUser?.sessionId;
+
+    // logged in user and new user are different -> creating session
+    if (loggedInUser?.id !== user.id) {
+      const session: UserSessions = await this.sessionService.createSession(
+        user.id,
+        `IP: ${request?.clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+          request?.headers['user-agent'] || 'unknown'
+        }`,
+        manager
+      );
+      sessionId = session.id;
+    }
+
     const JWTPayload: JWTPayload = {
+      sessionId: sessionId,
       username: user.id,
       sub: user.email,
-      organizationId: organization.id,
-      isSSOLogin: isInstanceSSO,
-      isPasswordLogin,
+      organizationIds: [...organizationIds],
+      isSSOLogin: loggedInUser?.isSSOLogin || isInstanceSSO,
+      isPasswordLogin: loggedInUser?.isPasswordLogin || isPasswordLogin,
     };
     user.organizationId = organization.id;
 
+    response.cookie('tj_auth_token', this.jwtService.sign(JWTPayload), {
+      httpOnly: true,
+      sameSite: 'strict',
+      maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
+    });
+
     return decamelizeKeys({
       id: user.id,
-      authToken: this.jwtService.sign(JWTPayload),
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      organizationId: organization.id,
-      organization: organization.name,
-      admin: await this.usersService.hasGroup(user, 'admin', null, manager),
-      groupPermissions: await this.usersService.groupPermissions(user, manager),
-      appGroupPermissions: await this.usersService.appGroupPermissions(user, null, manager),
+      currentOrganizationId: organization.id,
     });
   }
 }
 
 interface JWTPayload {
+  sessionId: string;
   username: string;
   sub: string;
-  organizationId: string;
+  organizationIds: Array<string>;
   isSSOLogin: boolean;
   isPasswordLogin: boolean;
 }

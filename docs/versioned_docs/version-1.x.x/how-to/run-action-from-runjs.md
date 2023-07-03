@@ -182,8 +182,20 @@ actions.showAlert(alert type , message ) // alert types are info, success, warni
 
 </div>
 
+## Run multiple actions from runjs query
 
+To run multiple actions from a runjs query, you'll have to use async-await in the function.
 
+Here is an sample code for running the queries and showing alert after specific intervals. Check the complete guide on running queries at specified intervals **[here](/docs/next/how-to/run-query-at-specified-intervals)**.
+
+```js
+actions.setVariable('interval',setInterval(countdown, 5000));
+async function countdown(){
+  await queries.restapi1.run()
+  await queries.restapi2.run()
+  await actions.showAlert('info','This is an information')
+}
+```
 
 
 

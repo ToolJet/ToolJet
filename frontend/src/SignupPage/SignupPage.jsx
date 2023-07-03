@@ -15,6 +15,7 @@ import { withTranslation } from 'react-i18next';
 import { ShowLoading } from '@/_components';
 import Spinner from '@/_ui/Spinner';
 import SignupStatusCard from '../OnBoardingForm/SignupStatusCard';
+import { withRouter } from '@/_hoc/withRouter';
 class SignupPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -26,8 +27,6 @@ class SignupPageComponent extends React.Component {
       isGettingConfigs: true,
       disableOnEdit: false,
     };
-
-    this.single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
   }
 
   backtoSignup = (email, name) => {
@@ -46,7 +45,7 @@ class SignupPageComponent extends React.Component {
         if (response.data.statusCode !== 404) {
           this.setState({ isGettingConfigs: false });
         } else {
-          return this.props.history.push('/setup');
+          return this.props.navigate('/setup');
         }
       }
     );
@@ -92,10 +91,7 @@ class SignupPageComponent extends React.Component {
   };
 
   isFormSignUpEnabled = () => {
-    return (
-      (!this.single_organization && this.state.configs?.form?.enable_sign_up) ||
-      (this.single_organization && !this.state.configs)
-    );
+    return this.state.configs?.form?.enable_sign_up;
   };
 
   render() {
@@ -156,9 +152,9 @@ class SignupPageComponent extends React.Component {
                         {(this.state.configs?.git?.enabled || this.state.configs?.google?.enabled) &&
                           this.isFormSignUpEnabled() && (
                             <div className="separator-signup">
-                              <div className="mt-2 separator" data-cy="separator-signup">
+                              <div className="mt-2 separator" data-cy="onboarding-separator">
                                 <h2>
-                                  <span data-cy="separator-signup-text">OR</span>
+                                  <span data-cy="onboarding-separator-text">OR</span>
                                 </h2>
                               </div>
                             </div>
@@ -201,7 +197,7 @@ class SignupPageComponent extends React.Component {
                               <span className="tj-text-input-error-state">{this.state.emailError}</span>
                             )}
                           </div>
-                          <label className="tj-text-input-label" data-cy="password-input-label">
+                          <label className="tj-text-input-label" data-cy="passwor-label">
                             Password
                           </label>
                           <div className="login-password signup-password-wrapper">
@@ -248,7 +244,7 @@ class SignupPageComponent extends React.Component {
                             <span className="tj-input-helper-text" data-cy="password-helper-text">
                               {this.props.t(
                                 'loginSignupPage.passwordCharacter',
-                                'Password must be at least 5 character'
+                                'Password must be at least 5 characters'
                               )}
                             </span>
                           </div>
@@ -330,4 +326,4 @@ class SignupPageComponent extends React.Component {
   }
 }
 
-export const SignupPage = withTranslation()(SignupPageComponent);
+export const SignupPage = withTranslation()(withRouter(SignupPageComponent));

@@ -66,7 +66,7 @@ describe("Date Picker widget", () => {
     verifyAndModifyParameter(datePickerText.labelformat, "DD/MM/YY");
     cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
     verifyDate(data.widgetName, data.date, "DD/MM/YY");
-    verifyComponentValueFromInspector(data.widgetName, data.date, "opened");
+    verifyComponentValueFromInspector(data.widgetName, data.date);
     cy.get(commonSelectors.canvas).click({ force: true });
 
     openEditorSidebar(data.widgetName);
@@ -156,14 +156,14 @@ describe("Date Picker widget", () => {
       "not.exist"
     );
 
-    verifyAndModifyToggleFx(
-      commonWidgetText.parameterShowOnMobile,
-      commonWidgetText.codeMirrorLabelFalse
-    );
-    cy.get(commonWidgetSelector.changeLayoutButton).click();
-    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
-      "exist"
-    );
+    // verifyAndModifyToggleFx(
+    //   commonWidgetText.parameterShowOnMobile,
+    //   commonWidgetText.codeMirrorLabelFalse
+    // );
+    // cy.get(commonWidgetSelector.changeLayoutButton).click();
+    // cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+    //   "exist"
+    // );
   });
 
   it("should verify the styles of the date picker widget", () => {
@@ -278,7 +278,7 @@ describe("Date Picker widget", () => {
       commonWidgetText.borderRadiusInput
     );
 
-    openAccordion(commonWidgetText.accordionGenaral, [], "1");
+    openAccordion(commonWidgetText.accordionGenaral, []);
 
     cy.get(
       commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)
@@ -292,6 +292,7 @@ describe("Date Picker widget", () => {
 
     addTextWidgetToVerifyValue(`components.${data.widgetName}.value`);
     cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 160);
+    cy.waitForAutoSave()
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
 

@@ -9,11 +9,13 @@
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^5.12.0",
     "@faker-js/faker": "^7.3.0",
-    "cypress": "^12.0.1",
-    "cypress-file-upload": "^5.0.8"
+    "cypress": "^12.5.1"
   },
   "dependencies": {
+    "cypress-real-events": "^1.7.6",
     "moment": "^2.29.4",
+    "node-xlsx": "^0.21.0",
+    "pdf-parse": "^1.1.1",
     "pg": "^8.8.0"
   }
 }

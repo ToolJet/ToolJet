@@ -17,7 +17,7 @@ const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, tot
   }, [currentPage]);
 
   return (
-    <div className="pagination-container d-flex">
+    <div className="pagination-container d-flex" data-cy="pagination-section">
       <Button.UnstyledButton
         onClick={(event) => {
           event.stopPropagation();
@@ -35,6 +35,7 @@ const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, tot
           disabled={isDisabled}
           type="text"
           className="form-control mx-1"
+          data-cy={`current-page-number-${currentPageNumber}`}
           value={currentPageNumber}
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
@@ -48,7 +49,9 @@ const Pagination = ({ darkMode, gotoNextPage, gotoPreviousPage, currentPage, tot
             setCurrentPageNumber(event.target.value);
           }}
         />
-        <span className="mx-1">/ {totalPage}</span>
+        <span className="mx-1" data-cy={`total-page-number-${totalPage}`}>
+          / {totalPage}
+        </span>
       </div>
 
       <Button.UnstyledButton

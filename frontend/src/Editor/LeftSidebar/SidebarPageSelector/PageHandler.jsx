@@ -6,6 +6,8 @@ import { SettingsModal } from './SettingsModal';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 import { toast } from 'react-hot-toast';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const PageHandler = ({
   darkMode,
@@ -13,7 +15,7 @@ export const PageHandler = ({
   switchPage,
   deletePage,
   renamePage,
-  // clonePage,
+  clonePage,
   hidePage,
   unHidePage,
   homePageId,
@@ -25,7 +27,8 @@ export const PageHandler = ({
   apps,
   pages,
   components,
-  dataQueries,
+  pinPagesPopover,
+  haveUserPinned,
 }) => {
   const isHomePage = page.id === homePageId;
   const isSelected = page.id === currentPageId;
@@ -36,7 +39,12 @@ export const PageHandler = ({
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   const handleClose = () => {
     setShowEditModal(false);
     setShowPagehandlerMenu(true);
@@ -54,7 +62,7 @@ export const PageHandler = ({
     setIsHovered(false);
     switch (id) {
       case 'delete-page':
-        deletePage(page.id, isHomePage);
+        deletePage(page.id, isHomePage, page.name);
         break;
 
       case 'rename-page':
@@ -73,9 +81,9 @@ export const PageHandler = ({
         showSettings();
         break;
 
-      // case 'duplicate-page':
-      //   clonePage(page.id);
-      //   break;
+      case 'clone-page':
+        clonePage(page.id);
+        break;
 
       case 'hide-page':
         hidePage(page.id);
@@ -127,11 +135,15 @@ export const PageHandler = ({
                 src="assets/images/icons/home.svg"
                 height={14}
                 width={14}
+                data-cy={'home-page-icon'}
               />
             )}
             <SortableList.DragHandle show={isHovered} />
           </div>
-          <div className="col text-truncate font-weight-400 page-name" data-cy="event-handler">
+          <div
+            className="col text-truncate font-weight-400 page-name"
+            data-cy={`pages-name-${String(page.name).toLowerCase()}`}
+          >
             {page.name}
           </div>
           <div className="col-auto page-icons">
@@ -143,11 +155,12 @@ export const PageHandler = ({
                 src="assets/images/icons/eye-off.svg"
                 height={14}
                 width={14}
+                data-cy={'hide-page-icon'}
               />
             )}
           </div>
           <div className="col-auto">
-            {(isHovered || isSelected) && (
+            {(isHovered || isSelected) && !isVersionReleased && (
               <PagehandlerMenu
                 page={page}
                 darkMode={darkMode}
@@ -169,14 +182,17 @@ export const PageHandler = ({
             <SettingsModal
               page={page}
               show={showSettingsModal}
-              handleClose={() => setShowSettingsModal(false)}
+              handleClose={() => {
+                setShowSettingsModal(false);
+                !haveUserPinned && pinPagesPopover(false);
+              }}
               darkMode={darkMode}
               updateOnPageLoadEvents={updateOnPageLoadEvents}
               currentState={currentState}
               apps={apps}
               pages={pages}
               components={components}
-              dataQueries={dataQueries}
+              pinPagesPopover={pinPagesPopover}
             />
           </div>
         </div>
@@ -188,7 +204,7 @@ export const PageHandler = ({
 export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated, darkMode }) => {
   const handleAddingNewPage = (pageName) => {
     if (pageName.trim().length === 0) {
-      toast('Page name should have atleast 1 character', {
+      toast('Page name should have at least 1 character', {
         icon: '⚠️',
       });
     }

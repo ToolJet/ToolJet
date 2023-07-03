@@ -1,13 +1,13 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
 import {
-  authHeaderForUser,
   clearDB,
   createApplication,
   createUser,
   createNestAppInstance,
   createThread,
   createApplicationVersion,
+  authenticateUser,
 } from '../test.helper';
 
 describe('thread controller', () => {
@@ -44,10 +44,14 @@ describe('thread controller', () => {
       appVersionsId: version.id,
     });
 
+    const loggedUser = await authenticateUser(app);
+    userData['tokenCookie'] = loggedUser.tokenCookie;
+
     const response = await request(app.getHttpServer())
       .get(`/api/threads/${application.id}/all`)
       .query({ appVersionsId: version.id })
-      .set('Authorization', authHeaderForUser(user));
+      .set('tj-workspace-id', user.defaultOrganizationId)
+      .set('Cookie', userData['tokenCookie']);
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveLength(1);

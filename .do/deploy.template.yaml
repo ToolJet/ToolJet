@@ -26,9 +26,6 @@ spec:
     - key: DISABLE_SIGNUPS
       value: "false"
       scope: RUN_TIME
-    - key: DISABLE_MULTI_WORKSPACE
-      value: "false"
-      scope: RUN_TIME
     - key: DEPLOYMENT_PLATFORM
       value: "digitalocean"
     - key: DATABASE_URL

@@ -1,34 +1,26 @@
 export const usersText = {
   usersElements: {
-    pageTitle: "Users & Permissions",
-    nameTitile: "NAME",
-    emailTitle: "EMAIL",
-    statusTitle: "STATUS",
-
+    usersTableNameColumnHeader: "NAME",
+    usersTableEmailColumnHeader: "EMAIL",
+    usersTableStatusColumnHeader: "STATUS",
+    usersFilterLabel: "Showing",
   },
+  usersPageTitle: "users",
+  breadcrumbUsersPageTitle: " Users & permissions",
   adminUserName: "The Developer",
   adminUserEmail: "dev@tooljet.io",
   adminUserState: "Archive",
-  inviteUserButton: "Invite new user",
-  cardTitle: "Add new user",
+  buttonAddUsers: "Add users",
+  addUsersCardTitle: "Add users",
   emailLabel: "Email address",
   cancelButton: "Cancel",
-  createUserButton: "Create User",
-  fieldRequired: "This field is required",
-  exsitingEmail: "User with such email already exists.",
+  buttonInviteUsers: "Invite users",
+  errorTextFieldRequired: "This field is required",
+  exsitingEmail:
+    "Duplicate email found. Please provide a unique email address.",
   userCreatedToast: "User has been created",
   inviteCopiedToast: "Invitation URL copied",
-  confirmInviteElements: {
-    cardTitle: "Set up your account",
-    firstNameLabel: "First name",
-    lastNameLabel: "Last name",
-    companyLabel: "Company",
-    roleLabel: "Role",
-    passwordLabel: "Password",
-    confirmpasswordLabel: "Confirm Password",
-    termsInfo:
-      "By clicking the button below, you agree to our Terms and Conditions.",
-  },
+
   acceptInvite: "Accept invite",
   acceptInviteErrorToast:
     "User not exist in the workspace, Please setup your account using link shared via email",
@@ -55,4 +47,16 @@ export const usersText = {
   },
   swPasswordSuccessToast:
     "Added to the workspace and password has been set successfully.",
+  inviteBulkUserButton: "Invite bulk users",
+  bulkUserUploadPageTitle: "Upload Users",
+  buttonDownloadTemplate: "Download Template",
+  buttonUploadUsers: "Upload users",
+
+  buttonInviteWithEmail: " Invite with email",
+  buttonUploadCsvFile: "Upload CSV file",
+
+  helperTextBulkUpload:
+    "Download the ToolJet template to add user details or format your file in the same as the template. ToolJet won’t be able to recognise files in any other format. ",
+  helperTextSelectFile: "Select a CSV file to upload",
+  helperTextDropFile: "Or drag and drop it here",
 };

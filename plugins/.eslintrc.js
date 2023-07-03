@@ -10,11 +10,6 @@ module.exports = {
   ],
   ignorePatterns: ['.eslintrc.js'],
   parser: '@typescript-eslint/parser',
-  parserOptions: {
-    ecmaVersion: 12,
-    sourceType: 'module',
-    project: ['./tsconfig.json'],
-  },
   overrides: [
     {
       files: ['*.ts'],
@@ -35,7 +30,6 @@ module.exports = {
         singleQuote: true,
       },
     ],
-    '@typescript-eslint/no-floating-promises': ['error'],
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',

@@ -43,20 +43,22 @@ export const verifyElementsOfExportModal = (
   cy.get(exportAppModalSelectors.modalCloseButton).should("be.visible");
 };
 
-export const createNewVersion = (newVersion = []) => {
-  cy.get(appVersionSelectors.createVersionLink).should("be.visible").click();
+export const createNewVersion = (newVersion = [], version) => {
+  cy.contains(appVersionText.createNewVersion).should("be.visible").click();
   verifyModal(
-    appVersionText.createVersion,
-    appVersionText.createVersion,
+    appVersionText.createNewVersion,
+    appVersionText.createNewVersion,
     appVersionSelectors.createVersionInputField
   );
-  cy.get(appVersionSelectors.createVersionButton).click();
+  cy.get(appVersionSelectors.createNewVersionButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     appVersionText.emptyToastMessage
   );
+  cy.get(appVersionSelectors.createVersionInputField).click();
+  cy.contains(`[id*="react-select-"]`, version).click();
   cy.get(appVersionSelectors.versionNameInputField).click().type(newVersion[0]);
-  cy.get(appVersionSelectors.createVersionButton).click();
+  cy.get(appVersionSelectors.createNewVersionButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     appVersionText.createdToastMessage
@@ -68,10 +70,12 @@ export const createNewVersion = (newVersion = []) => {
 
 export const clickOnExportButtonAndVerify = (buttonText, appName) => {
   cy.get(commonSelectors.buttonSelector(buttonText)).click();
-
+  cy.wait(1000);
   cy.exec("ls ./cypress/downloads/").then((result) => {
     const downloadedAppExportFileName = result.stdout.split("\n")[0];
-    expect(downloadedAppExportFileName).to.have.string(appName.toLowerCase());
+    expect(downloadedAppExportFileName).to.contain.string(
+      appName.toLowerCase()
+    );
   });
 };
 

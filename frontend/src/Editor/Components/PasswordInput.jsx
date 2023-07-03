@@ -9,8 +9,9 @@ export const PasswordInput = ({
   darkMode,
   component,
   fireEvent,
+  dataCy,
 }) => {
-  const { visibility, disabledState, borderRadius, backgroundColor } = styles;
+  const { visibility, disabledState, borderRadius, backgroundColor, boxShadow } = styles;
 
   const placeholder = properties.placeholder;
 
@@ -41,8 +42,9 @@ export const PasswordInput = ({
           display: visibility ? '' : 'none',
           borderRadius: `${borderRadius}px`,
           backgroundColor,
+          boxShadow,
         }}
-        data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+        data-cy={dataCy}
       />
       <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
         {validationError}

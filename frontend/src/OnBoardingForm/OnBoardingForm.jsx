@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { useHistory } from 'react-router-dom';
 import OnBoardingInput from './OnBoardingInput';
 import OnBoardingRadioInput from './OnBoardingRadioInput';
 import ContinueButton from './ContinueButton';
 import OnBoardingBubbles from './OnBoardingBubbles';
-import { getuserName } from '@/_helpers/utils';
+import { getuserName, getSubpath } from '@/_helpers/utils';
 import { ON_BOARDING_SIZE, ON_BOARDING_ROLES } from '@/_helpers/constants';
 import LogoLightMode from '@assets/images/Logomark.svg';
 import LogoDarkMode from '@assets/images/Logomark-dark-mode.svg';
+import startsWith from 'lodash.startswith';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', password, darkMode }) {
   const Logo = darkMode ? LogoDarkMode : LogoLightMode;
-  const history = useHistory();
   const [page, setPage] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,6 +22,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     companyName: '',
     role: '',
     companySize: '',
+    phoneNumber: '',
   });
 
   const pageProps = {
@@ -43,15 +45,19 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
           token: token,
           organizationToken: organizationToken,
           ...(password?.length > 0 && { password }),
+          phoneNumber: formData?.phoneNumber,
         })
-        .then((user) => {
-          authenticationService.updateUser(user);
+        .then((data) => {
           authenticationService.deleteLoginOrganizationId();
           setIsLoading(false);
-          history.push('/');
+          window.location = getSubpath()
+            ? `${getSubpath()}/${data.current_organization_id}`
+            : `/${data.current_organization_id}`;
+          setCompleted(false);
         })
         .catch((res) => {
           setIsLoading(false);
+          setCompleted(false);
           toast.error(res.error || 'Something went wrong', {
             id: 'toast-login-auth-error',
             position: 'top-center',
@@ -65,7 +71,8 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
     `Where do you work ${userDetails?.name}?`,
     'What best describes your role?',
     'What is the size of your company?',
-    'What is the size of your company?', //dummy placeholder
+    'Enter your phone number',
+    'Enter your phone number', //dummy for styling
   ];
   const FormSubTitles = ['This information will help us improve ToolJet.'];
 
@@ -78,7 +85,7 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
         <div></div>
         {/*Do not remove used for styling*/}
         <div className="onboarding-checkpoints">
-          <p className={page == 0 ? `active-onboarding-tab` : ''}>
+          <p className={page == 0 ? `active-onboarding-tab` : ''} data-cy="create-account-check-point">
             <img
               src={
                 darkMode
@@ -87,10 +94,14 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
               }
               loading="lazy"
               alt="check mark"
+              data-cy="create-account-check-mark"
             ></img>
             Create account
           </p>
-          <p className={page == 1 ? `active-onboarding-tab` : page < 1 ? 'passive-onboarding-tab' : ''}>
+          <p
+            className={page == 1 ? `active-onboarding-tab` : page < 1 ? 'passive-onboarding-tab' : ''}
+            data-cy="verify-email-check-point"
+          >
             <img
               src={
                 darkMode
@@ -99,14 +110,22 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
               }
               loading="lazy"
               alt="check mark"
+              data-cy="verify-email-check-mark"
             ></img>
             Verify email
           </p>
-          <p className={page >= 2 ? `active-onboarding-tab` : `passive-onboarding-tab`}>Set up workspace</p>
-          <div className="onboarding-divider"></div>
+          <p
+            className={page >= 2 ? `active-onboarding-tab` : `passive-onboarding-tab`}
+            data-cy="set-up-workspace-check-point"
+          >
+            Set up workspace
+          </p>
+          <div className="onboarding-divider" data-cy="onboarding-divider"></div>
         </div>
         <div></div> {/*Do not remove used for styling*/}
-        <div className="onboarding-account-name">{getuserName(userDetails)}</div>
+        <div className="onboarding-account-name" data-cy="user-account-name-avatar">
+          {getuserName(userDetails)}
+        </div>
       </div>
       <div className="page-wrap-onboarding">
         <div className="onboarding-form">
@@ -127,8 +146,11 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
                   }
                   loading="lazy"
                   alt="arrow back"
+                  data-cy="back-arrow"
                 />
-                <p className="onboarding-back-text">Back</p>
+                <p className="onboarding-back-text" data-cy="back-arrow-text">
+                  Back
+                </p>
               </div>
             )}
             <div className="onboarding-bubbles-container">
@@ -137,19 +159,25 @@ function OnBoardingForm({ userDetails = {}, token = '', organizationToken = '', 
             <div></div>
             {/*Do not remove used for styling*/}
           </div>
-          <form className="form-container">
+          <div className="form-container">
             <div className="onboarding-header-wrapper">
-              <h1 className="onboarding-page-header">{FORM_TITLES[page]}</h1>
-              <p className="onboarding-page-sub-header">{FormSubTitles[0]}</p>
+              <h1 className="onboarding-page-header" data-cy="onboarding-page-header">
+                {FORM_TITLES[page]}
+              </h1>
+              <p className="onboarding-page-sub-header" data-cy="onboarding-page-sub-header">
+                {FormSubTitles[0]}
+              </p>
             </div>
             {page == 0 ? (
               <Page0 {...pageProps} />
             ) : page == 1 ? (
               <Page1 {...pageProps} />
-            ) : (
+            ) : page == 2 ? (
               <Page2 {...pageProps} setIsLoading={setIsLoading} />
+            ) : (
+              <Page3 {...pageProps} setIsLoading={setIsLoading} />
             )}
-          </form>
+          </div>
         </div>
       </div>
     </div>
@@ -163,7 +191,13 @@ export function Page0({ formData, setFormData, setPage, page, setCompleted, isLo
   const btnProps = { setPage, page, formData, setCompleted, isLoading, darkMode };
   return (
     <div className="onboarding-pages-wrapper">
-      <OnBoardingInput {...props} fieldType="companyName" placeholder="Enter company name" autoFocus={true} />
+      <OnBoardingInput
+        {...props}
+        fieldType="companyName"
+        placeholder="Enter company name"
+        autoFocus={true}
+        dataCy="company-name-input-field"
+      />
       <ContinueButton {...btnProps} />
     </div>
   );
@@ -185,8 +219,29 @@ export function Page1({ formData, setFormData, setPage, page, setCompleted, isLo
   );
 }
 
-export function Page2({ formData, setFormData, setPage, page, setCompleted, isLoading, setIsLoading, darkMode }) {
+export function Page2({ formData, setFormData, setPage, page, setCompleted, isLoading, darkMode }) {
   const props = { formData, setFormData, fieldType: 'companySize' };
+  const btnProps = {
+    setPage,
+    page,
+    formData,
+    setCompleted,
+    isLoading,
+    darkMode,
+  };
+  return (
+    <div className="onboarding-pages-wrapper">
+      {ON_BOARDING_SIZE.map((field) => (
+        <div key={field}>
+          <OnBoardingRadioInput {...props} field={field} />
+        </div>
+      ))}
+      <ContinueButton {...btnProps} />
+    </div>
+  );
+}
+
+export function Page3({ formData, setFormData, setPage, page, setCompleted, isLoading, setIsLoading, darkMode }) {
   const btnProps = {
     setPage,
     page,
@@ -198,11 +253,29 @@ export function Page2({ formData, setFormData, setPage, page, setCompleted, isLo
   };
   return (
     <div className="onboarding-pages-wrapper">
-      {ON_BOARDING_SIZE.map((field) => (
-        <div key={field}>
-          <OnBoardingRadioInput {...props} field={field} />
-        </div>
-      ))}
+      <PhoneInput
+        inputProps={{
+          autoFocus: true,
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            setIsLoading(true);
+            setCompleted(true);
+          }
+        }}
+        country={'us'}
+        value={formData?.phoneNumber}
+        inputClass="tj-onboarding-phone-input"
+        containerClass="tj-onboarding-phone-input-wrapper"
+        onChange={(phone) => {
+          setFormData({ ...formData, phoneNumber: phone });
+        }}
+        isValid={(inputNumber, country, countries) => {
+          return countries.some((country) => {
+            return startsWith(inputNumber, country.dialCode) || startsWith(country.dialCode, inputNumber);
+          });
+        }}
+      />
       <ContinueButton {...btnProps} />
     </div>
   );

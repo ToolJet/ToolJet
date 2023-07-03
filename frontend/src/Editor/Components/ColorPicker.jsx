@@ -10,8 +10,9 @@ export const ColorPicker = function ({
   height,
   registerAction,
   fireEvent,
+  dataCy,
 }) {
-  const { visibility } = styles;
+  const { visibility, boxShadow } = styles;
   const defaultColor = properties.defaultColor;
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [color, setColor] = useState(defaultColor);
@@ -114,7 +115,7 @@ export const ColorPicker = function ({
     : { display: 'none' };
 
   return (
-    <div style={baseStyle} className="form-control">
+    <div style={{ baseStyle, boxShadow }} className="form-control" data-cy={dataCy}>
       <div className="d-flex h-100 justify-content-between align-items-center" onClick={() => setShowColorPicker(true)}>
         <span>{color}</span>
         {!(color === `Invalid Color`) && <div style={backgroundColorDivStyle}></div>}

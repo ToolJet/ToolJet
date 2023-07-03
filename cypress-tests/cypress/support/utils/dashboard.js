@@ -1,7 +1,6 @@
 import { commonSelectors } from "Selectors/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { dashboardText } from "Texts/dashboard";
-import { loginSelectors } from "Selectors/login";
 import { commonText } from "Texts/common";
 import {
   viewAppCardOptions,
@@ -12,9 +11,9 @@ import {
 
 export const login = () => {
   cy.visit("/");
-  cy.clearAndType(loginSelectors.emailField, "dev@tooljet.io");
-  cy.clearAndType(loginSelectors.passwordField, "password");
-  cy.get(loginSelectors.signInButton).click();
+  cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
+  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.get(commonSelectors.loginButton).click();
 };
 
 export const modifyAndVerifyAppCardIcon = (appName) => {
@@ -33,25 +32,30 @@ export const modifyAndVerifyAppCardIcon = (appName) => {
     );
   }
   closeModal(commonText.closeButton);
-  cy.get(dashboardSelector.appCardDefaultIcon).should("exist");
 
   viewAppCardOptions(appName);
   cy.get(commonSelectors.appCardOptions(commonText.changeIconOption)).click();
-  cy.get(dashboardSelector.appIcon(randomIcon)).click();
+  cy.get(".modal-body")
+    .parent()
+    .within(() => {
+      cy.get(dashboardSelector.appIcon(randomIcon)).first().click();
+    });
   cancelModal(commonText.cancelButton);
 
-  cy.get(dashboardSelector.appCardDefaultIcon).should("exist");
-
   viewAppCardOptions(appName);
   cy.get(commonSelectors.appCardOptions(commonText.changeIconOption)).click();
 
-  cy.get(dashboardSelector.appIcon(randomIcon)).click();
+  cy.get(".modal-body")
+    .parent()
+    .within(() => {
+      cy.get(dashboardSelector.appIcon(randomIcon)).first().click();
+    });
   cy.get(dashboardSelector.changeButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     dashboardText.iconUpdatedToast
   );
-  cy.get(dashboardSelector.appCardIcon(randomIcon)).should("exist");
+  cy.get(commonSelectors.appCard(appName)).should("exist");
   cy.get(dashboardText.modalComponent).should("not.exist");
 };
 

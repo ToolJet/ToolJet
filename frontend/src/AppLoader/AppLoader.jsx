@@ -7,11 +7,12 @@ import config from 'config';
 import { safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import useRouter from '@/_hooks/use-router';
+import { useParams } from 'react-router-dom';
 
 const AppLoaderComponent = (props) => {
   const router = useRouter();
-  const appId = props.match.params.id;
-  const currentUser = authenticationService.currentUserValue;
+  const params = useParams();
+  const appId = params.id;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => loadAppDetails(), []);
@@ -26,9 +27,8 @@ const AppLoaderComponent = (props) => {
     const path = `/apps/${appId}`;
     const sub_path = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : '';
     organizationService.switchOrganization(orgId).then(
-      (data) => {
-        authenticationService.updateCurrentUserDetails(data);
-        window.location.href = `${sub_path}${path}`;
+      () => {
+        window.location.href = `${sub_path}/${orgId}${path}`;
       },
       () => {
         return (window.location.href = `${sub_path}/login/${orgId}?redirectTo=${path}`);
@@ -42,7 +42,10 @@ const AppLoaderComponent = (props) => {
         const statusCode = error.data?.statusCode;
         if (statusCode === 403) {
           const errorObj = safelyParseJSON(error.data?.message);
-          if (errorObj?.organizationId && currentUser.organization_id !== errorObj?.organizationId) {
+          if (
+            errorObj?.organizationId &&
+            authenticationService.currentSessionValue.current_organization_id !== errorObj?.organizationId
+          ) {
             switchOrganization(errorObj?.organizationId);
             return;
           }

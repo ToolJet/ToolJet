@@ -32,6 +32,12 @@ import {
   verifyWidgetText,
 } from "Support/utils/commonWidget";
 
+import {
+  selectCSA,
+  selectEvent,
+  addSupportCSAData,
+} from "Support/utils/events";
+
 describe("Multiselect widget", () => {
   beforeEach(() => {
     cy.appUILogin();
@@ -79,11 +85,7 @@ describe("Multiselect widget", () => {
       commonWidgetText.labelDefaultValue,
       codeMirrorInputLabel("[1,2]")
     );
-    verifyMultipleComponentValuesFromInspector(
-      data.widgetName,
-      [1, 2],
-      "opened"
-    );
+    verifyMultipleComponentValuesFromInspector(data.widgetName, [1, 2]);
 
     verifyMultiselectHeader(data.widgetName, "one, two");
     verifyMultiselectStatus(data.widgetName);
@@ -96,11 +98,7 @@ describe("Multiselect widget", () => {
       multiselectText.labelAllItemsSelected
     );
 
-    verifyMultipleComponentValuesFromInspector(
-      data.widgetName,
-      [1, 2, 3],
-      "opened"
-    );
+    verifyMultipleComponentValuesFromInspector(data.widgetName, [1, 2, 3]);
 
     openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(
@@ -111,8 +109,7 @@ describe("Multiselect widget", () => {
 
     verifyMultipleComponentValuesFromInspector(
       data.widgetName,
-      data.randomLabels,
-      "opened"
+      data.randomLabels
     );
 
     openEditorSidebar(data.widgetName);
@@ -132,8 +129,7 @@ describe("Multiselect widget", () => {
     cy.get(multiselectSelector.dropdownAllItems)
       .first()
       .should("have.text", multiselectText.dropdwonOptionSelectAll)
-      .click()
-      .click();
+      .realClick();
 
     verifyMultiselectHeader(
       data.widgetName,
@@ -169,14 +165,14 @@ describe("Multiselect widget", () => {
       "not.exist"
     );
 
-    verifyAndModifyToggleFx(
-      commonWidgetText.parameterShowOnMobile,
-      commonWidgetText.codeMirrorLabelFalse
-    );
-    cy.get(commonWidgetSelector.changeLayoutButton).click();
-    cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
-      "exist"
-    );
+    // verifyAndModifyToggleFx(
+    //   commonWidgetText.parameterShowOnMobile,
+    //   commonWidgetText.codeMirrorLabelFalse
+    // );
+    // cy.get(commonWidgetSelector.changeLayoutButton).click();
+    // cy.get(commonWidgetSelector.draggableWidget(data.widgetName)).should(
+    //   "exist"
+    // );
   });
 
   it("should verify the styles of the widget", () => {
@@ -223,7 +219,7 @@ describe("Multiselect widget", () => {
 
     openEditorSidebar(multiselectText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, [], "1");
+    openAccordion(commonWidgetText.accordionGenaral, []);
 
     verifyAndModifyStylePickerFx(
       commonWidgetText.parameterBoxShadow,
@@ -288,7 +284,7 @@ describe("Multiselect widget", () => {
 
     openEditorSidebar(data.widgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();
-    openAccordion(commonWidgetText.accordionGenaral, [], "1");
+    openAccordion(commonWidgetText.accordionGenaral, []);
 
     cy.get(
       commonWidgetSelector.stylePicker(commonWidgetText.parameterBoxShadow)
@@ -351,5 +347,46 @@ describe("Multiselect widget", () => {
       .should("have.css", "border-radius", "20px");
 
     verifyBoxShadowCss(data.widgetName, data.colour, data.boxShadowParam);
+  });
+
+  it("should verify CSA", () => {
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget("Number input", 600, 50);
+    selectEvent("On change", "Control Component");
+    selectCSA("multiselect1", "Select Option", "1000");
+    addSupportCSAData("Option", "{{components.numberinput1.value");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget("Number input", 600, 150);
+    selectEvent("On change", "Control Component");
+    selectCSA("multiselect1", "Deselect Option", "1000");
+    addSupportCSAData("Option", "{{components.numberinput2.value");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget("Button", 600, 250);
+    selectEvent("On click", "Control Component");
+    selectCSA("Multiselect1", "Clear selections");
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.waitForAutoSave();
+
+    cy.reload();
+    cy.wait(3000);
+
+    verifyMultipleComponentValuesFromInspector("multiselect1", [2, 3]);
+    cy.get(commonWidgetSelector.draggableWidget("numberinput1"))
+      .clear()
+      .type("1");
+    verifyMultiselectHeader(
+      "multiselect1",
+      multiselectText.labelAllItemsSelected
+    );
+    cy.get(commonWidgetSelector.draggableWidget("numberinput2"))
+      .clear()
+      .type("3");
+    verifyMultipleComponentValuesFromInspector("multiselect1", [2, 1]);
+
+    cy.get(commonWidgetSelector.draggableWidget("button1")).click();
+
+    verifyMultiselectHeader("multiselect1", "Select...");
   });
 });

@@ -48,12 +48,7 @@ function ContinueButtonSelfHost({
             return;
           }
         }
-        page != 4 && setPage((currPage) => currPage + 1);
-        if (page == 4) {
-          setIsLoading(true);
-          setCompleted(true);
-          return;
-        }
+        if (page < 5) setPage((currPage) => currPage + 1);
       }
     };
     document.addEventListener('keydown', keyDownHandler);
@@ -67,20 +62,22 @@ function ContinueButtonSelfHost({
     <button
       className="onboarding-page-continue-button"
       disabled={activeCondition}
-      onClick={() => {
+      onClick={(e) => {
+        e.preventDefault();
         if (page == 0) {
           if (!validateEmail(email)) {
             setEmailError('Invalid Email');
             return;
           }
         }
-        page != 4 && setPage((currPage) => currPage + 1);
-        if (page == 4) {
+        if (page < 5) setPage((currPage) => currPage + 1);
+        if (page == 5) {
           setIsLoading(true);
           setCompleted(true);
           return;
         }
       }}
+      data-cy="continue-button"
     >
       {isLoading ? (
         <div className="spinner-center">

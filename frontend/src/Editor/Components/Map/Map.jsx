@@ -15,8 +15,10 @@ export const Map = function Map({
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onEvent,
+  styles,
   // canvasWidth,
   registerAction,
+  dataCy,
 }) {
   const center = component.definition.properties.initialLocation.value;
   const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
@@ -136,12 +138,13 @@ export const Map = function Map({
   return (
     <div
       data-disabled={parsedDisabledState}
-      style={{ height, display: parsedWidgetVisibility ? '' : 'none' }}
+      style={{ height, display: parsedWidgetVisibility ? '' : 'none', boxShadow: styles.boxShadow }}
       onClick={(event) => {
         event.stopPropagation();
         onComponentClick(id, component, event);
       }}
       className="map-widget"
+      data-cy={dataCy}
     >
       <div
         className="map-center"

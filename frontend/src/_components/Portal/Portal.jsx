@@ -1,9 +1,11 @@
 import React from 'react';
 import { ReactPortal } from './ReactPortal.js';
 import { Rnd } from 'react-rnd';
+import { Button } from '@/_ui/LeftSidebar';
 
 const Portal = ({ children, ...restProps }) => {
-  const { isOpen, trigger, styles, className, componentName, dragResizePortal } = restProps;
+  const { isOpen, trigger, styles, className, componentName, dragResizePortal, callgpt, isCopilotEnabled } = restProps;
+
   const [name, setName] = React.useState(componentName);
   const handleClose = (e) => {
     e.stopPropagation();
@@ -43,6 +45,8 @@ const Portal = ({ children, ...restProps }) => {
           styles={styles}
           componentName={name}
           dragResizePortal={dragResizePortal}
+          callgpt={callgpt}
+          isCopilotEnabled={isCopilotEnabled}
         >
           {children}
         </Portal.Modal>
@@ -55,31 +59,72 @@ const Container = ({ children, ...restProps }) => {
   return <ReactPortal {...restProps}>{children}</ReactPortal>;
 };
 
-const Modal = ({ children, handleClose, portalStyles, styles, componentName, darkMode, dragResizePortal }) => {
+const Modal = ({
+  children,
+  handleClose,
+  portalStyles,
+  styles,
+  componentName,
+  darkMode,
+  dragResizePortal,
+  callgpt,
+  isCopilotEnabled,
+}) => {
+  const [loading, setLoading] = React.useState(false);
+
+  const handleCallGpt = () => {
+    setLoading(true);
+
+    callgpt().then(() => setLoading(false));
+  };
+
+  const includeGPT = ['Runjs', 'Runpy', 'transformation'].includes(componentName) && isCopilotEnabled;
+
   const renderModalContent = () => (
-    <div className="modal-content" style={{ ...portalStyles, ...styles }}>
+    <div className="modal-content" style={{ ...portalStyles, ...styles }} onClick={(e) => e.stopPropagation()}>
       <div
         className={`resize-handle portal-header d-flex ${darkMode ? 'dark-mode-border' : ''}`}
         style={{ ...portalStyles }}
       >
         <div className="w-100">
-          <code className="mx-2 text-info">{componentName ?? 'Editor'}</code>
+          <span
+            style={{
+              textTransform: 'none',
+            }}
+            className="badge tj-badge"
+            data-cy="codehinder-popup-badge"
+          >
+            {componentName ?? 'Editor'}
+          </span>
         </div>
 
-        <button
-          type="button"
-          className="btn mx-2 btn-light"
+        {includeGPT && (
+          <div className="mx-2">
+            <Button
+              onClick={handleCallGpt}
+              darkMode={darkMode}
+              size="sm"
+              classNames={`${loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`}
+              styles={{ width: '100%', fontSize: '12px', fontWeight: 500, borderColor: darkMode && 'transparent' }}
+            >
+              <Button.Content title={'Generate code'} />
+            </Button>
+          </div>
+        )}
+
+        <Button
+          title={'close'}
           onClick={handleClose}
-          data-tip="Hide code editor modal"
-          style={{ backgroundColor: darkMode && '#42546a' }}
+          darkMode={darkMode}
+          size="sm"
+          styles={{ width: '50px', padding: '2px' }}
         >
-          <img
-            style={{ transform: 'rotate(-90deg)', filter: darkMode && 'brightness(0) invert(1)' }}
-            src="assets/images/icons/portal-close.svg"
-            width="12"
-            height="12"
+          <Button.Content
+            iconSrc={'assets/images/icons/portal-close.svg'}
+            direction="left"
+            dataCy={`codehinder-popup-close`}
           />
-        </button>
+        </Button>
       </div>
       <div
         className={`modal-body ${darkMode ? 'dark-mode-border' : ''}`}

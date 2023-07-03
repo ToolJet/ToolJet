@@ -1,14 +1,20 @@
 import React from 'react';
-export default ({ defaultChecked, onChange, checked = false, classes = {} }) => {
+import './Toggle.scss';
+function Toggle({ onChange, checked = false, className = {}, disabled = false, label = '', dataCy = '' }) {
   return (
-    <label className={`form-switch ${classes?.wrapper}`}>
+    <label className={`form-check form-switch ${className}`}>
       <input
-        className="form-check-input"
-        checked={checked}
+        className="form-check-input tj-toggle-switch"
         type="checkbox"
-        defaultChecked={defaultChecked}
+        checked={checked}
         onChange={onChange}
+        disabled={disabled}
+        data-cy={`${dataCy}-toggle-input`}
       />
+      <span className="tj-toggle-label" data-cy={`${dataCy}-toggle-label`}>
+        {label}
+      </span>
     </label>
   );
-};
+}
+export default Toggle;

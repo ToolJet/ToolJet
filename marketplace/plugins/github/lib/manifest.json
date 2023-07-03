@@ -1,0 +1,58 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "Github datasource",
+  "description": "A schema defining Github datasource",
+  "type": "api",
+  "source": {
+    "name": "Github",
+    "kind": "github",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "auth_type": {
+        "type": "string"
+      },
+      "personal_token": {
+        "type": "string",
+        "encrypted": true
+      }
+    }
+  },
+  "defaults": {
+    "auth_type": {
+      "value": "personal_access_token"
+    },
+    "personal_token": {
+      "value": ""
+    }
+  },
+  "properties": {
+    "credentials": {
+      "label": "Authentication",
+      "key": "auth_type",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for choosing credentials",
+      "list": [
+        {
+          "value": "personal_access_token",
+          "name": "Use Personal Access Token"
+        }
+      ]
+     
+    },
+    "personal_access_token": {
+      "token": {
+        "label": "Token",
+        "key": "personal_token",
+        "type": "password",
+        "description": "Enter personal access token",
+        "hint": "You can generate a personal access token from your Github account settings."
+      }
+    }
+  },
+  "required": ["personal_token"]
+}

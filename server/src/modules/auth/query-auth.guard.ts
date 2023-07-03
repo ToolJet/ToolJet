@@ -1,6 +1,7 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { DataQueriesService } from '@services/data_queries.service';
+import { maybeSetSubPath } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class QueryAuthGuard extends AuthGuard('jwt') {
@@ -12,11 +13,10 @@ export class QueryAuthGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest();
 
     // unauthenticated users should be able to to run queries of public apps
-    if (request.route.path === '/api/data_queries/:id/run') {
+    const apiUrl = maybeSetSubPath('/api/data_queries/:id/run');
+    if (request.route.path === apiUrl) {
       const dataQuery = await this.dataQueriesService.findOne(request.params.id);
-      const app = dataQuery.dataSource.app;
-
-      if (app.isPublic === true && request.headers['authorization']) return super.canActivate(context);
+      const app = dataQuery.app;
 
       if (app.isPublic === true) {
         return true;

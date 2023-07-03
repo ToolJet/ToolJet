@@ -2,6 +2,7 @@ import { tooljetDatabaseService } from '@/_services';
 import { isEmpty } from 'lodash';
 import PostgrestQueryBuilder from '@/_helpers/postgrestQueryBuilder';
 import { resolveReferences } from '@/_helpers/utils';
+import { hasEqualWithNull } from './util';
 
 export const tooljetDbOperations = {
   perform,
@@ -48,17 +49,36 @@ function buildPostgrestQuery(filters) {
       }
     }
   });
-
   return postgrestQueryBuilder.url.toString();
 }
 
 async function listRows(queryOptions, organizationId, currentState) {
   let query = [];
   const resolvedOptions = resolveReferences(queryOptions, currentState);
+  if (hasEqualWithNull(resolvedOptions, 'list_rows')) {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: 'Null value comparison not allowed, To check null values Please use IS operator instead.',
+      description: 'Is operator should be used with null value comparision.',
+      data: {},
+    };
+  }
   const { table_name: tableName, list_rows: listRows } = resolvedOptions;
 
   if (!isEmpty(listRows)) {
     const { limit, where_filters: whereFilters, order_filters: orderFilters } = listRows;
+
+    if (limit && isNaN(limit)) {
+      return {
+        status: 'failed',
+        statusText: 'failed',
+        message: 'Please provide a valid limit',
+        description: 'Limit should be a number',
+        data: {},
+      };
+    }
+
     const whereQuery = buildPostgrestQuery(whereFilters);
     const orderQuery = buildPostgrestQuery(orderFilters);
 
@@ -80,6 +100,15 @@ async function createRow(queryOptions, organizationId, currentState) {
 
 async function updateRows(queryOptions, organizationId, currentState) {
   const resolvedOptions = resolveReferences(queryOptions, currentState);
+  if (hasEqualWithNull(resolvedOptions, 'update_rows')) {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: 'Null value comparison not allowed, To check null values Please use IS operator instead.',
+      description: 'Is operator should be used with null value comparision.',
+      data: {},
+    };
+  }
   const { table_name: tableName, update_rows: updateRows } = resolvedOptions;
   const { where_filters: whereFilters, columns } = updateRows;
 
@@ -92,23 +121,41 @@ async function updateRows(queryOptions, organizationId, currentState) {
 
   !isEmpty(whereQuery) && query.push(whereQuery);
 
-  return await tooljetDatabaseService.updateRows(organizationId, tableName, body, query.join('&'));
+  return await tooljetDatabaseService.updateRows(organizationId, tableName, body, query.join('&') + '&order=id');
 }
 
 async function deleteRows(queryOptions, organizationId, currentState) {
   const resolvedOptions = resolveReferences(queryOptions, currentState);
-  const { table_name: tableName, delete_rows: deleteRows } = resolvedOptions;
-  const { where_filters: whereFilters, limit } = deleteRows;
+  if (hasEqualWithNull(resolvedOptions, 'delete_rows')) {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: 'Null value comparison not allowed, To check null values Please use IS operator instead.',
+      description: 'Is operator should be used with null value comparision.',
+      data: {},
+    };
+  }
+  const { table_name: tableName, delete_rows: deleteRows = { whereFilters: {} } } = resolvedOptions;
+  const { where_filters: whereFilters, limit = 1 } = deleteRows;
 
   let query = [];
   const whereQuery = buildPostgrestQuery(whereFilters);
-
-  if (isEmpty(whereQuery) || !limit || limit === '') {
+  if (isEmpty(whereQuery)) {
     return {
       status: 'failed',
       statusText: 'failed',
       message: 'Please provide a where filter or a limit to delete rows',
       description: 'Please provide a where filter or a limit to delete rows',
+      data: {},
+    };
+  }
+
+  if (limit && isNaN(limit)) {
+    return {
+      status: 'failed',
+      statusText: 'failed',
+      message: 'Please provide a valid limit',
+      description: 'Limit should be a number',
       data: {},
     };
   }

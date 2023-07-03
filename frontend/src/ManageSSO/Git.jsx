@@ -3,6 +3,9 @@ import { organizationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { copyToClipboard } from '@/_helpers/appUtils';
 import { useTranslation } from 'react-i18next';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Toggle from '@/_ui/Toggle/index';
 
 export function Git({ settings, updateData }) {
   const [enabled, setEnabled] = useState(settings?.enabled || false);
@@ -69,35 +72,31 @@ export function Git({ settings, updateData }) {
   };
 
   return (
-    <div className="card">
+    <div className="sso-card-wrapper">
       <div className="card-header">
         <div className="d-flex justify-content-between title-with-toggle">
-          <div className="card-title" data-cy="card-title">
-            {t('header.organization.menus.manageSSO.github.title', 'Github')}
-            <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`} data-cy="status-label">
+          <div>
+            <Toggle
+              label={t('header.organization.menus.manageSSO.github.title', 'Github')}
+              onChange={changeStatus}
+              checked={enabled}
+              dataCy="github"
+            />
+          </div>
+          <div className="card-title">
+            <span className={` tj-text-xsm ${enabled ? 'enabled-tag' : 'disabled-tag'}`} data-cy="status-label">
               {enabled ? t('globals.enabled', 'Enabled') : t('globals.disabled', 'Disabled')}
             </span>
-          </div>
-          <div>
-            <label className="form-check form-switch">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                checked={enabled}
-                onChange={changeStatus}
-                data-cy="git-enable-toogle"
-              />
-            </label>
           </div>
         </div>
       </div>
       <div className="card-body">
-        <form noValidate>
+        <form noValidate className="sso-form-wrap">
           <div className="form-group mb-3">
             <label className="form-label" data-cy="host-name-label">
               {t('header.organization.menus.manageSSO.github.hostName', 'Host Name')}
             </label>
-            <div>
+            <div className="tj-app-input">
               <input
                 type="text"
                 className="form-control"
@@ -107,8 +106,8 @@ export function Git({ settings, updateData }) {
                 data-cy="host-name-input"
               />
             </div>
-            <div className="help-text mt-2">
-              <div data-cy="git-sso-help-text">
+            <div>
+              <div data-cy="git-sso-help-text" className=" tj-text-xxsm git-sso-help-text">
                 {t('header.organization.menus.manageSSO.github.requiredGithub', 'Required if GitHub is self hosted')}
               </div>
             </div>
@@ -117,7 +116,7 @@ export function Git({ settings, updateData }) {
             <label className="form-label" data-cy="client-id-label">
               {t('header.organization.menus.manageSSO.github.clientId', ' Client Id')}
             </label>
-            <div>
+            <div className="tj-app-input">
               <input
                 type="text"
                 className="form-control"
@@ -131,12 +130,12 @@ export function Git({ settings, updateData }) {
           <div className="form-group mb-3">
             <label className="form-label" data-cy="client-secret-label">
               {t('header.organization.menus.manageSSO.github.clientSecret', 'Client Secret')}
-              <small className="text-green mx-2" data-cy="encripted-label">
-                <img className="mx-2 encrypted-icon" src="assets/images/icons/padlock.svg" width="12" height="12" />
+              <small className="git- mx-2" data-cy="encripted-label">
+                <SolidIcon name="lock" width="16" />
                 {t('header.organization.menus.manageSSO.github.encrypted', 'Encrypted')}
               </small>
             </label>
-            <div>
+            <div className="tj-app-input">
               <input
                 type="text"
                 className="form-control"
@@ -152,36 +151,35 @@ export function Git({ settings, updateData }) {
               <label className="form-label" data-cy="redirect-url-label">
                 {t('header.organization.menus.manageSSO.github.redirectUrl', 'Redirect URL')}
               </label>
-              <div className="d-flex justify-content-between form-control">
+              <div className="d-flex justify-content-between form-control align-items-center">
                 <p
                   data-cy="redirect-url"
                   id="redirect-url"
                 >{`${window.public_config?.TOOLJET_HOST}/sso/git/${configId}`}</p>
-                <img
-                  onClick={() => copyFunction('redirect-url')}
-                  src={`assets/images/icons/copy-dark.svg`}
-                  width="22"
-                  height="22"
-                  className="sso-copy"
-                />
+                <SolidIcon name="copy" width="16" onClick={() => copyFunction('redirect-url')} />
               </div>
             </div>
           )}
-          <div className="form-footer">
-            <button type="button" className="btn btn-light mr-2" onClick={reset} data-cy="cancel-button">
-              {t('globals.cancel', 'Cancel')}
-            </button>
-            <button
-              type="button"
-              className={`btn mx-2 btn-primary ${isSaving ? 'btn-loading' : ''}`}
-              disabled={isSaving}
-              onClick={saveSettings}
-              data-cy="save-button"
-            >
-              {t('globals.save', 'Save')}
-            </button>
-          </div>
         </form>
+      </div>
+      <div className="form-footer sso-card-footer">
+        <ButtonSolid onClick={reset} data-cy="cancel-button" variant="tertiary" className="sso-footer-cancel-btn">
+          {t('globals.cancel', 'Cancel')}
+        </ButtonSolid>
+
+        <ButtonSolid
+          disabled={isSaving}
+          isLoading={isSaving}
+          onClick={saveSettings}
+          data-cy="save-button"
+          variant="primary"
+          className="sso-footer-save-btn"
+          leftIcon="floppydisk"
+          fill="#fff"
+          iconWidth="20"
+        >
+          {t('globals.savechanges', 'Save changes')}
+        </ButtonSolid>
       </div>
     </div>
   );

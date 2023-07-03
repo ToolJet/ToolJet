@@ -11,9 +11,13 @@ import Drawer from '@/_ui/Drawer';
 import EditTableForm from '../Forms/TableForm';
 
 export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
-  const { organizationId, columns, selectedTable, setTables } = useContext(TooljetDatabaseContext);
+  const { organizationId, columns, selectedTable, setTables, setSelectedTable } = useContext(TooljetDatabaseContext);
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
+
+  function updateSelectedTable(tablename) {
+    setSelectedTable(tablename);
+  }
 
   const handleDeleteTable = async () => {
     const shouldDelete = confirm(`Are you sure you want to delete the table "${text}"?`);
@@ -30,15 +34,6 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
     }
   };
 
-  const handleEdit = async (tableName) => {
-    // const { error } = await tooljetDatabaseService.updateTable(organizationId, selectedTable, tableName);
-    // if (error) {
-    //   toast.error(error?.message ?? `Error editing table "${selectedTable}"`);
-    //   return;
-    // }
-    // toast.success(`Edited table "${selectedTable}"`);
-  };
-
   const formColumns = columns.reduce((acc, column, currentIndex) => {
     acc[currentIndex] = { column_name: column.Header, data_type: column.dataType };
     return acc;
@@ -53,10 +48,16 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
           'bg-dark-indigo': darkMode && active,
         }
       )}
+      data-cy={`${String(text).toLowerCase().replace(/\s+/g, '-')}-table`}
       onClick={onClick}
     >
       <ToolTip message={text}>
-        <span className="table-name">{text}</span>
+        <span
+          className="table-name tj-text-xsm"
+          data-cy={`${String(text).toLowerCase().replace(/\s+/g, '-')}-table-name`}
+        >
+          {text}
+        </span>
       </ToolTip>
       <ListItemPopover onEdit={() => setIsEditTableDrawerOpen(true)} onDelete={handleDeleteTable} darkMode={darkMode} />
       <Drawer
@@ -68,6 +69,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
         <EditTableForm
           selectedColumns={formColumns}
           selectedTable={selectedTable}
+          updateSelectedTable={updateSelectedTable}
           onEdit={() => {
             tooljetDatabaseService.findAll(organizationId).then(({ data = [] }) => {
               if (Array.isArray(data?.result) && data.result.length > 0) {

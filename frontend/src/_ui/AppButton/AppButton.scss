@@ -1,0 +1,344 @@
+@import "../../_styles/designtheme.scss";
+
+.tj-base-btn {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 20px;
+    gap: 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    line-height: 20px;
+    text-decoration: none !important;
+
+    .tj-btn-left-icon,
+    .tj-btn-right-icon {
+        display: flex;
+        align-items: center;
+    }
+
+    &:disabled {
+        background: var(--slate3) !important;
+        color: var(--slate8) !important;
+    }
+}
+
+.tj-large-btn {
+    height: 40px;
+    border-radius: 6px;
+    padding: 10px 20px 10px 20px;
+    font-size: 14px;
+}
+
+.tj-medium-btn {
+    height: 32px;
+    border-radius: 6px;
+    padding: 6px 16px 6px 16px;
+    font-size: 14px;
+}
+
+.tj-small-btn {
+    height: 28px;
+    border-radius: 6px;
+    padding: 4px 16px 4px 16px;
+    font-size: 12px;
+}
+
+.tj-extra-small-btn {
+    height: 20px;
+    border-radius: 4px;
+    padding: 0px 8px 0px 8px;
+    font-size: 12px;
+}
+
+/* Order */
+.tj-reverse-btn {
+    flex-direction: row-reverse;
+}
+
+/* Variants */
+.tj-primary-btn {
+    background: #3E63DD;
+    border: none;
+    color: #FDFDFE;
+
+    &:hover {
+        background: #3A5CCC;
+        color: #FDFDFE;
+
+    }
+
+    &:focus-visible {
+        box-shadow: 0px 0px 0px 4px var(--indigo6);
+        background: #3A5CCC;
+        outline: none;
+        color: #FDFDFE;
+
+    }
+
+
+    &:active {
+        background: #3451B2;
+        box-shadow: none;
+        color: #F0F4FF;
+    }
+
+}
+
+.tj-secondary-btn {
+    background: var(--indigo3);
+    border: none;
+    color: var(--indigo11);
+
+    &:hover {
+        background: var(--indigo4);
+        color: var(--indigo10);
+    }
+
+    &:active {
+        background: var(--indigo5);
+        color: var(--indigo8);
+        box-shadow: none;
+    }
+
+    &:focus-visible {
+        background: #E6EDFE;
+        box-shadow: 0px 0px 0px 4px var(--indigo6);
+        color: var(--indigo10);
+        outline: none;
+    }
+}
+
+.tj-tertiary-btn {
+    background: var(--base);
+    border: 1px solid var(--slate7);
+    color: var(--slate12);
+
+    &:hover {
+        background: var(--slate8);
+        color: var(--slate11);
+        border: 1px solid var(--slate8);
+        background: var(--base);
+    }
+
+    &:active {
+        background: var(--base);
+        box-shadow: none;
+        border: 1px solid var(--slate12);
+        color: var(--slate12);
+    }
+
+    &:focus-visible {
+        background: var(--base);
+        color: var(--slate11);
+        outline: 1px solid var(--slate8);
+        box-shadow: 0px 0px 0px 4px var(--slate6);
+        outline: none;
+    }
+}
+
+
+.tj-ghost-blue-btn {
+    color: var(--indigo9);
+    border: none;
+    background: transparent;
+
+    &:hover {
+        color: var(--indigo10);
+    }
+
+    &:active {
+        color: var(--indigo8);
+    }
+
+    &:focus-visible {
+        color: var(--indigo10);
+        background: var(--base);
+        border: none;
+        box-shadow: 0px 0px 0px 4px var(--indigo6);
+        outline: none;
+    }
+}
+
+.tj-ghost-black-btn {
+    color: var(--slate12);
+    border: none;
+    background: transparent;
+
+    &:hover {
+        color: var(--slate11);
+    }
+
+    &:active {
+        color: var(--slate12);
+    }
+
+    &:focus-visible {
+        color: var(--slate11);
+        background: var(--base);
+        border: none;
+        box-shadow: 0px 0px 0px 4px var(--slate6);
+        outline: none;
+    }
+}
+
+/* // Danger-variants--- */
+
+.tj-primary-danger-btn {
+    background: #E54D2E;
+    border: none;
+    color: #FFFCFC;
+
+    &:hover {
+        background: var(--tomato10);
+    }
+
+    &:active {
+        background: var(--tomato11);
+        color: #F0F4FF
+    }
+
+    &:focus-visible {
+        background: var(--tomato10);
+        border: none;
+        box-shadow: 0px 0px 0px 4px var(--tomato6);
+        outline: none;
+    }
+
+}
+
+.tj-secondary-danger-btn {
+    background: var(--tomato3);
+    border: none;
+    color: var(--tomato9);
+
+    &:hover {
+        background: var(--tomato4);
+        color: var(--tomato10);
+    }
+
+    &:active {
+        background: var(--tomato5);
+        color: var(--tomato8);
+    }
+
+    &:focus-visible {
+        background: var(--tomato4);
+        border: none;
+        box-shadow: 0px 0px 0px 4px var(--tomato6);
+        color: var(--tomato8);
+        outline: none;
+    }
+}
+
+.tj-tertiary-danger-btn {
+    background: var(--base);
+    border: 1px solid var(--tomato7);
+    color: var(--tomato9);
+
+    &:hover {
+        background: var(--base);
+        color: var(--tomato10);
+        border: 1px solid var(--tomato5);
+    }
+
+    &:active {
+        background: var(--base);
+        color: var(--tomato11);
+        border: 1px solid var(--tomato11);
+    }
+
+    &:focus-visible {
+        background: var(--base);
+        outline: 1px solid var(--tomato5);
+        box-shadow: 0px 0px 0px 4px var(--tomato6);
+        color: var(--tomato10);
+        outline: none;
+    }
+
+}
+
+
+.tj-ghost-danger-btn {
+    color: var(--tomato9);
+    background: transparent;
+    border: none;
+
+    &:hover {
+        color: var(--tomato10);
+    }
+
+    &:active {
+        color: var(--tomato8);
+    }
+
+    &:focus-visible {
+        border: none;
+        box-shadow: 0px 0px 0px 4px var(--tomato6);
+        outline: none;
+    }
+}
+
+.tj-disabled-btn {
+    background: var(--slate3) !important;
+    color: var(--slate8) !important;
+    border: none !important;
+}
+
+.dark-theme {
+    tj-primary-btn {
+        background: #3E63DD;
+        border: none;
+        color: #FDFDFE;
+
+        &:hover {
+            background: var(--indigo10);
+            border: 1px solid #FFFFFF
+        }
+
+        &:focus-visible {
+            box-shadow: 0px 0px 0px 4px var(--indigo6);
+            border: 1px solid #FFFFFF;
+            outline: none;
+        }
+
+
+        &:active {
+            background: #849DFF;
+            box-shadow: none;
+        }
+
+    }
+
+
+    /* // Danger-variants--- */
+
+    .tj-primary-danger-btn {
+        background: var(--tomato9);
+        border: none;
+        color: #FFFCFC;
+
+        &:hover {
+            background: var(--tomato10);
+            color: #FFFCFC;
+        }
+
+        &:active {
+            background: var(--tomato11);
+            color: #F0F4FF;
+        }
+
+        &:focus-visible {
+            background: var(--tomato10);
+            border: none;
+            box-shadow: 0px 0px 0px 4px var(--tomato6);
+            outline: none;
+            color: #FFFCFC;
+        }
+
+    }
+}

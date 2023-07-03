@@ -14,7 +14,7 @@ moment.updateLocale('en', {
   },
 });
 
-const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditCommentId, fetchComments }) => {
+const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditCommentId, fetchComments, currentUser }) => {
   const bottomRef = React.useRef();
   const { t } = useTranslation();
 
@@ -39,7 +39,6 @@ const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditComment
         <div className="text-center">{t('leftSidebar.Comments.commentBody', 'There are no comments to display')}</div>
       );
 
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     return (
       <div className="divide-y">
         {thread.map(({ id, comment, createdAt, user = {} }) => {
@@ -52,7 +51,7 @@ const CommentBody = ({ socket, thread, isLoading, setEditComment, setEditComment
                   fetchComments={fetchComments}
                   comment={comment}
                   commentId={id}
-                  isCommentOwner={currentUser.id === user.id}
+                  isCommentOwner={currentUser?.id === user.id}
                   setEditComment={setEditComment}
                   setEditCommentId={setEditCommentId}
                 />

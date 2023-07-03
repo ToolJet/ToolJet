@@ -1,0 +1,43 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/manifest.schema.json",
+  "title": "OpenAI plugin",
+  "description": "A schema defining OpenAI datasource",
+  "type": "api",
+  "source": {
+    "name": "OpenAI",
+    "kind": "openai",
+    "exposedVariables": {
+      "isLoading": false,
+      "data": {},
+      "rawData": {}
+    },
+    "options": {
+      "apiKey": {
+        "type": "string",
+        "encrypted": true
+      },
+      "organizationId": {
+        "type": "string"
+      }
+    }
+  },
+  "defaults": {},
+  "properties": {
+    "apiKey": {
+      "label": "API Key",
+      "key": "apiKey",
+      "type": "password",
+      "description": "Enter your OpenAI API Key",
+      "helpText": "For generating API Key, visit: <a href='https://beta.openai.com/account/api-keys' target='_blank' rel='noreferrer'>OpenAI Console</a>"
+    },
+    "organizationId": {
+      "label": "Organization ID",
+      "key": "organizationId",
+      "type": "text",
+      "description": "Enter your OpenAI Organization ID"
+    }
+  },
+  "required": [
+    "apiKey"
+  ]
+}

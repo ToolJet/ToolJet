@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import Slider, { Range } from 'rc-slider';
+import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
-export const RangeSlider = function RangeSlider({ height, properties, styles, setExposedVariable, fireEvent }) {
+export const RangeSlider = function RangeSlider({ height, properties, styles, setExposedVariable, fireEvent, dataCy }) {
   const { value, min, max, enableTwoHandle } = properties;
-  const { trackColor, handleColor, lineColor, visibility } = styles;
+  const { trackColor, handleColor, lineColor, visibility, boxShadow } = styles;
   const sliderRef = useRef(null);
   const [sliderValue, setSliderValue] = useState(0);
   const [rangeValue, setRangeValue] = useState([0, 100]);
@@ -19,6 +19,7 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
     alignItems: 'center',
     justifyContent: 'center',
     padding: '0px 2px',
+    boxShadow,
   };
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
   useEffect(() => {
     setExposedVariable('value', enableTwoHandle ? twoHandlesArray : singleHandleValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sliderRef.current, enableTwoHandle]);
+  }, [enableTwoHandle]);
 
   const onSliderChange = (value) => {
     setExposedVariable('value', value);
@@ -62,9 +63,10 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
   };
 
   return (
-    <div style={computedStyles} className="range-slider">
+    <div style={computedStyles} className="range-slider" data-cy={dataCy}>
       {enableTwoHandle ? (
-        <Range
+        <Slider
+          range
           min={min}
           max={max}
           defaultValue={toArray(rangeValue)}

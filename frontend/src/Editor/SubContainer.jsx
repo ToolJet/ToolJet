@@ -4,12 +4,14 @@ import { useDrop, useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { DraggableBox } from './DraggableBox';
 import update from 'immutability-helper';
-import produce from 'immer';
+const produce = require('immer').default;
 import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
-
+import { resolveReferences } from '@/_helpers/utils';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useMounted } from '@/_hooks/use-mount';
+import { shallow } from 'zustand/shallow';
 
 export const SubContainer = ({
   mode,
@@ -33,7 +35,6 @@ export const SubContainer = ({
   darkMode,
   containerCanvasWidth,
   readOnly,
-  dataQueries,
   customResolvables,
   parentComponent,
   onComponentHover,
@@ -54,6 +55,13 @@ export const SubContainer = ({
   });
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
+  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
@@ -70,18 +78,22 @@ export const SubContainer = ({
   const allComponents = appDefinition ? appDefinition.pages[currentPageId].components : {};
   const isParentModal =
     (allComponents[parent]?.component?.component === 'Modal' ||
-      allComponents[parent]?.component?.component === 'Form') ??
+      allComponents[parent]?.component?.component === 'Form' ||
+      allComponents[parent]?.component?.component === 'Container') ??
     false;
 
-  let childWidgets = [];
-
-  Object.keys(allComponents).forEach((key) => {
-    if (allComponents[key].parent === parent) {
-      childWidgets[key] = { ...allComponents[key], component: { ...allComponents[key]['component'], parent } };
-    }
-  });
+  const getChildWidgets = (components) => {
+    let childWidgets = [];
+    Object.keys(components).forEach((key) => {
+      if (components[key].parent === parent) {
+        childWidgets[key] = { ...components[key], component: { ...components[key]['component'], parent } };
+      }
+    });
+    return childWidgets;
+  };
 
   const [boxes, setBoxes] = useState(allComponents);
+  const [childWidgets, setChildWidgets] = useState(() => getChildWidgets(allComponents));
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   // const [subContainerHeight, setSubContainerHeight] = useState('100%'); //used to determine the height of the sub container for modal
@@ -89,7 +101,9 @@ export const SubContainer = ({
 
   useEffect(() => {
     setBoxes(allComponents);
-  }, [allComponents]);
+    setChildWidgets(() => getChildWidgets(allComponents));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allComponents, parent]);
 
   useEffect(() => {
     if (mounted) {
@@ -222,9 +236,10 @@ export const SubContainer = ({
         if (parentRef.current) {
           const currentOffset = monitor.getSourceClientOffset();
           if (currentOffset) {
-            const canvasBoundingRect = parentRef.current
-              .getElementsByClassName('real-canvas')[0]
-              .getBoundingClientRect();
+            const canvasBoundingRect = parentRef?.current
+              ?.getElementsByClassName('real-canvas')[0]
+              ?.getBoundingClientRect();
+            if (!canvasBoundingRect) return { draggingState: false };
             if (
               currentOffset.x > canvasBoundingRect.x &&
               currentOffset.x < canvasBoundingRect.x + canvasBoundingRect.width
@@ -311,6 +326,10 @@ export const SubContainer = ({
   }
 
   function onDragStop(e, componentId, direction, currentLayout) {
+    if (isVersionReleased) {
+      enableReleasedVersionPopupState();
+      return;
+    }
     const canvasWidth = getContainerCanvasWidth();
     const nodeBounds = direction.node.getBoundingClientRect();
 
@@ -347,10 +366,15 @@ export const SubContainer = ({
       }
     }
 
+    setChildWidgets(() => getChildWidgets(newBoxes));
     setBoxes(newBoxes);
   }
 
   function onResizeStop(id, e, direction, ref, d, position) {
+    if (isVersionReleased) {
+      enableReleasedVersionPopupState();
+      return;
+    }
     const deltaWidth = d.width;
     const deltaHeight = d.height;
 
@@ -440,94 +464,98 @@ export const SubContainer = ({
     removeComponent(component);
   }
 
+  function checkParentVisibility() {
+    let elem = parentRef.current;
+    if (elem?.className === 'tab-content') {
+      elem = parentRef.current?.parentElement;
+    }
+    if (elem?.style?.display !== 'none') return true;
+    return false;
+  }
+
   return (
     <div
       ref={drop}
       style={styles}
       id={`canvas-${parent}`}
-      className={`real-canvas ${(isDragging || isResizing) && !readOnly ? ' show-grid' : ''}`}
+      className={`real-canvas ${(isDragging || isResizing) && !readOnly ? 'show-grid' : ''}`}
     >
-      {Object.keys(childWidgets).map((key) => {
-        const addDefaultChildren = childWidgets[key]['withDefaultChildren'] || false;
+      {checkParentVisibility() &&
+        Object.keys(childWidgets).map((key) => {
+          const addDefaultChildren = childWidgets[key]['withDefaultChildren'] || false;
 
-        return (
-          <DraggableBox
-            onComponentClick={onComponentClick}
-            onEvent={onEvent}
-            onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
-            onComponentOptionsChanged={onComponentOptionsChanged}
-            key={key}
-            dataQueries={dataQueries}
-            currentState={currentState}
-            onResizeStop={onResizeStop}
-            onDragStop={onDragStop}
-            paramUpdated={paramUpdated}
-            id={key}
-            allComponents={allComponents}
-            {...childWidgets[key]}
-            mode={mode}
-            resizingStatusChanged={(status) => setIsResizing(status)}
-            draggingStatusChanged={(status) => setIsDragging(status)}
-            inCanvas={true}
-            zoomLevel={zoomLevel}
-            setSelectedComponent={setSelectedComponent}
-            currentLayout={currentLayout}
-            selectedComponent={selectedComponent}
-            deviceWindowWidth={deviceWindowWidth}
-            isSelectedComponent={mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false}
-            removeComponent={customRemoveComponent}
-            canvasWidth={_containerCanvasWidth}
-            readOnly={readOnly}
-            darkMode={darkMode}
-            customResolvables={customResolvables}
-            onComponentHover={onComponentHover}
-            hoveredComponent={hoveredComponent}
-            parentId={parentComponent?.name}
-            sideBarDebugger={sideBarDebugger}
-            isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
-            exposedVariables={exposedVariables ?? {}}
-            childComponents={childComponents[key]}
-            containerProps={{
-              mode,
-              snapToGrid,
-              onComponentClick,
-              onEvent,
-              appDefinition,
-              appDefinitionChanged,
-              currentState,
-              onComponentOptionChanged,
-              onComponentOptionsChanged,
-              appLoading,
-              zoomLevel,
-              setSelectedComponent,
-              removeComponent,
-              currentLayout,
-              deviceWindowWidth,
-              selectedComponents,
-              darkMode,
-              readOnly,
-              onComponentHover,
-              hoveredComponent,
-              sideBarDebugger,
-              addDefaultChildren,
-              currentPageId,
-              childComponents,
-            }}
-          />
-        );
-      })}
-
-      {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
-        <div className="mx-auto mt-5 w-50 p-5 bg-light no-components-box" data-cy="----Test----">
-          <center className="text-muted">
-            Drag components from the right sidebar and drop here. Check out our{' '}
-            <a href="https://docs.tooljet.io/docs/tutorial/adding-widget" target="_blank" rel="noreferrer">
-              guide
-            </a>{' '}
-            on adding widgets.
-          </center>
-        </div>
-      )}
+          const box = childWidgets[key];
+          const canShowInCurrentLayout =
+            box.component.definition.others[currentLayout === 'mobile' ? 'showOnMobile' : 'showOnDesktop'].value;
+          if (box.parent && resolveReferences(canShowInCurrentLayout, currentState)) {
+            return (
+              <DraggableBox
+                onComponentClick={onComponentClick}
+                onEvent={onEvent}
+                onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
+                onComponentOptionsChanged={onComponentOptionsChanged}
+                key={key}
+                currentState={currentState}
+                onResizeStop={onResizeStop}
+                onDragStop={onDragStop}
+                paramUpdated={paramUpdated}
+                id={key}
+                allComponents={allComponents}
+                {...childWidgets[key]}
+                mode={mode}
+                resizingStatusChanged={(status) => setIsResizing(status)}
+                draggingStatusChanged={(status) => setIsDragging(status)}
+                inCanvas={true}
+                zoomLevel={zoomLevel}
+                setSelectedComponent={setSelectedComponent}
+                currentLayout={currentLayout}
+                selectedComponent={selectedComponent}
+                deviceWindowWidth={deviceWindowWidth}
+                isSelectedComponent={
+                  mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false
+                }
+                removeComponent={customRemoveComponent}
+                canvasWidth={_containerCanvasWidth}
+                readOnly={readOnly}
+                darkMode={darkMode}
+                customResolvables={customResolvables}
+                onComponentHover={onComponentHover}
+                hoveredComponent={hoveredComponent}
+                parentId={parentComponent?.name}
+                sideBarDebugger={sideBarDebugger}
+                isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
+                exposedVariables={exposedVariables ?? {}}
+                childComponents={childComponents[key]}
+                containerProps={{
+                  mode,
+                  snapToGrid,
+                  onComponentClick,
+                  onEvent,
+                  appDefinition,
+                  appDefinitionChanged,
+                  currentState,
+                  onComponentOptionChanged,
+                  onComponentOptionsChanged,
+                  appLoading,
+                  zoomLevel,
+                  setSelectedComponent,
+                  removeComponent,
+                  currentLayout,
+                  deviceWindowWidth,
+                  selectedComponents,
+                  darkMode,
+                  readOnly,
+                  onComponentHover,
+                  hoveredComponent,
+                  sideBarDebugger,
+                  addDefaultChildren,
+                  currentPageId,
+                  childComponents,
+                }}
+              />
+            );
+          }
+        })}
       {appLoading && (
         <div className="mx-auto mt-5 w-50 p-5">
           <center>

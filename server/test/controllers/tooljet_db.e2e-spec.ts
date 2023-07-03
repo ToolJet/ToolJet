@@ -54,6 +54,7 @@ describe.skip('Tooljet DB controller', () => {
 
       await request(nestApp.getHttpServer())
         .get(`/api/tooljet_db/organizations/${archivedUserData.organization.id}/proxy/table_name`)
+        .set('tj-workspace-id', archivedUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(archivedUserData.user))
         .expect(401);
     });
@@ -65,6 +66,7 @@ describe.skip('Tooljet DB controller', () => {
 
       const response = await request(nestApp.getHttpServer())
         .get(`/api/tooljet_db/organizations/${adminUserData.organization.id}/proxy/\${table_name}`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user));
 
       const { message, statusCode } = response.body;
@@ -115,6 +117,7 @@ describe.skip('Tooljet DB controller', () => {
         .get(
           `/api/tooljet_db/organizations/${adminUserData.organization.id}/proxy/\${actors}?select=first_name,last_name,\${films}(title)}`
         )
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user));
 
       // expect(postgrestResponse).toBeCalledWith(`http://localhost:3001/${actorsTable.id}?select=first_name,last_name,${filmsTable.id}(title)`, expect.anything());
@@ -148,6 +151,7 @@ describe.skip('Tooljet DB controller', () => {
 
       await request(nestApp.getHttpServer())
         .post(`/api/tooljet_db/organizations/${archivedUserData.organization.id}/table`)
+        .set('tj-workspace-id', archivedUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(archivedUserData.user))
         .expect(401);
     });
@@ -159,6 +163,7 @@ describe.skip('Tooljet DB controller', () => {
 
       const { statusCode } = await request(nestApp.getHttpServer())
         .post(`/api/tooljet_db/organizations/${adminUserData.organization.id}/table`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send({
           action: 'create_table',
@@ -186,6 +191,7 @@ describe.skip('Tooljet DB controller', () => {
 
       await request(nestApp.getHttpServer())
         .post(`/api/tooljet_db/organizations/${adminUserData.organization.id}/table`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send({
           action: 'create_table',
@@ -195,6 +201,7 @@ describe.skip('Tooljet DB controller', () => {
 
       await request(nestApp.getHttpServer())
         .post(`/api/tooljet_db/organizations/${adminUserData.organization.id}/table`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send({
           action: 'create_table',
@@ -220,6 +227,7 @@ describe.skip('Tooljet DB controller', () => {
 
       await request(nestApp.getHttpServer())
         .post(`/api/tooljet_db/organizations/${adminUserData.organization.id}/table`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send({
           action: 'create_table',
@@ -237,6 +245,7 @@ describe.skip('Tooljet DB controller', () => {
 
       const { statusCode } = await request(nestApp.getHttpServer())
         .post(`/api/tooljet_db/organizations/${adminUserData.organization.id}/table/test_table/column`)
+        .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Authorization', authHeaderForUser(adminUserData.user))
         .send({
           action: 'add_column',

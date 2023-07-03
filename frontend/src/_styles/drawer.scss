@@ -3,14 +3,16 @@
 }
 
 .drawer {
-  background: #fff;
-  width: 40%;
+  background: var(--base);
+  width: 534px;
   height: 100%;
   overflow: auto;
   position: fixed;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--slate5);
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   transition: transform var(--transition-speed) ease;
   z-index: 1000;
+  background: var(--base);
 
   &.left {
     top: 0;
@@ -44,11 +46,14 @@
 }
 
 .drawer-container.in.open {
-  .left, .right {
+
+  .left,
+  .right {
     transform: translateX(0);
   }
 
-  .top, .bottom {
+  .top,
+  .bottom {
     transform: translateY(0);
   }
 }
@@ -72,15 +77,4 @@
   opacity: 1;
   pointer-events: auto;
   z-index: 999;
-}
-
-.theme-dark {
-  .drawer {
-    background: #22272E;
-
-    .btn {
-      background-color: #273342;
-      color: #fff;
-    }
-  }
 }

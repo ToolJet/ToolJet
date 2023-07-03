@@ -49,10 +49,16 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
 
   const actionButtonRadius = styles.actionButtonRadius ? parseFloat(styles.actionButtonRadius) : 0;
 
-  const actions = (component.definition.properties.actions?.value ?? []).map((action) => ({
-    ...action,
-    actionButtonRadius,
-  }));
+  const actions = (component.definition.properties.actions?.value ?? []).map((action) => {
+    action.position = action?.position ?? 'right';
+    return {
+      ...action,
+      actionButtonRadius,
+    };
+  });
+
+  const showAddNewRowButton = properties?.showAddNewRowButton ?? true;
+  const allowSelection = properties?.allowSelection ?? (showBulkSelector || highlightSelectedRow) ? true : false;
 
   return {
     color,
@@ -82,5 +88,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     rowsPerPage,
     enabledSort,
     hideColumnSelectorButton,
+    showAddNewRowButton,
+    allowSelection,
   };
 }

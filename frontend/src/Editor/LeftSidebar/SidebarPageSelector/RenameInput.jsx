@@ -12,6 +12,7 @@ export const RenameInput = ({ page, updaterCallback, updatePageEditMode }) => {
     <div className="row" role="button">
       <div className="col-12">
         <input
+          data-cy={`page-rename-input`}
           type="text"
           className="form-control page-name-input"
           autoFocus

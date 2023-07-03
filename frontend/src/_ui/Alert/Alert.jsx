@@ -22,7 +22,7 @@ const Container = ({ children, cls = '' }) => {
 
 const Message = ({ children }) => {
   return (
-    <div style={{ fontWeight: 400 }} className="mx-2">
+    <div data-cy={`alert-info-text`} style={{ fontWeight: 400 }} className="mx-2">
       {children}
     </div>
   );

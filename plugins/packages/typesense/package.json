@@ -20,6 +20,6 @@
     "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2",
     "rimraf": "^3.0.2",
-    "typesense": "^1.0.2"
+    "typesense": "^1.5.1"
   }
 }

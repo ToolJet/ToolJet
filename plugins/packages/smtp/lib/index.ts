@@ -5,7 +5,7 @@ import nodemailer from 'nodemailer';
 export default class Smtp implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
     const nodemailerTransport = await this.getConnection(sourceOptions);
-    const { from, to, from_name, subject, textContent, htmlContent } = queryOptions;
+    const { from, to, cc, bcc, from_name, subject, textContent, htmlContent } = queryOptions;
     const attachments =
       queryOptions['attachment_array'] && typeof queryOptions['attachment_array'] === 'string'
         ? JSON.parse(queryOptions['attachment_array'])
@@ -24,6 +24,8 @@ export default class Smtp implements QueryService {
         address: from,
       },
       to,
+      cc,
+      bcc,
       subject,
       text: textContent,
       html: htmlContent,

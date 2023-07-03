@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "ioredis": "^4.28.2",
+    "ioredis": "^4.28.5",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"
   }

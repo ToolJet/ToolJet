@@ -1,4 +1,15 @@
-import { Controller, Get, Request, Post, UseGuards, Body, Param, BadRequestException, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Request,
+  Post,
+  UseGuards,
+  Body,
+  Param,
+  BadRequestException,
+  Query,
+  Res,
+} from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import {
@@ -13,35 +24,90 @@ import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
 import { FirstUserSignupDisableGuard } from 'src/modules/auth/first-user-signup-disable.guard';
 import { FirstUserSignupGuard } from 'src/modules/auth/first-user-signup.guard';
+import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
+import { AuthorizeWorkspaceGuard } from 'src/modules/auth/authorize-workspace-guard';
+import { Response } from 'express';
+import { SessionAuthGuard } from 'src/modules/auth/session-auth-guard';
+import { UsersService } from '@services/users.service';
+import { SessionService } from '@services/session.service';
 
 @Controller()
 export class AppController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private userService: UsersService,
+    private sessionService: SessionService
+  ) {}
 
-  @Post(['authenticate', 'authenticate/:organizationId'])
-  async login(@Body() appAuthDto: AppAuthenticationDto, @Param('organizationId') organizationId) {
-    return this.authService.login(appAuthDto.email, appAuthDto.password, organizationId);
+  @Post('authenticate')
+  async login(@Body() appAuthDto: AppAuthenticationDto, @Res({ passthrough: true }) response: Response) {
+    return this.authService.login(response, appAuthDto.email, appAuthDto.password);
+  }
+
+  @UseGuards(OrganizationAuthGuard)
+  @Post('authenticate/:organizationId')
+  async organizationLogin(
+    @User() user,
+    @Body() appAuthDto: AppAuthenticationDto,
+    @Param('organizationId') organizationId,
+    @Res({ passthrough: true }) response: Response
+  ) {
+    return this.authService.login(response, appAuthDto.email, appAuthDto.password, organizationId, user);
+  }
+
+  @UseGuards(SessionAuthGuard)
+  @Get('session')
+  async getSessionDetails(@User() user, @Query('appId') appId: string) {
+    let appOrganizationId: string;
+    if (appId) {
+      const app = await this.userService.returnOrgIdOfAnApp(appId);
+      //if the user has a session and the app is public, we don't need to authorize the app organization id
+      if (!app?.isPublic) appOrganizationId = app.organizationId;
+      if (appOrganizationId && user.organizationIds?.includes(appOrganizationId)) {
+        user.organization_id = appOrganizationId;
+      }
+    }
+    return this.authService.generateSessionPayload(user, appOrganizationId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('logout')
+  async terminateUserSession(@User() user, @Res({ passthrough: true }) response: Response) {
+    await this.sessionService.terminateSession(user.id, user.sessionId, response);
+    return;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  async getUserDetails(@User() user) {
+    return this.sessionService.getSessionUserDetails(user);
+  }
+
+  @UseGuards(AuthorizeWorkspaceGuard)
+  @Get('authorize')
+  async authorize(@User() user) {
+    return await this.authService.authorizeOrganization(user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('switch/:organizationId')
-  async switch(@Param('organizationId') organizationId, @User() user) {
+  async switch(@Param('organizationId') organizationId, @User() user, @Res({ passthrough: true }) response: Response) {
     if (!organizationId) {
       throw new BadRequestException();
     }
-    return await this.authService.switchOrganization(organizationId, user);
+    return await this.authService.switchOrganization(response, organizationId, user);
   }
 
   @UseGuards(FirstUserSignupGuard)
   @Post('setup-admin')
-  async setupAdmin(@Body() userCreateDto: CreateAdminDto) {
-    return await this.authService.setupAdmin(userCreateDto);
+  async setupAdmin(@Body() userCreateDto: CreateAdminDto, @Res({ passthrough: true }) response: Response) {
+    return await this.authService.setupAdmin(response, userCreateDto);
   }
 
   @UseGuards(FirstUserSignupDisableGuard)
   @Post('setup-account-from-token')
-  async create(@Body() userCreateDto: CreateUserDto) {
-    return await this.authService.setupAccountFromInvitationToken(userCreateDto);
+  async create(@Body() userCreateDto: CreateUserDto, @Res({ passthrough: true }) response: Response) {
+    return await this.authService.setupAccountFromInvitationToken(response, userCreateDto);
   }
 
   @UseGuards(FirstUserSignupDisableGuard)

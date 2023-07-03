@@ -8,8 +8,9 @@ export const Pagination = ({
   setExposedVariable,
   fireEvent,
   darkMode,
+  dataCy,
 }) => {
-  const { visibility, disabledState } = styles;
+  const { visibility, disabledState, boxShadow } = styles;
   const [currentPage, setCurrentPage] = useState(() => properties?.defaultPageIndex ?? 1);
 
   useEffect(() => {
@@ -63,7 +64,12 @@ export const Pagination = ({
   };
 
   return (
-    <div data-disabled={disabledState} className="d-flex align-items-center px-1">
+    <div
+      data-disabled={disabledState}
+      className="d-flex align-items-center px-1"
+      data-cy={dataCy}
+      style={{ boxShadow }}
+    >
       <ul className="pagination m-0" style={computedStyles}>
         <Pagination.Operator
           operator="<<"

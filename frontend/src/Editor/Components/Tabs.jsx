@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
-import { resolveReferences, resolveWidgetFieldValue } from '@/_helpers/utils';
+import { resolveReferences, resolveWidgetFieldValue, isExpectedDataType } from '@/_helpers/utils';
 
 export const Tabs = function Tabs({
   id,
@@ -16,14 +16,15 @@ export const Tabs = function Tabs({
   registerAction,
   styles,
   darkMode,
+  dataCy,
 }) {
-  const { tabWidth } = styles;
+  const { tabWidth, boxShadow } = styles;
 
   const widgetVisibility = component.definition.styles?.visibility?.value ?? true;
   const disabledState = component.definition.styles?.disabledState?.value ?? false;
   const defaultTab = component.definition.properties.defaultTab.value;
   // config for tabs. Includes title
-  const tabs = component.definition.properties?.tabs?.value ?? [];
+  const tabs = isExpectedDataType(resolveReferences(component.definition.properties.tabs.value, currentState), 'array');
   let parsedTabs = tabs;
   parsedTabs = resolveWidgetFieldValue(parsedTabs, currentState);
   const hideTabs = component.definition.properties?.hideTabs?.value ?? false;
@@ -133,7 +134,8 @@ export const Tabs = function Tabs({
     <div
       data-disabled={parsedDisabledState}
       className="jet-tabs card"
-      style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor }}
+      style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor, boxShadow }}
+      data-cy={dataCy}
     >
       <ul
         className="nav nav-tabs"

@@ -1,4 +1,4 @@
-export const groupsText= {
+export const groupsText = {
   pageTitle: "User Groups",
   createNewGroupButton: "Create new group",
   tableHeader: "Name",
@@ -12,12 +12,13 @@ export const groupsText= {
   groupCreatedToast: "Group has been created",
   userGroup: "User group",
   appsLink: "Apps",
-  usersLink: "Users",
+  usersLink: "User",
   permissionsLink: "Permissions",
-  addButton: "Add",
-  nameTableHeader: "name",
+  addButton: "Add apps",
+  addUsersButton: "Add users",
+  userNameTableHeader: "User name",
   permissionstableHedaer: "Permissions",
-  emailTableHeader: "email",
+  emailTableHeader: "Email id",
   resourcesTableHeader: "Resources",
   resourcesApps: "Apps",
   resourcesFolders: "Folder",
@@ -25,7 +26,24 @@ export const groupsText= {
   folderCreateLabel: "Create/Update/Delete",
   deleteLabel: "Delete",
   permissionUpdatedToast: "Group permissions updated",
-  confirmText: "This group will be permanently deleted. Do you want to continue?",
+  confirmText:
+    "This group will be permanently deleted. Do you want to continue?",
   confirmCancelButton: "Cancel",
-  confirmYesButton : "Yes",
+  confirmYesButton: "Yes",
+  resourcesWorkspaceVar: "Workspace Variables",
+  textDefaultGroup: "Default group",
+  textAppName: "App name",
+  helperTextNoAppsAdded: "No apps are added to the group",
+  helperTextPermissions:
+    "Add app to the group to control permissions for users in this group",
+  helperTextAllUsersIncluded:
+    " All users include every users in the app. This list is not editable",
+  helperTextAdminAppAccess:
+    "Admin has edit access to all apps. These are not editable",
+  helperTextAdminPermissions: "Admin has all permissions",
+  updateGroupNameModalTitle: "Update group",
+  saveButton: "Save",
+  groupNameUpdateSucessToast: "Group name updated successfully",
+  editGroupNameButton: "Edit name",
+  deleteGroupButton: " Delete group",
 };

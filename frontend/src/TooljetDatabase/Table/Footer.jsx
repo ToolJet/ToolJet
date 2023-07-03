@@ -77,8 +77,8 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
 
   return (
     <div className="toojet-db-table-footer card-footer d-flex align-items-center jet-table-footer justify-content-center">
-      <div className="table-footer row gx-0">
-        <div className="col-5">
+      <div className="table-footer row gx-0" data-cy="table-footer-section">
+        <div className="col-5" data-cy="add-new-row-button">
           <Button
             disabled={dataLoading}
             onClick={openCreateRowDrawer}
@@ -86,7 +86,7 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
             size="sm"
             styles={{ width: '118px', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
           >
-            <Button.Content title={'Add new row'} iconSrc={'assets/images/icons/add-row.svg'} direction="right" />
+            <Button.Content title={'Add new row'} iconSrc={'assets/images/icons/add-row.svg'} direction="left" />
           </Button>
         </div>
         {tableDataLength > 0 && (
@@ -101,10 +101,10 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
                 isDisabled={dataLoading}
               />
             </div>
-            <div className="col mx-2">
+            <div className="col mx-2 records-dropdown-field" data-cy="records-dropdown-field">
               <Select
                 isLoading={dataLoading}
-                className={`${darkMode ? 'select-search-dark' : 'select-search'}`}
+                customWrap={true}
                 options={selectOptions}
                 value={selectOptions.find((option) => option.value === pageSize)}
                 search={false}
@@ -114,11 +114,11 @@ const Footer = ({ darkMode, openCreateRowDrawer, dataLoading, tableDataLength })
                 menuPlacement="top"
               />
             </div>
-            <div className="col-4 mx-2">
+            <div className="col-4 mx-2" data-cy="total-records-section">
               {dataLoading ? (
                 <Skeleton count={1} height={3} className="mt-3" />
               ) : (
-                <span className="animation-fade">
+                <span className="animation-fade" data-cy={`${pageRange}-of-${totalRecords}-records-text}`}>
                   {pageRange} of {totalRecords} Records
                 </span>
               )}

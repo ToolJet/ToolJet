@@ -1,5 +1,5 @@
 import React from 'react';
-export const Statistics = function Statistics({ width, height, properties, styles, darkMode }) {
+export const Statistics = function Statistics({ width, height, properties, styles, darkMode, dataCy }) {
   const {
     primaryValueLabel,
     primaryValue,
@@ -9,7 +9,8 @@ export const Statistics = function Statistics({ width, height, properties, style
     hideSecondary,
     loadingState,
   } = properties;
-  const { primaryLabelColour, primaryTextColour, secondaryLabelColour, secondaryTextColour, visibility } = styles;
+  const { primaryLabelColour, primaryTextColour, secondaryLabelColour, secondaryTextColour, visibility, boxShadow } =
+    styles;
 
   const baseStyle = {
     borderRadius: 4,
@@ -25,6 +26,7 @@ export const Statistics = function Statistics({ width, height, properties, style
     textAlign: 'center',
     overflow: 'hidden',
     height,
+    boxShadow,
   };
 
   const letterStyle = {
@@ -70,7 +72,7 @@ export const Statistics = function Statistics({ width, height, properties, style
   };
 
   return (
-    <div style={baseStyle}>
+    <div style={baseStyle} data-cy={dataCy}>
       {loadingState === true ? (
         <div style={{ width }} className="p-2">
           <center>

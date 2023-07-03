@@ -18,9 +18,14 @@ function deletePlugin(id) {
   return adapter.delete(`/plugins/${id}`);
 }
 
+function reloadPlugin(id) {
+  return adapter.post(`/plugins/${id}/reload`);
+}
+
 export const pluginsService = {
   findAll,
   installPlugin,
   updatePlugin,
   deletePlugin,
+  reloadPlugin,
 };
