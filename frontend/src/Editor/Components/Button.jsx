@@ -3,7 +3,7 @@ import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
 export const Button = function Button(props) {
-  const { height, properties, styles, fireEvent, registerAction, id, dataCy } = props;
+  const { height, properties, styles, fireEvent, registerAction, id, dataCy, setExposedVariable } = props;
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor, boxShadow } = styles;
 
   const [label, setLabel] = useState(properties.text);
@@ -11,7 +11,11 @@ export const Button = function Button(props) {
   const [visibility, setVisibility] = useState(styles.visibility);
   const [loading, setLoading] = useState(properties.loadingState);
 
-  useEffect(() => setLabel(properties.text), [properties.text]);
+  useEffect(() => {
+    setLabel(properties.text);
+    setExposedVariable('buttonText', properties.text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [properties.text]);
 
   useEffect(() => {
     disable !== disabledState && setDisable(disabledState);
@@ -55,6 +59,7 @@ export const Button = function Button(props) {
     'setText',
     async function (text) {
       setLabel(text);
+      setExposedVariable('buttonText', text);
     },
     [setLabel]
   );

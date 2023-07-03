@@ -595,7 +595,9 @@ export const widgets = [
         },
       },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      buttonText: 'Button',
+    },
     actions: [
       {
         handle: 'click',
