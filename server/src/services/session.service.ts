@@ -76,7 +76,7 @@ export class SessionService {
       now.getTime() +
         (this.configService.get<string>('USER_SESSION_EXPIRY')
           ? this.configService.get<number>('USER_SESSION_EXPIRY')
-          : 2880) *
+          : 14400) *
           60000
     );
   }
