@@ -228,6 +228,7 @@ const NewQueryNameInput = ({ darkMode, onNameChange }) => {
 
   useEffect(() => {
     setValue(computeQueryName());
+    onNameChange(name);
   }, []);
 
   useEffect(() => {
