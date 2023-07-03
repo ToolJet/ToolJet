@@ -2635,6 +2635,7 @@ export const widgets = [
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: '{{true}}' },
+        showAllOption: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -5594,12 +5595,28 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         validation: {
           schema: { type: 'string' },
         },
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
       },
       loadingState: {
         type: 'toggle',
         displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
+        },
+      },
+      advanced: {
+        type: 'toggle',
+        displayName: ' Use custom schema',
+      },
+      JSONSchema: {
+        type: 'code',
+        displayName: 'JSON Schema',
+        conditionallyRender: {
+          key: 'advanced',
+          value: true,
         },
       },
     },
@@ -5668,6 +5685,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       properties: {
         loadingState: { value: '{{false}}' },
+        advanced: { value: '{{false}}' },
+        JSONSchema: {
+          value:
+            "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
+        },
       },
       events: [],
       styles: {

@@ -10668,8 +10668,41 @@ tbody {
   align-items: center;
 }
 
+.jet-container-json-form {
+  padding: 20px;
+
+  .DateRangePickerInput {
+    width: 100% !important;
+  }
+
+  .dropzone {
+    aside {
+      width: 100% !important;
+    }
+  }
+
+  fieldset {
+    width: 100%;
+
+    .json-form-wrapper {
+      margin-bottom: 4px;
+
+      .widget-button {
+        button {
+          width: auto !important;
+          min-width: 140px !important;
+        }
+      }
+    }
+  }
+}
+
 .freeze-scroll {
   #real-canvas {
     overflow: hidden;
   }
+}
+
+.form-label-restricted {
+  display: none;
 }
