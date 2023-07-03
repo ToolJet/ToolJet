@@ -267,6 +267,9 @@ jobs:
           sudo apt update
           sudo apt install postgresql-client -y
 
+      - name: Wait after installing PostgreSQL
+        run: sleep 10          
+
       - name: Drop PostgreSQL PR database
         env:
           PGHOST: ${{ secrets.RENDER_DS_PG_HOST }}
