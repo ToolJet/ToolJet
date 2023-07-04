@@ -65,7 +65,7 @@ const ConstantForm = ({
     createOrUpdate(fields, isUpdate);
   };
 
-  const shouldDisbaleButton =
+  const shouldDisableButton =
     fields['name'] && fields['value'] && (fields['name'].length > 0 || fields['value'].length > 0) ? false : true;
 
   return (
@@ -122,7 +122,7 @@ const ConstantForm = ({
           type="submit"
           onClick={handlecreateOrUpdate}
           isLoading={isLoading}
-          disabled={isLoading || shouldDisbaleButton}
+          disabled={isLoading || shouldDisableButton || selectedConstant?.value === fields['value']}
           data-cy="add-constant-button"
         >
           {!selectedConstant ? 'Add constant' : 'Update'}
