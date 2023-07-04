@@ -47,6 +47,26 @@ import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
 
+const utilForConstructingNestedDataForNewRow = (row) => {
+  let arr = Object.keys(row);
+  let obj = {};
+  arr.forEach((key) => {
+    let nestedKeys = key.split('.');
+    let tempObj = obj;
+
+    for (let i = 0; i < nestedKeys.length; i++) {
+      let nestedKey = nestedKeys[i];
+
+      if (!tempObj.hasOwnProperty(nestedKey)) {
+        tempObj[nestedKey] = i === nestedKeys.length - 1 ? '' : {};
+      }
+
+      tempObj = tempObj[nestedKey];
+    }
+  });
+  return obj;
+};
+
 export function Table({
   id,
   width,
@@ -233,7 +253,11 @@ export function Table({
         ...obj,
       },
     };
-    obj = _.set({ ...rowData, ...obj }, key, value);
+
+    if (Object.keys(rowData).find((key) => key.includes('.'))) {
+      rowData = utilForConstructingNestedDataForNewRow(rowData);
+    }
+    obj = _.merge({}, rowData, obj);
 
     let newDataUpdates = {
       ...dataUpdates,
@@ -1275,6 +1299,7 @@ export function Table({
           defaultColumn={defaultColumn}
           columns={columnsForAddNewRow}
           addNewRowsDetails={tableDetails.addNewRowsDetails}
+          utilForConstructingNestedData={utilForConstructingNestedDataForNewRow}
         />
       )}
     </div>
