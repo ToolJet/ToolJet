@@ -29,6 +29,7 @@ export const navigateToManageGroups = () => {
   cy.get(groupsSelector.groupLink("All users")).click();
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("All users")).click();
+  cy.wait(500)
 };
 
 export const navigateToWorkspaceVariable = () => {
