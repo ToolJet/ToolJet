@@ -31,7 +31,6 @@ import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore } from '../_stores/currentStateStore';
-import memoize from 'fast-memoize';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -1091,7 +1090,7 @@ export function renderTooltip({ props, text }) {
   );
 }
 
-export const computeComponentState = memoize((_ref, components = {}) => {
+export const computeComponentState = (_ref, components = {}) => {
   let componentState = {};
   const currentComponents = useCurrentStateStore.getState().components;
   Object.keys(components).forEach((key) => {
@@ -1136,7 +1135,7 @@ export const computeComponentState = memoize((_ref, components = {}) => {
   return setStateAsync(_ref, {
     defaultComponentStateComputed: true,
   });
-});
+};
 
 export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, styles = {}) => {
   if (iconFile) return <img src={`data:image/svg+xml;base64,${iconFile}`} style={{ height, width }} />;
