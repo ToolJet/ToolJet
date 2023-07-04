@@ -17,13 +17,49 @@ A bounded box is an infinitely customizable image annotation component that can 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/bounded-box/prop.png" alt="Bounded Box" width="300"/>
+<img className="screenshot-full" src="/img/widgets/bounded-box/propnew.png" alt="Bounded Box"/>
 
 </div>
 
 ### Image URL
 
-The bounding box required an image to display, enter the URL of the image to display it on the component.
+The bounding box requires an image to be displayed. Enter the URL or image data to show it on the component.
+
+### Default value
+
+Provide the data that will load the default bounded boxes over the image when the app is loaded. The data is expected to be an array of objects format.
+
+| Property | Values |
+| -------- | ------ |
+| type | Sets the type of the bounded box. The value can be `RECTANGLE` or `POINT`. |
+| width | Sets the width of the bounded box in pixels. The value should be a number. If the `type` value is `POINT`, set it to `0`. |
+| height | Sets the height of the bounded box in pixels. The value should be a number. If the `type` value is `POINT`, set it to `0`. |
+| x | Sets the x-coordinate position of the bounded box in the image. It expects a numerical value representing the horizontal position. |
+| y | Sets the y-coordinate position of the bounded box in the image. It expects a numerical value representing the vertical position. |
+| text | Sets the text value of the bounded box. It should be one of the labels provided in the **[List of labels](#list-of-labels)** property. |
+
+Example of default values:
+
+```js
+[
+    {
+        type: 'RECTANGLE',
+        width: 40,
+        height: 24,
+        x: 41,
+        y: 12,
+        text: 'Tree'
+    },
+    {
+        type: 'POINT',
+        width: 0,
+        height: 0,
+        x: 10.28,
+        y: 81.14,
+        text: 'Car'
+    }
+]
+```
 
 ### Selector
 
