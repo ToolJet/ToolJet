@@ -12,7 +12,7 @@ import {
 import { Organization } from './organization.entity';
 
 @Entity({ name: 'app_environments' })
-@Unique(['name'])
+@Unique(['name', 'organizationId'])
 @Unique(['organizationId', 'priority'])
 export class AppEnvironment extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
