@@ -32,3 +32,11 @@ export const selectCSA = (
 export const addSupportCSAData = (field, data) => {
   cy.get(`[data-cy="${field}-input-field"]`).clearAndTypeOnCodeMirror(data);
 };
+
+export const selectSupportCSAData = (option) => {
+  cy.get('[data-cy="action-options-action-selection-field"]')
+    .eq(1)
+    .click()
+    .find("input")
+    .type(`{selectAll}{backspace}${option}{enter}`);
+};

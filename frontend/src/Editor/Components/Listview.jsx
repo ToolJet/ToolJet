@@ -27,7 +27,7 @@ export const Listview = function Listview({
     rowsPerPage = 10,
     enablePagination = false,
   } = { ...fallbackProperties, ...properties };
-  const { visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
+  const { visibility, disabledState, borderRadius, boxShadow } = { ...fallbackStyles, ...styles };
   const backgroundColor =
     ['#fff', '#ffffffff'].includes(styles.backgroundColor) && darkMode ? '#232E3C' : styles.backgroundColor;
   const borderColor = styles.borderColor ?? 'transparent';
@@ -40,6 +40,7 @@ export const Listview = function Listview({
     height: enablePagination ? height - 54 : height,
     display: visibility ? 'flex' : 'none',
     borderRadius: borderRadius ?? 0,
+    boxShadow,
   };
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
   function onRowClicked(index) {
