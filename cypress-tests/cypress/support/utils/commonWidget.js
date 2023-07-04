@@ -117,7 +117,8 @@ export const verifyMultipleComponentValuesFromInspector = (
 ) => {
   cy.get(commonWidgetSelector.sidebarinspector).click();
   if (openStatus == "closed") {
-    cy.get(commonWidgetSelector.inspectorNodeComponents).click();
+    cy.wait(100);
+    cy.get(commonWidgetSelector.inspectorNodeComponents).realClick();
     cy.get(commonWidgetSelector.nodeComponent(componentName)).click();
     cy.get(commonWidgetSelector.nodeComponentValues).click();
   }
@@ -176,17 +177,24 @@ export const fillBoxShadowParams = (paramLabels, values) => {
   );
 };
 
-export const verifyBoxShadowCss = (widgetName, color, shadowParam) => {
+export const verifyBoxShadowCss = (
+  widgetName,
+  color,
+  shadowParam,
+  type = "component"
+) => {
   cy.forceClickOnCanvas();
-  cy.get(commonWidgetSelector.draggableWidget(widgetName))
-    .parents('[role = "Box"]')
-    .should(
-      "have.css",
-      "box-shadow",
-      `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3] / 100}) ${
-        shadowParam[0]
-      }px ${shadowParam[1]}px ${shadowParam[2]}px ${shadowParam[3]}px`
-    );
+  cy.get(
+    type == "component"
+      ? commonWidgetSelector.draggableWidget(widgetName)
+      : widgetName
+  ).should(
+    "have.css",
+    "box-shadow",
+    `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3] / 100}) ${
+      shadowParam[0]
+    }px ${shadowParam[1]}px ${shadowParam[2]}px ${shadowParam[3]}px`
+  );
 };
 
 export const verifyComponentFromInspector = (
@@ -263,12 +271,13 @@ export const verifyWidgetColorCss = (
 };
 
 export const verifyLoaderColor = (widgetName, color) => {
+  //using only for button
   cy.forceClickOnCanvas();
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
     .should("attr", "style")
     .and(
       "contains",
-      `--loader-color:rgba(${color[0]}, ${color[1]}, ${color[2]}, ${
+      `--loader-color: rgba(${color[0]}, ${color[1]}, ${color[2]}, ${
         color[3] / 100
       })`
     );
