@@ -127,8 +127,6 @@ export class DataQueriesService {
       organizationId
     );
 
-    // console.log('sourceOptions ===> ', sourceOptions);
-
     try {
       // multi-auth will not work with public apps
       if (app?.isPublic && sourceOptions['multiple_auth_enabled']) {
