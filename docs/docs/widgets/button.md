@@ -97,7 +97,9 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 ## Exposed variables
 
-There are currently no exposed variables for the component.
+| Variable      | Description |
+| ----------- | ----------- |
+| buttonText | This variable stores the text displayed on the button. Its value can be accessed dynamically through JavaScript using the following syntax: `{{components.button1.buttonText}}` |
 
 ## Component specific actions (CSA)
 
