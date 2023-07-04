@@ -1299,7 +1299,7 @@ export function Table({
           defaultColumn={defaultColumn}
           columns={columnsForAddNewRow}
           addNewRowsDetails={tableDetails.addNewRowsDetails}
-          utilForConstructingNestedData={utilForConstructingNestedDataForNewRow}
+          utilForConstructingNestedDataForNewRow={utilForConstructingNestedDataForNewRow}
         />
       )}
     </div>
