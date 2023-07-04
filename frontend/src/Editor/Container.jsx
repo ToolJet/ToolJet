@@ -323,30 +323,31 @@ export const Container = ({
     setBoxes(newBoxes);
   }
 
-  function paramUpdated(id, param, value) {
-    if (Object.keys(value).length > 0) {
-      setBoxes((boxes) =>
-        update(boxes, {
-          [id]: {
-            $merge: {
-              component: {
-                ...boxes[id].component,
-                definition: {
-                  ...boxes[id].component.definition,
-                  properties: {
-                    ...boxes[id].component.definition.properties,
-                    [param]: value,
+  const paramUpdated = useCallback(
+    (id, param, value) => {
+      if (Object.keys(value).length > 0) {
+        setBoxes((boxes) =>
+          update(boxes, {
+            [id]: {
+              $merge: {
+                component: {
+                  ...boxes[id].component,
+                  definition: {
+                    ...boxes[id].component.definition,
+                    properties: {
+                      ...boxes[id].component.definition.properties,
+                      [param]: value,
+                    },
                   },
                 },
               },
             },
-          },
-        })
-      );
-    }
-  }
-
-  React.useEffect(() => {}, [selectedComponents]);
+          })
+        );
+      }
+    },
+    [setBoxes]
+  );
 
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();

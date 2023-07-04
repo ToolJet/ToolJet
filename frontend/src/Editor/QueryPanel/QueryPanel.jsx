@@ -288,4 +288,4 @@ const QueryPanel = ({
   );
 };
 
-export default QueryPanel;
+export default React.memo(QueryPanel);

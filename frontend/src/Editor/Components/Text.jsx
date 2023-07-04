@@ -30,7 +30,6 @@ export const Text = function Text({
   const [text, setText] = useState(() => computeText());
   const [visibility, setVisibility] = useState(styles.visibility);
   const color = ['#000', '#000000'].includes(textColor) ? (darkMode ? '#fff' : '#000') : textColor;
-
   useEffect(() => {
     if (visibility !== styles.visibility) setVisibility(styles.visibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps

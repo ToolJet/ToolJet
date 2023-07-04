@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import cx from 'classnames';
 import { useDrag } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
@@ -164,9 +164,12 @@ export const DraggableBox = function DraggableBox({
     };
   }
 
-  function changeCanDrag(newState) {
-    setCanDrag(newState);
-  }
+  const changeCanDrag = useCallback(
+    (newState) => {
+      setCanDrag(newState);
+    },
+    [setCanDrag]
+  );
 
   const defaultData = {
     top: 100,

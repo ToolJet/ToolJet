@@ -6,9 +6,9 @@ import JSON5 from 'json5';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
-
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '../_stores/currentStateStore';
+import memoize from 'fast-memoize';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -140,7 +140,7 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
   return resolvedStr;
 }
 
-export function resolveReferences(
+export const resolveReferences = memoize(function (
   object,
   state,
   defaultValue,
@@ -226,7 +226,7 @@ export function resolveReferences(
       return object;
     }
   }
-}
+});
 
 export function getDynamicVariables(text) {
   const matchedParams = text.match(/\{\{(.*?)\}\}/g) || text.match(/\%\%(.*?)\%\%/g);

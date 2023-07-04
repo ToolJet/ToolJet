@@ -123,7 +123,7 @@ const AllComponents = {
   BoundedBox,
 };
 
-export const Box = function Box({
+export const Box = React.memo(function Box({
   id,
   width,
   height,
@@ -173,6 +173,7 @@ export const Box = function Box({
   const [resetComponent, setResetStatus] = useState(false);
 
   const resolvedProperties = resolveProperties(component, currentState, null, customResolvables);
+
   const [validatedProperties, propertyErrors] =
     mode === 'edit' && component.validate
       ? validateProperties(resolvedProperties, componentMeta.properties)
@@ -238,7 +239,6 @@ export const Box = function Box({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ resolvedProperties, resolvedStyles })]);
-
   useEffect(() => {
     if (customResolvables && !readOnly && mode === 'edit') {
       const newCustomResolvable = {};
@@ -377,4 +377,4 @@ export const Box = function Box({
       </div>
     </OverlayTrigger>
   );
-};
+});

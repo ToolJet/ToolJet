@@ -29,6 +29,7 @@
     "draft-js-export-html": "^1.4.1",
     "driver.js": "^0.9.8",
     "emoji-mart": "^5.5.2",
+    "fast-memoize": "^2.5.2",
     "focus-trap-react": "^10.0.2",
     "fuse.js": "^6.6.2",
     "html-loader": "^4.2.0",

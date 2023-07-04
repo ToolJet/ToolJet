@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, memo } from 'react';
 import { Link } from 'react-router-dom';
 import AppLogo from '@/_components/AppLogo';
 import { GlobalSettings } from './GlobalSettings';
@@ -13,7 +13,7 @@ import config from 'config';
 // eslint-disable-next-line import/no-unresolved
 import { useUpdatePresence } from '@y-presence/react';
 
-export default function EditorHeader({
+export default memo(function EditorHeader({
   darkMode,
   currentLayout,
   globalSettingsChanged,
@@ -187,4 +187,4 @@ export default function EditorHeader({
       </header>
     </div>
   );
-}
+});

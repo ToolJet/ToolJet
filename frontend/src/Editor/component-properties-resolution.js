@@ -1,6 +1,7 @@
 import { resolveReferences } from '@/_helpers/utils';
+import memoize from 'fast-memoize';
 
-export const resolveProperties = (component, currentState, defaultValue, customResolvables) => {
+export const resolveProperties = memoize((component, currentState, defaultValue, customResolvables) => {
   if (currentState) {
     return Object.entries(component.definition.properties).reduce(
       (properties, entry) => ({
@@ -14,9 +15,9 @@ export const resolveProperties = (component, currentState, defaultValue, customR
       {}
     );
   } else return {};
-};
+});
 
-export const resolveStyles = (component, currentState, defaultValue, customResolvables) => {
+export const resolveStyles = memoize((component, currentState, defaultValue, customResolvables) => {
   if (currentState) {
     const styles = component.definition.styles;
     return Object.entries(styles).reduce((resolvedStyles, entry) => {
@@ -32,9 +33,9 @@ export const resolveStyles = (component, currentState, defaultValue, customResol
   } else {
     return {};
   }
-};
+});
 
-export const resolveGeneralProperties = (component, currentState, defaultValue, customResolvables) => {
+export const resolveGeneralProperties = memoize((component, currentState, defaultValue, customResolvables) => {
   if (currentState) {
     const generalProperties = component.definition?.general ?? {};
     return Object.entries(generalProperties).reduce((resolvedGeneral, entry) => {
@@ -50,9 +51,9 @@ export const resolveGeneralProperties = (component, currentState, defaultValue, 
   } else {
     return {};
   }
-};
+});
 
-export const resolveGeneralStyles = (component, currentState, defaultValue, customResolvables) => {
+export const resolveGeneralStyles = memoize((component, currentState, defaultValue, customResolvables) => {
   if (currentState) {
     const generalStyles = component.definition?.generalStyles ?? {};
     return Object.entries(generalStyles).reduce((resolvedGeneral, entry) => {
@@ -68,4 +69,4 @@ export const resolveGeneralStyles = (component, currentState, defaultValue, cust
   } else {
     return {};
   }
-};
+});
