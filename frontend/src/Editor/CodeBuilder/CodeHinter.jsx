@@ -283,22 +283,8 @@ export function CodeHinter({
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
   cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
 
-  const [showDepericatedAlert, setShowDepericatedAlert] = useState(!enablePreview);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowDepericatedAlert(false);
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
-      {/* Todo: Remove this when workspace variables are deprecated */}
-      {showDepericatedAlert && (
-        <CodeHinter.DepericatedAlertForWorkspaceVariable text={' Workspace variable deprecating soon'} />
-      )}
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
           <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
