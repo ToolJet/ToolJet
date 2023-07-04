@@ -20,7 +20,7 @@ jobs:
 
   build-tooljet-ce-image:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'release' && contains(github.event.types, 'published') }}
+    if: "${{ github.event.release }}"
 
     steps:
       - name: Checkout code
@@ -145,7 +145,7 @@ jobs:
 
   building-tooljet-server-ce-image:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'release' && contains(github.event.types, 'published') }}
+    if: "${{ github.event.release }}"
 
     steps:
       - name: Checkout code
