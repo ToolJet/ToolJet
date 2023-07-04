@@ -4822,21 +4822,27 @@ input[type="text"] {
 // **Alert component**
 .alert-component {
   border: 1px solid rgba(101, 109, 119, 0.16);
-  background: #f5f7f9;
+  background: var(--base);
 
   a {
     color: $primary;
   }
 }
 
-.alert-component.dark {
-  border: none !important;
-  background-color: #333c48 !important;
+.theme-dark .alert-component {
+  background: var(--slate2) !important;
+  border-color: var(--slate4) !important;
+
+  a {
+    color: $primary;
+  }
 
   span {
     filter: brightness(0) invert(1);
   }
 }
+
+
 
 .codehinter-plugins.code-hinter {
   @extend .codehinter-default-input;

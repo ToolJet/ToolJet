@@ -323,7 +323,6 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                           width: '100%',
                           fontSize: '12px',
                           fontWeight: 500,
-                          borderColor: true && 'transparent',
                         }}
                       >
                         <Button.Content title={'Read Documentation'} iconSrc="assets/images/icons/student.svg" />

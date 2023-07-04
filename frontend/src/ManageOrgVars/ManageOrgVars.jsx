@@ -265,8 +265,8 @@ class ManageOrgVarsComponent extends React.Component {
           <div className="container-xl">
             <div>
               <div className="row align-items-center ">
-                <div className="workspace-variable-header">
-                  <Alert svg="tj-info-warnning" cls="workspace-variables-alert-banner" data-cy={``}>
+                <div className="workspace-variable-header mb-3">
+                  <Alert svg="tj-info-warnning" cls="workspace-variables-alert-banner" useDarkMode={false}>
                     <div className="d-flex align-items-center">
                       <div class="text-muted">
                         Can&apos;t add or edit workspace workspace as we are deprecating them soon. Please use workspace
@@ -281,7 +281,6 @@ class ManageOrgVarsComponent extends React.Component {
                             width: '100%',
                             fontSize: '12px',
                             fontWeight: 500,
-                            borderColor: true && 'transparent',
                           }}
                         >
                           <Button.Content
