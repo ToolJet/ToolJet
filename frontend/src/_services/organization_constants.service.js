@@ -6,6 +6,7 @@ export const orgEnvironmentConstantService = {
   create,
   update,
   remove,
+  getConstantsFromEnvironment,
 };
 
 function getAll() {
@@ -39,4 +40,10 @@ function remove(id, environmentId) {
   return fetch(`${config.apiUrl}/organization-constants/${id}?environmentId=${environmentId}`, requestOptions).then(
     handleResponse
   );
+}
+
+//organization-constants/40e50c3e-60fb-4707-bd6e-8bbef6ce60d5
+function getConstantsFromEnvironment(environmentId) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/organization-constants/${environmentId}`, requestOptions).then(handleResponse);
 }

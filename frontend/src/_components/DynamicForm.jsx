@@ -13,7 +13,7 @@ import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
-import { orgEnvironmentVariableService } from '../_services';
+import { orgEnvironmentVariableService, orgEnvironmentConstantService } from '../_services';
 
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
@@ -31,10 +31,12 @@ const DynamicForm = ({
   optionsChanged,
   queryName,
   computeSelectStyles = false,
+  currentAppEnvironmentId,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
 
   const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
+  const [currentOrgEnvironmentConstants, setCurrentOrgEnvironmentConstants] = React.useState([]);
 
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
@@ -47,6 +49,15 @@ const DynamicForm = ({
 
   React.useEffect(() => {
     if (isGDS) {
+      orgEnvironmentConstantService.getConstantsFromEnvironment(currentAppEnvironmentId).then((data) => {
+        const constants = {};
+        data.constants.map((constant) => {
+          constants[constant.name] = constant.value;
+        });
+
+        setCurrentOrgEnvironmentConstants(constants);
+      });
+
       orgEnvironmentVariableService.getVariables().then((data) => {
         const client_variables = {};
         const server_variables = {};
@@ -64,9 +75,10 @@ const DynamicForm = ({
 
     return () => {
       setWorkspaceVariables([]);
+      setCurrentOrgEnvironmentConstants([]);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [currentAppEnvironmentId]);
 
   React.useEffect(() => {
     const { properties } = schema;
@@ -178,6 +190,7 @@ const DynamicForm = ({
           onChange: (e) => optionchanged(key, e.target.value),
           isGDS,
           workspaceVariables,
+          workspaceConstants: currentOrgEnvironmentConstants,
         };
       case 'toggle':
         return {
