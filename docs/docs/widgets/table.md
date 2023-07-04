@@ -589,6 +589,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
 | changeSet | Object with row number as the key and object of edited fields and their values as the value |
 | dataUpdates | Just like changeSet but includes the data of the entire row |
 | selectedRow | The data of the row that was last clicked. `selectedRow` also changes when an action button is clicked |
+| selectedCell | The data of the cell that was last clicked on the table. |
 | searchText | The value of the search field if server-side pagination is enabled |
 | newRows| The newRows variable stores an array of objects, each containing data for a row that was added to the table using the "Add new row" button. When the user clicks either the "Save" or "Discard" button in the modal, this data is cleared.|
 
