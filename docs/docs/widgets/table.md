@@ -69,17 +69,58 @@ You can choose which columns to display or hide in the table by clicking on this
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/table/data.png" alt="ToolJet - Widget Reference - Table" width="350" />
+<img className="screenshot-full" src="/img/widgets/table/nesteddata.png" alt="ToolJet - Widget Reference - Table" />
 
 </div>
 
-Array of objects to be displayed on the table. It is commonly used to display data from query (`{{queries.restapi1.data}}`). Table data expects an array of objects, example: 
+The table requires an array of objects to display its data. You can use the data returned by queries, such as `{{queries.restapi1.data}}`, to populate the table. Please note that the table will only populate if the provided data is in the form of an array of objects.
 
-```
+Example:
+```js
 {{[{ id: 1, name: 'Sarah', email: 'sarah@example.com'}]}}
 ```
 
-The table component will **auto-generate all the columns** as soon as the expected table data(array of objects) is provided.
+The table also supports the loading of one level of **nested data**. Here is an example of the data structure:
+
+```js
+[
+   {
+      "id":1,
+      "student":{
+         "name":"Anakin Skywalker",
+         "saber":"blue"
+      },
+      "teacher":{
+         "name":"Obi wan Kenobi",
+         "saber":"blue"
+      }
+   },
+   {
+      "id":2,
+      "student":{
+         "name":"Kevin",
+         "saber":"blue"
+      },
+      "teacher":{
+         "name":"Joe",
+         "saber":"blue"
+      }
+   },
+   {
+      "id":3,
+      "student":{
+         "name":"Alex",
+         "saber":"blue"
+      },
+      "teacher":{
+         "name":"Noah",
+         "saber":"blue"
+      }
+   }
+]
+```
+
+When you provide the expected table data as an array of objects, the table component will **automatically generate all the required columns**.
 
 ## Columns
 
