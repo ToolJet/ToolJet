@@ -89,7 +89,7 @@ export class DataQueriesService {
   }
 
   async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id, environmentId = undefined) {
-    const sourceOptions = await this.parseSourceOptions(dataSource.options);
+    const sourceOptions = await this.parseSourceOptions(dataSource.options, organization_id);
 
     const parsedQueryOptions = await this.parseQueryOptions(
       dataQuery.options,
@@ -97,6 +97,7 @@ export class DataQueriesService {
       organization_id,
       environmentId
     );
+
     const service = await this.pluginsHelper.getService(dataSource.pluginId, dataSource.kind);
 
     return { service, sourceOptions, parsedQueryOptions };
@@ -117,6 +118,7 @@ export class DataQueriesService {
 
   async runQuery(user: User, dataQuery: any, queryOptions: object, environmentId?: string): Promise<object> {
     const dataSource: DataSource = dataQuery?.dataSource;
+
     const app: App = dataQuery?.app;
     if (!(dataSource && app)) {
       throw new UnauthorizedException();
@@ -344,7 +346,7 @@ export class DataQueriesService {
     environmentId?: string,
     organizationId?: string
   ): Promise<void> {
-    const sourceOptions = await this.parseSourceOptions(dataSource.options);
+    const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId);
     const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
     const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
     const tokenData = this.getCurrentToken(
@@ -366,9 +368,20 @@ export class DataQueriesService {
     return;
   }
 
-  async parseSourceOptions(options: any): Promise<object> {
+  async parseSourceOptions(options: any, organization_id: string): Promise<object> {
     // For adhoc queries such as REST API queries, source options will be null
     if (!options) return {};
+
+    for (const key of Object.keys(options)) {
+      const currentOption = options[key]?.['value'];
+      const variablesMatcher = /(%%.+?%%)/g;
+      const matched = variablesMatcher.exec(currentOption);
+      if (matched) {
+        const resolved = await this.resolveVariable(currentOption, organization_id);
+
+        options[key]['value'] = resolved;
+      }
+    }
 
     const parsedOptions = {};
 
@@ -378,7 +391,14 @@ export class DataQueriesService {
       if (encrypted) {
         const credentialId = option['credential_id'];
         const value = await this.credentialsService.getValue(credentialId);
-        parsedOptions[key] = value;
+
+        if (value.includes('%%server')) {
+          const resolved = await this.resolveVariable(value, organization_id);
+          parsedOptions[key] = resolved;
+          continue;
+        } else {
+          parsedOptions[key] = value;
+        }
       } else {
         parsedOptions[key] = option['value'];
       }
@@ -390,15 +410,26 @@ export class DataQueriesService {
   async resolveVariable(str: string, organization_id: string) {
     const tempStr: string = str.replace(/%%/g, '');
     let result = tempStr;
-    if (new RegExp('^server.[A-Za-z0-9]+$').test(tempStr)) {
+
+    const isServerVariable = new RegExp('^server').test(tempStr);
+    const isClientVariable = new RegExp('^client').test(tempStr);
+
+    if (isServerVariable || isClientVariable) {
       const splitArray = tempStr.split('.');
+      const variableType = splitArray[0];
+      const variableName = splitArray[splitArray.length - 1];
+
       const variableResult = await this.orgEnvironmentVariablesRepository.findOne({
-        variableType: 'server',
+        variableType: variableType,
         organizationId: organization_id,
-        variableName: splitArray[splitArray.length - 1],
+        variableName: variableName,
       });
 
-      if (variableResult) {
+      if (isClientVariable && variableResult) {
+        result = variableResult.value;
+      }
+
+      if (isServerVariable && variableResult) {
         result = await this.encryptionService.decryptColumnValue(
           'org_environment_variables',
           organization_id,
@@ -406,14 +437,14 @@ export class DataQueriesService {
         );
       }
     }
+
     return result;
   }
 
   async resolveConstants(str: string, organization_id: string, environmentId: string) {
     const tempStr: string = str.match(/\{\{(.*?)\}\}/g)[0].replace(/[{}]/g, '');
     let result = tempStr;
-
-    if (new RegExp('^constants.[A-Za-z0-9]+$').test(tempStr)) {
+    if (new RegExp('^constants.').test(tempStr)) {
       const splitArray = tempStr.split('.');
       const constantName = splitArray[splitArray.length - 1];
 
@@ -431,6 +462,7 @@ export class DataQueriesService {
           )
         : null;
 
+      console.log('--testing ds query ==> ', { tempStr, constantName, constant, decryptedValue });
       result = decryptedValue;
     }
 
@@ -484,6 +516,7 @@ export class DataQueriesService {
 
       if (object.includes('{{constants.')) {
         const resolvingConstant = await this.resolveConstants(object, organization_id, environmentId);
+
         options[object] = resolvingConstant;
       }
 
