@@ -87,9 +87,9 @@ describe("Editor- Inspector", () => {
     verifyValue("name", "String", `"test_page"`);
 
     openNode("components");
-    verifyNodeData("button1", "Object", "6 entries ");
-    verifyNodeData("button2", "Object", "6 entries ");
-    verifyNodeData("button3", "Object", "6 entries ");
+    verifyNodeData("button1", "Object", "7 entries ");
+    verifyNodeData("button2", "Object", "7 entries ");
+    verifyNodeData("button3", "Object", "7 entries ");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
