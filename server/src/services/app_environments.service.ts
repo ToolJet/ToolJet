@@ -145,7 +145,7 @@ export class AppEnvironmentService {
         envId = (await this.get(organizationId, null, manager)).id;
       }
 
-      const constantId = (await manager.findOneOrFail(OrganizationConstant, {}, { where: { constantName } })).id;
+      const constantId = (await manager.findOne(OrganizationConstant, { where: { constantName, organizationId } })).id;
 
       return await manager.findOneOrFail(OrgEnvironmentConstantValue, {
         where: { organizationConstantId: constantId, environmentId: envId },

@@ -89,7 +89,7 @@ export class DataQueriesService {
   }
 
   async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id, environmentId = undefined) {
-    const sourceOptions = await this.parseSourceOptions(dataSource.options, organization_id);
+    const sourceOptions = await this.parseSourceOptions(dataSource.options, organization_id, environmentId);
 
     const parsedQueryOptions = await this.parseQueryOptions(
       dataQuery.options,
@@ -346,7 +346,7 @@ export class DataQueriesService {
     environmentId?: string,
     organizationId?: string
   ): Promise<void> {
-    const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId);
+    const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId, environmentId);
     const isMultiAuthEnabled = dataSource.options['multiple_auth_enabled']?.value;
     const newToken = await this.fetchOAuthToken(sourceOptions, code, userId, isMultiAuthEnabled);
     const tokenData = this.getCurrentToken(
@@ -368,7 +368,7 @@ export class DataQueriesService {
     return;
   }
 
-  async parseSourceOptions(options: any, organization_id: string): Promise<object> {
+  async parseSourceOptions(options: any, organization_id: string, environmentId: string): Promise<object> {
     // For adhoc queries such as REST API queries, source options will be null
     if (!options) return {};
 
@@ -376,9 +376,15 @@ export class DataQueriesService {
       const currentOption = options[key]?.['value'];
       const variablesMatcher = /(%%.+?%%)/g;
       const matched = variablesMatcher.exec(currentOption);
+      const constantMatcher = /{{constants\..+?}}/g;
       if (matched) {
         const resolved = await this.resolveVariable(currentOption, organization_id);
 
+        options[key]['value'] = resolved;
+      }
+
+      if (constantMatcher.test(currentOption)) {
+        const resolved = await this.resolveConstants(currentOption, organization_id, environmentId);
         options[key]['value'] = resolved;
       }
     }
@@ -462,7 +468,6 @@ export class DataQueriesService {
           )
         : null;
 
-      console.log('--testing ds query ==> ', { tempStr, constantName, constant, decryptedValue });
       result = decryptedValue;
     }
 

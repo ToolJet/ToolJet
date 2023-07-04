@@ -28,7 +28,7 @@ const Input = ({ helpText, ...props }) => {
 
   const shouldResolve =
     typeof value === 'string' &&
-    (value.includes('%%client') || value.includes('%%server') || value.includes('{{constant'));
+    (value.includes('%%client') || value.includes('%%server') || value.includes('{{constants'));
 
   const valueType = typeof value === 'string' && getResolveValueType(value);
 

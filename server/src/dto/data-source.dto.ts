@@ -30,7 +30,12 @@ export class CreateDataSourceDto {
 }
 
 export class UpdateDataSourceDto extends PartialType(CreateDataSourceDto) {}
-export class TestDataSourceDto extends PartialType(CreateDataSourceDto) {}
+export class TestDataSourceDto extends PartialType(CreateDataSourceDto) {
+  @IsString()
+  @IsOptional()
+  @Transform(({ value }) => sanitizeInput(value))
+  environment_id: string;
+}
 
 export class GetDataSourceOauthUrlDto {
   @IsString()
