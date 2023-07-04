@@ -302,7 +302,9 @@ export const SubContainer = ({
           return undefined;
         } else {
           toast.error(
-            ` ${componentMeta?.component} is not compatible as a child component of ${allComponents[parent]?.component?.component}`
+            ` ${
+              componentMeta?.component
+            } is not compatible as a child component of ${parentComponent?.component.toLowerCase()}`
           );
         }
       },

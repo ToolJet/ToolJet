@@ -6,7 +6,7 @@ import { restrictedChildWidgets } from '@/Editor/WidgetManager/restrictedWidgets
 
 export const Modal = function Modal({ showModal, setShowModal, kanbanProps }) {
   const parentRef = useRef(null);
-  const { id, containerProps, exposedVariables } = kanbanProps;
+  const { id, containerProps, exposedVariables, component } = kanbanProps;
 
   const renderCloseButton = () => {
     return (
@@ -52,6 +52,7 @@ export const Modal = function Modal({ showModal, setShowModal, kanbanProps }) {
           parentRef={parentRef}
           customResolvables={{ cardData: exposedVariables?.lastSelectedCard }}
           restrictedChildWidgets={restrictedChildWidgets.Modal}
+          parentComponent={component}
         />
       </BootstrapModal.Body>
     </BootstrapModal>
