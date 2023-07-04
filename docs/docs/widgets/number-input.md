@@ -4,32 +4,47 @@ title: Number Input
 ---
 # Number Input
 
-Number Input widget lets users enter and change numbers.
+The Number Input component allows users to input and modify numerical values.
 
-## How To Use Number Input Widget
-
-<iframe height="500" src="https://www.youtube.com/embed/Xf9Sx2fNzng" title="Number InputWidget" frameborder="0" allowfullscreen width="100%"></iframe>
-
-:::tip
-Numbers can be changed by using the arrow keys.
+:::info
+Numbers can be adjusted using the arrow keys.
 :::
 
 ## Properties
 
-### Default value
+### Default Value
 
-A predefined value that can be fetched from the number input widget if no changes are made in widget.
+Specify a default value for the number input component when the application is loaded. A default value is a pre-established value that can be retrieved from the number input widget if no modifications are made to it.
+
+Example values:
+
+```js
+10 // integer type
+3.54 // decimal type
+10.00 // decimal type, but displayed as 10 on the number input component
+```
 
 ### Minimum value
 
-It specifies the minimum value the number input can go to. This field accepts any numerical value.
+This field sets the minimum value that can be entered in the number input. Any numerical value is accepted.
 
 ### Maximum value
 
-It specifies the maximum value the number input can go to. This field accepts any numerical value.
+This field sets the maximum value that can be entered in the number input. Any numerical value is accepted.
 
 ### Placeholder
-It specifies a hint that describes the expected value. This field accepts any numerical value.
+
+The placeholder value is displayed when no user input has been made yet. It disappears once the user interacts with the control, such as typing a number or using the arrow keys on the right side of the component. Any numerical value can be used as a placeholder.
+
+### Loading state
+
+The loading state can be enabled to show a spinner as the content of the number input. This is commonly used with the `isLoading` property of queries to indicate a loading status while a query is being executed. You can toggle the state to "On" or use the "fx" option to programmatically set the value to `{{true}}` or `{{false}}`.
+
+### Decimal places
+
+This property determines the number of decimal places displayed in the number input component. It allows you to specify the level of precision for decimal values.
+
+For example, if you set the decimal places to **{{2}}**, any decimal value entered or displayed in the number input will be rounded to two decimal places. This ensures consistent formatting and helps users input and visualize decimal values accurately. It can be set to **{{0}}** for whole numbers or increased to display more precise decimal values.
 
 ## Events
 
