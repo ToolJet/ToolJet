@@ -2,7 +2,6 @@ import React, { useRef, useState, useEffect } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { resolveReferences, resolveWidgetFieldValue, isExpectedDataType } from '@/_helpers/utils';
-import { restrictedChildWidgets } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
 
 export const Tabs = function Tabs({
   id,
@@ -127,7 +126,7 @@ export const Tabs = function Tabs({
         removeComponent={removeComponent}
         containerCanvasWidth={width - 4}
         parentComponent={component}
-        restrictedChildWidgets={restrictedChildWidgets.Tabs}
+        restrictedKey="tabs"
       />
     </div>
   );

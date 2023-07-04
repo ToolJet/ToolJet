@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import { SubContainer } from '@/Editor/SubContainer';
 import '@/_styles/widgets/kanban.scss';
-import { restrictedChildWidgets } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
 
 export const Modal = function Modal({ showModal, setShowModal, kanbanProps }) {
   const parentRef = useRef(null);
@@ -51,7 +50,7 @@ export const Modal = function Modal({ showModal, setShowModal, kanbanProps }) {
           {...containerProps}
           parentRef={parentRef}
           customResolvables={{ cardData: exposedVariables?.lastSelectedCard }}
-          restrictedChildWidgets={restrictedChildWidgets.Modal}
+          restrictedKey="kanban_popout"
           parentComponent={component}
         />
       </BootstrapModal.Body>

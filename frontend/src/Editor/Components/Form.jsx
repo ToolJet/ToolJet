@@ -4,7 +4,6 @@ import { SubContainer } from '../SubContainer';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { omit } from 'lodash';
-import { restrictedChildWidgets } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
 
 export const Form = function Form(props) {
   const {
@@ -159,7 +158,7 @@ export const Form = function Form(props) {
                 setChildrenData(childDataRef.current);
               }
             }}
-            restrictedChildWidgets={restrictedChildWidgets.Form}
+            restrictedKey="form"
           />
           <SubCustomDragLayer
             containerCanvasWidth={width}

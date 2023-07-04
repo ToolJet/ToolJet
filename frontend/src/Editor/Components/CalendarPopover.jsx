@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
-import { restrictedChildWidgets } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
 
 export const CalendarEventPopover = function ({
   show,
@@ -97,7 +96,7 @@ export const CalendarEventPopover = function ({
                 {...containerProps}
                 parentRef={parentRef}
                 removeComponent={removeComponent}
-                restrictedChildWidgets={restrictedChildWidgets.Calendar}
+                restrictedKey="calendar"
               />
               <SubCustomDragLayer
                 parent={calendarWidgetId}

@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import Spinner from '@/_ui/Spinner';
-import { restrictedChildWidgets } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
 
 export const Container = function Container({
   id,
@@ -54,7 +53,7 @@ export const Container = function Container({
             {...containerProps}
             parentRef={parentRef}
             removeComponent={removeComponent}
-            restrictedChildWidgets={restrictedChildWidgets.Container}
+            restrictedKey="container"
           />
           <SubCustomDragLayer
             containerCanvasWidth={width}

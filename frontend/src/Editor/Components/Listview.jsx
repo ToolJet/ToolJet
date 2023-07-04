@@ -2,7 +2,6 @@ import React, { useRef, useState, useEffect } from 'react';
 import { SubContainer } from '../SubContainer';
 import _ from 'lodash';
 import { Pagination } from '@/_components/Pagination';
-import { restrictedChildWidgets } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
 
 export const Listview = function Listview({
   id,
@@ -127,7 +126,7 @@ export const Listview = function Listview({
                   return { ...prevData, ...newChildrenData };
                 });
               }}
-              restrictedChildWidgets={restrictedChildWidgets.Listview}
+              restrictedKey="listview"
             />
           </div>
         ))}

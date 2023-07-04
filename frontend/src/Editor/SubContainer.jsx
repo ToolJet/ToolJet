@@ -10,7 +10,7 @@ import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { resolveReferences } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
-
+import { restrictedWidgetsObj } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
 import { useMounted } from '@/_hooks/use-mount';
 
 export const SubContainer = ({
@@ -49,7 +49,7 @@ export const SubContainer = ({
   childComponents = null,
   isVersionReleased,
   setReleasedVersionPopupState,
-  restrictedChildWidgets = [],
+  restrictedKey,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -273,7 +273,7 @@ export const SubContainer = ({
         const componentMeta = componentTypes.find((component) => component.component === item.component.component);
 
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-        if (!restrictedChildWidgets.includes(componentMeta?.component)) {
+        if (!restrictedWidgetsObj[restrictedKey].includes(componentMeta?.component)) {
           const newComponent = addNewWidgetToTheEditor(
             componentMeta,
             monitor,
@@ -302,9 +302,7 @@ export const SubContainer = ({
           return undefined;
         } else {
           toast.error(
-            ` ${
-              componentMeta?.component
-            } is not compatible as a child component of ${parentComponent?.component.toLowerCase()}`
+            ` ${componentMeta?.component} is not compatible as a child component of ${restrictedKey.replace(/_/g, ' ')}`
           );
         }
       },
