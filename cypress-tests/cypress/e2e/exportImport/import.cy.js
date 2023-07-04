@@ -32,7 +32,9 @@ describe("App Import Functionality", () => {
   });
   before(() => {
     cy.fixture("templates/test-app.json").then((app) => {
-      cy.exec("cd ./cypress/downloads/ && rm -rf *");
+      cy.exec("cd ./cypress/downloads/ && rm -rf *", {
+        failOnNonZeroExit: false,
+      });
       appData = app;
     });
   });

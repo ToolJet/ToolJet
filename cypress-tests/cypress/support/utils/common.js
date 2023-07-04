@@ -168,7 +168,7 @@ export const createWorkspace = (workspaceName) => {
 
 export const selectAppCardOption = (appName, appCardOption) => {
   viewAppCardOptions(appName);
-  cy.get(appCardOption).should("be.visible").click();
+  cy.get(appCardOption).should("be.visible").realClick();
 };
 
 export const navigateToDatabase = () => {
