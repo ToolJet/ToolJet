@@ -252,17 +252,17 @@ export function Table({
     let headers = columns.map((column) => {
       return { exportValue: String(column.exportValue), key: column.key ? String(column.key) : column.key };
     });
-    const data = globalFilteredRows.map((row) => {
+    let data = globalFilteredRows.map((row) => {
       return headers.reduce((accumulator, header) => {
         let value = undefined;
         if (header.key && header.key !== header.exportValue) {
-          value = row.original[header.key];
+          value = _.get(row.original, header.key);
         } else {
           value = row.original[header.exportValue];
         }
-        accumulator[header.exportValue.toUpperCase()] = value;
+        accumulator.push(value);
         return accumulator;
-      }, {});
+      }, []);
     });
     headers = headers.map((header) => header.exportValue.toUpperCase());
     if (fileType === 'csv') {
@@ -283,11 +283,11 @@ export function Table({
         theme: 'grid',
       });
       doc.save(`${fileName}.pdf`);
+      return;
     } else if (fileType === 'xlsx') {
+      data.unshift(headers); //adding headers array at the beginning of data
       let wb = XLSX.utils.book_new();
-      let ws1 = XLSX.utils.json_to_sheet(data, {
-        headers,
-      });
+      let ws1 = XLSX.utils.aoa_to_sheet(data);
       XLSX.utils.book_append_sheet(wb, ws1, 'React Table Data');
       XLSX.writeFile(wb, `${fileName}.xlsx`);
       // Returning false as downloading of file is already taken care of
@@ -457,14 +457,7 @@ export function Table({
       }
     }
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
-  }, [
-    tableData.length,
-    tableDetails.changeSet,
-    component.definition.properties.data.value,
-    JSON.stringify(properties.data),
-    showBulkSelector,
-    allowSelection,
-  ]);
+  }, [tableData.length, component.definition.properties.data.value, JSON.stringify(properties.data)]);
 
   useEffect(() => {
     if (
@@ -736,8 +729,13 @@ export function Table({
       ['currentData', data],
       ['selectedRow', []],
       ['selectedRowId', null],
-    ]);
-  }, [tableData.length, tableDetails.changeSet, page, data]);
+    ]).then(() => {
+      if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
+        toggleAllRowsSelected(false);
+        mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
+      }
+    });
+  }, [tableData.length, _.toString(page), pageIndex, _.toString(data)]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
@@ -828,6 +826,7 @@ export function Table({
         display: parsedWidgetVisibility ? '' : 'none',
         overflow: 'hidden',
         borderRadius: Number.parseFloat(borderRadius),
+        boxShadow: styles.boxShadow,
       }}
       onClick={(event) => {
         onComponentClick(id, component, event);
@@ -1157,13 +1156,18 @@ export function Table({
                           })}
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
+                          onClick={(e) => {
+                            setExposedVariable('selectedCell', {
+                              columnName: cell.column.exportValue,
+                              columnKey: cell.column.key,
+                              value: cellValue,
+                            });
+                          }}
                         >
                           <div
                             className={`td-container ${
                               cell.column.columnType === 'image' && 'jet-table-image-column'
-                            } ${
-                              cell.column.columnType !== 'image' && `w-100 ${_.isEmpty(actionButtonsArray) && 'h-100'}`
-                            }`}
+                            } ${cell.column.columnType !== 'image' && `w-100 h-100`}`}
                           >
                             <GenerateEachCellValue
                               cellValue={cellValue}

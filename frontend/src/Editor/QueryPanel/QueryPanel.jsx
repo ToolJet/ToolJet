@@ -18,11 +18,9 @@ const QueryPanel = ({
   apps,
   allComponents,
   appId,
-  editingVersionId,
   appDefinition,
   editorRef,
   onQueryPaneDragging,
-  isVersionReleased,
   handleQueryPaneExpanding,
 }) => {
   const { setSelectedQuery, updateQueryPanelHeight, setSelectedDataSource } = useQueryPanelActions();
@@ -204,14 +202,12 @@ const QueryPanel = ({
                   dataQueries={dataQueries}
                   dataQueriesChanged={updateDataQueries}
                   appId={appId}
-                  editingVersionId={editingVersionId}
                   currentState={currentState}
                   darkMode={darkMode}
                   apps={apps}
                   allComponents={allComponents}
                   appDefinition={appDefinition}
                   editorRef={editorRef}
-                  isVersionReleased={isVersionReleased}
                 />
               </div>
             </div>

@@ -13,7 +13,9 @@ import config from 'config';
 import { LeftSidebarItem } from './SidebarItem';
 import Popover from '@/_ui/Popover';
 import { usePanelHeight } from '@/_stores/queryPanelStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useDataSources } from '@/_stores/dataSourcesStore';
+import { shallow } from 'zustand/shallow';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -28,7 +30,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     globalDataSourcesChanged,
     dataQueriesChanged,
     errorLogs: errors,
-    appVersionsId,
     debuggerActions,
     currentState,
     appDefinition,
@@ -50,8 +51,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     apps,
     clonePage,
     setEditorMarginLeft,
-    isVersionReleased,
-    setReleasedVersionPopupState,
   } = props;
 
   const dataSources = useDataSources();
@@ -63,6 +62,12 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   const [pinned, setPinned] = useState(!!localStorage.getItem('selectedSidebarItem'));
   const [errorLogs, setErrorLogs] = useState([]);
   const [errorHistory, setErrorHistory] = useState({ appLevel: [], pageLevel: [] });
@@ -213,8 +218,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         apps={apps}
         setPinned={handlePin}
         pinned={pinned}
-        isVersionReleased={isVersionReleased}
-        setReleasedVersionPopupState={setReleasedVersionPopupState}
       />
     ),
     inspect: (
@@ -235,14 +238,12 @@ export const LeftSidebar = forwardRef((props, ref) => {
       <LeftSidebarDataSources
         darkMode={darkMode}
         appId={appId}
-        editingVersionId={appVersionsId}
         dataSourcesChanged={dataSourcesChanged}
         globalDataSourcesChanged={globalDataSourcesChanged}
         dataQueriesChanged={dataQueriesChanged}
         toggleDataSourceManagerModal={toggleDataSourceManagerModal}
         showDataSourceManagerModal={showDataSourceManagerModal}
         isVersionReleased={isVersionReleased}
-        setReleasedVersionPopupState={setReleasedVersionPopupState}
         onDeleteofAllDataSources={() => {
           handleSelectedSidebarItem(null);
           handlePin(false);
@@ -310,7 +311,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
       {config.COMMENT_FEATURE_ENABLE && (
         <div className={`${isVersionReleased && 'disabled'}`}>
           <LeftSidebarComment
-            appVersionsId={appVersionsId}
             selectedSidebarItem={showComments ? 'comments' : ''}
             toggleComments={toggleComments}
             currentPageId={currentPageId}

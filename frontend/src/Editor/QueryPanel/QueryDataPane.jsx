@@ -12,13 +12,14 @@ import cx from 'classnames';
 import { Tooltip } from 'react-tooltip';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 import FilterandSortPopup from './FilterandSortPopup';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryDataPane = ({
   handleAddNewQuery,
   darkMode,
   fetchDataQueries,
   editorRef,
-  isVersionReleased,
   appId,
   toggleQueryEditor,
 }) => {
@@ -29,6 +30,13 @@ export const QueryDataPane = ({
   const [showSearchBox, setShowSearchBox] = useState(false);
   const searchBoxRef = useRef(null);
   const [dataSourcesForFilters, setDataSourcesForFilters] = useState([]);
+
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   useEffect(() => {
     if (isEmpty(dataSourcesForFilters)) {
@@ -161,7 +169,6 @@ export const QueryDataPane = ({
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
                   editorRef={editorRef}
-                  isVersionReleased={isVersionReleased}
                   appId={appId}
                 />
               ))}

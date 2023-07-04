@@ -4,18 +4,27 @@ import { Tooltip } from 'react-tooltip';
 import { checkExistingQueryName } from '@/_helpers/appUtils';
 import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
-
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions, useSelectedQuery } from '@/_stores/queryPanelStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 
-export const QueryCard = ({ dataQuery, darkMode = false, editorRef, isVersionReleased, appId }) => {
+export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => {
   const selectedQuery = useSelectedQuery();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
   const { deleteDataQueries, renameQuery, duplicateQuery } = useDataQueriesActions();
   const { setSelectedQuery, setPreviewData } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
+
   const [renamingQuery, setRenamingQuery] = useState(false);
 
   let isSeletedQuery = false;

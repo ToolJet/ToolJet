@@ -15,179 +15,186 @@ import {
   useDataQueries,
 } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource, usePreviewLoading } from '@/_stores/queryPanelStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 
-export const QueryManagerHeader = forwardRef(
-  ({ darkMode, currentState, options, editorRef, isVersionReleased, onNameChange }, ref) => {
-    const { renameQuery, updateDataQueryStatus } = useDataQueriesActions();
-    const selectedQuery = useSelectedQuery();
-    const isCreationInProcess = useQueryCreationLoading();
-    const isUpdationInProcess = useQueryUpdationLoading();
-    const selectedDataSource = useSelectedDataSource();
-    const queryName = selectedQuery?.name ?? '';
-    const [renamingQuery, setRenamingQuery] = useState(false);
+export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options, editorRef, onNameChange }, ref) => {
+  const { renameQuery, updateDataQueryStatus } = useDataQueriesActions();
+  const selectedQuery = useSelectedQuery();
+  const isCreationInProcess = useQueryCreationLoading();
+  const isUpdationInProcess = useQueryUpdationLoading();
+  const selectedDataSource = useSelectedDataSource();
+  const queryName = selectedQuery?.name ?? '';
+  const [renamingQuery, setRenamingQuery] = useState(false);
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      editingVersionId: state.editingVersion?.id,
+    }),
+    shallow
+  );
 
-    const buttonDisabled = isUpdationInProcess || isCreationInProcess;
-    const isInDraft = selectedQuery?.status === 'draft';
+  const buttonDisabled = isUpdationInProcess || isCreationInProcess;
+  const isInDraft = selectedQuery?.status === 'draft';
 
-    const executeQueryNameUpdation = (newName) => {
-      const { name } = selectedQuery;
-      if (name === newName) {
-        return setRenamingQuery(false);
+  const executeQueryNameUpdation = (newName) => {
+    const { name } = selectedQuery;
+    if (name === newName) {
+      return setRenamingQuery(false);
+    }
+    const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
+    if (newName && !isNewQueryNameAlreadyExists) {
+      renameQuery(selectedQuery?.id, newName, editorRef);
+      setRenamingQuery(false);
+    } else {
+      if (isNewQueryNameAlreadyExists) {
+        toast.error('Query name already exists');
       }
-      const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
-      if (newName && !isNewQueryNameAlreadyExists) {
-        renameQuery(selectedQuery?.id, newName, editorRef);
-        setRenamingQuery(false);
-      } else {
-        if (isNewQueryNameAlreadyExists) {
-          toast.error('Query name already exists');
+      setRenamingQuery(false);
+    }
+  };
+
+  const renderRenameInput = () => (
+    <input
+      data-cy={`query-rename-input`}
+      type="text"
+      className={cx('border-indigo-09 bg-transparent', { 'text-white': darkMode })}
+      autoFocus
+      defaultValue={queryName}
+      onKeyUp={(event) => {
+        event.persist();
+        if (event.keyCode === 13) {
+          executeQueryNameUpdation(event.target.value);
         }
-        setRenamingQuery(false);
-      }
-    };
+      }}
+      onBlur={({ target }) => executeQueryNameUpdation(target.value)}
+    />
+  );
 
-    const renderRenameInput = () => (
-      <input
-        data-cy={`query-rename-input`}
-        type="text"
-        className={cx('border-indigo-09 bg-transparent', { 'text-white': darkMode })}
-        autoFocus
-        defaultValue={queryName}
-        onKeyUp={(event) => {
-          event.persist();
-          if (event.keyCode === 13) {
-            executeQueryNameUpdation(event.target.value);
-          }
-        }}
-        onBlur={({ target }) => executeQueryNameUpdation(target.value)}
-      />
-    );
-
-    const renderBreadcrumb = () => {
-      return (
-        <>
-          <div className="query-name-breadcrum d-flex align-items-center ms-3">
-            <span
-              className={cx('query-manager-header-query-name font-weight-400', {
-                ellipsis: !renamingQuery && !!selectedQuery,
-              })}
-              data-cy={`query-name-label`}
-            >
-              {renamingQuery ? renderRenameInput() : queryName}
-              {!selectedQuery ? <NewQueryNameInput onNameChange={onNameChange} darkMode={darkMode} /> : ''}
-            </span>
-            {selectedQuery ? (
-              <span
-                className={cx('breadcrum-rename-query-icon', { 'd-none': renamingQuery && isVersionReleased })}
-                onClick={() => setRenamingQuery(true)}
-              >
-                <RenameIcon />
-              </span>
-            ) : (
-              ''
-            )}
-          </div>
-        </>
-      );
-    };
-
-    const buttonLoadingState = (loading, disabled = false) => {
-      return cx(
-        `${loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`,
-        { 'theme-dark ': darkMode },
-        { disabled: disabled || !selectedDataSource }
-      );
-    };
-
-    const previewButtonOnClick = () => {
-      const _options = { ...options };
-      const query = {
-        data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
-        pluginId: selectedDataSource.pluginId,
-        options: _options,
-        kind: selectedDataSource.kind,
-      };
-      previewQuery(editorRef, query)
-        .then(() => {
-          ref.current.scrollIntoView();
-        })
-        .catch(({ error, data }) => {
-          console.log(error, data);
-        });
-    };
-
-    const renderSaveButton = () => {
-      return (
-        <button
-          className={`default-tertiary-button ${buttonLoadingState(false, isVersionReleased)}`}
-          onClick={() => updateDataQueryStatus('published')}
-          disabled={buttonDisabled}
-          data-cy={`query-publish-button`}
-        >
-          <span className="d-flex query-create-run-svg query-icon-wrapper">
-            <CreateIcon />
+  const renderBreadcrumb = () => {
+    return (
+      <>
+        <div className="query-name-breadcrum d-flex align-items-center ms-3">
+          <span
+            className={cx('query-manager-header-query-name font-weight-400', {
+              ellipsis: !renamingQuery && !!selectedQuery,
+            })}
+            data-cy={`query-name-label`}
+          >
+            {renamingQuery ? renderRenameInput() : queryName}
+            {!selectedQuery ? <NewQueryNameInput onNameChange={onNameChange} darkMode={darkMode} /> : ''}
           </span>
-          <span>Publish</span>
-        </button>
-      );
-    };
+          {selectedQuery ? (
+            <span
+              className={cx('breadcrum-rename-query-icon', { 'd-none': renamingQuery && isVersionReleased })}
+              onClick={() => setRenamingQuery(true)}
+            >
+              <RenameIcon />
+            </span>
+          ) : (
+            ''
+          )}
+        </div>
+      </>
+    );
+  };
 
-    const renderRunButton = () => {
-      const { isLoading } = currentState?.queries[selectedQuery?.name] ?? false;
-      return (
-        <span
+  const buttonLoadingState = (loading, disabled = false) => {
+    return cx(
+      `${loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`,
+      { 'theme-dark ': darkMode },
+      { disabled: disabled || !selectedDataSource }
+    );
+  };
+
+  const previewButtonOnClick = () => {
+    const _options = { ...options };
+    const query = {
+      data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
+      pluginId: selectedDataSource.pluginId,
+      options: _options,
+      kind: selectedDataSource.kind,
+    };
+    previewQuery(editorRef, query)
+      .then(() => {
+        ref.current.scrollIntoView();
+      })
+      .catch(({ error, data }) => {
+        console.log(error, data);
+      });
+  };
+
+  const renderSaveButton = () => {
+    return (
+      <button
+        className={`default-tertiary-button ${buttonLoadingState(false, isVersionReleased)}`}
+        onClick={() => updateDataQueryStatus('published')}
+        disabled={buttonDisabled}
+        data-cy={`query-publish-button`}
+      >
+        <span className="d-flex query-create-run-svg query-icon-wrapper">
+          <CreateIcon />
+        </span>
+        <span>Publish</span>
+      </button>
+    );
+  };
+
+  const renderRunButton = () => {
+    const { isLoading } = currentState?.queries[selectedQuery?.name] ?? false;
+    return (
+      <span
+        {...(isInDraft && {
+          'data-tooltip-id': 'query-header-btn-run',
+          'data-tooltip-content': 'Publish the query to run',
+        })}
+      >
+        <button
+          onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name)}
+          className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(
+            isLoading,
+            isVersionReleased
+          )}`}
+          data-cy="query-run-button"
+          disabled={isInDraft}
           {...(isInDraft && {
             'data-tooltip-id': 'query-header-btn-run',
             'data-tooltip-content': 'Publish the query to run',
           })}
         >
-          <button
-            onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name)}
-            className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(
-              isLoading,
-              isVersionReleased
-            )}`}
-            data-cy="query-run-button"
-            disabled={isInDraft}
-            {...(isInDraft && {
-              'data-tooltip-id': 'query-header-btn-run',
-              'data-tooltip-content': 'Publish the query to run',
+          <span
+            className={cx('query-manager-btn-svg-wrapper d-flex align-item-center query-icon-wrapper query-run-svg', {
+              invisible: isLoading,
             })}
           >
-            <span
-              className={cx('query-manager-btn-svg-wrapper d-flex align-item-center query-icon-wrapper query-run-svg', {
-                invisible: isLoading,
-              })}
-            >
-              <RunIcon />
-            </span>
-            <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
-          </button>
-          {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
-        </span>
-      );
-    };
-
-    const renderButtons = () => {
-      if (selectedQuery === null) return;
-      return (
-        <>
-          {isInDraft && renderSaveButton()}
-          <PreviewButton onClick={previewButtonOnClick} buttonLoadingState={buttonLoadingState} />
-          {renderRunButton()}
-        </>
-      );
-    };
-
-    return (
-      <div className="row header">
-        <div className="col font-weight-500">{renderBreadcrumb()}</div>
-        <div className="query-header-buttons me-3">{renderButtons()}</div>
-      </div>
+            <RunIcon />
+          </span>
+          <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
+        </button>
+        {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
+      </span>
     );
-  }
-);
+  };
+
+  const renderButtons = () => {
+    if (selectedQuery === null) return;
+    return (
+      <>
+        {isInDraft && renderSaveButton()}
+        <PreviewButton onClick={previewButtonOnClick} buttonLoadingState={buttonLoadingState} />
+        {renderRunButton()}
+      </>
+    );
+  };
+
+  return (
+    <div className="row header">
+      <div className="col font-weight-500">{renderBreadcrumb()}</div>
+      <div className="query-header-buttons me-3">{renderButtons()}</div>
+    </div>
+  );
+});
 
 const PreviewButton = ({ buttonLoadingState, onClick }) => {
   const previewLoading = usePreviewLoading();

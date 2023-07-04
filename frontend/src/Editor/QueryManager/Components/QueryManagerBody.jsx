@@ -14,28 +14,14 @@ import { EventManager } from '@/Editor/Inspector/EventManager';
 import { allOperations } from '@tooljet/plugins/client';
 import { staticDataSources, customToggles, mockDataQueryAsComponent, schemaUnavailableOptions } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
-
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueries, useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource, useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryManagerBody = forwardRef(
-  (
-    {
-      darkMode,
-      options,
-      currentState,
-      allComponents,
-      apps,
-      appDefinition,
-      setOptions,
-      isVersionReleased,
-      appId,
-      editingVersionId,
-      newQueryName,
-    },
-    ref
-  ) => {
+  ({ darkMode, options, currentState, allComponents, apps, appDefinition, setOptions, appId, newQueryName }, ref) => {
     const { t } = useTranslation();
     const dataQueries = useDataQueries();
     const dataSources = useDataSources();
@@ -59,6 +45,13 @@ export const QueryManagerBody = forwardRef(
     const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
 
     const defaultOptions = useRef({});
+    const { isVersionReleased, editingVersionId } = useAppVersionStore(
+      (state) => ({
+        isVersionReleased: state.isVersionReleased,
+        editingVersionId: state.editingVersionId,
+      }),
+      shallow
+    );
 
     useEffect(() => {
       setDataSourceMeta(

@@ -13,14 +13,12 @@ const QueryManager = ({
   mode,
   dataQueriesChanged,
   appId,
-  editingVersionId,
   currentState,
   darkMode,
   apps,
   allComponents,
   appDefinition,
   editorRef,
-  isVersionReleased,
 }) => {
   const loadingDataSources = useLoadingDataSources();
   const dataSources = useDataSources();
@@ -34,7 +32,6 @@ const QueryManager = ({
 
   const [options, setOptions] = useState({});
   const mounted = useRef(false);
-  const previewPanelRef = useRef(null);
 
   useEffect(() => {
     if (mounted.current && !isCreationInProcess && !isUpdationInProcess) {
@@ -79,10 +76,9 @@ const QueryManager = ({
         darkMode={darkMode}
         currentState={currentState}
         options={options}
-        ref={previewPanelRef}
         editorRef={editorRef}
-        isVersionReleased={isVersionReleased}
         onNameChange={setNewQueryName}
+        appId={appId}
       />
       <QueryManagerBody
         darkMode={darkMode}
@@ -91,11 +87,8 @@ const QueryManager = ({
         allComponents={allComponents}
         apps={apps}
         appId={appId}
-        editingVersionId={editingVersionId}
         appDefinition={appDefinition}
         setOptions={setOptions}
-        ref={previewPanelRef}
-        isVersionReleased={isVersionReleased}
         newQueryName={newQueryName}
       />
     </div>

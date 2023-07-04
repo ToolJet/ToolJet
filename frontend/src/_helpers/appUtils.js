@@ -27,9 +27,9 @@ import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetD
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
 import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
-
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -370,8 +370,13 @@ function debounce(func) {
 export const executeAction = debounce(executeActionWithDebounce);
 
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
-  console.log('nopski', customVariables);
   if (event) {
+    if (event.runOnlyIf) {
+      const shouldRun = resolveReferences(event.runOnlyIf, _ref.state.currentState, undefined, customVariables);
+      if (!shouldRun) {
+        return false;
+      }
+    }
     switch (event.actionId) {
       case 'show-alert': {
         const message = resolveReferences(event.message, _ref.state.currentState, undefined, customVariables);
@@ -576,7 +581,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
 export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
-  console.log('Event: ', eventName);
+  console.log('Event: ', _ref, eventName, options, (mode = 'edit'));
 
   const { customVariables } = options;
 
@@ -817,7 +822,7 @@ export function getQueryVariables(options, state) {
 }
 
 export function previewQuery(_ref, query, calledFromQuery = false) {
-  const options = getQueryVariables(query.options, _ref.props.currentState);
+  const options = getQueryVariables(query.options, _ref?.state?.currentState);
 
   const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
   setPreviewLoading(true);
@@ -836,7 +841,11 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit');
     } else {
-      queryExecutionPromise = dataqueryService.preview(query, options, _ref?.state?.editingVersion?.id);
+      queryExecutionPromise = dataqueryService.preview(
+        query,
+        options,
+        useAppVersionStore.getState().editingVersion?.id
+      );
     }
 
     queryExecutionPromise
@@ -860,13 +869,13 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
           setPreviewLoading(false);
           setPreviewData(finalData);
         }
-
         const queryStatus =
           query.kind === 'tooljetdb'
             ? data.statusText
             : query.kind === 'runpy'
             ? data?.data?.status ?? 'ok'
             : data.status;
+
         switch (queryStatus) {
           case 'Bad Request':
           case 'failed': {
