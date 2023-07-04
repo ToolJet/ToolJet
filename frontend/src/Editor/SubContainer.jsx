@@ -12,6 +12,8 @@ import { resolveReferences } from '@/_helpers/utils';
 
 import { useMounted } from '@/_hooks/use-mount';
 
+const NO_OF_GRIDS = 43;
+
 export const SubContainer = ({
   mode,
   snapToGrid,
@@ -56,6 +58,8 @@ export const SubContainer = ({
   });
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
+
+  const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
 
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
@@ -123,7 +127,7 @@ export const SubContainer = ({
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
 
-          const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / 43;
+          const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / NO_OF_GRIDS;
           const height = layout.height ? layout.height : componentMeta.defaultSize.height;
           const newComponentDefinition = {
             ...componentData.definition.properties,
@@ -369,10 +373,11 @@ export const SubContainer = ({
       setReleasedVersionPopupState();
       return;
     }
-    const deltaWidth = d.width;
+    const deltaWidth = Math.round(d.width / gridWidth) * gridWidth;
     const deltaHeight = d.height;
 
     let { x, y } = position;
+    x = Math.round(x / gridWidth) * gridWidth;
 
     const defaultData = {
       top: 100,
@@ -383,17 +388,14 @@ export const SubContainer = ({
 
     let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
 
-    const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-    const subContainerWidth = canvasBoundingRect.width;
-
     top = y;
-    if (deltaWidth !== 0) {
+    if (deltaWidth !== 0 && direction === 'left') {
       // onResizeStop is triggered for a single click on the border, therefore this conditional logic
       // should not be removed.
-      left = (x * 100) / subContainerWidth;
+      left = (x * 100) / _containerCanvasWidth;
     }
 
-    width = width + (deltaWidth * 43) / subContainerWidth;
+    width = width + (deltaWidth * NO_OF_GRIDS) / _containerCanvasWidth;
     height = height + deltaHeight;
 
     let newBoxes = {
@@ -443,7 +445,7 @@ export const SubContainer = ({
     width: '100%',
     height: subContainerHeightRef.current,
     position: 'absolute',
-    backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
+    backgroundSize: `${gridWidth}px 10px`,
   };
 
   function onComponentOptionChangedForSubcontainer(component, optionName, value, componentId = '') {
