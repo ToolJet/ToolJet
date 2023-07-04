@@ -1,8 +1,7 @@
 /* eslint-disable import/no-named-as-default */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { LeftSidebarItem } from './SidebarItem';
-import { HeaderSection } from '@/_ui/LeftSidebar';
+import { HeaderSection, Button } from '@/_ui/LeftSidebar';
 import { DataSourceManager } from '../DataSourceManager';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
@@ -10,7 +9,6 @@ import { datasourceService, globalDatasourceService, authenticationService } fro
 import { ConfirmDialog } from '@/_components';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import Popover from '@/_ui/Popover';
 import { Popover as PopoverBS, OverlayTrigger } from 'react-bootstrap';
 // eslint-disable-next-line import/no-unresolved
 import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
@@ -22,15 +20,15 @@ import { shallow } from 'zustand/shallow';
 
 export const LeftSidebarDataSources = ({
   appId,
-  selectedSidebarItem,
-  setSelectedSidebarItem,
   darkMode,
   dataSourcesChanged,
   globalDataSourcesChanged,
   dataQueriesChanged,
   toggleDataSourceManagerModal,
   showDataSourceManagerModal,
-  popoverContentHeight,
+  onDeleteofAllDataSources,
+  setPinned,
+  pinned,
 }) => {
   const dataSources = useDataSources();
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
@@ -42,6 +40,11 @@ export const LeftSidebarDataSources = ({
     }),
     shallow
   );
+  useEffect(() => {
+    if (dataSources.length === 0) {
+      onDeleteofAllDataSources();
+    }
+  }, [dataSources.length]);
 
   const { admin } = authenticationService.currentSessionValue;
 
@@ -183,15 +186,6 @@ export const LeftSidebarDataSources = ({
     );
   };
 
-  const popoverContent = (
-    <LeftSidebarDataSources.Container
-      darkMode={darkMode}
-      RenderDataSource={RenderDataSource}
-      dataSources={dataSources}
-      toggleDataSourceManagerModal={toggleDataSourceManagerModal}
-    />
-  );
-
   if (dataSources?.length <= 0) return;
 
   return (
@@ -204,24 +198,14 @@ export const LeftSidebarDataSources = ({
         onCancel={() => cancelDeleteDataSource()}
         darkMode={darkMode}
       />
-      <Popover
-        handleToggle={(open) => {
-          if (!open) setSelectedSidebarItem('');
-        }}
-        popoverContentClassName="p-0 sidebar-h-100-popover"
-        side="right"
-        popoverContent={popoverContent}
-        popoverContentHeight={popoverContentHeight}
-      >
-        <LeftSidebarItem
-          selectedSidebarItem={selectedSidebarItem}
-          onClick={() => setSelectedSidebarItem('database')}
-          icon="database"
-          className={`left-sidebar-item sidebar-datasources left-sidebar-layout`}
-          tip="Sources"
-        />
-      </Popover>
-
+      <LeftSidebarDataSources.Container
+        darkMode={darkMode}
+        RenderDataSource={RenderDataSource}
+        dataSources={dataSources}
+        toggleDataSourceManagerModal={toggleDataSourceManagerModal}
+        setPinned={setPinned}
+        pinned={pinned}
+      />
       <DataSourceManager
         appId={appId}
         showDataSourceManagerModal={showDataSourceManagerModal}
@@ -239,7 +223,7 @@ export const LeftSidebarDataSources = ({
   );
 };
 
-const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [] }) => {
+const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [], setPinned, pinned }) => {
   const { t } = useTranslation();
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -250,7 +234,22 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
   return (
     <div>
       <HeaderSection darkMode={darkMode}>
-        <HeaderSection.PanelHeader title="Datasources"></HeaderSection.PanelHeader>
+        <HeaderSection.PanelHeader title="Datasources">
+          <div className="d-flex justify-content-end">
+            <Button
+              title={`${pinned ? 'Unpin' : 'Pin'}`}
+              onClick={() => setPinned(!pinned)}
+              darkMode={darkMode}
+              size="sm"
+              styles={{ width: '28px', padding: 0 }}
+            >
+              <Button.Content
+                iconSrc={`assets/images/icons/editor/left-sidebar/pinned${pinned ? 'off' : ''}.svg`}
+                direction="left"
+              />
+            </Button>
+          </div>
+        </HeaderSection.PanelHeader>
       </HeaderSection>
       <div className="card-body pb-5">
         <div className="d-flex w-100 flex-column align-items-start">

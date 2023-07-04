@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import cx from 'classnames';
 import { LeftSidebarItem } from './SidebarItem';
 import { commentsService } from '@/_services';
@@ -7,7 +7,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorDataStore } from '@/_stores/editorDataStore';
 import { shallow } from 'zustand/shallow';
 
-export const LeftSidebarComment = ({ selectedSidebarItem, currentPageId }) => {
+export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPageId }, ref) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const { appVersionsId } = useAppVersionStore(
     (state) => ({
@@ -27,7 +27,7 @@ export const LeftSidebarComment = ({ selectedSidebarItem, currentPageId }) => {
 
   React.useEffect(() => {
     if (appVersionsId) {
-      commentsService.getNotifications(router.query.id, false, appVersionsId, currentPageId).then(({ data }) => {
+      commentsService.getNotifications(router.query.id, false, appVersionsId, currentPageId).then(({ data }, ref) => {
         setNotifications(data);
       });
     }
@@ -49,6 +49,7 @@ export const LeftSidebarComment = ({ selectedSidebarItem, currentPageId }) => {
         toggleComments();
       }}
       tip="Comments"
+      ref={ref}
     />
   );
-};
+});

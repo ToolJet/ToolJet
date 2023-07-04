@@ -487,23 +487,29 @@ button {
   }
 
   .main {
-    margin-left: 3%;
-    width: 82%;
+    // margin-left: 3%;
+    // width: 82%;
     top: 0;
+    height: calc(100vh - 84px);
+
+    &.hide-scrollbar {
+      .canvas-container::-webkit-scrollbar {
+        height: 0;
+      }
+    }
 
     .canvas-container::-webkit-scrollbar {
       width: 0;
       background: transparent;
-      height: 0;
+      // height: 0;
+    }
+
+    .canvas-container::-webkit-scrollbar-track {
+      background: transparent !important;
     }
 
     .canvas-container {
       scrollbar-width: none;
-    }
-
-    .canvas-container::-webkit-scrollbar {
-      width: 0;
-      background: transparent;
     }
 
     .canvas-container {
@@ -512,8 +518,8 @@ button {
       position: fixed;
       right: 300px;
       left: 48px;
-      overflow-y: auto;
-      overflow-x: scroll;
+      overflow-y: scroll;
+      overflow-x: auto;
       -webkit-box-pack: center;
       justify-content: center;
       -webkit-box-align: center;
@@ -854,11 +860,15 @@ button {
         box-sizing: border-box;
         border-radius: 6px;
         color: $primary-light;
-        width: 136px;
+        width: 113px;
         height: 28px;
         background: var(--indigo11) !important;
         border: none;
         color: var(--indigo4);
+        padding: 4px 16px;
+        gap: 6px;
+        height: 28px;
+
 
         &:hover {
           background: var(--indigo10);
@@ -879,15 +889,18 @@ button {
       }
 
       .launch-button {
-
         box-sizing: border-box;
         border-radius: 6px;
         color: var(--base);
-        width: 92px;
+        width: 113px;
         height: 28px;
         background: var(--base);
         border: 1px solid var(--slate7);
         color: var(--slate12);
+        padding: 4px 16px;
+        gap: 6px;
+        height: 28px !important;
+
 
         &:hover {
           background: var(--slate8);
@@ -1171,30 +1184,35 @@ button {
 }
 
 .component-action-select {
-  .css-zz6spl-container{
+  .css-zz6spl-container {
     width: inherit;
   }
-  &.fx-container-eventmanager{
+
+  &.fx-container-eventmanager {
     .fx-common {
       right: 0;
     }
-    .custom-row{
-      width:100%
+
+    .custom-row {
+      width: 100%
     }
   }
-  .codeShow-active{
+
+  .codeShow-active {
     display: flex;
     flex-direction: row-reverse;
     justify-content: space-between;
-    .custom-row{
+
+    .custom-row {
       width: 75%;
     }
   }
-  .row.fx-container{
-    .col{
+
+  .row.fx-container {
+    .col {
       display: flex;
     }
-  }  
+  }
 }
 
 .fx-container-eventmanager *.fx-common {
@@ -1802,6 +1820,9 @@ button {
       margin-top: auto;
       margin-bottom: auto;
     }
+    .td-container:has(.action-button){
+      height: inherit !important;
+    }
   }
 
   td {
@@ -1813,7 +1834,7 @@ button {
       padding: 10px;
       margin-left: -9px;
       background: white;
-      box-shadow: rgba(15, 15, 15, 0/05) 0px 0px 0px 1px,
+      box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px,
         rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
       white-space: initial;
     }
@@ -1824,6 +1845,7 @@ button {
     .text-container:hover {
       outline: none;
     }
+
   }
 
   td {
@@ -2571,8 +2593,20 @@ hr {
   height: 28px !important;
 }
 
+.editor {
+  .modal-dialog {
+    overflow-y: initial !important
+  }
+
+  .modal-dialog-scrollable .modal-content {
+    max-height: 88% !important;
+  }
+
+}
+
+
 .modal-component {
-  margin-top: 150px;
+
 
   .modal-body {
     padding: 0;
@@ -2882,6 +2916,10 @@ input:focus-visible {
   .form-control.is-invalid,
   .was-validated .form-control:invalid {
     border-color: #ffb0b0;
+  }
+
+  .form-check-input {
+    cursor: pointer;
   }
 }
 
@@ -4376,7 +4414,8 @@ input[type="text"] {
   }
 
   input:focus {
-    width: 300px;
+    width: 200px;
+    background-color: var(--base);
   }
 
   .input-icon .input-icon-addon {
@@ -4569,10 +4608,10 @@ input[type="text"] {
     color: #fff;
     background-color: #232e3c !important;
   }
-}
 
-.onboarding-modal.dark .modal-content {
-  @extend .modal-content.home-modal-component.dark;
+  .btn-close {
+    filter: brightness(0) invert(1);
+  }
 }
 
 .modal-content.home-modal-component.dark-theme {
@@ -5515,10 +5554,10 @@ div#driver-page-overlay {
     }
   }
 
-  .action-icons-group {
-    margin-right: 4rem !important;
-    margin-left: 2rem !important;
-  }
+  // .action-icons-group {
+  //   margin-right: 4rem !important;
+  //   margin-left: 2rem !important;
+  // }
 
   .action-icons-group {
     cursor: pointer;
@@ -7079,6 +7118,7 @@ tbody {
   display: grid !important;
   grid-template-rows: auto 1fr auto !important;
 }
+
 .marketplace-page-sidebar {
   height: calc(100vh - 64px);
   max-width: 288px;
@@ -7307,6 +7347,9 @@ tbody {
 
   .query-preview-svg {
     padding: 2.67px 0.067px;
+    width: 16px;
+    height: 16px;
+    margin: 6px 0;
   }
 
   &:active {
@@ -7406,6 +7449,8 @@ tbody {
   width: 16px;
   height: 16px;
   padding: 2.88px 5.22px;
+  display: flex;
+  cursor: pointer;
 }
 
 .theme-dark {
@@ -7508,6 +7553,16 @@ tbody {
   &:focus {
     box-shadow: 0px 0px 0px 4px #DFE3E6;
   }
+
+  .tj-text-xsm {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tj-folder-list {
+    display: block;
+  }
 }
 
 
@@ -7567,6 +7622,11 @@ tbody {
 
 .modal-backdrop {
   opacity: 0.5;
+}
+
+.canvas-area>.modal-backdrop {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .ds-delete-btn {
@@ -8023,6 +8083,10 @@ tbody {
   font-size: .765625rem !important;
 }
 
+.tooltip {
+  z-index: 10000;
+}
+
 .add-new-workspace-icon-wrap {
   display: flex;
   flex-direction: row;
@@ -8428,24 +8492,16 @@ tbody {
 }
 
 .edit-button {
-  width: 135px;
-  height: 28px;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 4px 16px;
-  gap: 6px;
-  width: 135px;
   height: 28px;
 }
 
 .launch-button {
   display: flex;
-  width: 93px;
   height: 28px;
-  padding: 4px 16px;
-  gap: 6px;
   align-items: center;
   color: var(--slate12);
   justify-content: center;
@@ -9807,6 +9863,7 @@ tbody {
       border: 1px solid var(--slate8);
       border-radius: 6px;
       outline: none;
+      padding-left: 12px !important;
     }
 
     &:disabled {
@@ -10078,7 +10135,7 @@ tbody {
   border-radius: 0px !important;
 }
 
-// custom styles for users multiselect in manage users 
+// custom styles for users multiselect in manage users
 .manage-groups-users-multiselect {
   gap: 17px;
   width: 440px;
@@ -10267,7 +10324,7 @@ tbody {
       background-color: #121212;
       padding: 16px 18px 0px 16px;
       border-radius: 6px;
-  
+
       p {
         font-size: 14px;
         font-family: IBM Plex Sans;
@@ -10277,31 +10334,38 @@ tbody {
   }
 
   .error-shake {
-    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+    animation: shake 0.82s cubic-bezier(.36, .07, .19, .97) both;
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
     perspective: 10000px;
   }
-  
+
   @keyframes shake {
-    10%, 90% {
+
+    10%,
+    90% {
       transform: translate3d(-1px, 0, 0);
     }
-    
-    20%, 80% {
+
+    20%,
+    80% {
       transform: translate3d(2px, 0, 0);
     }
-  
-    30%, 50%, 70% {
+
+    30%,
+    50%,
+    70% {
       transform: translate3d(-4px, 0, 0);
     }
-  
-    40%, 60% {
+
+    40%,
+    60% {
       transform: translate3d(4px, 0, 0);
     }
   }
 
 }
+
 .profile-page-content-wrap {
   background-color: var(--slate2);
   padding-top: 40px;
@@ -10330,10 +10394,25 @@ tbody {
   max-width: 880px;
 }
 
+@media only screen and (min-width: 1584px) and (max-width: 1727px) {
+
+  .edit-button,
+  .launch-button {
+    width: 113px !important;
+  }
+}
+
+
+
 @media only screen and (max-width: 1583px) and (min-width: 1312px) {
 
   .homepage-app-card-list-item {
     max-width: 264px;
+
+    .edit-button,
+    .launch-button {
+      width: 109px !important;
+    }
   }
 
 }
@@ -10342,6 +10421,11 @@ tbody {
 
   .homepage-app-card-list-item {
     max-width: 304px;
+
+    .edit-button,
+    .launch-button {
+      width: 129px !important;
+    }
   }
 
   .home-page-content-container {
@@ -10366,6 +10450,11 @@ tbody {
   .homepage-app-card-list-item {
     max-width: 304px !important;
     flex-basis: 100%;
+
+    .edit-button,
+    .launch-button {
+      width: 129px !important;
+    }
   }
 }
 
@@ -10381,6 +10470,11 @@ tbody {
   .homepage-app-card-list-item {
     max-width: 269px;
     flex-basis: 100%;
+
+    .edit-button,
+    .launch-button {
+      width: 111.5px !important;
+    }
   }
 
   .liner {
@@ -10521,23 +10615,103 @@ tbody {
     }
   }
 }
-.table-editor-component-row{
-  .rdt.cell-type-datepicker{
+
+
+.workspace-folder-modal {
+  .tj-app-input {
+    padding-bottom: 0px !important;
+  }
+
+  .tj-input-error {
+    height: 32px;
+    color: #ED5F00;
+    font-weight: 400;
+    font-size: 10px;
+    height: 0px;
+    padding: 4px 0px 20px 0px;
+  }
+}
+
+.table-editor-component-row {
+  .rdt.cell-type-datepicker {
     margin-top: 0;
   }
-  .has-multiselect{
-    .select-search-input{
+
+  .has-multiselect {
+    .select-search-input {
       margin-bottom: 0;
     }
   }
 }
+
 .theme-dark .card-container {
   background-color: #121212 !important
 }
+
 .version-select {
   .react-select__menu {
     .react-select__menu-list {
       max-height: 150px;
     }
   }
+}
+
+.workspace-folder-modal {
+  .tj-app-input {
+    padding-bottom: 0px !important;
+  }
+
+  .tj-input-error {
+    height: 32px;
+    color: #ED5F00;
+    font-weight: 400;
+    font-size: 10px;
+    height: 0px;
+    padding: 4px 0px 20px 0px;
+  }
+}
+
+.jet-container-loading {
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+}
+
+.jet-container-json-form {
+  padding: 20px;
+
+  .DateRangePickerInput {
+    width: 100% !important;
+  }
+
+  .dropzone {
+    aside {
+      width: 100% !important;
+    }
+  }
+
+  fieldset {
+    width: 100%;
+
+    .json-form-wrapper {
+      margin-bottom: 4px;
+
+      .widget-button {
+        button {
+          width: auto !important;
+          min-width: 140px !important;
+        }
+      }
+    }
+  }
+}
+
+.freeze-scroll {
+  #real-canvas {
+    overflow: hidden;
+  }
+}
+
+.form-label-restricted {
+  display: none;
 }

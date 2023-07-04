@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ActionTypes } from '../ActionTypes';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -26,11 +26,16 @@ export const EventManager = ({
   popOverCallback,
   popoverPlacement,
   pages,
+  hideEmptyEventsAlert,
 }) => {
   const dataQueries = useDataQueries();
   const [events, setEvents] = useState(() => component.component.definition.events || []);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    setEvents(component.component.definition.events || []);
+  }, [component?.component?.definition?.events]);
 
   let actionOptions = ActionTypes.map((action) => {
     return { name: action.name, value: action.id };
@@ -271,6 +276,21 @@ export const EventManager = ({
                 styles={styles}
                 useMenuPortal={false}
                 useCustomStyles={true}
+              />
+            </div>
+          </div>
+
+          <div className="row mt-3">
+            <div className="col-3 p-2" data-cy="alert-type-label">
+              {t('editor.inspector.eventManager.runOnlyIf', 'Run Only If')}
+            </div>
+            <div className="col-9" data-cy="alert-message-type">
+              <CodeHinter
+                theme={darkMode ? 'monokai' : 'default'}
+                currentState={currentState}
+                initialValue={event.runOnlyIf}
+                onChange={(value) => handlerChanged(index, 'runOnlyIf', value)}
+                usePortalEditor={false}
               />
             </div>
           </div>
@@ -921,13 +941,19 @@ export const EventManager = ({
             {t('editor.inspector.eventManager.addEventHandler', '+ Add event handler')}
           </button>
         </div>
-        <div className="text-left">
-          <small className="color-disabled" data-cy="no-event-handler-message">
-            {t('editor.inspector.eventManager.emptyMessage', "This {{componentName}} doesn't have any event handlers", {
-              componentName: componentName.toLowerCase(),
-            })}
-          </small>
-        </div>
+        {!hideEmptyEventsAlert ? (
+          <div className="text-left">
+            <small className="color-disabled" data-cy="no-event-handler-message">
+              {t(
+                'editor.inspector.eventManager.emptyMessage',
+                "This {{componentName}} doesn't have any event handlers",
+                {
+                  componentName: componentName.toLowerCase(),
+                }
+              )}
+            </small>
+          </div>
+        ) : null}
       </>
     );
   }

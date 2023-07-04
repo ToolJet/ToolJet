@@ -1,0 +1,93 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "HarperDB datasource",
+  "description": "A schema defining HarperDB datasource",
+  "type": "database",
+  "defaults": {
+    "mode": "sql"
+  },
+  "properties": {
+    "mode": {
+      "label": "",
+      "key": "mode",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for mode",
+      "list": [
+        {
+          "name": "SQL mode",
+          "value": "sql"
+        }
+      ]
+    },
+    "sql": {
+      "sql_query": {
+        "key": "sql_query",
+        "type": "codehinter",
+        "description": "Enter query",
+        "height": "150px"
+      }
+    },
+    "nosql": {
+      "operation": {
+        "label": "Operation",
+        "key": "operation",
+        "type": "dropdown-component-flip",
+        "desription": "Single select dropdown for operation",
+        "list": [
+          {
+            "name": "Insert",
+            "value": "insert"
+          },
+          {
+            "name": "Update",
+            "value": "update"
+          }
+        ]
+      },
+      "insert": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "text",
+          "description": "Enter schema"
+        },
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "text",
+          "description": "Enter table name"
+        },
+        "records": {
+          "label": "Records",
+          "key": "records",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Enter records to insert",
+          "placeholder": "[{id: 1, name: 'Jose', age: 24}]"
+        }
+      },
+      "update": {
+        "schema": {
+          "label": "Schema",
+          "key": "schema",
+          "type": "text",
+          "description": "Enter schema"
+        },
+        "table": {
+          "label": "Table",
+          "key": "table",
+          "type": "text",
+          "description": "Enter table name"
+        },
+        "records": {
+          "label": "records",
+          "key": "records",
+          "type": "codehinter",
+          "mode": "javascript",
+          "description": "Enter records to update",
+          "placeholder": "[{id: 1, age: 25}]"
+        }
+      }
+    }
+  }
+}

@@ -15,7 +15,7 @@ export const PageHandler = ({
   switchPage,
   deletePage,
   renamePage,
-  // clonePage,
+  clonePage,
   hidePage,
   unHidePage,
   homePageId,
@@ -81,9 +81,9 @@ export const PageHandler = ({
         showSettings();
         break;
 
-      // case 'duplicate-page':
-      //   clonePage(page.id);
-      //   break;
+      case 'clone-page':
+        clonePage(page.id);
+        break;
 
       case 'hide-page':
         hidePage(page.id);

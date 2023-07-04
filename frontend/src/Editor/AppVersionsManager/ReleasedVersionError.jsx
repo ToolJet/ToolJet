@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import cx from 'classnames';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
@@ -11,14 +11,14 @@ export const ReleasedVersionError = () => {
     }),
     shallow
   );
-  const changeBackTheState = () => {
+  const changeBackTheState = useCallback(() => {
     isUserEditingTheVersion && disableReleasedVersionPopupState();
-  };
+  }, [isUserEditingTheVersion, disableReleasedVersionPopupState]);
 
-  React.useState(() => {
+  useEffect(() => {
     const intervalId = setInterval(() => changeBackTheState(), 2000);
     return () => intervalId && clearInterval(intervalId);
-  }, [isUserEditingTheVersion]);
+  }, [isUserEditingTheVersion, changeBackTheState]);
 
   return (
     <div className="released-version-popup-container">

@@ -21,7 +21,6 @@ export default function EditorHeader({
   globalSettingsChanged,
   appDefinition,
   toggleAppMaintenance,
-  editingVersion,
   app,
   appVersionPreviewLink,
   slug,
@@ -34,7 +33,6 @@ export default function EditorHeader({
   saveError,
   onNameChanged,
   setAppDefinitionFromVersion,
-  closeCreateVersionModalPrompt,
   handleSlugChange,
   onVersionRelease,
   saveEditingVersion,
@@ -42,9 +40,10 @@ export default function EditorHeader({
   currentUser,
 }) {
   const { is_maintenance_on } = app;
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      editingVersion: state.editingVersion,
     }),
     shallow
   );
@@ -122,10 +121,8 @@ export default function EditorHeader({
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}
-                      editingVersion={editingVersion}
                       releasedVersionId={app.current_version_id}
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-                      closeCreateVersionModalPrompt={closeCreateVersionModalPrompt}
                       onVersionDelete={onVersionDelete}
                     />
                   )}
@@ -177,7 +174,6 @@ export default function EditorHeader({
                       appId={app.id}
                       appName={app.name}
                       onVersionRelease={onVersionRelease}
-                      editingVersion={editingVersion}
                       saveEditingVersion={saveEditingVersion}
                     />
                   )}

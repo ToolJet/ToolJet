@@ -12,17 +12,15 @@ export const CreateVersion = ({
   appVersions,
   setAppVersions,
   setAppDefinitionFromVersion,
-  editingVersion,
   showCreateAppVersion,
   setShowCreateAppVersion,
-  closeCreateVersionModalPrompt,
 }) => {
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const { t } = useTranslation();
-  const { showCreateVersionModalPrompt } = useAppVersionStore(
+  const { editingVersion } = useAppVersionStore(
     (state) => ({
-      showCreateVersionModalPrompt: state.showCreateVersionModalPrompt,
+      editingVersion: state.editingVersion,
     }),
     shallow
   );
@@ -49,7 +47,6 @@ export const CreateVersion = ({
           const latestVersion = data.versions.at(0);
           setAppDefinitionFromVersion(latestVersion);
           setShowCreateAppVersion(false);
-          closeCreateVersionModalPrompt();
         });
       })
       .catch((error) => {
@@ -64,10 +61,9 @@ export const CreateVersion = ({
 
   return (
     <AlertDialog
-      show={showCreateAppVersion || showCreateVersionModalPrompt}
+      show={showCreateAppVersion}
       closeModal={() => {
         setVersionName('');
-        closeCreateVersionModalPrompt();
         setShowCreateAppVersion(false);
       }}
       title={t('editor.appVersionManager.createVersion', 'Create new version')}
@@ -118,30 +114,6 @@ export const CreateVersion = ({
           </div>
         </div>
 
-        {showCreateVersionModalPrompt && (
-          <div className="mb-3">
-            <div className="light border rounded">
-              <div className="container">
-                <div className="row py-3">
-                  <div className="col-auto d-flex align-items-center p-0">
-                    <span className="pe-1">
-                      <img src={'assets/images/icons/editor/bulb-sharp.svg'} />
-                    </span>
-                  </div>
-                  <div className="col">
-                    <span style={{ whiteSpace: 'pre-line' }}>
-                      {t(
-                        'editor.appVersionManager.versionAlreadyReleased',
-                        `You cannot make changes to a version that has already been released. \n Create a new version or switch to a different version if you want to make changes.`
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="mb-3">
           <div className="col d-flex justify-content-end">
             <button
@@ -149,7 +121,6 @@ export const CreateVersion = ({
               data-cy="cancel-button"
               onClick={() => {
                 setVersionName('');
-                closeCreateVersionModalPrompt();
                 setShowCreateAppVersion(false);
               }}
               type="button"
