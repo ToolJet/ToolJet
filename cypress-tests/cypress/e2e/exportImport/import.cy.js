@@ -70,6 +70,7 @@ describe("App Import Functionality", () => {
       "contain.value",
       appData.name
     );
+    cy.modifyCanvasSize(900, 600);
     cy.dragAndDropWidget(buttonText.defaultWidgetText);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
     cy.renameApp(data.appName);
