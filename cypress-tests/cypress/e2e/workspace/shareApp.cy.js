@@ -40,7 +40,8 @@ describe("App share functionality", () => {
 
     cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
     cy.get(commonWidgetSelector.modalCloseButton).click();
-    cy.dragAndDropWidget("Table", 50, 50);
+    cy.forceClickOnCanvas()
+    cy.dragAndDropWidget("Button", 50, 50);
     cy.get(commonSelectors.editorPageLogo).click();
 
     logout();
