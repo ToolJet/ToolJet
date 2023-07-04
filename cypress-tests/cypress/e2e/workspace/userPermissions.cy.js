@@ -25,6 +25,7 @@ describe("User permissions", () => {
     cy.wait("@homePage");
     cy.createApp();
     cy.renameApp(data.appName);
+    cy.dragAndDropWidget("Table", 250, 250);
     cy.get(commonSelectors.editorPageLogo).click();
     cy.reloadAppForTheElement(data.appName);
     permissions.addNewUserMW(data.firstName, data.email);
@@ -137,6 +138,7 @@ describe("User permissions", () => {
 
     cy.createApp();
     cy.renameApp(data.email);
+    cy.dragAndDropWidget("Table", 50, 50);
     cy.get(commonSelectors.editorPageLogo).click();
     cy.reloadAppForTheElement(data.email);
     common.viewAppCardOptions(data.email);

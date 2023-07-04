@@ -168,6 +168,8 @@ describe("dashboard", () => {
     cy.appUILogin();
     cy.createApp();
     cy.renameApp(data.appName);
+    cy.dragAndDropWidget("Table", 250, 250);
+
     cy.get(commonSelectors.editorPageLogo).click();
 
     cy.wait(500);
@@ -282,6 +284,7 @@ describe("dashboard", () => {
     cy.wait("@appEditor");
     cy.wait(300);
     cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
+    cy.dragAndDropWidget("button", 25, 25);
     cy.get(commonSelectors.editorPageLogo).click();
     cy.wait("@appLibrary");
     cy.wait(500);
@@ -337,6 +340,8 @@ describe("dashboard", () => {
     cy.appUILogin();
     cy.createApp();
     cy.renameApp(data.appName);
+    cy.dragAndDropWidget("Button", 50, 50);
+
     cy.get(commonSelectors.editorPageLogo).click();
     cy.reloadAppForTheElement(data.appName);
     cy.get(commonSelectors.appCard(data.appName)).should(
@@ -363,6 +368,8 @@ describe("dashboard", () => {
     cy.appUILogin();
     cy.createApp();
     cy.renameApp(data.appName);
+    cy.dragAndDropWidget("Button", 100, 100);
+
     cy.get(commonSelectors.editorPageLogo).click();
 
     cy.get(commonSelectors.createNewFolderButton).click();
