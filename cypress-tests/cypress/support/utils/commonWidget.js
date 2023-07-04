@@ -274,13 +274,15 @@ export const verifyLoaderColor = (widgetName, color) => {
   //using only for button
   cy.forceClickOnCanvas();
   cy.get(commonWidgetSelector.draggableWidget(widgetName))
-    .should("attr", "style")
-    .and(
-      "contains",
-      `--loader-color: rgba(${color[0]}, ${color[1]}, ${color[2]}, ${
-        color[3] / 100
-      })`
-    );
+    .invoke("attr", "style")
+    .then((style) => {
+      const loaderColor = style.split(" ").join("");
+      expect(loaderColor).to.include(
+        `--loader-color:rgba(${color[0]},${color[1]},${color[2]},${
+          color[3] / 100
+        })`
+      );
+    });
 };
 
 export const verifyLayout = (widgetName) => {
