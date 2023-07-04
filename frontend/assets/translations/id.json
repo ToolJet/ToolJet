@@ -1,169 +1,168 @@
 {
-    "globals":{
-        "readDocumentation":"Baca dokumentasi",
-        "cancel":"Batal",
-        "save":"Simpan",
-        "back":"Kembali",
-        "edit":"Sunting",
-        "search":"Cari",
-        "update":"Memperbarui",
-        "delete":"Hapus",
-        "add":"Tambah",
-        "view":"Lihat",
-        "create":"Buat",
-        "enabled":"Diaktifkan",
-        "disabled":"Nonaktifkan",
-        "yes":"Iya",
-        "submit":"Kirim",
-        "select":"Pilih",
-        "environmentVar":"Environment Variables",
-        "saving":"Menyimpan...",
-        "saveDatasource":"Simpan sumber data",
-        "authorize":"Mengizinkan",
-        "connect":"Menghubung",
-        "reconnect":"Hubungkan kembali",
-        "components":"komponen",
-        "send":"Kirim",
-        "noConnection":"tidak dapat tersambung",
-        "connectionVerified":"koneksi diverifikasi",
-        "left":"Kiri",
-        "center":"Tengah",
-        "right":"Kanan",
-        "justified":"Rata Kiri Kanan",
-        "host":"Host",
-        "operation":"Operasi",
-        "header":"HEADER",
-        "path":"PATH",
-        "query":"QUERY",
-        "requestBody":"REQUEST BODY"
+    "globals": {
+        "readDocumentation": "Baca dokumentasi",
+        "cancel": "Batal",
+        "save": "Simpan",
+        "back": "Kembali",
+        "edit": "Sunting",
+        "search": "Cari",
+        "update": "Memperbarui",
+        "delete": "Hapus",
+        "add": "Tambah",
+        "view": "Lihat",
+        "create": "Buat",
+        "enabled": "Diaktifkan",
+        "disabled": "Nonaktifkan",
+        "yes": "Iya",
+        "submit": "Kirim",
+        "select": "Pilih",
+        "environmentVar": "Environment Variables",
+        "saving": "Menyimpan...",
+        "saveDatasource": "Simpan sumber data",
+        "authorize": "Mengizinkan",
+        "connect": "Menghubung",
+        "reconnect": "Hubungkan kembali",
+        "components": "komponen",
+        "send": "Kirim",
+        "noConnection": "tidak dapat tersambung",
+        "connectionVerified": "koneksi diverifikasi",
+        "left": "Kiri",
+        "center": "Tengah",
+        "right": "Kanan",
+        "justified": "Rata Kiri Kanan",
+        "host": "Host",
+        "operation": "Operasi",
+        "header": "HEADER",
+        "path": "PATH",
+        "query": "QUERY",
+        "requestBody": "REQUEST BODY"
     },
-    "errorBoundary":"Ada yang salah.",
-    "viewer":"Maaf! Aplikasi ini sedang dalam pemeliharaan",
-    "app":{
-        "updateAvailable":"Pembaruan tersedia",
-        "newVersionReleased":"Versi baru ToolJet telah dirilis.",
-        "readReleaseNotes":"Baca catatan rilis & pembaruan",
-        "skipVersion":"Lewati versi ini"
+    "errorBoundary": "Ada yang salah.",
+    "viewer": "Maaf! Aplikasi ini sedang dalam pemeliharaan",
+    "app": {
+        "updateAvailable": "Pembaruan tersedia",
+        "newVersionReleased": "Versi baru ToolJet telah dirilis.",
+        "readReleaseNotes": "Baca catatan rilis & pembaruan",
+        "skipVersion": "Lewati versi ini"
     },
-    "stripe":"Harap tunggu sementara kami memuat spesifikasi OpenAPI untuk Stripe.",
-    "openApi":{
-        "noValidOpenApi":"Spesifikasi OpenAPI yang valid tidak tersedia!",
-        "selectHost":"Pilih host",
-        "selectOperation":"Pilih operasi"
+    "stripe": "Harap tunggu sementara kami memuat spesifikasi OpenAPI untuk Stripe.",
+    "openApi": {
+        "noValidOpenApi": "Spesifikasi OpenAPI yang valid tidak tersedia!",
+        "selectHost": "Pilih host",
+        "selectOperation": "Pilih operasi"
     },
-    "slack":{
-        "authorize":"Mengizinkan",
-        "connectToolJetToSlack":"ToolJet dapat terhubung ke Slack dan membuat daftar pengguna, mengirim pesan, dll. Pilih cakupan izin yang sesuai.",
-        "chatWrite":"chat:write",
-        "listUsersAndSendMessage":"Aplikasi ToolJet Anda akan dapat membuat daftar pengguna dan mengirim pesan ke pengguna & saluran.",
-        "connectSlack":"Hubungkan ke Slack"
+    "slack": {
+        "authorize": "Mengizinkan",
+        "connectToolJetToSlack": "ToolJet dapat terhubung ke Slack dan membuat daftar pengguna, mengirim pesan, dll. Pilih cakupan izin yang sesuai.",
+        "chatWrite": "chat:write",
+        "listUsersAndSendMessage": "Aplikasi ToolJet Anda akan dapat membuat daftar pengguna dan mengirim pesan ke pengguna & saluran.",
+        "connectSlack": "Hubungkan ke Slack"
     },
-    "googleSheets":{
-        "readOnly":"Read only",
-        "enableReadAndWrite":"Jika Anda ingin aplikasi ToolJet Anda mengubah Google Spreadsheet Anda, pastikan untuk memilih akses baca dan tulis",
-        "readDataFromSheets":"Aplikasi ToolJet Anda hanya dapat membaca data dari Google Spreadsheet",
-        "readWrite":"Baca dan tulis",
-        "readModifySheets":"Aplikasi ToolJet Anda dapat membaca data dari sheet, memodifikasi sheet, dan banyak lagi.",
-        "toGoogleSheets":"ke Google Sheets"
-
+    "googleSheets": {
+        "readOnly": "Read only",
+        "enableReadAndWrite": "Jika Anda ingin aplikasi ToolJet Anda mengubah Google Spreadsheet Anda, pastikan untuk memilih akses baca dan tulis",
+        "readDataFromSheets": "Aplikasi ToolJet Anda hanya dapat membaca data dari Google Spreadsheet",
+        "readWrite": "Baca dan tulis",
+        "readModifySheets": "Aplikasi ToolJet Anda dapat membaca data dari sheet, memodifikasi sheet, dan banyak lagi.",
+        "toGoogleSheets": "ke Google Sheets"
     },
     "profile": {
-      "profileSettings": "Pengaturan Profil"
+        "profileSettings": "Pengaturan Profil"
     },
-    "loginSignupPage":{
-        "forgotPassword":"Lupa kata sandi",
-        "emailAddress":"Alamat email",
-        "enterEmail":"Masukan email",
-        "resetPassword":"Setel ulang kata sandi",
-        "dontHaveAccount":"Belum punya akun?",
-        "signIn":"Masuk",
-        "signUp":"Daftar",
-        "createToolJetAccount":"Buat akun ToolJet",
-        "enterBusinessEmail":"Masukkan email bisnis Anda",
-        "alreadyHaveAnAccount":"Sudah memiliki akun?",
-        "password":"Kata sandi",
-        "showPassword":"tampilkan kata sandi",
-        "loginTo":"Masuk ke",
-        "yourAccount":"akun Anda",
-        "noLoginMethodsEnabled":"Tidak ada metode login yang diaktifkan untuk workspace ini",
-        "emailConfirmLink":"Silakan periksa email Anda untuk tautan konfirmasi",
-        "newPassword":"Kata sandi baru",
-        "passwordConfirmation":"Konfirmasi kata sandi"
+    "loginSignupPage": {
+        "forgotPassword": "Lupa kata sandi",
+        "emailAddress": "Alamat email",
+        "enterEmail": "Masukan email",
+        "resetPassword": "Setel ulang kata sandi",
+        "dontHaveAccount": "Belum punya akun?",
+        "signIn": "Masuk",
+        "signUp": "Daftar",
+        "createToolJetAccount": "Buat akun ToolJet",
+        "enterBusinessEmail": "Masukkan email bisnis Anda",
+        "alreadyHaveAnAccount": "Sudah memiliki akun?",
+        "password": "Kata sandi",
+        "showPassword": "tampilkan kata sandi",
+        "loginTo": "Masuk ke",
+        "yourAccount": "akun Anda",
+        "noLoginMethodsEnabled": "Tidak ada metode login yang diaktifkan untuk workspace ini",
+        "emailConfirmLink": "Silakan periksa email Anda untuk tautan konfirmasi",
+        "newPassword": "Kata sandi baru",
+        "passwordConfirmation": "Konfirmasi kata sandi"
     },
     "editor": {
         "preview": "Pratinjau",
-        "share":"Bagikan",
+        "share": "Bagikan",
         "shareModal": {
-            "makeApplicationPublic":"Jadikan aplikasi publik?",
-            "shareableLink":"Dapatkan tautan yang dapat dibagikan untuk aplikasi ini",
-            "copy":"salin",
-            "embeddableLink":"Dapatkan tautan yang dapat disematkan untuk aplikasi ini",
-            "manageUsers":"Kelola Pengguna"
+            "makeApplicationPublic": "Jadikan aplikasi publik?",
+            "shareableLink": "Dapatkan tautan yang dapat dibagikan untuk aplikasi ini",
+            "copy": "salin",
+            "embeddableLink": "Dapatkan tautan yang dapat disematkan untuk aplikasi ini",
+            "manageUsers": "Kelola Pengguna"
         },
-        "appVersionManager":{
-            "version":"Versi",
-            "currentlyReleased":"Saat ini Dirilis",
-            "createVersion":"Buat Versi",
-            "versionName":"Nama Versi",
-            "createVersionFrom":"Buat versi dari",
-            "save":"Simpan",
-            "create":"Buat Versi",
+        "appVersionManager": {
+            "version": "Versi",
+            "currentlyReleased": "Saat ini Dirilis",
+            "createVersion": "Buat Versi",
+            "versionName": "Nama Versi",
+            "createVersionFrom": "Buat versi dari",
+            "save": "Simpan",
+            "create": "Buat Versi",
             "editVersion": "Sunting Versi",
-            "deleteVersion":"Apakah Anda benar-benar ingin menghapus versi ini ({{version}})?",
-            "enterVersionName":"Masukkan nama versi",
-            "versionAlreadyReleased":"Versi sudah dirilis. Silakan buat versi baru atau beralih ke versi lain untuk terus membuat perubahan."
+            "deleteVersion": "Apakah Anda benar-benar ingin menghapus versi ini ({{version}})?",
+            "enterVersionName": "Masukkan nama versi",
+            "versionAlreadyReleased": "Versi sudah dirilis. Silakan buat versi baru atau beralih ke versi lain untuk terus membuat perubahan."
         },
-        "queries":"Queries",
-        "inspectComponent":"Silakan pilih komponen untuk diperiksa",
-        "release":"Rilis",
-        "searchQueries":"Cari queries",
-        "createQuery":"Buat query",
-        "queryManager":{
-            "general":"Umum",
-            "advanced":"Lanjutan",
-            "preview":"Pratinjau",
-            "Save":"Simpan",
-            "selectDatasource":"Pilih Sumber Data",
-            "addDatasource":"Tambahkan sumber data",
-            "dataSourceManager":{
-                "toast":{
+        "queries": "Queries",
+        "inspectComponent": "Silakan pilih komponen untuk diperiksa",
+        "release": "Rilis",
+        "searchQueries": "Cari queries",
+        "createQuery": "Buat query",
+        "queryManager": {
+            "general": "Umum",
+            "advanced": "Lanjutan",
+            "preview": "Pratinjau",
+            "Save": "Simpan",
+            "selectDatasource": "Pilih Sumber Data",
+            "addDatasource": "Tambahkan sumber data",
+            "dataSourceManager": {
+                "toast": {
                     "success": {
                         "dataSourceAdded": "Sumber Data Ditambahkan",
                         "dataSourceSaved": "Sumber Data Disimpan"
                     },
-                    "error" :{
-                       "noEmptyDsName" :"Nama sumber data wajib diisi"
+                    "error": {
+                        "noEmptyDsName": "Nama sumber data wajib diisi"
                     }
                 },
-                "suggestDataSource":"Sarankan Sumber Data",
-                "suggestAnIntegration":"Sarankan integrasi",
-                "whatLookingFor":"Beritahu kami apa yang Anda cari?",
-                "noResultFound":"Tidak melihat apa yang Anda cari?",
-                "suggest":"Menyarankan",
-                "addNewDataSource":"Tambahkan sumber data baru",
-                "whiteListIP":"Harap daftar putih alamat IP kami jika sumber data tidak dapat diakses secara publik",
-                "copied":"Disalin",
-                "copy":"Salin",
-                "saving":"Menyimpan",
-                "noResultsFor":"Tidak ada hasil untuk",
-                "noteTaken":"Terima kasih, kami telah mencatatnya!",
-                "goToAllDatasources":"Buka semua Sumber Data",
-                "send":"Kirim"
+                "suggestDataSource": "Sarankan Sumber Data",
+                "suggestAnIntegration": "Sarankan integrasi",
+                "whatLookingFor": "Beritahu kami apa yang Anda cari?",
+                "noResultFound": "Tidak melihat apa yang Anda cari?",
+                "suggest": "Menyarankan",
+                "addNewDataSource": "Tambahkan sumber data baru",
+                "whiteListIP": "Harap daftar putih alamat IP kami jika sumber data tidak dapat diakses secara publik",
+                "copied": "Disalin",
+                "copy": "Salin",
+                "saving": "Menyimpan",
+                "noResultsFor": "Tidak ada hasil untuk",
+                "noteTaken": "Terima kasih, kami telah mencatatnya!",
+                "goToAllDatasources": "Buka semua Sumber Data",
+                "send": "Kirim"
             },
-            "runQueryOnPageLoad":"Jalankan kueri ini saat memuat halaman?",
-            "confirmBeforeQueryRun":"Minta konfirmasi sebelum menjalankan kueri?",
-            "notificationOnSuccess":"Tampilkan pemberitahuan jika berhasil?",
-            "successMessage":"Pesan Sukses",
-            "queryRanSuccessfully":"Kueri berhasil dijalankan",
-            "notificationDuration":"Durasi notifikasi",
-            "events":"Peristiwa",
-            "transformation":{
-                "transformationToolTip":"Transformasi dapat digunakan untuk mengubah hasil kueri. Semua variabel aplikasi dapat diakses dari transformer dan mendukung pustaka JS seperti Lodash & Moment.",
-                "transformations":"Transformasi"
+            "runQueryOnPageLoad": "Jalankan kueri ini saat memuat halaman?",
+            "confirmBeforeQueryRun": "Minta konfirmasi sebelum menjalankan kueri?",
+            "notificationOnSuccess": "Tampilkan pemberitahuan jika berhasil?",
+            "successMessage": "Pesan Sukses",
+            "queryRanSuccessfully": "Kueri berhasil dijalankan",
+            "notificationDuration": "Durasi notifikasi",
+            "events": "Peristiwa",
+            "transformation": {
+                "transformationToolTip": "Transformasi dapat digunakan untuk mengubah hasil kueri. Semua variabel aplikasi dapat diakses dari transformer dan mendukung pustaka JS seperti Lodash & Moment.",
+                "transformations": "Transformasi"
             }
         },
-        "inspector":{
-            "eventManager":{
+        "inspector": {
+            "eventManager": {
                 "event": "Peristiwa",
                 "action": "Tindakan",
                 "actionOptions": "Opsi Tindakan",
@@ -187,137 +186,137 @@
             }
         }
     },
-    "header":{
-        "darkModeToggle":{
-           "activateLightMode" :"Aktifkan mode terang",
-           "activateDarkMode":"Aktifkan mode gelap"
+    "header": {
+        "darkModeToggle": {
+            "activateLightMode": "Aktifkan mode terang",
+            "activateDarkMode": "Aktifkan mode gelap"
         },
-        "languageSelection":{
-           "changeLanguage":"Ganti bahasa",
-           "searchLanguage":"Cari bahasa"
+        "languageSelection": {
+            "changeLanguage": "Ganti bahasa",
+            "searchLanguage": "Cari bahasa"
         },
-        "notificationCenter":{
-            "notifications":"Notifikasi",
-            "markAllAs":"Tandai semua sebagai",
-            "read":"dibaca",
-            "un":"belum",
-            "youDontHaveany":"Anda tidak punya",
-            "youAreCaughtUp":"Sudah dilihat!",
-            "view":"Lihat"
+        "notificationCenter": {
+            "notifications": "Notifikasi",
+            "markAllAs": "Tandai semua sebagai",
+            "read": "dibaca",
+            "un": "belum",
+            "youDontHaveany": "Anda tidak punya",
+            "youAreCaughtUp": "Sudah dilihat!",
+            "view": "Lihat"
         },
-        "organization":{
-            "loadOrganizations":"Muat Organisasi",
-            "createWorkspace":"Buat ruang kerja",
-            "workspaceName":"nama ruang kerja",
-            "editWorkspace":"Sunting ruang kerja",
+        "organization": {
+            "loadOrganizations": "Muat Organisasi",
+            "createWorkspace": "Buat ruang kerja",
+            "workspaceName": "nama ruang kerja",
+            "editWorkspace": "Sunting ruang kerja",
             "menus": {
-                "addWorkspace":"Tambahkan ruang kerja",
-                "menusList":{
-                    "manageUsers":"Kelola Pengguna",
-                    "manageGroups":"Kelola Grup",
-                    "manageSso":"Kelola SSO",
-                    "manageEnv":"Kelola Environment Variables"
+                "addWorkspace": "Tambahkan ruang kerja",
+                "menusList": {
+                    "manageUsers": "Kelola Pengguna",
+                    "manageGroups": "Kelola Grup",
+                    "manageSso": "Kelola SSO",
+                    "manageEnv": "Kelola Environment Variables"
                 },
-                "manageUsers":{
-                    "usersAndPermission":"Pengguna & Izin",
-                    "inviteNewUser":"Undang pengguna baru",
-                    "name":"NAMA",
-                    "email":"EMAIL",
-                    "status":"STATUS",
-                    "archive":"Arsip",
-                    "unarchive":"Batalkan pengarsipan",
-                    "addNewUser":"Tambahkan pengguna baru",
-                    "emailAddress":"Alamat email",
-                    "createUser":"Buat pengguna",
-                    "enterFirstName":"Masukkan Nama Depan",
-                    "enterLastName":"Masukkan Nama Belakang",
-                    "enterEmail":"Masukan email"
+                "manageUsers": {
+                    "usersAndPermission": "Pengguna & Izin",
+                    "inviteNewUser": "Undang pengguna baru",
+                    "name": "NAMA",
+                    "email": "EMAIL",
+                    "status": "STATUS",
+                    "archive": "Arsip",
+                    "unarchive": "Batalkan pengarsipan",
+                    "addNewUser": "Tambahkan pengguna baru",
+                    "emailAddress": "Alamat email",
+                    "createUser": "Buat pengguna",
+                    "enterFirstName": "Masukkan Nama Depan",
+                    "enterLastName": "Masukkan Nama Belakang",
+                    "enterEmail": "Masukan email"
                 },
-                "manageGroups":{
-                    "permissions":{
-                        "userGroups":"Grup Pengguna",
-                        "createNewGroup":"Buat grup baru",
-                        "updateGroup":"Perbarui grup",
-                        "addNewGroup":"Tambahkan grup baru",
-                        "enterName":"Masukkan nama",
-                        "createGroup":"Membuat grup",
-                        "name":"Nama"
+                "manageGroups": {
+                    "permissions": {
+                        "userGroups": "Grup Pengguna",
+                        "createNewGroup": "Buat grup baru",
+                        "updateGroup": "Perbarui grup",
+                        "addNewGroup": "Tambahkan grup baru",
+                        "enterName": "Masukkan nama",
+                        "createGroup": "Membuat grup",
+                        "name": "Nama"
                     },
-                    "permissionResources":{
-                        "userGroup":"Grup pengguna",
-                        "apps":"Aplikasi",
-                        "users":"Pengguna",
-                        "permissions":"Izin",
-                        "addAppsToGroup":"Pilih aplikasi untuk ditambahkan ke grup",
-                        "name":"nama",
-                        "addUsersToGroup":"Pilih pengguna untuk ditambahkan ke grup",
-                        "email":"email",
-                        "resource":"sumber",
-                        "createUpdateDelete":"Buat/Perbarui/Hapus",
-                        "folder":"Folder"
+                    "permissionResources": {
+                        "userGroup": "Grup pengguna",
+                        "apps": "Aplikasi",
+                        "users": "Pengguna",
+                        "permissions": "Izin",
+                        "addAppsToGroup": "Pilih aplikasi untuk ditambahkan ke grup",
+                        "name": "nama",
+                        "addUsersToGroup": "Pilih pengguna untuk ditambahkan ke grup",
+                        "email": "email",
+                        "resource": "sumber",
+                        "createUpdateDelete": "Buat/Perbarui/Hapus",
+                        "folder": "Folder"
                     }
                 },
-                "manageSSO":{
-                    "manageSso":"Kelola SSO",
-                    "generalSettings":{
-                        "title":"Pengaturan Umum",
-                        "enableSignup":"Aktifkan Pendaftaran",
-                        "newAccountWillBeCreated":"Akun baru akan dibuat untuk pengguna pertama kali masuk SSO",
-                        "allowedDomains":"Domain yang diizinkan",
-                        "enterDomains":"Masukkan Domain",
-                        "supportMultiDomains":"Mendukung banyak domain. Masukkan nama domain yang dipisahkan dengan koma. contoh: tooljet.com,tooljet.io,organisasianda.com",
-                        "loginUrl":"Login URL",
-                        "workspaceLogin":"Gunakan URL ini untuk masuk langsung ke ruang kerja ini",
-                        "allowDefaultSso":"Izinkan SSO default",
-                        "ssoAuth":"Izinkan pengguna untuk mengautentikasi melalui SSO default. Konfigurasi SSO default dapat diganti oleh SSO tingkat ruang kerja."
+                "manageSSO": {
+                    "manageSso": "Kelola SSO",
+                    "generalSettings": {
+                        "title": "Pengaturan Umum",
+                        "enableSignup": "Aktifkan Pendaftaran",
+                        "newAccountWillBeCreated": "Akun baru akan dibuat untuk pengguna pertama kali masuk SSO",
+                        "allowedDomains": "Domain yang diizinkan",
+                        "enterDomains": "Masukkan Domain",
+                        "supportMultiDomains": "Mendukung banyak domain. Masukkan nama domain yang dipisahkan dengan koma. contoh: tooljet.com,tooljet.io,organisasianda.com",
+                        "loginUrl": "Login URL",
+                        "workspaceLogin": "Gunakan URL ini untuk masuk langsung ke ruang kerja ini",
+                        "allowDefaultSso": "Izinkan SSO default",
+                        "ssoAuth": "Izinkan pengguna untuk mengautentikasi melalui SSO default. Konfigurasi SSO default dapat diganti oleh SSO tingkat ruang kerja."
                     },
-                    "google":{
-                        "title":"Google",
-                        "enabled":"Diaktifkan",
-                        "disabled":"Nonaktifkan",
-                        "clientId":"ID Klien",
-                        "enterClientId":"Masukkan ID Klien",
-                        "redirectUrl":"URL pengalihan"
+                    "google": {
+                        "title": "Google",
+                        "enabled": "Diaktifkan",
+                        "disabled": "Nonaktifkan",
+                        "clientId": "ID Klien",
+                        "enterClientId": "Masukkan ID Klien",
+                        "redirectUrl": "URL pengalihan"
                     },
-                    "github":{
-                        "title":"GitHub",
-                        "hostName":"Nama Host",
-                        "enterHostName":"Masukan Nama Host",
-                        "requiredGithub":"Dibutuhkan Jika menggunakan GitHub self-hosted",
-                        "clientId":"ID Klien",
-                        "enterClientId":"Masukkan ID Klien",
-                        "clientSecret":"Rahasia Klien",
-                        "enterClientSecret":"Masukkan Rahasia Klien",
-                        "encrypted":"Terenkripsi",
-                        "redirectUrl":"URL pengalihan"
+                    "github": {
+                        "title": "GitHub",
+                        "hostName": "Nama Host",
+                        "enterHostName": "Masukan Nama Host",
+                        "requiredGithub": "Dibutuhkan Jika menggunakan GitHub self-hosted",
+                        "clientId": "ID Klien",
+                        "enterClientId": "Masukkan ID Klien",
+                        "clientSecret": "Rahasia Klien",
+                        "enterClientSecret": "Masukkan Rahasia Klien",
+                        "encrypted": "Terenkripsi",
+                        "redirectUrl": "URL pengalihan"
                     },
-                    "passwordLogin":"Masuk Kata Sandi",
-                    "environmentVar" : {
-                        "noEnvConfig":"Anda belum mengonfigurasi environment variabel apa pun, tekan tombol 'Tambahkan variabel baru' untuk membuatnya",
-                        "envWillBeDeleted":"Variabel akan dihapus, apakah Anda ingin melanjutkan?",
-                        "addNewVariable":"Tambahkan variabel baru",
-                        "variableForm":{
-                            "addNewVariable":"Tambahkan variabel baru",
-                            "updatevariable":"Perbarui variabel",
-                            "name":"Nama",
-                            "value":"Nilai",
-                            "enterVariableName":"Masukkan Nama Variabel",
-                            "enterValue":"Masukkan Nilai",
-                            "type":"Tipe",
-                            "enableEncryption":"Aktifkan enkripsi",
-                            "addVariable":"Tambahkan variabel"
+                    "passwordLogin": "Masuk Kata Sandi",
+                    "environmentVar": {
+                        "noEnvConfig": "Anda belum mengonfigurasi environment variabel apa pun, tekan tombol 'Tambahkan variabel baru' untuk membuatnya",
+                        "envWillBeDeleted": "Variabel akan dihapus, apakah Anda ingin melanjutkan?",
+                        "addNewVariable": "Tambahkan variabel baru",
+                        "variableForm": {
+                            "addNewVariable": "Tambahkan variabel baru",
+                            "updatevariable": "Perbarui variabel",
+                            "name": "Nama",
+                            "value": "Nilai",
+                            "enterVariableName": "Masukkan Nama Variabel",
+                            "enterValue": "Masukkan Nilai",
+                            "type": "Tipe",
+                            "enableEncryption": "Aktifkan enkripsi",
+                            "addVariable": "Tambahkan variabel"
                         },
-                        "variableTable":{
-                            "name":"nama",
-                            "value":"nilai",
-                            "type":"tipe",
-                            "secret":"rahasia"
+                        "variableTable": {
+                            "name": "nama",
+                            "value": "nilai",
+                            "type": "tipe",
+                            "secret": "rahasia"
                         }
                     }
                 }
             }
         },
-        "profileSettingPage":{
+        "profileSettingPage": {
             "profileSettings": "Pengaturan Profil",
             "firstName": "Nama depan",
             "lastName": "nama belakang",
@@ -339,46 +338,46 @@
     },
     "homePage": {
         "appCard": {
-          "changeIcon": "Ubah Ikon",
-          "addToFolder": "Tambahkan ke folder",
-          "move": "Bergerak",
-          "to": "ke",
-          "selectFolder": "Pilih folder",
-          "deleteApp": "Hapus Aplikasi",
-          "exportApp": "Aplikasi Ekspor",
-          "cloneApp": "Aplikasi klon",
-          "launch": "Meluncurkan",
-          "maintenance": "Pemeliharaan",
-          "noDeployedVersion": "Aplikasi tidak memiliki versi yang digunakan",
-          "openInAppViewer": "Buka di App Viewer",
-          "removeFromFolder": "Hapus dari folder"
+            "changeIcon": "Ubah Ikon",
+            "addToFolder": "Tambahkan ke folder",
+            "move": "Bergerak",
+            "to": "ke",
+            "selectFolder": "Pilih folder",
+            "deleteApp": "Hapus Aplikasi",
+            "exportApp": "Aplikasi Ekspor",
+            "cloneApp": "Aplikasi klon",
+            "launch": "Meluncurkan",
+            "maintenance": "Pemeliharaan",
+            "noDeployedVersion": "Aplikasi tidak memiliki versi yang digunakan",
+            "openInAppViewer": "Buka di App Viewer",
+            "removeFromFolder": "Hapus dari folder"
         },
         "blankPage": {
-          "welcomeToToolJet": "Selamat datang di ToolJet!",
-          "getStartedCreateNewApp": "Anda dapat memulai dengan membuat aplikasi baru atau dengan membuat aplikasi menggunakan templat di pustaka ToolJet.",
-          "importApplication": "Impor aplikasi"
+            "welcomeToToolJet": "Selamat datang di ToolJet!",
+            "getStartedCreateNewApp": "Anda dapat memulai dengan membuat aplikasi baru atau dengan membuat aplikasi menggunakan templat di pustaka ToolJet.",
+            "importApplication": "Impor aplikasi"
         },
         "foldersSection": {
-          "allApplications": "Semua aplikasi",
-          "folders": "Folder",
-          "createNewFolder": "+ Buat folder baru",
-          "noFolders": "Anda belum membuat folder apa pun. Gunakan folder untuk mengatur aplikasi Anda",
-          "createFolder": "Membuat folder",
-          "updateFolder": "Perbarui folder",
-          "editFolder": "Edit folder",
-          "deleteFolder": "Hapus folder",
-          "folderName": "Nama folder",
-          "wishToDeleteFolder": "Apakah Anda yakin ingin menghapus foldernya {{folderName}}? Aplikasi di dalam folder tidak akan dihapus."
+            "allApplications": "Semua aplikasi",
+            "folders": "Folder",
+            "createNewFolder": "+ Buat folder baru",
+            "noFolders": "Anda belum membuat folder apa pun. Gunakan folder untuk mengatur aplikasi Anda",
+            "createFolder": "Membuat folder",
+            "updateFolder": "Perbarui folder",
+            "editFolder": "Edit folder",
+            "deleteFolder": "Hapus folder",
+            "folderName": "Nama folder",
+            "wishToDeleteFolder": "Apakah Anda yakin ingin menghapus foldernya {{folderName}}? Aplikasi di dalam folder tidak akan dihapus."
         },
         "header": {
-          "createNewApplication": "Buat Aplikasi Baru",
-          "import": "Impor",
-          "chooseFromTemplate": "Pilih dari template"
+            "createNewApplication": "Buat Aplikasi Baru",
+            "import": "Impor",
+            "chooseFromTemplate": "Pilih dari template"
         },
         "pagination": {
-          "showing": "Menunjukkan",
-          "of": "dari",
-          "to": "ke"
+            "showing": "Menunjukkan",
+            "of": "dari",
+            "to": "ke"
         },
         "noApplicationFound": "Tidak ada aplikasi yang ditemukan",
         "thisFolderIsEmpty": "Folder ini kosong",
@@ -386,16 +385,16 @@
         "removeAppFromFolder": "Aplikasi ini akan dihapus dari folder ini, apakah Anda ingin melanjutkan?",
         "change": "Mengubah",
         "templateCard": {
-          "use": "Menggunakan",
-          "preview": "Pratinjau",
-          "leadGeneretion": "Generasi timbal"
+            "use": "Menggunakan",
+            "preview": "Pratinjau",
+            "leadGeneretion": "Generasi timbal"
         },
         "templateLibraryModal": {
-          "select": "Pilih template",
-          "createAppfromTemplate": "Buat Aplikasi Dari Template"
+            "select": "Pilih template",
+            "createAppfromTemplate": "Buat Aplikasi Dari Template"
         }
-      },
-      "confirmationPage": {
+    },
+    "confirmationPage": {
         "setupAccount": "Siapkan Akun Anda",
         "signupWithGoogle": "Daftar dengan Google",
         "signupWithGitHub": "Daftar dengan GitHub",
@@ -413,8 +412,8 @@
         "acceptInvite": "terima undangan",
         "accountExists": "Sudah memiliki akun?",
         "and": "dan"
-      },
-      "onBoarding": {
+    },
+    "onBoarding": {
         "finishToolJetInstallation": "Selesaikan instalasi ToolJet",
         "organization": "Organisasi",
         "name": "Nama",
@@ -422,10 +421,18 @@
         "receiveUpdatesFromToolJet": "Anda akan menerima pembaruan dari tim ToolJet (1-2 email setiap bulan, kami tidak spam)",
         "finishSetup": "Selesaikan pengaturan",
         "skip": "Melewati"
-      },
-      "redirectSso": {
-        "upgradingTov1.13.0": "Meningkatkan ke v1.13.0 dan di atas.",
-        "fromV1.13.0": "Dari v1.13.0 yang telah kami perkenalkan",
+    },
+    "redirectSso": {
+        "upgradingTov1": {
+            "13": {
+                "0": "Meningkatkan ke v1.13.0 dan di atas."
+            }
+        },
+        "fromV1": {
+            "13": {
+                "0": "Dari v1.13.0 yang telah kami perkenalkan"
+            }
+        },
         "multiWorkspace": "Multi-Workspace",
         "singleSignOnConfig": "Konfigurasi terkait masuk tunggal dipindahkan dari variabel lingkungan ke database. Silakan merujuk ini",
         "link": "Tautan",
@@ -440,13 +447,13 @@
         "google": "Google",
         "redirectUrl": "Redirect URL:",
         "gitHub": "GitHub"
-      },
-      "oAuth2": {
+    },
+    "oAuth2": {
         "pleaseWait": "Mohon tunggu...",
         "authSuccess": "Auth berhasil, Anda dapat menutup tab ini sekarang.",
         "authFailed": "Auth gagal"
-      },
-      "widgetManager": {
+    },
+    "widgetManager": {
         "commonlyUsed": "biasanya digunakan",
         "layouts": "tata letak",
         "forms": "formulir",
@@ -455,464 +462,464 @@
         "noResults": "Tidak ada hasil yang ditemukan",
         "tryAdjustingFilterMessage": "Coba sesuaikan pencarian atau filter Anda untuk menemukan apa yang Anda cari.",
         "clearQuery": "kueri yang jelas"
-      },
-      "widget": {
+    },
+    "widget": {
         "common": {
-          "properties": "Properti",
-          "events": "Acara",
-          "layout": "Tata letak",
-          "styles": "Gaya",
-          "general": "Umum",
-          "validation": "Validasi",
-          "documentation": "{{componentMeta}} dokumentasi",
-          "widgetNameEmptyError": "Nama widget tidak bisa kosong",
-          "componentNameExistsError": "Nama komponen sudah ada",
-          "invalidWidgetName": "Nama widget tidak valid. Harus unik dan hanya menyertakan huruf, angka, dan garis bawah."
+            "properties": "Properti",
+            "events": "Acara",
+            "layout": "Tata letak",
+            "styles": "Gaya",
+            "general": "Umum",
+            "validation": "Validasi",
+            "documentation": "{{componentMeta}} dokumentasi",
+            "widgetNameEmptyError": "Nama widget tidak bisa kosong",
+            "componentNameExistsError": "Nama komponen sudah ada",
+            "invalidWidgetName": "Nama widget tidak valid. Harus unik dan hanya menyertakan huruf, angka, dan garis bawah."
         },
         "commonProperties": {
-          "visibility": "Visibilitas",
-          "disable": "Nonaktifkan",
-          "borderRadius": "Radius perbatasan",
-          "boxShadow": "Bayangan kotak",
-          "tooltip": "Tooltip",
-          "showOnDesktop": "Tampilkan di desktop",
-          "showOnMobile": "Tampilkan di ponsel",
-          "showLoadingState": "Tampilkan status pemuatan",
-          "backgroundColor": "Warna latar belakang",
-          "textColor": "Warna teks",
-          "loaderColor": "Warna Loader",
-          "defaultValue": "Nilai default",
-          "placeholder": "Placeholder",
-          "label": "Label",
-          "title": "Judul",
-          "code": "Kode",
-          "data": "Data",
-          "tableData": "Data tabel",
-          "tableColumns": "Kolom tabel",
-          "searverSideSearch": "Pencarian sisi server",
-          "loadingState": "Status pemuatan",
-          "serverSidePagination": "Pagination sisi server",
-          "clientSidePagination": "Pagination sisi klien",
-          "serverSideSearch": "Pencarian sisi server",
-          "showSearchBox": "Tampilkan kotak pencarian",
-          "showDownloadButton": "Tampilkan tombol unduh",
-          "showFilterButton": "Tampilkan tombol filter",
-          "showBulkUpdateActions": "Tampilkan tombol pembaruan",
-          "bulkSelection": "Seleksi curah",
-          "highlightSelectedRow": "Sorot baris yang dipilih",
-          "actionButtonRadius": "Radius tombol aksi",
-          "tableType": "Jenis tabel",
-          "cellSize": "Ukuran sel",
-          "setPage": "Setel halaman",
-          "page": "Halaman",
-          "buttonText": "Teks Tombol",
-          "click": "Klik",
-          "setText": "Atur teks",
-          "text": "Teks",
-          "markerColor": "Warna penanda",
-          "showAxes": "Tampilkan kapak",
-          "showGridLines": "Tampilkan garis kisi",
-          "chartType": "Jenis grafik",
-          "jsonDescription": "Deskripsi json",
-          "usePlotlyJsonSchema": "Gunakan Skema JSON Plotly",
-          "padding": "Lapisan",
-          "hideTitleBar": "Sembunyikan judul bar",
-          "hideCloseButton": "Sembunyikan tombol Tutup",
-          "hideOnEscape": "Bersembunyi saat melarikan diri",
-          "modalSize": "Ukuran modal",
-          "open": "Membuka",
-          "close": "Menutup",
-          "regex": "Regex",
-          "minLength": "Panjang min",
-          "maxLength": "panjang maksimal",
-          "customValidation": "Validasi khusus",
-          "clear": "Jernih",
-          "minimumValue": "Nilai minimum",
-          "maximumValue": "Nilai maksimum",
-          "format": "Format",
-          "enableTimeSelection": "Mengaktifkan pemilihan waktu?",
-          "enableDateSelection": "Mengaktifkan pemilihan tanggal?",
-          "disabledDates": "Tanggal dinonaktifkan",
-          "setChecked": "Atur diperiksa",
-          "status": "status",
-          "defaultStatus": "Status default",
-          "checkboxColor": "Warna kotak centang",
-          "optionValues": "Nilai Opsi",
-          "optionLabels": "Label Opsi",
-          "activeColor": "Warna aktif",
-          "selectOption": "Pilih opsi",
-          "option": "Pilihan",
-          "toggleSwitchColor": "Sakelar warna sakelar",
-          "defaultStartDate": "Tanggal mulai default",
-          "defaultEndDate": "Tanggal akhir default",
-          "textSize": "Ukuran teks",
-          "alignText": "Sejajarkan teks",
-          "url": "Url",
-          "alternativeText": "Teks alternatif",
-          "zoomButton": "Tombol zoom",
-          "borderType": "Tipe perbatasan",
-          "imageFit": "Fit Image",
-          "optionsLoadingState": "Status pemuatan opsi",
-          "selectedTextColor": "Warna teks yang dipilih",
-          "select": "Pilih",
-          "deselectOption": "Opsi Batalkan Pilih",
-          "clearSelections": "Pilihan Hapus",
-          "enableSelectAllOption": "Aktifkan Pilih Semua Opsi",
-          "initialLocation": "Lokasi awal",
-          "defaultMarkers": "Penanda default",
-          "addNewMarkers": "Tambahkan penanda baru",
-          "searchForPlaces": "Cari tempat",
-          "setLocation": "Setel lokasi",
-          "latitude": "Garis Lintang",
-          "longitude": "Garis bujur",
-          "numberOfStars": "Jumlah bintang",
-          "defaultNoOfSelectedStars": "Default Tidak ada bintang yang dipilih",
-          "enableHalfStar": "Aktifkan Half Star",
-          "tooltips": "Tooltips",
-          "starColor": "Warna bintang",
-          "labelColor": "Warna label",
-          "dividerColor": "Warna pembagi",
-          "clearFiles": "Hapus file",
-          "instructionText": "Teks instruksi",
-          "useDropZone": "Gunakan zona drop",
-          "useFilePicker": "Gunakan pemetik file",
-          "pickMultipleFiles": "Pilih banyak file",
-          "maxFileCount": "Jumlah file maks",
-          "acceptFileTypes": "Menerima jenis file",
-          "maxSizeLimitBytes": "Batas ukuran maksimal (byte)",
-          "minSizeLimitBytes": "Batas ukuran min (byte)",
-          "parseContent": "Konten parse",
-          "fileType": "Jenis file",
-          "dateFormat": "Format tanggal",
-          "defaultDate": "Tanggal default",
-          "events": "Acara",
-          "resources": "Sumber daya",
-          "defaultView": "Tampilan default",
-          "startTimeOnWeekAndDayView": "Mulailah Waktu pada Tampilan Minggu dan Hari",
-          "endTimeOnWeekAndDayView": "Akhir waktu pada tampilan minggu dan hari",
-          "showToolbar": "Tampilkan toolbar",
-          "showViewSwitcher": "Tampilkan tampilan switcher",
-          "highlightToday": "Sorot hari ini",
-          "showPopoverWhenEventIsClicked": "Tampilkan Popover saat acara diklik",
-          "cellSizeInViewsClassifiedByResource": "Ukuran sel dalam tampilan yang diklasifikasikan berdasarkan sumber daya",
-          "headerDateFormatOnWeekView": "Format tanggal header pada tampilan minggu",
-          "showLineNumber": "Tampilkan nomor baris",
-          "mode": "Mode",
-          "tabs": "Tab",
-          "defaultTab": "Tab default",
-          "hideTabs": "Sembunyikan tab",
-          "highlightColor": "Warna Sorotan",
-          "tabWidth": "Lebar tab",
-          "setCurrentTab": "Atur tab saat ini",
-          "id": "Indo",
-          "timerType": "Jenis pengatur waktu",
-          "listData": "Daftar data",
-          "rowHeight": "Tinggi baris",
-          "showBottomBorder": "Tunjukkan perbatasan bawah",
-          "tags": "Tag",
-          "numberOfPages": "Jumlah halaman",
-          "defaultPageIndex": "Indeks halaman default",
-          "progress": "Kemajuan",
-          "color": "Warna",
-          "strokeWidth": "Lebar stroke",
-          "counterClockwise": "Counter searah jarum jam",
-          "circleRatio": "Rasio lingkaran",
-          "colour": "Warna",
-          "size": "Ukuran",
-          "primaryValueLabel": "Label Nilai Utama",
-          "primaryValue": "Nilai utama",
-          "hideSecondaryValue": "Sembunyikan nilai sekunder",
-          "secondaryValueLabel": "Label Nilai Sekunder",
-          "secondaryValue": "Nilai sekunder",
-          "secondarySignDisplay": "Tampilan tanda sekunder",
-          "primaryLabelColour": "Warna label primer",
-          "primaryTextColour": "Warna teks primer",
-          "secondaryLabelColour": "Warna label sekunder",
-          "secondaryTextColour": "Warna teks sekunder",
-          "min": "Min",
-          "max": "Max",
-          "value": "Nilai",
-          "twoHandles": "Dua pegangan",
-          "lineColor": "Warna garis",
-          "handleColor": "Menangani warna",
-          "trackColor": "Warna trek",
-          "timelineData": "Data Timeline",
-          "hideDate": "Tanggal Sembunyikan",
-          "svgData": "Data SVG",
-          "rawHtml": "HTML mentah",
-          "values": "nilai",
-          "labels": "Label",
-          "defaultSelected": "Default dipilih",
-          "enableMutipleSelection": "Aktifkan pemilihan Mutiple",
-          "selectedTextColour": "Warna teks yang dipilih",
-          "selectedBackgroundColor": "Warna latar belakang yang dipilih",
-          "fileUrl": "URL file",
-          "scalePageToWidth": "Skala halaman hingga lebar",
-          "showPageControls": "Tampilkan kontrol halaman",
-          "steps": "Langkah",
-          "currentStep": "Langkah saat ini",
-          "stepsSelectable": "Langkah -langkah yang dapat dipilih",
-          "theme": "Tema",
-          "columns": "Kolom",
-          "cardData": "Data kartu",
-          "enableAddCard": "Aktifkan Tambah Kartu",
-          "width": "Lebar",
-          "minWidth": "Lebar menit",
-          "accentColor": "Aksen warna",
-          "defaultColor": "Warna default",
-          "setColor": "Atur warna",
-          "structure": "Struktur",
-          "checkedValues": "Nilai -nilai yang diperiksa",
-          "expandedValues": "Nilai yang diperluas"
+            "visibility": "Visibilitas",
+            "disable": "Nonaktifkan",
+            "borderRadius": "Radius perbatasan",
+            "boxShadow": "Bayangan kotak",
+            "tooltip": "Tooltip",
+            "showOnDesktop": "Tampilkan di desktop",
+            "showOnMobile": "Tampilkan di ponsel",
+            "showLoadingState": "Tampilkan status pemuatan",
+            "backgroundColor": "Warna latar belakang",
+            "textColor": "Warna teks",
+            "loaderColor": "Warna Loader",
+            "defaultValue": "Nilai default",
+            "placeholder": "Placeholder",
+            "label": "Label",
+            "title": "Judul",
+            "code": "Kode",
+            "data": "Data",
+            "tableData": "Data tabel",
+            "tableColumns": "Kolom tabel",
+            "searverSideSearch": "Pencarian sisi server",
+            "loadingState": "Status pemuatan",
+            "serverSidePagination": "Pagination sisi server",
+            "clientSidePagination": "Pagination sisi klien",
+            "serverSideSearch": "Pencarian sisi server",
+            "showSearchBox": "Tampilkan kotak pencarian",
+            "showDownloadButton": "Tampilkan tombol unduh",
+            "showFilterButton": "Tampilkan tombol filter",
+            "showBulkUpdateActions": "Tampilkan tombol pembaruan",
+            "bulkSelection": "Seleksi curah",
+            "highlightSelectedRow": "Sorot baris yang dipilih",
+            "actionButtonRadius": "Radius tombol aksi",
+            "tableType": "Jenis tabel",
+            "cellSize": "Ukuran sel",
+            "setPage": "Setel halaman",
+            "page": "Halaman",
+            "buttonText": "Teks Tombol",
+            "click": "Klik",
+            "setText": "Atur teks",
+            "text": "Teks",
+            "markerColor": "Warna penanda",
+            "showAxes": "Tampilkan kapak",
+            "showGridLines": "Tampilkan garis kisi",
+            "chartType": "Jenis grafik",
+            "jsonDescription": "Deskripsi json",
+            "usePlotlyJsonSchema": "Gunakan Skema JSON Plotly",
+            "padding": "Lapisan",
+            "hideTitleBar": "Sembunyikan judul bar",
+            "hideCloseButton": "Sembunyikan tombol Tutup",
+            "hideOnEscape": "Bersembunyi saat melarikan diri",
+            "modalSize": "Ukuran modal",
+            "open": "Membuka",
+            "close": "Menutup",
+            "regex": "Regex",
+            "minLength": "Panjang min",
+            "maxLength": "panjang maksimal",
+            "customValidation": "Validasi khusus",
+            "clear": "Jernih",
+            "minimumValue": "Nilai minimum",
+            "maximumValue": "Nilai maksimum",
+            "format": "Format",
+            "enableTimeSelection": "Mengaktifkan pemilihan waktu?",
+            "enableDateSelection": "Mengaktifkan pemilihan tanggal?",
+            "disabledDates": "Tanggal dinonaktifkan",
+            "setChecked": "Atur diperiksa",
+            "status": "status",
+            "defaultStatus": "Status default",
+            "checkboxColor": "Warna kotak centang",
+            "optionValues": "Nilai Opsi",
+            "optionLabels": "Label Opsi",
+            "activeColor": "Warna aktif",
+            "selectOption": "Pilih opsi",
+            "option": "Pilihan",
+            "toggleSwitchColor": "Sakelar warna sakelar",
+            "defaultStartDate": "Tanggal mulai default",
+            "defaultEndDate": "Tanggal akhir default",
+            "textSize": "Ukuran teks",
+            "alignText": "Sejajarkan teks",
+            "url": "Url",
+            "alternativeText": "Teks alternatif",
+            "zoomButton": "Tombol zoom",
+            "borderType": "Tipe perbatasan",
+            "imageFit": "Fit Image",
+            "optionsLoadingState": "Status pemuatan opsi",
+            "selectedTextColor": "Warna teks yang dipilih",
+            "select": "Pilih",
+            "deselectOption": "Opsi Batalkan Pilih",
+            "clearSelections": "Pilihan Hapus",
+            "enableSelectAllOption": "Aktifkan Pilih Semua Opsi",
+            "initialLocation": "Lokasi awal",
+            "defaultMarkers": "Penanda default",
+            "addNewMarkers": "Tambahkan penanda baru",
+            "searchForPlaces": "Cari tempat",
+            "setLocation": "Setel lokasi",
+            "latitude": "Garis Lintang",
+            "longitude": "Garis bujur",
+            "numberOfStars": "Jumlah bintang",
+            "defaultNoOfSelectedStars": "Default Tidak ada bintang yang dipilih",
+            "enableHalfStar": "Aktifkan Half Star",
+            "tooltips": "Tooltips",
+            "starColor": "Warna bintang",
+            "labelColor": "Warna label",
+            "dividerColor": "Warna pembagi",
+            "clearFiles": "Hapus file",
+            "instructionText": "Teks instruksi",
+            "useDropZone": "Gunakan zona drop",
+            "useFilePicker": "Gunakan pemetik file",
+            "pickMultipleFiles": "Pilih banyak file",
+            "maxFileCount": "Jumlah file maks",
+            "acceptFileTypes": "Menerima jenis file",
+            "maxSizeLimitBytes": "Batas ukuran maksimal (byte)",
+            "minSizeLimitBytes": "Batas ukuran min (byte)",
+            "parseContent": "Konten parse",
+            "fileType": "Jenis file",
+            "dateFormat": "Format tanggal",
+            "defaultDate": "Tanggal default",
+            "events": "Acara",
+            "resources": "Sumber daya",
+            "defaultView": "Tampilan default",
+            "startTimeOnWeekAndDayView": "Mulailah Waktu pada Tampilan Minggu dan Hari",
+            "endTimeOnWeekAndDayView": "Akhir waktu pada tampilan minggu dan hari",
+            "showToolbar": "Tampilkan toolbar",
+            "showViewSwitcher": "Tampilkan tampilan switcher",
+            "highlightToday": "Sorot hari ini",
+            "showPopoverWhenEventIsClicked": "Tampilkan Popover saat acara diklik",
+            "cellSizeInViewsClassifiedByResource": "Ukuran sel dalam tampilan yang diklasifikasikan berdasarkan sumber daya",
+            "headerDateFormatOnWeekView": "Format tanggal header pada tampilan minggu",
+            "showLineNumber": "Tampilkan nomor baris",
+            "mode": "Mode",
+            "tabs": "Tab",
+            "defaultTab": "Tab default",
+            "hideTabs": "Sembunyikan tab",
+            "highlightColor": "Warna Sorotan",
+            "tabWidth": "Lebar tab",
+            "setCurrentTab": "Atur tab saat ini",
+            "id": "Indo",
+            "timerType": "Jenis pengatur waktu",
+            "listData": "Daftar data",
+            "rowHeight": "Tinggi baris",
+            "showBottomBorder": "Tunjukkan perbatasan bawah",
+            "tags": "Tag",
+            "numberOfPages": "Jumlah halaman",
+            "defaultPageIndex": "Indeks halaman default",
+            "progress": "Kemajuan",
+            "color": "Warna",
+            "strokeWidth": "Lebar stroke",
+            "counterClockwise": "Counter searah jarum jam",
+            "circleRatio": "Rasio lingkaran",
+            "colour": "Warna",
+            "size": "Ukuran",
+            "primaryValueLabel": "Label Nilai Utama",
+            "primaryValue": "Nilai utama",
+            "hideSecondaryValue": "Sembunyikan nilai sekunder",
+            "secondaryValueLabel": "Label Nilai Sekunder",
+            "secondaryValue": "Nilai sekunder",
+            "secondarySignDisplay": "Tampilan tanda sekunder",
+            "primaryLabelColour": "Warna label primer",
+            "primaryTextColour": "Warna teks primer",
+            "secondaryLabelColour": "Warna label sekunder",
+            "secondaryTextColour": "Warna teks sekunder",
+            "min": "Min",
+            "max": "Max",
+            "value": "Nilai",
+            "twoHandles": "Dua pegangan",
+            "lineColor": "Warna garis",
+            "handleColor": "Menangani warna",
+            "trackColor": "Warna trek",
+            "timelineData": "Data Timeline",
+            "hideDate": "Tanggal Sembunyikan",
+            "svgData": "Data SVG",
+            "rawHtml": "HTML mentah",
+            "values": "nilai",
+            "labels": "Label",
+            "defaultSelected": "Default dipilih",
+            "enableMutipleSelection": "Aktifkan pemilihan Mutiple",
+            "selectedTextColour": "Warna teks yang dipilih",
+            "selectedBackgroundColor": "Warna latar belakang yang dipilih",
+            "fileUrl": "URL file",
+            "scalePageToWidth": "Skala halaman hingga lebar",
+            "showPageControls": "Tampilkan kontrol halaman",
+            "steps": "Langkah",
+            "currentStep": "Langkah saat ini",
+            "stepsSelectable": "Langkah -langkah yang dapat dipilih",
+            "theme": "Tema",
+            "columns": "Kolom",
+            "cardData": "Data kartu",
+            "enableAddCard": "Aktifkan Tambah Kartu",
+            "width": "Lebar",
+            "minWidth": "Lebar menit",
+            "accentColor": "Aksen warna",
+            "defaultColor": "Warna default",
+            "setColor": "Atur warna",
+            "structure": "Struktur",
+            "checkedValues": "Nilai -nilai yang diperiksa",
+            "expandedValues": "Nilai yang diperluas"
         },
         "Table": {
-          "displayName": "Tabel",
-          "description": "Tampilkan data tabel paginated",
-          "columnType": "Jenis kolom",
-          "columnName": "Nama kolom",
-          "overflow": "Meluap",
-          "key": "kunci",
-          "textColor": "Warna teks",
-          "validation": "Validasi",
-          "regex": "Regex",
-          "minLength": "Panjang min",
-          "maxLength": "panjang maksimal",
-          "customRule": "Aturan khusus",
-          "values": "Nilai",
-          "labels": "Label",
-          "cellBgColor": "Warna latar belakang sel",
-          "dateDisplayformat": "Format tampilan tanggal",
-          "dateParseformat": "Format parse tanggal",
-          "showTime": "waktu pertunjukan",
-          "makeEditable": "membuat edit",
-          "buttonText": "Teks Tombol",
-          "buttonPosition": "Posisi tombol",
-          "remove": "Menghapus",
-          "addButton": "+ Tambahkan tombol",
-          "addColumn": "+ Tambahkan kolom",
-          "noActionMessage": "Tabel ini tidak memiliki tombol tindakan apa pun"
+            "displayName": "Tabel",
+            "description": "Tampilkan data tabel paginated",
+            "columnType": "Jenis kolom",
+            "columnName": "Nama kolom",
+            "overflow": "Meluap",
+            "key": "kunci",
+            "textColor": "Warna teks",
+            "validation": "Validasi",
+            "regex": "Regex",
+            "minLength": "Panjang min",
+            "maxLength": "panjang maksimal",
+            "customRule": "Aturan khusus",
+            "values": "Nilai",
+            "labels": "Label",
+            "cellBgColor": "Warna latar belakang sel",
+            "dateDisplayformat": "Format tampilan tanggal",
+            "dateParseformat": "Format parse tanggal",
+            "showTime": "waktu pertunjukan",
+            "makeEditable": "membuat edit",
+            "buttonText": "Teks Tombol",
+            "buttonPosition": "Posisi tombol",
+            "remove": "Menghapus",
+            "addButton": "+ Tambahkan tombol",
+            "addColumn": "+ Tambahkan kolom",
+            "noActionMessage": "Tabel ini tidak memiliki tombol tindakan apa pun"
         },
         "Button": {
-          "displayName": "Tombol",
-          "description": "Tindakan pemicu: kueri, peringatan dll"
+            "displayName": "Tombol",
+            "description": "Tindakan pemicu: kueri, peringatan dll"
         },
         "Chart": {
-          "displayName": "Bagan",
-          "description": "Tampilan grafik"
+            "displayName": "Bagan",
+            "description": "Tampilan grafik"
         },
         "Modal": {
-          "displayName": "Modal",
-          "description": "Modal dipicu oleh peristiwa"
+            "displayName": "Modal",
+            "description": "Modal dipicu oleh peristiwa"
         },
         "TextInput": {
-          "displayName": "Input teks",
-          "description": "Bidang teks untuk formulir"
+            "displayName": "Input teks",
+            "description": "Bidang teks untuk formulir"
         },
         "NumberInput": {
-          "displayName": "Input angka",
-          "description": "Bidang Nomor untuk Formulir"
+            "displayName": "Input angka",
+            "description": "Bidang Nomor untuk Formulir"
         },
         "PasswordInput": {
-          "displayName": "Input kata sandi",
-          "description": "Bidang input kata sandi untuk formulir"
+            "displayName": "Input kata sandi",
+            "description": "Bidang input kata sandi untuk formulir"
         },
         "Datepicker": {
-          "displayName": "Pemetik tanggal",
-          "description": "Pilih tanggal dan waktu"
+            "displayName": "Pemetik tanggal",
+            "description": "Pilih tanggal dan waktu"
         },
         "Checkbox": {
-          "displayName": "Kotak centang",
-          "description": "Kotak centang tunggal"
+            "displayName": "Kotak centang",
+            "description": "Kotak centang tunggal"
         },
         "Radio-button": {
-          "displayName": "Tombol radio",
-          "description": "Tombol radio"
+            "displayName": "Tombol radio",
+            "description": "Tombol radio"
         },
         "ToggleSwitch": {
-          "displayName": "Sakelar Beralih",
-          "description": "Sakelar Beralih"
+            "displayName": "Sakelar Beralih",
+            "description": "Sakelar Beralih"
         },
         "Textarea": {
-          "displayName": "Area teks",
-          "description": "Bidang bentuk area teks"
+            "displayName": "Area teks",
+            "description": "Bidang bentuk area teks"
         },
         "DateRangePicker": {
-          "displayName": "Range Picker",
-          "description": "Pilih rentang tanggal"
+            "displayName": "Range Picker",
+            "description": "Pilih rentang tanggal"
         },
         "Text": {
-          "displayName": "Teks",
-          "description": "Tampilkan Markdown atau HTML"
+            "displayName": "Teks",
+            "description": "Tampilkan Markdown atau HTML"
         },
         "Image": {
-          "displayName": "Gambar",
-          "description": "Menampilkan gambar"
+            "displayName": "Gambar",
+            "description": "Menampilkan gambar"
         },
         "Container": {
-          "displayName": "Wadah",
-          "description": "Pembungkus untuk beberapa komponen"
+            "displayName": "Wadah",
+            "description": "Pembungkus untuk beberapa komponen"
         },
         "Dropdown": {
-          "displayName": "Dropdown",
-          "description": "Pilih satu nilai dari opsi"
+            "displayName": "Dropdown",
+            "description": "Pilih satu nilai dari opsi"
         },
         "Multiselect": {
-          "displayName": "Multiselect",
-          "description": "Pilih beberapa nilai dari opsi"
+            "displayName": "Multiselect",
+            "description": "Pilih beberapa nilai dari opsi"
         },
         "RichTextEditor": {
-          "displayName": "Editor Teks",
-          "description": "Editor Teks Kaya"
+            "displayName": "Editor Teks",
+            "description": "Editor Teks Kaya"
         },
         "Map": {
-          "displayName": "Peta",
-          "description": "Tampilkan Google Maps"
+            "displayName": "Peta",
+            "description": "Tampilkan Google Maps"
         },
         "QrScanner": {
-          "displayName": "Pemindai QR",
-          "description": "Pindai kode QR dan tahan datanya"
+            "displayName": "Pemindai QR",
+            "description": "Pindai kode QR dan tahan datanya"
         },
         "StarRating": {
-          "displayName": "Peringkat",
-          "description": "Peringkat bintang"
+            "displayName": "Peringkat",
+            "description": "Peringkat bintang"
         },
         "Divider": {
-          "displayName": "Pembagi",
-          "description": "Pemisah antar komponen"
+            "displayName": "Pembagi",
+            "description": "Pemisah antar komponen"
         },
         "FilePicker": {
-          "displayName": "Pemilih file",
-          "description": "Pemilih file"
+            "displayName": "Pemilih file",
+            "description": "Pemilih file"
         },
         "Calendar": {
-          "displayName": "Kalender",
-          "description": "Kalender"
+            "displayName": "Kalender",
+            "description": "Kalender"
         },
         "Iframe": {
-          "displayName": "Iframe",
-          "description": "Tampilkan iframe"
+            "displayName": "Iframe",
+            "description": "Tampilkan iframe"
         },
         "CodeEditor": {
-          "displayName": "Editor Kode",
-          "description": "Editor Kode"
+            "displayName": "Editor Kode",
+            "description": "Editor Kode"
         },
         "Tabs": {
-          "displayName": "Tab",
-          "description": "Komponen tab"
+            "displayName": "Tab",
+            "description": "Komponen tab"
         },
         "Timer": {
-          "displayName": "Timer",
-          "description": "timer"
+            "displayName": "Timer",
+            "description": "timer"
         },
         "Listview": {
-          "displayName": "Tampilan Daftar",
-          "description": "Pembungkus untuk beberapa komponen"
+            "displayName": "Tampilan Daftar",
+            "description": "Pembungkus untuk beberapa komponen"
         },
         "Tags": {
-          "displayName": "Tag",
-          "description": "Konten dapat ditampilkan sebagai tag"
+            "displayName": "Tag",
+            "description": "Konten dapat ditampilkan sebagai tag"
         },
         "Pagination": {
-          "displayName": "Pagination",
-          "description": "Pagination"
+            "displayName": "Pagination",
+            "description": "Pagination"
         },
         "CircularProgressbar": {
-          "displayName": "Circular Progressbar",
-          "description": "Tunjukkan Kemajuan Menggunakan Progressbar Circular"
+            "displayName": "Circular Progressbar",
+            "description": "Tunjukkan Kemajuan Menggunakan Progressbar Circular"
         },
         "Spinner": {
-          "displayName": "Pemintal",
-          "description": "Spinner dapat digunakan untuk menampilkan status pemuatan"
+            "displayName": "Pemintal",
+            "description": "Spinner dapat digunakan untuk menampilkan status pemuatan"
         },
         "Statistics": {
-          "displayName": "Statistik",
-          "description": "Statistik dapat digunakan untuk menampilkan informasi statistik yang berbeda"
+            "displayName": "Statistik",
+            "description": "Statistik dapat digunakan untuk menampilkan informasi statistik yang berbeda"
         },
         "RangeSlider": {
-          "displayName": "Range Slider",
-          "description": "Dapat digunakan untuk menampilkan slider dengan jangkauan"
+            "displayName": "Range Slider",
+            "description": "Dapat digunakan untuk menampilkan slider dengan jangkauan"
         },
         "Timeline": {
-          "displayName": "Linimasa",
-          "description": "Representasi visual dari urutan peristiwa"
+            "displayName": "Linimasa",
+            "description": "Representasi visual dari urutan peristiwa"
         },
         "SvgImage": {
-          "displayName": "Gambar SVG",
-          "description": "Gambar SVG"
+            "displayName": "Gambar SVG",
+            "description": "Gambar SVG"
         },
         "Html": {
-          "displayName": "Penampil html",
-          "description": "Penampil html"
+            "displayName": "Penampil html",
+            "description": "Penampil html"
         },
         "VerticalDivider": {
-          "displayName": "Pembagi vertikal",
-          "description": "Pemisah vertikal antar komponen"
+            "displayName": "Pembagi vertikal",
+            "description": "Pemisah vertikal antar komponen"
         },
         "CustomComponent": {
-          "displayName": "Komponen khusus",
-          "description": "Tambahkan Komponen React Kustom Anda"
+            "displayName": "Komponen khusus",
+            "description": "Tambahkan Komponen React Kustom Anda"
         },
         "ButtonGroup": {
-          "displayName": "Grup tombol",
-          "description": "Buttongroup"
+            "displayName": "Grup tombol",
+            "description": "Buttongroup"
         },
         "PDF": {
-          "displayName": "Pdf",
-          "description": "Embed file PDF"
+            "displayName": "Pdf",
+            "description": "Embed file PDF"
         },
         "Steps": {
-          "displayName": "Langkah",
-          "description": "Langkah"
+            "displayName": "Langkah",
+            "description": "Langkah"
         },
         "KanbanBoard": {
-          "displayName": "Dewan Kanban",
-          "description": "Dewan Kanban"
+            "displayName": "Dewan Kanban",
+            "description": "Dewan Kanban"
         },
         "ColorPicker": {
-          "displayName": "Pemilih warna",
-          "description": "Palet Picker Warna"
+            "displayName": "Pemilih warna",
+            "description": "Palet Picker Warna"
         },
         "TreeSelect": {
-          "displayName": "Pilihan Pohon",
-          "description": "Pilih nilai dari tampilan pohon"
+            "displayName": "Pilihan Pohon",
+            "description": "Pilih nilai dari tampilan pohon"
         }
-      },
-      "leftSidebar": {
+    },
+    "leftSidebar": {
         "Inspector": {
-          "text": "Pemeriksa",
-          "tip": "Pemeriksa"
+            "text": "Pemeriksa",
+            "tip": "Pemeriksa"
         },
         "Sources": {
-          "text": "Sumber",
-          "tip": "Tambahkan atau Edit DataSources",
-          "dataSources": "Sumber data",
-          "addDataSource": "+ Tambahkan Sumber Data"
+            "text": "Sumber",
+            "tip": "Tambahkan atau Edit DataSources",
+            "dataSources": "Sumber data",
+            "addDataSource": "+ Tambahkan Sumber Data"
         },
         "Debugger": {
-          "text": "Debugger",
-          "tip": "Debugger",
-          "errors": "Kesalahan",
-          "noErrors": "Tidak ada kesalahan yang ditemukan",
-          "clear": "bersihkan"
+            "text": "Debugger",
+            "tip": "Debugger",
+            "errors": "Kesalahan",
+            "noErrors": "Tidak ada kesalahan yang ditemukan",
+            "clear": "bersihkan"
         },
         "Comments": {
-          "text": "Komentar",
-          "tip": "alihkan komentar",
-          "commentBody": "Tidak ada komentar untuk ditampilkan",
-          "typeComment": "tulis komentarmu di sini"
+            "text": "Komentar",
+            "tip": "alihkan komentar",
+            "commentBody": "Tidak ada komentar untuk ditampilkan",
+            "typeComment": "tulis komentarmu di sini"
         },
         "Settings": {
-          "text": "Pengaturan",
-          "tip": "Pengaturan global",
-          "hideHeader": "Sembunyikan header untuk aplikasi yang diluncurkan",
-          "maintenanceMode": "Mode pemeliharaan",
-          "maxWidthOfCanvas": "Lebar Maksimum Kanvas",
-          "maxHeightOfCanvas": "Tinggi kanvas maksimal",
-          "backgroundColorOfCanvas": "Warna latar belakang kanvas"
+            "text": "Pengaturan",
+            "tip": "Pengaturan global",
+            "hideHeader": "Sembunyikan header untuk aplikasi yang diluncurkan",
+            "maintenanceMode": "Mode pemeliharaan",
+            "maxWidthOfCanvas": "Lebar Maksimum Kanvas",
+            "maxHeightOfCanvas": "Tinggi kanvas maksimal",
+            "backgroundColorOfCanvas": "Warna latar belakang kanvas"
         },
         "Back": {
-          "text": "Kembali",
-          "tip": "Kembali ke Beranda"
+            "text": "Kembali",
+            "tip": "Kembali ke Beranda"
         }
-      }
+    }
 }

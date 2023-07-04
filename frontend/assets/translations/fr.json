@@ -423,8 +423,16 @@
     "skip": "Passer"
   },
   "redirectSso": {
-    "upgradingTov1.13.0": "Mise à niveau vers V1.13.0 et supérieur.",
-    "fromV1.13.0": "De V1.13.0, nous avons introduit",
+    "upgradingTov1": {
+      "13": {
+        "0": "Mise à niveau vers V1.13.0 et supérieur."
+      }
+    },
+    "fromV1": {
+      "13": {
+        "0": "De V1.13.0, nous avons introduit"
+      }
+    },
     "multiWorkspace": "Espace multi-travaux",
     "singleSignOnConfig": "Les configurations liées à la connexion unique sont déplacées des variables d'environnement vers la base de données. Veuillez référer ceci",
     "link": "Lien",
@@ -909,8 +917,7 @@
       "maxHeightOfCanvas": "Hauteur maximale de la toile",
       "backgroundColorOfCanvas": "Couleur d'arrière-plan de la toile"
     },
-    "Back": 
-    {
+    "Back": {
       "text": "Retour",
       "tip": "De retour à la maison"
     }

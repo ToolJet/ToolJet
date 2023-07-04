@@ -423,8 +423,16 @@
         "skip": "Überspringen"
     },
     "redirectSso": {
-        "upgradingTov1.13.0": "Aktualisieren auf v1.13.0 und höher.",
-        "fromV1.13.0": "Ab v1.13.0 haben wir volgendes eingeführt",
+        "upgradingTov1": {
+            "13": {
+                "0": "Aktualisieren auf v1.13.0 und höher."
+            }
+        },
+        "fromV1": {
+            "13": {
+                "0": "Ab v1.13.0 haben wir volgendes eingeführt"
+            }
+        },
         "multiWorkspace": "Multi-Workspace",
         "singleSignOnConfig": "Die Single Sign-On bezogenen Konfigurationen werden von den Arbeitsbereich-Variablen in die Datenbank verschoben. Bitte lesen Sie dies",
         "link": "Link",

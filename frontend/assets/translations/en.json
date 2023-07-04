@@ -259,7 +259,7 @@
                     "enterLastName": "Enter Last Name",
                     "enterEmail": "Enter email id",
                     "enterFulltName": "Enter full name",
-                    "inviteNewUsers":"Invite new users"
+                    "inviteNewUsers": "Invite new users"
                 },
                 "manageGroups": {
                     "permissions": {
@@ -453,8 +453,16 @@
         "skip": "Skip"
     },
     "redirectSso": {
-        "upgradingTov1.13.0": "Upgrading to v1.13.0 and above.",
-        "fromV1.13.0": "From v1.13.0 we have introduced",
+        "upgradingTov1": {
+            "13": {
+                "0": "Upgrading to v1.13.0 and above."
+            }
+        },
+        "fromV1": {
+            "13": {
+                "0": "From v1.13.0 we have introduced"
+            }
+        },
         "multiWorkspace": "Multi-Workspace",
         "singleSignOnConfig": "The Single Sign-On related configurations are moved from workspace variables to database. Please refer this",
         "link": "Link",
