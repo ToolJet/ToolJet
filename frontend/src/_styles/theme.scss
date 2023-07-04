@@ -5850,6 +5850,13 @@ div#driver-page-overlay {
       border: 1px solid var(--indigo9);
       box-shadow: none;
   }
+
+  &:disabled {
+      background: var(--slate3);
+      border: 1px solid var(--slate8);
+      color: var(--slate9);
+      cursor: not-allowed;
+  }
 }
 
 
