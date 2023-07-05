@@ -310,3 +310,13 @@ If this parameter is not specified then PostgREST refuses authentication request
 :::info
 Please make sure that DB_URI is given in the format `postgrest://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]`
 :::
+
+## ToolJet Apps
+
+### Enabling embedding of private apps
+
+By default, only embedding of public apps is permitted. By setting this variable, users will be able to embed private ToolJet Apps.
+
+| Variable        | Description                           |
+| --------------- | ------------------------------------- |
+| ENABLE_PRIVATE_APP_EMBED | `true` or `false` |
