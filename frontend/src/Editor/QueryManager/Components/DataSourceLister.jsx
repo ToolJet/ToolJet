@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 import { groupBy } from 'lodash';
+import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
+import { authenticationService } from '@/_services';
+import { getWorkspaceId } from '@/_helpers/utils';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 function DataSourceLister({
   dataSources,
@@ -75,9 +79,12 @@ function DataSourceLister({
     <div className="query-datasource-card-container">
       <Select
         onChange={({ source } = {}) => handleChangeDataSource(source)}
+        menuPlacement="auto"
+        components={{ MenuList: MenuList }}
         styles={{
           control: (style) => ({ ...style, width: '400px', ...(darkMode ? { background: '#22272E' } : {}) }),
           menuList: (style) => ({ ...style, ...(darkMode ? { background: '#22272E' } : {}) }),
+          menu: (style) => ({ ...style, ...(darkMode ? { backgroundColor: '#1f2936', color: '#f4f6fa' } : {}) }),
           input: (style) => ({ ...style, ...(darkMode ? { color: '#ffffff' } : {}) }),
           groupHeading: (style) => ({
             ...style,
@@ -89,6 +96,7 @@ function DataSourceLister({
           }),
           option: (style, { data: { isNested } }) => ({
             ...style,
+            cursor: 'pointer',
             ...(darkMode ? { background: '#22272E' } : {}),
             ...(isNested
               ? { paddingLeft: '20px', marginLeft: '40px', borderLeft: '1px solid #ccc', width: 'auto' }
@@ -98,9 +106,42 @@ function DataSourceLister({
         placeholder="Where do you want to connect to"
         options={DataSourceOptions}
         isDisabled={isDisabled}
+        // menuIsOpen
+        menuPortalTarget={document.body}
       />
     </div>
   );
 }
+
+const MenuList = ({ children, cx, getStyles, innerRef, ...props }) => {
+  const navigate = useNavigate();
+  console.log('props', props, getStyles('menuList', props));
+  const menuListStyles = getStyles('menuList', props);
+
+  const { admin } = authenticationService.currentSessionValue;
+  const workspaceId = getWorkspaceId();
+
+  if (admin) {
+    //offseting for height of button since react-select calculates only the size of options list
+    menuListStyles.maxHeight = menuListStyles.maxHeight - 48;
+  }
+
+  const handleAddClick = () => navigate(`/${workspaceId}/global-datasources`);
+
+  return (
+    <>
+      <div ref={innerRef} style={menuListStyles}>
+        {children}
+      </div>
+      {admin && (
+        <div className="p-2 mt-2 border-top">
+          <ButtonSolid variant="secondary" size="md" className="w-100" onClick={handleAddClick}>
+            + Add new datasource
+          </ButtonSolid>
+        </div>
+      )}
+    </>
+  );
+};
 
 export default DataSourceLister;

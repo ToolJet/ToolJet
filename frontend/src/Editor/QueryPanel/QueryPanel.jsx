@@ -182,6 +182,7 @@ const QueryPanel = ({
         ref={queryPaneRef}
         onMouseDown={onMouseDown}
         className="query-pane"
+        id="query-manager"
         style={{
           height: `calc(100% - ${isExpanded ? height : 100}%)`,
           cursor: isDragging || isTopOfQueryPanel ? 'row-resize' : 'default',
