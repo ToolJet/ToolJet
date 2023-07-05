@@ -14,6 +14,7 @@ import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore'
 import FilterandSortPopup from './FilterandSortPopup';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const QueryDataPane = ({
   handleAddNewQuery,
@@ -117,19 +118,19 @@ export const QueryDataPane = ({
             />
             <button
               onClick={() => setShowSearchBox((showSearchBox) => !showSearchBox)}
-              className="bg-transparent border-0"
+              className={cx('btn-query-panel-header mx-1', { active: showSearchBox })}
               data-tooltip-id="tooltip-for-query-panel-header-btn"
               data-tooltip-content="Open quick search"
             >
-              <Search width="12" height="12" fill="var(--slate12)" />
+              <Search width="14" height="14" fill="var(--slate12)" />
             </button>
             <button
               onClick={toggleQueryEditor}
-              className="bg-transparent border-0"
+              className="btn-query-panel-header"
               data-tooltip-id="tooltip-for-query-panel-header-btn"
               data-tooltip-content="Hide query editor"
             >
-              <Minimize width="14" height="14" viewBox="0 0 25 14" stroke="var(--slate12)" />
+              <Minimize width="14" height="14" viewBox="0 0 18 20" stroke="var(--slate12)" />
             </button>
             <Tooltip id="tooltip-for-query-panel-header-btn" className="tooltip" />
           </div>

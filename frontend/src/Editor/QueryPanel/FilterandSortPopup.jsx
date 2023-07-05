@@ -112,7 +112,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
       <span>
         <button
           onClick={() => setShowMenu(true)}
-          className={cx('border-0 position-relative', { 'bg-transparent': !showMenu })}
+          className={cx('position-relative  btn-query-panel-header', { active: showMenu })}
           style={{ ...(showMenu && { background: 'var(--slate5)' }) }}
           data-tooltip-id="tooltip-for-open-filter"
           data-tooltip-content="Show sort/filter"

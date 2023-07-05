@@ -115,6 +115,7 @@ import Lock from './Lock.jsx';
 import Mail from './Mail.jsx';
 import Logs from './Logs.jsx';
 import Marketplace from './Marketplace.jsx';
+import Minimize from './Minimize.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -348,6 +349,8 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
+    case 'minimize':
+      return <Minimize {...props} />;
     default:
       return <Apps {...props} />;
   }

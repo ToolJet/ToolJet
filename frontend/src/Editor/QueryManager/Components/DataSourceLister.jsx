@@ -33,11 +33,11 @@ function DataSourceLister({
       Object.entries(groupBy(globalDataSources, 'kind')).map(([kind, sources]) => ({
         label: (
           <div>
-            <DataSourceIcon source={sources?.[0]} /> {kind}
+            <DataSourceIcon source={sources?.[0]} height={16} /> <span className="ms-1 small">{kind}</span>
           </div>
         ),
         options: sources.map((source) => ({
-          label: <div>{source.name}</div>,
+          label: <div className="py-2 px-2 rounded option-nested-datasource-selector small">{source.name}</div>,
           value: source.id,
           isNested: true,
           source,
@@ -58,7 +58,7 @@ function DataSourceLister({
     ...allSources.map((source) => ({
       label: (
         <div>
-          <DataSourceIcon source={source} /> {source.name}
+          <DataSourceIcon source={source} height={16} /> <span className="ms-1 small">{source.name}</span>
         </div>
       ),
       value: source.id,
@@ -79,12 +79,29 @@ function DataSourceLister({
     <div className="query-datasource-card-container">
       <Select
         onChange={({ source } = {}) => handleChangeDataSource(source)}
+        classNames={{
+          menu: () => 'tj-scrollbar',
+        }}
         menuPlacement="auto"
         components={{ MenuList: MenuList }}
         styles={{
-          control: (style) => ({ ...style, width: '400px', ...(darkMode ? { background: '#22272E' } : {}) }),
+          control: (style) => ({
+            ...style,
+            width: '400px',
+            background: 'var(--base)',
+            color: 'var(--slate9)',
+            border: '1px solid var(--slate7)',
+          }),
           menuList: (style) => ({ ...style, ...(darkMode ? { background: '#22272E' } : {}) }),
-          menu: (style) => ({ ...style, ...(darkMode ? { backgroundColor: '#1f2936', color: '#f4f6fa' } : {}) }),
+          menu: (style) => ({
+            ...style,
+            backgroundColor: 'var(--base)',
+            color: 'var(--slate12)',
+            boxShadow: 'none',
+            border: '1px solid var(--slate3)',
+            marginTop: 0,
+            marginBottom: 0,
+          }),
           input: (style) => ({ ...style, ...(darkMode ? { color: '#ffffff' } : {}) }),
           groupHeading: (style) => ({
             ...style,
@@ -94,20 +111,26 @@ function DataSourceLister({
             fontWeight: '400',
             ...(darkMode ? { background: '#22272E' } : {}),
           }),
-          option: (style, { data: { isNested } }) => ({
+          option: (style, { data: { isNested, ...data }, isFocused, isDisabled }) => ({
             ...style,
             cursor: 'pointer',
-            ...(darkMode ? { background: '#22272E' } : {}),
+            backgroundColor:
+              isNested || isDisabled ? 'transparent' : isFocused ? 'var(--slate5)' : style.backgroundColor,
             ...(isNested
-              ? { paddingLeft: '20px', marginLeft: '40px', borderLeft: '1px solid #ccc', width: 'auto' }
+              ? { padding: '0 8px', marginLeft: '40px', borderLeft: '1px solid var(--slate5)', width: 'auto' }
               : {}),
+            ':hover': {
+              backgroundColor: isNested || isDisabled ? 'transparent' : 'var(--slate4)',
+              '.option-nested-datasource-selector': { backgroundColor: 'var(--slate4)' },
+            },
           }),
         }}
         placeholder="Where do you want to connect to"
         options={DataSourceOptions}
         isDisabled={isDisabled}
-        // menuIsOpen
-        menuPortalTarget={document.body}
+        menuIsOpen
+        menuPortalTarget={document.querySelector('.main-wrapper')}
+        maxMenuHeight={375}
       />
     </div>
   );
@@ -134,7 +157,7 @@ const MenuList = ({ children, cx, getStyles, innerRef, ...props }) => {
         {children}
       </div>
       {admin && (
-        <div className="p-2 mt-2 border-top">
+        <div className="p-2 mt-2 border-slate3-top">
           <ButtonSolid variant="secondary" size="md" className="w-100" onClick={handleAddClick}>
             + Add new datasource
           </ButtonSolid>

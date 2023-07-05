@@ -171,3 +171,11 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 .bg-slate2 {
   background-color: var(--slate2) !important;
 }
+
+.border-slate3 {
+  border-top: 1px solid var(--slate3) !important;
+}
+
+.border-slate3-top {
+  border-top: 1px solid var(--slate3) !important;
+}
