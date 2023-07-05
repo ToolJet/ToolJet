@@ -10913,10 +10913,10 @@ tbody {
 }
 
 
-#tooltip-for-org-constant-cell {
+#tooltip-for-org-constant-cell, #tooltip-for-org-input-disabled {
   padding: 12px 16px !important;
   white-space: pre-line !important;
-  max-width: 300px !important;
+  max-width: 500px !important;
   z-index: 1 !important;
   .react-tooltip-arrow {
     background: inherit !important;

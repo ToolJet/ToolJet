@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { withTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { capitalize } from 'lodash';
+import { Tooltip } from 'react-tooltip';
 
 const ConstantForm = ({
   selectedConstant,
@@ -68,6 +69,8 @@ const ConstantForm = ({
   const shouldDisableButton =
     fields['name'] && fields['value'] && (fields['name'].length > 0 || fields['value'].length > 0) ? false : true;
 
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <div className="variable-form-wrap">
       <div className="card-header">
@@ -84,6 +87,8 @@ const ConstantForm = ({
                 style={{
                   marginRight: '10px',
                 }}
+                onMouseEnter={() => setIsOpen(true)}
+                onMouseLeave={() => setIsOpen(false)}
               >
                 <label className="form-label">Name</label>
                 <input
@@ -94,8 +99,15 @@ const ConstantForm = ({
                   onChange={handleFieldChange}
                   value={fields['name']}
                   disabled={!!selectedConstant}
+                  data-tooltip-id="tooltip-for-org-input-disabled"
+                  data-tooltip-content={'Cannot edit constant name'}
+                  data-tooltip-offset={5}
                 />
-
+                <Tooltip
+                  id="tooltip-for-org-input-disabled"
+                  isOpen={!!selectedConstant && isOpen}
+                  place={'top-start'}
+                />
                 <span className="text-danger">{error['name']}</span>
               </div>
             </div>
@@ -109,6 +121,7 @@ const ConstantForm = ({
                 onChange={handleFieldChange}
                 value={fields['value']}
               />
+
               <span className="text-danger">{error['value']}</span>
             </div>
           </div>

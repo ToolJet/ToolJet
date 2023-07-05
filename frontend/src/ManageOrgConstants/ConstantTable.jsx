@@ -53,15 +53,13 @@ const ConstantTable = ({
               </tbody>
             ) : (
               <tbody>
-                <Tooltip id="tooltip-for-org-constant-cell" isOpen={true} />
+                <Tooltip id="tooltip-for-org-constant-cell" />
                 {constants.map((constant) => (
                   <tr key={constant.id}>
                     <td>
                       <span
                         data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-name`}
                         data-tooltip-id="tooltip-for-org-constant-cell"
-                        data-tooltip-content={constant.name}
-                        data-tooltip-offset={5}
                       >
                         {String(constant.name).length > 30
                           ? String(constant.name).substring(0, 30) + '...'
