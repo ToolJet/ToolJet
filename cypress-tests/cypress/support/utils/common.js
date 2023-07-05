@@ -69,8 +69,9 @@ export const deleteFolder = (folderName) => {
 };
 
 export const deleteDownloadsFolder = () => {
-  const downloadsFolder = Cypress.config("downloadsFolder");
-  cy.task("deleteFolder", downloadsFolder);
+  cy.exec("cd ./cypress/downloads/ && rm -rf *", {
+    failOnNonZeroExit: false,
+  });
 };
 
 export const navigateToAppEditor = (appName) => {
@@ -168,7 +169,7 @@ export const createWorkspace = (workspaceName) => {
 
 export const selectAppCardOption = (appName, appCardOption) => {
   viewAppCardOptions(appName);
-  cy.get(appCardOption).should("be.visible").click();
+  cy.get(appCardOption).should("be.visible").realClick();
 };
 
 export const navigateToDatabase = () => {
