@@ -96,6 +96,7 @@ export class AppEnvironmentService {
             const productionEnv = await manager.findOne(AppEnvironment, {
               where: {
                 isDefault: true,
+                organizationId,
               },
               select: ['id'],
             });
