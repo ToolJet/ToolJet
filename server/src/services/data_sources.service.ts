@@ -114,18 +114,13 @@ export class DataSourcesService {
   }
 
   async findApp(dataSourceId: string, manager: EntityManager): Promise<App> {
-    try {
-      return (
-        await manager
-          .createQueryBuilder(DataSource, 'data_source')
-          .innerJoinAndSelect('data_source.apps', 'apps')
-          .where('data_source.id = :dataSourceId', { dataSourceId })
-          .getOneOrFail()
-      ).app;
-    } catch (error) {
-      console.error(error);
-      throw new Error('asds');
-    }
+    return (
+      await manager
+        .createQueryBuilder(DataSource, 'data_source')
+        .innerJoinAndSelect('data_source.apps', 'apps')
+        .where('data_source.id = :dataSourceId', { dataSourceId })
+        .getOneOrFail()
+    ).app;
   }
 
   async findDefaultDataSourceByKind(kind: string, appVersionId: string) {

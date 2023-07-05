@@ -16,7 +16,12 @@ import { staticDataSources, customToggles, mockDataQueryAsComponent, schemaUnava
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueries, useDataQueriesActions } from '@/_stores/dataQueriesStore';
-import { useSelectedQuery, useSelectedDataSource, useQueryPanelActions } from '@/_stores/queryPanelStore';
+import {
+  useSelectedQuery,
+  useSelectedDataSource,
+  useQueryPanelActions,
+  useShowCreateQuery,
+} from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 
@@ -30,6 +35,7 @@ export const QueryManagerBody = forwardRef(
     const selectedDataSource = useSelectedDataSource();
     const { setPreviewData } = useQueryPanelActions();
     const { changeDataQuery, updateDataQuery, createDataQuery } = useDataQueriesActions();
+    const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
 
     const [dataSourceMeta, setDataSourceMeta] = useState(null);
     /* - Added the below line to cause re-rendering when the query is switched
@@ -45,10 +51,11 @@ export const QueryManagerBody = forwardRef(
     const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
 
     const defaultOptions = useRef({});
+
     const { isVersionReleased, editingVersionId } = useAppVersionStore(
       (state) => ({
         isVersionReleased: state.isVersionReleased,
-        editingVersionId: state.editingVersionId,
+        editingVersionId: state.editingVersion?.id,
       }),
       shallow
     );
@@ -93,6 +100,7 @@ export const QueryManagerBody = forwardRef(
       setOptions({ ...newOptions });
 
       createDataQuery(appId, editingVersionId, options, source.kind, newQueryName, source, false);
+      setShowCreateQuery(false);
     };
 
     // Clear the focus field value from options
@@ -136,27 +144,33 @@ export const QueryManagerBody = forwardRef(
       optionchanged(option, !currentValue);
     };
 
-    const renderDataSourcesList = () => (
-      <div
-        className={cx(`datasource-picker`, {
-          'disabled ': isVersionReleased,
-        })}
-      >
-        <label className="form-label col-md-3 pb-1" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
-          Datasource
-        </label>
+    const renderDataSourcesList = () => {
+      if (!showCreateQuery) {
+        return '';
+      }
 
-        <DataSourceLister
-          dataSources={dataSources}
-          staticDataSources={staticDataSources}
-          globalDataSources={globalDataSources}
-          changeDataSource={changeDataSource}
-          handleBackButton={handleBackButton}
-          darkMode={darkMode}
-          isDisabled={!newQueryName}
-        />
-      </div>
-    );
+      return (
+        <div
+          className={cx(`datasource-picker`, {
+            'disabled ': isVersionReleased,
+          })}
+        >
+          <label className="form-label col-md-3 pb-1" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
+            Datasource
+          </label>
+
+          <DataSourceLister
+            dataSources={dataSources}
+            staticDataSources={staticDataSources}
+            globalDataSources={globalDataSources}
+            changeDataSource={changeDataSource}
+            handleBackButton={handleBackButton}
+            darkMode={darkMode}
+            isDisabled={!newQueryName}
+          />
+        </div>
+      );
+    };
 
     const renderTransformation = () => {
       if (

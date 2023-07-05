@@ -5,7 +5,7 @@ import { QueryDataPane } from './QueryDataPane';
 import QueryManager from '../QueryManager/QueryManager';
 
 import useWindowResize from '@/_hooks/useWindowResize';
-import { useQueryPanelStore, useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { useQueryPanelStore, useQueryPanelActions, useShowCreateQuery } from '@/_stores/queryPanelStore';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 import Maximize from '../../_ui/Icon/solidIcons/Maximize';
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
@@ -36,6 +36,7 @@ const QueryPanel = ({
   );
   const [isTopOfQueryPanel, setTopOfQueryPanel] = useState(false);
   const [windowSize, isWindowResizing] = useWindowResize();
+  const [, setShowCreateQuery] = useShowCreateQuery();
 
   useEffect(() => {
     const queryPanelStoreListner = useQueryPanelStore.subscribe(({ selectedQuery }, prevState) => {
@@ -128,6 +129,7 @@ const QueryPanel = ({
   const handleAddNewQuery = () => {
     setSelectedDataSource(null);
     setSelectedQuery(null);
+    setShowCreateQuery(true);
   };
 
   const toggleQueryEditor = useCallback(() => {

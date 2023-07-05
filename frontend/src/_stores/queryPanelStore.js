@@ -10,6 +10,7 @@ const initialState = {
   queryToBeRun: null,
   previewLoading: false,
   queryPreviewData: null,
+  showCreateQuery: false,
 };
 
 export const useQueryPanelStore = create(
@@ -31,6 +32,7 @@ export const useQueryPanelStore = create(
         setQueryToBeRun: (query) => set({ queryToBeRun: query }),
         setPreviewLoading: (status) => set({ previewLoading: status }),
         setPreviewData: (data) => set({ queryPreviewData: data }),
+        setShowCreateQuery: (showCreateQuery) => set({ showCreateQuery }),
       },
     }),
     { name: 'Query Panel Store' }
@@ -44,3 +46,5 @@ export const useQueryToBeRun = () => useQueryPanelStore((state) => state.queryTo
 export const usePreviewLoading = () => useQueryPanelStore((state) => state.previewLoading);
 export const usePreviewData = () => useQueryPanelStore((state) => state.queryPreviewData);
 export const useQueryPanelActions = () => useQueryPanelStore((state) => state.actions);
+export const useShowCreateQuery = () =>
+  useQueryPanelStore((state) => [state.showCreateQuery, state.actions.setShowCreateQuery]);

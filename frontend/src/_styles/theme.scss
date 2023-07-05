@@ -10726,3 +10726,10 @@ tbody {
 .form-label-restricted {
   display: none;
 }
+
+.query-rename-input{
+  &:focus, &:active {
+    box-shadow: 0px 0px 0px 2px #C6D4F9;
+    border: 1px solid var(--light-indigo-09, #3E63DD);
+  }
+}

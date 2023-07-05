@@ -14,10 +14,16 @@ import {
   useQueryUpdationLoading,
   useDataQueries,
 } from '@/_stores/dataQueriesStore';
-import { useSelectedQuery, useSelectedDataSource, usePreviewLoading } from '@/_stores/queryPanelStore';
+import {
+  useSelectedQuery,
+  useSelectedDataSource,
+  usePreviewLoading,
+  useShowCreateQuery,
+} from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
+import { Button } from 'react-bootstrap';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options, editorRef, onNameChange }, ref) => {
   const { renameQuery, updateDataQueryStatus } = useDataQueriesActions();
@@ -25,8 +31,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
   const isCreationInProcess = useQueryCreationLoading();
   const isUpdationInProcess = useQueryUpdationLoading();
   const selectedDataSource = useSelectedDataSource();
+  const [showCreateQuery] = useShowCreateQuery();
   const queryName = selectedQuery?.name ?? '';
-  const [renamingQuery, setRenamingQuery] = useState(false);
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -41,63 +47,16 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
   const executeQueryNameUpdation = (newName) => {
     const { name } = selectedQuery;
     if (name === newName) {
-      return setRenamingQuery(false);
+      return;
     }
     const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
     if (newName && !isNewQueryNameAlreadyExists) {
       renameQuery(selectedQuery?.id, newName, editorRef);
-      setRenamingQuery(false);
     } else {
       if (isNewQueryNameAlreadyExists) {
         toast.error('Query name already exists');
       }
-      setRenamingQuery(false);
     }
-  };
-
-  const renderRenameInput = () => (
-    <input
-      data-cy={`query-rename-input`}
-      type="text"
-      className={cx('border-indigo-09 bg-transparent', { 'text-white': darkMode })}
-      autoFocus
-      defaultValue={queryName}
-      onKeyUp={(event) => {
-        event.persist();
-        if (event.keyCode === 13) {
-          executeQueryNameUpdation(event.target.value);
-        }
-      }}
-      onBlur={({ target }) => executeQueryNameUpdation(target.value)}
-    />
-  );
-
-  const renderBreadcrumb = () => {
-    return (
-      <>
-        <div className="query-name-breadcrum d-flex align-items-center ms-3">
-          <span
-            className={cx('query-manager-header-query-name font-weight-400', {
-              ellipsis: !renamingQuery && !!selectedQuery,
-            })}
-            data-cy={`query-name-label`}
-          >
-            {renamingQuery ? renderRenameInput() : queryName}
-            {!selectedQuery ? <NewQueryNameInput onNameChange={onNameChange} darkMode={darkMode} /> : ''}
-          </span>
-          {selectedQuery ? (
-            <span
-              className={cx('breadcrum-rename-query-icon', { 'd-none': renamingQuery && isVersionReleased })}
-              onClick={() => setRenamingQuery(true)}
-            >
-              <RenameIcon />
-            </span>
-          ) : (
-            ''
-          )}
-        </div>
-      </>
-    );
   };
 
   const buttonLoadingState = (loading, disabled = false) => {
@@ -178,7 +137,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
   };
 
   const renderButtons = () => {
-    if (selectedQuery === null) return;
+    if (selectedQuery === null || showCreateQuery) return;
     return (
       <>
         {isInDraft && renderSaveButton()}
@@ -190,7 +149,13 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
 
   return (
     <div className="row header">
-      <div className="col font-weight-500">{renderBreadcrumb()}</div>
+      <div className="col font-weight-500">
+        {!selectedQuery && showCreateQuery ? (
+          <NewQueryNameInput onNameChange={onNameChange} darkMode={darkMode} isFocussed={showCreateQuery} />
+        ) : (
+          <NameInput onInput={executeQueryNameUpdation} value={queryName} darkMode={darkMode} />
+        )}
+      </div>
       <div className="query-header-buttons me-3">{renderButtons()}</div>
     </div>
   );
@@ -214,9 +179,8 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   );
 };
 
-const NewQueryNameInput = ({ darkMode, onNameChange }) => {
+const NewQueryNameInput = ({ darkMode, onNameChange, isFocussed }) => {
   const dataQueries = useDataQueries();
-  const inputRef = useRef();
   const [value, setValue] = useState();
 
   useEffect(() => {
@@ -225,21 +189,12 @@ const NewQueryNameInput = ({ darkMode, onNameChange }) => {
     onNameChange(name);
   }, []);
 
-  useEffect(() => {
-    inputRef.current?.select();
-  }, []);
-
   const handleNameInput = (name) => {
     if (dataQueries.find((query) => query.name === name) !== undefined) {
       onNameChange(null);
       return toast.error('Query name taken');
     }
     onNameChange(name);
-  };
-
-  const handleChange = (event) => {
-    const sanitizedValue = event.target.value.replace(/[ \t&]/g, '');
-    setValue(sanitizedValue);
   };
 
   const computeQueryName = () => {
@@ -255,24 +210,81 @@ const NewQueryNameInput = ({ darkMode, onNameChange }) => {
     }
   };
 
+  return <NameInput onInput={handleNameInput} value={value} darkMode={darkMode} isFocussed={isFocussed} />;
+};
+
+const NameInput = ({ onInput, value, darkMode, isFocussed: _isFocussed }) => {
+  const [isFocussed, setIsFocussed] = useState(false);
+  const [name, setName] = useState(value);
+  const isVersionReleased = useAppVersionStore((state) => state.isVersionReleased);
+  const inputRef = useRef();
+
+  useEffect(() => {
+    setName(value);
+  }, [value]);
+
+  useEffect(() => {
+    setIsFocussed(_isFocussed);
+  }, [_isFocussed]);
+
+  useEffect(() => {
+    if (isFocussed) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [isFocussed]);
+
+  const handleChange = (event) => {
+    const sanitizedValue = event.target.value.replace(/[ \t&]/g, '');
+    setName(sanitizedValue);
+  };
+
   return (
-    <input
-      data-cy={`query-rename-input`}
-      type="text"
-      className={cx('border-indigo-09 bg-transparent', { 'text-white': darkMode })}
-      autoFocus
-      ref={inputRef}
-      value={value}
-      defaultValue={computeQueryName()}
-      onChange={handleChange}
-      onKeyUp={(event) => {
-        event.persist();
-        if (event.keyCode === 13) {
-          handleNameInput(event.target.value);
-          // executeQueryNameUpdation(event.target.value);
-        }
-      }}
-      onBlur={({ target }) => handleNameInput(target.value)}
-    />
+    <div className="query-name-breadcrum d-flex align-items-center ms-1">
+      <span
+        className="query-manager-header-query-name font-weight-400"
+        data-cy={`query-name-label`}
+        style={{ width: '150px' }}
+      >
+        {isFocussed ? (
+          <input
+            data-cy={`query-rename-input`}
+            type="text"
+            className={cx('border-indigo-09 bg-transparent query-rename-input py-1 px-2 rounded', {
+              'text-white': darkMode,
+            })}
+            autoFocus
+            ref={inputRef}
+            onChange={handleChange}
+            value={name}
+            onKeyDown={(event) => {
+              event.persist();
+              if (event.keyCode === 13) {
+                setIsFocussed(false);
+                onInput(event.target.value);
+              }
+            }}
+            onBlur={({ target }) => {
+              setIsFocussed(false);
+              onInput(target.value);
+            }}
+          />
+        ) : (
+          <Button
+            size="sm"
+            onClick={() => setIsFocussed(true)}
+            className={'bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500'}
+          >
+            {value}{' '}
+            <span
+              className={cx('breadcrum-rename-query-icon', { 'd-none': isFocussed && isVersionReleased })}
+              // onClick={() => setIsFocussed(true)}
+            >
+              <RenameIcon />
+            </span>
+          </Button>
+        )}
+      </span>
+    </div>
   );
 };
