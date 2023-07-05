@@ -103,11 +103,7 @@ const ConstantForm = ({
                   data-tooltip-content={'Cannot edit constant name'}
                   data-tooltip-offset={5}
                 />
-                <Tooltip
-                  id="tooltip-for-org-input-disabled"
-                  isOpen={!!selectedConstant && isOpen}
-                  place={'top-start'}
-                />
+                <Tooltip id="tooltip-for-org-input-disabled" isOpen={!!selectedConstant && isOpen} place={'bottom'} />
                 <span className="text-danger">{error['name']}</span>
               </div>
             </div>
