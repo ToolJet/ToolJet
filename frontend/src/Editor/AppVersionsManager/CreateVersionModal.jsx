@@ -15,6 +15,7 @@ export const CreateVersion = ({
   setShowCreateAppVersion,
   showCreateVersionModalPrompt,
   closeCreateVersionModalPrompt,
+  onSelectVersion,
 }) => {
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
@@ -101,7 +102,7 @@ export const CreateVersion = ({
               options={options}
               defaultValue={options.find((option) => option?.value?.id === editingVersion?.id)}
               onChange={(version) => {
-                setAppDefinitionFromVersion(version, false);
+                onSelectVersion(version.id);
               }}
               useMenuPortal={false}
               width="100%"

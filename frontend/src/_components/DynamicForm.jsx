@@ -30,12 +30,14 @@ const DynamicForm = ({
   queryName,
   computeSelectStyles = false,
   currentAppEnvironmentId,
+  setDefaultOptions,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
 
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
+      setDefaultOptions(schema?.defaults);
       optionsChanged(schema?.defaults ?? {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -850,6 +850,8 @@ export function isExpectedDataType(data, expectedDataType) {
   return data;
 }
 
+export const returnDevelopmentEnv = (environments) => environments.find((env) => env.priority === 1);
+
 export const validateName = (name, nameType, showError = false, allowSpecialChars = true) => {
   const newName = name.trim();
   let errorMsg = '';

@@ -256,6 +256,7 @@ const QueryPanel = ({
             fetchDataQueries={fetchDataQueries}
             darkMode={darkMode}
             editorRef={editorRef}
+            isVersionReleased={isVersionReleased}
           />
           <div className="query-definition-pane-wrapper">
             <div className="query-definition-pane">

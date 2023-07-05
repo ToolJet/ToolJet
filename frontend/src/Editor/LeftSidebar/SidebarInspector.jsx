@@ -23,6 +23,7 @@ export const LeftSidebarInspector = ({
   runQuery,
   setPinned,
   pinned,
+  isVersionReleased,
 }) => {
   const dataSources = useGlobalDataSources();
   const dataQueries = useDataQueries();
@@ -121,6 +122,13 @@ export const LeftSidebarInspector = ({
     return toast.success('Copied to the clipboard', { position: 'top-center' });
   };
 
+  const actions = [
+    { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
+  ];
+  if (!isVersionReleased) {
+    actions.push({ name: 'Delete Component', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' });
+  }
+
   const callbackActions = [
     {
       for: 'queries',
@@ -139,10 +147,7 @@ export const LeftSidebarInspector = ({
     },
     {
       for: 'components',
-      actions: [
-        { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
-        { name: 'Delete Component', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' },
-      ],
+      actions,
       enableForAllChildren: false,
       enableFor1stLevelChildren: true,
     },

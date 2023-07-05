@@ -1,8 +1,8 @@
 import React from 'react';
 import cx from 'classnames';
-import InfoSvg from '@assets/images/info.svg';
+import Branch from '@assets/images/icons/branch.svg';
 
-export const ReleasedVersionError = ({ isUserEditingTheVersion, changeBackTheState }) => {
+export const FreezeVersionInfo = ({ isUserEditingTheVersion, changeBackTheState }) => {
   React.useState(() => {
     const intervalId = setInterval(() => changeBackTheState(), 2000);
     return () => intervalId && clearInterval(intervalId);
@@ -22,10 +22,10 @@ export const ReleasedVersionError = ({ isUserEditingTheVersion, changeBackTheSta
           }}
         >
           <div className="me-3">
-            <InfoSvg />
+            <Branch />
           </div>
           <p style={{ marginBottom: '0' }}>
-            This version of the app is released. Please create a new version in development to make any changes.
+            App cannot be edited after promotion. Please create a new version from Development to make any changes.
           </p>
         </div>
       </div>

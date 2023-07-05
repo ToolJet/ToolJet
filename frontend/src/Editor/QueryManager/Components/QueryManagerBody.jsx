@@ -401,6 +401,7 @@ export const QueryManagerBody = forwardRef(
             onChange={(newDataSource) => {
               changeDataQuery(newDataSource);
             }}
+            isVersionReleased={isVersionReleased}
           />
         </div>
       );

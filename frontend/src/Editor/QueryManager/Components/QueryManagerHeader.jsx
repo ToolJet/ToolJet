@@ -116,7 +116,7 @@ export const QueryManagerHeader = forwardRef(
               className={cx('breadcrum-rename-query-icon', { 'd-none': renamingQuery && isVersionReleased })}
               onClick={() => setRenamingQuery(true)}
             >
-              <RenameIcon />
+              {!isVersionReleased && <RenameIcon />}
             </span>
           </div>
         </>
@@ -187,10 +187,7 @@ export const QueryManagerHeader = forwardRef(
       return (
         <button
           onClick={() => createOrUpdateDataQuery(true)}
-          className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(
-            isLoading,
-            isVersionReleased
-          )}`}
+          className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(isLoading)}`}
           data-cy="query-run-button"
         >
           <span

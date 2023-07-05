@@ -49,7 +49,10 @@ export const Inspector = ({
   const [selectedTab, setSelectedTab] = useState('properties');
   const { t } = useTranslation();
 
-  useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));
+  useHotkeys('backspace', () => {
+    if (isVersionReleased) return;
+    setWidgetDeleteConfirmation(true);
+  });
   useHotkeys('escape', () => switchSidebarTab(2));
 
   const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);

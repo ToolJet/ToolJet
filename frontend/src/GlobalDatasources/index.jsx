@@ -5,12 +5,14 @@ import { globalDatasourceService, appEnvironmentService, authenticationService }
 import { GlobalDataSourcesPage } from './GlobalDataSourcesPage';
 import { toast } from 'react-hot-toast';
 import { BreadCrumbContext } from '@/App/App';
+import { returnDevelopmentEnv } from '@/_helpers/utils';
 
 export const GlobalDataSourcesContext = createContext({
   showDataSourceManagerModal: false,
   toggleDataSourceManagerModal: () => {},
   selectedDataSource: null,
   setSelectedDataSource: () => {},
+  environments: [],
 });
 
 export const GlobalDatasources = (props) => {
@@ -28,6 +30,10 @@ export const GlobalDatasources = (props) => {
   useEffect(() => {
     if (dataSources?.length == 0) updateSidebarNAV('');
     else selectedDataSource ? updateSidebarNAV(selectedDataSource.name) : updateSidebarNAV(dataSources?.[0].name);
+
+    //if user selected a new datasource to create one. switch to development env
+    if (!selectedDataSource) setCurrentEnvironment(returnDevelopmentEnv(environments));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource)]);
 
@@ -97,7 +103,9 @@ export const GlobalDatasources = (props) => {
   const handleToggleSourceManagerModal = () => {
     toggleDataSourceManagerModal(
       (prevState) => !prevState,
-      () => setEditing((prev) => !prev)
+      () => {
+        setEditing((prev) => !prev);
+      }
     );
   };
 
@@ -114,7 +122,7 @@ export const GlobalDatasources = (props) => {
       const envArray = data?.environments;
       setEnvironments(envArray);
       if (envArray.length > 0) {
-        const env = envArray.find((env) => env.is_default === true);
+        const env = returnDevelopmentEnv(envArray);
         setCurrentEnvironment(env);
       }
     });

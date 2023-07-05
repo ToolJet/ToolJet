@@ -49,6 +49,7 @@ import EditorHeader from './Header';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
+import { FreezeVersionInfo } from './EnvironmentsManager/FreezeVersionInfo';
 
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
@@ -379,6 +380,12 @@ class EditorComponent extends React.Component {
     );
   };
 
+  getStoreData = async (currentVersionId, currentSelectedEnvId) => {
+    this.fetchDataSources(currentVersionId, currentSelectedEnvId);
+    await this.fetchDataQueries(currentVersionId, true, true);
+    this.fetchGlobalDataSources(currentVersionId, currentSelectedEnvId);
+  };
+
   fetchApp = (startingPageHandle) => {
     const appId = this.props.params.id;
 
@@ -418,10 +425,7 @@ class EditorComponent extends React.Component {
           });
         }
       );
-
-      this.fetchDataSources(data.editing_version?.id, this.state.currentAppEnvironmentId);
-      await this.fetchDataQueries(data.editing_version?.id, true, true);
-      this.fetchGlobalDataSources(data.editing_version?.id, this.state.currentAppEnvironmentId);
+      await this.getStoreData(data.editing_version?.id, data.editing_version?.current_environment_id);
       initEditorWalkThrough();
       for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
         await this.handleEvent(event.eventId, event);
@@ -454,6 +458,7 @@ class EditorComponent extends React.Component {
         {
           editingVersion: version,
           isSaving: false,
+          isEditorFreezed: false,
         },
         () => {
           shouldWeEditVersion && this.saveEditingVersion(true);
@@ -651,6 +656,8 @@ class EditorComponent extends React.Component {
   };
 
   removeComponents = () => {
+    // will not remove components if version is released or editor is freezed
+    if (this.state.isEditorFreezed || this.isVersionReleased()) return;
     if (!this.isVersionReleased() && this.state?.selectedComponents?.length > 1) {
       let newDefinition = cloneDeep(this.state.appDefinition);
       const selectedComponents = this.state?.selectedComponents;
@@ -1480,6 +1487,16 @@ class EditorComponent extends React.Component {
     });
   };
 
+  /**
+   * disable/enable editor for restricting user actions
+   * @param {Boolean} value
+   */
+  onEditorFreeze = (value = false) => {
+    this.setState(() => ({
+      isEditorFreezed: value,
+    }));
+  };
+
   getCanvasMinWidth = () => {
     /**
      * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
@@ -1498,7 +1515,9 @@ class EditorComponent extends React.Component {
       return defaultCanvasMinWidth;
     }
   };
+
   handleEditorMarginLeftChange = (value) => this.setState({ editorMarginLeft: value });
+
   formCustomPageSelectorClass = () => {
     const handle = this.state.appDefinition?.pages[this.state.currentPageId]?.handle;
     return `_tooljet-page-${handle}`;
@@ -1563,6 +1582,19 @@ class EditorComponent extends React.Component {
             }}
           />
         )}
+        {/* when we promote app environment from development to staging,
+         we need to notify the user that they can't edit the current version. */}
+        {!this.isVersionReleased() && this.state.isEditorFreezed && (
+          <FreezeVersionInfo
+            isUserEditingTheVersion={this.state.isUserEditingTheVersion}
+            changeBackTheState={() => {
+              this.state.isUserEditingTheVersion &&
+                this.setState({
+                  isUserEditingTheVersion: false,
+                });
+            }}
+          />
+        )}
         <EditorContextWrapper>
           <EditorHeader
             darkMode={this.props.darkMode}
@@ -1595,6 +1627,9 @@ class EditorComponent extends React.Component {
             appEnvironmentChanged={this.appEnvironmentChanged}
             onVersionDelete={this.onVersionDelete}
             currentUser={this.state.currentUser}
+            onEditorFreeze={this.onEditorFreeze}
+            getStoreData={this.getStoreData}
+            shouldFreeze={this.isVersionReleased() || this.state.isEditorFreezed}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
@@ -1640,8 +1675,8 @@ class EditorComponent extends React.Component {
                 showHideViewerNavigationControls={this.showHideViewerNavigation}
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
+                isVersionReleased={this.isVersionReleased() || this.state.isEditorFreezed}
                 setEditorMarginLeft={this.handleEditorMarginLeftChange}
-                isVersionReleased={this.isVersionReleased()}
                 setReleasedVersionPopupState={this.setReleasedVersionPopupState}
               />
               {!showComments && (
@@ -1769,7 +1804,7 @@ class EditorComponent extends React.Component {
                             sideBarDebugger={this.sideBarDebugger}
                             currentPageId={this.state.currentPageId}
                             setReleasedVersionPopupState={this.setReleasedVersionPopupState}
-                            isVersionReleased={this.isVersionReleased()}
+                            isVersionReleased={this.isVersionReleased() || this.state.isEditorFreezed}
                           />
                           <CustomDragLayer
                             snapToGrid={true}
@@ -1795,7 +1830,7 @@ class EditorComponent extends React.Component {
                   editingVersionId={editingVersion?.id}
                   appDefinition={appDefinition}
                   dataSourceModalHandler={this.dataSourceModalHandler}
-                  isVersionReleased={this.isVersionReleased()}
+                  isVersionReleased={this.isVersionReleased() || this.state.isEditorFreezed}
                   editorRef={this}
                 />
                 <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
@@ -1828,7 +1863,7 @@ class EditorComponent extends React.Component {
                         darkMode={this.props.darkMode}
                         appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
                         pages={this.getPagesWithIds()}
-                        isVersionReleased={this.isVersionReleased()}
+                        isVersionReleased={this.isVersionReleased() || this.state.isEditorFreezed}
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">
@@ -1844,7 +1879,7 @@ class EditorComponent extends React.Component {
                     zoomLevel={zoomLevel}
                     currentLayout={currentLayout}
                     darkMode={this.props.darkMode}
-                    isVersionReleased={this.isVersionReleased()}
+                    isVersionReleased={this.isVersionReleased() || this.state.isEditorFreezed}
                   ></WidgetManager>
                 )}
               </div>
