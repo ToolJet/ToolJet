@@ -285,6 +285,10 @@ export const Container = ({
     const deltaWidth = Math.round(d.width / gridWidth) * gridWidth;
     const deltaHeight = d.height;
 
+    if (deltaWidth === 0 && deltaHeight === 0) {
+      return;
+    }
+
     let { x, y } = position;
 
     const defaultData = {
