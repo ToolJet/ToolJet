@@ -3,7 +3,7 @@ import { fake } from "Fixtures/fake";
 import { logout, navigateToAppEditor } from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { addNewUserMW } from "Support/utils/userPermissions";
-import { userSignUp } from "../../support/utils/onboarding";
+import { userSignUp } from "Support/utils/onboarding";
 
 describe("App share functionality", () => {
   const data = {};
@@ -19,6 +19,8 @@ describe("App share functionality", () => {
   it("Verify private and public app share funtionality", () => {
     cy.createApp();
     cy.renameApp(data.appName);
+    cy.dragAndDropWidget("Table", 250, 250);
+
     cy.get(commonWidgetSelector.shareAppButton).click();
 
     for (const elements in commonWidgetSelector.shareModalElements) {
@@ -38,7 +40,8 @@ describe("App share functionality", () => {
 
     cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
     cy.get(commonWidgetSelector.modalCloseButton).click();
-    cy.dragAndDropWidget("Table", 50, 50);
+    cy.forceClickOnCanvas()
+    cy.dragAndDropWidget("Button", 50, 50);
     cy.get(commonSelectors.editorPageLogo).click();
 
     logout();
@@ -96,7 +99,7 @@ describe("App share functionality", () => {
     );
   });
 
-  it.skip("Verify app private and public app visisbility for the same instance user", () => {
+  it("Verify app private and public app visisbility for the same instance user", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase();
 
