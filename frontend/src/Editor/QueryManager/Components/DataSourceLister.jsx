@@ -128,7 +128,7 @@ function DataSourceLister({
         placeholder="Where do you want to connect to"
         options={DataSourceOptions}
         isDisabled={isDisabled}
-        menuIsOpen
+        // menuIsOpen
         menuPortalTarget={document.querySelector('.main-wrapper')}
         maxMenuHeight={375}
       />
