@@ -43,9 +43,7 @@ export default class Openapi implements QueryService {
     context?: { user?: User; app?: App }
   ): Promise<RestAPIResult> {
     const { host, path, operation, params } = queryOptions;
-    const { request } = params;
-    const { query, header } = params;
-    const pathParams = params.path;
+    const { request, query, header, path: pathParams } = params;
     const url = new URL(host + this.resolvePathParams(pathParams, path));
     const json = operation !== 'get' ? this.sanitizeObject(request) : undefined;
 

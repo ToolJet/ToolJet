@@ -47,8 +47,7 @@ export default class GraphqlQueryService implements QueryService {
     const authValidatedRequestOptions = validateAndSetRequestOptionsBasedOnAuthType(
       sourceOptions,
       context,
-      _requestOptions,
-      { url }
+      _requestOptions
     );
     const { status, data } = authValidatedRequestOptions;
     if (status === 'needs_oauth') return authValidatedRequestOptions;
