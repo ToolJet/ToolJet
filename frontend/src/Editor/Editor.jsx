@@ -244,18 +244,18 @@ class EditorComponent extends React.Component {
   };
 
   fetchOrgEnvironmentConstants = () => {
+    //! for @ee: get the constants from  `getConstantsFromEnvironment ` -- '/organization-constants/:environmentId'
     orgEnvironmentConstantService.getAll().then(({ constants }) => {
       const orgConstants = {};
       constants.map((constant) => {
         const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
         orgConstants[constant.name] = constantValue;
-
-        this.setState({
-          currentState: {
-            ...this.state.currentState,
-            constants: orgConstants,
-          },
-        });
+      });
+      this.setState({
+        currentState: {
+          ...this.state.currentState,
+          constants: orgConstants,
+        },
       });
     });
   };

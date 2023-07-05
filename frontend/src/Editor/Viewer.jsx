@@ -210,21 +210,35 @@ class ViewerComponent extends React.Component {
     });
   };
 
-  fetchOrgEnvironmentConstants = () => {
-    orgEnvironmentConstantService.getAll().then(({ constants }) => {
-      const orgConstants = {};
-      constants.map((constant) => {
+  fetchOrgEnvironmentConstants = async (slug, isPublic) => {
+    const orgConstants = {};
+
+    let variablesResult;
+    if (!isPublic) {
+      const { constants } = await orgEnvironmentConstantService.getAll();
+      variablesResult = constants;
+    } else {
+      const { constants } = await orgEnvironmentConstantService.getConstantsFromPublicApp(slug);
+
+      variablesResult = constants;
+    }
+
+    console.log('--org constant 2.0', { variablesResult });
+
+    if (variablesResult && Array.isArray(variablesResult)) {
+      variablesResult.map((constant) => {
         const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
         orgConstants[constant.name] = constantValue;
-
-        this.setState({
-          currentState: {
-            ...this.state.currentState,
-            constants: orgConstants,
-          },
-        });
       });
-    });
+
+      // console.log('--org constant 2.0', { orgConstants });
+
+      return {
+        constants: orgConstants,
+      };
+    }
+
+    return { constants: {} };
   };
 
   fetchOrgEnvironmentVariables = async (slug, isPublic) => {

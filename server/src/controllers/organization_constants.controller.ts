@@ -13,12 +13,13 @@ import {
 } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
-
+import { IsPublicGuard } from 'src/modules/org_environment_variables/is-public.guard';
 import { User } from 'src/decorators/user.decorator';
 import { OrganizationConstantsService } from '@services/organization_constants.service';
 import { CreateOrganizationConstantDto, UpdateOrganizationConstantDto } from '@dto/organization-constant.dto';
 import { OrganizationConstant } from '../entities/organization_constants.entity';
 import { OrganizationConstantsAbilityFactory } from 'src/modules/casl/abilities/organization-constants-ability.factory';
+import { AppDecorator as App } from 'src/decorators/app.decorator';
 
 @Controller('organization-constants')
 export class OrganizationConstantController {
@@ -31,6 +32,13 @@ export class OrganizationConstantController {
   @Get()
   async get(@User() user) {
     const result = await this.organizationConstantsService.allEnvironmentConstants(user.organizationId);
+    return { constants: result };
+  }
+
+  @UseGuards(IsPublicGuard)
+  @Get(':app_slug')
+  async getConstantsFromApp(@App() app) {
+    const result = await this.organizationConstantsService.allEnvironmentConstants(app.organizationId);
     return { constants: result };
   }
 
