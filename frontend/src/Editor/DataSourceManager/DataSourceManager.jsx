@@ -814,12 +814,12 @@ class DataSourceManagerComponent extends React.Component {
               <div className="col-auto" data-cy="db-connection-save-button">
                 <ButtonSolid
                   className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
-                  isLoading={isSaving || this.props.isVersionReleased}
-                  disabled={isSaving}
+                  isLoading={isSaving}
+                  disabled={isSaving || this.props.isVersionReleased}
                   variant="primary"
                   onClick={this.createDataSource}
                   leftIcon="floppydisk"
-                  fill={'#FDFDFE'}
+                  fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
                 >
                   {this.props.t('globals.save', 'Save')}
                 </ButtonSolid>
