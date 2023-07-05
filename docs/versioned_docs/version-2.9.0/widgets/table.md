@@ -80,6 +80,7 @@ Example:
 {{[{ id: 1, name: 'Sarah', email: 'sarah@example.com'}]}}
 ```
 
+<!--PR not merged yet
 The table also supports the loading of one level of **nested data**. Here is an example of the data structure:
 
 ```js
@@ -121,6 +122,7 @@ The table also supports the loading of one level of **nested data**. Here is an 
 ```
 
 When you provide the expected table data as an array of objects, the table component will **automatically generate all the required columns**.
+-->
 
 ## Columns
 
