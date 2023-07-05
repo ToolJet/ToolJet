@@ -1,7 +1,11 @@
-import got, { HTTPError } from 'got';
+import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 import urrl from 'url';
 import { QueryError, OAuthUnauthorizedClientError } from './query.error';
 import { getCurrentToken } from './utils.helper';
+import { QueryResult } from './query_result.type';
+import { App } from './app.type';
+import { User } from './user.type';
+const { CookieJar } = require('tough-cookie');
 
 export function checkIfContentTypeIsURLenc(headers: [] = []) {
   const objectHeaders = Object.fromEntries(headers);
@@ -13,6 +17,141 @@ export function sanitizeCustomParams(customArray: any) {
   const params = Object.fromEntries(customArray ?? []);
   Object.keys(params).forEach((key) => (params[key] === '' ? delete params[key] : {}));
   return params;
+}
+
+export function validateAndSetRequestOptionsBasedOnAuthType(
+  sourceOptions: any,
+  context: { user?: User; app?: App },
+  requestOptions: OptionsOfTextResponseBody,
+  additionalOptions?: any
+): QueryResult {
+  switch (sourceOptions['auth_type']) {
+    case 'oauth':
+      return handleOAuthAuthentication(sourceOptions, context, requestOptions);
+    case 'bearer':
+      return handleBearerAuthentication(sourceOptions, requestOptions);
+    case 'apiKey':
+      return handleApiKeyAuthentication(sourceOptions, requestOptions, additionalOptions);
+    case 'basic':
+      return handleBasicAuthentication(sourceOptions, requestOptions);
+    default:
+      return { status: 'ok', data: { ...requestOptions } };
+  }
+}
+
+function handleOAuthAuthentication(sourceOptions: any, context: any, requestOptions: any): QueryResult {
+  const headers = { ...requestOptions.headers };
+  const oAuthValidatedResult = validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers);
+  if (oAuthValidatedResult.status !== 'ok') {
+    return oAuthValidatedResult;
+  }
+  return { status: 'ok', data: { ...requestOptions, headers } };
+}
+
+function handleBearerAuthentication(sourceOptions: any, requestOptions: any): QueryResult {
+  const headers = { ...requestOptions.headers };
+  headers['Authorization'] = `Bearer ${sourceOptions.bearer_token}`;
+  return { status: 'ok', data: { ...requestOptions, headers } };
+}
+
+function handleApiKeyAuthentication(sourceOptions, requestOptions, additionalOptions): QueryResult {
+  let cookieJar = new CookieJar();
+
+  const resolved = resolveApiKeyParams(
+    sourceOptions.api_keys,
+    sourceOptions.auth_key,
+    requestOptions.headers,
+    additionalOptions.url,
+    requestOptions.searchParams,
+    cookieJar
+  );
+  const header = resolved.header;
+  cookieJar = resolved.cookieJar;
+
+  return {
+    status: 'ok',
+    data: {
+      ...{ ...requestOptions, searchParams: resolved.query },
+      headers: header,
+      cookieJar,
+    },
+  };
+}
+
+function handleBasicAuthentication(sourceOptions: any, requestOptions: any): QueryResult {
+  return {
+    status: 'ok',
+    data: { ...requestOptions, username: sourceOptions.username, password: sourceOptions.password },
+  };
+}
+
+function validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers): QueryResult {
+  const authType = sourceOptions['auth_type'];
+  const requiresOauth = authType === 'oauth2';
+
+  if (requiresOauth) {
+    const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
+    const tokenData = sourceOptions['tokenData'];
+    const isAppPublic = context?.app.isPublic;
+    const userData = context?.user;
+    const currentToken = getCurrentToken(isMultiAuthEnabled, tokenData, userData?.id, isAppPublic);
+
+    if (!currentToken && !userData?.id && isAppPublic) {
+      throw new QueryError('Missing access token', {}, {});
+    }
+
+    if (!currentToken) {
+      return {
+        status: 'needs_oauth',
+        data: { auth_url: authUrl(sourceOptions) },
+      };
+    } else {
+      const accessToken = currentToken['access_token'];
+      if (sourceOptions['add_token_to'] === 'header') {
+        const headerPrefix = sourceOptions['header_prefix'];
+        headers['Authorization'] = `${headerPrefix}${accessToken}`;
+      }
+    }
+  }
+
+  return { status: 'ok', data: headers };
+}
+
+function authUrl(sourceOptions: any): string {
+  const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
+  const tooljetHost = process.env.TOOLJET_HOST;
+  const authUrl = new URL(
+    `${sourceOptions['auth_url']}?response_type=code&client_id=${sourceOptions['client_id']}&redirect_uri=${tooljetHost}/oauth2/authorize&scope=${sourceOptions['scopes']}`
+  );
+  Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
+  return authUrl.toString();
+}
+
+function resolveApiKeyParams(apiKeys, auth_key: string, header: any, url: URL, query: any, cookieJar: any) {
+  const processKey = (type: string, name: string, value: string) => {
+    if (type === 'header') {
+      header[name] = value;
+    } else if (type === 'query') {
+      query[name] = value;
+    } else if (type === 'cookie') {
+      cookieJar.setCookie(`${name}=${value}`, url);
+    }
+  };
+  apiKeys.map((key: any) => {
+    if (key.parentKey && key.parentKey === auth_key) {
+      //process multiple keys
+      key.fields.map((field: any) => {
+        processKey(field.in, field.name, field.value);
+      });
+    } else {
+      if (auth_key === key.key) {
+        processKey(key.in, key.name, key.value);
+        return;
+      }
+    }
+  });
+
+  return { header, query, cookieJar };
 }
 
 export const getRefreshedToken = async (sourceOptions: any, error: any, userId: string, isAppPublic: boolean) => {

@@ -1,14 +1,16 @@
 import {
+  User,
+  App,
   OAuthUnauthorizedClientError,
   QueryError,
   QueryService,
   getRefreshedToken,
   sanitizeCustomParams,
+  validateAndSetRequestOptionsBasedOnAuthType,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, RestAPIResult } from './types';
-import got, { HTTPError } from 'got';
+import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
 import urrl from 'url';
-const { CookieJar } = require('tough-cookie');
 
 export default class Openapi implements QueryService {
   authUrl(sourceOptions: SourceOptions): string {
@@ -33,98 +35,45 @@ export default class Openapi implements QueryService {
     return params;
   }
 
-  private resolveApiKeyParams = (apiKeys, auth_key: string, header: any, url: URL, query: any, cookieJar: any) => {
-    const processKey = (type: string, name: string, value: string) => {
-      if (type === 'header') {
-        header[name] = value;
-      } else if (type === 'query') {
-        query[name] = value;
-      } else if (type === 'cookie') {
-        cookieJar.setCookie(`${name}=${value}`, url);
-      }
-    };
-    apiKeys.map((key: any) => {
-      if (key.parentKey && key.parentKey === auth_key) {
-        //process multiple keys
-        key.fields.map((field: any) => {
-          processKey(field.in, field.name, field.value);
-        });
-      } else {
-        if (auth_key === key.key) {
-          processKey(key.in, key.name, key.value);
-          return;
-        }
-      }
-    });
-
-    return { header, query, cookieJar };
-  };
-
-  async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<RestAPIResult> {
+  async run(
+    sourceOptions: SourceOptions,
+    queryOptions: QueryOptions,
+    dataSourceId: string,
+    context?: { user?: User; app?: App }
+  ): Promise<RestAPIResult> {
     const { host, path, operation, params } = queryOptions;
     const { request } = params;
-    let { query, header } = params;
+    const { query, header } = params;
     const pathParams = params.path;
-    const authType = sourceOptions['auth_type'];
-    const requiresOauth = authType === 'oauth2';
-    let cookieJar = new CookieJar();
-
     const url = new URL(host + this.resolvePathParams(pathParams, path));
     const json = operation !== 'get' ? this.sanitizeObject(request) : undefined;
+
+    const _requestOptions: OptionsOfTextResponseBody = {
+      method: operation,
+      headers: header,
+      searchParams: {
+        ...query,
+      },
+      json,
+    };
+
+    const authValidatedRequestOptions = validateAndSetRequestOptionsBasedOnAuthType(
+      sourceOptions,
+      context,
+      _requestOptions,
+      { url }
+    );
+    const { status, data } = authValidatedRequestOptions;
+    if (status === 'needs_oauth') return authValidatedRequestOptions;
+    const requestOptions = data;
 
     let result = {};
     let requestObject = {};
     let responseObject = {};
     let responseHeaders = {};
 
-    if (authType === 'bearer') {
-      header['Authorization'] = `Bearer ${sourceOptions.bearer_token}`;
-    }
-
-    if (authType === 'apiKey') {
-      const resolved = this.resolveApiKeyParams(
-        sourceOptions.api_keys,
-        sourceOptions.auth_key,
-        header,
-        url,
-        query,
-        cookieJar
-      );
-      header = resolved.header;
-      query = resolved.query;
-      cookieJar = resolved.cookieJar;
-    }
-
-    /* Chceck if OAuth tokens exists for the source if query requires OAuth */
-    if (requiresOauth) {
-      const tokenData = sourceOptions['tokenData'];
-
-      if (!tokenData) {
-        return {
-          status: 'needs_oauth',
-          data: { auth_url: this.authUrl(sourceOptions) },
-        };
-      } else {
-        const accessToken = tokenData['access_token'];
-        if (sourceOptions['add_token_to'] === 'header') {
-          const headerPrefix = sourceOptions['header_prefix'];
-          header['Authorization'] = `${headerPrefix}${accessToken}`;
-        }
-      }
-    }
-
     try {
-      const response = await got(url, {
-        method: operation,
-        headers: header,
-        username: authType === 'basic' ? sourceOptions.username : undefined,
-        password: authType === 'basic' ? sourceOptions.password : undefined,
-        searchParams: {
-          ...query,
-        },
-        json,
-        cookieJar,
-      });
+      const response = await got(url, requestOptions);
 
       result = JSON.parse(response.body);
       requestObject = {
@@ -157,7 +106,7 @@ export default class Openapi implements QueryService {
           responseHeaders: error.response.headers,
         };
       }
-      if (requiresOauth && error?.response?.statusCode == 401) {
+      if (sourceOptions['auth_type'] === 'oauth2' && error?.response?.statusCode == 401) {
         throw new OAuthUnauthorizedClientError('Unauthorized status from API server', error.message, result);
       }
       throw new QueryError('Query could not be completed', error.message, result);
