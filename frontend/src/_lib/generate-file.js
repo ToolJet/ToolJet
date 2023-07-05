@@ -31,44 +31,36 @@ function generatePDF(filename, data) {
   const processValue = (value, indentLevel = 0) => {
     const valueType = typeof value;
 
-    if (valueType === 'string' || valueType === 'number' || valueType === 'boolean') {
-      doc.text(value.toString(), x + indentLevel * 10, y, {
+    if (valueType === 'string') {
+      doc.text(value, x, y, {
         align: 'left',
-        maxWidth: pageWidth - 2 * margin - indentLevel * 10,
+        maxWidth: pageWidth - 2 * margin,
       });
       y += 10;
     } else if (Array.isArray(value)) {
-      doc.text('[', x + indentLevel * 10, y, {
-        align: 'left',
-        maxWidth: pageWidth - 2 * margin - indentLevel * 10,
+      const columnNames = Object.keys(value[0]);
+
+      // Print table headers
+      doc.autoTable({
+        startY: y,
+        head: [columnNames],
+        body: value.map((item) => Object.values(item)),
       });
-      y += 10;
-      value.forEach((item) => {
-        processValue(item, indentLevel + 1);
-      });
-      doc.text(']', x + indentLevel * 10, y - 10, {
-        align: 'left',
-        maxWidth: pageWidth - 2 * margin - indentLevel * 10,
-      });
+
+      y = doc.autoTable.previous.finalY + 10;
     } else if (valueType === 'object' && value !== null) {
-      doc.text('{', x + indentLevel * 10, y, {
-        align: 'left',
-        maxWidth: pageWidth - 2 * margin - indentLevel * 10,
+      const columnNames = Object.keys(value);
+
+      // Print table headers
+      doc.autoTable({
+        startY: y,
+        head: [columnNames],
+        body: [Object.values(value)],
       });
-      y += 10;
-      Object.keys(value).forEach((key) => {
-        doc.text(`${key}: ${JSON.stringify(value[key])}`, x + (indentLevel + 1) * 10, y, {
-          align: 'left',
-          maxWidth: pageWidth - 2 * margin - (indentLevel + 1) * 10,
-        });
-        y += 10;
-      });
-      doc.text('}', x + indentLevel * 10, y - 10, {
-        align: 'left',
-        maxWidth: pageWidth - 2 * margin - indentLevel * 10,
-      });
+
+      y = doc.autoTable.previous.finalY + 10;
     } else {
-      throw new Error('Invalid data type. Expected string, number, boolean, object, or array.');
+      throw new Error('Invalid data type. Expected string, object, or array.');
     }
   };
 
