@@ -263,7 +263,7 @@ export default function generateColumnsData({
                 readOnly={!isEditable}
                 style={{ maxWidth: width }}
                 onBlur={(e) => {
-                  if (isEditable) {
+                  if (isEditable && e.target.defaultValue !== e.target.value) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}

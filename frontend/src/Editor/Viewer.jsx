@@ -128,8 +128,9 @@ class ViewerComponent extends React.Component {
           ...this.state.currentState.queries[query.name],
         };
       } else {
+        const dataSourceTypeDetail = DataSourceTypes.find((source) => source.kind === query.kind);
         queryState[query.name] = {
-          ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+          ...dataSourceTypeDetail.exposedVariables,
           ...this.state.currentState.queries[query.name],
         };
       }
@@ -517,6 +518,13 @@ class ViewerComponent extends React.Component {
         </div>
       );
     } else {
+      const startingPageHandle = this.props?.params?.pageHandle;
+      const homePageHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
+      if (!startingPageHandle && homePageHandle) {
+        return (
+          <Navigate to={`${homePageHandle}${this.props.params.pageHandle ? '' : window.location.search}`} replace />
+        );
+      }
       if (this.state.app?.is_maintenance_on) {
         return (
           <div className="maintenance_container">
