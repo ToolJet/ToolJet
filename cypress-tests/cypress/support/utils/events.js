@@ -30,9 +30,9 @@ export const selectCSA = (
     .click()
     .find("input")
     .type(`{selectAll}{backspace}${componentAction}{enter}`);
-  cy.get('[data-cy="-input-field"]').type(
-    `{selectAll}{backspace}${debounce}{enter}`
-  );
+  cy.get('[data-cy="-input-field"]')
+    .eq(1)
+    .type(`{selectAll}{backspace}${debounce}{enter}`);
 };
 
 export const addSupportCSAData = (field, data) => {
