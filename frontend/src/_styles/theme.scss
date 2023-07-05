@@ -10521,6 +10521,10 @@ tbody {
   width: 880px;
   min-height: calc(100vh - 308px);
 
+  .empty-state-org-constants {
+    padding-top: 5rem;
+  }
+
   .workspace-constant-card-body {
     min-height: calc(100vh - 408px);
   }

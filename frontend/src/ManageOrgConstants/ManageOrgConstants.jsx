@@ -10,6 +10,7 @@ import ConstantTable from './ConstantTable';
 import Pagination from '@/_ui/Pagination';
 import Drawer from '@/_ui/Drawer';
 import ConstantForm from './ConstantForm';
+import EmptyState from './EmptyState';
 import FolderList from '@/_ui/FolderList/FolderList';
 
 const ManageOrgConstantsComponent = ({ darkMode }) => {
@@ -347,30 +348,25 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                     isLoading={isLoading}
                     allConstants={constants}
                   />
-                  <div className="w-100 workspace-constant-card-body">
-                    <div className="align-items-center d-flex p-3 justify-content-between">
-                      <div className="tj-text-sm font-weight-500">{capitalize(activeTabEnvironment?.name)}</div>
-                      <div className="workspace-setting-buttons-wrap">
-                        {canCreateVariable() && (
-                          <ButtonSolid
-                            data-cy="add-new-constant-button"
-                            vaiant="primary"
-                            onClick={() => setIsManageVarDrawerOpen(true)}
-                            className="add-new-constant-button"
-                            customStyles={{ minWidth: '200px', height: '32px' }}
-                            disabled={isManageVarDrawerOpen}
-                          >
-                            Create new constant
-                          </ButtonSolid>
-                        )}
+                  {constants.length > 0 ? (
+                    <div className="w-100 workspace-constant-card-body">
+                      <div className="align-items-center d-flex p-3 justify-content-between">
+                        <div className="tj-text-sm font-weight-500">{capitalize(activeTabEnvironment?.name)}</div>
+                        <div className="workspace-setting-buttons-wrap">
+                          {canCreateVariable() && (
+                            <ButtonSolid
+                              data-cy="add-new-constant-button"
+                              vaiant="primary"
+                              onClick={() => setIsManageVarDrawerOpen(true)}
+                              className="add-new-constant-button"
+                              customStyles={{ minWidth: '200px', height: '32px' }}
+                              disabled={isManageVarDrawerOpen}
+                            >
+                              Create new constant
+                            </ButtonSolid>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    {constants.length === 0 ? (
-                      <span className="no-vars-text" data-cy="no-variable-text">
-                        You haven&apos;t configured any environment variables, press the &apos;Create new constanr&apos;
-                        button to create one
-                      </span>
-                    ) : (
                       <ConstantTable
                         constants={currentTableData}
                         onEditBtnClicked={onEditBtnClicked}
@@ -378,17 +374,22 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                         isLoading={isLoading}
                         canUpdateDeleteConstant={canUpdateVariable() || canDeleteVariable()}
                       />
-                    )}
-                    <Footer
-                      darkMode={darkMode}
-                      totalPage={totalPages}
-                      pageCount={currentPage}
-                      dataLoading={false}
-                      gotoNextPage={goToNextPage}
-                      gotoPreviousPage={goToPreviousPage}
-                      showPagination={constants.length > 0}
+                      <Footer
+                        darkMode={darkMode}
+                        totalPage={totalPages}
+                        pageCount={currentPage}
+                        dataLoading={false}
+                        gotoNextPage={goToNextPage}
+                        gotoPreviousPage={goToPreviousPage}
+                        showPagination={constants.length > 0}
+                      />
+                    </div>
+                  ) : (
+                    <EmptyState
+                      canCreateVariable={canCreateVariable()}
+                      setIsManageVarDrawerOpen={setIsManageVarDrawerOpen}
                     />
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
