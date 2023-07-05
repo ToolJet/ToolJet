@@ -70,6 +70,12 @@ export function OrganizationSettings(props) {
                           else updateSidebarNAV(item);
                         }}
                         selectedItem={selectedTab == defaultOrgName(item)}
+                        renderBadgeForItems={['Workspace Constants']}
+                        renderBadge={() => (
+                          <span style={{ width: '40px' }} className="badge bg-color-primary badge-pill">
+                            new
+                          </span>
+                        )}
                         dataCy={item.toLowerCase().replace(/\s+/g, '-')}
                       >
                         {item}
