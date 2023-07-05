@@ -21,7 +21,6 @@ export default function generateFile(filename, data, fileType) {
     window.URL.revokeObjectURL(elem.href);
   }
 }
-
 function generatePDF(filename, data) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -47,11 +46,10 @@ function generatePDF(filename, data) {
       value.forEach((item) => {
         processValue(item, indentLevel + 1);
       });
-      doc.text(']', x + indentLevel * 10, y, {
+      doc.text(']', x + indentLevel * 10, y - 10, {
         align: 'left',
         maxWidth: pageWidth - 2 * margin - indentLevel * 10,
       });
-      y += 10;
     } else if (valueType === 'object' && value !== null) {
       doc.text('{', x + indentLevel * 10, y, {
         align: 'left',
@@ -59,18 +57,16 @@ function generatePDF(filename, data) {
       });
       y += 10;
       Object.keys(value).forEach((key) => {
-        doc.text(`${key}:`, x + (indentLevel + 1) * 10, y, {
+        doc.text(`${key}: ${JSON.stringify(value[key])}`, x + (indentLevel + 1) * 10, y, {
           align: 'left',
           maxWidth: pageWidth - 2 * margin - (indentLevel + 1) * 10,
         });
         y += 10;
-        processValue(value[key], indentLevel + 1);
       });
-      doc.text('}', x + indentLevel * 10, y, {
+      doc.text('}', x + indentLevel * 10, y - 10, {
         align: 'left',
         maxWidth: pageWidth - 2 * margin - indentLevel * 10,
       });
-      y += 10;
     } else {
       throw new Error('Invalid data type. Expected string, number, boolean, object, or array.');
     }
