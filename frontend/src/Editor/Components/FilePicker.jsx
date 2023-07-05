@@ -72,6 +72,7 @@ export const FilePicker = ({
     display: parsedWidgetVisibility ? 'flex' : 'none',
     height,
     backgroundColor: !parsedDisabledState && bgThemeColor,
+    boxShadow: styles.boxShadow,
   };
 
   const activeStyle = {

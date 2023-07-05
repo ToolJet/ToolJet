@@ -21,6 +21,8 @@ import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { useCurrentStateStore } from '../../_stores/currentStateStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const Inspector = ({
   selectedComponentId,
@@ -31,7 +33,6 @@ export const Inspector = ({
   switchSidebarTab,
   removeComponent,
   pages,
-  isVersionReleased,
 }) => {
   const dataQueries = useDataQueries();
   const component = {
@@ -48,6 +49,12 @@ export const Inspector = ({
   const [newComponentName, setNewComponentName] = useState(component.component.name);
   const [inputRef, setInputFocus] = useFocus();
   const [selectedTab, setSelectedTab] = useState('properties');
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   const { t } = useTranslation();
 
   useHotkeys('backspace', () => setWidgetDeleteConfirmation(true));

@@ -39,6 +39,7 @@ export const Modal = function Modal({
     visibility,
     triggerButtonBackgroundColor,
     triggerButtonTextColor,
+    boxShadow,
   } = styles;
   const parentRef = useRef(null);
 
@@ -148,6 +149,7 @@ export const Modal = function Modal({
       width: '100%',
       display: visibility ? '' : 'none',
       '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
+      boxShadow,
     },
   };
 

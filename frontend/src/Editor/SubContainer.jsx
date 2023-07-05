@@ -10,7 +10,9 @@ import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { resolveReferences } from '@/_helpers/utils';
 import { useCurrentStateStore } from '../_stores/currentStateStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useMounted } from '@/_hooks/use-mount';
+import { shallow } from 'zustand/shallow';
 
 export const SubContainer = ({
   mode,
@@ -45,8 +47,6 @@ export const SubContainer = ({
   height = '100%',
   currentPageId,
   childComponents = null,
-  isVersionReleased,
-  setReleasedVersionPopupState,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -56,6 +56,13 @@ export const SubContainer = ({
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
   const currentState = useCurrentStateStore();
+  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
@@ -321,7 +328,7 @@ export const SubContainer = ({
 
   function onDragStop(e, componentId, direction, currentLayout) {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
     const canvasWidth = getContainerCanvasWidth();
@@ -366,7 +373,7 @@ export const SubContainer = ({
 
   function onResizeStop(id, e, direction, ref, d, position) {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
     const deltaWidth = d.width;
