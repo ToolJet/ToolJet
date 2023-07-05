@@ -20,15 +20,12 @@ services:
     container_name: ${PG_HOST}
     image: postgres:13
     restart: always
-    ports:
-      - "${PG_PORT}:${PG_PORT}"
     volumes:
       - postgres:/var/lib/postgresql/data
     env_file: .env
     environment:
       - POSTGRES_USER=${PG_USER}
       - POSTGRES_PASSWORD=${PG_PASS}
-      - PGPORT=${PG_PORT}
 
 # Uncomment if ENABLE_TOOLJET_DB=true
   # postgrest:
