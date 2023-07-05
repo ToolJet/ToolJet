@@ -303,11 +303,7 @@ export const Container = ({
     height = height + deltaHeight;
 
     top = y;
-    if (direction === 'left') {
-      // onResizeStop is triggered for a single click on the border, therefore this conditional logic
-      // should not be removed.
-      left = (x * 100) / canvasWidth;
-    }
+    left = (x * 100) / canvasWidth;
 
     let newBoxes = {
       ...boxes,
