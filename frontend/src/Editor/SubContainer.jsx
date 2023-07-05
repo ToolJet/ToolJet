@@ -389,7 +389,7 @@ export const SubContainer = ({
     let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
 
     top = y;
-    if (deltaWidth !== 0 && direction === 'left') {
+    if (deltaWidth !== 0 ) {
       // onResizeStop is triggered for a single click on the border, therefore this conditional logic
       // should not be removed.
       left = (x * 100) / _containerCanvasWidth;
