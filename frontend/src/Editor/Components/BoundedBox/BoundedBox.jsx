@@ -8,7 +8,7 @@ import { RenderHighlight } from './RenderHighlight';
 import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 
-export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles }) => {
+export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable, height, styles, id }) => {
   const [annotationState, setAnnotation] = useState({});
   const [annotationsState, setAnnotations] = useState([]);
   const [outerDivHeight, setOuterDivHeight] = useState();
@@ -26,8 +26,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
 
   useEffect(() => {
     const handleImageLoad = () => {
-      const wrapperElement = document.getElementsByClassName('lmGPCf')[0];
-
+      const wrapperElement = document.querySelector(`.widget-${id} .lmGPCf`);
       if (wrapperElement) {
         const { width, height } = wrapperElement.getBoundingClientRect();
         // Use the width and height of bounding image for further calculations
@@ -36,7 +35,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
       }
     };
 
-    const imageElement = document.getElementsByClassName('gVmiLs')[0];
+    const imageElement = document.querySelector(`.widget-${id} .gVmiLs`);
     if (imageElement) {
       imageElement.addEventListener('load', handleImageLoad);
     }
