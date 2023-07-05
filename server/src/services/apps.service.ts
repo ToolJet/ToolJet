@@ -619,6 +619,7 @@ export class AppsService {
         select: ['id'],
         where: {
           priority: MoreThan(currentEnvironment.priority),
+          organizationId,
         },
         order: { priority: 'ASC' },
       });
