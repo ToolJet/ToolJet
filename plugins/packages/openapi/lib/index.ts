@@ -39,6 +39,7 @@ export default class Openapi implements QueryService {
     sourceOptions: SourceOptions,
     queryOptions: QueryOptions,
     dataSourceId: string,
+    dataSourceUpdatedAt: string,
     context?: { user?: User; app?: App }
   ): Promise<RestAPIResult> {
     const { host, path, operation, params } = queryOptions;
@@ -65,7 +66,8 @@ export default class Openapi implements QueryService {
     );
     const { status, data } = authValidatedRequestOptions;
     if (status === 'needs_oauth') return authValidatedRequestOptions;
-    const requestOptions = data;
+
+    const requestOptions = data as OptionsOfTextResponseBody;
 
     let result = {};
     let requestObject = {};

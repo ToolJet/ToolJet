@@ -5,7 +5,7 @@ import { getCurrentToken } from './utils.helper';
 import { QueryResult } from './query_result.type';
 import { App } from './app.type';
 import { User } from './user.type';
-const { CookieJar } = require('tough-cookie');
+import { CookieJar } from 'tough-cookie';
 
 export function checkIfContentTypeIsURLenc(headers: [] = []) {
   const objectHeaders = Object.fromEntries(headers);
@@ -39,7 +39,11 @@ export function validateAndSetRequestOptionsBasedOnAuthType(
   }
 }
 
-function handleOAuthAuthentication(sourceOptions: any, context: any, requestOptions: any): QueryResult {
+function handleOAuthAuthentication(
+  sourceOptions: any,
+  context: { user?: User; app?: App },
+  requestOptions: any
+): QueryResult {
   const headers = { ...requestOptions.headers };
   const oAuthValidatedResult = validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers);
   if (oAuthValidatedResult.status !== 'ok') {

@@ -52,7 +52,7 @@ export default class GraphqlQueryService implements QueryService {
     );
     const { status, data } = authValidatedRequestOptions;
     if (status === 'needs_oauth') return authValidatedRequestOptions;
-    const requestOptions = data;
+    const requestOptions = data as OptionsOfTextResponseBody;
 
     let result = {};
 
