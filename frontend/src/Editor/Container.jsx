@@ -16,6 +16,8 @@ import { useHotkeys } from 'react-hotkeys-hook';
 const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 
+const NO_OF_GRIDS = 43;
+
 export const Container = ({
   canvasWidth,
   canvasHeight,
@@ -48,12 +50,13 @@ export const Container = ({
   isVersionReleased,
   setReleasedVersionPopupState,
 }) => {
+  const gridWidth = canvasWidth / NO_OF_GRIDS;
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
     maxWidth: `${canvasWidth}px`,
     height: `${canvasHeight}px`,
     position: 'absolute',
-    backgroundSize: `${canvasWidth / 43}px 10px`,
+    backgroundSize: `${gridWidth}px 10px`,
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -279,7 +282,7 @@ export const Container = ({
       setReleasedVersionPopupState();
       return;
     }
-    const deltaWidth = d.width;
+    const deltaWidth = Math.round(d.width / gridWidth) * gridWidth;
     const deltaHeight = d.height;
 
     let { x, y } = position;
@@ -296,11 +299,15 @@ export const Container = ({
     const boundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
     const canvasWidth = boundingRect?.width;
 
-    width = Math.round(width + (deltaWidth * 43) / canvasWidth); // convert the width delta to percentage
+    width = Math.round(width + (deltaWidth * NO_OF_GRIDS) / canvasWidth); // convert the width delta to percentage
     height = height + deltaHeight;
 
     top = y;
-    left = (x * 100) / canvasWidth;
+    if (direction === 'left') {
+      // onResizeStop is triggered for a single click on the border, therefore this conditional logic
+      // should not be removed.
+      left = (x * 100) / canvasWidth;
+    }
 
     let newBoxes = {
       ...boxes,
