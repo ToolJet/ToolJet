@@ -1138,6 +1138,7 @@ class EditorComponent extends React.Component {
       newPageData.components = Object.keys(newPageData.components).reduce((acc, key) => {
         const newComponentId = uuid();
         acc[newComponentId] = newPageData.components[key];
+        acc[newComponentId].id = newComponentId;
         oldToNewIdMapping[key] = newComponentId;
         return acc;
       }, {});
