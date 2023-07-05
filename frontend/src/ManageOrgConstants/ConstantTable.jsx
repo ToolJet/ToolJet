@@ -1,5 +1,6 @@
 import React from 'react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { Tooltip } from 'react-tooltip';
 
 const ConstantTable = ({
   constants = [],
@@ -52,19 +53,32 @@ const ConstantTable = ({
               </tbody>
             ) : (
               <tbody>
+                <Tooltip id="tooltip-for-org-constant-cell" isOpen={true} />
                 {constants.map((constant) => (
                   <tr key={constant.id}>
                     <td>
-                      <span data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-name`}>
-                        {constant.name}
+                      <span
+                        data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-name`}
+                        data-tooltip-id="tooltip-for-org-constant-cell"
+                        data-tooltip-content={constant.name}
+                        data-tooltip-offset={5}
+                      >
+                        {String(constant.name).length > 30
+                          ? String(constant.name).substring(0, 30) + '...'
+                          : constant.name}
                       </span>
                     </td>
                     <td className="text-muted">
                       <a
                         className="text-reset user-email"
                         data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-value`}
+                        data-tooltip-id="tooltip-for-org-constant-cell"
+                        data-tooltip-content={constant.value}
+                        data-tooltip-offset={5}
                       >
-                        {constant.value}
+                        {String(constant.value).length > 30
+                          ? String(constant.value).substring(0, 30) + '...'
+                          : constant.value}
                       </a>
                     </td>
 
