@@ -9577,7 +9577,7 @@ tbody {
 .manage-users-drawer-content {
   margin: 24px 32px;
 
-  div:first-child {
+  .invite-user-by-email {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -9591,13 +9591,16 @@ tbody {
   .invite-email-body {
     width: 452px;
 
-    input {
+    input:not([type="checkbox"]) {
       padding: 6px 10px;
-      width: 470px;
       height: 32px;
       color: var(--slate12);
     }
   }
+}
+
+.rmsc .item-renderer {
+  align-items: center !important;
 }
 
 .tj-db-table {
