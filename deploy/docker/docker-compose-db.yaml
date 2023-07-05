@@ -17,14 +17,18 @@ services:
     command: npm run start:prod
 
   postgres:
+    container_name: ${PG_HOST}
     image: postgres:13
     restart: always
     ports:
-      - 5432:5432
+      - "${PG_PORT}:${PG_PORT}"
     volumes:
       - postgres:/var/lib/postgresql/data
+    env_file: .env
     environment:
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASSWORD=${PG_PASS}
+      - PGPORT=${PG_PORT}
 
 # Uncomment if ENABLE_TOOLJET_DB=true
   # postgrest:
