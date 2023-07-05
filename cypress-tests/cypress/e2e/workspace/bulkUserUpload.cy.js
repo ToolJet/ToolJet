@@ -104,7 +104,7 @@ describe("Bulk user upload", () => {
       .should("be.visible")
       .and("have.text", "5 users are being added");
 
-    cy.wait(1000);
+    cy.wait(5000);
 
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(usersSelector.buttonUploadCsvFile).click();
