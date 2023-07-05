@@ -71,6 +71,17 @@ const ConstantForm = ({
 
   const [isOpen, setIsOpen] = useState(false);
 
+  const inputRef = React.useRef(null);
+
+  const handleInput = () => {
+    const input = inputRef.current;
+    if (fields['value'].length > 30 && input) {
+      input.style.height = 'auto';
+      input.style.height = `${input.scrollHeight}px`;
+      input.style.overflow = fields['value'].length >= 300 ? 'scroll' : 'hidden';
+    }
+  };
+
   return (
     <div className="variable-form-wrap">
       <div className="card-header">
@@ -109,13 +120,24 @@ const ConstantForm = ({
             </div>
             <div className="col tj-app-input">
               <label className="form-label">Value</label>
-              <input
+              <textarea
+                ref={inputRef}
                 type="text"
                 className={`tj-input-element ${error['value'] ? 'tj-input-error-state' : ''}`}
                 placeholder={'Enter Value'}
                 name="value"
                 onChange={handleFieldChange}
                 value={fields['value']}
+                onInput={handleInput}
+                onFocus={() => !!selectedConstant && handleInput()}
+                style={{
+                  height: !!selectedConstant && selectedConstant?.value?.length > 50 ? '300px' : '36px',
+                  minHeight: '36px',
+                  maxHeight: '500px',
+                  whiteSpace: 'pre-line',
+                  resize: 'none',
+                  overflow: 'hidden',
+                }}
               />
 
               <span className="text-danger">{error['value']}</span>
