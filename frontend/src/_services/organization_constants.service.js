@@ -42,7 +42,6 @@ function remove(id, environmentId) {
   );
 }
 
-//organization-constants/40e50c3e-60fb-4707-bd6e-8bbef6ce60d5
 function getConstantsFromEnvironment(environmentId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/organization-constants/${environmentId}`, requestOptions).then(handleResponse);

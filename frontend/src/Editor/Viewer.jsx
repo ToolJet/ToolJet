@@ -1,5 +1,11 @@
 import React from 'react';
-import { appService, authenticationService, orgEnvironmentVariableService, organizationService } from '@/_services';
+import {
+  appService,
+  authenticationService,
+  orgEnvironmentVariableService,
+  orgEnvironmentConstantService,
+  organizationService,
+} from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -137,6 +143,7 @@ class ViewerComponent extends React.Component {
     });
 
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
+    const constants = await this.fetchOrgEnvironmentConstants(data.slug, data.is_public);
 
     const pages = Object.entries(data.definition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
     const homePageId = data.definition.homePageId;
@@ -174,6 +181,7 @@ class ViewerComponent extends React.Component {
             variables: {},
           },
           ...variables,
+          ...constants,
         },
         dataQueries: data.data_queries,
         currentPageId: currentPage.id,
@@ -199,6 +207,23 @@ class ViewerComponent extends React.Component {
       if (query.options.runOnPageLoad) {
         runQuery(this, query.id, query.name, undefined, 'view');
       }
+    });
+  };
+
+  fetchOrgEnvironmentConstants = () => {
+    orgEnvironmentConstantService.getAll().then(({ constants }) => {
+      const orgConstants = {};
+      constants.map((constant) => {
+        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
+        orgConstants[constant.name] = constantValue;
+
+        this.setState({
+          currentState: {
+            ...this.state.currentState,
+            constants: orgConstants,
+          },
+        });
+      });
     });
   };
 
