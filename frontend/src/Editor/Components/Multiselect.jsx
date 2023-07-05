@@ -24,7 +24,7 @@ export const Multiselect = function Multiselect({
   dataCy,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
-  const { borderRadius, visibility, disabledState } = styles;
+  const { borderRadius, visibility, disabledState, boxShadow } = styles;
   const [selected, setSelected] = useState([]);
 
   let selectOptions = [];
@@ -143,7 +143,7 @@ export const Multiselect = function Multiselect({
           {label}
         </label>
       </div>
-      <div className="col px-0 h-100" style={{ borderRadius: parseInt(borderRadius) }}>
+      <div className="col px-0 h-100" style={{ borderRadius: parseInt(borderRadius), boxShadow }}>
         <MultiSelect
           hasSelectAll={showAllOption ?? false}
           options={selectOptions}

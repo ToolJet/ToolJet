@@ -3,18 +3,25 @@ import cx from 'classnames';
 import { appService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { ConfirmDialog } from '@/_components/ConfirmDialog';
+import { shallow } from 'zustand/shallow';
 
 export const ReleaseVersionButton = function DeployVersionButton({
   appId,
   appName,
-  editingVersion,
-  isVersionReleased,
   fetchApp,
   onVersionRelease,
   saveEditingVersion,
 }) {
   const [isReleasing, setIsReleasing] = useState(false);
+  const { isVersionReleased, editingVersion } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      editingVersion: state.editingVersion,
+    }),
+    shallow
+  );
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(false);
 
   const { t } = useTranslation();

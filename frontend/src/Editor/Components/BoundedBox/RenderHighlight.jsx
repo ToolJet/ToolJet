@@ -48,16 +48,9 @@ export const RenderHighlight = ({
           onClick={(event) => {
             event.persist();
             setAnnotations((prevState) => {
-              const annotations = prevState.reduce((acc, annotation) => {
-                if (
-                  annotation.data.id !== data.id &&
-                  annotation.geometry.x !== geometry.x &&
-                  annotation.geometry.y !== geometry.y
-                ) {
-                  acc.push(annotation);
-                }
-                return acc;
-              }, []);
+              const annotations = prevState.filter((annotation) => {
+                return annotation.data.id !== data.id;
+              });
               setExposedVariable('annotations', getExposedAnnotations(annotations)).then(() => fireEvent('onChange'));
               return annotations;
             });
