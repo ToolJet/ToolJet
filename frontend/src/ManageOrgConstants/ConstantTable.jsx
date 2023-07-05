@@ -74,8 +74,8 @@ const ConstantTable = ({
                         data-tooltip-content={constant.value}
                         data-tooltip-offset={5}
                       >
-                        {String(constant.value).length > 30
-                          ? String(constant.value).substring(0, 30) + '...'
+                        {String(constant.value).length > (canUpdateDeleteConstant ? 30 : 50)
+                          ? String(constant.value).substring(0, canUpdateDeleteConstant ? 30 : 50) + '...'
                           : constant.value}
                       </a>
                     </td>
