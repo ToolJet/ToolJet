@@ -29,7 +29,16 @@ export const navigateToManageGroups = () => {
   cy.get(groupsSelector.groupLink("All users")).click();
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("All users")).click();
-  cy.wait(500)
+  cy.wait(500);
+  cy.get("body").then(($title) => {
+    if ($title.text().includes("Admin has edit access to all apps. These are not editable")) {
+      cy.get(groupsSelector.groupLink("Admin")).click();
+      cy.get(groupsSelector.groupLink("All users")).click();
+      cy.get(groupsSelector.groupLink("Admin")).click();
+      cy.get(groupsSelector.groupLink("All users")).click();
+      cy.wait(2000);
+    }
+  });
 };
 
 export const navigateToWorkspaceVariable = () => {
