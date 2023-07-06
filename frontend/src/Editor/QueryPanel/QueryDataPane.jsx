@@ -14,7 +14,6 @@ import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore'
 import FilterandSortPopup from './FilterandSortPopup';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
-import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const QueryDataPane = ({
   handleAddNewQuery,

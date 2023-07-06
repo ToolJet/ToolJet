@@ -256,20 +256,6 @@ class EditorComponent extends React.Component {
     }
   }
 
-  isVersionReleased = (version = this.state.editingVersion) => {
-    if (isEmpty(version)) {
-      return false;
-    }
-    return this.state.app.current_version_id === version.id;
-  };
-
-  closeCreateVersionModalPrompt = () => {
-    useAppDataStore.getState().actions.setIsSaving(false);
-    this.setState({
-      showCreateVersionModalPrompt: false,
-    });
-  };
-
   initEventListeners() {
     this.socket?.addEventListener('message', (event) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
@@ -314,8 +300,8 @@ class EditorComponent extends React.Component {
     useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
   };
 
-  fetchDataQueries = (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
-    useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, this);
+  fetchDataQueries = async (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
+    await useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, this);
   };
 
   toggleAppMaintenance = () => {
@@ -381,17 +367,17 @@ class EditorComponent extends React.Component {
             this.setState({
               showComments: !!queryString.parse(this.props.location.search).threadId,
             });
-            for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
-              await this.handleEvent(event.eventId, event);
-            }
           });
         }
       );
 
       this.fetchDataSources(data.editing_version?.id);
-      this.fetchDataQueries(data.editing_version?.id, true, true);
+      await this.fetchDataQueries(data.editing_version?.id, true, true);
       this.fetchGlobalDataSources();
       initEditorWalkThrough();
+      for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
+        await this.handleEvent(event.eventId, event);
+      }
     };
 
     this.setState(
@@ -1159,6 +1145,7 @@ class EditorComponent extends React.Component {
       newPageData.components = Object.keys(newPageData.components).reduce((acc, key) => {
         const newComponentId = uuid();
         acc[newComponentId] = newPageData.components[key];
+        acc[newComponentId].id = newComponentId;
         oldToNewIdMapping[key] = newComponentId;
         return acc;
       }, {});
