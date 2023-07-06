@@ -39,6 +39,7 @@ export const Modal = function Modal({
     visibility,
     triggerButtonBackgroundColor,
     triggerButtonTextColor,
+    boxShadow,
   } = styles;
   const parentRef = useRef(null);
 
@@ -76,7 +77,7 @@ export const Modal = function Modal({
       const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
       const modalCanvasEl = document.getElementById(`canvas-${id}`);
 
-      if (canvasElement && modalBackdropEl) {
+      if (canvasElement && modalBackdropEl && modalCanvasEl && realCanvasEl) {
         canvasElement.style.height = '100vh';
         canvasElement.style.maxHeight = '100vh';
         canvasElement.style.minHeight = '100vh';
@@ -96,7 +97,7 @@ export const Modal = function Modal({
       const canvasElement = document.getElementsByClassName('canvas-area')[0];
       const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
 
-      if (canvasElement) {
+      if (canvasElement && realCanvasEl) {
         canvasElement.style.height = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
         canvasElement.style.minHeight = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
         canvasElement.style.maxHeight = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
@@ -148,6 +149,7 @@ export const Modal = function Modal({
       width: '100%',
       display: visibility ? '' : 'none',
       '--tblr-btn-color-darker': tinycolor(triggerButtonBackgroundColor).darken(8).toString(),
+      boxShadow,
     },
   };
 

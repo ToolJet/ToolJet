@@ -32,15 +32,15 @@ export const manageUsersElements = () => {
   cy.contains("td", usersText.adminUserEmail)
     .parent()
     .within(() => {
-      cy.get(usersSelector.adminUserName).verifyVisibleElement(
+      cy.get(usersSelector.userName(usersText.adminUserName)).verifyVisibleElement(
         "have.text",
         usersText.adminUserName
       );
-      cy.get(usersSelector.adminUserEmail).verifyVisibleElement(
+      cy.get(usersSelector.userEmail(usersText.adminUserName)).verifyVisibleElement(
         "have.text",
         usersText.adminUserEmail
       );
-      cy.get("td small").verifyVisibleElement(
+      cy.get(usersSelector.userStatus(usersText.adminUserName)).verifyVisibleElement(
         "have.text",
         usersText.activeStatus
       );
@@ -254,4 +254,18 @@ export const userStatus = (email) => {
     .within(() => {
       cy.get("td button").click();
     });
+};
+
+export const bulkUserUpload = (file, fileName, toastMessage) => {
+  cy.get(usersSelector.inputFieldBulkUpload).selectFile(file, {
+    force: true,
+  });
+  cy.get(usersSelector.uploadedFileData).should("contain", fileName);
+  cy.get(usersSelector.buttonUploadUsers).click();
+  cy.get(commonSelectors.newToastMessage)
+    .should("be.visible")
+    .and("have.text", toastMessage);
+  cy.get(usersSelector.toastCloseButton).click();
+
+  cy.wait(200);
 };

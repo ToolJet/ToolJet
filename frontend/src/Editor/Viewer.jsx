@@ -128,8 +128,9 @@ class ViewerComponent extends React.Component {
           ...this.state.currentState.queries[query.name],
         };
       } else {
+        const dataSourceTypeDetail = DataSourceTypes.find((source) => source.kind === query.kind);
         queryState[query.name] = {
-          ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+          ...dataSourceTypeDetail.exposedVariables,
           ...this.state.currentState.queries[query.name],
         };
       }
@@ -414,7 +415,7 @@ class ViewerComponent extends React.Component {
   }
 
   getCanvasWidth = () => {
-    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect();
     return canvasBoundingRect?.width;
   };
 
@@ -517,6 +518,13 @@ class ViewerComponent extends React.Component {
         </div>
       );
     } else {
+      const startingPageHandle = this.props?.params?.pageHandle;
+      const homePageHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
+      if (!startingPageHandle && homePageHandle) {
+        return (
+          <Navigate to={`${homePageHandle}${this.props.params.pageHandle ? '' : window.location.search}`} replace />
+        );
+      }
       if (this.state.app?.is_maintenance_on) {
         return (
           <div className="maintenance_container">
@@ -536,6 +544,7 @@ class ViewerComponent extends React.Component {
         //checking if page is hidden
         if (
           pageArray.find((page) => page.handle === this.props.params.pageHandle)?.hidden &&
+          this.state.currentPageId !== this.state.appDefinition?.homePageId && //Prevent page crashing when home page is hidden
           this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
         ) {
           const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
@@ -556,7 +565,7 @@ class ViewerComponent extends React.Component {
           if (this.state.slug) {
             url = `/applications/${this.state.slug}/${homeHandle}`;
           }
-          return <Navigate to={url} replace />;
+          return <Navigate to={`${url}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
         }
 
         return (

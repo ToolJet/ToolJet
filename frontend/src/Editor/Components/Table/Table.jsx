@@ -102,6 +102,7 @@ export function Table({
     enabledSort,
     hideColumnSelectorButton,
     defaultSelctedRow,
+    showAddNewRowButton,
     allowSelection,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
@@ -213,7 +214,7 @@ export function Table({
 
     const changesToBeSavedAndExposed = { dataUpdates: newDataUpdates, changeSet: newChangeset };
     mergeToTableDetails(changesToBeSavedAndExposed);
-
+    fireEvent('onCellValueChanged');
     return setExposedVariables({ ...changesToBeSavedAndExposed, updatedData: clonedTableData });
   }
 
@@ -252,17 +253,17 @@ export function Table({
     let headers = columns.map((column) => {
       return { exportValue: String(column.exportValue), key: column.key ? String(column.key) : column.key };
     });
-    const data = globalFilteredRows.map((row) => {
+    let data = globalFilteredRows.map((row) => {
       return headers.reduce((accumulator, header) => {
         let value = undefined;
         if (header.key && header.key !== header.exportValue) {
-          value = row.original[header.key];
+          value = _.get(row.original, header.key);
         } else {
           value = row.original[header.exportValue];
         }
-        accumulator[header.exportValue.toUpperCase()] = value;
+        accumulator.push(value);
         return accumulator;
-      }, {});
+      }, []);
     });
     headers = headers.map((header) => header.exportValue.toUpperCase());
     if (fileType === 'csv') {
@@ -283,11 +284,11 @@ export function Table({
         theme: 'grid',
       });
       doc.save(`${fileName}.pdf`);
+      return;
     } else if (fileType === 'xlsx') {
+      data.unshift(headers); //adding headers array at the beginning of data
       let wb = XLSX.utils.book_new();
-      let ws1 = XLSX.utils.json_to_sheet(data, {
-        headers,
-      });
+      let ws1 = XLSX.utils.aoa_to_sheet(data);
       XLSX.utils.book_append_sheet(wb, ws1, 'React Table Data');
       XLSX.writeFile(wb, `${fileName}.xlsx`);
       // Returning false as downloading of file is already taken care of
@@ -457,14 +458,7 @@ export function Table({
       }
     }
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
-  }, [
-    tableData.length,
-    tableDetails.changeSet,
-    component.definition.properties.data.value,
-    JSON.stringify(properties.data),
-    showBulkSelector,
-    allowSelection,
-  ]);
+  }, [tableData.length, component.definition.properties.data.value, JSON.stringify(properties.data)]);
 
   useEffect(() => {
     if (
@@ -649,7 +643,7 @@ export function Table({
       if (!_.isEmpty(tableDetails.selectedRow)) {
         const selectedRowDetails = { selectedRow: {}, selectedRowId: {} };
         setExposedVariables(selectedRowDetails).then(() => {
-          if (allowSelection && !highlightSelectedRow) toggleRowSelected(tableDetails.selectedRowId, false);
+          if (allowSelection && !showBulkSelector) toggleRowSelected(tableDetails.selectedRowId, false);
           mergeToTableDetails(selectedRowDetails);
         });
       }
@@ -745,10 +739,15 @@ export function Table({
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
       ['currentData', data],
-      ['selectedRow', selectedRow],
-      ['selectedRowId', selectedRowId],
-    ]);
-  }, [tableData.length, tableDetails.changeSet, page, data]);
+      ['selectedRow', []],
+      ['selectedRowId', null],
+    ]).then(() => {
+      if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
+        toggleAllRowsSelected(false);
+        mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
+      }
+    });
+  }, [tableData.length, _.toString(page), pageIndex, _.toString(data)]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
@@ -850,6 +849,7 @@ export function Table({
         display: parsedWidgetVisibility ? '' : 'none',
         overflow: 'hidden',
         borderRadius: Number.parseFloat(borderRadius),
+        boxShadow: styles.boxShadow,
       }}
       onClick={(event) => {
         onComponentClick(id, component, event);
@@ -857,7 +857,7 @@ export function Table({
       ref={tableRef}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
-      {(displaySearchBox || showDownloadButton || showFilterButton) && (
+      {(displaySearchBox || showDownloadButton || showFilterButton || showAddNewRowButton) && (
         <div className={`card-body border-bottom py-3 ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'}`}>
           <div
             className={`d-flex align-items-center ms-auto text-muted ${
@@ -876,21 +876,23 @@ export function Table({
               />
             )}
             <div>
-              <button
-                className="btn btn-light btn-sm p-1 mx-1"
-                onClick={(e) => {
-                  showAddNewRowPopup();
-                }}
-                data-tooltip-id="tooltip-for-add-new-row"
-                data-tooltip-content="Add new row"
-                disabled={tableDetails.addNewRowsDetails.addingNewRows}
-              >
-                <img src="assets/images/icons/plus.svg" width="15" height="15" />
-                {!tableDetails.addNewRowsDetails.addingNewRows &&
-                  !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
-                    <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                  )}
-              </button>
+              {showAddNewRowButton && (
+                <button
+                  className="btn btn-light btn-sm p-1 mx-1"
+                  onClick={(e) => {
+                    showAddNewRowPopup();
+                  }}
+                  data-tooltip-id="tooltip-for-add-new-row"
+                  data-tooltip-content="Add new row"
+                  disabled={tableDetails.addNewRowsDetails.addingNewRows}
+                >
+                  <img src="assets/images/icons/plus.svg" width="15" height="15" />
+                  {!tableDetails.addNewRowsDetails.addingNewRows &&
+                    !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
+                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                    )}
+                </button>
+              )}
               <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
               {showFilterButton && (
                 <>
@@ -1100,7 +1102,7 @@ export function Table({
                       const selectedRow = row.original;
                       const selectedRowId = row.id;
                       setExposedVariables({ selectedRow, selectedRowId }).then(() => {
-                        if (allowSelection && highlightSelectedRow) mergeToTableDetails({ selectedRow, selectedRowId });
+                        mergeToTableDetails({ selectedRow, selectedRowId });
                         fireEvent('onRowClicked');
                       });
                     }}
@@ -1177,13 +1179,18 @@ export function Table({
                           })}
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
+                          onClick={(e) => {
+                            setExposedVariable('selectedCell', {
+                              columnName: cell.column.exportValue,
+                              columnKey: cell.column.key,
+                              value: cellValue,
+                            });
+                          }}
                         >
                           <div
                             className={`td-container ${
                               cell.column.columnType === 'image' && 'jet-table-image-column'
-                            } ${
-                              cell.column.columnType !== 'image' && `w-100 ${_.isEmpty(actionButtonsArray) && 'h-100'}`
-                            }`}
+                            } ${cell.column.columnType !== 'image' && `w-100 h-100`}`}
                           >
                             <GenerateEachCellValue
                               cellValue={cellValue}

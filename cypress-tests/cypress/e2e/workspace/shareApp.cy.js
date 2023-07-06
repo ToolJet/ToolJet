@@ -3,6 +3,7 @@ import { fake } from "Fixtures/fake";
 import { logout, navigateToAppEditor } from "Support/utils/common";
 import { commonText } from "Texts/common";
 import { addNewUserMW } from "Support/utils/userPermissions";
+import { userSignUp } from "Support/utils/onboarding";
 
 describe("App share functionality", () => {
   const data = {};
@@ -18,7 +19,7 @@ describe("App share functionality", () => {
   it("Verify private and public app share funtionality", () => {
     cy.createApp();
     cy.renameApp(data.appName);
-    cy.dragAndDropWidget("Table", 50, 50);
+    cy.dragAndDropWidget("Table", 250, 250);
 
     cy.get(commonWidgetSelector.shareAppButton).click();
 
@@ -39,6 +40,8 @@ describe("App share functionality", () => {
 
     cy.clearAndType(commonWidgetSelector.appNameSlugInput, `${slug}`);
     cy.get(commonWidgetSelector.modalCloseButton).click();
+    cy.forceClickOnCanvas()
+    cy.dragAndDropWidget("Button", 50, 50);
     cy.get(commonSelectors.editorPageLogo).click();
 
     logout();
@@ -66,8 +69,9 @@ describe("App share functionality", () => {
     cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
   });
 
-  it("Verify app private and public app visisbility for a workspace user", () => {
+  it("Verify app private and public app visibility for the same workspace user", () => {
     addNewUserMW(data.firstName, data.email);
+
     logout();
     cy.visit(`/applications/${slug}`);
     cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
@@ -93,5 +97,36 @@ describe("App share functionality", () => {
       "have.text",
       commonText.allApplicationLink
     );
+  });
+
+  it.skip("Verify app private and public app visibility for the same instance user", () => {
+    data.firstName = fake.firstName;
+    data.email = fake.email.toLowerCase();
+
+    logout();
+    userSignUp(data.firstName, data.email, "Test");
+    cy.visit(`/applications/${slug}`);
+
+    cy.clearAndType(commonSelectors.workEmailInputField, data.email);
+    cy.clearAndType(commonSelectors.passwordInputField, "password");
+    cy.get(commonSelectors.signInButton).click();
+
+    cy.visit("/");
+    logout();
+    cy.appUILogin();
+
+    navigateToAppEditor(data.appName);
+    cy.reloadAppForTheElement("skip");
+    cy.wait(4000);
+    cy.skipEditorPopover();
+    cy.get(commonWidgetSelector.shareAppButton).click();
+    cy.get(commonWidgetSelector.makePublicAppToggle).check();
+    cy.get(commonWidgetSelector.modalCloseButton).click();
+    cy.get(commonSelectors.editorPageLogo).click();
+
+    logout();
+    cy.visit(`/applications/${slug}`);
+    cy.get('[data-cy="draggable-widget-table1"]').should("be.visible");
+    cy.get(commonSelectors.viewerPageLogo).click();
   });
 });

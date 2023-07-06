@@ -148,7 +148,7 @@ jobs:
                 "port": 80,
                 "protocol": "TCP"
                 }],
-                "plan": "pro",
+                "plan": "starter",
                 "pullRequestPreviewsEnabled": "no",
                 "region": "oregon",
                 "url": "https://tooljet-pr-${{ env.PR_NUMBER }}.onrender.com"
@@ -250,6 +250,9 @@ jobs:
         run: |
           sudo apt update
           sudo apt install postgresql-client -y
+
+      - name: Wait after installing PostgreSQL
+        run: sleep 10    
 
       - name: Drop PostgreSQL PR database
         env:

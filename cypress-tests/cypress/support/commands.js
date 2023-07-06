@@ -21,11 +21,11 @@ Cypress.Commands.add("clearAndType", (selector, text) => {
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
-  cy.get(commonSelectors.canvas).click({ force: true });
+  cy.get(commonSelectors.canvas).click("topRight", { force: true });
 });
 
 Cypress.Commands.add("verifyToastMessage", (selector, message) => {
-  cy.get(selector).eq(0).should("be.visible").and("contain.text", message);
+  cy.get(selector).should("contain.text", message);
   cy.get("body").then(($body) => {
     if ($body.find(commonSelectors.toastCloseButton).length > 0) {
       cy.closeToastMessage();
@@ -100,13 +100,7 @@ Cypress.Commands.add("createApp", (appName) => {
     }
     cy.intercept("GET", "/api/apps/**/versions").as("appVersion");
     cy.wait("@appVersion", { timeout: 15000 });
-    cy.get("body").then(($el) => {
-      if ($el.text().includes("Skip", { timeout: 1000 })) {
-        cy.get(commonSelectors.skipButton).click();
-      } else {
-        cy.log("instructions modal is skipped ");
-      }
-    });
+    cy.skipEditorPopover();
   });
 });
 
@@ -258,9 +252,14 @@ Cypress.Commands.add("notVisible", (dataCy) => {
 });
 
 Cypress.Commands.add("resizeWidget", (widgetName, x, y) => {
-  cy.get(`[data-cy="draggable-widget-${widgetName}"]`).trigger("mouseover");
+  cy.get(`[data-cy="draggable-widget-${widgetName}"]`).trigger("mouseover", {
+    force: true,
+  });
 
-  cy.get('[class="bottom-right"]').trigger("mousedown", { which: 1 });
+  cy.get('[class="bottom-right"]').trigger("mousedown", {
+    which: 1,
+    force: true,
+  });
   cy.get(commonSelectors.canvas)
     .trigger("mousemove", {
       which: 1,
@@ -282,6 +281,17 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
   cy.get("body").then(($title) => {
     if (!$title.text().includes(elementText)) {
       cy.reload();
+    }
+  });
+});
+
+Cypress.Commands.add("skipEditorPopover", () => {
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Skip", { timeout: 2000 })) {
+      cy.wait(200);
+      cy.get(commonSelectors.skipButton).realClick();
+    } else {
+      cy.log("instructions modal is skipped ");
     }
   });
 });

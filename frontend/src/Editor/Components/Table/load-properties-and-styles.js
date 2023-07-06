@@ -58,6 +58,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
   });
   const defaultSelctedRow = properties?.defaultSelctedRow;
 
+  const showAddNewRowButton = properties?.showAddNewRowButton ?? true;
   const allowSelection = properties?.allowSelection ?? (showBulkSelector || highlightSelectedRow) ? true : false;
 
   return {
@@ -89,6 +90,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     enabledSort,
     hideColumnSelectorButton,
     defaultSelctedRow,
+    showAddNewRowButton,
     allowSelection,
   };
 }
