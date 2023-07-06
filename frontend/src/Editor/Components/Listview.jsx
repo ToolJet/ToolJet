@@ -26,6 +26,8 @@ export const Listview = function Listview({
     showBorder,
     rowsPerPage = 10,
     enablePagination = false,
+    mode,
+    columns,
   } = { ...fallbackProperties, ...properties };
   const { visibility, disabledState, borderRadius } = { ...fallbackStyles, ...styles };
   const backgroundColor =
@@ -81,6 +83,7 @@ export const Listview = function Listview({
       ? data.slice(startIndexOfRowInThePage, endIndexOfRowInThePage)
       : data
     : [];
+
   return (
     <div
       data-disabled={disabledState}
@@ -91,11 +94,11 @@ export const Listview = function Listview({
       style={computedStyles}
       data-cy={dataCy}
     >
-      <div className={`rows w-100 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
+      <div className={`row w-100 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
         {filteredData.map((listItem, index) => (
           <div
-            className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
-            style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
+            className={`list-item ${mode == 'list' ? 'w-100' : 'col-4'}  ${showBorder ? 'border-bottom' : ''}`}
+            style={{ position: 'relative', height: `${rowHeight}px` }}
             key={index}
             data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
             onClick={(event) => {

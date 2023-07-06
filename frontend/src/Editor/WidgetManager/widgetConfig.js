@@ -3742,6 +3742,39 @@ export const widgets = [
         accessorKey: 'buttonText',
       },
     ],
+    defaultGridChildren: [
+      {
+        componentName: 'Image',
+        layout: {
+          top: 15,
+          left: 10,
+          height: 100,
+        },
+        properties: ['source'],
+        accessorKey: 'imageURL',
+      },
+      {
+        componentName: 'Text',
+        layout: {
+          top: 20,
+          left: 10,
+          height: 30,
+        },
+        properties: ['text'],
+        accessorKey: 'text',
+      },
+      {
+        componentName: 'Button',
+        layout: {
+          top: 30,
+          left: 0,
+          height: 30,
+        },
+        incrementWidth: 2,
+        properties: ['text'],
+        accessorKey: 'buttonText',
+      },
+    ],
     component: 'Listview',
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -3753,6 +3786,24 @@ export const widgets = [
         displayName: 'List data',
         validation: {
           schema: { type: 'array', element: { type: 'object' } },
+        },
+      },
+      mode: {
+        type: 'select',
+        displayName: 'Mode',
+        options: [
+          { name: 'list', value: 'list' },
+          { name: 'grid', value: 'grid' },
+        ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      columns: {
+        type: 'number',
+        displayName: 'Columns',
+        validation: {
+          schema: { type: 'number' },
         },
       },
       rowHeight: {
@@ -3840,6 +3891,8 @@ export const widgets = [
     { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 3' },
   ]}}`,
         },
+        mode: { value: 'list' },
+        columns: { value: '{{3}}' },
         rowHeight: {
           value: '100',
         },
