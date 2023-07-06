@@ -402,6 +402,10 @@ export class DataQueriesService {
           const resolved = await this.resolveVariable(value, organization_id);
           parsedOptions[key] = resolved;
           continue;
+        } else if (value.includes('{{constants')) {
+          const resolved = await this.resolveConstants(value, organization_id, environmentId);
+          parsedOptions[key] = resolved;
+          continue;
         } else {
           parsedOptions[key] = value;
         }
