@@ -218,7 +218,7 @@ export default function EditorHeader({
                   </Link>
                 </div>
                 <div className="nav-item dropdown">
-                  {!isVersionReleased() && currentEnvironment?.name !== 'production' ? (
+                  {!isVersionReleased && currentEnvironment?.name !== 'production' ? (
                     <ButtonSolid variant="primary" onClick={handlePromote} size="md" disabled={shouldDisablePromote}>
                       {' '}
                       <ToolTip

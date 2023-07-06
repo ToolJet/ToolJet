@@ -1626,7 +1626,7 @@ class EditorComponent extends React.Component {
             currentUser={this.state.currentUser}
             onEditorFreeze={this.onEditorFreeze}
             getStoreData={this.getStoreData}
-            shouldFreeze={this.isVersionReleased() || this.state.isEditorFreezed}
+            shouldFreeze={this.props.isVersionReleased || this.state.isEditorFreezed}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
@@ -1671,7 +1671,7 @@ class EditorComponent extends React.Component {
                 showHideViewerNavigationControls={this.showHideViewerNavigation}
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
-                isVersionReleased={this.isVersionReleased() || this.state.isEditorFreezed}
+                isVersionReleased={this.props.isVersionReleased || this.state.isEditorFreezed}
                 setEditorMarginLeft={this.handleEditorMarginLeftChange}
               />
               {!showComments && (
