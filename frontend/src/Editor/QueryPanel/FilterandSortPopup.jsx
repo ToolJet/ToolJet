@@ -182,16 +182,6 @@ const DataSourceSelector = ({
                   </>
                 }
               />
-              {/* <Checkbox
-                label={
-                  <>
-                    <DataSourceIcon source={source} height={12} /> <small className="ms-1">{source.name}</small>
-                  </>
-                }
-                className="m-0"
-                onChange={(e) => onFilterDatasourcesChange(source.kind, e.target.value)}
-                isChecked={selectedDataSources.includes(source.kind)}
-              /> */}
             </div>
           ))}
       </div>

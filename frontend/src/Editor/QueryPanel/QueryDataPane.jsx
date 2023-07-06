@@ -150,6 +150,7 @@ export const QueryDataPane = ({
                 placeholder={t('globals.search', 'Search')}
                 onClearCallback={() => setShowSearchBox(false)}
                 customClass="query-manager-search-box-wrapper"
+                showClearButton
               />
             </div>
           </div>

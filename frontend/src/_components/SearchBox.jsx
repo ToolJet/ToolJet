@@ -19,6 +19,7 @@ export const SearchBox = forwardRef(
       callBack,
       onClearCallback,
       autoFocus = false,
+      showClearButton,
     },
     ref
   ) => {
@@ -69,7 +70,7 @@ export const SearchBox = forwardRef(
             autoFocus={autoFocus}
             ref={ref}
           />
-          {isFocused && (
+          {(isFocused || showClearButton) && (
             <span className="input-icon-addon end" onMouseDown={clearSearchText}>
               <div className="d-flex tj-common-search-input-clear-icon" title="clear">
                 <SolidIcon name="remove" />
