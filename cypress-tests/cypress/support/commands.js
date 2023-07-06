@@ -252,9 +252,14 @@ Cypress.Commands.add("notVisible", (dataCy) => {
 });
 
 Cypress.Commands.add("resizeWidget", (widgetName, x, y) => {
-  cy.get(`[data-cy="draggable-widget-${widgetName}"]`).trigger("mouseover");
+  cy.get(`[data-cy="draggable-widget-${widgetName}"]`).trigger("mouseover", {
+    force: true,
+  });
 
-  cy.get('[class="bottom-right"]').trigger("mousedown", { which: 1 });
+  cy.get('[class="bottom-right"]').trigger("mousedown", {
+    which: 1,
+    force: true,
+  });
   cy.get(commonSelectors.canvas)
     .trigger("mousemove", {
       which: 1,
