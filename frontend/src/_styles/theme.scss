@@ -10781,3 +10781,13 @@ tbody {
   background-color: var(--base) !important;
   color: var(--base-black);
 }
+
+.tj-list-btn {
+  &:hover {
+    background-color: var(--slate4);
+  }
+
+  &.active {
+    background-color: var(--slate5);
+  }
+}

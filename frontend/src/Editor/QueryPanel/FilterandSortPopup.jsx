@@ -61,7 +61,12 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
             <div className="color-slate9 px-3 pb-2 w-100">
               <small>Filter By</small>
             </div>
-            <MenuButton id="filter-by-datasource" text="Data Source" callback={handlePageCallback} />
+            <MenuButton
+              id="filter-by-datasource"
+              text="Data Source"
+              customClass="tj-list-btn"
+              callback={handlePageCallback}
+            />
             <div class="border-bottom"></div>
             <div className="color-slate9 px-3 pb-2 pt-1 w-100">
               <small>Sort By</small>
@@ -70,21 +75,21 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
               id="name"
               text="A-Z"
               callback={handleSort}
-              customClass={sortBy === 'name' ? 'text-info' : ''}
+              customClass={cx('tj-list-btn', { active: sortBy === 'name' })}
               sortOrder={sortBy === 'name' && sortOrder}
             />
             <MenuButton
               id="kind"
               text="Type"
               callback={handleSort}
-              customClass={sortBy === 'kind' ? 'text-info' : ''}
+              customClass={cx('tj-list-btn', { active: sortBy === 'kind' })}
               sortOrder={sortBy === 'kind' && sortOrder}
             />
             <MenuButton
               id="updated_at"
               text="Last modified"
               callback={handleSort}
-              customClass={sortBy === 'updated_at' ? 'text-info' : ''}
+              customClass={cx('tj-list-btn', { active: sortBy === 'updated_at' })}
               sortOrder={sortBy === 'updated_at' && sortOrder}
             />
           </div>
@@ -169,7 +174,11 @@ const DataSourceSelector = ({
             return source.name.toLowerCase().includes(search.toLowerCase());
           })
           .map((source) => (
-            <div className="px-2 py-2" key={source.kind}>
+            <div
+              className={cx('px-2 py-2 tj-list-btn', { active: selectedDataSources.includes(source.kind) })}
+              key={source.kind}
+              role="button"
+            >
               <Form.Check // prettier-ignore
                 type={'checkbox'}
                 id={`default-${source.kind}`}
@@ -196,13 +205,8 @@ const MenuButton = ({ id, text, iconSrc, customClass = '', disabled = false, cal
   };
 
   return (
-    <div className={`field px-2 ${customClass ? ` ${customClass}` : ''}`}>
-      <Button.UnstyledButton
-        onClick={handleOnClick}
-        styles={{ height: '28px' }}
-        disabled={disabled}
-        classNames="d-flex justify-content-between"
-      >
+    <div className={`field p-2  ${customClass ? ` ${customClass}` : ''}`}>
+      <Button.UnstyledButton onClick={handleOnClick} disabled={disabled} classNames="d-flex justify-content-between">
         <Button.Content title={text} iconSrc={iconSrc} direction="left" />
         {sortOrder &&
           (sortOrder === 'asc' ? (
