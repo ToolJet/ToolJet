@@ -1,64 +1,58 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import posthog from 'posthog-js';
 import useRouter from '@/_hooks/use-router';
 import { useTranslation } from 'react-i18next';
 
-export const LeftSidebarItem = ({
-  tip = '',
-  selectedSidebarItem,
-  className,
-  icon,
-  commentBadge,
-  text,
-  onClick,
-  badge = false,
-  count,
-  ...rest
-}) => {
-  const { t } = useTranslation();
-  const displayIcon = selectedSidebarItem === icon ? `${icon}-selected` : icon;
-  const router = useRouter();
-  const Icon = require('@assets/images/icons/editor/left-sidebar/' + displayIcon + '.svg');
+export const LeftSidebarItem = forwardRef(
+  (
+    { tip = '', selectedSidebarItem, className, icon, commentBadge, text, onClick, badge = false, count, ...rest },
+    ref
+  ) => {
+    const { t } = useTranslation();
+    const router = useRouter();
+    const displayIcon = selectedSidebarItem === icon ? `${icon}-selected` : icon;
 
-  const content = (
-    <div
-      {...rest}
-      className={className}
-      onClick={(e) => {
-        if (onClick) {
-          onClick(e);
+    const Icon = require('@assets/images/icons/editor/left-sidebar/' + displayIcon + '.svg');
+
+    const content = (
+      <div
+        {...rest}
+        className={className}
+        onClick={(e) => {
           computePosthogEvent(text, router.query.id);
-        }
-      }}
-    >
-      {icon && (
-        <div
-          className={`sidebar-svg-icon position-relative ${displayIcon === 'settings' && 'img-invert'}`}
-          data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
-        >
-          <Icon.default />
-          {commentBadge && <LeftSidebarItem.CommentBadge />}
-        </div>
-      )}
-      {badge && <LeftSidebarItem.Badge count={count} />}
-      <p>{text && t(`leftSidebar.${text}.text`, text)}</p>
-    </div>
-  );
+          onClick && onClick(e);
+        }}
+        ref={ref}
+      >
+        {icon && (
+          <div
+            className={`sidebar-svg-icon position-relative ${displayIcon === 'settings' && 'img-invert'}`}
+            data-cy={`left-sidebar-${icon.toLowerCase()}-button`}
+          >
+            <Icon.default />
+            {commentBadge && <LeftSidebarItem.CommentBadge />}
+          </div>
+        )}
+        {badge && <LeftSidebarItem.Badge count={count} />}
+        <p>{text && t(`leftSidebar.${text}.text`, text)}</p>
+      </div>
+    );
 
-  if (!tip) return content;
-  return (
-    <OverlayTrigger
-      trigger={['click', 'hover', 'focus']}
-      placement="right"
-      delay={{ show: 250, hide: 200 }}
-      overlay={<Tooltip id="button-tooltip">{t(`leftSidebar.${tip}.tip`, tip)}</Tooltip>}
-    >
-      {content}
-    </OverlayTrigger>
-  );
-};
+    if (!tip) return content;
+    return (
+      <OverlayTrigger
+        trigger={['click', 'hover', 'focus']}
+        placement="right"
+        delay={{ show: 250, hide: 200 }}
+        overlay={<Tooltip id="button-tooltip">{t(`leftSidebar.${tip}.tip`, tip)}</Tooltip>}
+      >
+        {content}
+      </OverlayTrigger>
+    );
+  }
+);
 
 function computePosthogEvent(text, appId) {
   let label = '';

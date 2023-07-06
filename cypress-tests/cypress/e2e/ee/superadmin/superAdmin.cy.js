@@ -7,7 +7,7 @@ import {
   resetAllowPersonalWorkspace,
   addNewUser,
 } from "Support/utils/eeCommon";
-import { addNewUserMW } from "Support/utils/userPermissions";
+import { addNewUserMW, updateWorkspaceName } from "Support/utils/userPermissions";
 import { usersSelector } from "Selectors/manageUsers";
 import {
   commonEeSelectors,
@@ -16,6 +16,7 @@ import {
 import { commonEeText, instanceSettingsText } from "Texts/eeCommon";
 import { ssoSelector } from "Selectors/manageSSO";
 import { ssoText } from "Texts/manageSSO";
+
 
 let invitationToken,
   organizationId,
@@ -138,7 +139,7 @@ describe("dashboard", () => {
     cy.get(instanceSettingsSelector.viewModalRow(commonEeText.defaultWorkspace))
       .parent()
       .within(() => {
-        cy.get(usersSelector.userStatus).verifyVisibleElement(
+        cy.get("td small").verifyVisibleElement(
           "have.text",
           usersText.activeStatus
         );
@@ -233,7 +234,7 @@ describe("dashboard", () => {
     cy.get(instanceSettingsSelector.viewModalRow(commonEeText.defaultWorkspace))
       .parent()
       .within(() => {
-        cy.get(usersSelector.userStatus).verifyVisibleElement(
+        cy.get("td small").verifyVisibleElement(
           "have.text",
           usersText.activeStatus
         );
@@ -245,13 +246,10 @@ describe("dashboard", () => {
     cy.get(commonEeSelectors.instanceSettingIcon).should("not.exist");
     cy.contains("My workspace").click();
     cy.wait(500);
-    cy.contains("Untitled workspace").click();
+    cy.contains(data.email).click();
     cy.wait("@homePage");
     cy.get(commonEeSelectors.instanceSettingIcon).should("not.exist");
-    cy.get(commonSelectors.workspaceName).click();
-    cy.get('[data-cy="edit-rectangle-icon"]').click();
-    cy.clearAndType(".form-control", data.workspaceName);
-    cy.get(".col > .tj-primary-btn").click();
+    cy.contains(data.email).click();
     cy.wait("@homePage");
 
     common.logout();
@@ -275,7 +273,7 @@ describe("dashboard", () => {
     cy.get(commonEeSelectors.modalCloseButton).click();
     common.logout();
     cy.login(data.email, usersText.password);
-    cy.contains(data.workspaceName).click();
+    cy.contains(data.email).click();
     cy.contains(commonEeText.defaultWorkspace).should("not.exist");
 
     common.logout();
@@ -283,7 +281,7 @@ describe("dashboard", () => {
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
-    cy.get(instanceSettingsSelector.viewModalRow(data.workspaceName))
+    cy.get(instanceSettingsSelector.viewModalRow(data.email))
       .parent()
       .within(() => {
         cy.get(instanceSettingsSelector.userStatusChangeButton).click();
@@ -299,7 +297,7 @@ describe("dashboard", () => {
     common.logout();
 
     cy.login(data.email, usersText.password);
-    cy.contains("Untitled workspace").should("be.visible");
+    cy.get(commonSelectors.workspaceName).should("contain", "My workspace");
     common.logout();
 
     cy.appUILogin();
@@ -329,17 +327,8 @@ describe("dashboard", () => {
 
     common.logout();
     userSignUp(data.firstName, data.email, data.workspaceName);
-    cy.get("body").then(($title) => {
-      if (!$title.text().includes(data.workspaceName)) {
-        cy.wait(500);
-        cy.contains("Untitled workspace").realClick();
-        cy.get('[data-cy="edit-rectangle-icon"]').click();
-        cy.clearAndType(".form-control", data.workspaceName);
-        cy.get(".col > .tj-primary-btn").click();
-        cy.wait("@homePage");
-        cy.wait(500);
-      }
-    });
+    updateWorkspaceName(data.email)
+
     common.logout();
     cy.appUILogin();
     cy.get(commonEeSelectors.instanceSettingIcon).click();
@@ -401,7 +390,7 @@ describe("dashboard", () => {
     common.logout();
     cy.task("updateId", {
       dbconfig: Cypress.env("app_db"),
-      sql: `select id from organizations where name='${data.workspaceName}';`,
+      sql: `select id from organizations where name='${data.email}';`,
     }).then((resp) => {
       organizationId = resp.rows[0].id;
       cy.task("updateId", {
@@ -416,7 +405,7 @@ describe("dashboard", () => {
 
     cy.get(commonSelectors.acceptInviteButton).click();
     cy.login(data.email, usersText.password);
-    cy.contains(data.workspaceName).should("be.visible");
+    cy.contains(data.email).should("be.visible");
   });
 
   it("Verify instance settings functionality", () => {
@@ -442,7 +431,7 @@ describe("dashboard", () => {
     cy.appUILogin();
     addNewUser(data.firstName, data.email);
     cy.get(commonSelectors.workspaceName).click();
-    cy.contains("Untitled workspace").should("not.exist");
+    cy.contains(data.email).should("not.exist");
     cy.get(".add-new-workspace-icon-wrap").should("not.exist");
 
     common.logout();
@@ -469,7 +458,7 @@ describe("dashboard", () => {
     cy.get(instanceSettingsSelector.viewModalRow(commonEeText.defaultWorkspace))
       .parent()
       .within(() => {
-        cy.get(usersSelector.userStatus).verifyVisibleElement(
+        cy.get("td small").verifyVisibleElement(
           "have.text",
           usersText.activeStatus
         );
@@ -484,17 +473,7 @@ describe("dashboard", () => {
 
     common.logout();
     userSignUp(data.firstName, data.email, data.workspaceName);
-    cy.get("body").then(($title) => {
-      if (!$title.text().includes(data.workspaceName)) {
-        cy.wait(500);
-        cy.contains("Untitled workspace").realClick();
-        cy.get('[data-cy="edit-rectangle-icon"]').click();
-        cy.clearAndType(".form-control", data.workspaceName);
-        cy.get(".col > .tj-primary-btn").click();
-        cy.wait("@homePage");
-        cy.wait(500);
-      }
-    });
+    updateWorkspaceName(data.email)
     common.logout();
 
     cy.appUILogin();
@@ -517,6 +496,6 @@ describe("dashboard", () => {
 
     common.logout();
     cy.login(data.email, usersText.password);
-    cy.contains(data.workspaceName).should("be.visible");
+    cy.contains(data.email).should("be.visible");
   });
 });

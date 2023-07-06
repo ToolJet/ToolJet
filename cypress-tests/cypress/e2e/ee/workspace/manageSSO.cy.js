@@ -2,7 +2,11 @@ import { ssoSelector } from "Selectors/manageSSO";
 import { fake } from "Fixtures/fake";
 import * as common from "Support/utils/common";
 import { ssoText } from "Texts/manageSSO";
-import { oidcSSOPageElements, defaultWorkspace } from "Support/utils/eeCommon";
+import {
+  oidcSSOPageElements,
+  defaultWorkspace,
+  disableSSO,
+} from "Support/utils/eeCommon";
 import { commonSelectors } from "Selectors/common";
 import { commonEeSelectors, ssoEeSelector } from "Selectors/eeCommon";
 import { commonEeText, ssoEeText } from "Texts/eeCommon";
@@ -57,6 +61,10 @@ describe("Manage SSO for multi workspace", () => {
 
   it("Should verify the workspace login page", () => {
     common.navigateToManageSSO();
+    disableSSO(ssoSelector.google, ssoSelector.googleEnableToggle);
+    disableSSO(ssoSelector.git, ssoSelector.gitEnableToggle);
+    disableSSO(ssoEeSelector.oidc, ssoEeSelector.oidcToggle);
+
     SSO.visitWorkspaceLoginPage();
     SSO.workspaceLoginPageElements("My workspace");
 
@@ -77,6 +85,7 @@ describe("Manage SSO for multi workspace", () => {
       "have.text",
       ssoText.enabledLabel
     );
+
     SSO.visitWorkspaceLoginPage();
     cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
       "have.text",

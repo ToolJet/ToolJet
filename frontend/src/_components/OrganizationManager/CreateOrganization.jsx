@@ -1,68 +1,92 @@
 import React, { useState } from 'react';
 import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
-import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import posthog from 'posthog-js';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { appendWorkspaceId } from '../../_helpers/utils';
+import { appendWorkspaceId, validateName, handleHttpErrorMessages } from '@/_helpers/utils';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
+  const [errorText, setErrorText] = useState('');
   const { t } = useTranslation();
 
   const createOrganization = () => {
-    if (!(newOrgName && newOrgName.trim())) {
-      toast.error('Workspace name can not be empty.', {
-        position: 'top-center',
-      });
+    const newName = newOrgName?.trim();
+    if (!newName) {
+      setErrorText("Workspace name can't be empty");
       return;
     }
 
-    setIsCreating(true);
-    organizationService.createOrganization(newOrgName).then(
-      (data) => {
-        posthog.capture('create_workspace', {
-          workspace_id: data.organization_id || data.current_organization_id,
-        });
-        setIsCreating(false);
-        const newPath = appendWorkspaceId(data.current_organization_id, location.pathname, true);
-        window.history.replaceState(null, null, newPath);
-        window.location.reload();
-      },
-      () => {
-        setIsCreating(false);
-        toast.error('Error while creating workspace', {
-          position: 'top-center',
-        });
-      }
-    );
+    if (!errorText) {
+      setIsCreating(true);
+      organizationService.createOrganization(newName).then(
+        (data) => {
+          posthog.capture('create_workspace', {
+            workspace_id: data.organization_id || data.current_organization_id,
+          });
+          setIsCreating(false);
+          const newPath = appendWorkspaceId(data.current_organization_id, location.pathname, true);
+          window.history.replaceState(null, null, newPath);
+          window.location.reload();
+        },
+        (error) => {
+          setIsCreating(false);
+          handleHttpErrorMessages(error, 'workspace');
+        }
+      );
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.keyCode === 13) {
+      e.preventDefault();
+      createOrganization();
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setErrorText('');
+    const error = validateName(value, 'Workspace name');
+    if (!error.status) {
+      setErrorText(error.errorMsg);
+    }
+    setNewOrgName(value);
+  };
+
+  const closeModal = () => {
+    setErrorText('');
+    setNewOrgName('');
+    setShowCreateOrg(false);
   };
 
   return (
     <AlertDialog
       show={showCreateOrg}
-      closeModal={() => setShowCreateOrg(false)}
+      closeModal={closeModal}
       title={t('header.organization.createWorkspace', 'Create workspace')}
     >
-      <div className="row mb-3">
+      <div className="row mb-3 workspace-folder-modal">
         <div className="col modal-main tj-app-input">
           <input
             type="text"
-            onChange={(e) => setNewOrgName(e.target.value)}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             className="form-control"
             placeholder={t('header.organization.workspaceName', 'workspace name')}
             disabled={isCreating}
-            maxLength={25}
+            maxLength={50}
             data-cy="workspace-name-input-field"
             autoFocus
           />
+          <label className="tj-input-error">{errorText || ''}</label>
         </div>
       </div>
       <div className="row">
         <div className="col d-flex justify-content-end gap-2">
-          <ButtonSolid variant="tertiary" onClick={() => setShowCreateOrg(false)} data-cy="cancel-button">
+          <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button">
             {t('globals.cancel', 'Cancel')}
           </ButtonSolid>
           <ButtonSolid

@@ -34,7 +34,7 @@ import {
   URL_SSO_SOURCE,
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
-import { dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, isSuperAdmin, generateNextName } from 'src/helpers/utils.helper';
 import { InstanceSettingsService } from './instance_settings.service';
 import { MetadataService } from './metadata.service';
 import { CookieOptions, Response } from 'express';
@@ -135,7 +135,7 @@ export class AuthService {
           organization = organizationList[0];
         } else if (allowPersonalWorkspace) {
           // no form login enabled organization available for user - creating new one
-          organization = await this.organizationsService.create('Untitled workspace', user, manager);
+          organization = await this.organizationsService.create(generateNextName('My workspace'), user, manager);
         } else {
           throw new UnauthorizedException('User is not assigned to any workspaces');
         }
@@ -297,7 +297,10 @@ export class AuthService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Create default organization
-      organization = await this.organizationsService.create('Untitled workspace', null, manager);
+      //TODO: check if there any case available that the firstname will be nil
+
+      const organizationName = generateNextName('My workspace');
+      organization = await this.organizationsService.create(organizationName, null, manager);
       const user = await this.usersService.create(
         {
           email,
@@ -377,7 +380,7 @@ export class AuthService {
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       // Create first organization
-      const organization = await this.organizationsService.create(workspace || 'Untitled workspace', null, manager);
+      const organization = await this.organizationsService.create(workspace || 'My workspace', null, manager);
       const user = await this.usersService.create(
         {
           email,
@@ -472,12 +475,6 @@ export class AuthService {
           },
           manager
         );
-
-        if (companyName) {
-          await manager.update(Organization, user.defaultOrganizationId, {
-            name: companyName,
-          });
-        }
       } else {
         throw new BadRequestException('Invalid invitation link');
       }

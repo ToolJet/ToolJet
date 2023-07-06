@@ -4,6 +4,7 @@ import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
 import { uniqueId } from 'lodash';
+import { isOperatorOptions } from './util';
 
 export const UpdateRows = React.memo(({ currentState, darkMode }) => {
   const { columns, updateRowsOptions, handleUpdateRowsOptionsChange } = useContext(TooljetDatabaseContext);
@@ -109,15 +110,25 @@ export const UpdateRows = React.memo(({ currentState, darkMode }) => {
             />
           </div>
           <div className="field col-4">
-            <CodeHinter
-              currentState={currentState}
-              initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
-              className="codehinter-plugins"
-              theme={darkMode ? 'monokai' : 'default'}
-              height={'32px'}
-              placeholder="key"
-              onChange={(newValue) => handleValueChange(newValue)}
-            />
+            {operator === 'is' ? (
+              <Select
+                useMenuPortal={true}
+                placeholder="Select value"
+                value={value}
+                options={isOperatorOptions}
+                onChange={handleValueChange}
+              />
+            ) : (
+              <CodeHinter
+                currentState={currentState}
+                initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
+                className="codehinter-plugins"
+                theme={darkMode ? 'monokai' : 'default'}
+                height={'32px'}
+                placeholder="key"
+                onChange={(newValue) => handleValueChange(newValue)}
+              />
+            )}
           </div>
           <div className="col-1 cursor-pointer m-1 mr-2">
             <svg
