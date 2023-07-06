@@ -20,21 +20,34 @@ export class BackFillCurrentEnvironmentId1686829426671 implements MigrationInter
 
     for (const organization of organizations) {
       const productionEnvironment = organization.appEnvironments.find((appEnvironment) => appEnvironment.isDefault);
+      const developmentEnvironment = organization.appEnvironments.find(
+        (appEnvironment) => appEnvironment.priority === 1
+      );
       const apps = await manager.find(App, {
-        select: ['id', 'appVersions'],
+        select: ['id', 'appVersions', 'currentVersionId'],
         where: {
           organizationId: organization.id,
         },
         relations: ['appVersions'],
       });
-      for (const { appVersions } of apps) {
+
+      for (const { appVersions, currentVersionId } of apps) {
         for (const appVersion of appVersions) {
           console.log('Updating app version =>', appVersion.id);
-          manager.update(
+          let envToUpdate: string;
+
+          /* For CE always the this condition will only work */
+          if ((currentVersionId && currentVersionId === appVersion.id) || organization.appEnvironments.length === 1) {
+            envToUpdate = productionEnvironment.id;
+          } else {
+            envToUpdate = developmentEnvironment.id;
+          }
+
+          await manager.update(
             AppVersion,
             { id: appVersion.id },
             {
-              currentEnvironmentId: productionEnvironment.id,
+              currentEnvironmentId: envToUpdate,
             }
           );
         }
