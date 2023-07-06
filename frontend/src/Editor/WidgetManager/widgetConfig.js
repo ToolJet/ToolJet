@@ -3805,6 +3805,10 @@ export const widgets = [
         validation: {
           schema: { type: 'number' },
         },
+        conditionallyRender: {
+          key: 'mode',
+          value: 'grid',
+        },
       },
       rowHeight: {
         type: 'code',
