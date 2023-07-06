@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { OverlayTrigger, Popover, Form } from 'react-bootstrap';
 import cx from 'classnames';
 import { Checkbox } from '@/_ui/CheckBox';
 import { Button } from '@/_ui/LeftSidebar';
@@ -57,7 +57,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
 
       default:
         return (
-          <div className="card-body">
+          <div className="card-body p-0">
             <div className="color-slate9 px-3 pb-2 w-100">
               <small>Filter By</small>
             </div>
@@ -101,9 +101,9 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
         <Popover
           key={'page.i'}
           id="query-sort-filter-popover"
-          className={`query-manager-sort-filter-popup ${darkMode && 'popover-dark-themed'}`}
+          className={`query-manager-sort-filter-popup ${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
         >
-          <Popover.Body key={'1'} bsPrefix="popover-body" className="pt-2 p-0">
+          <Popover.Body key={'1'} bsPrefix="popover-body" className="pt-1 p-0">
             {renderPopupComponent(action)}
           </Popover.Body>
         </Popover>
@@ -141,9 +141,9 @@ const DataSourceSelector = ({
   }, []);
 
   return (
-    <div className="card-body">
+    <div className="card-body p-0">
       <div className="border-bottom d-flex px-2 mb-2">
-        <div className="d-flex align-items-center">
+        <div className="d-flex align-items-center mb-1">
           <button
             className="border-primary border-0 border-end border-2 bg-transparent rounded-0 p-0"
             onClick={onBackBtnClick}
@@ -153,14 +153,14 @@ const DataSourceSelector = ({
         </div>
         <div>
           <input
-            className="bg-transparent border-0 form-control"
+            className="bg-transparent border-0 form-control form-control-sm"
             placeholder="Select datasource"
             onChange={(e) => setSearch(e.target.value)}
             ref={searchBoxRef}
           />
         </div>
       </div>
-      <div className="" style={{ maxHeight: '250px', overflowY: 'scroll' }}>
+      <div className="tj-scrollbar" style={{ maxHeight: '250px', overflowY: 'scroll' }}>
         {sources
           .filter((source) => {
             if (!search || !source?.name) {
@@ -170,15 +170,28 @@ const DataSourceSelector = ({
           })
           .map((source) => (
             <div className="px-2 py-2" key={source.kind}>
-              <Checkbox
+              <Form.Check // prettier-ignore
+                type={'checkbox'}
+                id={`default-${source.kind}`}
+                onChange={(e) => onFilterDatasourcesChange(source.kind, e.target.value)}
+                className="m-0"
+                checked={selectedDataSources.includes(source.kind)}
                 label={
                   <>
-                    <DataSourceIcon source={source} /> {source.name}
+                    <DataSourceIcon source={source} height={12} /> <span className="ms-1">{source.name}</span>
                   </>
                 }
+              />
+              {/* <Checkbox
+                label={
+                  <>
+                    <DataSourceIcon source={source} height={12} /> <small className="ms-1">{source.name}</small>
+                  </>
+                }
+                className="m-0"
                 onChange={(e) => onFilterDatasourcesChange(source.kind, e.target.value)}
                 isChecked={selectedDataSources.includes(source.kind)}
-              />
+              /> */}
             </div>
           ))}
       </div>

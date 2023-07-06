@@ -92,7 +92,6 @@ function DataSourceLister({
             color: 'var(--slate9)',
             border: '1px solid var(--slate7)',
           }),
-          menuList: (style) => ({ ...style, ...(darkMode ? { background: '#22272E' } : {}) }),
           menu: (style) => ({
             ...style,
             backgroundColor: 'var(--base)',
@@ -109,7 +108,6 @@ function DataSourceLister({
             textTransform: '',
             color: 'inherit',
             fontWeight: '400',
-            ...(darkMode ? { background: '#22272E' } : {}),
           }),
           option: (style, { data: { isNested, ...data }, isFocused, isDisabled }) => ({
             ...style,
