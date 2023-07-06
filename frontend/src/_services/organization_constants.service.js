@@ -45,7 +45,9 @@ function remove(id, environmentId) {
 
 function getConstantsFromEnvironment(environmentId) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/organization-constants/${environmentId}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/organization-constants/environment/${environmentId}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function getConstantsFromPublicApp(slug) {

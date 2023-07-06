@@ -43,7 +43,7 @@ export class OrganizationConstantController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get(':environmentId')
+  @Get('/environment/:environmentId')
   async getConstantsFromEnvironment(@User() user, @Param('environmentId') environmentId) {
     const result = await this.organizationConstantsService.getConstantsForEnvironment(
       user.organizationId,
