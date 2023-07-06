@@ -128,7 +128,6 @@ export const SubContainer = ({
 
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
-
           const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / 43;
           const height = layout.height ? layout.height : componentMeta.defaultSize.height;
           const newComponentDefinition = {
@@ -275,7 +274,6 @@ export const SubContainer = ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
         const componentMeta = componentTypes.find((component) => component.component === item.component.component);
-
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
 
         const newComponent = addNewWidgetToTheEditor(
@@ -371,6 +369,8 @@ export const SubContainer = ({
   }
 
   function onResizeStop(id, e, direction, ref, d, position) {
+    let columns,
+      isListviewWithGrid = false;
     if (isVersionReleased) {
       enableReleasedVersionPopupState();
       return;
@@ -398,8 +398,20 @@ export const SubContainer = ({
       // should not be removed.
       left = (x * 100) / subContainerWidth;
     }
+    if (
+      allComponents[parent]?.component?.component == 'Listview' &&
+      allComponents[parent]?.component?.definition?.properties?.mode?.value == 'grid'
+    ) {
+      columns = allComponents[parent]?.component?.definition?.properties?.columns?.value;
+      isListviewWithGrid = true;
+    }
+    if (isListviewWithGrid) {
+      width = width + (deltaWidth * (43 / parseInt(columns.match(/\d+/)[0]))) / subContainerWidth;
+      // check how to remove {{}}
+    } else {
+      width = width + (deltaWidth * 43) / subContainerWidth;
+    }
 
-    width = width + (deltaWidth * 43) / subContainerWidth;
     height = height + deltaHeight;
 
     let newBoxes = {
