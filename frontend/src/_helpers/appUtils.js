@@ -787,7 +787,6 @@ export function getQueryVariables(options, state) {
   switch (optionsType) {
     case 'string': {
       options = options.replace(/\n/g, ' ');
-
       if (options.match(/\{\{(.*?)\}\}/g)?.length > 1 && options.includes('{{constants.')) {
         const constantVariables = options.match(/\{\{(constants.*?)\}\}/g);
 
@@ -797,10 +796,14 @@ export function getQueryVariables(options, state) {
       }
 
       if (options.includes('{{constants.')) {
-        queryVariables[options] = 'HiddenOrganizationConstant';
+        if (options.includes('%%')) {
+          const vars = resolveReferences(options, state);
+          queryVariables[options] = vars;
+        } else {
+          queryVariables[options] = 'HiddenOrganizationConstant';
+        }
       } else if (options.includes('{{') && options.includes('%%')) {
         const vars = resolveReferences(options, state);
-        console.log('queryVariables', { options, vars });
         queryVariables[options] = vars;
       } else {
         const dynamicVariables = getDynamicVariables(options) || [];
