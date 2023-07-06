@@ -101,7 +101,7 @@ export function Table({
     rowsPerPage,
     enabledSort,
     hideColumnSelectorButton,
-    defaultSelctedRow,
+    defaultSelectedRow,
     showAddNewRowButton,
     allowSelection,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
@@ -580,7 +580,6 @@ export function Table({
         ]);
     }
   );
-
   const currentColOrder = React.useRef();
 
   const sortOptions = useMemo(() => {
@@ -599,8 +598,8 @@ export function Table({
   }, [JSON.stringify(state)]);
 
   const getDetailsOfPreSelectedRow = () => {
-    const key = Object?.keys(defaultSelctedRow)[0] ?? '';
-    const value = defaultSelctedRow?.[key] ?? undefined;
+    const key = Object?.keys(defaultSelectedRow)[0] ?? '';
+    const value = defaultSelectedRow?.[key] ?? undefined;
     const preSelectedRowDetails = rows.find((row) => row?.original?.[key] === value);
     return preSelectedRowDetails;
   };
@@ -704,7 +703,7 @@ export function Table({
         mergeToTableDetails({ selectedRow, selectedRowId });
       });
     }
-  }, [selectedFlatRows.length, selectedFlatRows, _.toString(selectedFlatRows)]);
+  }, [selectedFlatRows.length, _.toString(selectedFlatRows)]);
 
   registerAction(
     'downloadTableData',
@@ -715,10 +714,12 @@ export function Table({
   );
 
   useEffect(() => {
-    setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null }).then(() => {
-      mergeToTableDetails({ selectedRowsDetails: [], selectedRow: {}, selectedRowId: null });
-      toggleAllRowsSelected(false);
-    });
+    if (mounted) {
+      setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null }).then(() => {
+        mergeToTableDetails({ selectedRowsDetails: [], selectedRow: {}, selectedRowId: null });
+        toggleAllRowsSelected(false);
+      });
+    }
   }, [showBulkSelector, highlightSelectedRow, allowSelection]);
 
   React.useEffect(() => {
@@ -732,10 +733,6 @@ export function Table({
 
   useEffect(() => {
     const pageData = page.map((row) => row.original);
-    const preSelectedRowDetails =
-      typeof defaultSelctedRow === 'object' && !_.isEmpty(defaultSelctedRow) ? getDetailsOfPreSelectedRow() : {};
-    const selectedRow = preSelectedRowDetails?.original ?? {};
-    const selectedRowId = preSelectedRowDetails?.id ?? null;
     onComponentOptionsChanged(component, [
       ['currentPageData', pageData],
       ['currentData', data],
@@ -796,15 +793,23 @@ export function Table({
   }, [JSON.stringify(changeSet)]);
 
   useEffect(() => {
-    if (!_.isEmpty(defaultSelctedRow) && typeof defaultSelctedRow === 'object') {
+    if (!_.isEmpty(defaultSelectedRow) && typeof defaultSelectedRow === 'object') {
       const preSelectedRowDetails = getDetailsOfPreSelectedRow();
       const selectedRow = preSelectedRowDetails?.original ?? {};
       const selectedRowId = preSelectedRowDetails?.id ?? null;
-      setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId }).then(() => {
-        mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
-      });
+      if (page.find((row) => row.id === selectedRowId && _.isEqual(selectedRow, row.original))) {
+        if (highlightSelectedRow) {
+          setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId }).then(() => {
+            toggleRowSelected(selectedRowId, true);
+            mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
+          });
+        } else {
+          toggleRowSelected(selectedRowId, true);
+        }
+      }
     }
-  }, [JSON.stringify(defaultSelctedRow)]);
+    //hack : in the initial render, data is undefined since, upon feeding data to the table from some query, query inside current state is {}. Hence we added data in the dependency array, now question is should we add data or rows?
+  }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data)]);
 
   function downlaodPopover() {
     return (

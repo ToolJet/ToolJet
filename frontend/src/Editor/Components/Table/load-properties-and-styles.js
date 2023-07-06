@@ -56,10 +56,10 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
       actionButtonRadius,
     };
   });
-  const defaultSelctedRow = properties?.defaultSelctedRow;
 
   const showAddNewRowButton = properties?.showAddNewRowButton ?? true;
   const allowSelection = properties?.allowSelection ?? (showBulkSelector || highlightSelectedRow) ? true : false;
+  const defaultSelectedRow = allowSelection ? properties?.defaultSelectedRow : undefined;
 
   return {
     color,
@@ -89,7 +89,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     rowsPerPage,
     enabledSort,
     hideColumnSelectorButton,
-    defaultSelctedRow,
+    defaultSelectedRow,
     showAddNewRowButton,
     allowSelection,
   };

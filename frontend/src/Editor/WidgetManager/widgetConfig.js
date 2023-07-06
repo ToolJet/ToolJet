@@ -285,14 +285,12 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
-      defaultSelctedRow: {
+      defaultSelectedRow: {
         type: 'code',
         displayName: 'Default selected row',
         validation: {
           schema: {
-            type: 'array',
-            element: { type: 'object' },
-            optional: true,
+            type: 'object',
           },
         },
       },
@@ -501,7 +499,7 @@ export const widgets = [
         actions: { value: [] },
         enabledSort: { value: '{{true}}' },
         hideColumnSelectorButton: { value: '{{false}}' },
-        defaultSelctedRow: { value: '{{{"name":"Sarah"}}}' },
+        defaultSelectedRow: { value: '{{{"name":"Sarah"}}}' },
         showAddNewRowButton: { value: '{{true}}' },
         allowSelection: { value: '{{true}}' },
       },
