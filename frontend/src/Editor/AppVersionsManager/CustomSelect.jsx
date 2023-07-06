@@ -110,7 +110,7 @@ export const CustomSelect = ({ ...props }) => {
       <EditVersion {...props} showEditAppVersion={showEditAppVersion} setShowEditAppVersion={setShowEditAppVersion} />
       <ConfirmDialog
         show={deleteVersion.showModal}
-        message={`Are you sure you want to delete this version - ${deleteVersion.versionName}`}
+        message={`Deleting a version will permanently remove it from all environments. Are you sure you want to delete this version - ${deleteVersion.versionName}?`}
         onConfirm={() => deleteAppVersion(deleteVersion.versionId, deleteVersion.versionName)}
         onCancel={resetDeleteModal}
       />
