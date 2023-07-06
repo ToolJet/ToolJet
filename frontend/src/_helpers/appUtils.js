@@ -787,7 +787,14 @@ export function getQueryVariables(options, state) {
   switch (optionsType) {
     case 'string': {
       options = options.replace(/\n/g, ' ');
-      // check if {{var}} and %%var%% are present in the string
+
+      if (options.match(/\{\{(.*?)\}\}/g)?.length > 1 && options.includes('{{constants.')) {
+        const constantVariables = options.match(/\{\{(constants.*?)\}\}/g);
+
+        constantVariables.forEach((constant) => {
+          options = options.replace(constant, 'HiddenOrganizationConstant');
+        });
+      }
 
       if (options.includes('{{constants.')) {
         queryVariables[options] = 'HiddenOrganizationConstant';

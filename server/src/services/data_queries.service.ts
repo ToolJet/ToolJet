@@ -97,6 +97,7 @@ export class DataQueriesService {
       organization_id,
       environmentId
     );
+    console.log('--arpit', { parsedQueryOptions });
 
     const service = await this.pluginsHelper.getService(dataSource.pluginId, dataSource.kind);
 
@@ -523,6 +524,19 @@ export class DataQueriesService {
         return resolvedvar;
       }
 
+      // check if more than two types of variables are present in a single line
+      if (object.match(/\{\{(.*?)\}\}/g)?.length > 1 && object.includes('{{constants.')) {
+        // find the constant variable from the string, {{constants.}} keyword
+        const constantVariables = object.match(/\{\{(constants.*?)\}\}/g);
+
+        if (constantVariables.length > 0) {
+          for (const variable of constantVariables) {
+            const resolvedVariable = await this.resolveConstants(variable, organization_id, environmentId);
+
+            object = object.replace(variable, resolvedVariable);
+          }
+        }
+      }
       if (object.includes('{{constants.')) {
         const resolvingConstant = await this.resolveConstants(object, organization_id, environmentId);
 
