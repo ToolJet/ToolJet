@@ -97,7 +97,6 @@ export class DataQueriesService {
       organization_id,
       environmentId
     );
-    console.log('--arpit', { parsedQueryOptions });
 
     const service = await this.pluginsHelper.getService(dataSource.pluginId, dataSource.kind);
 
