@@ -5,9 +5,10 @@ import { getSvgIcon, checkExistingQueryName } from '@/_helpers/appUtils';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
-
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions, useSelectedQuery, useUnsavedChanges } from '@/_stores/queryPanelStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryCard = ({
   dataQuery,
@@ -16,7 +17,6 @@ export const QueryCard = ({
   setDraftQuery,
   darkMode = false,
   editorRef,
-  isVersionReleased,
 }) => {
   const selectedQuery = useSelectedQuery();
   const isUnsavedChangesAvailable = useUnsavedChanges();
@@ -24,6 +24,12 @@ export const QueryCard = ({
   const { deleteDataQueries, renameQuery } = useDataQueriesActions();
   const { setSelectedQuery, setSelectedDataSource, setUnSavedChanges } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   const [renamingQuery, setRenamingQuery] = useState(false);
 
   const getSourceMetaData = (dataSource) => {

@@ -151,6 +151,7 @@ actions.unsetPageVariable('pageVar')`
     cy.waitForAutoSave();
     addInputOnQueryField("runpy", "actions.showModal('modal1')");
     query("run");
+    cy.closeToastMessage();
     cy.get('[data-cy="modal-title"]').should("be.visible");
     cy.get('[data-cy="runpy-input-field"]').click({ force: true });
 
@@ -162,7 +163,7 @@ actions.unsetPageVariable('pageVar')`
       commonSelectors.toastMessage,
       "Query (runpy1) completed."
     );
-    cy.wait(3000);
+    cy.wait(1000);
     cy.notVisible('[data-cy="modal-title"]');
 
     addInputOnQueryField("runpy", "actions.copyToClipboard('data from runpy')");
@@ -188,7 +189,8 @@ actions.unsetPageVariable('pageVar')`
       commonSelectors.toastMessage,
       "Query (runpy1) completed."
     );
-    cy.wait(2000);
+    cy.wait(1000);
+
     cy.getAllLocalStorage().then((result) => {
       expect(result[Cypress.config().baseUrl].localStorage).to.deep.equal(
         "data from runpy"

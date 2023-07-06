@@ -4,14 +4,13 @@ import { appVersionService, appEnvironmentService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 import { toast } from 'react-hot-toast';
 import { ToolTip } from '@/_components/ToolTip';
+import { shallow } from 'zustand/shallow';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 export const AppVersionsManager = function ({
   appId,
-  editingVersion,
   releasedVersionId,
   setAppDefinitionFromVersion,
-  showCreateVersionModalPrompt,
-  closeCreateVersionModalPrompt,
   onVersionDelete,
   currentEnvironment,
   setCurrentEnvironment,
@@ -23,6 +22,13 @@ export const AppVersionsManager = function ({
     versionName: '',
     showModal: false,
   });
+
+  const { editingVersion } = useAppVersionStore(
+    (state) => ({
+      editingVersion: state.editingVersion,
+    }),
+    shallow
+  );
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
@@ -154,8 +160,6 @@ export const AppVersionsManager = function ({
     setAppVersions,
     setAppDefinitionFromVersion,
     editingVersion,
-    showCreateVersionModalPrompt,
-    closeCreateVersionModalPrompt,
     setDeleteVersion,
     deleteVersion,
     deleteAppVersion,

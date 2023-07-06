@@ -1,12 +1,25 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import cx from 'classnames';
 import InfoSvg from '@assets/images/info.svg';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
-export const ReleasedVersionError = ({ isUserEditingTheVersion, changeBackTheState }) => {
-  React.useState(() => {
+export const ReleasedVersionError = () => {
+  const { isUserEditingTheVersion, disableReleasedVersionPopupState } = useAppVersionStore(
+    (state) => ({
+      isUserEditingTheVersion: state.isUserEditingTheVersion,
+      disableReleasedVersionPopupState: state.actions.disableReleasedVersionPopupState,
+    }),
+    shallow
+  );
+  const changeBackTheState = useCallback(() => {
+    isUserEditingTheVersion && disableReleasedVersionPopupState();
+  }, [isUserEditingTheVersion, disableReleasedVersionPopupState]);
+
+  useEffect(() => {
     const intervalId = setInterval(() => changeBackTheState(), 2000);
     return () => intervalId && clearInterval(intervalId);
-  }, [isUserEditingTheVersion]);
+  }, [isUserEditingTheVersion, changeBackTheState]);
 
   return (
     <div className="released-version-popup-container">

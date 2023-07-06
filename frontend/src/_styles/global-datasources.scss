@@ -33,7 +33,7 @@
             border-radius: 6px;
 
             .ds-delete-btn {
-                display: block;
+                visibility: visible;
             }
         }
 
@@ -44,7 +44,8 @@
 
 
         .ds-delete-btn {
-            display: none;
+            display: block;
+            visibility:hidden;
             border: none;
             background: none;
         }

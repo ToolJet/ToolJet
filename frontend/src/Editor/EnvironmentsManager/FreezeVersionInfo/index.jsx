@@ -1,12 +1,25 @@
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import cx from 'classnames';
 import Branch from '@assets/images/icons/branch.svg';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
-export const FreezeVersionInfo = ({ isUserEditingTheVersion, changeBackTheState }) => {
-  React.useState(() => {
+export const FreezeVersionInfo = () => {
+  const { isUserEditingTheVersion, disableReleasedVersionPopupState } = useAppVersionStore(
+    (state) => ({
+      isUserEditingTheVersion: state.isUserEditingTheVersion,
+      disableReleasedVersionPopupState: state.actions.disableReleasedVersionPopupState,
+    }),
+    shallow
+  );
+  const changeBackTheState = useCallback(() => {
+    isUserEditingTheVersion && disableReleasedVersionPopupState();
+  }, [isUserEditingTheVersion, disableReleasedVersionPopupState]);
+
+  useEffect(() => {
     const intervalId = setInterval(() => changeBackTheState(), 2000);
     return () => intervalId && clearInterval(intervalId);
-  }, [isUserEditingTheVersion]);
+  }, [isUserEditingTheVersion, changeBackTheState]);
 
   return (
     <div className="released-version-popup-container">

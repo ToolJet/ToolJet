@@ -4,6 +4,7 @@ import { profileSelector } from "Selectors/profile";
 import { commonSelectors } from "Selectors/common";
 import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
+import { groupsSelector } from "Selectors/manageGroups";
 
 export const navigateToProfile = () => {
   cy.get(commonSelectors.profileSettings).click();
@@ -24,7 +25,22 @@ export const navigateToManageUsers = () => {
 export const navigateToManageGroups = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.manageGroupsOption).click();
+  cy.get(groupsSelector.groupLink("Admin")).click();
+  cy.get(groupsSelector.groupLink("All users")).click();
+  cy.get(groupsSelector.groupLink("Admin")).click();
+  cy.get(groupsSelector.groupLink("All users")).click();
+  cy.wait(500);
+  cy.get("body").then(($title) => {
+    if ($title.text().includes("Admin has edit access to all apps. These are not editable")) {
+      cy.get(groupsSelector.groupLink("Admin")).click();
+      cy.get(groupsSelector.groupLink("All users")).click();
+      cy.get(groupsSelector.groupLink("Admin")).click();
+      cy.get(groupsSelector.groupLink("All users")).click();
+      cy.wait(2000);
+    }
+  });
 };
+
 export const navigateToWorkspaceVariable = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.workspaceVariableOption).click();
@@ -40,7 +56,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-      Math.random() * (endDate.getTime() - startDate.getTime())
+    Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -69,8 +85,9 @@ export const deleteFolder = (folderName) => {
 };
 
 export const deleteDownloadsFolder = () => {
-  const downloadsFolder = Cypress.config("downloadsFolder");
-  cy.task("deleteFolder", downloadsFolder);
+  cy.exec("cd ./cypress/downloads/ && rm -rf *", {
+    failOnNonZeroExit: false,
+  });
 };
 
 export const navigateToAppEditor = (appName) => {
@@ -83,6 +100,7 @@ export const navigateToAppEditor = (appName) => {
 };
 
 export const viewAppCardOptions = (appName) => {
+  cy.reloadAppForTheElement(appName);
   cy.contains("div", appName)
     .parent()
     .within(() => {
@@ -91,6 +109,7 @@ export const viewAppCardOptions = (appName) => {
 };
 
 export const viewFolderCardOptions = (folderName) => {
+  cy.reloadAppForTheElement(folderName);
   cy.get(commonSelectors.folderListcard(folderName))
     .parent()
     .within(() => {
@@ -174,7 +193,7 @@ export const createWorkspace = (workspaceName) => {
 
 export const selectAppCardOption = (appName, appCardOption) => {
   viewAppCardOptions(appName);
-  cy.get(appCardOption).should("be.visible").click();
+  cy.get(appCardOption).should("be.visible").realClick();
 };
 
 export const navigateToDatabase = () => {

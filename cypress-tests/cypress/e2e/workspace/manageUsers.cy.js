@@ -115,10 +115,7 @@ describe("Manage Users", () => {
     cy.contains("td", data.email)
       .parent()
       .within(() => {
-        cy.get(usersSelector.userStatus, { timeout: 9000 }).should(
-          "have.text",
-          usersText.archivedStatus
-        );
+        cy.get("td small").should("have.text", usersText.archivedStatus);
       });
 
     common.logout();
@@ -172,7 +169,7 @@ describe("Manage Users", () => {
             cy.contains("td", data.email)
               .parent()
               .within(() => {
-                cy.get(usersSelector.userStatus, { timeout: 9000 }).should(
+                cy.get("td small").should(
                   "have.text",
                   usersText.invitedStatus
                 );

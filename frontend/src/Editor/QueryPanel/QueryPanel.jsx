@@ -17,12 +17,10 @@ const QueryPanel = ({
   apps,
   allComponents,
   appId,
-  editingVersionId,
   appDefinition,
   dataSourceModalHandler,
   editorRef,
   onQueryPaneDragging,
-  isVersionReleased,
   handleQueryPaneExpanding,
 }) => {
   const { setSelectedQuery, updateQueryPanelHeight, setUnSavedChanges, setSelectedDataSource } = useQueryPanelActions();
@@ -256,7 +254,6 @@ const QueryPanel = ({
             fetchDataQueries={fetchDataQueries}
             darkMode={darkMode}
             editorRef={editorRef}
-            isVersionReleased={isVersionReleased}
           />
           <div className="query-definition-pane-wrapper">
             <div className="query-definition-pane">
@@ -268,7 +265,6 @@ const QueryPanel = ({
                   mode={editingQuery ? 'edit' : 'create'}
                   dataQueriesChanged={updateDataQueries}
                   appId={appId}
-                  editingVersionId={editingVersionId}
                   currentState={currentState}
                   darkMode={darkMode}
                   apps={apps}
@@ -279,7 +275,6 @@ const QueryPanel = ({
                   createDraftQuery={createDraftQuery}
                   isUnsavedQueriesAvailable={isUnsavedQueriesAvailable}
                   updateDraftQueryName={updateDraftQueryName}
-                  isVersionReleased={isVersionReleased}
                 />
               </div>
             </div>
