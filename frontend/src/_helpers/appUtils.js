@@ -401,6 +401,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const { queryId, queryName } = event;
         const name =
           useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
+        console.log('mode--- ', mode);
         return runQuery(_ref, queryId, name, undefined, mode);
       }
       case 'logout': {
@@ -581,7 +582,6 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
 export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
-  console.log('Event: ', _ref, eventName, options, (mode = 'edit'));
 
   const { customVariables } = options;
 
