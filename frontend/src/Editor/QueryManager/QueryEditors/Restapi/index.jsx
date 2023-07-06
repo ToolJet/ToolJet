@@ -26,6 +26,9 @@ class Restapi extends React.Component {
       if (isEmpty(this.state.options['headers'])) {
         this.addNewKeyValuePair('headers');
       }
+      if (isEmpty(this.state.options['method'])) {
+        changeOption(this, 'method', 'get');
+      }
       setTimeout(() => {
         if (isEmpty(this.state.options['url_params'])) {
           this.addNewKeyValuePair('url_params');
