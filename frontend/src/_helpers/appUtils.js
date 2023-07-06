@@ -795,15 +795,11 @@ export function getQueryVariables(options, state) {
         });
       }
 
-      if (options.includes('{{constants.')) {
-        if (options.includes('%%')) {
-          const vars = resolveReferences(options, state);
-          queryVariables[options] = vars;
-        } else {
-          queryVariables[options] = 'HiddenOrganizationConstant';
-        }
-      } else if (options.includes('{{') && options.includes('%%')) {
-        const vars = resolveReferences(options, state);
+      if (options.includes('{{') && options.includes('%%')) {
+        const vars =
+          options.includes('{{constants.') && !options.includes('%%')
+            ? 'HiddenOrganizationConstant'
+            : resolveReferences(options, state);
         queryVariables[options] = vars;
       } else {
         const dynamicVariables = getDynamicVariables(options) || [];
