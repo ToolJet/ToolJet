@@ -5,6 +5,7 @@ import { components } from 'react-select';
 import { EditVersion } from './EditVersionModal';
 import { CreateVersion } from './CreateVersionModal';
 import { ConfirmDialog } from '@/_components';
+import { defaultAppEnvironments } from '@/_helpers/utils';
 
 const Menu = (props) => {
   return (
@@ -108,9 +109,14 @@ export const CustomSelect = ({ ...props }) => {
         setShowCreateAppVersion={setShowCreateAppVersion}
       />
       <EditVersion {...props} showEditAppVersion={showEditAppVersion} setShowEditAppVersion={setShowEditAppVersion} />
+      {/*  When we merge this code to EE update the defaultAppEnvironments object with rest of default environments (then delete this comment)*/}
       <ConfirmDialog
         show={deleteVersion.showModal}
-        message={`Deleting a version will permanently remove it from all environments. Are you sure you want to delete this version - ${deleteVersion.versionName}?`}
+        message={`${
+          defaultAppEnvironments.length > 1
+            ? 'Deleting a version will permanently remove it from all environments.'
+            : ''
+        }Are you sure you want to delete this version - ${deleteVersion.versionName}?`}
         onConfirm={() => deleteAppVersion(deleteVersion.versionId, deleteVersion.versionName)}
         onCancel={resetDeleteModal}
       />
