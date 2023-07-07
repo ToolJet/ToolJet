@@ -20,6 +20,8 @@ import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const Inspector = ({
   selectedComponentId,
@@ -31,7 +33,6 @@ export const Inspector = ({
   switchSidebarTab,
   removeComponent,
   pages,
-  isVersionReleased,
 }) => {
   const dataQueries = useDataQueries();
   const component = {
@@ -47,10 +48,17 @@ export const Inspector = ({
   const [newComponentName, setNewComponentName] = useState(component.component.name);
   const [inputRef, setInputFocus] = useFocus();
   const [selectedTab, setSelectedTab] = useState('properties');
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
   const { t } = useTranslation();
 
   useHotkeys('backspace', () => {
-    if (isVersionReleased) return;
+    if (isVersionReleased || isEditorFreezed) return;
     setWidgetDeleteConfirmation(true);
   });
   useHotkeys('escape', () => switchSidebarTab(2));
@@ -313,7 +321,7 @@ export const Inspector = ({
       />
       <div>
         <div className="row inspector-component-title-input-holder">
-          <div className={`col-11 p-0 ${isVersionReleased && 'disabled'}`}>
+          <div className={`col-11 p-0 ${isVersionReleased || (isEditorFreezed && 'disabled')}`}>
             <div className="input-icon">
               <input
                 onChange={(e) => setNewComponentName(e.target.value)}
@@ -396,7 +404,7 @@ export const Inspector = ({
           </div>
         </div>
         <hr className="m-0" />
-        <div className={`${isVersionReleased && 'disabled'}`}>
+        <div className={`${isVersionReleased || (isEditorFreezed && 'disabled')}`}>
           {selectedTab === 'properties' && propertiesTab}
           {selectedTab === 'styles' && stylesTab}
         </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import AppLogo from '@/_components/AppLogo';
 import { get } from 'lodash';
@@ -17,6 +17,8 @@ import cx from 'classnames';
 import config from 'config';
 // eslint-disable-next-line import/no-unresolved
 import { useUpdatePresence } from '@y-presence/react';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export default function EditorHeader({
   darkMode,
@@ -25,8 +27,6 @@ export default function EditorHeader({
   globalSettingsChanged,
   appDefinition,
   toggleAppMaintenance,
-  editingVersion,
-  showCreateVersionModalPrompt,
   app,
   appVersionPreviewLink,
   slug,
@@ -38,24 +38,29 @@ export default function EditorHeader({
   toggleCurrentLayout,
   isSaving,
   saveError,
-  isVersionReleased,
   onNameChanged,
   appEnvironmentChanged,
   setAppDefinitionFromVersion,
-  closeCreateVersionModalPrompt,
   handleSlugChange,
   onVersionRelease,
   saveEditingVersion,
   onVersionDelete,
   currentUser,
-  onEditorFreeze,
   getStoreData,
-  shouldFreeze,
 }) {
   const { is_maintenance_on } = app;
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
   const [promoteModalData, setPromoteModalData] = useState(null);
+  const { isVersionReleased, editingVersion, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      editingVersion: state.editingVersion,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
+
   const updatePresence = useUpdatePresence();
 
   useEffect(() => {
@@ -116,7 +121,7 @@ export default function EditorHeader({
                       darkMode={darkMode}
                       toggleAppMaintenance={toggleAppMaintenance}
                       is_maintenance_on={is_maintenance_on}
-                      shouldFreeze={shouldFreeze}
+                      shouldFreeze={isVersionReleased || isEditorFreezed}
                     />
                     <EditAppName appId={app.id} appName={app.name} onNameChanged={onNameChanged} />
                   </div>
@@ -135,7 +140,7 @@ export default function EditorHeader({
                         className={cx('autosave-indicator', {
                           'autosave-indicator-saving': isSaving,
                           'text-danger': saveError,
-                          'd-none': isVersionReleased(),
+                          'd-none': isVersionReleased,
                         })}
                         data-cy="autosave-indicator"
                       >
@@ -155,17 +160,13 @@ export default function EditorHeader({
                       setEnvironments={setEnvironments}
                       currentEnvironment={currentEnvironment}
                       setCurrentEnvironment={setCurrentEnvironment}
-                      onEditorFreeze={onEditorFreeze}
                     />
                   )}
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}
-                      editingVersion={editingVersion}
                       releasedVersionId={app.current_version_id}
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-                      showCreateVersionModalPrompt={showCreateVersionModalPrompt}
-                      closeCreateVersionModalPrompt={closeCreateVersionModalPrompt}
                       onVersionDelete={onVersionDelete}
                       environments={environments}
                       currentEnvironment={currentEnvironment}
@@ -215,7 +216,7 @@ export default function EditorHeader({
                   </Link>
                 </div>
                 <div className="nav-item dropdown">
-                  {!isVersionReleased() && currentEnvironment?.name !== 'production' ? (
+                  {!isVersionReleased && currentEnvironment?.name !== 'production' ? (
                     <ButtonSolid variant="primary" onClick={handlePromote} size="md" disabled={shouldDisablePromote}>
                       {' '}
                       <ToolTip
@@ -237,11 +238,9 @@ export default function EditorHeader({
                   ) : (
                     app.id && (
                       <ReleaseVersionButton
-                        isVersionReleased={isVersionReleased()}
                         appId={app.id}
                         appName={app.name}
                         onVersionRelease={onVersionRelease}
-                        editingVersion={editingVersion}
                         saveEditingVersion={saveEditingVersion}
                       />
                     )

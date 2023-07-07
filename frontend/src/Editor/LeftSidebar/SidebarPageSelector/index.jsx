@@ -7,6 +7,8 @@ import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 // eslint-disable-next-line import/no-unresolved
 import EmptyIllustration from '@assets/images/no-results.svg';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -31,14 +33,19 @@ const LeftSidebarPageSelector = ({
   pinned,
   setPinned,
   popoverContentHeight,
-  isVersionReleased,
-  setReleasedVersionPopupState,
 }) => {
   const [allpages, setPages] = useState(pages);
   const [haveUserPinned, setHaveUserPinned] = useState(false);
-
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const { enableReleasedVersionPopupState, isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
 
   const filterPages = (value) => {
     if (!value || value.length === 0) return clearSearch();
@@ -77,8 +84,6 @@ const LeftSidebarPageSelector = ({
                 darkMode={darkMode}
                 showHideViewerNavigationControls={showHideViewerNavigationControls}
                 showPageViwerPageNavitation={appDefinition?.showViewerNavigation || false}
-                isVersionReleased={isVersionReleased}
-                setReleasedVersionPopupState={setReleasedVersionPopupState}
               />
             }
           >
@@ -86,8 +91,8 @@ const LeftSidebarPageSelector = ({
               <Button
                 title={'Add Page'}
                 onClick={() => {
-                  if (isVersionReleased) {
-                    setReleasedVersionPopupState();
+                  if (isVersionReleased || isEditorFreezed) {
+                    enableReleasedVersionPopupState();
                     return;
                   }
                   setNewPageBeingCreated(true);
@@ -160,8 +165,6 @@ const LeftSidebarPageSelector = ({
                 apps={apps}
                 allpages={pages}
                 components={appDefinition?.components ?? {}}
-                isVersionReleased={isVersionReleased}
-                setReleasedVersionPopupState={setReleasedVersionPopupState}
                 pinPagesPopover={pinPagesPopover}
                 haveUserPinned={haveUserPinned}
               />

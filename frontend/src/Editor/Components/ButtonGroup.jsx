@@ -24,6 +24,7 @@ export const ButtonGroup = function Button({
     disabledState,
     selectedBackgroundColor,
     selectedTextColor,
+    boxShadow,
   } = styles;
 
   const computedStyles = {
@@ -94,6 +95,7 @@ export const ButtonGroup = function Button({
               backgroundColor: defaultActive?.includes(values[index]) ? selectedBackgroundColor : backgroundColor,
               color: defaultActive?.includes(values[index]) ? selectedTextColor : textColor,
               transition: 'all .1s ease',
+              boxShadow,
             }}
             key={index}
             disabled={disabledState}

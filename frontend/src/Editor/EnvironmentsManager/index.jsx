@@ -4,6 +4,8 @@ import { capitalize } from 'lodash';
 import EnvironmentSelectBox from './EnvironmentSelectBox';
 import { ToolTip } from '@/_components/ToolTip';
 import '@/_styles/versions.scss';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 const EnvironmentManager = (props) => {
   const {
@@ -11,12 +13,17 @@ const EnvironmentManager = (props) => {
     appEnvironmentChanged,
     environments,
     setEnvironments,
-    onEditorFreeze,
     currentEnvironment,
     setCurrentEnvironment,
   } = props;
   // TODO: fix naming with the current environment id
   const currentAppEnvironmentId = editingVersion?.current_environment_id || editingVersion?.currentEnvironmentId;
+  const { onEditorFreeze } = useAppVersionStore(
+    (state) => ({
+      onEditorFreeze: state.actions.onEditorFreeze,
+    }),
+    shallow
+  );
 
   useEffect(() => {
     if (!currentEnvironment) editingVersion.id && fetchEnvironments();

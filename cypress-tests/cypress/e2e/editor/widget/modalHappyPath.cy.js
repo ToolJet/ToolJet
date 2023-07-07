@@ -421,7 +421,7 @@ describe("Modal", () => {
       .find(".form-check-input")
       .click();
     launchModal("modal1");
-    cy.wait(500);
+    cy.wait(1000);
     cy.notVisible('[data-cy="modal-close-button"]');
   });
 

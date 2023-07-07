@@ -7,6 +7,8 @@ import { QueryCard } from './QueryCard';
 import Fuse from 'fuse.js';
 import cx from 'classnames';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryDataPane = ({
   setSaveConfirmation,
@@ -17,13 +19,18 @@ export const QueryDataPane = ({
   darkMode,
   fetchDataQueries,
   editorRef,
-  isVersionReleased,
 }) => {
   const { t } = useTranslation();
   const { loadingDataQueries } = useDataQueriesStore();
   const dataQueries = useDataQueries();
   const [filteredQueries, setFilteredQueries] = useState(dataQueries);
-
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
   useEffect(() => {
     setFilteredQueries(dataQueries);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,7 +78,7 @@ export const QueryDataPane = ({
           <button
             data-cy={`button-add-new-queries`}
             className={cx(`col-auto d-flex align-items-center py-1 rounded default-secondary-button`, {
-              disabled: isVersionReleased,
+              disabled: isVersionReleased || isEditorFreezed,
               'theme-dark': darkMode,
             })}
             onClick={handleAddNewQuery}
@@ -108,7 +115,6 @@ export const QueryDataPane = ({
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
                   editorRef={editorRef}
-                  isVersionReleased={isVersionReleased}
                 />
               ) : (
                 ''
@@ -123,7 +129,6 @@ export const QueryDataPane = ({
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
                   editorRef={editorRef}
-                  isVersionReleased={isVersionReleased}
                 />
               ))}
             </div>

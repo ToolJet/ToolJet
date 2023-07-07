@@ -50,7 +50,7 @@ import { Steps } from './Components/Steps';
 import { TreeSelect } from './Components/TreeSelect';
 import { Icon } from './Components/Icon';
 import { Link } from './Components/Link';
-import { Form } from './Components/Form';
+import { Form } from './Components/Form/Form';
 import { BoundedBox } from './Components/BoundedBox/BoundedBox';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import '@/_styles/custom.scss';
@@ -284,7 +284,6 @@ export const Box = function Box({
         style={{
           ...styles,
           backgroundColor,
-          boxShadow: validatedGeneralStyles?.boxShadow,
         }}
         role={preview ? 'BoxPreview' : 'Box'}
         className={inCanvas ? `_tooljet-${component.component} _tooljet-${component.name}` : ''}
@@ -309,7 +308,7 @@ export const Box = function Box({
               canvasWidth={canvasWidth}
               properties={validatedProperties}
               exposedVariables={exposedVariables}
-              styles={validatedStyles}
+              styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
               setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
               setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
               registerAction={(actionName, func, dependencies = []) => {

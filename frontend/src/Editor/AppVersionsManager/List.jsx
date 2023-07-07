@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import cx from 'classnames';
 import { appVersionService, appEnvironmentService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 import { toast } from 'react-hot-toast';
 import { ToolTip } from '@/_components/ToolTip';
+import { shallow } from 'zustand/shallow';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 export const AppVersionsManager = function ({
   appId,
-  editingVersion,
   releasedVersionId,
   setAppDefinitionFromVersion,
-  showCreateVersionModalPrompt,
-  closeCreateVersionModalPrompt,
   onVersionDelete,
   currentEnvironment,
+  environments,
   setCurrentEnvironment,
 }) {
   const [appVersions, setAppVersions] = useState([]);
@@ -23,6 +23,13 @@ export const AppVersionsManager = function ({
     versionName: '',
     showModal: false,
   });
+
+  const { editingVersion } = useAppVersionStore(
+    (state) => ({
+      editingVersion: state.editingVersion,
+    }),
+    shallow
+  );
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
@@ -39,6 +46,18 @@ export const AppVersionsManager = function ({
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const shouldFreezeEditor = (currentEnvironmentId) => {
+    if (!currentEnvironmentId) return false;
+    const currentPromotedEnvironment = currentEnvironmentId
+      ? environments.find((env) => env.id === currentEnvironmentId)
+      : environments.find((env) => env.name === 'development');
+    if (currentPromotedEnvironment.name === 'production' || currentPromotedEnvironment.name === 'staging') {
+      // we don't want to allow editing of production and staging environments
+      // so let's freeze the editor
+      return true;
+    } else return false;
+  };
 
   const setVersionsWithEnvironment = useCallback(() => {
     setGetAppVersionStatus('loading');
@@ -73,7 +92,7 @@ export const AppVersionsManager = function ({
     appVersionService
       .getOne(appId, id)
       .then((data) => {
-        setAppDefinitionFromVersion(data, true);
+        setAppDefinitionFromVersion(data, true, shouldFreezeEditor(data.currentEnvironmentId));
       })
       .catch((error) => {
         toast.error(error);
@@ -154,8 +173,6 @@ export const AppVersionsManager = function ({
     setAppVersions,
     setAppDefinitionFromVersion,
     editingVersion,
-    showCreateVersionModalPrompt,
-    closeCreateVersionModalPrompt,
     setDeleteVersion,
     deleteVersion,
     deleteAppVersion,

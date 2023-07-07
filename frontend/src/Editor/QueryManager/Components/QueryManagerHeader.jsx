@@ -9,10 +9,11 @@ import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { useTranslation } from 'react-i18next';
 import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUtils';
-
 import { useDataQueriesActions, useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource, useUnsavedChanges } from '@/_stores/queryPanelStore';
 import ToggleQueryEditorIcon from '../Icons/ToggleQueryEditorIcon';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryManagerHeader = forwardRef(
   (
@@ -25,10 +26,8 @@ export const QueryManagerHeader = forwardRef(
       previewLoading = false,
       currentState,
       options,
-      editingVersionId,
       appId,
       editorRef,
-      isVersionReleased,
     },
     ref
   ) => {
@@ -41,6 +40,14 @@ export const QueryManagerHeader = forwardRef(
     const { t } = useTranslation();
     const queryName = selectedQuery?.name ?? '';
     const [renamingQuery, setRenamingQuery] = useState(false);
+    const { isVersionReleased, editingVersionId, isEditorFreezed } = useAppVersionStore(
+      (state) => ({
+        isVersionReleased: state.isVersionReleased,
+        editingVersionId: state.editingVersion?.id,
+        isEditorFreezed: state.isEditorFreezed,
+      }),
+      shallow
+    );
 
     const buttonText = mode === 'edit' ? 'Save' : 'Create';
     const buttonDisabled = isUpdationInProcess || isCreationInProcess;
@@ -113,10 +120,12 @@ export const QueryManagerHeader = forwardRef(
               {renamingQuery ? renderRenameInput() : queryName}
             </span>
             <span
-              className={cx('breadcrum-rename-query-icon', { 'd-none': renamingQuery && isVersionReleased })}
+              className={cx('breadcrum-rename-query-icon', {
+                'd-none': renamingQuery && (isVersionReleased || isEditorFreezed),
+              })}
               onClick={() => setRenamingQuery(true)}
             >
-              {!isVersionReleased && <RenameIcon />}
+              {!(isVersionReleased || isEditorFreezed) && <RenameIcon />}
             </span>
           </div>
         </>
@@ -168,7 +177,7 @@ export const QueryManagerHeader = forwardRef(
         <button
           className={`default-tertiary-button ${buttonLoadingState(
             isCreationInProcess || isUpdationInProcess,
-            isVersionReleased
+            isVersionReleased || isEditorFreezed
           )}`}
           onClick={() => createOrUpdateDataQuery(false)}
           disabled={buttonDisabled}

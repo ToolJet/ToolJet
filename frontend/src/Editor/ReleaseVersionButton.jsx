@@ -4,19 +4,28 @@ import { appService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import ReleaseConfirmation from './ReleaseConfirmation';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 import '@/_styles/versions.scss';
 
 export const ReleaseVersionButton = function DeployVersionButton({
   appId,
   appName,
-  editingVersion,
-  isVersionReleased,
   fetchApp,
   onVersionRelease,
   saveEditingVersion,
 }) {
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const { isVersionReleased, editingVersion, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      editingVersion: state.editingVersion,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
+
   const { t } = useTranslation();
 
   const releaseVersion = (editingVersion) => {
