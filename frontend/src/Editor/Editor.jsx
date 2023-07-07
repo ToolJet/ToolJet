@@ -1455,22 +1455,6 @@ class EditorComponent extends React.Component {
 
   handleEditorMarginLeftChange = (value) => this.setState({ editorMarginLeft: value });
 
-  calcPageHeight = () => {
-    const { currentLayout, currentPageId, appDefinition: { pages } = {} } = this.state;
-    const curentPageComponents = Object.values(pages?.[currentPageId]?.components);
-
-    const maxHeight = curentPageComponents.reduce((max, component) => {
-      const layout = component?.layouts?.[currentLayout];
-      if (!layout) {
-        return 0;
-      }
-      const sum = layout.top + layout.height;
-      return Math.max(max, sum);
-    }, 0);
-
-    return `max(100vh, ${maxHeight + 300}px)`;
-  };
-
   render() {
     const {
       currentSidebarTab,
@@ -1639,12 +1623,9 @@ class EditorComponent extends React.Component {
                       className="canvas-area"
                       style={{
                         width: currentLayout === 'desktop' ? '100%' : '450px',
-                        // minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
-                        height: this.calcPageHeight(),
                         maxWidth:
                           +this.state.appDefinition.globalSettings.canvasMaxWidth +
                           this.state.appDefinition.globalSettings.canvasMaxWidthType,
-                        // maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                         /**
                          * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
                          * default canvas min width = calc(((screen width - width component editor side bar) - width of editor sidebar on left) - width of left sidebar popover)
@@ -1687,8 +1668,6 @@ class EditorComponent extends React.Component {
                         <>
                           <Container
                             canvasWidth={this.getCanvasWidth()}
-                            // canvasHeight={this.getCanvasHeight()}
-                            canvasHeight={this.calcPageHeight()}
                             socket={this.socket}
                             showComments={showComments}
                             appDefinition={appDefinition}
