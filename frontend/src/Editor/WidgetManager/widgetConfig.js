@@ -3777,39 +3777,6 @@ export const widgets = [
         accessorKey: 'buttonText',
       },
     ],
-    defaultGridChildren: [
-      {
-        componentName: 'Image',
-        layout: {
-          top: 15,
-          left: 10,
-          height: 100,
-        },
-        properties: ['source'],
-        accessorKey: 'imageURL',
-      },
-      {
-        componentName: 'Text',
-        layout: {
-          top: 20,
-          left: 10,
-          height: 30,
-        },
-        properties: ['text'],
-        accessorKey: 'text',
-      },
-      {
-        componentName: 'Button',
-        layout: {
-          top: 30,
-          left: 0,
-          height: 30,
-        },
-        incrementWidth: 2,
-        properties: ['text'],
-        accessorKey: 'buttonText',
-      },
-    ],
     component: 'Listview',
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
