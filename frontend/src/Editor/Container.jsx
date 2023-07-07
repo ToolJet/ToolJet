@@ -121,13 +121,14 @@ export const Container = ({
 
   useEffect(() => {
     setBoxes(components);
-
-    //making sure updateCanvasHeight runs only once
-    if (components && !canvasHeight) {
-      updateCanvasHeight(components);
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(components)]);
+
+  //listening to no of component change to handle addition/deletion of widgets
+  const noOfBoxs = Object.values(boxes || []).length;
+  useEffect(() => {
+    updateCanvasHeight(boxes);
+  }, [noOfBoxs]);
 
   const moveBox = useCallback(
     (id, layouts) => {
@@ -252,7 +253,6 @@ export const Container = ({
         };
 
         setBoxes(newBoxes);
-        updateCanvasHeight(newBoxes);
 
         setSelectedComponent(newComponent.id, newComponent.component);
 
