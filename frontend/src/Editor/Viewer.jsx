@@ -493,7 +493,7 @@ class ViewerComponent extends React.Component {
       return Math.max(max, sum);
     }, 0);
 
-    return `max(100vh, ${maxHeight + 250}px)`;
+    return `max(100vh, ${maxHeight + 100}px)`;
   };
 
   componentWillUnmount() {
