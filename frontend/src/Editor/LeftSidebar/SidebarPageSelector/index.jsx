@@ -38,10 +38,11 @@ const LeftSidebarPageSelector = ({
   const [haveUserPinned, setHaveUserPinned] = useState(false);
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+  const { enableReleasedVersionPopupState, isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -90,7 +91,7 @@ const LeftSidebarPageSelector = ({
               <Button
                 title={'Add Page'}
                 onClick={() => {
-                  if (isVersionReleased) {
+                  if (isVersionReleased || isEditorFreezed) {
                     enableReleasedVersionPopupState();
                     return;
                   }

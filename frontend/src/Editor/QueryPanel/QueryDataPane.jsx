@@ -24,9 +24,10 @@ export const QueryDataPane = ({
   const { loadingDataQueries } = useDataQueriesStore();
   const dataQueries = useDataQueries();
   const [filteredQueries, setFilteredQueries] = useState(dataQueries);
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -77,7 +78,7 @@ export const QueryDataPane = ({
           <button
             data-cy={`button-add-new-queries`}
             className={cx(`col-auto d-flex align-items-center py-1 rounded default-secondary-button`, {
-              disabled: isVersionReleased,
+              disabled: isVersionReleased || isEditorFreezed,
               'theme-dark': darkMode,
             })}
             onClick={handleAddNewQuery}

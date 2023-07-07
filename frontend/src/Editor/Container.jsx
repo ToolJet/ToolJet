@@ -57,11 +57,12 @@ export const Container = ({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const components = appDefinition.pages[currentPageId]?.components ?? {};
-  const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+  const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       appVersionsId: state?.editingVersion?.id,
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -80,7 +81,7 @@ export const Container = ({
   useHotkeys(
     'meta+v, control+v',
     () => {
-      if (isContainerFocused && !isVersionReleased) {
+      if (isContainerFocused && !(isVersionReleased || isEditorFreezed)) {
         navigator.clipboard.readText().then((cliptext) => {
           try {
             addComponents(
@@ -242,7 +243,7 @@ export const Container = ({
   );
 
   function onDragStop(e, componentId, direction, currentLayout) {
-    if (isVersionReleased) {
+    if (isVersionReleased || isEditorFreezed) {
       enableReleasedVersionPopupState();
       return;
     }
@@ -280,7 +281,7 @@ export const Container = ({
   }
 
   function onResizeStop(id, e, direction, ref, d, position) {
-    if (isVersionReleased) {
+    if (isVersionReleased || isEditorFreezed) {
       enableReleasedVersionPopupState();
       return;
     }

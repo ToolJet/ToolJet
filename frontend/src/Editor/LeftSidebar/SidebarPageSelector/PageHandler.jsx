@@ -39,12 +39,14 @@ export const PageHandler = ({
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
+
   const handleClose = () => {
     setShowEditModal(false);
     setShowPagehandlerMenu(true);
@@ -160,7 +162,7 @@ export const PageHandler = ({
             )}
           </div>
           <div className="col-auto">
-            {(isHovered || isSelected) && !isVersionReleased && (
+            {(isHovered || isSelected) && !(isVersionReleased || isEditorFreezed) && (
               <PagehandlerMenu
                 page={page}
                 darkMode={darkMode}

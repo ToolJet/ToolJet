@@ -55,10 +55,11 @@ export const SubContainer = ({
   });
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
-  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+  const { enableReleasedVersionPopupState, isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -326,7 +327,7 @@ export const SubContainer = ({
   }
 
   function onDragStop(e, componentId, direction, currentLayout) {
-    if (isVersionReleased) {
+    if (isVersionReleased || isEditorFreezed) {
       enableReleasedVersionPopupState();
       return;
     }
@@ -371,7 +372,7 @@ export const SubContainer = ({
   }
 
   function onResizeStop(id, e, direction, ref, d, position) {
-    if (isVersionReleased) {
+    if (isVersionReleased || isEditorFreezed) {
       enableReleasedVersionPopupState();
       return;
     }

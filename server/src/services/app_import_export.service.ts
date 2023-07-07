@@ -172,6 +172,10 @@ export class AppImportExportService {
     return importedApp;
   }
 
+  /*
+   * With new multi-env changes. the imported apps will not have any released versions from now (if the importing schema has any currentVersionId).
+   * All version's default environment will be development or least priority environment only.
+   */
   async buildImportedAppAssociations(manager: EntityManager, importedApp: App, appParams: any, user: User) {
     const dataSourceMapping = {};
     const defaultDataSourceIdMapping = {};
@@ -179,7 +183,6 @@ export class AppImportExportService {
     const appVersionMapping = {};
     const appEnvironmentMapping = {};
     const appDefaultEnvironmentMapping = {};
-    let currentVersionId: string;
     const dataSources = appParams?.dataSources || [];
     const dataQueries = appParams?.dataQueries || [];
     const appVersions = appParams?.appVersions || [];
@@ -224,7 +227,7 @@ export class AppImportExportService {
         const { appEnvironments } = organization;
         if (appEnvironments.length === 1) currentEnvironmentId = appEnvironments[0].id;
         else {
-          organization.appEnvironments.map((appEnvironment) => {
+          appEnvironments.map((appEnvironment) => {
             if (appEnvironment.priority === 1) currentEnvironmentId = appEnvironment.id;
           });
         }
@@ -239,8 +242,6 @@ export class AppImportExportService {
         updatedAt: new Date(),
       });
       await manager.save(version);
-
-      await manager.update(App, importedApp, { currentVersionId: version.id });
 
       // Create default data sources
       const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
@@ -319,16 +320,13 @@ export class AppImportExportService {
       });
       envIdArray = [...organization.appEnvironments.map((env) => env.id)];
       if (appEnvironments.length > 0) defaultAppEnvironmentId = appEnvironments.find((env: any) => env.isDefault)?.id;
-      if (
-        (appVersion.currentEnvironmentId && defaultAppEnvironments.length === 1) ||
-        !appVersion.currentEnvironmentId
-      ) {
-        //importing to CE or old version without current environment id
+
+      //app is exported to CE
+      if (defaultAppEnvironments.length === 1) {
         currentEnvironmentId = organization.appEnvironments.find((env: any) => env.isDefault)?.id;
-      } else if (appVersion.currentEnvironmentId && appEnvironments) {
-        //importing to EE. new version with currentEnvironmentId
-        const oldEnvironment = appEnvironments.find((env: any) => env.id === appVersion.currentEnvironmentId);
-        currentEnvironmentId = organization.appEnvironments.find((env) => env.name === oldEnvironment.name)?.id;
+      } else {
+        //to EE or cloud
+        currentEnvironmentId = organization.appEnvironments.find((env) => env.priority === 1)?.id;
       }
 
       const version = manager.create(AppVersion, {
@@ -342,11 +340,6 @@ export class AppImportExportService {
       await manager.save(version);
 
       appDefaultEnvironmentMapping[appVersion.id] = envIdArray;
-
-      if (appVersion.id == appParams.currentVersionId) {
-        currentVersionId = version.id;
-        await manager.update(App, importedApp, { currentVersionId });
-      }
       appVersionMapping[appVersion.id] = version.id;
     }
 

@@ -40,10 +40,11 @@ export const QueryManagerHeader = forwardRef(
     const { t } = useTranslation();
     const queryName = selectedQuery?.name ?? '';
     const [renamingQuery, setRenamingQuery] = useState(false);
-    const { isVersionReleased, editingVersionId } = useAppVersionStore(
+    const { isVersionReleased, editingVersionId, isEditorFreezed } = useAppVersionStore(
       (state) => ({
         isVersionReleased: state.isVersionReleased,
         editingVersionId: state.editingVersion?.id,
+        isEditorFreezed: state.isEditorFreezed,
       }),
       shallow
     );
@@ -119,10 +120,12 @@ export const QueryManagerHeader = forwardRef(
               {renamingQuery ? renderRenameInput() : queryName}
             </span>
             <span
-              className={cx('breadcrum-rename-query-icon', { 'd-none': renamingQuery && isVersionReleased })}
+              className={cx('breadcrum-rename-query-icon', {
+                'd-none': renamingQuery && (isVersionReleased || isEditorFreezed),
+              })}
               onClick={() => setRenamingQuery(true)}
             >
-              {!isVersionReleased && <RenameIcon />}
+              {!(isVersionReleased || isEditorFreezed) && <RenameIcon />}
             </span>
           </div>
         </>
@@ -174,7 +177,7 @@ export const QueryManagerHeader = forwardRef(
         <button
           className={`default-tertiary-button ${buttonLoadingState(
             isCreationInProcess || isUpdationInProcess,
-            isVersionReleased
+            isVersionReleased || isEditorFreezed
           )}`}
           onClick={() => createOrUpdateDataQuery(false)}
           disabled={buttonDisabled}

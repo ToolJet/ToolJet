@@ -10,9 +10,10 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
   const [searchQuery, setSearchQuery] = useState('');
   const { t } = useTranslation();
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -134,7 +135,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   }
 
   return (
-    <div className={`components-container mx-3 ${isVersionReleased && 'disabled'}`}>
+    <div className={`components-container mx-3 ${isVersionReleased || (isEditorFreezed && 'disabled')}`}>
       <div className="input-icon">
         <input
           type="text"

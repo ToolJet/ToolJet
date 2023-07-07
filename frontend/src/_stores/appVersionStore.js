@@ -5,6 +5,7 @@ const initialState = {
   isUserEditingTheVersion: false,
   releasedVersionId: null,
   isVersionReleased: false,
+  isEditorFreezed: false,
 };
 
 export const useAppVersionStore = create(
@@ -21,6 +22,7 @@ export const useAppVersionStore = create(
             releasedVersionId: versionId,
             isVersionReleased: get().editingVersion?.id ? get().editingVersion?.id === versionId : false,
           }),
+        onEditorFreeze: (value = false) => set({ isEditorFreezed: value }),
       },
     }),
     { name: 'App Version Manager Store' }

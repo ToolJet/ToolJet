@@ -17,10 +17,11 @@ export const ReleaseVersionButton = function DeployVersionButton({
 }) {
   const [isReleasing, setIsReleasing] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const { isVersionReleased, editingVersion } = useAppVersionStore(
+  const { isVersionReleased, editingVersion, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
       editingVersion: state.editingVersion,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );

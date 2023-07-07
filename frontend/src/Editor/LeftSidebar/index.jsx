@@ -63,9 +63,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [popoverContentHeight, setPopoverContentHeight] = useState(queryPanelHeight);
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -234,7 +235,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         popoverContentHeight={popoverContentHeight}
         setPinned={handlePin}
         pinned={pinned}
-        isVersionReleased={isVersionReleased}
+        isVersionReleased={isVersionReleased || isEditorFreezed}
       />
     ),
     database: (
@@ -247,7 +248,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         dataQueriesChanged={dataQueriesChanged}
         toggleDataSourceManagerModal={toggleDataSourceManagerModal}
         showDataSourceManagerModal={showDataSourceManagerModal}
-        isVersionReleased={isVersionReleased}
+        isVersionReleased={isVersionReleased || isEditorFreezed}
         onDeleteofAllDataSources={() => {
           handleSelectedSidebarItem(null);
           handlePin(false);
@@ -313,7 +314,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
       />
 
       {config.COMMENT_FEATURE_ENABLE && (
-        <div className={`${isVersionReleased && 'disabled'}`}>
+        <div className={`${(isVersionReleased || isEditorFreezed) && 'disabled'}`}>
           <LeftSidebarComment
             selectedSidebarItem={showComments ? 'comments' : ''}
             toggleComments={toggleComments}

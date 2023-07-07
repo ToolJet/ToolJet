@@ -5,16 +5,17 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 
 export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, showPageViwerPageNavitation }) => {
-  const { isVersionReleased, enableReleasedVersionPopupState } = useAppVersionStore(
+  const { isVersionReleased, enableReleasedVersionPopupState, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
     }),
     shallow
   );
 
   const onChange = () => {
-    if (isVersionReleased) {
+    if (isVersionReleased || isEditorFreezed) {
       enableReleasedVersionPopupState();
       return;
     }

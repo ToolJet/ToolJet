@@ -35,9 +35,10 @@ export const LeftSidebarDataSources = ({
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -159,7 +160,7 @@ export const LeftSidebarDataSources = ({
             {dataSource.name}
           </span>
         </div>
-        {showDeleteIcon && !isVersionReleased && (
+        {showDeleteIcon && !(isVersionReleased || isEditorFreezed) && (
           <div className="col-auto">
             <button className="btn btn-sm p-1 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
               <div>
@@ -168,7 +169,7 @@ export const LeftSidebarDataSources = ({
             </button>
           </div>
         )}
-        {convertToGlobal && admin && !isVersionReleased && (
+        {convertToGlobal && admin && !(isVersionReleased || isEditorFreezed) && (
           <div className="col-auto">
             <OverlayTrigger
               rootClose={false}
@@ -219,7 +220,7 @@ export const LeftSidebarDataSources = ({
         globalDataSourcesChanged={globalDataSourcesChanged}
         selectedDataSource={selectedDataSource}
         currentAppEnvironmentId={currentAppEnvironmentId}
-        isVersionReleased={isVersionReleased}
+        isVersionReleased={isVersionReleased || isEditorFreezed}
       />
     </>
   );
@@ -234,9 +235,10 @@ const LeftSidebarDataSourcesContainer = ({
   pinned,
 }) => {
   const { t } = useTranslation();
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -282,7 +284,7 @@ const LeftSidebarDataSourcesContainer = ({
           </div>
         </div>
       </div>
-      {!isVersionReleased && (
+      {!(isVersionReleased || isEditorFreezed) && (
         <div className="add-datasource-btn w-100 p-3">
           <Link to={getPrivateRoute('global_datasources')}>
             <div className="p-2 color-primary cursor-pointer">

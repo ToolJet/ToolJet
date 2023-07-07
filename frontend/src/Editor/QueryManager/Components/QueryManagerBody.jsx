@@ -69,9 +69,10 @@ export const QueryManagerBody = forwardRef(
     const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
 
     const defaultOptions = useRef({});
-    const { isVersionReleased } = useAppVersionStore(
+    const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
       (state) => ({
         isVersionReleased: state.isVersionReleased,
+        isEditorFreezed: state.isEditorFreezed,
       }),
       shallow
     );
@@ -198,7 +199,7 @@ export const QueryManagerBody = forwardRef(
       return (
         <div
           className={cx(`datasource-picker`, {
-            'disabled ': isVersionReleased,
+            'disabled ': isVersionReleased || isEditorFreezed,
           })}
         >
           <label className="form-label col-md-3" data-cy={'label-select-datasource'}>
@@ -262,7 +263,7 @@ export const QueryManagerBody = forwardRef(
           <div>
             <div
               className={cx({
-                'disabled ': isVersionReleased,
+                'disabled ': isVersionReleased || isEditorFreezed,
               })}
             >
               <ElementToRender
@@ -378,7 +379,7 @@ export const QueryManagerBody = forwardRef(
       return (
         <div
           className={cx(`advanced-options-container font-weight-400 border-top query-manager-border-color`, {
-            'disabled ': isVersionReleased,
+            'disabled ': isVersionReleased || isEditorFreezed,
           })}
         >
           <div className="advance-options-input-form-container">
@@ -407,7 +408,7 @@ export const QueryManagerBody = forwardRef(
             onChange={(newDataSource) => {
               changeDataQuery(newDataSource);
             }}
-            isVersionReleased={isVersionReleased}
+            isVersionReleased={isVersionReleased || isEditorFreezed}
           />
         </div>
       );

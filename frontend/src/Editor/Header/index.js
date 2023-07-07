@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import AppLogo from '@/_components/AppLogo';
 import { get } from 'lodash';
@@ -46,18 +46,17 @@ export default function EditorHeader({
   saveEditingVersion,
   onVersionDelete,
   currentUser,
-  onEditorFreeze,
   getStoreData,
-  shouldFreeze,
 }) {
   const { is_maintenance_on } = app;
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
   const [promoteModalData, setPromoteModalData] = useState(null);
-  const { isVersionReleased, editingVersion } = useAppVersionStore(
+  const { isVersionReleased, editingVersion, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
       editingVersion: state.editingVersion,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -122,7 +121,7 @@ export default function EditorHeader({
                       darkMode={darkMode}
                       toggleAppMaintenance={toggleAppMaintenance}
                       is_maintenance_on={is_maintenance_on}
-                      shouldFreeze={shouldFreeze}
+                      shouldFreeze={isVersionReleased || isEditorFreezed}
                     />
                     <EditAppName appId={app.id} appName={app.name} onNameChanged={onNameChanged} />
                   </div>
@@ -161,7 +160,6 @@ export default function EditorHeader({
                       setEnvironments={setEnvironments}
                       currentEnvironment={currentEnvironment}
                       setCurrentEnvironment={setCurrentEnvironment}
-                      onEditorFreeze={onEditorFreeze}
                     />
                   )}
                   {editingVersion && (

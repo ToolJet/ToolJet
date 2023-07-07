@@ -429,7 +429,7 @@ class EditorComponent extends React.Component {
     );
   };
 
-  setAppDefinitionFromVersion = (version, shouldWeEditVersion = true) => {
+  setAppDefinitionFromVersion = (version, shouldWeEditVersion = true, freezeEditor = false) => {
     if (version?.id !== this.props.editingVersion?.id) {
       this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), {
         skipAutoSave: true,
@@ -440,11 +440,11 @@ class EditorComponent extends React.Component {
         (this.canUndo = false), (this.canRedo = false);
       }
       useAppVersionStore.getState().actions.updateEditingVersion(version);
+      useAppVersionStore.getState().actions.onEditorFreeze(freezeEditor);
 
       this.setState(
         {
           isSaving: false,
-          isEditorFreezed: false,
         },
         () => {
           shouldWeEditVersion && this.saveEditingVersion(true);
@@ -646,7 +646,7 @@ class EditorComponent extends React.Component {
 
   removeComponents = () => {
     // will not remove components if version is released or editor is freezed
-    if (this.state.isEditorFreezed || this.props.isVersionReleased) return;
+    if (this.props.isEditorFreezed || this.props.isVersionReleased) return;
     if (!this.props.isVersionReleased && this.state?.selectedComponents?.length > 1) {
       let newDefinition = cloneDeep(this.state.appDefinition);
       const selectedComponents = this.state?.selectedComponents;
@@ -1512,16 +1512,6 @@ class EditorComponent extends React.Component {
     });
   };
 
-  /**
-   * disable/enable editor for restricting user actions
-   * @param {Boolean} value
-   */
-  onEditorFreeze = (value = false) => {
-    this.setState(() => ({
-      isEditorFreezed: value,
-    }));
-  };
-
   getCanvasMinWidth = () => {
     /**
      * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
@@ -1594,7 +1584,7 @@ class EditorComponent extends React.Component {
           darkMode={this.props.darkMode}
         />
         {this.props.isVersionReleased && <ReleasedVersionError />}
-        {this.props.isVersionReleased && <FreezeVersionInfo />}
+        {!this.props.isVersionReleased && this.props.isEditorFreezed && <FreezeVersionInfo />}
         <EditorContextWrapper>
           <EditorHeader
             darkMode={this.props.darkMode}
@@ -1624,9 +1614,7 @@ class EditorComponent extends React.Component {
             appEnvironmentChanged={this.appEnvironmentChanged}
             onVersionDelete={this.onVersionDelete}
             currentUser={this.state.currentUser}
-            onEditorFreeze={this.onEditorFreeze}
             getStoreData={this.getStoreData}
-            shouldFreeze={this.props.isVersionReleased || this.state.isEditorFreezed}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
@@ -1671,7 +1659,6 @@ class EditorComponent extends React.Component {
                 showHideViewerNavigationControls={this.showHideViewerNavigation}
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
-                isVersionReleased={this.props.isVersionReleased || this.state.isEditorFreezed}
                 setEditorMarginLeft={this.handleEditorMarginLeftChange}
               />
               {!showComments && (
@@ -1888,12 +1875,23 @@ class EditorComponent extends React.Component {
 }
 
 const withStore = (Component) => (props) => {
-  const { isVersionReleased, editingVersion } = useAppVersionStore(
-    (state) => ({ isVersionReleased: state.isVersionReleased, editingVersion: state.editingVersion }),
+  const { isVersionReleased, editingVersion, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      editingVersion: state.editingVersion,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
     shallow
   );
 
-  return <Component {...props} isVersionReleased={isVersionReleased} editingVersion={editingVersion} />;
+  return (
+    <Component
+      {...props}
+      isVersionReleased={isVersionReleased}
+      editingVersion={editingVersion}
+      isEditorFreezed={isEditorFreezed}
+    />
+  );
 };
 
 export const Editor = withTranslation()(withRouter(withStore(EditorComponent)));

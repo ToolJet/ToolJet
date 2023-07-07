@@ -24,9 +24,10 @@ export const QueryCard = ({
   const { deleteDataQueries, renameQuery } = useDataQueriesActions();
   const { setSelectedQuery, setSelectedDataSource, setUnSavedChanges } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
@@ -140,7 +141,7 @@ export const QueryCard = ({
             </OverlayTrigger>
           )}
         </div>
-        {!isVersionReleased && (
+        {!(isVersionReleased || isEditorFreezed) && (
           <div className="col-auto query-rename-delete-btn">
             <div
               className={`col-auto ${renamingQuery && 'display-none'} rename-query`}
