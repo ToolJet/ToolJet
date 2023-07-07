@@ -398,13 +398,7 @@ export const SubContainer = ({
       // should not be removed.
       left = (x * 100) / subContainerWidth;
     }
-
-    if (listmode == 'grid') {
-      width = width + (deltaWidth * (43 / columns)) / subContainerWidth;
-    } else {
-      width = width + (deltaWidth * 43) / subContainerWidth;
-    }
-
+    width = width + (deltaWidth * 43) / subContainerWidth;
     height = height + deltaHeight;
 
     let newBoxes = {
