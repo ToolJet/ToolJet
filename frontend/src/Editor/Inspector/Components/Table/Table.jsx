@@ -195,6 +195,7 @@ class TableComponent extends React.Component {
                 { name: 'Toggle switch', value: 'toggle' },
                 { name: 'Date Picker', value: 'datepicker' },
                 { name: 'Image', value: 'image' },
+                { name: 'Link', value: 'link' },
               ]}
               value={column.columnType}
               search={true}
@@ -670,8 +671,58 @@ class TableComponent extends React.Component {
               </div>
             </>
           )}
+          {column.columnType === 'link' && (
+            <>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('w', 'Link key')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.linkKey ?? 'https://dev.to/'}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'linkkey', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'linkKey')}
+                  popOverCallback={(showing) => {
+                    this.setColumnPopoverRootCloseBlocker('linkKey', showing);
+                  }}
+                />
+              </div>
+              <div className="field mb-2">
+                <label className="form-label">{this.props.t('w', 'Link label')}</label>
+                <CodeHinter
+                  currentState={this.props.currentState}
+                  initialValue={column.linkLabel ?? ''}
+                  theme={this.props.darkMode ? 'monokai' : 'default'}
+                  mode="javascript"
+                  lineNumbers={false}
+                  placeholder={''}
+                  onChange={(value) => this.onColumnItemChange(index, 'linkLabel', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'linkLabel')}
+                  popOverCallback={(showing) => {
+                    this.setColumnPopoverRootCloseBlocker('linkLabel', showing);
+                  }}
+                />
+              </div>
+              <div className="field mb-2">
+                <ProgramaticallyHandleToggleSwitch
+                  label="Link target"
+                  currentState={this.state.currentState}
+                  index={index}
+                  darkMode={this.props.darkMode}
+                  callbackFunction={this.onColumnItemChange}
+                  property="linkTarget"
+                  props={column}
+                  component={this.props.component}
+                  paramMeta={{ type: 'select', displayName: 'Link Target' }}
+                  paramType="properties"
+                />
+              </div>
+            </>
+          )}
 
-          {column.columnType !== 'image' && (
+          {!['image', 'link'].includes(column.columnType) && (
             <ProgramaticallyHandleToggleSwitch
               label="make editable"
               currentState={this.state.currentState}

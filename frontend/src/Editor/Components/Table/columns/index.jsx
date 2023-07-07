@@ -7,6 +7,7 @@ import { Tags } from '../Tags';
 import { Radio } from '../Radio';
 import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
+import { Link } from '../Link';
 import moment from 'moment';
 
 export default function generateColumnsData({
@@ -439,6 +440,14 @@ export default function generateColumnsData({
                   }}
                   tableRef={tableRef}
                 />
+              </div>
+            );
+          }
+          case 'link': {
+            const { linkKey, linkLabel, linkTarget } = column;
+            return (
+              <div className="h-100 d-flex align-items-center">
+                <Link linkKey={linkKey} linkLabel={linkLabel} linkTarget={linkTarget} />
               </div>
             );
           }
