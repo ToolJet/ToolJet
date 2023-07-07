@@ -108,6 +108,8 @@ export const Listview = function Listview({
             }}
           >
             <SubContainer
+              columns={columns}
+              listmode={mode}
               parentComponent={component}
               containerCanvasWidth={width}
               parent={`${id}`}
