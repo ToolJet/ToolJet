@@ -54,10 +54,6 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
       editOrganization();
     }
   };
-    if (e.keyCode === 13) {
-      editOrganization();
-    }
-  };
 
   const closeModal = () => {
     setShowEditOrg(false);
