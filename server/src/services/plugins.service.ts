@@ -185,9 +185,11 @@ export class PluginsService {
         fetch(`${host}/marketplace-assets/${id}/lib/manifest.json`),
       ]);
 
-      const files = promises.map((promise) => {
+      const files = promises.map(async (promise) => {
         if (!promise.ok) throw new InternalServerErrorException();
-        return promise.arrayBuffer();
+        const arrayBuffer = await promise.arrayBuffer();
+        const textDecoder = new TextDecoder();
+        return textDecoder.decode(arrayBuffer);
       });
 
       const [indexFile, operationsFile, iconFile, manifestFile] = await Promise.all(files);
