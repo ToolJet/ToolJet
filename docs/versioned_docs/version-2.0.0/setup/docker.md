@@ -47,8 +47,6 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
   curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/.env.example
   mv .env.example .env
   ```
-
-  4. These are the new changes to be added:
   
   Database configuration: 
 
@@ -103,7 +101,7 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
   If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
   :::
 
-  5. Once you've populated the `.env` file, run
+  4. Once you've populated the `.env` file, run
 
   :::note
   Kindly uncomment PostgREST service within the [docker-compose.yaml](https://raw.githubusercontent.com/tooljet/tooljet/main/deploy/docker/docker-compose.yaml) if you intend to use tooljet database.
@@ -122,7 +120,7 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
   setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
   :::
 
-  6. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
+  5. If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server.
 
 
   </TabItem>
