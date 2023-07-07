@@ -356,3 +356,31 @@ const Icon = (props) => {
   }
 };
 export default Icon;
+
+export const TJPreviewIcon = () => {
+  const importAll = (context) => {
+    const keys = context.keys();
+    return keys
+      .filter((key) => key !== './index.js') // Exclude self
+      .map((key) => ({
+        component: context(key).default,
+        name: key.substring(2, key.length - 3), // Extract component name from file path
+      }));
+  };
+
+  const filesContext = require.context('./', false, /\.jsx$/);
+  const files = importAll(filesContext);
+
+  console.log('FILES', files);
+
+  return (
+    <div>
+      {files.map(({ component: FileComponent, name }, index) => (
+        <span key={index} className="me-1">
+          <FileComponent />
+          <span>{name}</span>
+        </span>
+      ))}
+    </div>
+  );
+};

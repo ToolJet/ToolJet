@@ -4,7 +4,7 @@ import cx from 'classnames';
 import { Checkbox } from '@/_ui/CheckBox';
 import { Button } from '@/_ui/LeftSidebar';
 import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
-import Filter from '@/_ui/Icon/bulkIcons/Filter';
+import Filter from '@/_ui/Icon/solidIcons/Filter';
 import Arrowleft from '@/_ui/Icon/bulkIcons/Arrowleft';
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import SortArrowUp from '@/_ui/Icon/bulkIcons/SortArrowUp';
@@ -146,13 +146,10 @@ const DataSourceSelector = ({
   }, []);
 
   return (
-    <div className="card-body p-0">
+    <div className="card-body p-0 mt-1">
       <div className="border-bottom d-flex px-2 mb-2">
         <div className="d-flex align-items-center mb-1">
-          <button
-            className="border-primary border-0 border-end border-2 bg-transparent rounded-0 p-0"
-            onClick={onBackBtnClick}
-          >
+          <button className="border-0 bg-transparent rounded-0 p-0" onClick={onBackBtnClick}>
             <Arrowleft fill="#3E63DD" tailOpacity={1} />
           </button>
         </div>
