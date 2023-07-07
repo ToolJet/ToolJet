@@ -793,7 +793,7 @@ export function Table({
   }, [JSON.stringify(changeSet)]);
 
   useEffect(() => {
-    if (!_.isEmpty(defaultSelectedRow) && typeof defaultSelectedRow === 'object') {
+    if (allowSelection && typeof defaultSelectedRow === 'object' && !_.isEmpty(defaultSelectedRow)) {
       const preSelectedRowDetails = getDetailsOfPreSelectedRow();
       const selectedRow = preSelectedRowDetails?.original ?? {};
       const selectedRowId = preSelectedRowDetails?.id ?? null;

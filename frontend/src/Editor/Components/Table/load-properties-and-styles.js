@@ -59,8 +59,7 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
 
   const showAddNewRowButton = properties?.showAddNewRowButton ?? true;
   const allowSelection = properties?.allowSelection ?? (showBulkSelector || highlightSelectedRow) ? true : false;
-  const defaultSelectedRow = allowSelection ? properties?.defaultSelectedRow : undefined;
-
+  const defaultSelectedRow = properties?.defaultSelectedRow ?? { id: 1 };
   return {
     color,
     serverSidePagination,

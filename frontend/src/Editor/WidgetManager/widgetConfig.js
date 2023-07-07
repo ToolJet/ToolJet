@@ -499,7 +499,7 @@ export const widgets = [
         actions: { value: [] },
         enabledSort: { value: '{{true}}' },
         hideColumnSelectorButton: { value: '{{false}}' },
-        defaultSelectedRow: { value: '{{{"name":"Sarah"}}}' },
+        defaultSelectedRow: { value: '{{{"id":1}}}' },
         showAddNewRowButton: { value: '{{true}}' },
         allowSelection: { value: '{{true}}' },
       },
