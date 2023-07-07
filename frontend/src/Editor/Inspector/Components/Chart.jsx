@@ -57,7 +57,6 @@ class Chart extends React.Component {
 
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState } = this.state;
-
     const data = this.state.component.component.definition.properties.data;
 
     const jsonDescription = this.state.component.component.definition.properties.jsonDescription;
@@ -98,6 +97,21 @@ class Chart extends React.Component {
         currentState
       ),
     });
+
+    if (plotFromJson) {
+      items.push({
+        title: 'Bar mode',
+        children: renderElement(
+          component,
+          componentMeta,
+          paramUpdated,
+          dataQueries,
+          'barmode',
+          'properties',
+          currentState
+        ),
+      });
+    }
 
     if (plotFromJson) {
       items.push({

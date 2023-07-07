@@ -21,7 +21,6 @@ const QueryManager = ({
   mode,
   dataQueriesChanged,
   appId,
-  editingVersionId,
   currentState,
   darkMode,
   apps,
@@ -31,7 +30,6 @@ const QueryManager = ({
   editorRef,
   createDraftQuery,
   updateDraftQueryName,
-  isVersionReleased,
 }) => {
   const loadingDataSources = useLoadingDataSources();
   const dataSources = useDataSources();
@@ -65,6 +63,7 @@ const QueryManager = ({
       runQuery(editorRef, queryToBeRun.id, queryToBeRun.name);
       setQueryToBeRun(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editorRef, queryToBeRun]);
 
   useEffect(() => {
@@ -96,11 +95,9 @@ const QueryManager = ({
         previewLoading={previewLoading}
         currentState={currentState}
         options={options}
-        editingVersionId={editingVersionId}
         appId={appId}
         ref={previewPanelRef}
         editorRef={editorRef}
-        isVersionReleased={isVersionReleased}
       />
       <QueryManagerBody
         darkMode={darkMode}
@@ -116,7 +113,6 @@ const QueryManager = ({
         createDraftQuery={createDraftQuery}
         setOptions={setOptions}
         ref={previewPanelRef}
-        isVersionReleased={isVersionReleased}
       />
     </div>
   );

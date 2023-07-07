@@ -24,8 +24,8 @@ export const OtherSources = [RunjsSchema.source, RunpySchema.source, TooljetDbSc
 export const DataSourceTypes = [...DataBaseSources, ...ApiSources, ...CloudStorageSources, ...OtherSources];
 
 export const SourceComponents = Object.keys(allManifests).reduce((accumulator, currentValue) => {
-  accumulator[currentValue] = (props) => <DynamicForm schema={allManifests[currentValue]} {...props} />;
+  accumulator[currentValue] = (props) => <DynamicForm schema={allManifests[currentValue]} isGDS={true} {...props} />;
   return accumulator;
 }, {});
 
-export const SourceComponent = (props) => <DynamicForm schema={props.dataSourceSchema} {...props} />;
+export const SourceComponent = (props) => <DynamicForm schema={props.dataSourceSchema} isGDS={true} {...props} />;
