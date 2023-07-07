@@ -480,6 +480,22 @@ class ViewerComponent extends React.Component {
     return computedCanvasMaxWidth;
   };
 
+  calcPageHeight = () => {
+    const { currentLayout, currentPageId, appDefinition: { pages } = {} } = this.state;
+    const curentPageComponents = Object.values(pages?.[currentPageId]?.components || []);
+
+    const maxHeight = curentPageComponents.reduce((max, component) => {
+      const layout = component?.layouts?.[currentLayout];
+      if (!layout) {
+        return 0;
+      }
+      const sum = layout.top + layout.height;
+      return Math.max(max, sum);
+    }, 0);
+
+    return `max(100vh, ${maxHeight + 250}px)`;
+  };
+
   componentWillUnmount() {
     this.subscription && this.subscription.unsubscribe();
   }
@@ -607,9 +623,10 @@ class ViewerComponent extends React.Component {
                         className="canvas-area"
                         style={{
                           width: currentCanvasWidth,
-                          minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
+                          // minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                           maxWidth: canvasMaxWidth,
-                          maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
+                          // maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
+                          height: this.calcPageHeight(),
                           backgroundColor: this.computeCanvasBackgroundColor(),
                           margin: 0,
                           padding: 0,
