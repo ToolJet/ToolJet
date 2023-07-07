@@ -305,7 +305,7 @@ describe("RunJS", () => {
     );
     query("save");
     cy.reload();
-    cy.wait(3000);
+    cy.wait(5000);
     cy.get('[data-cy="modal-confirm-button"]').realClick();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,

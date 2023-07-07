@@ -1122,7 +1122,7 @@ describe("Table", () => {
 
   it("should verify add new row", () => {
     addNewRow();
-    cy.contains("Save").click();
+    cy.contains(".btn-primary", "Save").click();
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(".tooltip-inner").invoke("hide");
     verifyNodeData("components", "Object", "1 entry ");

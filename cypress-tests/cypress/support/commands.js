@@ -28,7 +28,6 @@ Cypress.Commands.add("verifyToastMessage", (selector, message) => {
   cy.get(selector).should("contain.text", message);
   cy.get("body").then(($body) => {
     if ($body.find(commonSelectors.toastCloseButton).length > 0) {
-      cy.closeToastMessage();
       cy.wait(200);
     }
   });
@@ -98,8 +97,8 @@ Cypress.Commands.add("createApp", (appName) => {
     } else {
       cy.get(commonSelectors.appCreateButton).click();
     }
-    cy.intercept("GET", "/api/apps/**/versions").as("appVersion");
-    cy.wait("@appVersion", { timeout: 15000 });
+    cy.intercept("GET", "/api/comments/**").as("comments");
+    cy.wait("@comments", { timeout: 15000 });
     cy.skipEditorPopover();
   });
 });
@@ -212,6 +211,7 @@ Cypress.Commands.add("renameApp", (appName) => {
     `{selectAll}{backspace}${appName}`,
     { force: true }
   );
+  cy.forceClickOnCanvas();
   cy.waitForAutoSave();
 });
 
@@ -286,9 +286,9 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
 });
 
 Cypress.Commands.add("skipEditorPopover", () => {
+  cy.wait(2000);
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip", { timeout: 2000 })) {
-      cy.wait(200);
       cy.get(commonSelectors.skipButton).realClick();
     } else {
       cy.log("instructions modal is skipped ");
