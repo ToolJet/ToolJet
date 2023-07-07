@@ -1452,7 +1452,9 @@ class EditorComponent extends React.Component {
       return defaultCanvasMinWidth;
     }
   };
+
   handleEditorMarginLeftChange = (value) => this.setState({ editorMarginLeft: value });
+
   render() {
     const {
       currentSidebarTab,
