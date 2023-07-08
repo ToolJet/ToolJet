@@ -918,6 +918,11 @@ const EmptyStateContainer = ({
                   value={inputValue}
                   placeholder={placeholder}
                   onChange={(e) => set(e.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      handleSend();
+                    }
+                  }}
                 />
               </div>
             </div>
