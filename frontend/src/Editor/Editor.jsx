@@ -1607,7 +1607,7 @@ class EditorComponent extends React.Component {
                     background: !this.props.darkMode && '#f4f6fa',
                   }}
                   onMouseUp={(e) => {
-                    if (['real-canvas', 'modal'].includes(e.target.className)) {
+                    if (['real-canvas show-grid', 'modal'].includes(e.target.className)) {
                       this.setState({ selectedComponents: [], currentSidebarTab: 2, hoveredComponent: false });
                     }
                   }}

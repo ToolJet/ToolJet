@@ -473,12 +473,17 @@ export const SubContainer = ({
     return false;
   }
 
+  const isChildSelected = () => Object.keys(childWidgets).some((key) => key == selectedComponents?.[0]?.id);
   return (
     <div
       ref={drop}
       style={styles}
       id={`canvas-${parent}`}
-      className={`real-canvas ${(isDragging || isResizing) && !readOnly ? 'show-grid' : ''}`}
+      className={`real-canvas ${
+        (isDragging || isResizing || parent.includes(selectedComponents?.[0]?.id) || isChildSelected()) && !readOnly
+          ? ' show-grid'
+          : ''
+      }`}
     >
       {checkParentVisibility() &&
         Object.keys(childWidgets).map((key) => {

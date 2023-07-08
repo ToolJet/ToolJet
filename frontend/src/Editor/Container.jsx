@@ -68,7 +68,6 @@ export const Container = ({
 
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
   const [isContainerFocused, setContainerFocus] = useState(false);
@@ -465,9 +464,7 @@ export const Container = ({
         drop(el);
       }}
       style={styles}
-      className={cx('real-canvas', {
-        'show-grid': isDragging || isResizing,
-      })}
+      className="real-canvas show-grid"
       id="real-canvas"
       data-cy="real-canvas"
     >
@@ -520,7 +517,6 @@ export const Container = ({
               id={key}
               {...boxes[key]}
               mode={mode}
-              resizingStatusChanged={(status) => setIsResizing(status)}
               draggingStatusChanged={(status) => setIsDragging(status)}
               inCanvas={true}
               zoomLevel={zoomLevel}
