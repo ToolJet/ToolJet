@@ -27,7 +27,7 @@ export const Listview = function Listview({
     rowsPerPage = 10,
     enablePagination = false,
     mode,
-    columns,
+    columns = 1,
   } = { ...fallbackProperties, ...properties };
   const { visibility, disabledState, borderRadius, boxShadow } = { ...fallbackStyles, ...styles };
   const backgroundColor =
@@ -46,6 +46,8 @@ export const Listview = function Listview({
   };
 
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
+  const [positiveColumns, setPositiveColumns] = useState(columns);
+
   function onRowClicked(index) {
     setSelectedRowIndex(index);
     setExposedVariable('selectedRowId', index);
@@ -53,10 +55,21 @@ export const Listview = function Listview({
     fireEvent('onRowClicked');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }
+  function onRecordClicked(index) {
+    setSelectedRowIndex(index);
+    setExposedVariable('selectedRecordId', index);
+    setExposedVariable('selectedRecord', childrenData[index]);
+    fireEvent('onRecordClicked');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }
 
   const parentRef = useRef(null);
 
   const [childrenData, setChildrenData] = useState({});
+
+  useEffect(() => {
+    if (columns < 1) setPositiveColumns(1);
+  }, [columns]);
 
   useEffect(() => {
     setExposedVariable('data', {});
@@ -99,16 +112,17 @@ export const Listview = function Listview({
         {filteredData.map((listItem, index) => (
           <div
             className={`list-item ${mode == 'list' && 'w-100'}  ${showBorder ? 'border-bottom' : ''}`}
-            style={{ position: 'relative', height: `${rowHeight}px`, width: `${100 / columns}%` }}
+            style={{ position: 'relative', height: `${rowHeight}px`, width: `${100 / positiveColumns}%` }}
             key={index}
             data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
             onClick={(event) => {
               event.stopPropagation();
+              onRecordClicked(index);
               onRowClicked(index);
             }}
           >
             <SubContainer
-              columns={columns}
+              columns={positiveColumns}
               listmode={mode}
               parentComponent={component}
               containerCanvasWidth={width}

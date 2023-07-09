@@ -754,6 +754,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onOpen',
       'onClose',
       'onRowClicked',
+      'onRecordClicked',
       'onCancelChanges',
       'onSort',
       'onCellValueChanged',

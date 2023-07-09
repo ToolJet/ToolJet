@@ -3842,7 +3842,8 @@ export const widgets = [
       },
     },
     events: {
-      onRowClicked: { displayName: 'Row clicked' },
+      onRowClicked: { displayName: 'Row clicked (Deprecated)' },
+      onRecordClicked: { displayName: 'Record clicked' },
     },
     styles: {
       backgroundColor: {
