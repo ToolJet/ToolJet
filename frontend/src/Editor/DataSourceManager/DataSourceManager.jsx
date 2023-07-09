@@ -918,19 +918,16 @@ const EmptyStateContainer = ({
                   value={inputValue}
                   placeholder={placeholder}
                   onChange={(e) => set(e.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      handleSend();
+                    }
+                  }}
                 />
               </div>
             </div>
             <div className="col-auto">
-              <Button 
-                className="mt-2" 
-                variant="primary" 
-                onClick={handleSend}
-                onKeyPress={(event) => {
-                  if (event.key === 'Enter') {
-                    handleSend();
-                  }
-              }}>
+              <Button className="mt-2" variant="primary" onClick={handleSend}>
                 {t('editor.queryManager.dataSourceManager.send', 'Send')}
               </Button>
             </div>
