@@ -56,7 +56,7 @@ const ConstantTable = ({
                 <Tooltip id="tooltip-for-org-constant-cell" />
                 {constants.map((constant) => (
                   <tr key={constant.id}>
-                    <td>
+                    <td className="p-3">
                       <span
                         data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-name`}
                         data-tooltip-id="tooltip-for-org-constant-cell"
@@ -66,7 +66,7 @@ const ConstantTable = ({
                           : constant.name}
                       </span>
                     </td>
-                    <td className="text-muted">
+                    <td className="text-muted p-3">
                       <a
                         className="text-reset user-email"
                         data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-value`}
@@ -81,39 +81,36 @@ const ConstantTable = ({
                     </td>
 
                     {canUpdateDeleteConstant && (
-                      <td>
+                      <td className="p-3">
                         <div
                           style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}
                           data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-workspace-constant-update`}
                         >
-                          <td>
-                            <ButtonSolid
-                              variant="secondary"
-                              style={{ minWidth: '100px' }}
-                              className="workspace-user-archive-btn tj-text-xsm"
-                              leftIcon="editrectangle"
-                              fill="#3b5ccc"
-                              iconWidth="12"
-                              onClick={() => onEditBtnClicked(constant)}
-                              data-cy="button-user-status-change"
-                            >
-                              Edit
-                            </ButtonSolid>
-                          </td>
-                          <td>
-                            <ButtonSolid
-                              variant="dangerSecondary"
-                              style={{ minWidth: '100px' }}
-                              className="workspace-user-archive-btn tj-text-xsm"
-                              leftIcon="trash"
-                              fill="#E54D2E"
-                              iconWidth="12"
-                              onClick={() => onDeleteBtnClicked(constant)}
-                              data-cy="button-user-status-change"
-                            >
-                              Delete
-                            </ButtonSolid>
-                          </td>
+                          <ButtonSolid
+                            variant="secondary"
+                            style={{ minWidth: '100px' }}
+                            className="workspace-user-archive-btn tj-text-xsm"
+                            leftIcon="editrectangle"
+                            fill="#3b5ccc"
+                            iconWidth="12"
+                            onClick={() => onEditBtnClicked(constant)}
+                            data-cy="button-user-status-change"
+                          >
+                            Edit
+                          </ButtonSolid>
+
+                          <ButtonSolid
+                            variant="dangerSecondary"
+                            style={{ minWidth: '100px' }}
+                            className="workspace-user-archive-btn tj-text-xsm"
+                            leftIcon="trash"
+                            fill="#E54D2E"
+                            iconWidth="12"
+                            onClick={() => onDeleteBtnClicked(constant)}
+                            data-cy="button-user-status-change"
+                          >
+                            Delete
+                          </ButtonSolid>
                         </div>
                       </td>
                     )}
