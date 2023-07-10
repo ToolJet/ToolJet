@@ -12,43 +12,66 @@ List view widget allows to create a list of repeatable rows of data. Just like a
 
 </div>
 
-## How To Use List view Widget
-
-<iframe height="500" src="https://www.youtube.com/embed/pwCP-eGjF0Q" title="List view Widget" frameborder="0" allowfullscreen width="100%"></iframe>
-
 ## Events
 
-### Row clicked
+To attach an event handler to the list view component, follow these steps:
+1. Click on the component handle to open its properties on the right sidebar.
+2. Navigate to the **Events** section.
+3. Click on the **+Add handler** button.
+
+There are two events that you can use with the List View component:
+- **[Row clicked (Deprecated)](#row-clicked)**
+- **[Record clicked](#record-clicked)**
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/event.png" alt="ToolJet - List view widget" />
+<img className="screenshot-full" src="/img/widgets/list-view/newevents.png" alt="ToolJet - List view widget" />
 
 </div>
 
-To add an event to a button, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **Add handler**.
+### Row clicked
 
-**Row clicked** event is triggered when the button is clicked. Just like any other event on ToolJet, you can set multiple actions for a row clicked event.
+The **Row clicked** event is triggered when any row inside the list view is clicked. Similar to other events in ToolJet, you can define multiple actions for this event.
+
+When a row is clicked in the list view component, certain related data is made available through the **selectedRowId** and **selectedRow** variables. For the list view component's available exposed variables, refer to the **[here](#exposed-variables)** section.
+
+:::warning
+The Row clicked event is being deprecated, so it is recommended to use the **Record Clicked** event instead.
+:::
+
+### Record clicked
+
+The **Record clicked** event is similar to the row click event, as it is triggered whenever an interaction is made with a record in the component.
+
+When a record is clicked in the list view component, relevant data is exposed through the **selectedRecordId** and **selectedRecord** variables. For the list view component's available exposed variables, refer to the **[here](#exposed-variables)** section.
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+To get detailed information about all the **Actions**, please consult the [Action Reference](/docs/category/actions-reference) documentation.
 :::
 
 ## Properties
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/list-view/props2.png" alt="ToolJet - List view widget" width="300"/>
+<img className="screenshot-full" src="/img/widgets/list-view/propsnew.png" alt="ToolJet - List view widget" width="300"/>
 
 </div>
 
-| Properties  | description | Expected value |
-| ----------- | ----------- | -------------- |
-| List data | Enter the data that you want to display into the widget. Data in the form of an array of objects or data from a query that returns an array of objects.| `{{ [ {id: 0, name: ABC, email: abc@bla.com}, {id: 1, name: XYZ, email: xyz@bla.com} ] }}` or `{{queries.xyz.data}}` |
-| Row height | Enter a numerical value to set the row height accordingly. | Any number between `1` to `100` |
-| Show bottom border | This property allows you to show or hide the row bottom border. | By default its `{{true}}`, set `{{false}}` to hide the border  |
-| Enable pagination | Enable it to set the number of rows per page. | Pagination is disabled by default. You can programmatically set to `{{true}}` to show a particular number of rows per page.  |
+| **Properties** | **Description** | **Expected value** |
+|---|---|---|
+| **List data** | The data that you want to display in the list view component. This can be an array of objects or data from a query that returns an array of objects. | An array of objects or a query that returns an array of objects. |
+| **Mode** | The layout of the list view component. You can choose between `List` and `Grid` mode. | `list` or `grid` |
+| **Show bottom border** | Whether to show or hide the bottom border on a row. This option is only available when the **Mode** is set to `List`. | `true` or `false` |
+| **Columns** | The number of columns in the list view component. This option is only available when the **Mode** is set to `Grid`. | Any numerical value |
+| **Row height** | The height of each row in the list view component. | Any number between 1 and 100 |
+| **Enable pagination** | Whether to enable pagination. If enabled, you can set the number of rows per page. | `true` or `false` |
+| **Rows per page** | The number of rows per page. This option is only available when **Enable pagination** is enabled. | Any numerical value |
 
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/list-view/gridmode.gif" alt="ToolJet - List view widget" />
+
+</div>
 
 ### General
 #### Tooltip
@@ -141,9 +164,19 @@ Use `{{listItem.key}}` to display data on the nested widgets. Example: For displ
 
 ## Exposed Variables
 
-| Variables    | Description |
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/list-view/exposedvars.png" alt="ToolJet - List view widget" />
+
+</div>
+
+| **Variables**    | **Description** |
 | ----------- | ----------- |
-| data | This variable holds the data loaded onto the listview component. You can access the data of each row of the listview using `{{components.listview1.data["0"].text1.text}}` |
+| **data** | This variable stores the data loaded into the list view component. You can retrieve the data of each record in the list view using `{{components.listview1.data["0"].text1.text}}` |
+| **selectedRowId** (deprecated) | This variable holds the ID of the clicked row in the list view. The row ID starts from `0`. You can access the selectedRowId using `{{components.listview1.selectedRowId}}` |
+| **selectedRow** (deprecated) | This variable contains the data of the components within the selected row. You can access the data using `{{components.listview1.selectedRow.text1}}` |
+| **selectedRecordId** | This variable holds the ID of the clicked record in the list view. The record ID starts from `0`. You can access the selectedRecordId using `{{components.listview1.selectedRecordId}}` |
+| **selectedRow** | This variable stores the data of the components within the selected record. You can access the data using `{{components.listview1.selectedRecord.text1}}` |
 
 ## Component specific actions (CSA)
 
