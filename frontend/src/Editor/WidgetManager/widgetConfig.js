@@ -595,7 +595,9 @@ export const widgets = [
         },
       },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      buttonText: 'Button',
+    },
     actions: [
       {
         handle: 'click',
@@ -740,6 +742,21 @@ export const widgets = [
           },
         },
       },
+      barmode: {
+        type: 'select',
+        displayName: 'Bar mode',
+        options: [
+          { name: 'Stack', value: 'stack' },
+          { name: 'Group', value: 'group' },
+          { name: 'Overlay', value: 'overlay' },
+          { name: 'Relative', value: 'relative' },
+        ],
+        validation: {
+          schema: {
+            schemas: { type: 'string' },
+          },
+        },
+      },
     },
     events: {},
     styles: {
@@ -787,6 +804,7 @@ export const widgets = [
         showGridLines: { value: '{{true}}' },
         plotFromJson: { value: '{{false}}' },
         loadingState: { value: `{{false}}` },
+        barmode: { value: `group` },
         jsonDescription: {
           value: `{
             "data": [
@@ -1167,6 +1185,20 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      decimalPlaces: {
+        type: 'code',
+        displayName: 'Decimal places',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -1223,6 +1255,8 @@ export const widgets = [
         maxValue: { value: '' },
         minValue: { value: '' },
         placeholder: { value: '0' },
+        decimalPlaces: { value: '{{2}}' },
+        loadingState: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -2601,6 +2635,7 @@ export const widgets = [
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: '{{true}}' },
+        showAllOption: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -5560,12 +5595,28 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         validation: {
           schema: { type: 'string' },
         },
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
       },
       loadingState: {
         type: 'toggle',
         displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
+        },
+      },
+      advanced: {
+        type: 'toggle',
+        displayName: ' Use custom schema',
+      },
+      JSONSchema: {
+        type: 'code',
+        displayName: 'JSON Schema',
+        conditionallyRender: {
+          key: 'advanced',
+          value: true,
         },
       },
     },
@@ -5634,6 +5685,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       properties: {
         loadingState: { value: '{{false}}' },
+        advanced: { value: '{{false}}' },
+        JSONSchema: {
+          value:
+            "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
+        },
       },
       events: [],
       styles: {
@@ -5664,6 +5720,14 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         displayName: 'Image Url',
         validation: {
           schema: { type: 'string' },
+        },
+      },
+
+      defaultValue: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'array', element: { type: 'object' } }] },
         },
       },
       selector: {
@@ -5708,7 +5772,26 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
     exposedVariables: {
-      annotations: [],
+      annotations: [
+        {
+          type: 'RECTANGLE',
+          x: 41,
+          y: 62,
+          width: 40,
+          height: 24,
+          text: 'Car',
+          id: 'ce103db2-b2a6-46f5-a4f0-5f4eaa6f3663',
+        },
+        {
+          type: 'RECTANGLE',
+          x: 41,
+          y: 12,
+          width: 40,
+          height: 24,
+          text: 'Tree',
+          id: 'b1a7315e-2b15-4bc8-a1c6-a042dab44f27',
+        },
+      ],
     },
     actions: [],
     definition: {
@@ -5717,6 +5800,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
+        defaultValue: {
+          value:
+            "{{[\t{type: 'RECTANGLE',width: 40,height:24, x:41,y:62,text:'Car'},{type: 'RECTANGLE',width: 40,height:24, x:41,y:12,text:'Tree'}\t]}}",
+        },
         imageUrl: {
           value: `https://burst.shopifycdn.com/photos/three-cars-are-parked-on-stone-paved-street.jpg?width=746&format=pjpg&exif=1&iptc=1`,
         },

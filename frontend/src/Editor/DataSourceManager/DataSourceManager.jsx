@@ -21,6 +21,7 @@ import { withTranslation, useTranslation } from 'react-i18next';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
@@ -159,7 +160,7 @@ class DataSourceManagerComponent extends React.Component {
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
-    const appVersionId = this.props.editingVersionId;
+    const appVersionId = useAppVersionStore?.getState()?.editingVersion?.id;
     const currentEnvironment = this.props.currentEnvironment?.id;
     const scope = this.state?.scope || selectedDataSource?.scope;
 
@@ -813,12 +814,12 @@ class DataSourceManagerComponent extends React.Component {
               <div className="col-auto" data-cy="db-connection-save-button">
                 <ButtonSolid
                   className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
-                  isLoading={isSaving || this.props.isVersionReleased}
-                  disabled={isSaving}
+                  isLoading={isSaving}
+                  disabled={isSaving || this.props.isVersionReleased}
                   variant="primary"
                   onClick={this.createDataSource}
                   leftIcon="floppydisk"
-                  fill={'#FDFDFE'}
+                  fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
                 >
                   {this.props.t('globals.save', 'Save')}
                 </ButtonSolid>
