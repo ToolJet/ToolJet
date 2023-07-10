@@ -4823,6 +4823,7 @@ input[type="text"] {
 .alert-component {
   border: 1px solid rgba(101, 109, 119, 0.16);
   background: var(--base);
+  border-radius: 6px;
 
   a {
     color: $primary;
