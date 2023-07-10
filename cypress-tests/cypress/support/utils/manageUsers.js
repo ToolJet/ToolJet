@@ -32,15 +32,15 @@ export const manageUsersElements = () => {
   cy.contains("td", usersText.adminUserEmail)
     .parent()
     .within(() => {
-      cy.get(usersSelector.adminUserName).verifyVisibleElement(
+      cy.get(usersSelector.userName(usersText.adminUserName)).verifyVisibleElement(
         "have.text",
         usersText.adminUserName
       );
-      cy.get(usersSelector.adminUserEmail).verifyVisibleElement(
+      cy.get(usersSelector.userEmail(usersText.adminUserName)).verifyVisibleElement(
         "have.text",
         usersText.adminUserEmail
       );
-      cy.get("td small").verifyVisibleElement(
+      cy.get(usersSelector.userStatus(usersText.adminUserName)).verifyVisibleElement(
         "have.text",
         usersText.activeStatus
       );

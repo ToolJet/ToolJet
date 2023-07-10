@@ -142,6 +142,7 @@ export const verifyInvalidInvitationLink = () => {
 
 export const userSignUp = (fullName, email, workspaceName) => {
   let invitationLink;
+  cy.visit("/");
   cy.get(commonSelectors.createAnAccountLink).realClick();
   cy.clearAndType(commonSelectors.nameInputField, fullName);
   cy.clearAndType(commonSelectors.emailInputField, email);
