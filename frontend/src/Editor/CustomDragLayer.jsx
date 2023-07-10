@@ -23,10 +23,10 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
 
   let id = item.id;
 
-  const canvasContainerBoundingRect = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
+  // const canvasContainerBoundingRect = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
   const realCanvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
 
-  const realCanvasDelta = realCanvasBoundingRect.x - canvasContainerBoundingRect.x;
+  // const realCanvasDelta = realCanvasBoundingRect.x - canvasContainerBoundingRect.x;
 
   if (id) {
     // Dragging within the canvas
@@ -70,6 +70,7 @@ export const CustomDragLayer = ({ canvasWidth, currentLayout, onDragging }) => {
 
   useEffect(() => {
     onDragging(isDragging);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging]);
 
   if (itemType === ItemTypes.COMMENT) return null;

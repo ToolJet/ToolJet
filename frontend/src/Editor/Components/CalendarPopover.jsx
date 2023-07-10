@@ -5,6 +5,7 @@ import { SubContainer } from '../SubContainer';
 export const CalendarEventPopover = function ({
   show,
   offset,
+  darkMode,
   calendarWidgetId,
   containerProps,
   removeComponent,
@@ -83,7 +84,7 @@ export const CalendarEventPopover = function ({
         }}
         role="tooltip"
         x-placement="left"
-        className="popover bs-popover-left shadow-lg"
+        className={`popover bs-popover-left shadow-lg ${darkMode ? 'dark' : ''}`}
         ref={parentRef}
         id={`${calendarWidgetId}-popover`}
       >
