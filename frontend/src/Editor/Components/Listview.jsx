@@ -70,8 +70,7 @@ export const Listview = function Listview({
   useEffect(() => {
     if (columns < 1) {
       setPositiveColumns(1);
-    }
-    setPositiveColumns(columns);
+    } else setPositiveColumns(columns);
   }, [columns]);
 
   useEffect(() => {
