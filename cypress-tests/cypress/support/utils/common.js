@@ -1,7 +1,7 @@
 import { commonText, path } from "Texts/common";
 import { usersSelector } from "Selectors/manageUsers";
 import { profileSelector } from "Selectors/profile";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
 import { groupsSelector } from "Selectors/manageGroups";
@@ -91,12 +91,19 @@ export const deleteDownloadsFolder = () => {
 };
 
 export const navigateToAppEditor = (appName) => {
+  cy.intercept("GET", "/api/v2/data_sources").as("editor");
   cy.get(commonSelectors.appCard(appName))
     .trigger("mousehover")
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
     .click({ force: true });
-  //cy.wait("@appEditor");
+
+  cy.wait('@editor');
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Skip", { timeout: 10000 })) {
+      cy.get(commonSelectors.skipButton).click();
+    }
+  });
 };
 
 export const viewAppCardOptions = (appName) => {
@@ -206,3 +213,22 @@ export const verifyTooltip = (selector, message) => {
       cy.get(".tooltip-inner").last().should("have.text", message);
     });
 };
+
+
+export const pinInspector = () => {
+  cy.get(commonWidgetSelector.sidebarinspector).click();
+  cy.get(commonSelectors.inspectorPinIcon).click();
+  cy.intercept("GET", "/api/v2/data_sources").as("editor");
+  cy.reload();
+  cy.wait("@editor");
+  cy.get("body").then(($body) => {
+    if (!$body.find(commonSelectors.inspectorPinIcon).length > 0) {
+      cy.get(commonWidgetSelector.sidebarinspector).click();
+      cy.get(commonSelectors.inspectorPinIcon).click();
+      cy.wait(500);
+      cy.intercept("GET", "/api/v2/data_sources").as("editor");
+      cy.reload();
+      cy.wait("@editor");
+    }
+  });
+}
