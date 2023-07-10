@@ -8,7 +8,7 @@ const EmptyState = ({ canCreateVariable, setIsManageVarDrawerOpen }) => {
         <div className="empty-state-org-constants">
           <center className={`empty-result`}>
             <img src="assets/images/icons/org-constants.svg" width="64" height="64" />
-            <div className="w-75 mt-2">
+            <div className="w-50 mt-2">
               <h3>No workspace constants yet</h3>
               <p className="text-muted mt-2">
                 Use workspace constants seamlessly in both the app builder and global data source connections across
