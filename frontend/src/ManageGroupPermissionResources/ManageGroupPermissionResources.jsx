@@ -325,10 +325,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         groupPermission.org_environment_variable_delete
       : false;
 
-    const orgEnvironmentConstantPermission = groupPermission
-      ? groupPermission.org_environment_constant_create && groupPermission.org_environment_constant_delete
-      : false;
-
     return (
       <ErrorBoundary showFallback={false}>
         <div className="org-users-page animation-fade">
@@ -901,50 +897,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                                             'header.organization.menus.manageGroups.permissionResources.createUpdateDelete',
                                             'Create/Update/Delete'
                                           )}
-                                        </span>
-                                      </label>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="apps-constant-permission-wrap">
-                                  <div data-cy="resource-workspace-constants">Workspace Constants</div>
-                                  <div className="text-muted">
-                                    <div className="d-flex apps-permission-wrap flex-column">
-                                      <label className="form-check form-check-inline">
-                                        <input
-                                          className="form-check-input"
-                                          type="checkbox"
-                                          onChange={() => {
-                                            this.updateGroupPermission(groupPermission.id, {
-                                              org_environment_constant_create:
-                                                !groupPermission.org_environment_constant_create,
-                                            });
-                                          }}
-                                          checked={groupPermission.org_environment_constant_create}
-                                          disabled={groupPermission.group === 'admin'}
-                                          data-cy="app-create-checkbox"
-                                        />
-                                        <span className="form-check-label" data-cy="app-create-label">
-                                          {this.props.t('globals.create', 'Create')}
-                                        </span>
-                                      </label>
-                                      <label className="form-check form-check-inline">
-                                        <input
-                                          className="form-check-input"
-                                          type="checkbox"
-                                          onChange={() => {
-                                            this.updateGroupPermission(groupPermission.id, {
-                                              org_environment_constant_delete:
-                                                !groupPermission.org_environment_constant_delete,
-                                            });
-                                          }}
-                                          checked={groupPermission.org_environment_constant_delete}
-                                          disabled={groupPermission.group === 'admin'}
-                                          data-cy="app-delete-checkbox"
-                                        />
-                                        <span className="form-check-label" data-cy="app-delete-label">
-                                          {this.props.t('globals.delete', 'Delete')}
                                         </span>
                                       </label>
                                     </div>
