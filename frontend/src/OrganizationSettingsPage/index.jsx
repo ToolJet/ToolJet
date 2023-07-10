@@ -17,7 +17,7 @@ export function OrganizationSettings(props) {
   const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Copilot', 'Workspace Constants'];
+  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Workspace Constants', 'Copilot'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'Users':
@@ -72,7 +72,10 @@ export function OrganizationSettings(props) {
                         selectedItem={selectedTab == defaultOrgName(item)}
                         renderBadgeForItems={['Workspace Constants']}
                         renderBadge={() => (
-                          <span style={{ width: '40px' }} className="badge bg-color-primary badge-pill">
+                          <span
+                            style={{ width: '40px', textTransform: 'lowercase' }}
+                            className="badge bg-color-primary badge-pill"
+                          >
                             new
                           </span>
                         )}
