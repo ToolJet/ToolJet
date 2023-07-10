@@ -3825,6 +3825,10 @@ export const widgets = [
         validation: {
           schema: { type: 'boolean' },
         },
+        conditionallyRender: {
+          key: 'mode',
+          value: 'list',
+        },
       },
       enablePagination: {
         type: 'toggle',

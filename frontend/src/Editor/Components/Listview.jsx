@@ -111,7 +111,7 @@ export const Listview = function Listview({
       style={computedStyles}
       data-cy={dataCy}
     >
-      <div className={`row w-100 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
+      <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
         {filteredData.map((listItem, index) => (
           <div
             className={`list-item ${mode == 'list' && 'w-100'}  ${showBorder && mode == 'list' ? 'border-bottom' : ''}`}
