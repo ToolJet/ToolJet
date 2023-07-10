@@ -26,7 +26,7 @@ export const Listview = function Listview({
     showBorder,
     rowsPerPage = 10,
     enablePagination = false,
-    mode,
+    mode = 'list',
     columns = 1,
   } = { ...fallbackProperties, ...properties };
   const { visibility, disabledState, borderRadius, boxShadow } = { ...fallbackStyles, ...styles };
