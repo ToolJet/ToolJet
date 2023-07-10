@@ -68,7 +68,10 @@ export const Listview = function Listview({
   const [childrenData, setChildrenData] = useState({});
 
   useEffect(() => {
-    if (columns < 1) setPositiveColumns(1);
+    if (columns < 1) {
+      setPositiveColumns(1);
+    }
+    setPositiveColumns(columns);
   }, [columns]);
 
   useEffect(() => {
