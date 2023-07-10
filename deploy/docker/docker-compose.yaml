@@ -4,6 +4,7 @@ services:
   tooljet:
     tty: true
     stdin_open: true
+    container_name: Tooljet-app
     image: tooljet/tooljet-ce:latest
     restart: always
     env_file: .env
@@ -13,8 +14,7 @@ services:
       SERVE_CLIENT: "true"
       PORT: "80"
     command: npm run start:prod
-
-# Uncomment if ENABLE_TOOLJET_DB=true
+  # Uncomment if ENABLE_TOOLJET_DB=true
   # postgrest:
   #   image: postgrest/postgrest:v10.1.1.20221215
   #   restart: always
