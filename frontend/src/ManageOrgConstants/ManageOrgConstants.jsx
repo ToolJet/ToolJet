@@ -341,7 +341,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
             <div className="workspace-constant-table-card">
               <div className="manage-sso-container h-100">
                 <div className="d-flex manage-sso-wrapper-card h-100">
-                  <RenderEnvironmentsTab
+                  <ManageOrgConstantsComponent.EnvironmentsTabs
                     allEnvironments={environments}
                     currentEnvironment={activeTabEnvironment}
                     setActiveTabEnvironment={setActiveTabEnvironment}
@@ -374,7 +374,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                         isLoading={isLoading}
                         canUpdateDeleteConstant={canUpdateVariable() || canDeleteVariable()}
                       />
-                      <Footer
+                      <ManageOrgConstantsComponent.Footer
                         darkMode={darkMode}
                         totalPage={totalPages}
                         pageCount={currentPage}
@@ -477,5 +477,8 @@ const Footer = ({ darkMode, totalPage, pageCount, dataLoading, gotoNextPage, got
     </div>
   );
 };
+
+ManageOrgConstantsComponent.EnvironmentsTabs = RenderEnvironmentsTab;
+ManageOrgConstantsComponent.Footer = Footer;
 
 export default ManageOrgConstantsComponent;
