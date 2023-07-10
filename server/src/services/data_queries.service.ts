@@ -403,7 +403,7 @@ export class DataQueriesService {
 
     const isServerVariable = new RegExp('^server').test(tempStr);
     const isClientVariable = new RegExp('^client').test(tempStr);
-    // console.log('sourceOptions ===> [result] ', { str, isServerVariable, isClientVariable });
+
     if (isServerVariable || isClientVariable) {
       const splitArray = tempStr.split('.');
       const variableType = splitArray[0];
