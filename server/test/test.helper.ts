@@ -353,6 +353,8 @@ export async function maybeCreateDefaultGroupPermissions(nestApp, organizationId
         orgEnvironmentVariableCreate: group == 'admin',
         orgEnvironmentVariableUpdate: group == 'admin',
         orgEnvironmentVariableDelete: group == 'admin',
+        orgEnvironmentConstantCreate: group == 'admin',
+        orgEnvironmentConstantDelete: group == 'admin',
         folderUpdate: group == 'admin',
         folderDelete: group == 'admin',
       });
