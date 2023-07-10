@@ -61,11 +61,47 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
   PG_PORT=5432
   PG_USER=postgres
   PG_PASS=postgres
-  PG_DB=tooljet_development
+  PG_DB=tooljet_production
   ORM_LOGGING=all
   ```
 
   **The above postgres values is set to its default state. If necessary, kindly modify it according to your personal preference.**
+  
+  Database configuration: 
+
+  ```
+  PG_HOST      # Hostname for Postgres
+  PG_USER      # Username for Postgres
+  PG_PASS      # Password for Postgres
+  PG_DB        # Database name for Postgres
+  ```
+
+  The .env file conveniently lists the default values for Postgres environment variables. Should you desire to customize these values, feel free to update them according to your preferences. 
+
+  Please be aware that, with the current setup, the PostgreSQL container can only be accessed from the services within the compose file.
+
+  :::note 
+  Making the PostgreSQL container publicly accessible can lead to security vulnerabilities.
+  :::
+
+  If you intend to enable public access to the container, simply include the appropriate port configuration for the postgres service within the docker-compose.yml file:
+
+  ```yaml
+      postgres:
+      container_name: ${PG_HOST}
+      image: postgres:13
+      restart: always
+      ports:
+      - "5432:5432"
+      volumes:
+      - postgres:/var/lib/postgresql/data
+      env_file: .env
+      environment:
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASSWORD=${PG_PASS}
+  ```
+
+  Set up additional environment variables in `.env` file as explained in [environment variables reference](/docs/setup/env-vars)
 
   `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use.
 
@@ -137,44 +173,6 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
   ```
   
   **kindly set the postgres credentials according to your external database**
-
-  4. These are the new changes to be added:
-  
-  Database configuration: 
-
-  ```
-  PG_HOST      # Hostname for Postgres
-  PG_USER      # Username for Postgres
-  PG_PASS      # Password for Postgres
-  PG_DB        # Database name for Postgres
-  ```
-
-  The .env file conveniently lists the default values for Postgres environment variables. Should you desire to customize these values, feel free to update them according to your preferences. 
-
-  Please be aware that, with the current setup, the PostgreSQL container can only be accessed from the services within the compose file.
-
-  :::note 
-  Making the PostgreSQL container publicly accessible can lead to security vulnerabilities.
-  :::
-
-  If you intend to enable public access to the container, simply include the appropriate port configuration for the postgres service within the docker-compose.yml file:
-
-  ```yaml
-      postgres:
-      container_name: ${PG_HOST}
-      image: postgres:13
-      restart: always
-      ports:
-      - "5432:5432"
-      volumes:
-      - postgres:/var/lib/postgresql/data
-      env_file: .env
-      environment:
-      - POSTGRES_USER=${PG_USER}
-      - POSTGRES_PASSWORD=${PG_PASS}
-  ```
-
-  Set up additional environment variables in `.env` file as explained in [environment variables reference](/docs/setup/env-vars)
 
   Set up environment variables in `.env` file as explained in [environment variables reference](/docs/setup/env-vars)
 
