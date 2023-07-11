@@ -34,12 +34,22 @@ export const LeftSidebarDataSources = ({
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
+  const [modalProps, setModalProps] = React.useState({
+    backdrop: false,
+    dialogClassName: `datasource-edit-modal`,
+    enforceFocus: false,
+  });
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
     }),
     shallow
   );
+  useEffect(() => {
+    if (selectedDataSource) {
+      setModalProps({ ...modalProps, backdrop: false });
+    }
+  }, [selectedDataSource]);
   useEffect(() => {
     if (dataSources.length === 0) {
       onDeleteofAllDataSources();
@@ -218,6 +228,7 @@ export const LeftSidebarDataSources = ({
         globalDataSourcesChanged={globalDataSourcesChanged}
         selectedDataSource={selectedDataSource}
         isVersionReleased={isVersionReleased}
+        modalProps={modalProps}
       />
     </>
   );
