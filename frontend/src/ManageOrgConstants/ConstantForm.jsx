@@ -18,6 +18,12 @@ const ConstantForm = ({
   }));
 
   const [error, setError] = useState({});
+
+  function isValidPropertyName(name) {
+    const validNameRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+    return validNameRegex.test(name);
+  }
+
   const handleConstantNameError = (name, value) => {
     const isNameAlreadyExists = name === 'name' && checkIfConstantNameExists(value, currentEnvironment.id);
     const invalidNameLength = name === 'name' && value.length > 32;
@@ -34,6 +40,10 @@ const ConstantForm = ({
     } else if (maxNameLengthReached) {
       setError({
         name: `Maximum length has been reached`,
+      });
+    } else if (!isValidPropertyName(value)) {
+      setError({
+        name: `Constant name should start with a letter or underscore and can only contain letters, numbers and underscores`,
       });
     }
   };

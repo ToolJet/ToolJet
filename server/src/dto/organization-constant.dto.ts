@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { sanitizeInput } from '../helpers/utils.helper';
 
@@ -6,6 +6,9 @@ export class CreateOrganizationConstantDto {
   @IsString()
   @Transform(({ value }) => sanitizeInput(value))
   @IsNotEmpty()
+  @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
+    message: 'Constant name must start with a letter or underscore and contain only letters, numbers, and underscores',
+  })
   constant_name: string;
 
   @IsString({ each: true })
