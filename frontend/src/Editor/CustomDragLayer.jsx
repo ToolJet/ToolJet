@@ -3,7 +3,7 @@ import { useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { BoxDragPreview } from './BoxDragPreview';
 import { snapToGrid } from '@/_helpers/appUtils';
-import { useEditorDataStore } from '../_stores/editorDataStore';
+import { useEditorDataStore } from '@/_stores/editorDataStore';
 import { shallow } from 'zustand/shallow';
 
 const layerStyles = {

@@ -520,7 +520,9 @@ class ViewerComponent extends React.Component {
       const startingPageHandle = this.props?.params?.pageHandle;
       const homePageHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
       if (!startingPageHandle && homePageHandle) {
-        return <Navigate to={homePageHandle} replace />;
+        return (
+          <Navigate to={`${homePageHandle}${this.props.params.pageHandle ? '' : window.location.search}`} replace />
+        );
       }
       if (this.state.app?.is_maintenance_on) {
         return (

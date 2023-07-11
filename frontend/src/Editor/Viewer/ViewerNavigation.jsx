@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { DarkModeToggle } from '@/_components/DarkModeToggle';
 import Header from './Header';
 import FolderList from '@/_ui/FolderList/FolderList';
-import { useEditorDataStore } from '../../_stores/editorDataStore';
+import { useEditorDataStore } from '@/_stores/editorDataStore';
 import { shallow } from 'zustand/shallow';
 
 export const ViewerNavigation = ({ isMobileDevice, pages, currentPageId, switchPage, darkMode }) => {

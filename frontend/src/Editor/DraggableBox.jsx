@@ -9,7 +9,7 @@ import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
-import { useEditorDataStore } from '../_stores/editorDataStore';
+import { useEditorDataStore } from '@/_stores/editorDataStore';
 import { shallow } from 'zustand/shallow';
 
 const resizerClasses = {
