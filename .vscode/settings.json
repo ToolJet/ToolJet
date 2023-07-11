@@ -9,7 +9,7 @@
         "typescriptreact"
     ],
     "eslint.format.enable": true,
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
     "json.schemas": [
         {
             "fileMatch": [
