@@ -655,9 +655,7 @@ class ViewerComponent extends React.Component {
                         className={`canvas-area ${this.formCustomPageSelectorClass()}`}
                         style={{
                           width: currentCanvasWidth,
-                          minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                           maxWidth: canvasMaxWidth,
-                          maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                           backgroundColor: this.computeCanvasBackgroundColor(),
                           margin: 0,
                           padding: 0,
