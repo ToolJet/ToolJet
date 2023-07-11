@@ -1150,10 +1150,12 @@ describe("Table", () => {
       "Button"
     );
     deleteAndVerifyColumn("name");
+    deleteAndVerifyColumn("email");
+
     cy.get(tableSelector.columnHeader("actions"))
       .scrollIntoView()
       .verifyVisibleElement("have.text", "Actions");
-    cy.get(`${tableSelector.column(2)} > > > button`)
+    cy.get(`${tableSelector.column(1)} > > > button`)
       .eq("0")
       .should("have.text", "Button")
       .and("not.have.attr", "disabled");
@@ -1167,7 +1169,7 @@ describe("Table", () => {
       "have.text",
       "Actions"
     );
-    cy.get(`${tableSelector.column(2)} > > > button`)
+    cy.get(`${tableSelector.column(1)} > > > button`)
       .eq("0")
       .click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Hello world!");
@@ -1184,7 +1186,7 @@ describe("Table", () => {
     cy.get(tableSelector.columnHeader("actions"))
       .scrollIntoView()
       .verifyVisibleElement("have.text", "Actions");
-    cy.get(`${tableSelector.column(2)} > > > button`)
+    cy.get(`${tableSelector.column(1)} > > > button`)
       .eq("0")
       .should("have.text", "Button")
       .and("have.attr", "disabled");
@@ -1207,7 +1209,7 @@ describe("Table", () => {
     cy.get(tableSelector.columnHeader("actions"))
       .scrollIntoView()
       .verifyVisibleElement("have.text", "Actions");
-    cy.get(`${tableSelector.column(2)} > > > button`)
+    cy.get(`${tableSelector.column(1)} > > > button`)
       .eq("0")
       .click();
     cy.verifyToastMessage(commonSelectors.toastMessage, "Hello world!");
@@ -1217,13 +1219,14 @@ describe("Table", () => {
     cy.get(tableSelector.columnHeader("actions"))
       .scrollIntoView()
       .verifyVisibleElement("have.text", "Actions");
-    cy.get(`${tableSelector.column(2)} > > > button`)
+    cy.get(`${tableSelector.column(1)} > > > button`)
       .eq("0")
       .should("have.text", "Button")
       .and("have.attr", "disabled");
   });
 
   it("should verify Programatically actions on table column", () => {
+    deleteAndVerifyColumn("id");
     cy.get('[data-cy="inspector-close-icon"]').click();
     cy.dragAndDropWidget("Text", 800, 200);
     openEditorSidebar(commonWidgetText.text1);
@@ -1269,17 +1272,17 @@ describe("Table", () => {
       .click()
       .clearAndTypeOnCodeMirror(`{{components.toggleswitch1.value`);
     cy.forceClickOnCanvas();
-    cy.get('[data-cy*="-cell-1"]').should("not.have.class", "has-text");
+    cy.get('[data-cy*="-cell-0"]').should("not.have.class", "has-text");
     cy.get(
       '[data-cy="draggable-widget-toggleswitch1"] [type="checkbox"]'
     ).click();
-    cy.get('[data-cy*="-cell-1"]')
+    cy.get('[data-cy*="-cell-0"]')
       .eq(0)
       .click()
       .type(`{selectAll}{backspace}Jack`);
     cy.forceClickOnCanvas();
-    cy.get('[data-cy*="-cell-1"]').should("have.class", "has-text");
-    cy.get('[data-cy*="-cell-1"] [type="text"]')
+    cy.get('[data-cy*="-cell-0"]').should("have.class", "has-text");
+    cy.get('[data-cy*="-cell-0"] [type="text"]')
       .eq(0)
       .verifyVisibleElement("have.value", "Jack");
   });
