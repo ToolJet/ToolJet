@@ -51,16 +51,18 @@ import {
 import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
 import { textInputText } from "Texts/textInput";
 import { deleteDownloadsFolder } from "Support/utils/common";
+import { resizeQueryPanel } from "Support/utils/dataSource";
 
 describe("Table", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.createApp();
     deleteDownloadsFolder();
-    cy.viewport(1200, 1200);
+    cy.viewport(1400, 2200);
     cy.modifyCanvasSize(900, 800);
     cy.dragAndDropWidget("Table", 50, 50);
     cy.resizeWidget(tableText.defaultWidgetName, 750, 600);
+    resizeQueryPanel("1");
     cy.get(`[data-cy="allow-selection-toggle-button"]`).click({ force: true });
   });
 

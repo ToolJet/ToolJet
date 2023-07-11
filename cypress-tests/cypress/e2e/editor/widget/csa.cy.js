@@ -13,7 +13,7 @@ import {
 import { verifyComponent } from "Support/utils/basicComponents";
 import { commonWidgetText } from "Texts/common";
 
-describe("Editor- Test Button widget", () => {
+describe("Editor- CSA", () => {
   const toolJetImage = "cypress/fixtures/Image/tooljet.png";
   beforeEach(() => {
     cy.appUILogin();
@@ -194,7 +194,9 @@ describe("Editor- Test Button widget", () => {
   });
 
   it("Should verify Kanban CSA", () => {
-    cy.dragAndDropWidget("Kanban", 50, 100);
+    cy.viewport(1400, 1900);
+
+    cy.dragAndDropWidget("Kanban", 50, 400);
     addDefaultEventHandler("Card updated successfully");
     selectEvent(
       "Card added",
@@ -231,7 +233,7 @@ describe("Editor- Test Button widget", () => {
       .clearAndTypeOnCodeMirror("Card moved successfully");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Button", 100, 600);
+    cy.dragAndDropWidget("Button", 100, 200);
     selectEvent("On click", "Control Component");
     selectCSA("kanban1", "Add Card");
     addSupportCSAData(
@@ -240,20 +242,20 @@ describe("Editor- Test Button widget", () => {
     );
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Button", 250, 600);
+    cy.dragAndDropWidget("Button", 250, 200);
     selectEvent("On click", "Control Component");
     selectCSA("kanban1", "Delete Card");
     addSupportCSAData("Card Id", "c11");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Button", 350, 600);
+    cy.dragAndDropWidget("Button", 350, 200);
     selectEvent("On click", "Control Component");
     selectCSA("kanban1", "Move Card");
     addSupportCSAData("Card Id", "c1");
     addSupportCSAData("Destination Column Id", "r2");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Button", 450, 600);
+    cy.dragAndDropWidget("Button", 450, 200);
     selectEvent("On click", "Control Component");
     selectCSA("kanban1", "Update Card Data");
     addSupportCSAData("Card Id", "c1");
@@ -276,9 +278,10 @@ describe("Editor- Test Button widget", () => {
       commonSelectors.toastMessage,
       "Card removed successfully"
     );
-    cy.get('[label="To Do"] .kanban-item [data-cy="draggable-widget-text1"]')
-      .last()
-      .should("not.be.visible");
+    cy.contains(
+      '[label="To Do"] .kanban-item [data-cy="draggable-widget-text1"]',
+      "New Card"
+    ).should("not.exist");
 
     cy.get('[label="To Do"] .kanban-item [data-cy="draggable-widget-text1"]')
       .first()
