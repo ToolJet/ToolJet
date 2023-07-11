@@ -45,7 +45,8 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
 
   ```bash
   curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/.env.internal.example
-  mv .env.example .env
+  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/keys.sh && chmod +x keys.sh
+  mv .env.internal.example .env && ./keys.sh
   ```
   
   Set up environment variables in `.env` file as explained in [environment variables reference](/docs/setup/env-vars)
@@ -109,7 +110,7 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
 
   ```bash
   curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/.env.external.example
-  mv .env.example .env
+  mv .env.external.example .env
   ```
   **Example:**
   ```bash
