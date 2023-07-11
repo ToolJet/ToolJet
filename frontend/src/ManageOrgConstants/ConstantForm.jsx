@@ -41,7 +41,7 @@ const ConstantForm = ({
       setError({
         name: `Maximum length has been reached`,
       });
-    } else if (!isValidPropertyName(value)) {
+    } else if (name === 'name' && !isValidPropertyName(value)) {
       setError({
         name: `Constant name should start with a letter or underscore and can only contain letters, numbers and underscores`,
       });

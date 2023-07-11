@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSpring, config, animated } from 'react-spring';
 import { resolveReferences } from '../../_helpers/utils';
 import { Alert } from '../Alert';
+import useHeight from '@/_hooks/use-height-transition';
 
 const Input = ({ helpText, ...props }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -28,7 +29,8 @@ const Input = ({ helpText, ...props }) => {
 
   const shouldResolve =
     typeof value === 'string' &&
-    (value.includes('%%client') || value.includes('%%server') || value.includes('{{constants'));
+    ((value.includes('%%') && (value.includes('client.') || value.includes('server.'))) ||
+      (value.includes('{{') && value.includes('constants.')));
 
   const valueType = typeof value === 'string' && getResolveValueType(value);
 
@@ -85,24 +87,28 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
   };
 
   const isConstant = type === 'Workspace Constant';
+  const [heightRef, currentHeight] = useHeight();
 
   const slideInStyles = useSpring({
     config: config.stiff,
     from: { opacity: 0, height: 0 },
     to: {
       opacity: isFocused ? 1 : 0,
-      height: isFocused ? (isConstant ? 49 : 77) : 0,
+      height: isFocused ? (isConstant ? currentHeight : currentHeight + 30) : 0,
     },
   });
 
   return (
     <React.Fragment>
       <animated.div className={themeCls} style={{ ...slideInStyles, overflow: 'hidden' }}>
-        <div className={`dynamic-variable-preview px-1 py-1 ${isValidError ? 'bg-red-lt' : 'bg-green-lt'}`}>
+        <div
+          ref={heightRef}
+          className={`dynamic-variable-preview px-1 py-1 ${isValidError ? 'bg-red-lt' : 'bg-green-lt'}`}
+        >
           <div className="alert-banner-type-text">
             <div className="d-flex my-1">
               <div className="flex-grow-1" style={{ fontWeight: 800, textTransform: 'capitalize' }}>
-                {type}
+                {isValidError ? 'Error' : ` ${type} - ${previewType}`}
               </div>
             </div>
             {getPreviewContent(resolvedValue, previewType)}
