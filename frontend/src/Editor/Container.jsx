@@ -594,6 +594,7 @@ export const Container = ({
           <div className="mx-auto w-50 p-5 bg-light no-components-box">
             <center className="text-muted">
               You haven&apos;t added any components yet. Drag components from the right sidebar and drop here. Check out
+              our&nbsp;
               <a href="https://docs.tooljet.com/docs#the-very-quick-quickstart" target="_blank" rel="noreferrer">
                 guide
               </a>{' '}
