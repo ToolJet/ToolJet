@@ -5,7 +5,7 @@ import cx from 'classnames';
 
 export const Icon = ({ properties, styles, fireEvent, width, height, registerAction, darkMode, dataCy, component }) => {
   const { icon } = properties;
-  const { iconColor, visibility } = styles;
+  const { iconColor, visibility, boxShadow } = styles;
   // eslint-disable-next-line import/namespace
   const IconElement = Icons[icon];
   const { definition } = component;
@@ -39,7 +39,7 @@ export const Icon = ({ properties, styles, fireEvent, width, height, registerAct
     >
       <IconElement
         color={color}
-        style={{ width, height }}
+        style={{ width, height, boxShadow }}
         onClick={(event) => {
           event.stopPropagation();
           fireEvent('onClick');

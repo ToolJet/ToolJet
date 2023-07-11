@@ -17,7 +17,6 @@ import { EventManager } from '@/Editor/Inspector/EventManager';
 import { allOperations } from '@tooljet/plugins/client';
 import { staticDataSources, customToggles, mockDataQueryAsComponent, schemaUnavailableOptions } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
-
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueries, useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import {
@@ -26,6 +25,8 @@ import {
   useSelectedDataSource,
   useQueryPanelActions,
 } from '@/_stores/queryPanelStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryManagerBody = forwardRef(
   (
@@ -42,7 +43,6 @@ export const QueryManagerBody = forwardRef(
       appDefinition,
       createDraftQuery,
       setOptions,
-      isVersionReleased,
     },
     ref
   ) => {
@@ -69,6 +69,12 @@ export const QueryManagerBody = forwardRef(
     const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
 
     const defaultOptions = useRef({});
+    const { isVersionReleased } = useAppVersionStore(
+      (state) => ({
+        isVersionReleased: state.isVersionReleased,
+      }),
+      shallow
+    );
 
     useEffect(() => {
       setDataSourceMeta(
@@ -77,9 +83,9 @@ export const QueryManagerBody = forwardRef(
           : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind)
       );
       setSelectedQueryId(selectedQuery?.id);
-      defaultOptions.current = selectedQuery?.options;
+      defaultOptions.current = selectedQuery?.options && JSON.parse(JSON.stringify(selectedQuery?.options));
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedQuery?.id]);
+    }, [selectedQuery]);
 
     const computeQueryName = (kind) => {
       const currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
