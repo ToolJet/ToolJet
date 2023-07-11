@@ -4,7 +4,7 @@ import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton'
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OnBoardingForm from '../OnBoardingForm/OnBoardingForm';
 import { authenticationService } from '@/_services';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { LinkExpiredInfoScreen } from '@/SuccessInfoScreen';
 import { ShowLoading } from '@/_components';
 import { toast } from 'react-hot-toast';
@@ -14,7 +14,7 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
-import { buildURLWithQuery } from '@/_helpers/utils';
+import { buildURLWithQuery, getSubpath } from '@/_helpers/utils';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -30,17 +30,16 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
   const { t } = useTranslation();
 
   const location = useLocation();
-  const history = useHistory();
+  const params = useParams();
 
-  const organizationId = new URLSearchParams(location?.state?.search).get('oid');
-  const single_organization = window.public_config?.DISABLE_MULTI_WORKSPACE === 'true';
-  const source = new URLSearchParams(location?.state?.search).get('source');
+  const organizationId = new URLSearchParams(location?.search).get('oid');
+  const source = new URLSearchParams(location?.search).get('source');
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   const getUserDetails = () => {
     setIsLoading(true);
     authenticationService
-      .verifyToken(location?.state?.token, location?.state?.organizationToken)
+      .verifyToken(params?.token, params?.organizationToken)
       .then((data) => {
         if (data?.redirect_url) {
           window.location.href = buildURLWithQuery(data.redirect_url, {
@@ -52,7 +51,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         setUserDetails(data);
         setIsLoading(false);
         if (data?.email !== '') {
-          if (location?.state?.organizationToken) {
+          if (params?.organizationToken) {
             setShowJoinWorkspace(true);
             return;
           }
@@ -71,32 +70,20 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
 
     if (source == 'sso') setShowJoinWorkspace(true);
     authenticationService.deleteLoginOrganizationId();
-    if (!single_organization) {
-      if (organizationId) {
-        authenticationService.saveLoginOrganizationId(organizationId);
-        organizationId &&
-          authenticationService.getOrganizationConfigs(organizationId).then(
-            (configs) => {
-              setIsGettingConfigs(false);
-              setConfigs(configs);
-            },
-            () => {
-              setIsGettingConfigs(false);
-            }
-          );
-      } else {
-        setIsGettingConfigs(false);
-      }
+    if (organizationId) {
+      authenticationService.saveLoginOrganizationId(organizationId);
+      organizationId &&
+        authenticationService.getOrganizationConfigs(organizationId).then(
+          (configs) => {
+            setIsGettingConfigs(false);
+            setConfigs(configs);
+          },
+          () => {
+            setIsGettingConfigs(false);
+          }
+        );
     } else {
-      authenticationService.getOrganizationConfigs().then(
-        (configs) => {
-          setIsGettingConfigs(false);
-          setConfigs(configs);
-        },
-        () => {
-          setIsGettingConfigs(false);
-        }
-      );
+      setIsGettingConfigs(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -122,16 +109,17 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
         companyName: '',
         companySize: '',
         role: '',
-        token: location?.state?.token,
-        organizationToken: location?.state?.organizationToken ?? '',
+        token: params?.token,
+        organizationToken: params?.organizationToken ?? '',
         source: source,
         password: password,
       })
       .then((user) => {
-        authenticationService.updateUser(user);
         authenticationService.deleteLoginOrganizationId();
         setIsLoading(false);
-        history.push('/');
+        window.location = getSubpath()
+          ? `${getSubpath()}/${user?.current_organization_id}`
+          : `/${user?.current_organization_id}`;
       })
       .catch((res) => {
         setIsLoading(false);
@@ -149,15 +137,12 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
     setPassword(event.target.value);
   };
   const clickContinue = (e) => {
-    if (single_organization) userDetails?.onboarding_details?.questions ? setShowOnboarding(true) : setUpAccount(e);
-    else {
-      userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
-        ? setShowOnboarding(true)
-        : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
-          (userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions)
-        ? setShowJoinWorkspace(true)
-        : setUpAccount(e);
-    }
+    userDetails?.onboarding_details?.questions && !userDetails?.onboarding_details?.password
+      ? setShowOnboarding(true)
+      : (userDetails?.onboarding_details?.password && !userDetails?.onboarding_details?.questions) ||
+        (userDetails?.onboarding_details?.password && userDetails?.onboarding_details?.questions)
+      ? setShowJoinWorkspace(true)
+      : setUpAccount(e);
   };
 
   return (
@@ -172,11 +157,11 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   <ShowLoading />
                 ) : (
                   <div className="common-auth-container-wrapper">
-                    <h2 className="common-auth-section-header org-invite-header">
+                    <h2 className="common-auth-section-header org-invite-header" data-cy="invite-page-header">
                       Join {configs?.name ? configs?.name : 'ToolJet'}
                     </h2>
 
-                    <div className="invite-sub-header">
+                    <div className="invite-sub-header" data-cy="invite-page-sub-header">
                       {`You are invited to ${
                         configs?.name
                           ? `a workspace ${configs?.name}. Accept the invite to join the workspace.`
@@ -203,7 +188,7 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                           </div>
                         )}
                         <div className="separator-onboarding " style={{ width: '100%' }}>
-                          <div className="mt-2 separator">
+                          <div className="mt-2 separator" data-cy="onboarding-separator">
                             <h2>
                               <span>{t('confirmationPage.or', 'OR')}</span>
                             </h2>
@@ -213,13 +198,21 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                     )}
 
                     <div className="org-page-inputs-wrapper">
-                      <label className="tj-text-input-label">{t('verificationSuccessPage.name', 'Name')}</label>
-                      <p className="tj-text-input">{userDetails?.name}</p>
+                      <label className="tj-text-input-label" data-cy="name-input-label">
+                        {t('verificationSuccessPage.name', 'Name')}
+                      </label>
+                      <p className="tj-text-input" data-cy="invited-user-name">
+                        {userDetails?.name}
+                      </p>
                     </div>
 
                     <div className="signup-inputs-wrap">
-                      <label className="tj-text-input-label">{t('verificationSuccessPage.workEmail', 'Email')}</label>
-                      <p className="tj-text-input">{userDetails?.email}</p>
+                      <label className="tj-text-input-label" data-cy="email-input-label">
+                        {t('verificationSuccessPage.workEmail', 'Email')}
+                      </label>
+                      <p className="tj-text-input" data-cy="invited-user-email">
+                        {userDetails?.email}
+                      </p>
                     </div>
 
                     {userDetails?.onboarding_details?.password && (
@@ -235,10 +228,10 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                             className="tj-text-input"
                             placeholder="Enter password"
                             autoComplete="new-password"
-                            data-cy="password-input"
+                            data-cy="password-input-field"
                           />
 
-                          <div className="org-password-hide-img" onClick={handleOnCheck}>
+                          <div className="org-password-hide-img" onClick={handleOnCheck} data-cy="show-password-icon">
                             {showPassword ? (
                               <EyeHide
                                 fill={
@@ -265,8 +258,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                               />
                             )}
                           </div>
-                          <span className="tj-input-helper-text">
-                            {t('loginSignupPage.passwordCharacter', 'Password must be at least 5 character')}
+                          <span className="tj-input-helper-text" data-cy="password-helper-text">
+                            {t('loginSignupPage.passwordCharacter', 'Password must be at least 5 characters')}
                           </span>
                         </div>
                       </div>
@@ -300,12 +293,18 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                         )}
                       </ButtonSolid>
                     </div>
-                    <p className="verification-terms">
+                    <p className="verification-terms" data-cy="signup-terms-helper">
                       By signing up you are agreeing to the
                       <br />
                       <span>
-                        <a href="https://www.tooljet.com/terms">Terms of Service </a>&
-                        <a href="https://www.tooljet.com/privacy"> Privacy Policy</a>
+                        <a href="https://www.tooljet.com/terms" data-cy="terms-of-service-link">
+                          Terms of Service{' '}
+                        </a>
+                        &
+                        <a href="https://www.tooljet.com/privacy" data-cy="privacy-policy-link">
+                          {' '}
+                          Privacy Policy
+                        </a>
                       </span>
                     </p>
                   </div>
@@ -331,17 +330,21 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
                   }
                   alt="email image"
                   loading="lazy"
+                  data-cy="email-image"
                 />
-                <h1 className="common-auth-section-header">
+                <h1 className="common-auth-section-header" data-cy="onboarding-page-header">
                   {t('verificationSuccessPage.successfullyVerifiedEmail', 'Successfully verified email')}
                 </h1>
-                <p className="info-screen-description">Continue to set up your workspace to start using ToolJet.</p>
+                <p className="info-screen-description" data-cy="onboarding-page-description">
+                  Continue to set up your workspace to start using ToolJet.
+                </p>
                 <ButtonSolid
                   className="verification-success-info-btn "
                   variant="primary"
                   onClick={(e) => {
                     clickContinue(e);
                   }}
+                  data-cy="setup-tooljet-button"
                 >
                   {isLoading ? (
                     <div className="spinner-center">
@@ -363,8 +366,8 @@ export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScr
       {verifiedToken && showOnboarding && (
         <OnBoardingForm
           userDetails={userDetails}
-          token={location?.state?.token}
-          organizationToken={location?.state?.organizationToken ?? ''}
+          token={params?.token}
+          organizationToken={params?.organizationToken ?? ''}
           password={password}
           darkMode={darkMode}
         />

@@ -65,21 +65,42 @@ export default class SlackQueryService implements QueryService {
           break;
 
         case 'send_message': {
-          const body = {
-            channel: queryOptions.channel,
-            text: queryOptions.message,
-            as_user: queryOptions.sendAsUser,
-          };
+          if (sourceOptions.access_type === 'chat:write') {
+            const body = {
+              channel: queryOptions.channel,
+              text: queryOptions.message,
+              as_user: queryOptions.sendAsUser,
+            };
 
-          response = await got('https://slack.com/api/chat.postMessage', {
+            response = await got('https://slack.com/api/chat.postMessage', {
+              method: 'post',
+              json: body,
+              headers: this.authHeader(accessToken),
+            });
+
+            result = JSON.parse(response.body);
+          } else {
+            result = {
+              ok: false,
+              error: 'You do not have the required permissions to perform this operation',
+            };
+          }
+          break;
+        }
+
+        case 'list_messages':
+          response = await got('https://slack.com/api/conversations.history', {
             method: 'post',
-            json: body,
+            form: {
+              channel: queryOptions.channel,
+              limit: queryOptions.limit || 100,
+              cursor: queryOptions.cursor || '',
+            },
             headers: this.authHeader(accessToken),
           });
 
           result = JSON.parse(response.body);
           break;
-        }
       }
     } catch (error) {
       throw new QueryError('Query could not be completed', error.message, {});

@@ -25,6 +25,7 @@ const OpenApi = ({
   grant_type,
   scopes,
   auth_url,
+  spec,
 }) => {
   const [securities, setSecurities] = useState([]);
   const [loadingSpec, setLoadingSpec] = useState(false);
@@ -41,6 +42,11 @@ const OpenApi = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth_key, securities]);
 
+  useEffect(() => {
+    spec && setSecurities(resolveSecurities(spec));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spec]);
+
   const validateDef = () => {
     if (definition) {
       setLoadingSpec(true);
@@ -49,7 +55,6 @@ const OpenApi = ({
         .parseOpenapiSpec(definition, format)
         .then((result) => {
           optionchanged('spec', result);
-          setSecurities(resolveSecurities(result));
           setLoadingSpec(false);
         })
         .catch((err) => {

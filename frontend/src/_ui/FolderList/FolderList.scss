@@ -1,0 +1,62 @@
+.tj-list-item {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 20px;
+    display: flex;
+    align-items: center;
+    color: var(--slate12);
+    min-height: 32px;
+    cursor: pointer;
+    padding: 6px 8px;
+    justify-content: space-between;
+    border: none;
+    border-radius: 6px;
+    background-color: transparent;
+    margin-bottom: 2px;
+    width: 100%;
+    text-align: left;
+
+
+    &:focus-visible {
+        box-shadow: 0px 0px 0px 4px #DFE3E6;
+        outline: none;
+    }
+
+    &:hover {
+        background: var(--slate4);
+        border-radius: 6px;
+    }
+
+    &:active {
+        background: var(--indigo4);
+        box-shadow: none;
+
+    }
+
+}
+
+.tj-list-item-disabled {
+    color: var(--slate8);
+}
+
+.tj-list-item-icon {
+    display: flex;
+    align-items: center;
+}
+
+.user-group-actions {
+    width: 231px;
+
+    a {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 108px;
+    }
+}
+
+.tj-list-item-selected {
+    background-color: var(--indigo4);
+}

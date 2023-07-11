@@ -67,7 +67,7 @@ ToolJet is an **open-source low-code framework** to build and deploy internal to
 <hr>
 
 ## Quickstart
-The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/setup/architecture).
+The easiest way to get started with ToolJet is by creating a [ToolJet Cloud](https://tooljet.com) account. ToolJet Cloud offers a hosted solution of ToolJet. If you want to self-host ToolJet, kindly proceed to [deployment documentation](https://docs.tooljet.com/docs/setup/).
 
 You can deploy ToolJet on Heroku for free using the one-click-deployment button only until **28th November 2022**.
 <p align="center">
@@ -119,7 +119,7 @@ You can use ToolJet cloud for a fully managed solution. If you want to self-host
 ## Community support
 For general help using ToolJet, please refer to the official [documentation](https://docs.tooljet.com/docs/). For additional help, you can use one of these channels to ask a question:
 
-- [Slack](https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg) - Discussions with the community and the team.
+- [Slack](https://tooljet.com/slack) - Discussions with the community and the team.
 - [GitHub](https://github.com/ToolJet/ToolJet/issues) - For bug reports and feature requests.
 - [Twitter](https://twitter.com/ToolJet) - Get the product updates easily.
 
@@ -134,7 +134,7 @@ Kindly read our [Contributing Guide](CONTRIBUTING.md) to learn and understand ab
 
 ## Contributors
 <a href="https://github.com/tooljet/tooljet/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=tooljet/tooljet&max=300&columns=20" />
+  <img src="https://contrib.rocks/image?repo=tooljet/tooljet&max=400&columns=20" />
   <img src="https://us-central1-tooljet-hub.cloudfunctions.net/github" width="0" height="0" />
 </a>
 

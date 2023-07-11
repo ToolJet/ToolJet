@@ -1,9 +1,11 @@
 export const appVersionText = {
+  createNewVersion: "Create new version",
   createVersion: "Create Version",
   versionNameLabel: "Version Name",
   createVersionFromLabel: "Create version from",
-  emptyToastMessage: "The version name should not be empty",
+  emptyToastMessage: "Version name should not be empty",
   createdToastMessage: "Version Created",
+  versionNameAlreadyExists: "Version name already exists."
 };
 
 export const exportAppModalText = {

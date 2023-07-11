@@ -1,19 +1,22 @@
 {
   "iconList": [
     "apps",
-    "business",
-    "calendar",
-    "chart-bar",
-    "code",
-    "cpu",
-    "database",
-    "file-analytics",
-    "flame",
-    "presentation",
-    "report-search",
-    "settings",
-    "users",
-    "world"
+    "archive",
+    "floppydisk",
+    "layers",
+    "folderupload",
+    "grid",
+    "home",
+    "sentfast",
+    "server",
+    "globe",
+    "share",
+    "shield",
+    "sun",
+    "table",
+    "menuhome",
+    "draghandle"
+
   ],
   "defaultIcon": "apps"
 }

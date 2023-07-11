@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { authenticationService, userService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Layout from '@/_ui/Layout';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { BreadCrumbContext } from '@/App/App';
 
 function SettingsPage(props) {
-  const [firstName, setFirstName] = React.useState(authenticationService.currentUserValue.first_name);
-  const email = authenticationService.currentUserValue.email;
-  const token = authenticationService.currentUserValue.auth_token;
-  const [lastName, setLastName] = React.useState(authenticationService.currentUserValue.last_name);
+  const currentSession = authenticationService.currentSessionValue;
+  const email = currentSession?.current_user.email;
+  const [firstName, setFirstName] = React.useState(currentSession?.current_user.first_name);
+  const [lastName, setLastName] = React.useState(currentSession?.current_user.last_name);
   const [currentpassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
@@ -17,6 +19,12 @@ function SettingsPage(props) {
   const [selectedFile, setSelectedFile] = React.useState(null);
   const focusRef = React.useRef(null);
   const { t } = useTranslation();
+  const { updateSidebarNAV } = useContext(BreadCrumbContext);
+
+  useEffect(() => {
+    updateSidebarNAV('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateDetails = async () => {
     const firstNameMatch = firstName.match(/^ *$/);
@@ -35,20 +43,28 @@ function SettingsPage(props) {
 
     setUpdateInProgress(true);
     try {
-      const updatedDetails = await userService.updateCurrentUser(firstName, lastName);
-      authenticationService.updateCurrentUserDetails(updatedDetails);
-
+      await userService.updateCurrentUser(firstName, lastName);
+      let avatar;
       if (selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
-        const avatarData = await userService.updateAvatar(formData, token);
-        authenticationService.updateCurrentUserDetails({ avatar_id: avatarData.id });
+        avatar = await userService.updateAvatar(formData);
       }
 
       toast.success('Details updated!', {
         duration: 3000,
       });
       setUpdateInProgress(false);
+      authenticationService.updateCurrentSession({
+        ...authenticationService.currentSessionValue,
+        current_user: {
+          ...authenticationService.currentSessionValue.current_user,
+          first_name: firstName,
+          last_name: lastName,
+          ...(avatar && { avatar_id: avatar.id }),
+        },
+        isUserUpdated: true,
+      });
     } catch (error) {
       toast.error('Something went wrong');
       setUpdateInProgress(false);
@@ -112,23 +128,10 @@ function SettingsPage(props) {
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper">
-        <div className="page-wrapper">
-          <div className="container-xl">
-            <div className="page-header d-print-none">
-              <div className="row align-items-center">
-                <div className="col">
-                  <div className="page-pretitle"></div>
-                  <h2 className="page-title" data-cy="page-title">
-                    {t('header.profileSettingPage.profileSettings', 'Profile Settings')}
-                  </h2>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="page-body">
+        <div className="page-wrapper profile-page-content-wrap">
+          <div style={{ height: `calc(100vh - 2.5rem - 64px)` }}>
             <div className="container-xl">
-              <div className="card">
+              <div className="profile-page-card">
                 <div className="card-header">
                   <h3 className="card-title" data-cy="card-title-profile">
                     {t('header.profileSettingPage.profile', 'Profile')}
@@ -137,7 +140,7 @@ function SettingsPage(props) {
                 <div className="card-body">
                   <div className="row">
                     <div className="col">
-                      <div className="mb-3">
+                      <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="first-name-label">
                           {t('header.profileSettingPage.firstName', 'First name')}
                         </label>
@@ -154,7 +157,7 @@ function SettingsPage(props) {
                       </div>
                     </div>
                     <div className="col">
-                      <div className="mb-3">
+                      <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="last-name-label">
                           {t('header.profileSettingPage.lastName', 'Last name')}
                         </label>
@@ -173,7 +176,7 @@ function SettingsPage(props) {
                   </div>
                   <div className="row">
                     <div className="col">
-                      <div className="mb-3">
+                      <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="email-label">
                           {t('header.profileSettingPage.email', 'Email')}
                         </label>
@@ -190,10 +193,10 @@ function SettingsPage(props) {
                       </div>
                     </div>
                     <div className="col">
-                      <div className="mb-3">
-                        <div className="form-label" data-cy="avatar-label">
+                      <div className="mb-3 tj-app-input">
+                        <label className="form-label" data-cy="avatar-label">
                           {t('header.profileSettingPage.avatar', 'Avatar')}
-                        </div>
+                        </label>
                         <input
                           onChange={(e) => {
                             const file = e.target.files[0];
@@ -212,20 +215,16 @@ function SettingsPage(props) {
                       </div>
                     </div>
                   </div>
-                  <button
-                    className={'btn btn-primary' + (updateInProgress ? '  btn-loading' : '')}
-                    onClick={updateDetails}
-                    data-cy="update-button"
-                  >
+                  <ButtonSolid isLoading={updateInProgress} onClick={updateDetails} data-cy="update-button">
                     {t('header.profileSettingPage.update', 'Update')}
-                  </button>
+                  </ButtonSolid>
                   {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
                   {/* The div below is a placeholder to prevent it from affecting the button above.  */}
                   <div></div>
                 </div>
               </div>
               <br />
-              <div className="card">
+              <div className="profile-page-card">
                 <div className="card-header">
                   <h3 className="card-title" data-cy="card-title-change-password">
                     {t('header.profileSettingPage.changePassword', 'Change password')}
@@ -234,7 +233,7 @@ function SettingsPage(props) {
                 <div className="card-body">
                   <div className="row">
                     <div className="col">
-                      <div className="mb-3">
+                      <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="current-password-label">
                           {t('header.profileSettingPage.currentPassword', 'Current password')}
                         </label>
@@ -250,7 +249,7 @@ function SettingsPage(props) {
                       </div>
                     </div>
                     <div className="col">
-                      <div className="mb-3">
+                      <div className="mb-3 tj-app-input">
                         <label className="form-label" data-cy="new-password-label">
                           {t('header.profileSettingPage.newPassword', 'New password')}
                         </label>
@@ -268,7 +267,7 @@ function SettingsPage(props) {
                     </div>
                   </div>
                   <div className="w-50 confirm-input">
-                    <div className="mb-3">
+                    <div className="mb-3 tj-app-input">
                       <label className="form-label" data-cy="confirm-password-label">
                         {t('header.profileSettingPage.confirmNewPassword', 'Confirm new password')}
                       </label>
@@ -285,14 +284,14 @@ function SettingsPage(props) {
                       />
                     </div>
                   </div>
-                  <button
-                    className={'btn btn-primary' + (passwordChangeInProgress ? '  btn-loading' : '')}
+                  <ButtonSolid
+                    isLoading={passwordChangeInProgress}
+                    disabled={newPassword.length < 5 || confirmPassword.length < 5}
                     onClick={changePassword}
                     data-cy="change-password-button"
-                    disabled={newPassword.length < 5 || confirmPassword.length < 5}
                   >
                     {t('header.profileSettingPage.changePassword', 'Change password')}
-                  </button>
+                  </ButtonSolid>
                   {/* An !important style on theme.scss is making the last child of every .card-body color to #c3c3c3!.  */}
                   {/* The div below is a placeholder to prevent it from affecting the button above.  */}
                   <div></div>

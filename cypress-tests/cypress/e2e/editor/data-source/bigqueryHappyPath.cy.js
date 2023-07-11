@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { bigqueryText } from "Texts/bigquery";
@@ -7,22 +8,23 @@ import {
   fillDataSourceTextField,
   selectDataSource,
 } from "Support/utils/postgreSql";
+import { commonText } from "Texts/common";
+import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source BigQuery", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
+    cy.intercept("GET", "/api/v2/data_sources");
   });
 
   it("Should verify elements on BigQuery connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
@@ -46,7 +48,7 @@ describe("Data source BigQuery", () => {
       bigqueryText.bigQuery
     );
     cy.get("[data-cy*='data-source-']")
-      .eq(0)
+      .eq(1)
       .should("contain", bigqueryText.bigQuery);
     cy.get('[data-cy="data-source-bigquery"]').click();
 
@@ -87,7 +89,7 @@ describe("Data source BigQuery", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
       "have.text",
       bigqueryText.errorInvalidEmailId
     );
@@ -98,13 +100,13 @@ describe("Data source BigQuery", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      bigqueryText.cypressBigQuery
+      `cypress-${data.lastName}-bigquery`
     );
 
     fillDataSourceTextField(
       firestoreText.privateKey,
       bigqueryText.placehlderPrivateKey,
-      JSON.stringify(Cypress.env("bigquery_pvt_key")),
+      `${JSON.stringify(Cypress.env("bigquery_pvt_key"))}`,
       "contain",
       { parseSpecialCharSequences: false, delay: 0 }
     );
@@ -119,10 +121,11 @@ describe("Data source BigQuery", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", bigqueryText.cypressBigQuery)
-      .find("button")
-      .should("be.visible");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-bigquery-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-bigquery`);
+
+    deleteDatasource(`cypress-${data.lastName}-bigquery`);
   });
 });

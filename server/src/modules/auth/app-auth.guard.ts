@@ -11,13 +11,18 @@ export class AppAuthGuard extends AuthGuard('jwt') {
   async canActivate(context: ExecutionContext): Promise<any> {
     const request = context.switchToHttp().getRequest();
 
+    if (!request.params.slug) {
+      throw new NotFoundException('App not found. Invalid app id');
+    }
     // unauthenticated users should be able to to view public apps
-    if (request.route.path.includes('/api/apps/slugs/:slug')) {
-      const app = await this.appsService.findBySlug(request.params.slug);
-      if (!app) throw new NotFoundException('App not found. Invalid app id');
-      if (app.isPublic === true) {
-        return true;
-      }
+    const app = await this.appsService.findBySlug(request.params.slug);
+    if (!app) throw new NotFoundException('App not found. Invalid app id');
+
+    request.tj_app = app;
+    request.headers['tj-workspace-id'] = app.organizationId;
+
+    if (app.isPublic === true) {
+      return true;
     }
 
     return super.canActivate(context);

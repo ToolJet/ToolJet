@@ -23,8 +23,10 @@ export const SearchBox = ({ onChange, ...restProps }) => {
     }
 
     return () => {
-      document.querySelector('.searchbox-wrapper .input-icon .form-control:not(:first-child)').style.paddingLeft =
-        '2.5rem';
+      if (document.querySelector('.searchbox-wrapper .input-icon .form-control:not(:first-child)')) {
+        document.querySelector('.searchbox-wrapper .input-icon .form-control:not(:first-child)').style.paddingLeft =
+          '2.5rem';
+      }
     };
   }, [searchText]);
 
@@ -93,6 +95,7 @@ export const SearchBox = ({ onChange, ...restProps }) => {
           onChange={handleChange}
           className="form-control animate-width-change"
           placeholder={placeholder ?? t(`globals.search`, 'Search')}
+          data-cy={`search-input-filed`}
         />
       </div>
     </div>

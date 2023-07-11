@@ -31,7 +31,7 @@ docker-compose version 1.26.2, build eefe0d31
 
 ## Setting up
 
-:::tip
+:::warning
 If you are setting up on a Windows machine, we advise you to setup Docker desktop with WSL2.
 Please find more information [here](https://docs.docker.com/desktop/windows/wsl/).
 :::
@@ -53,7 +53,7 @@ Please find more information [here](https://docs.docker.com/desktop/windows/wsl/
 
    `LOCKBOX_MASTER_KEY` requires a 32 byte key. (Run `openssl rand -hex 32` to create a 32 byte secure random key)
    :::
-   :::tip 
+   :::warning
    If you are setting up on a Windows machine. Please make sure that .env file line endings to be LF as it will be CRLF by default unless configured for Windows machine.
    :::
    
@@ -190,4 +190,4 @@ docker-compose run --rm server npm --prefix server run test <path-to-file>
 
 ## Troubleshooting
 
-Please open a new issue at https://github.com/ToolJet/ToolJet/issues or join our Slack channel (https://join.slack.com/t/tooljet/shared_invite/zt-r2neyfcw-KD1COL6t2kgVTlTtAV5rtg) if you encounter any issues when trying to run ToolJet locally.
+Please open a new issue at https://github.com/ToolJet/ToolJet/issues or join our [Slack Community](https://tooljet.com/slack) if you encounter any issues when trying to run ToolJet locally.

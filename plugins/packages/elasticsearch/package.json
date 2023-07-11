@@ -16,7 +16,7 @@
     "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@opensearch-project/opensearch": "^1.0.2",
+    "@opensearch-project/opensearch": "^1.1.0",
     "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"

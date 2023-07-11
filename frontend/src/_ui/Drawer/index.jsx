@@ -86,7 +86,7 @@ const Drawer = ({
             open: isOpen,
             in: isTransitioning,
             className,
-            'theme-dark': darkMode,
+            'theme-dark dark-theme': darkMode,
           })}
         >
           <Toast toastOptions={toastOptions} />

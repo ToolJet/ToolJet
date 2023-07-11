@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const Tags = function Tags({ width, height, properties, styles }) {
+export const Tags = function Tags({ width, height, properties, styles, dataCy }) {
   const { data } = properties;
   const { visibility } = styles;
 
@@ -26,7 +26,7 @@ export const Tags = function Tags({ width, height, properties, styles }) {
   }
 
   return (
-    <div style={computedStyles}>
+    <div style={computedStyles} data-cy={dataCy}>
       {data &&
         data.map((item, index) => {
           return renderTag(item, index);

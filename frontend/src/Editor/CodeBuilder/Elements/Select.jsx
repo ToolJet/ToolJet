@@ -4,9 +4,12 @@ import FxButton from './FxButton';
 
 export const Select = ({ value, onChange, forceCodeBox, meta }) => {
   return (
-    <div className="row fx-container">
+    <div
+      className="row fx-container"
+      data-cy={`dropdown-${meta.displayName ? String(meta.displayName).toLowerCase().replace(/\s+/g, '-') : 'common'}`}
+    >
       <div className="col">
-        <div className="field mb-3">
+        <div className="field mb-3" onClick={(e) => e.stopPropagation()}>
           <SelectComponent
             options={meta.options}
             value={value}
@@ -18,7 +21,11 @@ export const Select = ({ value, onChange, forceCodeBox, meta }) => {
         </div>
       </div>
       <div className="col-auto pt-0 style-fx fx-common">
-        <FxButton active={false} onPress={forceCodeBox} />
+        <FxButton
+          active={false}
+          onPress={forceCodeBox}
+          dataCy={`${meta.displayName ? String(meta.displayName).toLowerCase().replace(/\s+/g, '-') : 'common'}`}
+        />
       </div>
     </div>
   );

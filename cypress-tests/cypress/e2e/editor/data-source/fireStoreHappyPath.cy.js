@@ -1,27 +1,31 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { firestoreText } from "Texts/firestore";
 import { commonSelectors } from "Selectors/common";
+import { commonText } from "Texts/common";
+import {
+  verifyCouldnotConnectWithAlert,
+  deleteDatasource,
+  closeDSModal,
+} from "Support/utils/dataSource";
 import {
   fillDataSourceTextField,
   selectDataSource,
 } from "Support/utils/postgreSql";
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source Firestore", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
   it("Should verify elements on Firestore connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
@@ -45,7 +49,7 @@ describe("Data source Firestore", () => {
       firestoreText.firestore
     );
     cy.get("[data-cy*='data-source-']")
-      .eq(0)
+      .eq(1)
       .should("contain", firestoreText.firestore);
     cy.get('[data-cy="data-source-firestore"]').click();
 
@@ -86,7 +90,7 @@ describe("Data source Firestore", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
       "have.text",
       firestoreText.errorGcpKeyCouldNotBeParsed
     );
@@ -97,13 +101,13 @@ describe("Data source Firestore", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      firestoreText.cypressFirestore
+      `cypress-${data.lastName}-firestore`
     );
 
     fillDataSourceTextField(
       firestoreText.privateKey,
       firestoreText.placeholderPrivateKey,
-      JSON.stringify(Cypress.env("firestore_pvt_key")),
+      `${JSON.stringify(Cypress.env("firestore_pvt_key"))}`,
       "contain",
       { parseSpecialCharSequences: false, delay: 0 }
     );
@@ -118,10 +122,10 @@ describe("Data source Firestore", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("contain.text", firestoreText.cypressFirestore)
-      .find("button")
-      .should("be.visible");
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-firestore-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-firestore`);
+
+    deleteDatasource(`cypress-${data.lastName}-firestore`);
   });
 });

@@ -99,7 +99,7 @@ function createTooljetDb(envVars, dbName) {
     if (err.message.includes(errorMessage)) {
       console.log(`Using Tooljet database\nTOOLJET_DB: ${dbName}\nTOOLJET_DB_HOST: ${envVars.TOOLJET_DB_HOST}\n`);
     } else {
-      console.error(err);
+      console.error(_stderr);
       process.exit(1);
     }
   });

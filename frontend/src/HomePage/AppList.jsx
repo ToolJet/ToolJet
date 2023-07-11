@@ -27,10 +27,10 @@ const AppList = (props) => {
       )}
       {!props.isLoading && props.meta.total_count > 0 && (
         <div className="container px-0">
-          <div className="row">
+          <div className="row homepage-app-card-list-item-wrap">
             {props.apps.map((app) => {
               return (
-                <div className="col mt-3 homepage-app-card-list-item" key={app.id}>
+                <div className="homepage-app-card-list-item" key={app.id}>
                   <AppCard
                     app={app}
                     key={app.id}
@@ -51,7 +51,7 @@ const AppList = (props) => {
       )}
       {!props.isLoading && props.currentFolder.count === 0 && (
         <div className="text-center d-block">
-          <EmptyFoldersIllustration className="mb-4" />
+          <EmptyFoldersIllustration className="mb-4" data-cy="empty-folder-image" />
           <span
             className={`d-block text-center text-body ${props.darkMode && 'text-white-50'}`}
             data-cy="empty-folder-text"

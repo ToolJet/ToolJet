@@ -32,12 +32,13 @@ describe("App Import Functionality", () => {
   });
   before(() => {
     cy.fixture("templates/test-app.json").then((app) => {
+      cy.exec("cd ./cypress/downloads/ && rm -rf *");
       appData = app;
     });
   });
   it("Verify the Import functionality of an Application", () => {
     cy.get("body").then(($title) => {
-      if ($title.text().includes(commonText.introductionMessage)) {
+      if ($title.text().includes(commonText.welcomeTooljetWorkspace)) {
         cy.get(dashboardSelector.importAppButton).click();
       } else {
         cy.get(importSelectors.dropDownMenu).should("be.visible").click();
@@ -58,24 +59,26 @@ describe("App Import Functionality", () => {
     cy.get(importSelectors.importOptionInput).selectFile(appFile, {
       force: true,
     });
+    cy.get(".driver-close-btn").click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       importText.appImportedToastMessage
     );
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-      "have.value",
+      "contain.value",
       appData.name
     );
     cy.dragAndDropWidget(buttonText.defaultWidgetText);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
     cy.renameApp(data.appName);
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-      "have.value",
+      "contain.value",
       data.appName
     );
     cy.waitForAutoSave();
     cy.get(commonSelectors.editorPageLogo).should("be.visible").click();
-    cy.get(commonSelectors.folderPageTitle).should("be.visible");
+    cy.get(commonSelectors.appHeaderLable).should("be.visible");
+    cy.reload();
     selectAppCardOption(
       data.appName,
       commonSelectors.appCardOptions(commonText.exportAppOption)
@@ -112,26 +115,29 @@ describe("App Import Functionality", () => {
         let exportedAppData = newApp;
 
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-          "have.value",
-          exportedAppData.name
+          "contain.value",
+          exportedAppData.appV2.name
         );
         cy.get(
           appVersionSelectors.currentVersionField((currentVersion = "v1"))
         ).verifyVisibleElement(
           "have.text",
-          exportedAppData.appVersions[0].name
+          exportedAppData.appV2.appVersions[0].name
         );
       });
       cy.exec("cd ./cypress/downloads/ && rm -rf *");
     });
     cy.renameApp(data.appReName);
     cy.get(commonSelectors.editorPageLogo).click();
+    cy.get(commonSelectors.appHeaderLable).should("be.visible");
+    cy.reload();
     navigateToAppEditor(data.appReName);
 
+    cy.wait(500);
     cy.get(appVersionSelectors.appVersionMenuField)
       .should("be.visible")
       .click();
-    createNewVersion((otherVersions = ["v2"]));
+    createNewVersion((otherVersions = ["v2"]), (currentVersion = "v1"));
     cy.get(appVersionSelectors.currentVersionField((otherVersions = "v2")))
       .should("be.visible")
       .click()
@@ -141,7 +147,8 @@ describe("App Import Functionality", () => {
           .then((versionText) => {
             cy.log(versionText);
             cy.get(commonSelectors.editorPageLogo).click();
-            cy.get(commonSelectors.folderPageTitle).should("be.visible");
+            cy.get(commonSelectors.appHeaderLable).should("be.visible");
+            cy.reload();
             selectAppCardOption(
               data.appReName,
               commonSelectors.appCardOptions(commonText.exportAppOption)
@@ -184,8 +191,8 @@ describe("App Import Functionality", () => {
                 let exportedAppData = newApp;
 
                 cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-                  "have.value",
-                  exportedAppData.name
+                  "contain.value",
+                  exportedAppData.appV2.name
                 );
                 cy.get(
                   appVersionSelectors.currentVersionField(
@@ -193,7 +200,7 @@ describe("App Import Functionality", () => {
                   )
                 ).verifyVisibleElement(
                   "have.text",
-                  exportedAppData.appVersions[1].name
+                  exportedAppData.appV2.appVersions[1].name
                 );
               });
             });

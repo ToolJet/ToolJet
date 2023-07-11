@@ -15,12 +15,13 @@ const PopoverComponent = ({
   side = 'bottom',
   showArrow = false,
   popoverContentHeight = '',
+  onInteractOutside,
 }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const computeStyle = () => {
     if (popoverContentHeight) {
       return {
-        height: `${popoverContentHeight}vh`,
+        height: popoverContentHeight === 'auto' ? 'auto' : `${popoverContentHeight}vh`,
         overflow: 'auto',
       };
     }
@@ -34,6 +35,7 @@ const PopoverComponent = ({
       <Popover.Portal>
         <Popover.Content
           style={computeStyle()}
+          {...(onInteractOutside && { onInteractOutside })}
           side={side}
           className={`PopoverContent ${popoverContentClassName} ${darkMode && 'dark'} ${
             popoverContentHeight && 'drawer-height'

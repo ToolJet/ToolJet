@@ -12,13 +12,14 @@ import { GroupPermission } from './group_permission.entity';
 import { SSOConfigs } from './sso_config.entity';
 import { OrganizationUser } from './organization_user.entity';
 import { InternalTable } from './internal_table.entity';
+import { AppEnvironment } from './app_environments.entity';
 
 @Entity({ name: 'organizations' })
 export class Organization extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'name' })
+  @Column({ name: 'name', unique: true })
   name: string;
 
   @Column({ name: 'domain' })
@@ -45,6 +46,10 @@ export class Organization extends BaseEntity {
 
   @OneToMany(() => OrganizationUser, (organizationUser) => organizationUser.organization)
   organizationUsers: OrganizationUser[];
+
+  @OneToMany(() => AppEnvironment, (appEnvironment) => appEnvironment.organization, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'organization_id' })
+  appEnvironments: AppEnvironment[];
 
   @OneToMany(() => InternalTable, (internalTable) => internalTable.organization)
   internalTable: InternalTable[];

@@ -72,6 +72,7 @@ export const addDefaultEventHandler = (message) => {
   cy.get(commonWidgetSelector.eventHandlerCard).click();
   cy.get(commonWidgetSelector.alertMessageInputField)
     .find('[data-cy*="-input-field"]')
+    .eq(0)
     .clearAndTypeOnCodeMirror(message);
 };
 
@@ -82,8 +83,11 @@ export const addAndVerifyTooltip = (widgetSelector, message) => {
   verifyTooltip(widgetSelector, message);
 };
 
-export const editAndVerifyWidgetName = (name) => {
-  closeAccordions(["General", "Properties", "Layout"]);
+export const editAndVerifyWidgetName = (
+  name,
+  accordion = ["General", "Properties", "Layout"]
+) => {
+  closeAccordions(accordion);
   cy.clearAndType(commonWidgetSelector.WidgetNameInputField, name);
   cy.get(commonWidgetSelector.buttonCloseEditorSideBar).click();
 
@@ -125,11 +129,16 @@ export const verifyMultipleComponentValuesFromInspector = (
   cy.forceClickOnCanvas();
 };
 
-export const selectColourFromColourPicker = (paramName, colour, index = 0) => {
+export const selectColourFromColourPicker = (
+  paramName,
+  colour,
+  index = 0,
+  parent = commonWidgetSelector.colourPickerParent
+) => {
   cy.get(commonWidgetSelector.stylePicker(paramName)).click();
-  cy.get(commonWidgetSelector.colourPickerParent)
+  cy.get(parent)
     .eq(index)
-    .within(() => {
+    .then(() => {
       colour.forEach((value, i) =>
         cy
           .get(commonWidgetSelector.colourPickerInput(i + 1))
@@ -237,9 +246,16 @@ export const verifyAndModifyStylePickerFx = (
     });
 };
 
-export const verifyWidgetColorCss = (widgetName, cssProperty, color) => {
+export const verifyWidgetColorCss = (
+  widgetName,
+  cssProperty,
+  color,
+  innerProp = false
+) => {
   cy.forceClickOnCanvas();
-  cy.get(commonWidgetSelector.draggableWidget(widgetName)).should(
+  cy.get(
+    innerProp ? widgetName : commonWidgetSelector.draggableWidget(widgetName)
+  ).should(
     "have.css",
     cssProperty,
     `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3] / 100})`
@@ -278,8 +294,7 @@ export const verifyLayout = (widgetName) => {
 export const verifyPropertiesGeneralAccordion = (widgetName, tooltipText) => {
   openEditorSidebar(widgetName);
   openAccordion(commonWidgetText.accordionGenaral);
-  cy.intercept("PUT", "/api/apps/**").as("apps");
-  cy.wait("@apps");
+  cy.wait(3000);
   addAndVerifyTooltip(
     commonWidgetSelector.draggableWidget(widgetName),
     tooltipText

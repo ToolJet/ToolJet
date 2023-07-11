@@ -134,6 +134,17 @@ export const widgets = [
         //   },
         // },
       },
+      useDynamicColumn: {
+        type: 'toggle',
+        displayName: 'Use dynamic column',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      columnData: {
+        type: 'code',
+        displayName: 'Column data',
+      },
       rowsPerPage: {
         type: 'code',
         displayName: 'Number of rows per page',
@@ -253,6 +264,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      allowSelection: {
+        type: 'toggle',
+        displayName: 'Allow selection',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       showBulkSelector: {
         type: 'toggle',
         displayName: 'Bulk selection',
@@ -267,6 +285,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      showAddNewRowButton: {
+        type: 'toggle',
+        displayName: 'Show add new row button',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
@@ -274,7 +299,7 @@ export const widgets = [
     },
     defaultSize: {
       width: 20,
-      height: 300,
+      height: 358,
     },
     events: {
       onRowHovered: { displayName: 'Row hovered' },
@@ -286,6 +311,7 @@ export const widgets = [
       onSort: { displayName: 'Sort applied' },
       onCellValueChanged: { displayName: 'Cell value changed' },
       onFilterChanged: { displayName: 'Filter changed' },
+      onNewRowsAdded: { displayName: 'Add new rows' },
     },
     styles: {
       textColor: {
@@ -378,6 +404,35 @@ export const widgets = [
           { handle: 'value', displayName: 'Value' },
         ],
       },
+      {
+        handle: 'deselectRow',
+        displayName: 'Deselect row',
+      },
+      {
+        handle: 'discardChanges',
+        displayName: 'Discard Changes',
+      },
+      {
+        handle: 'discardNewlyAddedRows',
+        displayName: 'Discard newly added rows',
+      },
+      {
+        displayName: 'Download table data',
+        handle: 'downloadTableData',
+        params: [
+          {
+            handle: 'type',
+            displayName: 'Type',
+            options: [
+              { name: 'Download as Excel', value: 'xlsx' },
+              { name: 'Download as CSV', value: 'csv' },
+              { name: 'Download as PDF', value: 'pdf' },
+            ],
+            defaultValue: `{{Download as Excel}}`,
+            type: 'select',
+          },
+        ],
+      },
     ],
     definition: {
       others: {
@@ -391,6 +446,10 @@ export const widgets = [
         data: {
           value:
             "{{ [ \n\t\t{ id: 1, name: 'Sarah', email: 'sarah@example.com'}, \n\t\t{ id: 2, name: 'Lisa', email: 'lisa@example.com'}, \n\t\t{ id: 3, name: 'Sam', email: 'sam@example.com'}, \n\t\t{ id: 4, name: 'Jon', email: 'jon@example.com'} \n] }}",
+        },
+        useDynamicColumn: { value: '{{false}}' },
+        columnData: {
+          value: "{{[{name: 'email', key: 'email'}, {name: 'Full name', key: 'name', isEditable: true}]}}",
         },
         rowsPerPage: { value: '{{10}}' },
         serverSidePagination: { value: '{{false}}' },
@@ -430,6 +489,8 @@ export const widgets = [
         actions: { value: [] },
         enabledSort: { value: '{{true}}' },
         hideColumnSelectorButton: { value: '{{false}}' },
+        showAddNewRowButton: { value: '{{true}}' },
+        allowSelection: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -769,7 +830,7 @@ export const widgets = [
     component: 'Modal',
     defaultSize: {
       width: 10,
-      height: 400,
+      height: 34,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -810,7 +871,8 @@ export const widgets = [
       },
       hideTitleBar: { type: 'toggle', displayName: 'Hide title bar' },
       hideCloseButton: { type: 'toggle', displayName: 'Hide close button' },
-      hideOnEsc: { type: 'toggle', displayName: 'Hide on escape' },
+      hideOnEsc: { type: 'toggle', displayName: 'Close on escape key' },
+      closeOnClickingOutside: { type: 'toggle', displayName: 'Close on clicking outside' },
 
       size: {
         type: 'select',
@@ -820,6 +882,13 @@ export const widgets = [
           { name: 'medium', value: 'lg' },
           { name: 'large', value: 'xl' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      modalHeight: {
+        type: 'code',
+        displayName: 'Modal Height',
         validation: {
           schema: { type: 'string' },
         },
@@ -910,6 +979,8 @@ export const widgets = [
         hideTitleBar: { value: '{{false}}' },
         hideCloseButton: { value: '{{false}}' },
         hideOnEsc: { value: '{{true}}' },
+        closeOnClickingOutside: { value: '{{false}}' },
+        modalHeight: { value: '400px' },
       },
       events: [],
       styles: {
@@ -1140,7 +1211,7 @@ export const widgets = [
       },
     },
     exposedVariables: {
-      value: 0,
+      value: 99,
     },
     definition: {
       others: {
@@ -1474,14 +1545,17 @@ export const widgets = [
         type: 'code',
         displayName: 'Default value',
         validation: {
-          schema: { type: 'boolean' },
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
         },
       },
       values: {
         type: 'code',
         displayName: 'Option values',
         validation: {
-          schema: { type: 'array', element: { type: 'boolean' } },
+          schema: {
+            type: 'array',
+            element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
+          },
         },
       },
       display_values: {
@@ -1982,7 +2056,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '' },
+        backgroundColor: { value: '#fff00000' },
         textColor: { value: '#000000' },
         textSize: { value: 14 },
         textAlign: { value: 'left' },
@@ -2147,7 +2221,15 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
-    properties: {},
+    properties: {
+      loadingState: {
+        type: 'toggle',
+        displayName: 'loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+    },
     events: {},
     styles: {
       backgroundColor: {
@@ -2197,6 +2279,7 @@ export const widgets = [
       },
       properties: {
         visible: { value: '{{true}}' },
+        loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
@@ -2232,9 +2315,29 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          validation: {
+            schema: { type: 'string' },
+          },
+        },
+      },
+      advanced: {
+        type: 'toggle',
+        displayName: 'Advanced',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       value: {
         type: 'code',
         displayName: 'Default value',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
         validation: {
           schema: {
             type: 'union',
@@ -2245,6 +2348,10 @@ export const widgets = [
       values: {
         type: 'code',
         displayName: 'Option values',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
         validation: {
           schema: {
             type: 'array',
@@ -2255,11 +2362,24 @@ export const widgets = [
       display_values: {
         type: 'code',
         displayName: 'Option labels',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
         validation: {
           schema: {
             type: 'array',
             element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
           },
+        },
+      },
+
+      schema: {
+        type: 'code',
+        displayName: 'Schema',
+        conditionallyRender: {
+          key: 'advanced',
+          value: true,
         },
       },
       loadingState: {
@@ -2324,6 +2444,8 @@ export const widgets = [
       value: 2,
       searchText: '',
       label: 'Select',
+      optionLabels: ['one', 'two', 'three'],
+      selectedOptionLabel: 'two',
     },
     actions: [
       {
@@ -2341,12 +2463,18 @@ export const widgets = [
         customRule: { value: null },
       },
       properties: {
+        advanced: { value: `{{false}}` },
+        schema: {
+          value:
+            "{{[\t{label: 'One',value: 1,disable: false,visible: true,default: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}\t]}}",
+        },
+
         label: { value: 'Select' },
         value: { value: '{{2}}' },
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
-        visible: { value: '{{true}}' },
         loadingState: { value: '{{false}}' },
+        placeholder: { value: 'Select an option' },
       },
       events: [],
       styles: {
@@ -3641,6 +3769,20 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      enablePagination: {
+        type: 'toggle',
+        displayName: 'Enable pagination',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      rowsPerPage: {
+        type: 'code',
+        displayName: 'Rows per page',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
     },
     events: {
       onRowClicked: { displayName: 'Row clicked' },
@@ -3703,6 +3845,8 @@ export const widgets = [
         },
         visible: { value: '{{true}}' },
         showBorder: { value: '{{true}}' },
+        rowsPerPage: { value: '{{10}}' },
+        enablePagination: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -4406,7 +4550,7 @@ export const widgets = [
       events: [],
       styles: {
         visibility: { value: '{{true}}' },
-        dividerColor: { value: '' },
+        dividerColor: { value: '#000000' },
       },
     },
   },
@@ -4840,6 +4984,171 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         width: { value: '{{400}}' },
         minWidth: { value: '{{200}}' },
         textColor: { value: '' },
+      },
+    },
+  },
+  {
+    name: 'Kanban',
+    displayName: 'Kanban',
+    description: 'Kanban',
+    component: 'Kanban',
+    defaultSize: {
+      width: 40,
+      height: 490,
+    },
+    defaultChildren: [
+      {
+        componentName: 'Text',
+        layout: {
+          top: 20,
+          left: 4,
+          height: 30,
+        },
+        properties: ['text'],
+        accessorKey: 'text',
+        styles: ['fontWeight', 'textSize', 'textColor'],
+        defaultValue: {
+          text: '{{cardData.title}}',
+          fontWeight: 'bold',
+          textSize: 16,
+          textColor: '#000',
+        },
+      },
+      {
+        componentName: 'Text',
+        layout: {
+          top: 50,
+          left: 4,
+          height: 30,
+        },
+        properties: ['text'],
+        accessorKey: 'text',
+        styles: ['textSize', 'textColor'],
+        defaultValue: {
+          text: '{{cardData.description}}',
+          textSize: 14,
+          textColor: '#000',
+        },
+      },
+    ],
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      columnData: { type: 'code', displayName: 'Column Data' },
+      cardData: { type: 'code', displayName: 'Card Data' },
+      cardWidth: {
+        type: 'code',
+        displayName: 'Card Width',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      cardHeight: {
+        type: 'code',
+        displayName: 'Card Height',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
+      enableAddCard: { type: 'toggle', displayName: 'Enable Add Card' },
+      showDeleteButton: { type: 'toggle', displayName: 'Show Delete Button' },
+    },
+    events: {
+      onUpdate: { displayName: 'On update' },
+      onAddCardClick: { displayName: 'On add card click' },
+      onCardRemoved: { displayName: 'Card removed' },
+      onCardAdded: { displayName: 'Card added' },
+      onCardMoved: { displayName: 'Card moved' },
+      onCardSelected: { displayName: 'Card selected' },
+    },
+    styles: {
+      disabledState: { type: 'toggle', displayName: 'Disable' },
+      visibility: { type: 'toggle', displayName: 'Visibility' },
+      accentColor: { type: 'color', displayName: 'Accent color' },
+    },
+    actions: [
+      {
+        handle: 'addCard',
+        displayName: 'Add Card',
+        params: [
+          {
+            handle: 'cardDetails',
+            displayName: 'Card Details',
+            defaultValue: `{{{ id: "c11", title: "Title 11", description: "Description 11", columnId: "r3" }}}`,
+          },
+        ],
+      },
+      {
+        handle: 'deleteCard',
+        displayName: 'Delete Card',
+        params: [
+          { handle: 'id', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
+        ],
+      },
+      {
+        handle: 'moveCard',
+        displayName: 'Move Card',
+        params: [
+          { handle: 'cardId', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
+          { handle: 'columnId', displayName: 'Destination Column Id', defaultValue: '' },
+        ],
+      },
+      {
+        handle: 'updateCardData',
+        displayName: 'Update Card Data',
+        params: [
+          { handle: 'id', displayName: 'Card Id', defaultValue: `{{components.kanban1?.lastSelectedCard?.id}}` },
+          {
+            handle: 'value',
+            displayName: 'Value',
+            defaultValue: `{{{...components.kanban1?.lastSelectedCard, title: 'New Title'}}}`,
+          },
+        ],
+      },
+    ],
+    exposedVariables: {
+      updatedCardData: {},
+      lastAddedCard: {},
+      lastRemovedCard: {},
+      lastCardMovement: {},
+      lastSelectedCard: {},
+      lastUpdatedCard: {},
+      lastCardUpdate: [],
+    },
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        columnData: {
+          value:
+            '{{[{ "id": "r1", "title": "To Do" },{ "id": "r2", "title": "In Progress" },{ "id": "r3", "title": "Done" }]}}',
+        },
+        cardData: {
+          value:
+            '{{[{ id: "c1", title: "Title 1", description: "Description 1", columnId: "r1" },{ id: "c2", title: "Title 2", description: "Description 2", columnId: "r1" },{ id: "c3", title: "Title 3", description: "Description 3",columnId: "r2" },{ id: "c4", title: "Title 4", description: "Description 4",columnId: "r3" },{ id: "c5", title: "Title 5", description: "Description 5",columnId: "r3" }, { id: "c6", title: "Title 6", description: "Description 6", columnId: "r1" },{ id: "c7", title: "Title 7", description: "Description 7", columnId: "r1" },{ id: "c8", title: "Title 8", description: "Description 8",columnId: "r2" },{ id: "c9", title: "Title 9", description: "Description 9",columnId: "r3" },{ id: "c10", title: "Title 10", description: "Description 10",columnId: "r3" }]}}',
+        },
+        cardWidth: {
+          value: '{{302}}',
+        },
+        cardHeight: {
+          value: '{{100}}',
+        },
+        enableAddCard: {
+          value: `{{true}}`,
+        },
+        showDeleteButton: {
+          value: `{{true}}`,
+        },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+        accentColor: { value: '#4d72fa' },
       },
     },
   },
@@ -5332,6 +5641,92 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         borderRadius: { value: '0' },
         borderColor: { value: '#fff' },
         visibility: { value: '{{true}}' },
+        disabledState: { value: '{{false}}' },
+      },
+    },
+  },
+  {
+    name: 'BoundedBox',
+    displayName: 'Bounded Box',
+    description: 'An infinitely customizable image annotation widget',
+    component: 'BoundedBox',
+    defaultSize: {
+      width: 30,
+      height: 420,
+    },
+    others: {
+      showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
+      showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
+    },
+    properties: {
+      imageUrl: {
+        type: 'code',
+        displayName: 'Image Url',
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      selector: {
+        type: 'select',
+        displayName: 'Selector',
+        options: [
+          { name: 'Rectangle', value: 'RECTANGLE' },
+          { name: 'Point', value: 'POINT' },
+        ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      labels: {
+        type: 'code',
+        displayName: 'List of labels',
+        validation: {
+          schema: { type: 'array' },
+          element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }] },
+        },
+      },
+    },
+    events: {
+      onChange: { displayName: 'On change' },
+    },
+    styles: {
+      visibility: {
+        type: 'toggle',
+        displayName: 'Visibility',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
+      disabledState: {
+        type: 'toggle',
+        displayName: 'Disable',
+        validation: {
+          schema: { type: 'boolean' },
+          defaultValue: false,
+        },
+      },
+    },
+    exposedVariables: {
+      annotations: [],
+    },
+    actions: [],
+    definition: {
+      others: {
+        showOnDesktop: { value: '{{true}}' },
+        showOnMobile: { value: '{{false}}' },
+      },
+      properties: {
+        imageUrl: {
+          value: `https://burst.shopifycdn.com/photos/three-cars-are-parked-on-stone-paved-street.jpg?width=746&format=pjpg&exif=1&iptc=1`,
+        },
+        selector: { value: `RECTANGLE` },
+        labels: { value: `{{['Tree', 'Car', 'Stree light']}}` },
+      },
+      events: [],
+      styles: {
+        visibility: { value: '{{true}}' },
+
         disabledState: { value: '{{false}}' },
       },
     },

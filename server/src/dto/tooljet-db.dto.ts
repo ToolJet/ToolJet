@@ -68,7 +68,14 @@ export class SQLInjectionValidator implements ValidatorConstraintInterface {
   validate(value: any) {
     // Todo: add validations to overcome for SQL Injection
     const sql_meta = new RegExp('^[a-zA-Z0-9_ .]*$', 'i');
+    // . and @ are allowed in email
+    const allowedSpecialChars = new RegExp('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$', 'i');
+
     if (sql_meta.test(value)) {
+      return true;
+    }
+
+    if (allowedSpecialChars.test(value)) {
       return true;
     }
 
@@ -114,10 +121,11 @@ export class PostgrestTableColumnDto {
   @MaxLength(31, { message: 'Column name must be less than 32 characters' })
   @MinLength(1, { message: 'Column name must be at least 1 character' })
   @Matches(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
-    message: 'Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
+    message:
+      '  $value : Column name must start with a letter or underscore and can only contain letters, numbers and underscores',
   })
   @Validate(ReservedKeywordConstraint, {
-    message: 'Column name cannot be a reserved keyword',
+    message: ' $value : Column name cannot be a reserved keyword',
   })
   @Validate(SQLInjectionValidator, { message: 'Column name does not support special characters' })
   column_name: string;
@@ -142,7 +150,7 @@ export class PostgrestTableColumnDto {
   @Match('data_type', {
     message: 'Default value must match the data type',
   })
-  @Validate(SQLInjectionValidator, { message: 'Default value does not support special characters' })
+  @Validate(SQLInjectionValidator, { message: 'Default value does not support special characters except "." and "@"' })
   default: string | number | boolean;
 }
 

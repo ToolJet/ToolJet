@@ -1,0 +1,73 @@
+@import "@radix-ui/colors/slate.css";
+@import "@radix-ui/colors/indigo.css";
+@import "@radix-ui/colors/tomato.css";
+@import "@radix-ui/colors/grass.css";
+@import "@radix-ui/colors/orange.css";
+@import "@radix-ui/colors/crimson.css";
+@import "@radix-ui/colors/pink.css";
+@import "@radix-ui/colors/plum.css";
+@import "@radix-ui/colors/purple.css";
+@import "@radix-ui/colors/violet.css";
+@import "@radix-ui/colors/blue.css";
+@import "@radix-ui/colors/cyan.css";
+@import "@radix-ui/colors/teal.css";
+@import "@radix-ui/colors/green.css";
+@import "@radix-ui/colors/brown.css";
+@import "@radix-ui/colors/red.css";
+@import "@radix-ui/colors/slateDark.css";
+@import "@radix-ui/colors/indigoDark.css";
+@import "@radix-ui/colors/tomatoDark.css";
+@import "@radix-ui/colors/grassDark.css";
+@import "@radix-ui/colors/orangeDark.css";
+@import "@radix-ui/colors/crimsonDark.css";
+@import "@radix-ui/colors/pinkDark.css";
+@import "@radix-ui/colors/plumDark.css";
+@import "@radix-ui/colors/purpleDark.css";
+@import "@radix-ui/colors/violetDark.css";
+@import "@radix-ui/colors/blueDark.css";
+@import "@radix-ui/colors/cyanDark.css";
+@import "@radix-ui/colors/tealDark.css";
+@import "@radix-ui/colors/greenDark.css";
+@import "@radix-ui/colors/brownDark.css";
+@import "@radix-ui/colors/redDark.css";
+
+// Bright Colors
+@import "@radix-ui/colors/sky.css";
+@import "@radix-ui/colors/mint.css";
+@import "@radix-ui/colors/lime.css";
+@import "@radix-ui/colors/yellow.css";
+@import "@radix-ui/colors/amber.css";
+@import "@radix-ui/colors/skyDark.css";
+@import "@radix-ui/colors/mintDark.css";
+@import "@radix-ui/colors/limeDark.css";
+@import "@radix-ui/colors/yellowDark.css";
+@import "@radix-ui/colors/amberDark.css";
+
+// Grays
+@import "@radix-ui/colors/grayDark.css";
+@import "@radix-ui/colors/mauveDark.css";
+@import "@radix-ui/colors/sageDark.css";
+@import "@radix-ui/colors/oliveDark.css";
+@import "@radix-ui/colors/sandDark.css";
+@import "@radix-ui/colors/gray.css";
+@import "@radix-ui/colors/mauve.css";
+@import "@radix-ui/colors/sage.css";
+@import "@radix-ui/colors/olive.css";
+@import "@radix-ui/colors/sand.css";
+
+// Metals
+@import "@radix-ui/colors/gold.css";
+@import "@radix-ui/colors/bronze.css";
+@import "@radix-ui/colors/goldDark.css";
+@import "@radix-ui/colors/bronzeDark.css";
+
+:root {
+    --base: white;
+    --base-black: #121212;
+}
+
+.dark-theme {
+    /* Remap your colors for dark mode */
+    --base: #121212;
+    --base-black: white;
+}

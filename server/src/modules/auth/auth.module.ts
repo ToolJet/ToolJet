@@ -34,6 +34,8 @@ import { AppEnvironmentService } from '@services/app_environments.service';
 import { MetaModule } from '../meta/meta.module';
 import { Metadata } from 'src/entities/metadata.entity';
 import { MetadataService } from '@services/metadata.service';
+import { SessionService } from '@services/session.service';
+import { SessionScheduler } from 'src/schedulers/session.scheduler';
 
 @Module({
   imports: [
@@ -59,9 +61,6 @@ import { MetadataService } from '@services/metadata.service';
       useFactory: (config: ConfigService) => {
         return {
           secret: config.get<string>('SECRET_KEY_BASE'),
-          signOptions: {
-            expiresIn: config.get<string | number>('JWT_EXPIRATION_TIME') || '30d',
-          },
         };
       },
       inject: [ConfigService],
@@ -85,8 +84,10 @@ import { MetadataService } from '@services/metadata.service';
     AppEnvironmentService,
     MetadataService,
     PluginsHelper,
+    SessionService,
+    SessionScheduler,
   ],
   controllers: [OauthController],
-  exports: [AuthService],
+  exports: [AuthService, SessionService],
 })
 export class AuthModule {}

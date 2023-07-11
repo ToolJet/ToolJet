@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import cx from 'classnames';
 import Modal from 'react-bootstrap/Modal';
 import { useTranslation } from 'react-i18next';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-export function ConfirmDialog({ show, title, message, onConfirm, onCancel, confirmButtonLoading, darkMode }) {
-  darkMode = darkMode ?? (localStorage.getItem('darkMode') || false);
+export function ConfirmDialog({
+  show,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  confirmButtonLoading,
+  darkMode,
+  confirmButtonText,
+  confirmButtonType = 'dangerPrimary',
+}) {
+  darkMode = darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const [showModal, setShow] = useState(show);
   const { t } = useTranslation();
+
+  const buttonText = confirmButtonText ?? t('globals.yes', 'Yes');
 
   useEffect(() => {
     setShow(show);
@@ -28,7 +40,7 @@ export function ConfirmDialog({ show, title, message, onConfirm, onCancel, confi
       size="sm"
       animation={false}
       centered={true}
-      contentClassName={darkMode ? 'theme-dark' : ''}
+      contentClassName={`confirm-dialogue-modal ${darkMode ? 'dark-theme' : ''}`}
       data-cy="modal-component"
     >
       {title && (
@@ -52,18 +64,21 @@ export function ConfirmDialog({ show, title, message, onConfirm, onCancel, confi
           </svg>
         </Modal.Header>
       )}
-      <Modal.Body data-cy="modal-message">{message}</Modal.Body>
+      <Modal.Body className="confirm-dialogue-body" data-cy="modal-message">
+        {message}
+      </Modal.Body>
       <Modal.Footer className="mt-3">
-        <button className="btn" onClick={handleClose} data-cy="cancel-button">
+        <ButtonSolid variant="secondary" onClick={handleClose} data-cy="cancel-button">
           {t('globals.cancel', 'Cancel')}
-        </button>
-        <button
-          className={cx('btn btn-danger', { 'btn-loading': confirmButtonLoading })}
-          onClick={handleConfirm}
+        </ButtonSolid>
+        <ButtonSolid
+          variant={confirmButtonType}
           data-cy="yes-button"
+          onClick={handleConfirm}
+          isLoading={confirmButtonLoading}
         >
-          {t('globals.yes', 'Yes')}
-        </button>
+          {buttonText}
+        </ButtonSolid>
       </Modal.Footer>
     </Modal>
   );

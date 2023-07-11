@@ -48,6 +48,9 @@ export class DataSource extends BaseEntity {
   @Column({ name: 'organization_id' })
   organizationId: string;
 
+  @Column({ type: 'enum', enumName: 'scope', enum: ['local', 'global'], default: 'local' })
+  scope: string;
+
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;
 

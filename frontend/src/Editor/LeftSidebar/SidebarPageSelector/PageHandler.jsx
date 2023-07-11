@@ -25,7 +25,9 @@ export const PageHandler = ({
   apps,
   pages,
   components,
-  dataQueries,
+  isVersionReleased,
+  pinPagesPopover,
+  haveUserPinned,
 }) => {
   const isHomePage = page.id === homePageId;
   const isSelected = page.id === currentPageId;
@@ -54,7 +56,7 @@ export const PageHandler = ({
     setIsHovered(false);
     switch (id) {
       case 'delete-page':
-        deletePage(page.id, isHomePage);
+        deletePage(page.id, isHomePage, page.name);
         break;
 
       case 'rename-page':
@@ -73,7 +75,7 @@ export const PageHandler = ({
         showSettings();
         break;
 
-      // case 'duplicate-page':
+      // case 'clone-page':
       //   clonePage(page.id);
       //   break;
 
@@ -127,11 +129,15 @@ export const PageHandler = ({
                 src="assets/images/icons/home.svg"
                 height={14}
                 width={14}
+                data-cy={'home-page-icon'}
               />
             )}
             <SortableList.DragHandle show={isHovered} />
           </div>
-          <div className="col text-truncate font-weight-400 page-name" data-cy="event-handler">
+          <div
+            className="col text-truncate font-weight-400 page-name"
+            data-cy={`pages-name-${String(page.name).toLowerCase()}`}
+          >
             {page.name}
           </div>
           <div className="col-auto page-icons">
@@ -143,11 +149,12 @@ export const PageHandler = ({
                 src="assets/images/icons/eye-off.svg"
                 height={14}
                 width={14}
+                data-cy={'hide-page-icon'}
               />
             )}
           </div>
           <div className="col-auto">
-            {(isHovered || isSelected) && (
+            {(isHovered || isSelected) && !isVersionReleased && (
               <PagehandlerMenu
                 page={page}
                 darkMode={darkMode}
@@ -169,14 +176,17 @@ export const PageHandler = ({
             <SettingsModal
               page={page}
               show={showSettingsModal}
-              handleClose={() => setShowSettingsModal(false)}
+              handleClose={() => {
+                setShowSettingsModal(false);
+                !haveUserPinned && pinPagesPopover(false);
+              }}
               darkMode={darkMode}
               updateOnPageLoadEvents={updateOnPageLoadEvents}
               currentState={currentState}
               apps={apps}
               pages={pages}
               components={components}
-              dataQueries={dataQueries}
+              pinPagesPopover={pinPagesPopover}
             />
           </div>
         </div>
@@ -188,7 +198,7 @@ export const PageHandler = ({
 export const AddingPageHandler = ({ addNewPage, setNewPageBeingCreated, darkMode }) => {
   const handleAddingNewPage = (pageName) => {
     if (pageName.trim().length === 0) {
-      toast('Page name should have atleast 1 character', {
+      toast('Page name should have at least 1 character', {
         icon: '⚠️',
       });
     }

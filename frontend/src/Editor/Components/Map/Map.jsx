@@ -17,6 +17,7 @@ export const Map = function Map({
   onEvent,
   // canvasWidth,
   registerAction,
+  dataCy,
 }) {
   const center = component.definition.properties.initialLocation.value;
   const defaultMarkerValue = component.definition.properties.defaultMarkers.value;
@@ -142,6 +143,7 @@ export const Map = function Map({
         onComponentClick(id, component, event);
       }}
       className="map-widget"
+      data-cy={dataCy}
     >
       <div
         className="map-center"

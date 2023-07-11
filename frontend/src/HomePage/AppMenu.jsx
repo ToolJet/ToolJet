@@ -11,23 +11,22 @@ export const AppMenu = function AppMenu({
   canDeleteApp,
   canUpdateApp,
   onMenuOpen,
-  isMenuOpen,
   openAppActionModal,
   darkMode,
   currentFolder,
 }) {
-  const closeMenu = () => {
-    document.body.click();
-  };
   const { t } = useTranslation();
   const Field = ({ text, onClick, customClass }) => {
+    const closeMenu = () => {
+      document.body.click();
+      onClick();
+    };
     return (
       <div className={`field mb-3${customClass ? ` ${customClass}` : ''}`}>
         <span
           role="button"
           onClick={() => {
             closeMenu();
-            onClick();
           }}
           data-cy={`${text.toLowerCase().replace(/\s+/g, '-')}-card-option`}
         >
@@ -44,48 +43,47 @@ export const AppMenu = function AppMenu({
       rootClose
       onToggle={onMenuOpen}
       overlay={
-        <Popover id="popover-app-menu" className={darkMode && 'popover-dark-themed'}>
-          <Popover.Content bsPrefix="popover-body">
-            <div data-cy="card-options">
-              {canUpdateApp && (
-                <Field
-                  text={t('homePage.appCard.changeIcon', 'Change Icon')}
-                  onClick={() => openAppActionModal('change-icon')}
-                />
-              )}
-              {canCreateApp && (
-                <>
+        <div>
+          <Popover id="popover-app-menu" className={darkMode && 'dark-theme'} placement="bottom">
+            <Popover.Body bsPrefix="popover-body">
+              <div data-cy="card-options">
+                {canUpdateApp && (
                   <Field
-                    text={t('homePage.appCard.addToFolder', 'Add to folder')}
-                    onClick={() => openAppActionModal('add-to-folder')}
+                    text={t('homePage.appCard.changeIcon', 'Change Icon')}
+                    onClick={() => openAppActionModal('change-icon')}
                   />
-
-                  {currentFolder.id && (
+                )}
+                {canCreateApp && (
+                  <>
                     <Field
-                      text={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
-                      onClick={() => openAppActionModal('remove-app-from-folder')}
+                      text={t('homePage.appCard.addToFolder', 'Add to folder')}
+                      onClick={() => openAppActionModal('add-to-folder')}
                     />
-                  )}
-                  <Field text={t('homePage.appCard.cloneApp', 'Clone app')} onClick={cloneApp} />
-                  <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
-                </>
-              )}
-              {canDeleteApp && (
-                <Field
-                  text={t('homePage.appCard.deleteApp', 'Delete app')}
-                  customClass="field__danger"
-                  onClick={deleteApp}
-                />
-              )}
-            </div>
-          </Popover.Content>
-        </Popover>
+
+                    {currentFolder.id && (
+                      <Field
+                        text={t('homePage.appCard.removeFromFolder', 'Remove from folder')}
+                        onClick={() => openAppActionModal('remove-app-from-folder')}
+                      />
+                    )}
+                    <Field text={t('homePage.appCard.cloneApp', 'Clone app')} onClick={cloneApp} />
+                    <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
+                  </>
+                )}
+                {canDeleteApp && (
+                  <Field
+                    text={t('homePage.appCard.deleteApp', 'Delete app')}
+                    customClass="field__danger"
+                    onClick={deleteApp}
+                  />
+                )}
+              </div>
+            </Popover.Body>
+          </Popover>
+        </div>
       }
     >
-      <div
-        className={`d-grid cursor-pointer menu-ico menu-ico${isMenuOpen ? '__open' : ''}`}
-        data-cy={`app-card-menu-icon`}
-      >
+      <div className={'cursor-pointer menu-ico'} data-cy={`app-card-menu-icon`}>
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"

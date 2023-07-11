@@ -17,17 +17,21 @@ const operationColorMapping = {
 class OpenapiComponent extends React.Component {
   constructor(props) {
     super(props);
-    const { selectedDataSource } = props;
+    const { selectedDataSource, options } = props;
     this.state = {
       options: {
         params: {
-          path: {},
-          query: {},
-          request: {},
-          header: {},
+          path: options?.params?.path || {},
+          query: options?.params?.query || {},
+          request: options?.params?.request || {},
+          header: options?.params?.header || {},
         },
+        host: options?.host,
+        operation: options?.operation,
+        path: options?.path,
       },
       spec: selectedDataSource.options?.spec?.value,
+      selectedOperation: selectedDataSource.options?.spec?.value?.paths[options?.path]?.[options?.operation] || null,
     };
   }
 
@@ -64,8 +68,7 @@ class OpenapiComponent extends React.Component {
     );
   };
 
-  renderOperationOption = (props, option, snapshot, className) => {
-    console.log(props, 'props', option, className);
+  renderOperationOption = (props) => {
     const optionName = props.value.split(',')[1];
     const operation = props.label;
     return (
@@ -81,8 +84,7 @@ class OpenapiComponent extends React.Component {
     );
   };
 
-  renderHostOptions = (props, option, snapshot, className) => {
-    console.log(props, 'props', className);
+  renderHostOptions = (props) => {
     return (
       <div className="row">
         <div className="col">
@@ -147,7 +149,11 @@ class OpenapiComponent extends React.Component {
       return servers.map((url) => {
         return url.url;
       });
-    } else if (path && this.state.spec.paths[path]['servers'] && this.state.spec?.paths[path]['servers'].length > 0) {
+    } else if (
+      path &&
+      this.state.spec.paths[path]?.['servers'] &&
+      this.state.spec.paths[path]?.['servers'].length > 0
+    ) {
       const servers = this.state.spec.paths[path]['servers'];
       return servers.map((url) => {
         return url.url;
@@ -165,7 +171,7 @@ class OpenapiComponent extends React.Component {
     const path = this.state.options.path;
 
     if (operation.parameters) {
-      if (this.state.spec.paths[path]['parameters']) {
+      if (this.state.spec.paths[path]?.['parameters']) {
         const generalParams = this.state.spec.paths[path]['parameters'].filter((param) => param.in === paramType);
         const operationParams = operation.parameters.filter((param) => param.in === paramType);
         const result = generalParams.concat(operationParams).filter(function (o) {
@@ -174,7 +180,7 @@ class OpenapiComponent extends React.Component {
         return result;
       }
       return operation.parameters.filter((param) => param.in === paramType);
-    } else if (this.state.spec.paths[path]['parameters'])
+    } else if (this.state.spec.paths[path]?.['parameters'])
       return this.state.spec.paths[path]['parameters'].filter((param) => param.in === paramType);
     else return [];
   }
@@ -228,8 +234,8 @@ class OpenapiComponent extends React.Component {
                 <div className="col openapi-operation-options">
                   <Select
                     options={this.computeHostOptions(baseUrls)}
-                    value={this.state.host}
-                    onChange={(value) => this.changeHost(value)}
+                    value={this.state.options.host}
+                    onChange={this.changeHost}
                     width="100%"
                     customOption={this.renderHostOptions}
                     placeholder={this.props.t('openApi.selectHost', 'Select a host')}
@@ -246,8 +252,8 @@ class OpenapiComponent extends React.Component {
               <div className="col openapi-operation-options">
                 <Select
                   options={this.computeOperationSelectionOptions(spec.paths)}
-                  value={this.state.option}
-                  onChange={(value) => this.changeOperation(value)}
+                  value={[this.state.options.operation, this.state.options.path].join(',')}
+                  onChange={this.changeOperation}
                   width="100%"
                   customOption={this.renderOperationOption}
                   placeholder={this.props.t('openApi.selectOperation', 'Select an operation')}

@@ -22,7 +22,7 @@ export const CalendarEventPopover = function ({
   const calendarElement = document.getElementById(calendarWidgetId);
 
   const handleClickOutside = (event) => {
-    if (parentRef.current && !parentRef.current.contains(event.target)) {
+    if (parentRef.current && !parentRef.current.contains(event.target) && !event.target.closest('.editor-sidebar')) {
       popoverClosed();
     }
   };

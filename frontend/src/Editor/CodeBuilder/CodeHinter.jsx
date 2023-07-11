@@ -31,6 +31,7 @@ import { toast } from 'react-hot-toast';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import cx from 'classnames';
 
 const AllElements = {
   Color,
@@ -68,6 +69,8 @@ export function CodeHinter({
   component,
   popOverCallback,
   cyLabel = '',
+  callgpt = () => null,
+  isCopilotEnabled = false,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -161,7 +164,7 @@ export function CodeHinter({
       if (component?.component?.component === 'Table' && fieldMeta?.name) {
         return {
           ...variablesExposedForPreview[component?.id],
-          cellValue: variablesExposedForPreview[component?.id]?.rowData[fieldMeta?.name],
+          cellValue: variablesExposedForPreview[component?.id]?.rowData?.[fieldMeta?.name],
           rowData: { ...variablesExposedForPreview[component?.id]?.rowData },
         };
       }
@@ -173,7 +176,7 @@ export function CodeHinter({
   const getPreview = () => {
     if (!enablePreview) return;
     const customResolvables = getCustomResolvables();
-    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true);
+    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
 
     if (error) {
@@ -268,10 +271,9 @@ export function CodeHinter({
 
   const [forceCodeBox, setForceCodeBox] = useState(fxActive);
   const codeShow = (type ?? 'code') === 'code' || forceCodeBox;
-  cyLabel = paramLabel ? paramLabel.toLowerCase().replace(/\s+/g, '-') : cyLabel;
-
+  cyLabel = paramLabel ? paramLabel.toLowerCase().trim().replace(/\s+/g, '-') : cyLabel;
   return (
-    <div ref={wrapperRef}>
+    <div ref={wrapperRef} className={cx({ 'codeShow-active': codeShow })}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {paramLabel && (
           <div className={`mb-2 field ${options.className}`} data-cy={`${cyLabel}-widget-parameter-label`}>
@@ -296,7 +298,7 @@ export function CodeHinter({
         </div>
       </div>
       <div
-        className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''}`}
+        className={`row${height === '150px' || height === '300px' ? ' tablr-gutter-x-0' : ''} custom-row`}
         style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col code-hinter-col`} style={{ marginBottom: '0.5rem' }}>
@@ -318,9 +320,11 @@ export function CodeHinter({
                   callback={handleToggle}
                   icon="portal-open"
                   tip="Pop out code editor into a new window"
+                  transformation={componentName === 'transformation'}
                 />
               )}
               <CodeHinter.Portal
+                isCopilotEnabled={isCopilotEnabled}
                 isOpen={isOpen}
                 callback={setIsOpen}
                 componentName={componentName}
@@ -331,6 +335,7 @@ export function CodeHinter({
                 darkMode={darkMode}
                 selectors={{ className: 'preview-block-portal' }}
                 dragResizePortal={true}
+                callgpt={callgpt}
               >
                 <CodeMirror
                   value={typeof initialValue === 'string' ? initialValue : ''}
@@ -338,7 +343,8 @@ export function CodeHinter({
                   scrollbarStyle={null}
                   height={'100%'}
                   onFocus={() => setFocused(true)}
-                  onBlur={(editor) => {
+                  onBlur={(editor, e) => {
+                    e.stopPropagation();
                     const value = editor.getValue()?.trimEnd();
                     onChange(value);
                     if (!isPreviewFocused.current) {
@@ -381,7 +387,9 @@ export function CodeHinter({
   );
 }
 
-const PopupIcon = ({ callback, icon, tip }) => {
+const PopupIcon = ({ callback, icon, tip, transformation = false }) => {
+  const size = transformation ? 20 : 12;
+
   return (
     <div className="d-flex justify-content-end" style={{ position: 'relative' }}>
       <OverlayTrigger
@@ -393,8 +401,8 @@ const PopupIcon = ({ callback, icon, tip }) => {
         <img
           className="svg-icon m-2 popup-btn"
           src={`assets/images/icons/${icon}.svg`}
-          width="12"
-          height="12"
+          width={size}
+          height={size}
           onClick={(e) => {
             e.stopPropagation();
             callback();

@@ -1,6 +1,6 @@
 import * as request from 'supertest';
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createUser, createNestAppInstance } from '../test.helper';
+import { clearDB, createUser, createNestAppInstance, authenticateUser } from '../test.helper';
 import { getManager } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 const path = require('path');
@@ -28,9 +28,13 @@ describe('users controller', () => {
 
       const oldPassword = user.password;
 
+      const loggedUser = await authenticateUser(app);
+      userData['tokenCookie'] = loggedUser.tokenCookie;
+
       const response = await request(app.getHttpServer())
         .patch('/api/users/change_password')
-        .set('Authorization', authHeaderForUser(user))
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie'])
         .send({ currentPassword: 'password', newPassword: 'new password' });
 
       expect(response.statusCode).toBe(200);
@@ -44,9 +48,13 @@ describe('users controller', () => {
 
       const oldPassword = user.password;
 
+      const loggedUser = await authenticateUser(app);
+      userData['tokenCookie'] = loggedUser.tokenCookie;
+
       const response = await request(app.getHttpServer())
         .patch('/api/users/change_password')
-        .set('Authorization', authHeaderForUser(user))
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie'])
         .send({
           currentPassword: 'wrong password',
           newPassword: 'new password',
@@ -66,9 +74,13 @@ describe('users controller', () => {
 
       const [firstName, lastName] = ['Daenerys', 'Targaryen'];
 
+      const loggedUser = await authenticateUser(app);
+      userData['tokenCookie'] = loggedUser.tokenCookie;
+
       const response = await request(app.getHttpServer())
         .patch('/api/users/update')
-        .set('Authorization', authHeaderForUser(user))
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie'])
         .send({ first_name: firstName, last_name: lastName });
 
       expect(response.statusCode).toBe(200);
@@ -86,9 +98,13 @@ describe('users controller', () => {
       const { user } = userData;
       const filePath = path.join(__dirname, '../__mocks__/avatar.png');
 
+      const loggedUser = await authenticateUser(app);
+      userData['tokenCookie'] = loggedUser.tokenCookie;
+
       const response = await request(app.getHttpServer())
         .post('/api/users/avatar')
-        .set('Authorization', authHeaderForUser(user))
+        .set('tj-workspace-id', user.defaultOrganizationId)
+        .set('Cookie', userData['tokenCookie'])
         .attach('file', filePath);
 
       expect(response.statusCode).toBe(201);

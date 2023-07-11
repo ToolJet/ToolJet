@@ -1,11 +1,13 @@
 import React from 'react';
 import cx from 'classnames';
-import { Picker } from 'emoji-mart';
+import data from '@emoji-mart/data/sets/14/apple.json';
+import Picker from '@emoji-mart/react';
 
 import TextareaMentions from '@/_ui/Mentions';
 import Button from '@/_ui/Button';
 import usePopover from '@/_hooks/use-popover';
 import { useHotkeys } from 'react-hotkeys-hook';
+// eslint-disable-next-line import/no-unresolved
 import { useTranslation } from 'react-i18next';
 
 function CommentFooter({
@@ -38,12 +40,18 @@ function CommentFooter({
     setOpen(false);
   };
 
-  useHotkeys('⌘+enter, control+enter', () => handleClick());
+  useHotkeys('meta+enter, control+enter', () => handleClick());
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <>
       <div {...content} className={open ? 'show' : 'hide'}>
-        <Picker theme={darkMode ? 'dark' : 'light'} style={{ width: 320 }} set="apple" onSelect={addEmoji} />
+        <Picker
+          data={data}
+          theme={darkMode ? 'dark' : 'light'}
+          style={{ width: 320 }}
+          set="apple"
+          onEmojiSelect={addEmoji}
+        />
       </div>
       <div className="card-footer">
         <div className="row align-items-center">

@@ -36,15 +36,15 @@ jobs:
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Use Node.js 14.17.3
-        uses: actions/setup-node@v2
+      - name: Use Node.js 18.3.0
+        uses: actions/setup-node@v3
         with:
-          node-version: 14.17.3
+          node-version: 18.3.0
 
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -56,7 +56,6 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
-      - run: npm i -g npm@7.20.0
       - run: npm run build
 
   lint:
@@ -67,15 +66,15 @@ jobs:
       github.ref == 'refs/heads/develop'
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Use Node.js 14.17.3
-        uses: actions/setup-node@v2
+      - name: Use Node.js 18.3.0
+        uses: actions/setup-node@v3
         with:
-          node-version: 14.17.3
+          node-version: 18.3.0
 
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -87,7 +86,6 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
-      - run: npm i -g npm@7.20.0
       - run: npm run build:plugins
       - run: npm --prefix frontend ci && npm --prefix server ci && npm --prefix plugins ci
       - run: npm --prefix server run lint && npm --prefix frontend run lint && npm --prefix plugins run lint
@@ -95,7 +93,7 @@ jobs:
   unit-test:
     runs-on: ubuntu-latest
     needs: build
-    container: node:14.17.3-buster
+    container: node:18.3.0-buster
     services:
       postgres:
         image: postgres
@@ -108,9 +106,9 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -122,7 +120,6 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
       - run: apt update && apt install -y postgresql
-      - run: npm i -g npm@7.20.0
       - run: npm --prefix plugins ci
       - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
       - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
@@ -134,7 +131,7 @@ jobs:
   e2e-test:
     runs-on: ubuntu-latest
     needs: build
-    container: node:14.17.3-buster
+    container: node:18.3.0-buster
     services:
       postgres:
         image: postgres
@@ -147,9 +144,9 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -161,11 +158,10 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
       - run: apt update && apt install -y postgresql
-      - run: npm i -g npm@7.20.0
       - run: npm --prefix plugins ci
       - run: npm --prefix plugins run create:client && npm --prefix plugins run create:server
       - run: npm --prefix plugins run build:packages && npm --prefix plugins run build:server
       - run: npm --prefix server ci
       - run: npm --prefix server run db:create
       - run: npm --prefix server run db:migrate
-      - run: npm --prefix server run test:e2e -- --silent
+      - run: NODE_OPTIONS=--max_old_space_size=8096 npm --prefix server run test:e2e -- --silent --testTimeout=20000

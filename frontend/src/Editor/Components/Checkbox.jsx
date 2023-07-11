@@ -8,6 +8,7 @@ export const Checkbox = function Checkbox({
   setExposedVariable,
   registerAction,
   darkMode,
+  dataCy,
 }) {
   const defaultValueFromProperties = properties.defaultValue ?? false;
   const [defaultValue, setDefaultvalue] = React.useState(defaultValueFromProperties);
@@ -43,7 +44,12 @@ export const Checkbox = function Checkbox({
   );
 
   return (
-    <div data-disabled={disabledState} className="row py-1" style={{ height, display: visibility ? '' : 'none' }}>
+    <div
+      data-disabled={disabledState}
+      className="row py-1"
+      style={{ height, display: visibility ? '' : 'none' }}
+      data-cy={dataCy}
+    >
       <div className="col px-1 py-0 mt-0">
         <label className="mx-1 form-check form-check-inline">
           <input

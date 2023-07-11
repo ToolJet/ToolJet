@@ -9,6 +9,7 @@ function OnBoardingInput({
   placeholder,
   emailError = false,
   autoFocus = false,
+  dataCy = '',
 }) {
   return (
     <div className="wrap-onboard-input">
@@ -27,8 +28,14 @@ function OnBoardingInput({
         }}
         style={{ marginBottom: fieldType == 'email' && '0px' }}
         autoComplete="off"
+        data-cy={dataCy}
       />
-      {emailError && <span className="tj-text-input-error-state"> Invalid email</span>}
+      {emailError && (
+        <span className="tj-text-input-error-state" data-cy="email-error-message">
+          {' '}
+          Invalid email
+        </span>
+      )}
     </div>
   );
 }

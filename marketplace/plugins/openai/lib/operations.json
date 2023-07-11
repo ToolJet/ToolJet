@@ -1,0 +1,124 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToolJet/ToolJet/develop/plugins/schemas/operations.schema.json",
+  "title": "OpenAI datasource",
+  "description": "A schema defining OpenAI datasource",
+  "type": "api",
+  "defaults": {},
+  "properties": {
+    "operation": {
+      "label": "Operation",
+      "key": "operation",
+      "type": "dropdown-component-flip",
+      "description": "Single select dropdown for operation",
+      "list": [
+        {
+          "value": "completion",
+          "name": "Completion"
+        },
+        {
+          "value": "chat",
+          "name": "Chat"
+        }
+      ]
+    },
+    "completion": {
+      "prompt": {
+        "label": "Prompt",
+        "key": "prompt",
+        "type": "codehinter",
+        "description": "Enter prompt",
+        "height": "150px"
+      },
+      "max_tokens": {
+        "label": "Max Tokens",
+        "key": "max_tokens",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter from 1 to 2048",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "temperature": {
+        "label": "Temperature",
+        "key": "temperature",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter from 0 to 1",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "stop_sequence": {
+        "label": "Stop Sequence",
+        "key": "stop_sequence",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter stop sequence",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "suffix": {
+        "label": "Suffix",
+        "key": "suffix",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter suffix",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    },
+    "chat": {
+      "prompt": {
+        "label": "Message as input,",
+        "key": "prompt",
+        "type": "codehinter",
+        "description": "Enter message",
+        "placeholder": "Draft an email or other piece of writing",
+        "height": "150px"
+      },
+      "max_tokens": {
+        "label": "Max Tokens",
+        "key": "max_tokens",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter from 1 to 2048",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "temperature": {
+        "label": "Temperature",
+        "key": "temperature",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter from 0 to 1",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "stop_sequence": {
+        "label": "Stop Sequence",
+        "key": "stop_sequence",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter stop sequence",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      },
+      "suffix": {
+        "label": "Suffix",
+        "key": "suffix",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter suffix",
+        "width": "320px",
+        "height": "36px",
+        "className": "codehinter-plugins"
+      }
+    }
+  }
+}

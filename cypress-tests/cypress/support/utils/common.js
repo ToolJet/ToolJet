@@ -6,36 +6,33 @@ import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
 
 export const navigateToProfile = () => {
-  cy.get(profileSelector.profileDropdown).invoke("show");
-  cy.contains("Profile").click();
-  cy.url().should("include", path.profilePath);
+  cy.get(commonSelectors.profileSettings).click();
+  cy.get(profileSelector.profileLink).click();
+  cy.url().should("include", "settings");
 };
 
 export const logout = () => {
-  cy.get(profileSelector.profileDropdown).invoke("show");
-  cy.contains("Logout").click();
-  cy.url().should("include", path.loginPath);
+  cy.get(commonSelectors.profileSettings).click();
+  cy.get(commonSelectors.logoutLink).click();
 };
 
 export const navigateToManageUsers = () => {
-  cy.get(usersSelector.dropdown).invoke("show");
-  cy.contains("Manage Users").click();
-  cy.url().should("include", path.manageUsers);
+  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.manageUsersOption).click();
 };
 
 export const navigateToManageGroups = () => {
-  cy.get(commonSelectors.dropdown).invoke("show");
-  cy.contains("Manage Groups").click();
-  cy.url().should("include", path.manageGroups);
+  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.manageGroupsOption).click();
+};
+export const navigateToWorkspaceVariable = () => {
+  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.workspaceVariableOption).click();
 };
 
 export const navigateToManageSSO = () => {
-  cy.url().then(($url) => {
-    if (!$url.includes(path.manageSSO)) {
-      cy.get(commonSelectors.dropdown).invoke("show");
-      cy.contains("Manage SSO").click();
-    }
-  });
+  cy.get(commonSelectors.workspaceSettingsIcon).click();
+  cy.get(commonSelectors.manageSSOOption).click();
 };
 
 export const randomDateOrTime = (format = "DD/MM/YYYY") => {
@@ -43,7 +40,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-    Math.random() * (endDate.getTime() - startDate.getTime())
+      Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -62,7 +59,7 @@ export const createFolder = (folderName) => {
 
 export const deleteFolder = (folderName) => {
   viewFolderCardOptions(folderName);
-  cy.get(commonSelectors.deleteFolderOption).click();
+  cy.get(commonSelectors.deleteFolderOption(folderName)).click();
   cy.get(commonSelectors.buttonSelector(commonText.modalYesButton)).click();
   cy.wait("@folderDeleted");
   cy.verifyToastMessage(
@@ -81,20 +78,24 @@ export const navigateToAppEditor = (appName) => {
     .trigger("mousehover")
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
-    .click();
+    .click({ force: true });
   //cy.wait("@appEditor");
 };
 
 export const viewAppCardOptions = (appName) => {
-  cy.get(commonSelectors.appCard(appName))
-    .find(commonSelectors.appCardOptionsButton)
-    .click();
+  cy.contains("div", appName)
+    .parent()
+    .within(() => {
+      cy.get(commonSelectors.appCardOptionsButton).invoke("click");
+    });
 };
 
 export const viewFolderCardOptions = (folderName) => {
   cy.get(commonSelectors.folderListcard(folderName))
-    .find(commonSelectors.folderCardOptions)
-    .click();
+    .parent()
+    .within(() => {
+      cy.get(commonSelectors.folderCardOptions(folderName)).invoke("click");
+    });
 };
 
 export const verifyModal = (title, buttonText, inputFiledSelector) => {
@@ -153,21 +154,36 @@ export const manageUsersPagination = (email) => {
 };
 
 export const searchUser = (email) => {
-  cy.clearAndType(commonSelectors.emailFilterInput, email);
-  cy.get(commonSelectors.filterButton).click();
+  cy.clearAndType(commonSelectors.inputUserSearch, email);
 };
 
 export const createWorkspace = (workspaceName) => {
-  cy.get(usersSelector.dropdown).invoke("show");
+  cy.get(commonSelectors.workspaceName).click();
   cy.get(commonSelectors.addWorkspaceButton).click();
   cy.clearAndType(commonSelectors.workspaceNameInput, workspaceName);
   cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
   cy.get(commonSelectors.createWorkspaceButton).click();
   cy.wait("@homePage");
-  cy.get(dashboardSelector.modeToggle, { timeout: 10000 }).should("be.visible");
 };
 
 export const selectAppCardOption = (appName, appCardOption) => {
   viewAppCardOptions(appName);
   cy.get(appCardOption).should("be.visible").click();
+};
+
+export const navigateToDatabase = () => {
+  cy.get(commonSelectors.databaseIcon).click();
+  cy.url().should("include", path.database);
+};
+export const randomValue = () => {
+  return Math.floor(Math.random() * (1000 - 100) + 100) / 100;
+};
+
+export const verifyTooltip = (selector, message) => {
+  cy.get(selector)
+    .trigger("mouseover", { timeout: 2000 })
+    .trigger("mouseover")
+    .then(() => {
+      cy.get(".tooltip-inner").last().should("have.text", message);
+    });
 };

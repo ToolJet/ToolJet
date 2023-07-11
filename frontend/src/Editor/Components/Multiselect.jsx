@@ -21,6 +21,7 @@ export const Multiselect = function Multiselect({
   darkMode,
   fireEvent,
   registerAction,
+  dataCy,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState } = styles;
@@ -45,13 +46,13 @@ export const Multiselect = function Multiselect({
     setExposedVariable('values', newValues);
     setSelected(selectOptions.filter((option) => newValues.includes(option.value)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(values)]);
+  }, [JSON.stringify(values), JSON.stringify(display_values)]);
 
   useEffect(() => {
     setExposedVariable('values', value);
     setSelected(selectOptions.filter((option) => value.includes(option.value)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(value)]);
+  }, [JSON.stringify(value), JSON.stringify(display_values)]);
 
   useEffect(() => {
     if (value && !selected) {
@@ -127,7 +128,7 @@ export const Multiselect = function Multiselect({
   return (
     <div
       className="multiselect-widget row g-0"
-      data-cy={`draggable-widget-${component.name.toLowerCase()}`}
+      data-cy={dataCy}
       style={{ height, display: visibility ? '' : 'none' }}
       onFocus={() => {
         onComponentClick(this, id, component);

@@ -99,7 +99,7 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
         style={{ width: '350px', maxWidth: '350px' }}
         className={`${darkMode && 'popover-dark-themed theme-dark'} shadow`}
       >
-        <Popover.Content>
+        <Popover.Body>
           <>
             {input.map((item) => (
               <div className="row" key={item}>
@@ -142,7 +142,7 @@ export const BoxShadow = ({ value, onChange, forceCodeBox, cyLabel }) => {
               Clear
             </button>
           </>
-        </Popover.Content>
+        </Popover.Body>
       </Popover>
     );
   };

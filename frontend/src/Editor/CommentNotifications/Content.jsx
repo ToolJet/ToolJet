@@ -43,7 +43,7 @@ const Content = ({ notifications, loading, darkMode }) => {
             >
               <div className="d-flex justify-content-between">
                 <span className="comment-notification-user">
-                  {`${comment.user?.firstName} ${comment.user?.lastName}`}{' '}
+                  {`${comment.user?.firstName} ${comment.user?.lastName ?? ''}`}{' '}
                 </span>
                 <div className={`comment-notification-count ms-auto ${darkMode && 'text-light'}`}>
                   {moment(comment.createdAt).fromNow()}

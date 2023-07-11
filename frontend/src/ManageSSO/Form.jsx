@@ -27,7 +27,7 @@ export function Form({ settings, updateData, darkMode }) {
   };
 
   return (
-    <div className="card">
+    <div className="sso-card-wrapper">
       <ConfirmDialog
         show={showDisablingPasswordConfirmation}
         message={t(
@@ -42,7 +42,7 @@ export function Form({ settings, updateData, darkMode }) {
         <div className="d-flex justify-content-between title-with-toggle">
           <div className="card-title" data-cy="card-title">
             {t('header.organization.menus.manageSSO.passwordLogin', 'Password Login')}
-            <span className={`badge bg-${enabled ? 'green' : 'grey'} ms-1`} data-cy="status-label">
+            <span className={`tj-text-xsm ${enabled ? 'enabled-tag' : 'disabled-tag'}`} data-cy="status-label">
               {enabled ? t('globals.enabled', 'Enabled') : t('globals.disabled', 'Disabled')}
             </span>
           </div>
@@ -53,7 +53,7 @@ export function Form({ settings, updateData, darkMode }) {
                 type="checkbox"
                 checked={enabled}
                 onChange={() => (enabled ? setShowDisablingPasswordConfirmation(true) : changeStatus())}
-                data-cy="enable-sign-up-toggle"
+                data-cy="password-enable-toggle"
               />
             </label>
           </div>

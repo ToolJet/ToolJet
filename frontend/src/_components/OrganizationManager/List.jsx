@@ -1,51 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { authenticationService, organizationService } from '@/_services';
+import { authenticationService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
+import { getWorkspaceIdFromURL, appendWorkspaceId, getAvatar } from '../../_helpers/utils';
+import { ToolTip } from '@/_components';
 
 export const OrganizationList = function () {
-  const { organization_id } = authenticationService.currentUserValue;
+  const { current_organization_id } = authenticationService.currentSessionValue;
   const [organizationList, setOrganizationList] = useState([]);
   const [getOrgStatus, setGetOrgStatus] = useState('');
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
-    getOrganizations();
+    setGetOrgStatus('loading');
+    const sessionObservable = authenticationService.currentSession.subscribe((newSession) => {
+      setOrganizationList(newSession.organizations ?? []);
+      if (newSession.organizations?.length > 0) setGetOrgStatus('success');
+    });
+
+    () => sessionObservable.unsubscribe();
   }, []);
 
-  const getOrganizations = () => {
-    setGetOrgStatus('loading');
-    organizationService.getOrganizations().then(
-      (data) => {
-        setOrganizationList(data.organizations);
-        setGetOrgStatus('success');
-      },
-      () => {
-        setGetOrgStatus('failure');
-      }
-    );
-  };
-
   const switchOrganization = (orgId) => {
-    organizationService.switchOrganization(orgId).then(
-      (data) => {
-        authenticationService.updateCurrentUserDetails(data);
-        window.location.reload();
-      },
-      () => {
-        return (window.location.href = `login/${orgId}`);
-      }
-    );
-  };
-
-  const getAvatar = (organization) => {
-    if (!organization) return;
-
-    const orgName = organization.split(' ').filter((e) => e && !!e.trim());
-    if (orgName.length > 1) {
-      return `${orgName[0]?.[0]}${orgName[1]?.[0]}`;
-    } else if (organization.length >= 2) {
-      return `${organization[0]}${organization[1]}`;
-    } else {
-      return `${organization[0]}${organization[0]}`;
+    if (getWorkspaceIdFromURL() !== orgId) {
+      const newPath = appendWorkspaceId(orgId, location.pathname, true);
+      window.history.replaceState(null, null, newPath);
+      window.location.reload();
     }
   };
 
@@ -53,23 +32,31 @@ export const OrganizationList = function () {
     value: org.id,
     name: org.name,
     label: (
-      <div className="row align-items-center">
-        <div className="col organization-avatar">
-          <span className="avatar avatar-sm bg-secondary-lt">{getAvatar(org.name)}</span>
+      <div className={`align-items-center d-flex tj-org-dropdown  ${darkMode && 'dark-theme'}`}>
+        <div
+          className="dashboard-org-avatar "
+          data-cy={`${String(org.name).toLowerCase().replace(/\s+/g, '-')}-avatar`}
+        >
+          {getAvatar(org.name)}
         </div>
-        <div className="col">
-          <div className="org-name">{org.name}</div>
-        </div>
+        <ToolTip message={org.name} placement="right">
+          <div className="org-name" data-cy={`${String(org.name).toLowerCase().replace(/\s+/g, '-')}-name-selector`}>
+            {org.name}
+          </div>
+        </ToolTip>
       </div>
     ),
   }));
 
   return (
-    <CustomSelect
-      isLoading={getOrgStatus === 'loading'}
-      options={options}
-      value={organization_id}
-      onChange={(id) => switchOrganization(id)}
-    />
+    <div className="org-select-container">
+      <CustomSelect
+        isLoading={getOrgStatus === 'loading'}
+        options={options}
+        value={current_organization_id}
+        onChange={(id) => switchOrganization(id)}
+        className={`tj-org-select  ${darkMode && 'dark-theme'}`}
+      />
+    </div>
   );
 };

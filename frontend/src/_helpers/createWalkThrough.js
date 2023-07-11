@@ -25,8 +25,8 @@ export const initEditorWalkThrough = () => {
       {
         element: '.component-image-holder',
         popover: {
-          title: 'Drag and drop widgets',
-          description: 'From the widget sidebar, drag and drop widgets to the canvas.',
+          title: 'Drag and drop components',
+          description: 'From the component sidebar, drag and drop components to the canvas.',
           position: 'left',
           closeBtnText: 'Skip (1/6)',
         },
@@ -44,7 +44,7 @@ export const initEditorWalkThrough = () => {
         element: '.left-sidebar-inspector',
         popover: {
           title: 'Inspector',
-          description: 'Inspector lets you check the properties of widgets, results of queries etc.',
+          description: 'Inspector lets you check the properties of components, results of queries etc.',
           position: 'right',
           closeBtnText: 'Skip (3/6)',
         },

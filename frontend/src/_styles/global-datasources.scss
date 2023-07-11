@@ -1,0 +1,126 @@
+@import "./typography.scss";
+@import "./designtheme.scss";
+
+.global-datasources-sidebar {
+    height: calc(100vh - 64px);
+    max-width: 288px;
+    overflow-y: auto;
+    background: var(--base);
+
+    .add-datasource-btn {
+        height: 40px;
+        background: var(--indigo9);
+        width: 248px !important;
+        display: flex;
+        margin: 0 auto;
+        border-radius: 6px;
+    }
+
+    .datasources-list {
+        display: flex;
+        padding: 6px 8px;
+        width: 248px;
+        height: 32px;
+        margin-bottom: 2px;
+
+        &:focus-visible {
+            box-shadow: 0px 0px 0px 4px #DFE3E6;
+            outline: none;
+        }
+
+        &:hover {
+            background: var(--slate4);
+            border-radius: 6px;
+
+            .ds-delete-btn {
+                display: block;
+            }
+        }
+
+        &:active {
+            background: var(--indigo4);
+            box-shadow: none;
+        }
+
+
+        .ds-delete-btn {
+            display: none;
+            border: none;
+            background: none;
+        }
+    }
+
+    .datasources-list-item {
+        background-color: var(--indigo3);
+    }
+}
+
+.main-empty-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    width: 300px;
+    height: 100%;
+
+    .icon-container {
+        background-color: var(--indigo3);
+        border-radius: 15px;
+        padding: 12px;
+    }
+
+    .heading {
+        color: var(--slate12);
+        font-weight: 600;
+    }
+
+    .sub-heading {
+        text-align: center;
+    }
+
+    .add-datasource-btn {
+        background-color: var(--indigo3);
+        color: var(--indigo9);
+    }
+}
+
+.datasource-modal-container {
+    position: relative;
+    background: var(--slate2);
+
+    .modal-header {
+        background-color: var(--base) !important;
+    }
+
+    .modal {
+        position: absolute;
+        background: var(--slate2);
+    }
+
+    .modal-content {
+        border: 1px solid var(--slate5);
+        background-color: var(--base) !important;
+
+        .input-icon {
+            &:hover {
+                input {
+                    padding-right: 2rem !important;
+                }
+
+                .input-icon-addon {
+                    justify-content: flex-end;
+                }
+            }
+        }
+
+        .close-btn.dark {
+            filter: none !important;
+            background-color: revert !important;
+        }
+    }
+}
+
+.datasource-inner-sidebar-wrap {
+    min-height: calc(100vh - 185px);
+  }

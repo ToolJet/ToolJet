@@ -15,7 +15,8 @@ to: <%= plugins_path %>/plugins/<%= name %>/package.json
   ],
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
-    "build": "ncc build lib/index.ts -o dist"
+    "build": "ncc build lib/index.ts -o dist",
+    "watch": "ncc build lib/index.ts -o dist --watch"
   },
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {

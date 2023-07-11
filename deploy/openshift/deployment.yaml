@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tooljet-deployment
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      component: tooljet
+  template:
+    metadata:
+      labels:
+        component: tooljet
+    spec:
+      imagePullSecrets:
+        - name: docker-secret
+      containers:
+        - name: container
+          image: tooljet/tooljet-ce:latest
+          imagePullPolicy: Always
+          args: ["npm", "run", "start:prod"]
+          resources:
+            limits:
+              memory: "2000Mi"
+              cpu: "2000m"
+            requests:
+              memory: "1000Mi"
+              cpu: "1000m"
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              port: 3000
+              path: /api/health
+            successThreshold: 1
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
+          env:
+            - name: PG_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: pg_host
+            - name: PG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: pg_user
+            - name: PG_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: pg_password
+            - name: PG_DB
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: pg_db
+            - name: LOCKBOX_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: lockbox_key
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: secret_key_base
+            - name: TOOLJET_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: server
+                  key: tj_host
+            - name: DEPLOYMENT_PLATFORM
+              value: "openshift"
+            # Need to define missed HOME directory on openshift platform
+            # for npm commands to work with aribitrary user
+            - name: HOME
+              value: "/home/appuser"
+            # Set the env values below for Tooljet Database
+            # - name: ENABLE_TOOLJET_DB
+            #   value: "true"
+            # - name: TOOLJET_DB
+            #   value: "tooljet_db"
+            # - name: TOOLJET_DB_USER
+            #   value: "replace_with_tooljet_db_user"
+            # - name: TOOLJET_DB_HOST
+            #   value: "replace_with_tooljet_db_host"
+            # - name: TOOLJET_DB_PASS
+            #   value: "replace_with_tooljet_db_pass"
+            # - name: PGRST_HOST
+            #   value: "replace_with_postgrest_host"
+            # - name: PGRST_JWT_SECRET
+            #   value: "replace_jwt_secret_here"

@@ -2,6 +2,8 @@ export type SourceOptions = {
   access_key: string;
   secret_key: string;
   region: string;
+  useInstanceMetadataCredentials?: boolean;
+  roleArn?: string;
 };
 
 export type QueryOptions = {
@@ -12,6 +14,11 @@ export type QueryOptions = {
   bcc_to: string[];
   reply_to: string[];
   subject: string;
-  text: string;
-  html: string;
+  body: string;
+};
+
+export type AssumeRoleCredentials = {
+  accessKeyId: string;
+  secretAccessKey: string;
+  sessionToken: string;
 };

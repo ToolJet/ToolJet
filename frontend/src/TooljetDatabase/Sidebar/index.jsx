@@ -1,19 +1,19 @@
 import React from 'react';
-import Search from '../Search';
 import List from '../TableList';
 import CreateTableDrawer from '../Drawers/CreateTableDrawer';
+import { OrganizationList } from '@/_components/OrganizationManager/List';
 
 export default function Sidebar() {
   return (
-    <div className="tooljet-database-sidebar col border-bottom">
-      <div className="sidebar-container border-bottom border-end">
+    <div className="tooljet-database-sidebar col">
+      <div className="sidebar-container">
         <CreateTableDrawer />
-        <Search />
       </div>
-      <div className="col table-left-sidebar border-end">
-        <div className="p-3">
+      <div className="col table-left-sidebar" data-cy="all-table-column">
+        <div className="sidebar-list-wrap">
           <List />
         </div>
+        <OrganizationList />
       </div>
     </div>
   );

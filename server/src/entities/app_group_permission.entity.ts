@@ -31,8 +31,8 @@ export class AppGroupPermission extends BaseEntity {
   @Column({ default: false })
   delete: boolean;
 
-  @Column({ default: false, name: 'read_on_dashboard' })
-  readOnDashboard: boolean;
+  @Column({ default: false, name: 'hide_from_dashboard' })
+  hideFromDashboard: boolean;
 
   @CreateDateColumn({ default: () => 'now()', name: 'created_at' })
   createdAt: Date;

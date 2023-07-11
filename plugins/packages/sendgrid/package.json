@@ -16,7 +16,7 @@
     "clean": "rimraf ./dist && rimraf tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@sendgrid/mail": "^7.6.0",
+    "@sendgrid/mail": "^7.7.0",
     "@tooljet-plugins/common": "file:../common",
     "react": "^17.0.2",
     "rimraf": "^3.0.2"

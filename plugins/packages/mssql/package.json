@@ -18,9 +18,9 @@
   "homepage": "https://github.com/tooljet/tooljet#readme",
   "dependencies": {
     "@tooljet-plugins/common": "file:../common",
-    "knex": "^0.95.14",
+    "knex": "^0.95.15",
     "react": "^17.0.2",
     "rimraf": "^3.0.2",
-    "tedious": "^11.2.0"
+    "tedious": "^11.8.0"
   }
 }

@@ -179,7 +179,7 @@ export default class RestapiQueryService implements QueryService {
 
     try {
       const response = await got(url, requestOptions);
-      result = this.isJson(response.body) ? JSON.parse(response.body) : response.body;
+      result = this.getResponse(response);
       requestObject = {
         requestUrl: response.request.requestUrl,
         method: response.request.options.method,
@@ -240,6 +240,20 @@ export default class RestapiQueryService implements QueryService {
         certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
       },
     };
+  }
+
+  private getResponse(response) {
+    try {
+      if (this.isJson(response.body)) {
+        return JSON.parse(response.body);
+      }
+      if (response.rawBody && response.headers?.['content-type']?.startsWith('image/')) {
+        return Buffer.from(response.rawBody, 'binary').toString('base64');
+      }
+    } catch (error) {
+      console.error('Error while parsing response', error);
+    }
+    return response.body;
   }
 
   checkIfContentTypeIsURLenc(headers: [] = []) {

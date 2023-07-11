@@ -15,6 +15,7 @@ export const Datepicker = function Datepicker({
   id,
   darkMode,
   fireEvent,
+  dataCy,
 }) {
   const { enableTime, enableDate, defaultValue, disabledDates } = properties;
   const format = typeof properties.format === 'string' ? properties.format : '';
@@ -80,7 +81,7 @@ export const Datepicker = function Datepicker({
     <div
       data-disabled={disabledState}
       className={`datepicker-widget ${darkMode && 'theme-dark'}`}
-      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+      data-cy={dataCy}
       style={{
         height,
         display: visibility ? '' : 'none',

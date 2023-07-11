@@ -7,13 +7,15 @@ export const appVersionSelectors = {
   },
   createVersionLink: '[data-cy="create-version-link"]',
   createVersionTitle: '[data-cy="create-version-title"]',
+  createNewVersion: '[data-cy="create-new-version-title"]',
   versionNamelabel: '[data-cy="version-name-label"]',
-  appVersionMenuField: '[data-cy="app-version-menu-field"]',
+  appVersionMenuField:
+    '[data-cy="app-version-selector"] .undefined__indicators',
   versionNameInputField: '[data-cy="version-name-input-field"]',
   createVersionFromLabel: '[data-cy="create-version-from-label"]',
-  createVersionInputField: '[data-cy="create-version-input-field"]',
-  createVersionButton: '[data-cy="create-version-button"]',
-  appVersionContentList: '[data-cy="app-version-content"] .dropdown-item',
+  createVersionInputField: '[data-cy="create-version-from-input-field"]',
+  createNewVersionButton: '[data-cy="create-new-version-button"]',
+  appVersionContentList: ".undefined__menu-list",
 };
 export const exportAppModalSelectors = {
   selectVersionTitle: '[data-cy= "select-a-version-to-export-title"]',
@@ -34,6 +36,7 @@ export const exportAppModalSelectors = {
 
 export const importSelectors = {
   dropDownMenu: '[data-cy="import-dropdown-menu"]',
+  importAnApplication: '[data-cy="import-an-application"]',
   importOptionLabel: '[data-cy="import-option-label"]',
   importOptionInput: '[data-cy="import-option-input"]',
 };

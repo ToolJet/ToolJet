@@ -47,8 +47,8 @@ export default class MssqlQueryService implements QueryService {
 
   async testConnection(sourceOptions: SourceOptions): Promise<ConnectionTestResult> {
     const knexInstance = await this.getConnection(sourceOptions, {}, false);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const result = await knexInstance.raw('select @@version;');
+    await knexInstance.raw('select @@version;');
+    knexInstance.destroy();
 
     return {
       status: 'ok',
@@ -68,6 +68,7 @@ export default class MssqlQueryService implements QueryService {
           encrypt: sourceOptions.azure ?? false,
           instanceName: sourceOptions.instanceName,
         },
+        pool: { min: 0 },
       },
     };
 

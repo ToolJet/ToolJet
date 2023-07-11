@@ -292,6 +292,7 @@ describe("Date Picker widget", () => {
 
     addTextWidgetToVerifyValue(`components.${data.widgetName}.value`);
     cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 160);
+    cy.waitForAutoSave()
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
 

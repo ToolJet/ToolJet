@@ -239,10 +239,7 @@ describe("Number Input", () => {
       commonWidgetText.parameterBorderRadius,
       commonWidgetText.borderRadiusInput
     );
-
     cy.forceClickOnCanvas();
-    cy.waitForAutoSave();
-    cy.reload();
 
     openEditorSidebar(numberInputText.defaultWidgetName);
     cy.get(commonWidgetSelector.buttonStylesEditorSideBar).click();

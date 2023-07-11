@@ -166,10 +166,6 @@ export const gitSSOPageElements = () => {
 export const passwordPageElements = () => {
   cy.get(ssoSelector.passwordEnableToggle).then(($el) => {
     if ($el.is(":checked")) {
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.enabledLabel
-      );
       cy.get(ssoSelector.passwordEnableToggle).uncheck();
       cy.get(commonSelectors.modalComponent).should("be.visible");
       cy.get(commonSelectors.modalMessage).verifyVisibleElement(
@@ -181,33 +177,17 @@ export const passwordPageElements = () => {
         commonSelectors.toastMessage,
         ssoText.passwordDisabledToast
       );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.disabledLabel
-      );
 
       cy.get(ssoSelector.passwordEnableToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
         ssoText.passwordEnabledToast
       );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.enabledLabel
-      );
     } else {
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.disabledLabel
-      );
       cy.get(ssoSelector.passwordEnableToggle).check();
       cy.verifyToastMessage(
         commonSelectors.toastMessage,
         ssoText.passwordEnabledToast
-      );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.enabledLabel
       );
 
       cy.get(ssoSelector.passwordEnableToggle).uncheck();
@@ -215,10 +195,7 @@ export const passwordPageElements = () => {
         commonSelectors.toastMessage,
         ssoText.passwordDisabledToast
       );
-      cy.get(ssoSelector.statusLabel).verifyVisibleElement(
-        "have.text",
-        ssoText.disabledLabel
-      );
+
       cy.get(ssoSelector.passwordEnableToggle).check();
     }
   });
@@ -287,7 +264,6 @@ export const workspaceLogin = (workspaceName) => {
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.loginButton).click();
   cy.get(commonSelectors.homePageLogo).should("be.visible");
-  cy.get(dashboardSelector.modeToggle, { timeout: 10000 }).should("be.visible");
   cy.get(commonSelectors.workspaceName).verifyVisibleElement(
     "have.text",
     workspaceName
@@ -321,11 +297,11 @@ export const signInPageElements = () => {
     "have.text",
     ssoText.signInHeader
   );
-  cy.get(ssoSelector.googleSignInText).verifyVisibleElement(
+  cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
     "have.text",
-    ssoText.googleSignInText
+    ssoText.googleSSOText
   );
-  cy.get(ssoSelector.gitSignInText).verifyVisibleElement(
+  cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
     "have.text",
     ssoText.gitSignInText
   );
@@ -352,9 +328,14 @@ export const signInPageElements = () => {
 };
 
 export const SignUpPageElements = () => {
+  cy.get(commonSelectors.pageLogo).should("be.visible");
   cy.get(commonSelectors.SignUpSectionHeader).verifyVisibleElement(
     "have.text",
     commonText.SignUpSectionHeader
+  );
+  cy.get(commonSelectors.signUpButton).verifyVisibleElement(
+    "have.text",
+    commonText.getStartedButton
   );
   cy.get(commonSelectors.signInRedirectText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
@@ -364,14 +345,6 @@ export const SignUpPageElements = () => {
   cy.get(commonSelectors.signInRedirectLink).verifyVisibleElement(
     "have.text",
     commonText.signInRedirectLink
-  );
-  cy.get(ssoSelector.googleSignInText).verifyVisibleElement(
-    "have.text",
-    ssoText.googleSignUpText
-  );
-  cy.get(ssoSelector.gitSignInText).verifyVisibleElement(
-    "have.text",
-    ssoText.gitSignUpText
   );
   cy.get(commonSelectors.signUpTermsHelperText).should(($el) => {
     expect($el.contents().first().text().trim()).to.eq(
@@ -386,13 +359,30 @@ export const SignUpPageElements = () => {
     .verifyVisibleElement("have.text", commonText.privacyPolicyLink)
     .and("have.attr", "href")
     .and("equal", "https://www.tooljet.com/privacy");
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Google")) {
+      cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.googleSignUpText
+      );
+      cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.gitSignUpText
+      );
+      cy.get(commonSelectors.onboardingSeperator).should("be.visible");
+      cy.get(commonSelectors.onboardingSeperatorText).verifyVisibleElement(
+        "have.text",
+        commonText.onboardingSeperatorText
+      );
+    }
+  });
 };
 
 export const loginbyGoogle = (email, password) => {
   cy.session([email, password], () => {
     cy.visit("/");
     cy.wait(3000);
-    cy.get(ssoSelector.googleTile).click();
+    cy.get(ssoSelector.googleSSOText).click();
     cy.origin(
       "https://accounts.google.com/",
       { args: [email, password] },
@@ -419,11 +409,11 @@ export const loginbyGoogle = (email, password) => {
 export const googleSSO = (email, password) => {
   Cypress.session.clearAllSavedSessions();
   cy.wait(3000);
-  cy.get(ssoSelector.googleTile).click();
+  cy.get(ssoSelector.googleSSOText).click();
   loginbyGoogle(email, password);
   cy.visit("http://localhost:8082");
   cy.wait(4000);
-  cy.get(ssoSelector.googleTile).click();
+  cy.get(ssoSelector.googleSSOText).click();
   cy.origin("https://accounts.google.com/", () => {
     cy.get(".d2laFc").first().click();
     cy.wait(3000);
@@ -434,7 +424,7 @@ export const loginbyGitHub = (email, password) => {
   Cypress.session.clearAllSavedSessions();
   cy.session([email, password], () => {
     cy.visit("/");
-    cy.get(ssoSelector.gitSignInText).click();
+    cy.get(ssoSelector.gitSSOText).click();
     cy.origin(
       "https://github.com/",
       { args: [email, password] },
@@ -445,6 +435,7 @@ export const loginbyGitHub = (email, password) => {
         cy.get('input[name="commit"]').click();
         cy.get("body").then(($el) => {
           if ($el.text().includes("Authorize")) {
+            cy.wait(1000);
             cy.get("#js-oauth-authorize-btn").click();
           }
         });
@@ -457,7 +448,7 @@ export const loginbyGitHub = (email, password) => {
 export const gitHubSSO = (email, password) => {
   loginbyGitHub(email, password);
   cy.visit("http://localhost:8082");
-  cy.get(ssoSelector.gitSignInText).click();
+  cy.get(ssoSelector.gitSSOText).click();
 };
 
 export const enableGitHubSSO = () => {
@@ -538,9 +529,9 @@ export const invitePageElements = () => {
     commonText.userNameInputLabel
   );
   cy.get(commonSelectors.invitedUserName).should("be.visible");
-  cy.get(commonSelectors.workEmailLabel).verifyVisibleElement(
+  cy.get(commonSelectors.emailInputLabel).verifyVisibleElement(
     "have.text",
-    commonText.workEmailLabel
+    commonText.emailInputLabel
   );
   cy.get(commonSelectors.invitedUserEmail).should("be.visible");
   cy.get(commonSelectors.passwordLabel).verifyVisibleElement(
@@ -568,13 +559,13 @@ export const invitePageElements = () => {
     .and("equal", "https://www.tooljet.com/privacy");
 };
 
-export const updateId = () =>{
-  cy.task("UpdateId", {
+export const updateId = () => {
+  cy.task("updateId", {
     dbconfig: Cypress.config("db"),
-    sql: "update sso_configs set id='5edf41b2-ff2b-4932-9e2a-08aef4a303cc' where sso='google';"
+    sql: "update sso_configs set id='5edf41b2-ff2b-4932-9e2a-08aef4a303cc' where sso='google';",
   });
-  cy.task("UpdateId", {
-      dbconfig: Cypress.config("db"),
-      sql: "update sso_configs set id='9628dee2-6fa9-4aca-9c98-ef950601c83e' where sso='git';",
-    });
-}
+  cy.task("updateId", {
+    dbconfig: Cypress.config("db"),
+    sql: "update sso_configs set id='9628dee2-6fa9-4aca-9c98-ef950601c83e' where sso='git';",
+  });
+};

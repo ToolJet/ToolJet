@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/server"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "npm"
+    directory: "/plugins"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "npm"
+    directory: "/marketplace"
+    schedule:
+      interval: "daily"

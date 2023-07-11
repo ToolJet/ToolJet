@@ -13,7 +13,7 @@ import { commentsService } from '@/_services';
 import config from 'config';
 import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
-import produce from 'immer';
+const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 
 export const Container = ({
@@ -44,8 +44,9 @@ export const Container = ({
   onComponentHover,
   hoveredComponent,
   sideBarDebugger,
-  dataQueries,
   currentPageId,
+  isVersionReleased,
+  setReleasedVersionPopupState,
 }) => {
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
@@ -55,6 +56,7 @@ export const Container = ({
     backgroundSize: `${canvasWidth / 43}px 10px`,
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const components = appDefinition.pages[currentPageId]?.components ?? {};
 
   const [boxes, setBoxes] = useState(components);
@@ -67,13 +69,13 @@ export const Container = ({
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
 
-  useHotkeys('⌘+z, control+z', () => handleUndo());
-  useHotkeys('⌘+shift+z, control+shift+z', () => handleRedo());
+  useHotkeys('meta+z, control+z', () => handleUndo());
+  useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
 
   useHotkeys(
-    '⌘+v, control+v',
+    'meta+v, control+v',
     () => {
-      if (isContainerFocused) {
+      if (isContainerFocused && !isVersionReleased) {
         navigator.clipboard.readText().then((cliptext) => {
           try {
             addComponents(
@@ -88,6 +90,7 @@ export const Container = ({
           }
         });
       }
+      setReleasedVersionPopupState();
     },
     [isContainerFocused, appDefinition, focusedParentIdRef]
   );
@@ -115,6 +118,7 @@ export const Container = ({
 
   useEffect(() => {
     setBoxes(components);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(components)]);
 
   const moveBox = useCallback(
@@ -233,6 +237,10 @@ export const Container = ({
   );
 
   function onDragStop(e, componentId, direction, currentLayout) {
+    if (isVersionReleased) {
+      setReleasedVersionPopupState();
+      return;
+    }
     // const id = componentId ? componentId : uuidv4();
 
     // Get the width of the canvas
@@ -267,6 +275,10 @@ export const Container = ({
   }
 
   function onResizeStop(id, e, direction, ref, d, position) {
+    if (isVersionReleased) {
+      setReleasedVersionPopupState();
+      return;
+    }
     const deltaWidth = d.width;
     const deltaHeight = d.height;
 
@@ -525,7 +537,6 @@ export const Container = ({
               hoveredComponent={hoveredComponent}
               sideBarDebugger={sideBarDebugger}
               isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
-              dataQueries={dataQueries}
               childComponents={childComponents[key]}
               containerProps={{
                 mode,
@@ -548,11 +559,13 @@ export const Container = ({
                 onComponentHover,
                 hoveredComponent,
                 sideBarDebugger,
-                dataQueries,
                 addDefaultChildren,
                 currentPageId,
                 childComponents,
+                isVersionReleased,
+                setReleasedVersionPopupState,
               }}
+              isVersionReleased={isVersionReleased}
             />
           );
         }
@@ -565,7 +578,7 @@ export const Container = ({
             <a href="https://docs.tooljet.com/docs#the-very-quick-quickstart" target="_blank" rel="noreferrer">
               guide
             </a>{' '}
-            on adding widgets.
+            on adding components.
           </center>
         </div>
       )}

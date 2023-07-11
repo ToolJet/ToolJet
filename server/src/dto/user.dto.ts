@@ -24,6 +24,10 @@ export class CreateUserDto {
 
   @IsString()
   @IsOptional()
+  phoneNumber: string;
+
+  @IsString()
+  @IsOptional()
   @IsNotEmpty()
   @Transform(({ value }) => sanitizeInput(value))
   companyName: string;
@@ -68,6 +72,10 @@ export class CreateAdminDto {
   @IsNotEmpty()
   @MinLength(5, { message: 'Password should contain more than 5 letters' })
   password: string;
+
+  @IsString()
+  @IsOptional()
+  phoneNumber: string;
 
   @IsString()
   @IsOptional()

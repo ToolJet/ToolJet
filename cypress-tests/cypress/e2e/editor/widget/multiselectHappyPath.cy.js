@@ -32,6 +32,12 @@ import {
   verifyWidgetText,
 } from "Support/utils/commonWidget";
 
+import {
+  selectCSA,
+  selectEvent,
+  addSupportCSAData,
+} from "Support/utils/events";
+
 describe("Multiselect widget", () => {
   beforeEach(() => {
     cy.appUILogin();
@@ -123,8 +129,7 @@ describe("Multiselect widget", () => {
     cy.get(multiselectSelector.dropdownAllItems)
       .first()
       .should("have.text", multiselectText.dropdwonOptionSelectAll)
-      .click()
-      .click();
+      .realClick();
 
     verifyMultiselectHeader(
       data.widgetName,
@@ -342,5 +347,46 @@ describe("Multiselect widget", () => {
       .should("have.css", "border-radius", "20px");
 
     verifyBoxShadowCss(data.widgetName, data.colour, data.boxShadowParam);
+  });
+
+  it("should verify CSA", () => {
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget("Number input", 600, 50);
+    selectEvent("On change", "Control Component");
+    selectCSA("multiselect1", "Select Option", "1000");
+    addSupportCSAData("Option", "{{components.numberinput1.value");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget("Number input", 600, 150);
+    selectEvent("On change", "Control Component");
+    selectCSA("multiselect1", "Deselect Option", "1000");
+    addSupportCSAData("Option", "{{components.numberinput2.value");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget("Button", 600, 250);
+    selectEvent("On click", "Control Component");
+    selectCSA("Multiselect1", "Clear selections");
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.waitForAutoSave();
+
+    cy.reload();
+    cy.wait(3000);
+
+    verifyMultipleComponentValuesFromInspector("multiselect1", [2, 3]);
+    cy.get(commonWidgetSelector.draggableWidget("numberinput1"))
+      .clear()
+      .type("1");
+    verifyMultiselectHeader(
+      "multiselect1",
+      multiselectText.labelAllItemsSelected
+    );
+    cy.get(commonWidgetSelector.draggableWidget("numberinput2"))
+      .clear()
+      .type("3");
+    verifyMultipleComponentValuesFromInspector("multiselect1", [2, 1]);
+
+    cy.get(commonWidgetSelector.draggableWidget("button1")).click();
+
+    verifyMultiselectHeader("multiselect1", "Select...");
   });
 });

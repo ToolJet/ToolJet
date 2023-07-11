@@ -7,8 +7,8 @@ export const Text = function Text({
   styles,
   darkMode,
   registerAction,
-  component,
   setExposedVariable,
+  dataCy,
 }) {
   let {
     textSize,
@@ -83,12 +83,7 @@ export const Text = function Text({
   };
 
   return (
-    <div
-      data-disabled={disabledState}
-      className="text-widget"
-      style={computedStyles}
-      data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
-    >
+    <div data-disabled={disabledState} className="text-widget" style={computedStyles} data-cy={dataCy}>
       {!loadingState && (
         <div
           style={{ width: '100%', fontSize: textSize }}

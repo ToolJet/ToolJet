@@ -4,6 +4,8 @@ export type SourceOptions = {
   region: string;
   endpoint_enabled: boolean;
   endpoint: string;
+  useInstanceMetadataCredentials?: boolean;
+  roleArn?: string;
 };
 export type QueryOptions = {
   operation?: Operation;
@@ -25,3 +27,9 @@ export enum Operation {
   SignedUrlForPut = 'signed_url_for_put',
   RemoveObject = 'remove_object',
 }
+
+export type AssumeRoleCredentials = {
+  accessKeyId: string;
+  secretAccessKey: string;
+  sessionToken: string;
+};

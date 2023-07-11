@@ -1,0 +1,79 @@
+// for selects and dropdowns across app dashboard
+.react-select__control {
+    background-color: var(--base) !important;
+}
+
+.react-select__menu {
+    background-color: var(--base) !important;
+    border: 1px solid var(--slate3) !important;
+    box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03) !important;
+    margin: 0px !important;
+
+    .react-select__menu-list {
+        background-color: var(--base) !important;
+        overflow-y: auto;
+
+        .react-select__option {
+            background-color: var(--base) !important;
+
+            &:hover {
+                background-color: var(--slate3) !important;
+            }
+        }
+    }
+}
+
+.org-select-container {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px solid var(--slate3);
+}
+
+.tj-org-select {
+    .react-select__control {
+        width: 262px;
+        height: 32px;
+
+        &:hover {
+            background: var(--slate2) !important;
+        }
+
+        &:active {
+            background: var(--slate3) !important;
+        }
+    }
+
+    .tj-text-xsm {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 200px;
+    }
+
+}
+
+.users-filter-dropdown,
+.data-type-dropdown-section,
+.row-edit-select-container,
+.select-operation-field,
+.select-column-field,
+.select-order-field,
+.select-column-field,
+.records-dropdown-field {
+    .react-select__control {
+        border: 1px solid var(--slate7) !important;
+    }
+}
+
+.css-1ms6gku-MenuPortal,
+.css-169zxdi-MenuList {
+    .react-select__option {
+        border-radius: 6px;
+    }
+}
+
+.css-nw08ma-menu {
+    box-shadow: none !important;
+}

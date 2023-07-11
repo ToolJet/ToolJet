@@ -3,6 +3,11 @@
   margin-top: 2px;
   margin-right: 5px;
 
+  input.form-control:disabled {
+    background-color: #ff000000;
+    border: 0px;
+  }
+
   .rdtPicker {
     position: fixed;
 
@@ -11,17 +16,21 @@
       vertical-align: middle;
       position: static !important;
     }
+
     tbody {
       display: table-row-group;
-      tr{
-        td{
+
+      tr {
+        td {
           width: 14.2857% !important;
         }
       }
     }
+
     tr {
       display: table-row;
     }
+
     td {
       display: table-cell !important;
     }
@@ -43,7 +52,7 @@ div[data-disabled='true'] {
   padding-right: .90rem;
 }
 
-.accepted-files  .file-list {
+.accepted-files .file-list {
   margin-bottom: -0.25rem;
 }
 
@@ -68,20 +77,25 @@ div[data-disabled='true'] {
   }
 }
 
-.go-to-app{
-  .css-1nfapid-container{
+.go-to-app {
+  .css-1nfapid-container {
     width: 100%;
   }
 }
 
 .switch-page {
-  .css-1nfapid-container{
+  .css-1nfapid-container {
     width: 100%;
   }
 }
-.loader-main-container{
+
+.loader-main-container {
   width: 0px !important;
   position: absolute;
   bottom: 44%;
   left: 46%;
+}
+
+body {
+  overflow-y: auto !important;
 }

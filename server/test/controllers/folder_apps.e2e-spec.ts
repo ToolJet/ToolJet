@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { authHeaderForUser, clearDB, createNestAppInstance, setupOrganization } from '../test.helper';
+import { authenticateUser, clearDB, createNestAppInstance, setupOrganization } from '../test.helper';
 import * as request from 'supertest';
 import { getManager } from 'typeorm';
 import { Folder } from '../../src/entities/folder.entity';
@@ -28,9 +28,13 @@ describe('folder apps controller', () => {
       const folder = await manager.save(
         manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
       );
+
+      const loggedUser = await authenticateUser(nestApp);
+
       const response = await request(nestApp.getHttpServer())
         .post(`/api/folder_apps`)
-        .set('Authorization', authHeaderForUser(adminUser))
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
         .send({ folder_id: folder.id, app_id: app.id });
 
       expect(response.statusCode).toBe(201);
@@ -49,14 +53,18 @@ describe('folder apps controller', () => {
         manager.create(Folder, { name: 'folder', organizationId: adminUser.organizationId })
       );
 
+      const loggedUser = await authenticateUser(nestApp);
+
       await request(nestApp.getHttpServer())
         .post(`/api/folder_apps`)
-        .set('Authorization', authHeaderForUser(adminUser))
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
         .send({ folder_id: folder.id, app_id: app.id });
 
       const response = await request(nestApp.getHttpServer())
         .post(`/api/folder_apps`)
-        .set('Authorization', authHeaderForUser(adminUser))
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
         .send({ folder_id: folder.id, app_id: app.id });
 
       expect(response.statusCode).toBe(400);
@@ -65,6 +73,9 @@ describe('folder apps controller', () => {
 
     it('should remove an app from a folder', async () => {
       const { adminUser, app } = await setupOrganization(nestApp);
+
+      const loggedUser = await authenticateUser(nestApp);
+
       const manager = getManager();
       // create a new folder
       const folder = await manager.save(
@@ -74,10 +85,14 @@ describe('folder apps controller', () => {
       const folderApp = await manager.save(manager.create(FolderApp, { folderId: folder.id, appId: app.id }));
       const response = await request(nestApp.getHttpServer())
         .put(`/api/folder_apps/${folderApp.folderId}`)
-        .set('Authorization', authHeaderForUser(adminUser))
+        .set('tj-workspace-id', adminUser.defaultOrganizationId)
+        .set('Cookie', loggedUser.tokenCookie)
         .send({ app_id: folderApp.appId });
 
       expect(response.statusCode).toBe(200);
     });
+  });
+  afterAll(async () => {
+    await nestApp.close();
   });
 });

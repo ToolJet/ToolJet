@@ -10,6 +10,7 @@ export const TextInput = function TextInput({
   registerAction,
   component,
   darkMode,
+  dataCy,
 }) {
   const textInputRef = useRef();
 
@@ -77,7 +78,7 @@ export const TextInput = function TextInput({
   );
 
   return (
-    <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`} data-cy="text-disable-div">
+    <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`}>
       <input
         ref={textInputRef}
         onKeyUp={(e) => {
@@ -108,7 +109,7 @@ export const TextInput = function TextInput({
         placeholder={properties.placeholder}
         style={computedStyles}
         value={value}
-        data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
+        data-cy={dataCy}
       />
       <div
         className="invalid-feedback"

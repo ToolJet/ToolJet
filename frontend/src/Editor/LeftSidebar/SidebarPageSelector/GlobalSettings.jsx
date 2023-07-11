@@ -2,8 +2,18 @@ import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import MenuIcon from '@assets/images/icons/3dots-menu.svg';
 
-export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, showPageViwerPageNavitation }) => {
+export const GlobalSettings = ({
+  darkMode,
+  showHideViewerNavigationControls,
+  showPageViwerPageNavitation,
+  isVersionReleased,
+  setReleasedVersionPopupState,
+}) => {
   const onChange = () => {
+    if (isVersionReleased) {
+      setReleasedVersionPopupState();
+      return;
+    }
     showHideViewerNavigationControls();
   };
 
@@ -14,9 +24,9 @@ export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, sho
       rootClose={true}
       overlay={
         <Popover id="page-handler-menu" className={`global-settings ${darkMode && 'popover-dark-themed'}`}>
-          <Popover.Content bsPrefix="popover-body">
+          <Popover.Body bsPrefix="popover-body">
             <div className="card-body">
-              <label htmlFor="pin" className="form-label">
+              <label htmlFor="pin" className="form-label" data-cy={`page-settings-header`}>
                 Settings
               </label>
               <hr style={{ margin: '0.75rem 0' }} />
@@ -24,11 +34,13 @@ export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, sho
                 <Toggle onChange={onChange} value={!showPageViwerPageNavitation} />
               </div>
             </div>
-          </Popover.Content>
+          </Popover.Body>
         </Popover>
       }
     >
-      <MenuIcon width="10" height="16" />
+      <span>
+        <MenuIcon width="10" height="16" data-cy={'menu-icon'} />
+      </span>
     </OverlayTrigger>
   );
 };
@@ -37,6 +49,7 @@ const Toggle = ({ onChange, value = true }) => {
   return (
     <div className="form-check form-switch">
       <input
+        data-cy={`disable-page-menu-toggle`}
         className="form-check-input"
         type="checkbox"
         onClick={(e) => {
@@ -45,10 +58,12 @@ const Toggle = ({ onChange, value = true }) => {
         }}
         checked={value}
       />
-      <span className="form-check-label">Disable Menu</span>
+      <span className="form-check-label" data-cy={`disable-page-menu-label`}>
+        Disable Menu
+      </span>
 
       <div className="toggle-info">
-        <small className="secondary-text">
+        <small className="secondary-text" data-cy={`disable-page-menu-description`}>
           To hide the page navigation sidebar in viewer mode, set this option to on.
         </small>
       </div>

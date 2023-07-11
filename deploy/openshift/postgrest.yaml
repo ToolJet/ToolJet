@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tooljet-postgrest
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      component: tooljet-postgrest
+  template:
+    metadata:
+      labels:
+        component: tooljet-postgrest
+    spec:
+      containers:
+      - name: postgrest
+        image: postgrest/postgrest:v10.1.1.20221215
+        ports:
+        - containerPort: 3000
+        env:
+          - name: PGRST_DB_URI
+            valueFrom:
+              secretKeyRef:
+                name: server
+                key: pgrst_db_uri
+          - name: PGRST_JWT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: server
+                key: pgrst_db_uri
+          - name: PGRST_LOG_LEVEL
+            value: "info"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tooljet-postgrest-service
+  labels:
+    name: tooljet-postgrest
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 3000
+  selector:
+    component: tooljet-postgrest
