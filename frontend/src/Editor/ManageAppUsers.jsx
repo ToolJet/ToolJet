@@ -195,6 +195,46 @@ class ManageAppUsersComponent extends React.Component {
                     </span>
                   </div>
                 </div>
+
+                <div className="shareable-link mb-3">
+                  <label className="form-label" data-cy="shareable-app-link-label">
+                    <small>
+                      {this.props.t('editor.shareModal.shareableLink', 'Get shareable link for this application')}
+                    </small>
+                  </label>
+                  <div className="input-group">
+                    <span className="input-group-text" data-cy="app-link">
+                      {appLink}
+                    </span>
+                    <div className="input-with-icon">
+                      <input
+                        type="text"
+                        className={`form-control form-control-sm ${slugButtonClass}`}
+                        placeholder={appId}
+                        onChange={(e) => {
+                          e.persist();
+                          this.delayedSlugChange(e);
+                        }}
+                        defaultValue={this.props.slug}
+                        data-cy="app-name-slug-input"
+                      />
+                      {isSlugVerificationInProgress && (
+                        <div className="icon-container">
+                          <div className="spinner-border text-azure spinner-border-sm" role="status"></div>
+                        </div>
+                      )}
+                    </div>
+                    <span className="input-group-text">
+                      <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
+                        <button className="btn btn-secondary btn-sm" data-cy="copy-app-link-button">
+                          {this.props.t('editor.shareModal.copy', 'copy')}
+                        </button>
+                      </CopyToClipboard>
+                    </span>
+                    <div className="invalid-feedback">{slugError}</div>
+                  </div>
+                </div>
+                <hr />
                 {(this.state.app.is_public || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
                   <div className="shareable-link mb-3">
                     <label className="form-label" data-cy="iframe-link-label">
@@ -223,33 +263,6 @@ class ManageAppUsersComponent extends React.Component {
                     </div>
                   </div>
                 )}
-                <hr />
-                <div className="shareable-link mb-3">
-                  <label className="form-label" data-cy="iframe-link-label">
-                    <small>
-                      {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
-                    </small>
-                  </label>
-                  <div className="input-group">
-                    <Textarea
-                      disabled
-                      className={`input-with-icon ${this.props.darkMode && 'text-light'}`}
-                      rows={5}
-                      value={embeddableLink}
-                      data-cy="iframe-link"
-                    />
-                    <span className="input-group-text">
-                      <CopyToClipboard
-                        text={embeddableLink}
-                        onCopy={() => toast.success('Embeddable link copied to clipboard')}
-                      >
-                        <button className="btn btn-secondary btn-sm" data-cy="iframe-link-copy-button">
-                          {this.props.t('editor.shareModal.copy', 'copy')}
-                        </button>
-                      </CopyToClipboard>
-                    </span>
-                  </div>
-                </div>
               </div>
             )}
           </Modal.Body>
