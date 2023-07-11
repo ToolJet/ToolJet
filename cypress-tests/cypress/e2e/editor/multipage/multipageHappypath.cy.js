@@ -145,13 +145,13 @@ describe("Multipage", () => {
       .find(multipageSelector.homePageIcon)
       .should("be.visible");
 
-    hideOrUnhidePage("test_page");
-    cy.get('[data-cy="pages-name-test_page"]')
+    hideOrUnhidePage("home");
+    cy.get('[data-cy="pages-name-home"]')
       .parents(".page-handler")
       .find(multipageSelector.hidePageIcon)
       .should("be.visible");
 
-    hideOrUnhidePage("test_page", "unhide");
+    hideOrUnhidePage("home", "unhide");
     cy.notVisible(multipageSelector.hidePageIcon);
 
     cy.get(multipageSelector.homePageLabel).click();
