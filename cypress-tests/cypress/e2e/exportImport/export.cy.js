@@ -91,7 +91,7 @@ describe("App Export Functionality", () => {
     cy.get(appVersionSelectors.appVersionMenuField)
       .should("be.visible")
       .click();
-    createNewVersion(otherVersions = ["v2"], currentVersion = "v1");
+    createNewVersion((otherVersions = ["v2"]), (currentVersion = "v1"));
     cy.wait(500);
     cy.dragAndDropWidget("Toggle Switch", 50, 50);
     cy.waitForAutoSave();
