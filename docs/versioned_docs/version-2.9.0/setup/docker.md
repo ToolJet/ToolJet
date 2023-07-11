@@ -48,8 +48,6 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
   curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/keys.sh && chmod +x keys.sh
   mv .env.internal.example .env && ./keys.sh
   ```
-  
-  Set up environment variables in `.env` file as explained in [environment variables reference](/docs/setup/env-vars)
 
   `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use.
 
@@ -64,7 +62,9 @@ If you'd want to run postgres with persistent volume rather, curl for the altern
   If there are self signed HTTPS endpoints that Tooljet needs to connect to, please make sure that `NODE_EXTRA_CA_CERTS` environment variable is set to the absolute path containing the certificates.
   :::
 
-  3. Once you've populated the `.env` file, run
+  For setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
+
+  3. To start the docker container, use the following command:
 
   ```bash
   docker-compose up -d
