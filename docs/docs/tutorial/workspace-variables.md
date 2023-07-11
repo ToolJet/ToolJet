@@ -5,6 +5,10 @@ title: Workspace Variables
 
 Workspace Variables are the variables with some value(usually tokens/secret keys/API keys) that can be used in different apps across the same Workspace.
 
+:::note
+Server variables will not resolve if you use bracket notation. This is because bracket notation is not supported on the server-side, where server variables are resolved. If you use bracket notation in a query that is executed on the server, the query will fail. To avoid this, use dot notation to resolve workspace variables in queries.
+:::
+
 ## How can we add these variables to an Workspace?
 
 Suppose there is an `API key` or a value that you want to use in the queries or widgets in the multiple apps of the same Workspace then the Workspace admin or the user with permissions can add an environment variable.
@@ -24,9 +28,9 @@ Suppose there is an `API key` or a value that you want to use in the queries or 
 
 ### Types of variables
 
-- **Client**: The client variable can be used in widgets and queries.
+- **Client**: The client variable can be utilized in components, queries, and global datasources.
 
-- **Server**: The server variables can be used with all the queries except the `RunJS`. The reason why we don't allow the server variables to be used with the widgets is that these variables are only resolved during the runtime so they're highly secured.
+- **Server**: The server variables can be employed in all queries except for `RunJS` and the connection form for global datasources. The restriction on using server variables with components is due to their resolution occurring solely during runtime, ensuring a high level of security.
 
 :::info
 Variable Type cannot be changed once it has been created.
@@ -61,5 +65,13 @@ So, the syntax for using the variable that we created before will be `%%client.p
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/tutorial/use-env-org-vars/server-variable-usage.png"  alt="server-variable-usage" width="700" />
+
+</div>
+
+Starting from ToolJet version `2.10.0` and onwards, it is possible to utilize Server-type workspace variables in the global datasources connection form.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/tutorial/use-env-org-vars/varingds.gif"  alt="server-variable-usage" />
 
 </div>

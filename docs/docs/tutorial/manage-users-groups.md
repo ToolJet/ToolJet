@@ -26,13 +26,12 @@ Admins can invite anyone to a workspace using the email address. To invite a use
     
   </div>
 
-- A drawer from the right will open, and on the `Invite with email` tab, enter the details of new user such full name and email, and then click on the **Invite Users**.
+- A drawer from the right will open, navigate to the **Invite with email** tab. Fill in the required information for the new user, including their Full Name, Email address, and select the desired group(s) from the dropdown menu to assign them. Once you have entered all the details, proceed by clicking the **Invite Users** button.
   <div style={{textAlign: 'center'}}>
     
-  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/inviteviaemail.png" alt="add new user" />
+  <img className="screenshot-full" src="/img/tutorial/manage-users-groups/groupsdrop.png" alt="add new user" />
     
   </div>
-
 
 - An email including the **Invite Link** to join your workspace will be send to the created user. The status will turn from **invited** to **active** after the user successfully joins your workspace using the invite link.
 
