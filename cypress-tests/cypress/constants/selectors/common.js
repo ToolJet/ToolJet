@@ -211,6 +211,8 @@ export const commonSelectors = {
   editFolderOption: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`;
   },
+  inspectorPinIcon: '[data-cy="null-option-icon"]'
+
 };
 
 export const commonWidgetSelector = {
