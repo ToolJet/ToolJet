@@ -10753,3 +10753,15 @@ tbody {
 .form-label-restricted {
   display: none;
 }
+
+.release-buttons {
+  .release-button {
+      padding: 6px 16px;
+      font-size: 14px;
+  }
+
+  .released-button {
+      background-color:  #F1F3F5;
+      color: #C1C8CD;
+  }
+}

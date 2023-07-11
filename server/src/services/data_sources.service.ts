@@ -34,7 +34,7 @@ export class DataSourcesService {
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
       if (!environmentId) {
-        selectedEnvironmentId = (await this.appEnvironmentService.get(organizationId, null, manager))?.id;
+        selectedEnvironmentId = (await this.appEnvironmentService.get(organizationId, null, true, manager))?.id;
       }
 
       const query = await manager
@@ -200,7 +200,7 @@ export class DataSourcesService {
       await this.appEnvironmentService.createDataSourceInAllEnvironments(organizationId, dataSource.id, manager);
 
       // Find the environment to be updated
-      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, manager);
+      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
 
       await this.appEnvironmentService.updateOptions(
         await this.parseOptionsForCreate(options, false, manager),
@@ -239,7 +239,7 @@ export class DataSourcesService {
     const dataSource = await this.findOne(dataSourceId);
 
     await dbTransactionWrap(async (manager: EntityManager) => {
-      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, manager);
+      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
 
       // if datasource is restapi then reset the token data
       if (dataSource.kind === 'restapi')
@@ -286,7 +286,7 @@ export class DataSourcesService {
     await dbTransactionWrap(async (manager: EntityManager) => {
       const dataSource = await manager.findOneOrFail(DataSource, dataSourceId, { relations: ['dataSourceOptions'] });
       const parsedOptions = await this.parseOptionsForUpdate(dataSource, optionsToMerge);
-      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, manager);
+      const envToUpdate = await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
       const oldOptions = dataSource.dataSourceOptions?.[0]?.options || {};
       const updatedOptions = { ...oldOptions, ...parsedOptions };
 
