@@ -47,7 +47,8 @@ import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
 
-const utilForConstructingNestedDataForNewRow = (row) => {
+// utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
+const utilityForNestedNewRow = (row) => {
   let arr = Object.keys(row);
   let obj = {};
   arr.forEach((key) => {
@@ -255,7 +256,7 @@ export function Table({
     };
 
     if (Object.keys(rowData).find((key) => key.includes('.'))) {
-      rowData = utilForConstructingNestedDataForNewRow(rowData);
+      rowData = utilityForNestedNewRow(rowData);
     }
     obj = _.merge({}, rowData, obj);
 
@@ -1299,7 +1300,7 @@ export function Table({
           defaultColumn={defaultColumn}
           columns={columnsForAddNewRow}
           addNewRowsDetails={tableDetails.addNewRowsDetails}
-          utilForConstructingNestedDataForNewRow={utilForConstructingNestedDataForNewRow}
+          utilityForNestedNewRow={utilityForNestedNewRow}
         />
       )}
     </div>
