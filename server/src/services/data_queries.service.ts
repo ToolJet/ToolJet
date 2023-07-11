@@ -382,7 +382,8 @@ export class DataQueriesService {
   async resolveVariable(str: string, organization_id: string) {
     const tempStr: string = str.replace(/%%/g, '');
     let result = tempStr;
-    if (new RegExp('^server.[A-Za-z0-9]+$').test(tempStr)) {
+
+    if (new RegExp('^server\\.[A-Za-z0-9_]+$').test(tempStr)) {
       const splitArray = tempStr.split('.');
       const variableResult = await this.orgEnvironmentVariablesRepository.findOne({
         variableType: 'server',

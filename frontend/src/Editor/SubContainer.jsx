@@ -49,6 +49,8 @@ export const SubContainer = ({
   height = '100%',
   currentPageId,
   childComponents = null,
+  listmode = null,
+  columns = 1,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -72,7 +74,7 @@ export const SubContainer = ({
       setContainerCanvasWidth(canvasWidth);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentRef, getContainerCanvasWidth(), parent]);
+  }, [parentRef, getContainerCanvasWidth(), listmode]);
 
   zoomLevel = zoomLevel || 1;
 
@@ -130,7 +132,6 @@ export const SubContainer = ({
 
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
-
           const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / 43;
           const height = layout.height ? layout.height : componentMeta.defaultSize.height;
           const newComponentDefinition = {
@@ -325,8 +326,10 @@ export const SubContainer = ({
 
   function getContainerCanvasWidth() {
     if (containerCanvasWidth !== undefined) {
-      return containerCanvasWidth - 2;
+      if (listmode == 'grid') return containerCanvasWidth / columns - 2;
+      else return containerCanvasWidth - 2;
     }
+
     let width = 0;
     if (parentRef.current) {
       const realCanvas = parentRef.current.getElementsByClassName('real-canvas')[0];
@@ -335,7 +338,6 @@ export const SubContainer = ({
         width = canvasBoundingRect.width;
       }
     }
-
     return width;
   }
 
@@ -405,14 +407,12 @@ export const SubContainer = ({
 
     const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
     const subContainerWidth = canvasBoundingRect.width;
-
     top = y;
     if (deltaWidth !== 0) {
       // onResizeStop is triggered for a single click on the border, therefore this conditional logic
       // should not be removed.
       left = (x * 100) / subContainerWidth;
     }
-
     width = width + (deltaWidth * 43) / subContainerWidth;
     height = height + deltaHeight;
 

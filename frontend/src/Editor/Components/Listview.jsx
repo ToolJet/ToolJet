@@ -26,6 +26,8 @@ export const Listview = function Listview({
     showBorder,
     rowsPerPage = 10,
     enablePagination = false,
+    mode = 'list',
+    columns = 1,
   } = { ...fallbackProperties, ...properties };
   const { visibility, disabledState, borderRadius, boxShadow } = { ...fallbackStyles, ...styles };
   const backgroundColor =
@@ -43,6 +45,8 @@ export const Listview = function Listview({
     boxShadow,
   };
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
+  const [positiveColumns, setPositiveColumns] = useState(columns);
+
   function onRowClicked(index) {
     setSelectedRowIndex(index);
     setExposedVariable('selectedRowId', index);
@@ -50,10 +54,23 @@ export const Listview = function Listview({
     fireEvent('onRowClicked');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }
+  function onRecordClicked(index) {
+    setSelectedRowIndex(index);
+    setExposedVariable('selectedRecordId', index);
+    setExposedVariable('selectedRecord', childrenData[index]);
+    fireEvent('onRecordClicked');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }
 
   const parentRef = useRef(null);
 
   const [childrenData, setChildrenData] = useState({});
+
+  useEffect(() => {
+    if (columns < 1) {
+      setPositiveColumns(1);
+    } else setPositiveColumns(columns);
+  }, [columns]);
 
   useEffect(() => {
     setExposedVariable('data', {});
@@ -81,6 +98,7 @@ export const Listview = function Listview({
       ? data.slice(startIndexOfRowInThePage, endIndexOfRowInThePage)
       : data
     : [];
+
   return (
     <div
       data-disabled={disabledState}
@@ -91,19 +109,22 @@ export const Listview = function Listview({
       style={computedStyles}
       data-cy={dataCy}
     >
-      <div className={`rows w-100 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
+      <div className={`row w-100 m-0 ${enablePagination && 'pagination-margin-bottom-last-child'}`}>
         {filteredData.map((listItem, index) => (
           <div
-            className={`list-item w-100 ${showBorder ? 'border-bottom' : ''}`}
-            style={{ position: 'relative', height: `${rowHeight}px`, width: '100%' }}
+            className={`list-item ${mode == 'list' && 'w-100'}  ${showBorder && mode == 'list' ? 'border-bottom' : ''}`}
+            style={{ position: 'relative', height: `${rowHeight}px`, width: `${100 / positiveColumns}%` }}
             key={index}
             data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
             onClick={(event) => {
               event.stopPropagation();
+              onRecordClicked(index);
               onRowClicked(index);
             }}
           >
             <SubContainer
+              columns={positiveColumns}
+              listmode={mode}
               parentComponent={component}
               containerCanvasWidth={width}
               parent={`${id}`}
