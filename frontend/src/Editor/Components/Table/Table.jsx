@@ -482,14 +482,7 @@ export function Table({
       }
     }
     return _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current;
-  }, [
-    tableData.length,
-    tableDetails.changeSet,
-    component.definition.properties.data.value,
-    JSON.stringify(properties.data),
-    showBulkSelector,
-    allowSelection,
-  ]);
+  }, [tableData.length, component.definition.properties.data.value, JSON.stringify(properties.data)]);
 
   useEffect(() => {
     if (
@@ -761,8 +754,13 @@ export function Table({
       ['currentData', data],
       ['selectedRow', []],
       ['selectedRowId', null],
-    ]);
-  }, [tableData.length, tableDetails.changeSet, page, data]);
+    ]).then(() => {
+      if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
+        toggleAllRowsSelected(false);
+        mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
+      }
+    });
+  }, [tableData.length, _.toString(page), pageIndex, _.toString(data)]);
 
   useEffect(() => {
     const newColumnSizes = { ...columnSizes, ...state.columnResizing.columnWidths };
@@ -1183,13 +1181,18 @@ export function Table({
                           })}
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
+                          onClick={(e) => {
+                            setExposedVariable('selectedCell', {
+                              columnName: cell.column.exportValue,
+                              columnKey: cell.column.key,
+                              value: cellValue,
+                            });
+                          }}
                         >
                           <div
                             className={`td-container ${
                               cell.column.columnType === 'image' && 'jet-table-image-column'
-                            } ${
-                              cell.column.columnType !== 'image' && `w-100 ${_.isEmpty(actionButtonsArray) && 'h-100'}`
-                            }`}
+                            } ${cell.column.columnType !== 'image' && `w-100 h-100`}`}
                           >
                             <GenerateEachCellValue
                               cellValue={cellValue}

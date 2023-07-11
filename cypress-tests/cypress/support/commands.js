@@ -288,6 +288,7 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
 Cypress.Commands.add("skipEditorPopover", () => {
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip", { timeout: 2000 })) {
+      cy.wait(200);
       cy.get(commonSelectors.skipButton).realClick();
     } else {
       cy.log("instructions modal is skipped ");

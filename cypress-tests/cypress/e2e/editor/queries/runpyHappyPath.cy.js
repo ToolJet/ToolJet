@@ -69,7 +69,7 @@ describe("runpy", () => {
     resizeQueryPanel("50");
   });
 
-  it.skip("should verify basic runpy", () => {
+  it("should verify basic runpy", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -88,7 +88,7 @@ describe("runpy", () => {
     verifyValue("rawData", "Boolean", "true");
   });
 
-  it.skip("should verify actions", () => {
+  it.only("should verify actions", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -151,6 +151,7 @@ actions.unsetPageVariable('pageVar')`
     cy.waitForAutoSave();
     addInputOnQueryField("runpy", "actions.showModal('modal1')");
     query("run");
+    cy.closeToastMessage();
     cy.get('[data-cy="modal-title"]').should("be.visible");
     cy.get('[data-cy="runpy-input-field"]').click({ force: true });
 
@@ -162,7 +163,7 @@ actions.unsetPageVariable('pageVar')`
       commonSelectors.toastMessage,
       "Query (runpy1) completed."
     );
-    cy.wait(300);
+    cy.wait(1000);
     cy.notVisible('[data-cy="modal-title"]');
 
     addInputOnQueryField("runpy", "actions.copyToClipboard('data from runpy')");
@@ -187,6 +188,7 @@ actions.unsetPageVariable('pageVar')`
       commonSelectors.toastMessage,
       "Query (runpy1) completed."
     );
+    cy.wait(1000);
 
     cy.getAllLocalStorage().then((result) => {
       expect(result[Cypress.config().baseUrl].localStorage).to.deep.equal(
@@ -224,7 +226,7 @@ actions.unsetPageVariable('pageVar')`
     cy.get('[data-cy="sign-in-header"]').should("be.visible");
   });
 
-  it.skip("should verify global and page data", () => {
+  it("should verify global and page data", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -273,7 +275,7 @@ actions.unsetPageVariable('pageVar')`
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
   });
 
-  it.skip("should verify runpy toggle options", () => {
+  it("should verify runpy toggle options", () => {
     const data = {};
     data.customText = randomString(12);
 

@@ -5,8 +5,14 @@ import { bulkUserUpload } from "Support/utils/manageUsers";
 import * as common from "Support/utils/common";
 import { path } from "Texts/common";
 import { groupsSelector } from "Selectors/manageGroups";
+import { fake } from "Fixtures/fake";
+import { userSignUp } from "Support/utils/onboarding";
 
 describe("Bulk user upload", () => {
+  const data = {};
+  data.firstName = fake.firstName;
+  data.email = fake.email.toLowerCase();
+
   const without_name = "cypress/fixtures/bulkUser/without_name - Sheet1.csv";
   const without_email = "cypress/fixtures/bulkUser/without_email - Sheet1.csv";
   const without_group = "cypress/fixtures/bulkUser/without_group - Sheet1.csv";
@@ -27,8 +33,12 @@ describe("Bulk user upload", () => {
     "cypress/fixtures/bulkUser/without_lastname - Sheet1.csv";
   const invite_users = "cypress/fixtures/bulkUser/invite_users - Sheet1 .csv";
 
+  before(() => {
+    userSignUp(data.firstName, data.email, "Test");
+    common.logout();
+  });
   beforeEach(() => {
-    cy.appUILogin();
+    cy.login(data.email, usersText.password);
     common.navigateToManageUsers();
   });
 
@@ -94,7 +104,7 @@ describe("Bulk user upload", () => {
       .should("be.visible")
       .and("have.text", "5 users are being added");
 
-    cy.wait(1000);
+    cy.wait(5000);
 
     cy.get(usersSelector.buttonAddUsers).click();
     cy.get(usersSelector.buttonUploadCsvFile).click();

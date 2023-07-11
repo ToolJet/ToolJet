@@ -28,6 +28,7 @@ import {
   selectCSA,
   selectEvent,
   addSupportCSAData,
+  selectSupportCSAData,
 } from "Support/utils/events";
 import {
   openAccordion,
@@ -49,15 +50,17 @@ import {
 } from "Support/utils/commonWidget";
 import { verifyNodeData, openNode, verifyValue } from "Support/utils/inspector";
 import { textInputText } from "Texts/textInput";
+import { deleteDownloadsFolder } from "Support/utils/common";
 
 describe("Table", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.createApp();
+    deleteDownloadsFolder();
     cy.viewport(1200, 1200);
-    cy.modifyCanvasSize(900, 700);
+    cy.modifyCanvasSize(900, 800);
     cy.dragAndDropWidget("Table", 50, 50);
-    cy.resizeWidget(tableText.defaultWidgetName, 850, 600);
+    cy.resizeWidget(tableText.defaultWidgetName, 750, 600);
     cy.get(`[data-cy="allow-selection-toggle-button"]`).click({ force: true });
   });
 
@@ -581,6 +584,8 @@ describe("Table", () => {
       .scrollIntoView()
       .verifyVisibleElement("have.text", "User email");
     cy.get('[data-cy*="-cell-1"]').should("not.have.class", "has-text");
+
+    openEditorSidebar(data.widgetName);
     verifyAndModifyParameter(
       "Column data",
       codeMirrorInputLabel(
@@ -1014,27 +1019,50 @@ describe("Table", () => {
     verifyAndModifyToggleFx("Highlight selected row", "{{false}}", true);
 
     cy.get('[data-cy="real-canvas"]').click("topRight");
-    cy.dragAndDropWidget("Button", 870, 50);
+    cy.dragAndDropWidget("Button", 800, 50);
     selectEvent("On click", "Control Component");
     selectCSA("table1", "Set page");
     addSupportCSAData("Page", "{{2");
 
     cy.get('[data-cy="real-canvas"]').click("topRight");
-    cy.dragAndDropWidget("Button", 870, 100);
+    cy.dragAndDropWidget("Button", 800, 100);
     selectEvent("On click", "Control Component");
     selectCSA("table1", "Select row");
     addSupportCSAData("Key", "name");
     addSupportCSAData("Value", "Lisa");
 
     cy.get('[data-cy="real-canvas"]').click("topRight");
-    cy.dragAndDropWidget("Button", 870, 150);
+    cy.dragAndDropWidget("Button", 800, 150);
     selectEvent("On click", "Control Component");
     selectCSA("table1", "Deselect row");
 
     cy.get('[data-cy="real-canvas"]').click("topRight");
-    cy.dragAndDropWidget("Button", 870, 200);
+    cy.dragAndDropWidget("Button", 800, 200);
     selectEvent("On click", "Control Component");
     selectCSA("table1", "Discard Changes");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight");
+    cy.dragAndDropWidget("Button", 800, 250);
+    selectEvent("On click", "Control Component");
+    selectCSA("table1", "Discard newly added rows");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight");
+    cy.dragAndDropWidget("Button", 800, 300);
+    selectEvent("On click", "Control Component");
+    selectCSA("table1", "Download table data");
+    selectSupportCSAData("Download as Excel");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight");
+    cy.dragAndDropWidget("Button", 800, 350);
+    selectEvent("On click", "Control Component");
+    selectCSA("table1", "Download table data");
+    selectSupportCSAData("Download as CSV");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight");
+    cy.dragAndDropWidget("Button", 800, 400);
+    selectEvent("On click", "Control Component");
+    selectCSA("table1", "Download table data");
+    selectSupportCSAData("Download as PDF");
 
     cy.get(commonWidgetSelector.draggableWidget("button2")).click();
     cy.get('[role="row"]').eq(2).should("have.class", "selected");
@@ -1058,15 +1086,48 @@ describe("Table", () => {
       .should("have.value", "test123");
     cy.get(commonWidgetSelector.draggableWidget("button4")).click();
     cy.get('[data-cy*="-cell-0"]').eq(0).should("have.text", "3");
+
+    addNewRow();
+    cy.get(commonWidgetSelector.draggableWidget("button5")).click();
+    cy.get(commonWidgetSelector.sidebarinspector).click();
+    cy.get(".tooltip-inner").invoke("hide");
+    verifyNodeData("components", "Object", "9 entries ");
+    openNode("components");
+    verifyNodeData(tableText.defaultWidgetName, "Object", "21 entries ");
+    openNode(tableText.defaultWidgetName);
+    verifyNodeData("newRows", "Array", "0 item ");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight");
+    cy.get(commonWidgetSelector.draggableWidget("button6")).click();
+    cy.wait(500);
+    cy.task("readXlsx", "cypress/downloads/all-data.xlsx")
+      .should("contain", dataCsvAssertionHelper(tableText.defaultInput)[0])
+      .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[1])
+      .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[2]);
+
+    cy.get(commonWidgetSelector.draggableWidget("button7")).click();
+    cy.wait(500);
+    cy.readFile("cypress/downloads/all-data.csv", "utf-8")
+      .should("contain", dataCsvAssertionHelper(tableText.defaultInput)[0])
+      .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[1])
+      .and("contain", dataCsvAssertionHelper(tableText.defaultInput)[2]);
+
+    cy.get(commonWidgetSelector.draggableWidget("button8")).click();
+    cy.wait(500);
+    cy.task("readPdf", "cypress/downloads/all-data.pdf")
+      .should("contain", dataPdfAssertionHelper(tableText.defaultInput)[0])
+      .and("contain", dataPdfAssertionHelper(tableText.defaultInput)[1])
+      .and("contain", dataPdfAssertionHelper(tableText.defaultInput)[2]);
   });
 
   it("should verify add new row", () => {
     addNewRow();
+    cy.contains("Save").click();
     cy.get(commonWidgetSelector.sidebarinspector).click();
     cy.get(".tooltip-inner").invoke("hide");
     verifyNodeData("components", "Object", "1 entry ");
     openNode("components");
-    verifyNodeData(tableText.defaultWidgetName, "Object", "15 entries ");
+    verifyNodeData(tableText.defaultWidgetName, "Object", "17 entries ");
     openNode(tableText.defaultWidgetName);
     verifyNodeData("newRows", "Array", "1 item ");
     openNode("newRows");
@@ -1100,10 +1161,10 @@ describe("Table", () => {
     cy.get('[data-cy="add-event-handler"]').eq(1).click();
     cy.get('[data-cy="event-handler-card"]').click();
     cy.forceClickOnCanvas();
-
-    cy.get(tableSelector.columnHeader("actions"))
-      .scrollIntoView()
-      .verifyVisibleElement("have.text", "Actions");
+    cy.get(tableSelector.columnHeader("actions")).verifyVisibleElement(
+      "have.text",
+      "Actions"
+    );
     cy.get(`${tableSelector.column(2)} > > > button`)
       .eq("0")
       .click();
@@ -1117,7 +1178,7 @@ describe("Table", () => {
       "{{false}}",
       true
     );
-
+    cy.forceClickOnCanvas();
     cy.get(tableSelector.columnHeader("actions"))
       .scrollIntoView()
       .verifyVisibleElement("have.text", "Actions");
@@ -1125,7 +1186,6 @@ describe("Table", () => {
       .eq("0")
       .should("have.text", "Button")
       .and("have.attr", "disabled");
-    cy.get('[data-cy="inspector-close-icon"]').click();
 
     cy.dragAndDropWidget("Toggle Switch", 800, 300);
     openEditorSidebar(tableText.defaultWidgetName);

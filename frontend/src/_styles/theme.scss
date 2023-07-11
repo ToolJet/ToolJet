@@ -1820,6 +1820,9 @@ button {
       margin-top: auto;
       margin-bottom: auto;
     }
+    .td-container:has(.action-button){
+      height: inherit !important;
+    }
   }
 
   td {
@@ -1842,6 +1845,7 @@ button {
     .text-container:hover {
       outline: none;
     }
+
   }
 
   td {
@@ -4603,6 +4607,10 @@ input[type="text"] {
   .form-control {
     color: #fff;
     background-color: #232e3c !important;
+  }
+
+  .btn-close {
+    filter: brightness(0) invert(1);
   }
 }
 
@@ -9855,6 +9863,7 @@ tbody {
       border: 1px solid var(--slate8);
       border-radius: 6px;
       outline: none;
+      padding-left: 12px !important;
     }
 
     &:disabled {
@@ -10668,8 +10677,41 @@ tbody {
   align-items: center;
 }
 
+.jet-container-json-form {
+  padding: 20px;
+
+  .DateRangePickerInput {
+    width: 100% !important;
+  }
+
+  .dropzone {
+    aside {
+      width: 100% !important;
+    }
+  }
+
+  fieldset {
+    width: 100%;
+
+    .json-form-wrapper {
+      margin-bottom: 4px;
+
+      .widget-button {
+        button {
+          width: auto !important;
+          min-width: 140px !important;
+        }
+      }
+    }
+  }
+}
+
 .freeze-scroll {
   #real-canvas {
     overflow: hidden;
   }
+}
+
+.form-label-restricted {
+  display: none;
 }

@@ -287,8 +287,8 @@ class EditorComponent extends React.Component {
     useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
   };
 
-  fetchDataQueries = (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
-    useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, this);
+  fetchDataQueries = async (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
+    await useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, this);
   };
 
   toggleAppMaintenance = () => {
@@ -354,17 +354,17 @@ class EditorComponent extends React.Component {
             this.setState({
               showComments: !!queryString.parse(this.props.location.search).threadId,
             });
-            for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
-              await this.handleEvent(event.eventId, event);
-            }
           });
         }
       );
 
       this.fetchDataSources(data.editing_version?.id);
-      this.fetchDataQueries(data.editing_version?.id, true, true);
+      await this.fetchDataQueries(data.editing_version?.id, true, true);
       this.fetchGlobalDataSources();
       initEditorWalkThrough();
+      for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
+        await this.handleEvent(event.eventId, event);
+      }
     };
 
     this.setState(
@@ -1138,6 +1138,7 @@ class EditorComponent extends React.Component {
       newPageData.components = Object.keys(newPageData.components).reduce((acc, key) => {
         const newComponentId = uuid();
         acc[newComponentId] = newPageData.components[key];
+        acc[newComponentId].id = newComponentId;
         oldToNewIdMapping[key] = newComponentId;
         return acc;
       }, {});
@@ -1603,6 +1604,7 @@ class EditorComponent extends React.Component {
                       (this.state.editorMarginLeft ? this.state.editorMarginLeft - 1 : this.state.editorMarginLeft) +
                       `px solid ${this.computeCanvasBackgroundColor()}`,
                     height: this.computeCanvasContainerHeight(),
+                    background: !this.props.darkMode && '#f4f6fa',
                   }}
                   onMouseUp={(e) => {
                     if (['real-canvas', 'modal'].includes(e.target.className)) {
