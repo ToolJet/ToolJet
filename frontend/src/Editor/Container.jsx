@@ -195,7 +195,7 @@ export const Container = ({
 
     const padding = mode === 'view' ? 100 : 300;
 
-    setCanvasHeight(`max(100vh, ${maxHeight + padding}px)`);
+    setCanvasHeight(`max(100vh - 85px, ${maxHeight + padding}px)`);
   }
 
   useEffect(() => {
