@@ -71,6 +71,16 @@ To execute the query, click the 'Run' button. Note that the query must be saved 
 You can apply transformations to the query results. Refer to our transformations documentation for more information: [link](/docs/tutorial/transformations)
 :::
 
+- **[List Tables](#list-tables)**
+- **[Get Item](#get-item)**
+- **[Query Table](#query-table)**
+- **[Scan Table](#scan-table)**
+- **[Delete Item](#delete-item)**
+- **[Update Item](#update-item)**
+- **[Describe Table](#describe-table)**
+- **[Create Table](#create-table)**
+- **[Put Item](#put-item)**
+
 ### List Tables
 
 Returns an array of table names associated with the current account and endpoint. The output from List Tables is paginated, with each page returning a maximum of 100 table names.
@@ -185,5 +195,156 @@ Syntax for Key name:
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/datasource-reference/dynamodb/deleteitem.png" alt="ToolJet - DynamoDB operations" />
+
+</div>
+
+### Update Item
+
+Update an item in DynamoDB by specifying the primary key and providing new attribute values.
+
+**Required parameters:**
+- **Update Condition**
+
+Syntax for Update Condition:
+```json
+{
+  "TableName": "USER_DETAILS_with_local",
+  "Key": {
+          "USER_ID": 1,
+					"USER_NAME": "Nick"
+         },
+  "UpdateExpression": "set USER_AGE = :age, USER_FEE = :fee",
+  "ExpressionAttributeValues": {
+    ":age": 40,
+    ":fee": 230545
+  }
+}
+```
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/datasource-reference/dynamodb/updateitem.png" alt="ToolJet - DynamoDB operations" />
+
+</div>
+
+### Describe Table
+
+This operation in DynamoDB retrieves metadata and configuration details about a specific table. It provides information such as the table's name, primary key schema, provisioned throughput settings, and any secondary indexes defined on the table.
+
+**Required parameters:**
+- **Table**
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/datasource-reference/dynamodb/describetable.png" alt="ToolJet - DynamoDB operations" />
+
+</div>
+
+### Create Table
+
+This operation in DynamoDB enables you to create a new table by specifying its name, primary key schema, and optional configurations. 
+
+**Required parameters:**
+- **Table Parameters**
+
+Syntax for Table Parameters:
+```json
+{
+    "AttributeDefinitions": [
+    {
+        "AttributeName": "USER_ID",
+      "AttributeType": "N"
+    },
+    {
+        "AttributeName": "USER_FEE",
+      "AttributeType": "N"
+    },
+    {
+        "AttributeName": "USER_FEE_PAID",
+      "AttributeType": "BOOLEAN"
+    }
+  ],
+  "KeySchema": [
+     {
+
+       "AttributeName": "USER_ID",
+       "KeyType": "HASH"
+     }
+   ],
+  "LocalSecondaryIndexes": [
+        {
+            "IndexName": "USER_FEE",
+            "KeySchema": [
+                {
+                    "AttributeName": "USER_ID",
+                    "KeyType": "HASH"
+                },
+                {
+                    "AttributeName": "USER_FEE",
+                    "KeyType": "RANGE"
+                }
+            ],
+            "Projection": {
+                "ProjectionType": "KEYS_ONLY"
+            }
+        },
+        {
+            "IndexName": "USER_FEE_PAID",
+            "KeySchema": [
+                {
+                    "AttributeName": "USER_ID",
+                    "KeyType": "HASH"
+                },
+                {
+                    "AttributeName": "USER_FEE_PAID",
+                    "KeyType": "RANGE"
+                }
+            ],
+            "Projection": {
+                "ProjectionType": "KEYS_ONLY"
+            }
+        }
+    ],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 1,
+    "WriteCapacityUnits": 1
+  },
+  "TableName": "USER_FEE_LOCAL",
+  "StreamSpecification": {
+    "StreamEnabled": false
+  }
+}
+```
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/datasource-reference/dynamodb/createtable.png" alt="ToolJet - DynamoDB operations" />
+
+</div>
+
+### Put Item
+
+This operation allows you to create or replace an item in a table. It enables you to specify the table name, provide the attribute values for the new item, and define the primary key attributes to uniquely identify the item.
+
+**Required parameters:**
+- **New Item Details**
+
+Syntax for New Item Details:
+```json
+{
+  "TableName": "USER_DETAILS_with_localS",
+  "Item": {
+  	"USER_ID": 1,
+    "USER_NAME": "NICK",
+    "USER_AGE": 34,
+    "USER_FEE": 1234.56,
+		"USER_FEE_PAID": true
+  }
+}
+```
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/datasource-reference/dynamodb/updateitem.png" alt="ToolJet - DynamoDB operations" />
 
 </div>
