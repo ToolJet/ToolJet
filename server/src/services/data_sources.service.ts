@@ -316,9 +316,9 @@ export class DataSourcesService {
         const resolved = await this.resolveVariable(currentOption, organization_id);
         parsedOptions[key]['value'] = resolved;
       }
-
       if (constantMatcher.test(currentOption)) {
         const resolved = await this.resolveConstants(currentOption, organization_id, environment_id);
+        console.log('-----parsedOptions----- [arpit]', { resolved });
         parsedOptions[key]['value'] = resolved;
       }
     }
@@ -526,15 +526,9 @@ export class DataSourcesService {
         environmentId
       );
 
-      const decryptedValue = constant?.value
-        ? await this.encryptionService.decryptColumnValue(
-            'org_environment_constant_values',
-            organization_id,
-            constant.value
-          )
-        : null;
-
-      result = decryptedValue;
+      if (constant) {
+        result = constant.value;
+      }
     }
 
     return result;

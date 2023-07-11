@@ -464,15 +464,9 @@ export class DataQueriesService {
         environmentId
       );
 
-      const decryptedValue = constant?.value
-        ? await this.encryptionService.decryptColumnValue(
-            'org_environment_constant_values',
-            organization_id,
-            constant.value
-          )
-        : null;
-
-      result = decryptedValue;
+      if (constant) {
+        result = constant.value;
+      }
     }
 
     return result;
