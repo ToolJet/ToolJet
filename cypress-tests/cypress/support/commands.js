@@ -34,54 +34,6 @@ Cypress.Commands.add("verifyToastMessage", (selector, message) => {
   });
 });
 
-Cypress.Commands.add("appLogin", () => {
-  cy.request({
-    url: "http://localhost:3000/api/authenticate",
-    method: "POST",
-    body: {
-      email: "dev@tooljet.io",
-      password: "password",
-    },
-  })
-    .its("body")
-    .then((res) =>
-      localStorage.setItem(
-        "currentUser",
-        JSON.stringify({
-          id: res.id,
-          auth_token: res.auth_token,
-          email: res.email,
-          first_name: res.first_name,
-          last_name: res.last_name,
-          organization_id: res.organization_id,
-          organization: res.organization,
-          admin: true,
-          group_permissions: [
-            {
-              id: res.id,
-              organization_id: res.organization_id,
-              group: res.group,
-              app_create: false,
-              app_delete: false,
-              folder_create: false,
-            },
-            {
-              id: res.id,
-              organization_id: res.organization_id,
-              group: res.group,
-              app_create: true,
-              app_delete: true,
-              folder_create: true,
-            },
-          ],
-          app_group_permissions: [],
-        })
-      )
-    );
-
-  cy.visit("/");
-});
-
 Cypress.Commands.add("waitForAutoSave", () => {
   cy.wait(200);
   cy.get(commonSelectors.autoSave, { timeout: 20000 }).should(
@@ -98,8 +50,8 @@ Cypress.Commands.add("createApp", (appName) => {
     } else {
       cy.get(commonSelectors.appCreateButton).click();
     }
-    cy.intercept("GET", "/api/apps/**/versions").as("appVersion");
-    cy.wait("@appVersion", { timeout: 15000 });
+    cy.intercept("GET", "api/v2/data_sources").as("datasource");
+    cy.wait("@datasource", { timeout: 15000 });
     cy.skipEditorPopover();
   });
 });
@@ -150,9 +102,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).type(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
     if (!Array.isArray(value)) {
       cy.wrap(subject).type(value, {
@@ -227,9 +179,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).type(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
