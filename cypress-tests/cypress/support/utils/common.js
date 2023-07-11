@@ -1,9 +1,10 @@
 import { commonText, path } from "Texts/common";
 import { usersSelector } from "Selectors/manageUsers";
 import { profileSelector } from "Selectors/profile";
-import { commonSelectors, commonWidgetSelector } from "Selectors/common";
+import { commonSelectors } from "Selectors/common";
 import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
+import { groupsSelector } from "Selectors/manageGroups";
 
 export const navigateToProfile = () => {
   cy.get(commonSelectors.profileSettings).click();
@@ -24,7 +25,22 @@ export const navigateToManageUsers = () => {
 export const navigateToManageGroups = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.manageGroupsOption).click();
+  cy.get(groupsSelector.groupLink("Admin")).click();
+  cy.get(groupsSelector.groupLink("All users")).click();
+  cy.get(groupsSelector.groupLink("Admin")).click();
+  cy.get(groupsSelector.groupLink("All users")).click();
+  cy.wait(500);
+  cy.get("body").then(($title) => {
+    if ($title.text().includes("Admin has edit access to all apps. These are not editable")) {
+      cy.get(groupsSelector.groupLink("Admin")).click();
+      cy.get(groupsSelector.groupLink("All users")).click();
+      cy.get(groupsSelector.groupLink("Admin")).click();
+      cy.get(groupsSelector.groupLink("All users")).click();
+      cy.wait(2000);
+    }
+  });
 };
+
 export const navigateToWorkspaceVariable = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.workspaceVariableOption).click();
@@ -74,14 +90,13 @@ export const deleteDownloadsFolder = () => {
 };
 
 export const navigateToAppEditor = (appName) => {
-  cy.intercept("GET", "/api/v2/data_sources").as("editor");
+  cy.intercept("GET", "/api/v2/data_sources").as("appEditor");
   cy.get(commonSelectors.appCard(appName))
     .trigger("mousehover")
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
     .click({ force: true });
   cy.wait("@appEditor");
-  cy.wait("@editor");
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip", { timeout: 10000 })) {
       cy.get(commonSelectors.skipButton).click();
@@ -90,6 +105,7 @@ export const navigateToAppEditor = (appName) => {
 };
 
 export const viewAppCardOptions = (appName) => {
+  cy.reloadAppForTheElement(appName);
   cy.contains("div", appName)
     .parent()
     .within(() => {
@@ -98,6 +114,7 @@ export const viewAppCardOptions = (appName) => {
 };
 
 export const viewFolderCardOptions = (folderName) => {
+  cy.reloadAppForTheElement(folderName);
   cy.get(commonSelectors.folderListcard(folderName))
     .parent()
     .within(() => {
@@ -175,7 +192,7 @@ export const createWorkspace = (workspaceName) => {
 
 export const selectAppCardOption = (appName, appCardOption) => {
   viewAppCardOptions(appName);
-  cy.get(appCardOption).should("be.visible").click();
+  cy.get(appCardOption).should("be.visible").realClick();
 };
 
 export const navigateToDatabase = () => {

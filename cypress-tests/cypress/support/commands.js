@@ -34,53 +34,6 @@ Cypress.Commands.add("verifyToastMessage", (selector, message) => {
   });
 });
 
-Cypress.Commands.add("appLogin", () => {
-  cy.request({
-    url: "http://localhost:3000/api/authenticate",
-    method: "POST",
-    body: {
-      email: "dev@tooljet.io",
-      password: "password",
-    },
-  })
-    .its("body")
-    .then((res) =>
-      localStorage.setItem(
-        "currentUser",
-        JSON.stringify({
-          id: res.id,
-          auth_token: res.auth_token,
-          email: res.email,
-          first_name: res.first_name,
-          last_name: res.last_name,
-          organization_id: res.organization_id,
-          organization: res.organization,
-          admin: true,
-          group_permissions: [
-            {
-              id: res.id,
-              organization_id: res.organization_id,
-              group: res.group,
-              app_create: false,
-              app_delete: false,
-              folder_create: false,
-            },
-            {
-              id: res.id,
-              organization_id: res.organization_id,
-              group: res.group,
-              app_create: true,
-              app_delete: true,
-              folder_create: true,
-            },
-          ],
-          app_group_permissions: [],
-        })
-      )
-    );
-
-  cy.visit("/");
-});
 
 Cypress.Commands.add("waitForAutoSave", () => {
   cy.wait(200);
@@ -98,7 +51,7 @@ Cypress.Commands.add("createApp", (appName) => {
     } else {
       cy.get(commonSelectors.appCreateButton).click();
     }
-    cy.intercept("GET", "/api/apps/**/versions").as("appVersion");
+    cy.intercept("GET", "/api/apps/data_sources").as("appVersion");
     cy.wait("@appVersion", { timeout: 15000 });
     cy.skipEditorPopover();
   });
@@ -150,9 +103,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).type(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
     if (!Array.isArray(value)) {
       cy.wrap(subject).type(value, {
@@ -227,9 +180,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).type(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
@@ -286,6 +239,7 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
 });
 
 Cypress.Commands.add("skipEditorPopover", () => {
+  cy.wait(3000);
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip", { timeout: 2000 })) {
       cy.get(commonSelectors.skipButton).realClick();
