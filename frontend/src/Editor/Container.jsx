@@ -494,6 +494,7 @@ export const Container = ({
       })}
       id="real-canvas"
       data-cy="real-canvas"
+      canvas-height={canvasHeight}
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>
