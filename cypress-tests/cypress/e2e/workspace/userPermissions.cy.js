@@ -90,6 +90,7 @@ describe("User permissions", () => {
       .within(() => {
         cy.get("td input").eq(1).check();
       });
+    cy.verifyToastMessage(commonSelectors.toastMessage, "App permissions updated")
 
     common.logout();
     cy.login(data.email, usersText.password);

@@ -75,12 +75,6 @@ describe("App share functionality", () => {
 
     cy.appUILogin();
     navigateToAppEditor(data.appName);
-    cy.wait(1000);
-    cy.get("body").then(($el) => {
-      if ($el.text().includes("Skip", { timeout: 10000 })) {
-        cy.get(commonSelectors.skipButton).click();
-      }
-    });
     cy.get(commonWidgetSelector.shareAppButton).click();
     cy.get(commonWidgetSelector.makePublicAppToggle).uncheck();
     cy.get(commonWidgetSelector.modalCloseButton).click();
@@ -96,7 +90,7 @@ describe("App share functionality", () => {
     );
   });
 
-  it.skip("Verify app private and public app visisbility for the same instance user", () => {
+  it("Verify app private and public app visisbility for the same instance user", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase();
 
