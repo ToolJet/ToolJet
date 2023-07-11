@@ -51,7 +51,7 @@ Cypress.Commands.add("createApp", (appName) => {
     } else {
       cy.get(commonSelectors.appCreateButton).click();
     }
-    cy.intercept("GET", "/api/apps/data_sources").as("appVersion");
+    cy.intercept("GET", "/api/v2/data_sources").as("appVersion");
     cy.wait("@appVersion", { timeout: 15000 });
     cy.skipEditorPopover();
   });

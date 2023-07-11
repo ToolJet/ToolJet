@@ -1,7 +1,7 @@
 import { commonText, path } from "Texts/common";
 import { usersSelector } from "Selectors/manageUsers";
 import { profileSelector } from "Selectors/profile";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
 import { groupsSelector } from "Selectors/manageGroups";
@@ -98,6 +98,7 @@ export const navigateToAppEditor = (appName) => {
     .find(commonSelectors.editButton)
     .click({ force: true });
   cy.wait("@appEditor");
+  cy.wait(1000);
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip", { timeout: 10000 })) {
       cy.get(commonSelectors.skipButton).click();
