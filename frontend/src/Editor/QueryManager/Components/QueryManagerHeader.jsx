@@ -118,12 +118,14 @@ export const QueryManagerHeader = forwardRef(
             >
               {renamingQuery ? renderRenameInput() : queryName}
             </span>
-            <span
-              className={cx('breadcrum-rename-query-icon', { 'd-none': renamingQuery && isVersionReleased })}
-              onClick={() => setRenamingQuery(true)}
-            >
-              <RenameIcon />
-            </span>
+            {!isVersionReleased && (
+              <span
+                className={cx('breadcrum-rename-query-icon', { 'd-none': renamingQuery && isVersionReleased })}
+                onClick={() => setRenamingQuery(true)}
+              >
+                <RenameIcon />
+              </span>
+            )}
           </div>
         </>
       );
