@@ -836,11 +836,6 @@ class EditorComponent extends React.Component {
     return canvasBoundingRect?.width;
   };
 
-  getCanvasHeight = () => {
-    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
-    return canvasBoundingRect?.height;
-  };
-
   computeCanvasBackgroundColor = () => {
     const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#edeff5';
     if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
@@ -1452,7 +1447,9 @@ class EditorComponent extends React.Component {
       return defaultCanvasMinWidth;
     }
   };
+
   handleEditorMarginLeftChange = (value) => this.setState({ editorMarginLeft: value });
+
   render() {
     const {
       currentSidebarTab,
@@ -1621,11 +1618,9 @@ class EditorComponent extends React.Component {
                       className="canvas-area"
                       style={{
                         width: currentLayout === 'desktop' ? '100%' : '450px',
-                        minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                         maxWidth:
                           +this.state.appDefinition.globalSettings.canvasMaxWidth +
                           this.state.appDefinition.globalSettings.canvasMaxWidthType,
-                        maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                         /**
                          * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
                          * default canvas min width = calc(((screen width - width component editor side bar) - width of editor sidebar on left) - width of left sidebar popover)
@@ -1668,7 +1663,6 @@ class EditorComponent extends React.Component {
                         <>
                           <Container
                             canvasWidth={this.getCanvasWidth()}
-                            canvasHeight={this.getCanvasHeight()}
                             socket={this.socket}
                             showComments={showComments}
                             appDefinition={appDefinition}
