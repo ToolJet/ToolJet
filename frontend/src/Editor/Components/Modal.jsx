@@ -85,6 +85,7 @@ export const Modal = function Modal({
         modalCanvasEl.style.height = modalHeight;
 
         realCanvasEl.style.height = '100vh';
+        realCanvasEl.style.position = 'absolute';
 
         canvasElement?.classList?.add('freeze-scroll');
         modalBackdropEl.style.height = '100vh';
@@ -96,13 +97,15 @@ export const Modal = function Modal({
     const handleModalClose = () => {
       const canvasElement = document.getElementsByClassName('canvas-area')[0];
       const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
+      const canvasHeight = realCanvasEl.getAttribute('canvas-height');
 
-      if (canvasElement && realCanvasEl) {
-        canvasElement.style.height = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
-        canvasElement.style.minHeight = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
-        canvasElement.style.maxHeight = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
+      if (canvasElement && realCanvasEl && canvasHeight) {
+        canvasElement.style.height = '';
+        canvasElement.style.minHeight = '';
+        canvasElement.style.maxHeight = '';
 
-        realCanvasEl.style.maxHeight = containerProps.appDefinition.globalSettings.canvasMaxHeight + 'px';
+        realCanvasEl.style.height = canvasHeight;
+        realCanvasEl.style.position = '';
 
         canvasElement?.classList?.remove('freeze-scroll');
       }
