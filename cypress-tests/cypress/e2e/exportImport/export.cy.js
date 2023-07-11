@@ -87,7 +87,7 @@ describe("App Export Functionality", () => {
 
     navigateToAppEditor(data.appName1);
     cy.get('[data-cy="widget-list-box-table"]').should("be.visible");
-    cy.get(".driver-close-btn").click();
+    cy.skipEditorPopover();
     cy.get(appVersionSelectors.appVersionMenuField)
       .should("be.visible")
       .click();
