@@ -33,9 +33,9 @@ describe("Number Input", () => {
     data.appName = `${fake.companyName}-App`;
     data.widgetName = fake.widgetName;
     data.tooltipText = fake.randomSentence;
-    data.randomNumber = randomNumber(10, 99);
-    data.minimumvalue = randomNumber(5, 10);
-    data.maximumValue = randomNumber(90, 99);
+    data.randomNumber = `${randomNumber(10, 99)}`;
+    data.minimumvalue = `${randomNumber(5, 10)}`;
+    data.maximumValue = `${randomNumber(90, 99)}`;
 
     cy.renameApp(data.appName);
 

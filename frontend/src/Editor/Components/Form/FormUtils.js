@@ -148,6 +148,8 @@ export function generateUIComponents(JSONSchema, advanced) {
 
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
+            else uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = null;
+
             if (value?.maxValue)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['maxValue']['value'] = value?.maxValue;
             if (value?.minValue)
@@ -286,6 +288,8 @@ export function generateUIComponents(JSONSchema, advanced) {
                 value?.styles?.borderRadius;
             if (value?.value)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = value?.value;
+            else uiComponentsDraft[index * 2 + 1]['definition']['properties']['value']['value'] = null;
+
             if (value?.placeholder)
               uiComponentsDraft[index * 2 + 1]['definition']['properties']['placeholder']['value'] = value?.placeholder;
             break;

@@ -242,9 +242,12 @@ describe("Multiselect widget", () => {
 
     selectColourFromColourPicker(commonWidgetText.boxShadowColor, data.colour);
     verifyBoxShadowCss(
-      multiselectText.defaultWidgetName,
+      `${commonWidgetSelector.draggableWidget(
+        multiselectText.defaultWidgetName
+      )}>.col`,
       data.colour,
-      data.boxShadowParam
+      data.boxShadowParam,
+      "child"
     );
   });
 
@@ -346,7 +349,12 @@ describe("Multiselect widget", () => {
       .children(".h-100")
       .should("have.css", "border-radius", "20px");
 
-    verifyBoxShadowCss(data.widgetName, data.colour, data.boxShadowParam);
+    verifyBoxShadowCss(
+      `${commonWidgetSelector.draggableWidget(data.widgetName)}>.col`,
+      data.colour,
+      data.boxShadowParam,
+      "child"
+    );
   });
 
   it("should verify CSA", () => {
