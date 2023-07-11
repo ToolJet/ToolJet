@@ -35,7 +35,7 @@ describe("Editor- Test Button widget", () => {
   beforeEach(() => {
     cy.appUILogin();
     cy.createApp();
-    cy.dragAndDropWidget(buttonText.defaultWidgetText);
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
   });
 
   it("should verify the properties of the button widget", () => {

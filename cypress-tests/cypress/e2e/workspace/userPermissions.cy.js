@@ -17,14 +17,27 @@ data.appName = `${fake.companyName}-App`;
 data.folderName = `${fake.companyName.toLowerCase()}-folder`;
 
 describe("User permissions", () => {
+  before(() => {
+    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
+    cy.appUILogin();
+    permissions.reset();
+    cy.get(commonSelectors.homePageLogo).click();
+    cy.wait("@homePage");
+    cy.createApp();
+    cy.renameApp(data.appName);
+    cy.dragAndDropWidget("Table", 250, 250);
+    cy.get(commonSelectors.editorPageLogo).click();
+    cy.reloadAppForTheElement(data.appName);
+    permissions.addNewUserMW(data.firstName, data.email);
+    common.logout();
+  });
   beforeEach(() => {
     cy.appUILogin();
   });
 
   it("Should verify the create new app permission", () => {
-    permissions.reset();
-    permissions.addNewUserMW(data.firstName, data.email);
-
+    common.logout();
+    cy.login(data.email, usersText.password);
     cy.get("body").then(($title) => {
       if ($title.text().includes(dashboardText.emptyPageDescription)) {
         cy.get(commonSelectors.dashboardAppCreateButton).click();
@@ -40,23 +53,7 @@ describe("User permissions", () => {
   });
 
   it("Should verify the View and Edit permission", () => {
-    common.navigateToManageUsers();
-    common.searchUser(data.email);
-    cy.contains("td", data.email)
-      .parent()
-      .within(() => {
-        cy.get("td small").should("have.text", usersText.activeStatus);
-      });
-    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
-    cy.get(commonSelectors.homePageLogo).click();
-    cy.wait("@homePage");
-    cy.createApp();
-    cy.renameApp(data.appName);
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.reloadAppForTheElement(data.appName);
     common.navigateToManageGroups();
-    cy.get(groupsSelector.groupLink("Admin")).click();
-    cy.get(groupsSelector.groupLink("All users")).click();
     cy.get(groupsSelector.appSearchBox).click();
     cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
     cy.get(groupsSelector.selectAddButton).click();
@@ -142,6 +139,7 @@ describe("User permissions", () => {
 
     cy.createApp();
     cy.renameApp(data.email);
+    cy.dragAndDropWidget("Table", 50, 50);
     cy.get(commonSelectors.editorPageLogo).click();
     cy.reloadAppForTheElement(data.email);
     common.viewAppCardOptions(data.email);

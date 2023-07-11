@@ -16,7 +16,6 @@ export const adminLogin = () => {
 
 export const reset = () => {
   common.navigateToManageGroups();
-  cy.contains(groupsText.allUsers).click();
   cy.get(groupsSelector.permissionsLink).click();
 
   cy.get(groupsSelector.appsCreateCheck).then(($el) => {

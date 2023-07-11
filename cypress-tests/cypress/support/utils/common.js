@@ -85,8 +85,9 @@ export const deleteFolder = (folderName) => {
 };
 
 export const deleteDownloadsFolder = () => {
-  const downloadsFolder = Cypress.config("downloadsFolder");
-  cy.task("deleteFolder", downloadsFolder);
+  cy.exec("cd ./cypress/downloads/ && rm -rf *", {
+    failOnNonZeroExit: false,
+  });
 };
 
 export const navigateToAppEditor = (appName) => {
