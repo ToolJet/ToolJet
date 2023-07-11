@@ -49,7 +49,6 @@ export const SubContainer = ({
   height = '100%',
   currentPageId,
   childComponents = null,
-  restrictedKey,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -73,7 +72,7 @@ export const SubContainer = ({
       setContainerCanvasWidth(canvasWidth);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentRef, getContainerCanvasWidth()]);
+  }, [parentRef, getContainerCanvasWidth(), parent]);
 
   zoomLevel = zoomLevel || 1;
 
@@ -278,9 +277,14 @@ export const SubContainer = ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
         const componentMeta = componentTypes.find((component) => component.component === item.component.component);
-
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-        if (!restrictedWidgetsObj[restrictedKey].includes(componentMeta?.component)) {
+        const parentComp =
+          parentComponent?.component === 'Kanban'
+            ? parent.includes('modal')
+              ? 'Kanban_popout'
+              : 'Kanban_card'
+            : parentComponent.component;
+        if (!restrictedWidgetsObj[parentComp].includes(componentMeta?.component)) {
           const newComponent = addNewWidgetToTheEditor(
             componentMeta,
             monitor,
@@ -309,7 +313,9 @@ export const SubContainer = ({
           return undefined;
         } else {
           toast.error(
-            ` ${componentMeta?.component} is not compatible as a child component of ${restrictedKey.replace(/_/g, ' ')}`
+            ` ${componentMeta?.component} is not compatible as a child component of ${parentComp
+              .replace(/_/g, ' ')
+              .toLowerCase()}`
           );
         }
       },

@@ -126,7 +126,6 @@ export const Tabs = function Tabs({
         removeComponent={removeComponent}
         containerCanvasWidth={width - 4}
         parentComponent={component}
-        restrictedKey="tabs"
       />
     </div>
   );

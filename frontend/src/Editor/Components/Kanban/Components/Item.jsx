@@ -87,7 +87,6 @@ export const Item = React.memo(
                 {...containerProps}
                 readOnly={isDragActive || !isFirstItem}
                 parentRef={parentRef}
-                restrictedKey="kanban_card"
               />
             </div>
             <span className="handle-container">

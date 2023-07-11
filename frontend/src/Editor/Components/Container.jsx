@@ -54,7 +54,6 @@ export const Container = function Container({
             {...containerProps}
             parentRef={parentRef}
             removeComponent={removeComponent}
-            restrictedKey="container"
           />
           <SubCustomDragLayer
             containerCanvasWidth={width}

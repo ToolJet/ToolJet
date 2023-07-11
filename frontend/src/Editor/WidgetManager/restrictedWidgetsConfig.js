@@ -1,10 +1,10 @@
 export const restrictedWidgetsObj = {
-  form: ['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container'],
-  kanban_card: ['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container'],
-  calendar: ['Calendar', 'Kanban'],
-  container: ['Calendar', 'Kanban'],
-  modal: ['Calendar', 'Kanban'],
-  tabs: ['Calendar', 'Kanban'],
-  kanban_popout: ['Calendar', 'Kanban'],
-  listview: ['Calendar', 'Kanban'],
+  Form: ['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container'],
+  Kanban_card: ['Calendar', 'Kanban', 'Form', 'Tabs', 'Modal', 'Listview', 'Container'],
+  Calendar: ['Calendar', 'Kanban'],
+  Container: ['Calendar', 'Kanban'],
+  Modal: ['Calendar', 'Kanban'],
+  Tabs: ['Calendar', 'Kanban'],
+  Kanban_popout: ['Calendar', 'Kanban'],
+  Listview: ['Calendar', 'Kanban'],
 };

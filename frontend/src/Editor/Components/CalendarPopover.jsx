@@ -10,6 +10,7 @@ export const CalendarEventPopover = function ({
   containerProps,
   removeComponent,
   popoverClosed,
+  component,
 }) {
   const parentRef = useRef(null);
   const [showPopover, setShow] = useState(show);
@@ -97,7 +98,7 @@ export const CalendarEventPopover = function ({
                 {...containerProps}
                 parentRef={parentRef}
                 removeComponent={removeComponent}
-                restrictedKey="calendar"
+                parentComponent={component}
               />
               <SubCustomDragLayer
                 parent={calendarWidgetId}

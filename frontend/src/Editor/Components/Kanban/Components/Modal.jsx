@@ -50,7 +50,6 @@ export const Modal = function Modal({ showModal, setShowModal, kanbanProps }) {
           {...containerProps}
           parentRef={parentRef}
           customResolvables={{ cardData: exposedVariables?.lastSelectedCard }}
-          restrictedKey="kanban_popout"
           parentComponent={component}
         />
       </BootstrapModal.Body>

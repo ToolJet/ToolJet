@@ -217,7 +217,7 @@ export const Modal = function Modal({
       >
         {!loadingState ? (
           <>
-            <SubContainer parent={id} {...containerProps} parentRef={parentRef} restrictedKey="modal" />
+            <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
             <SubCustomDragLayer
               snapToGrid={true}
               parentRef={parentRef}

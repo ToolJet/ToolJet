@@ -127,7 +127,6 @@ export const Listview = function Listview({
                   return { ...prevData, ...newChildrenData };
                 });
               }}
-              restrictedKey="listview"
             />
           </div>
         ))}
