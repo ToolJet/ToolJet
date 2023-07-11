@@ -6,7 +6,7 @@ import { Alert } from '../Alert';
 const Input = ({ helpText, ...props }) => {
   const [isFocused, setIsFocused] = useState(false);
 
-  const { workspaceVariables, value } = props;
+  const { workspaceVariables, workspaceConstants, value } = props;
 
   const getResolveValueType = (currentValue) => {
     if (!currentValue) return null;
@@ -19,17 +19,29 @@ const Input = ({ helpText, ...props }) => {
       return 'server workspace variable';
     }
 
+    if (currentValue.includes('constants')) {
+      return 'Workspace Constant';
+    }
+
     return null;
   };
 
-  const shouldResolve = typeof value === 'string' && (value.includes('%%client') || value.includes('%%server'));
+  const shouldResolve =
+    typeof value === 'string' &&
+    (value.includes('%%client') || value.includes('%%server') || value.includes('{{constants'));
+
   const valueType = typeof value === 'string' && getResolveValueType(value);
 
   return (
     <div className="tj-app-input">
       <textarea {...props} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)} />
       {shouldResolve && (
-        <ResolvedValue value={value} isFocused={isFocused} state={workspaceVariables} type={valueType} />
+        <ResolvedValue
+          value={value}
+          isFocused={isFocused}
+          state={{ ...workspaceVariables, constants: workspaceConstants }}
+          type={valueType}
+        />
       )}
       {helpText && <small className="text-muted" dangerouslySetInnerHTML={{ __html: helpText }} />}
     </div>
@@ -37,15 +49,6 @@ const Input = ({ helpText, ...props }) => {
 };
 
 const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
-  const slideInStyles = useSpring({
-    config: config.stiff,
-    from: { opacity: 0, height: 0 },
-    to: {
-      opacity: isFocused ? 1 : 0,
-      height: isFocused ? 77 : 0,
-    },
-  });
-
   const [preview, error] = resolveReferences(value, state, null, {}, true, true);
   const previewType = typeof preview;
 
@@ -81,26 +84,39 @@ const ResolvedValue = ({ value, isFocused, state = {}, type }) => {
     }
   };
 
+  const isConstant = type === 'Workspace Constant';
+
+  const slideInStyles = useSpring({
+    config: config.stiff,
+    from: { opacity: 0, height: 0 },
+    to: {
+      opacity: isFocused ? 1 : 0,
+      height: isFocused ? (isConstant ? 49 : 77) : 0,
+    },
+  });
+
   return (
     <React.Fragment>
       <animated.div className={themeCls} style={{ ...slideInStyles, overflow: 'hidden' }}>
         <div className={`dynamic-variable-preview px-1 py-1 ${isValidError ? 'bg-red-lt' : 'bg-green-lt'}`}>
           <div className="alert-banner-type-text">
             <div className="d-flex my-1">
-              <div className="flex-grow-1" style={{ fontWeight: 700, textTransform: 'capitalize' }}>
+              <div className="flex-grow-1" style={{ fontWeight: 800, textTransform: 'capitalize' }}>
                 {type}
               </div>
             </div>
             {getPreviewContent(resolvedValue, previewType)}
           </div>
         </div>
-        <DepericatedAlerForWorkspaceVariable text="Workspace variables deprecating soon" />
+        <DepericatedAlerForWorkspaceVariable text="Workspace variables deprecating soon" shouldShow={!isConstant} />
       </animated.div>
     </React.Fragment>
   );
 };
 
-const DepericatedAlerForWorkspaceVariable = ({ text }) => {
+const DepericatedAlerForWorkspaceVariable = ({ text, shouldShow }) => {
+  if (!shouldShow) return null;
+
   return (
     <Alert
       svg="tj-info-warning"
