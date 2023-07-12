@@ -9,8 +9,9 @@ import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { resolveReferences } from '@/_helpers/utils';
-
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useMounted } from '@/_hooks/use-mount';
+import { shallow } from 'zustand/shallow';
 
 const NO_OF_GRIDS = 43;
 
@@ -48,8 +49,8 @@ export const SubContainer = ({
   height = '100%',
   currentPageId,
   childComponents = null,
-  isVersionReleased,
-  setReleasedVersionPopupState,
+  listmode = null,
+  columns = 1,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -58,6 +59,13 @@ export const SubContainer = ({
   });
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
+  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
 
@@ -68,7 +76,7 @@ export const SubContainer = ({
       setContainerCanvasWidth(canvasWidth);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentRef, getContainerCanvasWidth()]);
+  }, [parentRef, getContainerCanvasWidth(), listmode]);
 
   zoomLevel = zoomLevel || 1;
 
@@ -273,7 +281,6 @@ export const SubContainer = ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
         const componentMeta = componentTypes.find((component) => component.component === item.component.component);
-
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
 
         const newComponent = addNewWidgetToTheEditor(
@@ -309,8 +316,10 @@ export const SubContainer = ({
 
   function getContainerCanvasWidth() {
     if (containerCanvasWidth !== undefined) {
-      return containerCanvasWidth - 2;
+      if (listmode == 'grid') return containerCanvasWidth / columns - 2;
+      else return containerCanvasWidth - 2;
     }
+
     let width = 0;
     if (parentRef.current) {
       const realCanvas = parentRef.current.getElementsByClassName('real-canvas')[0];
@@ -319,13 +328,12 @@ export const SubContainer = ({
         width = canvasBoundingRect.width;
       }
     }
-
     return width;
   }
 
   function onDragStop(e, componentId, direction, currentLayout) {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
     const canvasWidth = getContainerCanvasWidth();
@@ -370,7 +378,7 @@ export const SubContainer = ({
 
   function onResizeStop(id, e, direction, ref, d, position) {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
     const deltaWidth = Math.round(d.width / gridWidth) * gridWidth;

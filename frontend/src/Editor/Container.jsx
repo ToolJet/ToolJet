@@ -15,12 +15,13 @@ import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 const NO_OF_GRIDS = 43;
 
 export const Container = ({
   canvasWidth,
-  canvasHeight,
   mode,
   snapToGrid,
   onComponentClick,
@@ -39,7 +40,6 @@ export const Container = ({
   selectedComponents,
   darkMode,
   showComments,
-  appVersionsId,
   socket,
   handleUndo,
   handleRedo,
@@ -47,20 +47,24 @@ export const Container = ({
   hoveredComponent,
   sideBarDebugger,
   currentPageId,
-  isVersionReleased,
-  setReleasedVersionPopupState,
 }) => {
   const gridWidth = canvasWidth / NO_OF_GRIDS;
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
     maxWidth: `${canvasWidth}px`,
-    height: `${canvasHeight}px`,
-    position: 'absolute',
     backgroundSize: `${gridWidth}px 10px`,
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const components = appDefinition.pages[currentPageId]?.components ?? {};
+  const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      appVersionsId: state?.editingVersion?.id,
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
@@ -68,13 +72,12 @@ export const Container = ({
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
   const [isContainerFocused, setContainerFocus] = useState(false);
+  const [canvasHeight, setCanvasHeight] = useState(null);
   const router = useRouter();
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
-
   useHotkeys('meta+z, control+z', () => handleUndo());
   useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
-
   useHotkeys(
     'meta+v, control+v',
     () => {
@@ -93,7 +96,7 @@ export const Container = ({
           }
         });
       }
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
     },
     [isContainerFocused, appDefinition, focusedParentIdRef]
   );
@@ -123,6 +126,12 @@ export const Container = ({
     setBoxes(components);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(components)]);
+
+  //listening to no of component change to handle addition/deletion of widgets
+  const noOfBoxs = Object.values(boxes || []).length;
+  useEffect(() => {
+    updateCanvasHeight(boxes);
+  }, [noOfBoxs]);
 
   const moveBox = useCallback(
     (id, layouts) => {
@@ -177,6 +186,22 @@ export const Container = ({
     return (x * 100) / canvasWidth;
   }
 
+  function updateCanvasHeight(components) {
+    const maxHeight = Object.values(components).reduce((max, component) => {
+      const layout = component?.layouts?.[currentLayout];
+      if (!layout) {
+        return max;
+      }
+      const sum = layout.top + layout.height;
+      return Math.max(max, sum);
+    }, 0);
+
+    const bottomPadding = mode === 'view' ? 100 : 300;
+    const frameHeight = mode === 'view' ? 45 : 85;
+
+    setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`);
+  }
+
   useEffect(() => {
     setIsDragging(draggingState);
   }, [draggingState]);
@@ -220,7 +245,7 @@ export const Container = ({
           zoomLevel
         );
 
-        setBoxes({
+        const newBoxes = {
           ...boxes,
           [newComponent.id]: {
             component: newComponent.component,
@@ -229,7 +254,9 @@ export const Container = ({
             },
             withDefaultChildren: newComponent.withDefaultChildren,
           },
-        });
+        };
+
+        setBoxes(newBoxes);
 
         setSelectedComponent(newComponent.id, newComponent.component);
 
@@ -241,7 +268,7 @@ export const Container = ({
 
   function onDragStop(e, componentId, direction, currentLayout) {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
     // const id = componentId ? componentId : uuidv4();
@@ -275,11 +302,12 @@ export const Container = ({
     }
 
     setBoxes(newBoxes);
+    updateCanvasHeight(newBoxes);
   }
 
   function onResizeStop(id, e, direction, ref, d, position) {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
     const deltaWidth = Math.round(d.width / gridWidth) * gridWidth;
@@ -327,6 +355,7 @@ export const Container = ({
     };
 
     setBoxes(newBoxes);
+    updateCanvasHeight(newBoxes);
   }
 
   function paramUpdated(id, param, value) {
@@ -466,7 +495,7 @@ export const Container = ({
         canvasRef.current = el;
         drop(el);
       }}
-      style={styles}
+      style={{ ...styles, height: canvasHeight }}
       className={cx('real-canvas', {
         'show-grid': isDragging || isResizing,
       })}
@@ -475,13 +504,7 @@ export const Container = ({
     >
       {config.COMMENT_FEATURE_ENABLE && showComments && (
         <>
-          <Comments
-            socket={socket}
-            newThread={newThread}
-            appVersionsId={appVersionsId}
-            canvasWidth={canvasWidth}
-            currentPageId={currentPageId}
-          />
+          <Comments socket={socket} newThread={newThread} canvasWidth={canvasWidth} currentPageId={currentPageId} />
           {commentsPreviewList.map((previewComment, index) => (
             <div
               key={index}
@@ -569,24 +592,23 @@ export const Container = ({
                 addDefaultChildren,
                 currentPageId,
                 childComponents,
-                isVersionReleased,
-                setReleasedVersionPopupState,
               }}
-              isVersionReleased={isVersionReleased}
             />
           );
         }
       })}
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
-        <div className="mx-auto w-50 p-5 bg-light no-components-box" style={{ marginTop: '10%' }}>
-          <center className="text-muted">
-            You haven&apos;t added any components yet. Drag components from the right sidebar and drop here. Check out
-            our{' '}
-            <a href="https://docs.tooljet.com/docs#the-very-quick-quickstart" target="_blank" rel="noreferrer">
-              guide
-            </a>{' '}
-            on adding components.
-          </center>
+        <div style={{ paddingTop: '10%' }}>
+          <div className="mx-auto w-50 p-5 bg-light no-components-box">
+            <center className="text-muted">
+              You haven&apos;t added any components yet. Drag components from the right sidebar and drop here. Check out
+              our&nbsp;
+              <a href="https://docs.tooljet.com/docs#the-very-quick-quickstart" target="_blank" rel="noreferrer">
+                guide
+              </a>{' '}
+              on adding components.
+            </center>
+          </div>
         </div>
       )}
     </div>
