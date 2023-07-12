@@ -87,6 +87,7 @@ describe("User permissions", () => {
       .within(() => {
         cy.get("td input").eq(1).check();
       });
+    cy.verifyToastMessage(commonSelectors.toastMessage, "App permissions updated")
 
     common.logout();
     cy.login(data.email, usersText.password);
@@ -106,7 +107,6 @@ describe("User permissions", () => {
     cy.get(commonSelectors.editButton).should("exist").and("be.enabled");
 
     cy.get(commonSelectors.workspaceName).click();
-    cy.contains("Untitled workspace").click();
     cy.contains(`${data.email}`).click();
     cy.contains(data.appName).should("not.exist");
 
@@ -141,8 +141,6 @@ describe("User permissions", () => {
     cy.renameApp(data.email);
     cy.dragAndDropWidget("Table", 50, 50);
     cy.get(commonSelectors.editorPageLogo).click();
-    cy.reload();
-    common.viewAppCardOptions(data.appName);
     cy.reloadAppForTheElement(data.email);
     common.viewAppCardOptions(data.email);
     cy.contains("Delete app").should("exist");

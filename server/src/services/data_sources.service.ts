@@ -14,12 +14,15 @@ import { User } from 'src/entities/user.entity';
 import { UsersService } from './users.service';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
+import { EncryptionService } from './encryption.service';
+import { OrgEnvironmentVariable } from '../entities/org_envirnoment_variable.entity';
 
 @Injectable()
 export class DataSourcesService {
   constructor(
     private readonly pluginsHelper: PluginsHelper,
     private credentialsService: CredentialsService,
+    private encryptionService: EncryptionService,
     private appEnvironmentService: AppEnvironmentService,
     private usersService: UsersService,
     @InjectRepository(DataSource)
@@ -356,17 +359,31 @@ export class DataSourcesService {
     });
   }
 
-  async testConnection(kind: string, options: object, plugin_id: string): Promise<object> {
+  async testConnection(kind: string, options: object, plugin_id: string, organization_id: string): Promise<object> {
     let result = {};
+
+    const parsedOptions = JSON.parse(JSON.stringify(options));
+
+    for (const key of Object.keys(parsedOptions)) {
+      const currentOption = parsedOptions[key]?.['value'];
+      const variablesMatcher = /(%%.+?%%)/g;
+      const matched = variablesMatcher.exec(currentOption);
+
+      if (matched) {
+        const resolved = await this.resolveVariable(currentOption, organization_id);
+        parsedOptions[key]['value'] = resolved;
+      }
+    }
+
     try {
       const sourceOptions = {};
 
-      for (const key of Object.keys(options)) {
-        const credentialId = options[key]?.['credential_id'];
+      for (const key of Object.keys(parsedOptions)) {
+        const credentialId = parsedOptions[key]?.['credential_id'];
         if (credentialId) {
           sourceOptions[key] = await this.credentialsService.getValue(credentialId);
         } else {
-          sourceOptions[key] = options[key]['value'];
+          sourceOptions[key] = parsedOptions[key]['value'];
         }
       }
 
@@ -546,5 +563,39 @@ export class DataSourcesService {
   getAuthUrl(provider: string, sourceOptions?: any): { url: string } {
     const service = new allPlugins[provider]();
     return { url: service.authUrl(sourceOptions) };
+  }
+
+  async resolveVariable(str: string, organization_id: string) {
+    const tempStr: string = str.replace(/%%/g, '');
+    let result = tempStr;
+
+    const isServerVariable = new RegExp('^server').test(tempStr);
+    const isClientVariable = new RegExp('^client').test(tempStr);
+
+    if (isServerVariable || isClientVariable) {
+      const splitArray = tempStr.split('.');
+
+      const variableType = splitArray[0];
+      const variableName = splitArray[splitArray.length - 1];
+
+      const variableResult = await OrgEnvironmentVariable.findOne({
+        variableType: variableType,
+        organizationId: organization_id,
+        variableName: variableName,
+      });
+
+      if (isClientVariable && variableResult) {
+        result = variableResult.value;
+      }
+
+      if (isServerVariable && variableResult) {
+        result = await this.encryptionService.decryptColumnValue(
+          'org_environment_variables',
+          organization_id,
+          variableResult.value
+        );
+      }
+    }
+    return result;
   }
 }

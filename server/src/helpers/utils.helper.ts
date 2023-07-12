@@ -204,7 +204,6 @@ export class MigrationProgress {
     console.log(`${this.fileName} Progress ${Math.round((this.progress / this.totalCount) * 100)} %`);
   }
 }
-
 export const generateNextName = (firstWord: string) => {
   return `${firstWord} ${Date.now()}`;
 };

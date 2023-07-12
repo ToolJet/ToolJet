@@ -65,7 +65,7 @@ describe("App Version Functionality", () => {
   it("Verify all functionality for the app version", () => {
     navigateToAppEditor(data.appName);
     cy.get('[data-cy="widget-list-box-table"]').should("be.visible");
-    cy.get(".driver-close-btn").click();
+    cy.skipEditorPopover();
 
     cy.dragAndDropWidget("Toggle Switch", 50, 50);
     verifyComponent("toggleswitch1");

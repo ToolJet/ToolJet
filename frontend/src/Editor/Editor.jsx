@@ -210,7 +210,6 @@ class EditorComponent extends React.Component {
 
   componentDidMount() {
     window.addEventListener('message', this.handleMessage);
-    resetAllStores();
     this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);

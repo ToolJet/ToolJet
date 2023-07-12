@@ -29,6 +29,7 @@ export class BackFillAppEnvironmentsPriorityColumn1686826460358 implements Migra
 
     for (const { appEnvironments } of organizations) {
       for (const appEnvironment of appEnvironments) {
+        console.log('Updating app environment =>', appEnvironment.id);
         const priority = defaultAppEnvironments.find(
           (defaultAppEnvironment) => defaultAppEnvironment.name === appEnvironment.name
         ).priority;

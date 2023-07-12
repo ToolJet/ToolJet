@@ -393,7 +393,11 @@ export const QueryManagerBody = forwardRef(
 
     const renderChangeDataSource = () => {
       return (
-        <div className="mt-2 pb-4">
+        <div
+          className={cx(`mt-2 pb-4`, {
+            'disabled ': isVersionReleased,
+          })}
+        >
           <div
             className={`border-top query-manager-border-color px-4 hr-text-left py-2 ${
               darkMode ? 'color-white' : 'color-light-slate-12'

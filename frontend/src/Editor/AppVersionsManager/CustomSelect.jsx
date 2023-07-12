@@ -7,6 +7,7 @@ import { CreateVersion } from './CreateVersionModal';
 import { ConfirmDialog } from '@/_components';
 import { ToolTip } from '@/_components/ToolTip';
 import EditWhite from '@assets/images/icons/edit-white.svg';
+import { defaultAppEnvironments } from '@/_helpers/utils';
 
 const Menu = (props) => {
   const { currentEnvironment } = props;
@@ -114,9 +115,14 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
         setShowEditAppVersion={setShowEditAppVersion}
         currentEnvironment={currentEnvironment}
       />
+      {/* TODO[future]:: use environments list instead of hard coded defaultAppEnvironments data */}
       <ConfirmDialog
         show={deleteVersion.showModal}
-        message={`Deleting a version will permanently remove it from all environments. Are you sure you want to delete this version - ${deleteVersion.versionName}?`}
+        message={`${
+          defaultAppEnvironments.length > 1
+            ? 'Deleting a version will permanently remove it from all environments.'
+            : ''
+        }Are you sure you want to delete this version - ${deleteVersion.versionName}?`}
         onConfirm={() => deleteAppVersion(deleteVersion.versionId, deleteVersion.versionName)}
         onCancel={resetDeleteModal}
       />

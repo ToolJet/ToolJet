@@ -305,10 +305,10 @@ describe("dashboard", () => {
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
     cy.get(instanceSettingsSelector.archiveAllButton).click();
+    cy.get(commonEeSelectors.modalCloseButton).click();
     cy.get(
       instanceSettingsSelector.userStatus(data.firstName)
     ).verifyVisibleElement("have.text", "archived");
-    cy.get(commonEeSelectors.modalCloseButton).click();
     common.logout();
 
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
