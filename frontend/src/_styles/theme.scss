@@ -10040,21 +10040,21 @@ tbody {
     &:hover {
       background: var(--slate1) !important;
       border: 1px solid var(--slate8) !important;
-      -webkit-box-shadow: none !important;
-      box-shadow: none !important;
+      -webkit-box-shadow: none ;
+      box-shadow: none ;
       outline: none;
     }
 
-    &:focus-visible {
+    &:focus-visible{
       background: var(--indigo2) !important;
       border: 1px solid var(--indigo9) !important;
-      box-shadow: none !important;
+      box-shadow: none;
     }
 
   }
-
+   
 }
-
+  
 
 
 .tj-sub-helper-text {
