@@ -14,9 +14,11 @@ import {
   sanitizeHeaders,
   sanitizeSearchParams,
   fetchHttpsCertsForCustomCA,
+  getAuthUrl,
 } from '@tooljet-plugins/common';
 const JSON5 = require('json5');
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
+import { SourceOptions } from './types';
 
 interface RestAPIResult extends QueryResult {
   request?: Array<object> | object;
@@ -171,6 +173,10 @@ export default class RestapiQueryService implements QueryService {
     const objectHeaders = Object.fromEntries(headers);
     const contentType = objectHeaders['content-type'] ?? objectHeaders['Content-Type'];
     return contentType === 'application/x-www-form-urlencoded';
+  }
+
+  authUrl(sourceOptions: SourceOptions): string {
+    return getAuthUrl(sourceOptions);
   }
 
   async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {

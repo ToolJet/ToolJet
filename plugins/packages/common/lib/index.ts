@@ -17,6 +17,7 @@ import {
 import { ConnectionTestResult } from './connection_test_result.type';
 import {
   getRefreshedToken,
+  getAuthUrl,
   sanitizeCustomParams,
   checkIfContentTypeIsURLenc,
   validateAndSetRequestOptionsBasedOnAuthType,
@@ -37,6 +38,7 @@ export {
   cleanSensitiveData,
   getCurrentToken,
   getRefreshedToken,
+  getAuthUrl,
   sanitizeCustomParams,
   sanitizeHeaders,
   sanitizeSearchParams,

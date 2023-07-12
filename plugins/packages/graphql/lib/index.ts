@@ -12,8 +12,9 @@ import {
   sanitizeSearchParams,
   fetchHttpsCertsForCustomCA,
   getRefreshedToken,
+  getAuthUrl,
 } from '@tooljet-plugins/common';
-import { QueryOptions } from './types';
+import { QueryOptions, SourceOptions } from './types';
 
 export default class GraphqlQueryService implements QueryService {
   constructor(private sendRequest = got) {}
@@ -91,6 +92,10 @@ export default class GraphqlQueryService implements QueryService {
       status: 'ok',
       data: result,
     };
+  }
+
+  authUrl(sourceOptions: SourceOptions): string {
+    return getAuthUrl(sourceOptions);
   }
 
   async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {

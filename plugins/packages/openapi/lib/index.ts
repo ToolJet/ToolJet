@@ -7,6 +7,7 @@ import {
   QueryService,
   getRefreshedToken,
   validateAndSetRequestOptionsBasedOnAuthType,
+  getAuthUrl,
 } from '@tooljet-plugins/common';
 import { SourceOptions, QueryOptions, RestAPIResult } from './types';
 import got, { HTTPError, OptionsOfTextResponseBody } from 'got';
@@ -110,6 +111,10 @@ export default class Openapi implements QueryService {
       response: responseObject,
       responseHeaders,
     };
+  }
+
+  authUrl(sourceOptions: SourceOptions): string {
+    return getAuthUrl(sourceOptions);
   }
 
   async refreshToken(sourceOptions: any, error: any, userId: string, isAppPublic: boolean) {

@@ -26,6 +26,7 @@ export function validateAndSetRequestOptionsBasedOnAuthType(
   additionalOptions?: any
 ): QueryResult {
   switch (sourceOptions['auth_type']) {
+    case 'oauth2':
     case 'oauth':
       return handleOAuthAuthentication(sourceOptions, context, requestOptions);
     case 'bearer':
@@ -107,7 +108,7 @@ function validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers): Query
     if (!currentToken) {
       return {
         status: 'needs_oauth',
-        data: { auth_url: authUrl(sourceOptions) },
+        data: { auth_url: getAuthUrl(sourceOptions) },
       };
     } else {
       const accessToken = currentToken['access_token'];
@@ -121,7 +122,7 @@ function validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers): Query
   return { status: 'ok', data: headers };
 }
 
-function authUrl(sourceOptions: any): string {
+export function getAuthUrl(sourceOptions: any): string {
   const customQueryParams = sanitizeCustomParams(sourceOptions['custom_query_params']);
   const tooljetHost = process.env.TOOLJET_HOST;
   const authUrl = new URL(
