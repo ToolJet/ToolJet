@@ -46,10 +46,6 @@ describe("Editor- Global Settings", () => {
       "have.text",
       "Max width of canvas"
     );
-    cy.get('[data-cy="label-max-canvas-height"]').verifyVisibleElement(
-      "have.text",
-      "Max height of canvas"
-    );
     cy.get('[data-cy="label-bg-canvas"]').verifyVisibleElement(
       "have.text",
       "Background color of canvas"

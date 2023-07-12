@@ -1,7 +1,7 @@
 import { commonText, path } from "Texts/common";
 import { usersSelector } from "Selectors/manageUsers";
 import { profileSelector } from "Selectors/profile";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
 import { groupsSelector } from "Selectors/manageGroups";
@@ -31,7 +31,11 @@ export const navigateToManageGroups = () => {
   cy.get(groupsSelector.groupLink("All users")).click();
   cy.wait(500);
   cy.get("body").then(($title) => {
-    if ($title.text().includes("Admin has edit access to all apps. These are not editable")) {
+    if (
+      $title
+        .text()
+        .includes("Admin has edit access to all apps. These are not editable")
+    ) {
       cy.get(groupsSelector.groupLink("Admin")).click();
       cy.get(groupsSelector.groupLink("All users")).click();
       cy.get(groupsSelector.groupLink("Admin")).click();
@@ -56,7 +60,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-    Math.random() * (endDate.getTime() - startDate.getTime())
+      Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -91,12 +95,19 @@ export const deleteDownloadsFolder = () => {
 };
 
 export const navigateToAppEditor = (appName) => {
+  cy.intercept("GET", "/api/v2/data_sources").as("appEditor");
   cy.get(commonSelectors.appCard(appName))
     .trigger("mousehover")
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
     .click({ force: true });
-  //cy.wait("@appEditor");
+  cy.wait("@appEditor");
+  cy.wait(1000);
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Skip", { timeout: 10000 })) {
+      cy.get(commonSelectors.skipButton).click();
+    }
+  });
 };
 
 export const viewAppCardOptions = (appName) => {
@@ -193,7 +204,7 @@ export const createWorkspace = (workspaceName) => {
 
 export const selectAppCardOption = (appName, appCardOption) => {
   viewAppCardOptions(appName);
-  cy.get(appCardOption).should("be.visible").realClick();
+  cy.get(appCardOption).should("be.visible").click({ force: true });
 };
 
 export const navigateToDatabase = () => {
@@ -211,4 +222,22 @@ export const verifyTooltip = (selector, message) => {
     .then(() => {
       cy.get(".tooltip-inner").last().should("have.text", message);
     });
+};
+
+export const pinInspector = () => {
+  cy.get(commonWidgetSelector.sidebarinspector).click();
+  cy.get(commonSelectors.inspectorPinIcon).click();
+  cy.intercept("GET", "/api/v2/data_sources").as("editor");
+  cy.reload();
+  cy.wait("@editor");
+  cy.get("body").then(($body) => {
+    if (!$body.find(commonSelectors.inspectorPinIcon).length > 0) {
+      cy.get(commonWidgetSelector.sidebarinspector).click();
+      cy.get(commonSelectors.inspectorPinIcon).click();
+      cy.wait(500);
+      cy.intercept("GET", "/api/v2/data_sources").as("editor");
+      cy.reload();
+      cy.wait("@editor");
+    }
+  });
 };

@@ -84,6 +84,7 @@ export class AppEnvironmentsController {
     return await this.appEnvironmentServices.delete(id, organizationId);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('versions')
   async getVersions(@User() user, @Query('app_id') appId: string) {
     const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(user?.organizationId, appId);

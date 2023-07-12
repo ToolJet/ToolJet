@@ -46,6 +46,7 @@ export const LeftSidebarDataSources = ({
     if (dataSources.length === 0) {
       onDeleteofAllDataSources();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSources.length]);
 
   const { admin } = authenticationService.currentSessionValue;

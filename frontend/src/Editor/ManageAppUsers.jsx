@@ -198,6 +198,7 @@ class ManageAppUsersComponent extends React.Component {
                     </span>
                   </div>
                 </div>
+
                 <div className="shareable-link mb-3">
                   <label className="form-label" data-cy="shareable-app-link-label">
                     <small>

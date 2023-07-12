@@ -43,7 +43,8 @@ describe("Basic components", () => {
   });
 
   it("Should verify Toggle switch", () => {
-    cy.dragAndDropWidget("Toggle Switch", 250, 250);
+    cy.intercept("GET", "/api/v2/data_sources").as("appDs");
+    cy.dragAndDropWidget("Toggle Switch", 50, 50);
     verifyComponent("toggleswitch1");
 
     cy.resizeWidget("toggleswitch1", 650, 400);
@@ -65,7 +66,7 @@ describe("Basic components", () => {
     ).should("have.text", "label");
 
     cy.go("back");
-    cy.wait(4000);
+    cy.wait("@appDs");
     deleteComponentAndVerify("toggleswitch2");
     cy.get(commonSelectors.editorPageLogo).click();
 

@@ -924,3 +924,9 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
     }
   }
 };
+
+export const defaultAppEnvironments = [
+  { name: 'development', isDefault: false, priority: 1 },
+  { name: 'staging', isDefault: false, priority: 2 },
+  { name: 'production', isDefault: true, priority: 3 },
+];

@@ -237,7 +237,6 @@ export class AppsService {
           throw new BadRequestException('You can only release when the version is promoted to production');
         }
       }
-
       return await catchDbException(
         async () => {
           return await manager.update(App, appId, updatableParams);
