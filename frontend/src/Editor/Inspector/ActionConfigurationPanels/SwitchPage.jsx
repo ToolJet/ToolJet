@@ -3,7 +3,7 @@ import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { useTranslation } from 'react-i18next';
-import { useCurrentStateStore } from '../../../_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
 export function SwitchPage({ getPages, event, handlerChanged, eventIndex, darkMode }) {
   const queryParamChangeHandler = (index, key, value) => {

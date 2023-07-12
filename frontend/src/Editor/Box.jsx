@@ -66,7 +66,7 @@ import {
 import _ from 'lodash';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
-import { useCurrentStateStore } from '../_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
 const AllComponents = {
   Button,

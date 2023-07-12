@@ -32,7 +32,7 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
-import { useCurrentStateStore } from '../../_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
 const AllElements = {
   Color,

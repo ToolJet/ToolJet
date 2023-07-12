@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx/xlsx.mjs';
-import { useCurrentStateStore } from '../../_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
 export const FilePicker = ({
   id,

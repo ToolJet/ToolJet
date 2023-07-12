@@ -9,7 +9,7 @@ import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
-import { useCurrentStateStore } from '../_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
 const resizerClasses = {
   topRight: 'top-right',

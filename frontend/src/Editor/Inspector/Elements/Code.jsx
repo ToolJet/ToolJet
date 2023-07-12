@@ -2,7 +2,7 @@ import React from 'react';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import _ from 'lodash';
 import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentStateStore } from '../../../_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
 export const Code = ({
   param,

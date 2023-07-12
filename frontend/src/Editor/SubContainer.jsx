@@ -9,7 +9,7 @@ import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentStateStore } from '../_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useMounted } from '@/_hooks/use-mount';
 import { shallow } from 'zustand/shallow';

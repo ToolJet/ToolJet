@@ -10,7 +10,7 @@ import { resolveReferences } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import Popover from '@/_ui/Popover';
-import { useCurrentStateStore } from '../../_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
 export const GlobalSettings = ({
   globalSettings,

@@ -2,7 +2,7 @@ import _ from 'lodash';
 import React from 'react';
 import Board from './Board';
 import { isCardColoumnIdUpdated, updateCardData, updateColumnData, getData, isArray, isValidCardData } from './utils';
-import { useCurrentStateStore } from '../../../_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 
 export const BoardContext = React.createContext({});
 

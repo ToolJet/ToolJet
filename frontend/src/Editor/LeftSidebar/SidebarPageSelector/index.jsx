@@ -7,7 +7,7 @@ import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 // eslint-disable-next-line import/no-unresolved
 import EmptyIllustration from '@assets/images/no-results.svg';
-import { useCurrentStateStore } from '../../../_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 

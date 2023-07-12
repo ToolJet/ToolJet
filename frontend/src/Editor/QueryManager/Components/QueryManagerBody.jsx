@@ -25,7 +25,7 @@ import {
   useSelectedDataSource,
   useQueryPanelActions,
 } from '@/_stores/queryPanelStore';
-import { useCurrentStateStore } from '../../../_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 

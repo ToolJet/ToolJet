@@ -7,7 +7,7 @@ import { getSvgIcon } from '@/_helpers/appUtils';
 
 import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
-import { useCurrentStateStore } from '../../_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 const staticDataSources = [
   { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
   { kind: 'restapi', id: 'null', name: 'REST API' },
