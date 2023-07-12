@@ -1130,7 +1130,9 @@ describe("Table", () => {
     verifyNodeData("components", "Object", "1 entry ");
     openNode("components");
     verifyNodeData(tableText.defaultWidgetName, "Object", "17 entries ");
+    cy.wait(1000);
     openNode(tableText.defaultWidgetName);
+    cy.wait(500);
     verifyNodeData("newRows", "Array", "1 item ");
     openNode("newRows");
     verifyNodeData("0", "Object", "3 entries ");
