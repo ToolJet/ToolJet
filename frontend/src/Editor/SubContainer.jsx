@@ -316,7 +316,12 @@ export const SubContainer = ({
           toast.error(
             ` ${componentMeta?.component} is not compatible as a child component of ${parentComp
               .replace(/_/g, ' ')
-              .toLowerCase()}`
+              .toLowerCase()}`,
+            {
+              style: {
+                wordBreak: 'break-word',
+              },
+            }
           );
         }
       },
