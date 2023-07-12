@@ -401,7 +401,7 @@ class EditorComponent extends React.Component {
         (this.canUndo = false), (this.canRedo = false);
       }
       useAppDataStore.getState().actions.setIsSaving(false);
-      useAppDataStore.getState().actions.updateEditingVersion(version);
+      useAppVersionStore.getState().actions.updateEditingVersion(version);
 
       shouldWeEditVersion && this.saveEditingVersion(true);
       this.fetchDataSources(this.props.editingVersion?.id);
