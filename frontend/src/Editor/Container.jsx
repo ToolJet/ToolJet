@@ -318,6 +318,7 @@ export const Container = ({
     }
 
     let { x, y } = position;
+    x = Math.round(x / gridWidth) * gridWidth;
 
     const defaultData = {
       top: 100,
