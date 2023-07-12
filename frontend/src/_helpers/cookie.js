@@ -1,10 +1,15 @@
-export function setCookie(name, value, expiryMinutes) {
+export function setCookie(name, value, inIFrame = false, expiryMinutes) {
   let expires = '';
   if (expiryMinutes) {
     const date = new Date();
     date.setTime(date.getTime() + expiryMinutes * 60 * 1000);
     expires = '; expires=' + date.toUTCString();
   }
+
+  if (inIFrame) {
+    return (document.cookie = `${name}=${value || ''}${expires}; path=/; SameSite=None; Secure`);
+  }
+
   document.cookie = `${name}=${value || ''}${expires}; path=/`;
 }
 

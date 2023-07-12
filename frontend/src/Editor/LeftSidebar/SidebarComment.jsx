@@ -20,7 +20,7 @@ export const LeftSidebarComment = forwardRef(({ toggleComments, selectedSidebarI
 
   React.useEffect(() => {
     if (appVersionsId) {
-      commentsService.getNotifications(router.query.id, false, appVersionsId, currentPageId).then(({ data }, ref) => {
+      commentsService.getNotifications(router.query.id, false, appVersionsId, currentPageId).then(({ data }) => {
         setNotifications(data);
       });
     }
