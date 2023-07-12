@@ -32,7 +32,6 @@ const LeftSidebarPageSelector = ({
   apps,
   pinned,
   setPinned,
-  popoverContentHeight,
 }) => {
   const [allpages, setPages] = useState(pages);
   const [haveUserPinned, setHaveUserPinned] = useState(false);

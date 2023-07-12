@@ -30,7 +30,7 @@ import { Navigate } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 import { toast } from 'react-hot-toast';
 import { withRouter } from '@/_hoc/withRouter';
-
+import { setCookie } from '@/_helpers/cookie';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 
 class ViewerComponent extends React.Component {
@@ -341,8 +341,25 @@ class ViewerComponent extends React.Component {
     });
   }
 
+  /**
+   *
+   * ThandleMessage event listener in the login component fir iframe communication.
+   * It now checks if the received message has a type of 'redirectTo' and extracts the redirectPath value from the payload.
+   * If the value is present, it sets a cookie named 'redirectPath' with the received value and a one-day expiration.
+   * This allows for redirection to a specific path after the login process is completed.
+   */
+  handleMessage = (event) => {
+    const { data } = event;
+
+    if (data?.type === 'redirectTo') {
+      const redirectCookie = data?.payload['redirectPath'];
+      setCookie('redirectPath', redirectCookie, 1);
+    }
+  };
+
   componentDidMount() {
     this.setupViewer();
+    window.addEventListener('message', this.handleMessage);
   }
 
   componentDidUpdate(prevProps) {
@@ -521,7 +538,9 @@ class ViewerComponent extends React.Component {
       const startingPageHandle = this.props?.params?.pageHandle;
       const homePageHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
       if (!startingPageHandle && homePageHandle) {
-        return <Navigate to={homePageHandle} replace />;
+        return (
+          <Navigate to={`${homePageHandle}${this.props.params.pageHandle ? '' : window.location.search}`} replace />
+        );
       }
       if (this.state.app?.is_maintenance_on) {
         return (
@@ -605,9 +624,7 @@ class ViewerComponent extends React.Component {
                         className="canvas-area"
                         style={{
                           width: currentCanvasWidth,
-                          minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                           maxWidth: canvasMaxWidth,
-                          maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                           backgroundColor: this.computeCanvasBackgroundColor(),
                           margin: 0,
                           padding: 0,

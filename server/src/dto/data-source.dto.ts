@@ -27,6 +27,10 @@ export class CreateDataSourceDto {
 
   @IsOptional()
   scope: string;
+
+  @IsUUID()
+  @IsOptional()
+  environment_id: string;
 }
 
 export class UpdateDataSourceDto extends PartialType(CreateDataSourceDto) {}
