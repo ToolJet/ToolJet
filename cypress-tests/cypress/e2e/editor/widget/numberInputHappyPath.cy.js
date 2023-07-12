@@ -80,7 +80,7 @@ describe("Number Input", () => {
     );
     cy.get(
       commonWidgetSelector.draggableWidget(data.widgetName)
-    ).verifyVisibleElement("have.value", data.minimumvalue);
+    ).verifyVisibleElement("have.value", `${data.minimumvalue}.00`);
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties, [
@@ -90,7 +90,7 @@ describe("Number Input", () => {
     ]);
     verifyAndModifyParameter(
       commonWidgetText.labelMaximumValue,
-      data.maximumValue
+      `${data.maximumValue}`
     );
     cy.clearAndType(
       commonWidgetSelector.draggableWidget(data.widgetName),
@@ -98,7 +98,7 @@ describe("Number Input", () => {
     );
     cy.get(
       commonWidgetSelector.draggableWidget(data.widgetName)
-    ).verifyVisibleElement("have.value", data.maximumValue);
+    ).verifyVisibleElement("have.value", `${data.maximumValue}.00`);
 
     openEditorSidebar(data.widgetName);
     openAccordion(commonWidgetText.accordionProperties, [
@@ -217,11 +217,11 @@ describe("Number Input", () => {
     );
     verifyAndModifyParameter(
       commonWidgetText.labelMinimumValue,
-      data.minimumvalue
+      `${data.minimumvalue}`
     );
     verifyAndModifyParameter(
       commonWidgetText.labelMaximumValue,
-      data.maximumValue
+      `${data.maximumValue}`
     );
     verifyAndModifyParameter(
       commonWidgetText.labelPlaceHolder,
@@ -270,14 +270,14 @@ describe("Number Input", () => {
     );
     cy.get(
       commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
-    ).verifyVisibleElement("have.value", data.minimumvalue);
+    ).verifyVisibleElement("have.value", `${data.minimumvalue}.00`);
     cy.clearAndType(
       commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName),
       randomNumber(100, 110)
     );
     cy.get(
       commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
-    ).verifyVisibleElement("have.value", data.maximumValue);
+    ).verifyVisibleElement("have.value", `${data.maximumValue}.00`);
     cy.get(
       commonWidgetSelector.draggableWidget(numberInputText.defaultWidgetName)
     )

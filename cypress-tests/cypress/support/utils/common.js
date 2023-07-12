@@ -31,7 +31,11 @@ export const navigateToManageGroups = () => {
   cy.get(groupsSelector.groupLink("All users")).click();
   cy.wait(500);
   cy.get("body").then(($title) => {
-    if ($title.text().includes("Admin has edit access to all apps. These are not editable")) {
+    if (
+      $title
+        .text()
+        .includes("Admin has edit access to all apps. These are not editable")
+    ) {
       cy.get(groupsSelector.groupLink("Admin")).click();
       cy.get(groupsSelector.groupLink("All users")).click();
       cy.get(groupsSelector.groupLink("Admin")).click();
@@ -56,7 +60,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-    Math.random() * (endDate.getTime() - startDate.getTime())
+      Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -194,7 +198,7 @@ export const createWorkspace = (workspaceName) => {
 
 export const selectAppCardOption = (appName, appCardOption) => {
   viewAppCardOptions(appName);
-  cy.get(appCardOption).should("be.visible").realClick();
+  cy.get(appCardOption).should("be.visible").click({ force: true });
 };
 
 export const navigateToDatabase = () => {
