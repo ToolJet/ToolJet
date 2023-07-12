@@ -10,16 +10,7 @@ import 'codemirror/theme/duotone-light.css';
 import 'codemirror/theme/monokai.css';
 import { onBeforeChange, handleChange } from '../CodeBuilder/utils';
 
-export const CodeEditor = ({
-  height,
-  darkMode,
-  properties,
-  styles,
-  exposedVariables,
-  setExposedVariable,
-  dataCy,
-  boxShadow,
-}) => {
+export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariables, setExposedVariable, dataCy }) => {
   const { enableLineNumber, mode, placeholder } = properties;
   const { visibility, disabledState } = styles;
 

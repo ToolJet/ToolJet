@@ -426,7 +426,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       <div className="row">
                         <div className="manage-groups-app-dropdown" data-cy="select-search">
                           <Multiselect
-                            value={selectedAppIds}
                             onChange={this.setSelectedApps}
                             options={appSelectOptions}
                             overrideStrings={{
@@ -436,7 +435,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                               ),
                             }}
                             setState={this.setState}
-                            selectedApps={this.state.selectedAppIds}
+                            value={this.state.selectedAppIds}
                           />
                         </div>
 
