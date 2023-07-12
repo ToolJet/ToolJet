@@ -200,7 +200,7 @@ Syntax for Key name:
 
 ### Update Item
 
-Update an item in DynamoDB by specifying the primary key and providing new attribute values.
+Update an item in DynamoDB by specifying the primary key and providing new attribute values. If the primary key does not exist in the table then instead of updating it will insert a new row.
 
 **Required parameters:**
 - **Update Condition**
@@ -258,10 +258,6 @@ Syntax for Table Parameters:
     {
         "AttributeName": "USER_FEE",
       "AttributeType": "N"
-    },
-    {
-        "AttributeName": "USER_FEE_PAID",
-      "AttributeType": "BOOLEAN"
     }
   ],
   "KeySchema": [
@@ -281,22 +277,6 @@ Syntax for Table Parameters:
                 },
                 {
                     "AttributeName": "USER_FEE",
-                    "KeyType": "RANGE"
-                }
-            ],
-            "Projection": {
-                "ProjectionType": "KEYS_ONLY"
-            }
-        },
-        {
-            "IndexName": "USER_FEE_PAID",
-            "KeySchema": [
-                {
-                    "AttributeName": "USER_ID",
-                    "KeyType": "HASH"
-                },
-                {
-                    "AttributeName": "USER_FEE_PAID",
                     "KeyType": "RANGE"
                 }
             ],
@@ -338,7 +318,6 @@ Syntax for New Item Details:
     "USER_NAME": "NICK",
     "USER_AGE": 34,
     "USER_FEE": 1234.56,
-		"USER_FEE_PAID": true
   }
 }
 ```
