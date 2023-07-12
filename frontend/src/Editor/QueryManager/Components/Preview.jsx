@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
 import { usePreviewLoading, usePreviewData, useQueryPanelActions } from '@/_stores/queryPanelStore';
@@ -18,15 +18,15 @@ const Preview = ({ darkMode }) => {
     setTheme(() => getTheme(darkMode));
   }, [darkMode]);
 
-  useEffect(() => {
-    if (previewPanelRef.current && queryPreviewData) {
+  useLayoutEffect(() => {
+    if (queryPreviewData || previewLoading) {
       previewPanelRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
         inline: 'nearest',
       });
     }
-  }, [queryPreviewData, previewPanelRef]);
+  }, [queryPreviewData, previewLoading]);
 
   useEffect(() => {
     if (queryPreviewData !== null && typeof queryPreviewData === 'object') {
