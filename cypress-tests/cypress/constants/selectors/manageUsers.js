@@ -1,3 +1,5 @@
+import { cyParamName } from "./common";
+
 export const usersSelector = {
   dropdown: "[data-cy=workspace-dropdown]",
   buttonAddUsers: "[data-cy=button-invite-new-user]",
@@ -12,9 +14,7 @@ export const usersSelector = {
   userFilterInput: '[data-cy="users-filter-input"]',
   adminUserName: "[data-cy=user-name]",
   adminUserEmail: "[data-cy=user-email]",
-  userStatus: "[data-cy=user-status]:eq(0)",
   userState: "[data-cy=user-state]:eq(0)",
-  userStatus: "[data-cy=user-status]",
   addUsersCardTitle: '[data-cy="add-users-card-title"]',
 
   inputFieldName: "[data-cy=first-name-input]",
@@ -63,4 +63,16 @@ export const usersSelector = {
   uploadedFileData: '[data-cy="uploaded-file-data"]',
   toastCloseButton:
     '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > [data-cy="toast-close-button"]',
+
+
+  userName: (userName) => {
+    return `[data-cy="${cyParamName(userName)}-user-name"]`;
+  },
+  userEmail: (userName) => {
+    return `[data-cy="${cyParamName(userName)}-user-email"]`;
+  },
+  userStatus: (userName) => {
+    return `[data-cy="${cyParamName(userName)}-user-status"]`;
+  },
+
 };

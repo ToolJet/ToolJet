@@ -39,6 +39,7 @@ export const TextArea = function TextArea({ height, properties, styles, setExpos
         resize: 'none',
         display: styles.visibility ? '' : 'none',
         borderRadius: `${styles.borderRadius}px`,
+        boxShadow: styles.boxShadow,
       }}
       value={value}
       data-cy={dataCy}
