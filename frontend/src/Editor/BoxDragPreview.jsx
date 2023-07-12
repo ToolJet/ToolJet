@@ -1,10 +1,10 @@
 import React, { useEffect, useState, memo } from 'react';
 import { shallow } from 'zustand/shallow';
-import { useEditorDataStore } from '@/_stores/editorDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
 
 export const BoxDragPreview = memo(function BoxDragPreview({ item, canvasWidth }) {
   const [tickTock, setTickTock] = useState(false);
-  const { currentLayout } = useEditorDataStore(
+  const { currentLayout } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
     }),

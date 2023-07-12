@@ -30,7 +30,7 @@ import { Navigate } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 import { toast } from 'react-hot-toast';
 import { withRouter } from '@/_hoc/withRouter';
-import { useEditorDataStore } from '@/_stores/editorDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { shallow } from 'zustand/shallow';
 
@@ -144,7 +144,7 @@ class ViewerComponent extends React.Component {
     const currentPage = pages.find((page) => page.id === currentPageId);
 
     useDataQueriesStore.getState().actions.setDataQueries(data.data_queries);
-    useEditorDataStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
+    useEditorStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
     this.setState(
       {
         currentUser,
@@ -342,7 +342,7 @@ class ViewerComponent extends React.Component {
   componentDidMount() {
     this.setupViewer();
     const isMobileDevice = this.state.deviceWindowWidth < 600;
-    useEditorDataStore.getState().actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
+    useEditorStore.getState().actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
   }
 
   componentDidUpdate(prevProps) {
@@ -664,7 +664,7 @@ class ViewerComponent extends React.Component {
 }
 
 const withStore = (Component) => (props) => {
-  const { currentLayout } = useEditorDataStore(
+  const { currentLayout } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
     }),

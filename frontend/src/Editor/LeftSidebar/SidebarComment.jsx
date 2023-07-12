@@ -4,7 +4,7 @@ import { LeftSidebarItem } from './SidebarItem';
 import { commentsService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorDataStore } from '@/_stores/editorDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
 export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPageId }, ref) => {
@@ -15,7 +15,7 @@ export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPage
     }),
     shallow
   );
-  const { toggleComments } = useEditorDataStore(
+  const { toggleComments } = useEditorStore(
     (state) => ({
       toggleComments: state?.actions.toggleComments,
     }),

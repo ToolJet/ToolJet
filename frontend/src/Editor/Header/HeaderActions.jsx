@@ -1,12 +1,12 @@
 import React from 'react';
 import cx from 'classnames';
 import { Tooltip } from 'react-tooltip';
-import { useEditorDataStore } from '@/_stores/editorDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
 function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-  const { currentLayout, toggleCurrentLayout } = useEditorDataStore(
+  const { currentLayout, toggleCurrentLayout } = useEditorStore(
     (state) => ({
       currentLayout: state.currentLayout,
       toggleCurrentLayout: state.actions.toggleCurrentLayout,

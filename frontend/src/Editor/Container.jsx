@@ -16,7 +16,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorDataStore } from '@/_stores/editorDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
 export const Container = ({
@@ -61,7 +61,7 @@ export const Container = ({
     }),
     shallow
   );
-  const { showComments, currentLayout } = useEditorDataStore(
+  const { showComments, currentLayout } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,

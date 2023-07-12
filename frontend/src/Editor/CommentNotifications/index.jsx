@@ -5,7 +5,7 @@ import { commentsService } from '@/_services';
 import TabContent from './Content';
 import useRouter from '@/_hooks/use-router';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorDataStore } from '@/_stores/editorDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
 const CommentNotifications = ({ socket, pageId }) => {
@@ -16,7 +16,7 @@ const CommentNotifications = ({ socket, pageId }) => {
     }),
     shallow
   );
-  const { toggleComments } = useEditorDataStore(
+  const { toggleComments } = useEditorStore(
     (state) => ({
       toggleComments: state?.actions.toggleComments,
     }),

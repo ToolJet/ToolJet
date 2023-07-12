@@ -46,7 +46,7 @@ import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError'
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorDataStore } from '@/_stores/editorDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { resetAllStores } from '@/_stores/utils';
 import { shallow } from 'zustand/shallow';
@@ -351,9 +351,7 @@ class EditorComponent extends React.Component {
           computeComponentState(this, this.state.appDefinition.pages[homePageId]?.components ?? {}).then(async () => {
             this.setWindowTitle(data.name);
 
-            useEditorDataStore
-              .getState()
-              .actions.setShowComments(!!queryString.parse(this.props.location.search).threadId);
+            useEditorStore.getState().actions.setShowComments(!!queryString.parse(this.props.location.search).threadId);
             for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
               await this.handleEvent(event.eventId, event);
             }
@@ -1757,7 +1755,7 @@ class EditorComponent extends React.Component {
 }
 
 const withStore = (Component) => (props) => {
-  const { showComments, currentLayout } = useEditorDataStore(
+  const { showComments, currentLayout } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,
