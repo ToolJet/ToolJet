@@ -128,7 +128,8 @@ function DataSourceLister({
         isDisabled={isDisabled}
         // menuIsOpen
         menuPortalTarget={document.querySelector('.main-wrapper')}
-        maxMenuHeight={375}
+        maxMenuHeight={400}
+        minMenuHeight={300}
       />
     </div>
   );

@@ -123,15 +123,6 @@ $border-radius: 4px;
 
     .query-icon {
       margin: auto 8px auto 12px;
-      width: 21.33px;
-      height: 21.33px;
-      padding: 1.33px;
-
-      svg {
-        width: 20px !important;
-        height: 20px !important;
-
-      }
     }
 
     .delete-query,
@@ -1129,7 +1120,7 @@ $border-radius: 4px;
 
   .query-details {
     .form-label {
-      color: $color-light-slate-09 !important;
+      color: var(--slate9) !important;
       font-size: 12px;
       font-weight: 500;
       line-height: 20px;
@@ -1445,7 +1436,6 @@ $border-radius: 4px;
 
   .query-details {
     .form-label {
-      color: #f4f6fa !important;
       font-size: 12px;
       font-weight: 400;
       line-height: 20px;

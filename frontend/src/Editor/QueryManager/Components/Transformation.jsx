@@ -173,7 +173,7 @@ return [row for row in data if row['amount'] > 1000]
           <Button.Content title={title} iconSrc={'assets/images/icons/flash.svg'} direction="left" />
         </Button.UnstyledButton>
         <OverlayTrigger trigger="click" overlay={popoverForRecommendation} rootClose>
-          <span style={{ cursor: 'pointer' }} data-cy={`transformation-info-icon`}>
+          <span style={{ cursor: 'pointer' }} data-cy={`transformation-info-icon`} className="lh-1">
             <Information width={18} fill={'var(--indigo9)'} />
           </span>
         </OverlayTrigger>
@@ -185,7 +185,7 @@ return [row for row in data if row['amount'] > 1000]
     <div className="field  transformation-editor">
       <div className="align-items-center gap-2" style={{ display: 'flex', position: 'relative', height: '20px' }}>
         <div className="d-flex flex-fill row">
-          <span className="font-weight-400 tranformation-label col-sm-3" data-cy={'label-query-transformation'}>
+          <span className="color-slate9 col-sm-3 font-weight-500" data-cy={'label-query-transformation'}>
             {t('editor.queryManager.transformation.transformations', 'Transformations')}
           </span>
           <div className="col-sm-9">

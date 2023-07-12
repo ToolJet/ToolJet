@@ -132,7 +132,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
 };
 
 const DataSourceSelector = ({
-  sources,
+  sources: _sources,
   search,
   setSearch,
   onFilterDatasourcesChange,
@@ -140,10 +140,27 @@ const DataSourceSelector = ({
   selectedDataSources,
 }) => {
   const searchBoxRef = useRef(null);
+  const [sources, setSources] = useState([]);
 
   useEffect(() => {
     searchBoxRef.current.focus();
   }, []);
+
+  useEffect(() => {
+    const seen = new Set();
+    setSources(
+      _sources.filter((source) => {
+        if (seen.has(source.kind)) {
+          return false;
+        }
+        seen.add(source.kind);
+        if (!search || !source?.name) {
+          return true;
+        }
+        return source.name.toLowerCase().includes(search.toLowerCase());
+      })
+    );
+  }, [_sources, search]);
 
   return (
     <div className="card-body p-0 mt-1">
@@ -163,33 +180,29 @@ const DataSourceSelector = ({
         </div>
       </div>
       <div className="tj-scrollbar" style={{ maxHeight: '250px', overflowY: 'scroll' }}>
-        {sources
-          .filter((source) => {
-            if (!search || !source?.name) {
-              return true;
-            }
-            return source.name.toLowerCase().includes(search.toLowerCase());
-          })
-          .map((source) => (
-            <div
-              className={cx('px-2 py-2 tj-list-btn', { active: selectedDataSources.includes(source.kind) })}
-              key={source.kind}
-              role="button"
-            >
-              <Form.Check // prettier-ignore
-                type={'checkbox'}
-                id={`default-${source.kind}`}
-                onChange={(e) => onFilterDatasourcesChange(source.kind, e.target.value)}
-                className="m-0"
-                checked={selectedDataSources.includes(source.kind)}
-                label={
-                  <>
-                    <DataSourceIcon source={source} height={12} /> <span className="ms-1">{source.name}</span>
-                  </>
-                }
-              />
-            </div>
-          ))}
+        {sources.map((source) => (
+          <div
+            className={cx('px-2 py-2 tj-list-btn', {
+              active: selectedDataSources.includes(source.kind),
+            })}
+            key={source.kind}
+            role="button"
+          >
+            <Form.Check // prettier-ignore
+              type={'checkbox'}
+              id={`default-${source.kind}`}
+              onChange={(e) => onFilterDatasourcesChange(source.kind, e.target.value)}
+              className="m-0"
+              checked={selectedDataSources.includes(source.kind)}
+              label={
+                <>
+                  <DataSourceIcon source={source} height={12} />
+                  &nbsp;<span className="ms-1">{source.kind}</span>
+                </>
+              }
+            />
+          </div>
+        ))}
       </div>
     </div>
   );

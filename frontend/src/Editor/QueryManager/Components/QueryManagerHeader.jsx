@@ -1,8 +1,8 @@
 import React, { useState, forwardRef, useRef, useEffect } from 'react';
-import RunIcon from '../Icons/RunIcon';
 import RenameIcon from '../Icons/RenameIcon';
-import PreviewIcon from '../Icons/PreviewIcon';
-import CreateIcon from '../Icons/CreateIcon';
+import FloppyDisk from '@/_ui/Icon/solidIcons/FloppyDisk';
+import Eye1 from '@/_ui/Icon/solidIcons/Eye1';
+import Play from '@/_ui/Icon/solidIcons/Play';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -92,9 +92,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
         disabled={buttonDisabled}
         data-cy={`query-publish-button`}
       >
-        <span className="d-flex query-create-run-svg query-icon-wrapper">
-          <CreateIcon />
-        </span>
+        <FloppyDisk width={14} fill="var(--slate9)" />
         <span>Publish</span>
       </button>
     );
@@ -123,11 +121,11 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
           })}
         >
           <span
-            className={cx('query-manager-btn-svg-wrapper d-flex align-item-center query-icon-wrapper query-run-svg', {
+            className={cx({
               invisible: isLoading,
             })}
           >
-            <RunIcon />
+            <Play width={14} fill="var(--indigo9)" viewBox="0 0 14 14" />
           </span>
           <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
         </button>
@@ -172,7 +170,7 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
       data-cy={'query-preview-button'}
     >
       <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
-        <PreviewIcon />
+        <Eye1 width={14} fill="var(--slate9)" />
       </span>
       <span>{t('editor.queryManager.preview', 'Preview')}</span>
     </button>

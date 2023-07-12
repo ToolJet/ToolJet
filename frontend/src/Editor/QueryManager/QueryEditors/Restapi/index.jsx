@@ -14,7 +14,7 @@ class Restapi extends React.Component {
     super(props);
     const options = defaults(
       { ...props.options },
-      { headers: [], url_params: [], body: [], json_body: null, body_toggle: false }
+      { headers: [['', '']], url_params: [], body: [], json_body: null, body_toggle: false }
     );
     this.state = {
       options,
@@ -134,7 +134,7 @@ class Restapi extends React.Component {
 
     return (
       <div className="row">
-        <div className="col-md-3">Request</div>
+        <div className="col-md-3 color-slate9 font-weight-500">Request</div>
         <div className="col-md-9">
           <div className="rest-api-methods-select-element-container">
             <div className={`${this.props.darkMode && 'dark'} me-2`} style={{ width: '90px', height: '32px' }}>

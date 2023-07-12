@@ -1,21 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
 import { usePreviewLoading, usePreviewData, useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { getTheme, tabs } from '../constants';
 import RemoveRectangle from '../../../_ui/Icon/solidIcons/RemoveRectangle';
 
-const Preview = ({ previewPanelRef, darkMode }) => {
+const Preview = ({ darkMode }) => {
   const [key, setKey] = useState('raw');
   const [isJson, setIsJson] = useState(false);
   const [theme, setTheme] = useState(() => getTheme(darkMode));
   const queryPreviewData = usePreviewData();
   const previewLoading = usePreviewLoading();
   const { setPreviewData } = useQueryPanelActions();
+  const previewPanelRef = useRef();
 
   useEffect(() => {
     setTheme(() => getTheme(darkMode));
   }, [darkMode]);
+
+  useEffect(() => {
+    if (previewPanelRef.current && queryPreviewData) {
+      previewPanelRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest',
+      });
+    }
+  }, [queryPreviewData, previewPanelRef]);
 
   useEffect(() => {
     if (queryPreviewData !== null && typeof queryPreviewData === 'object') {
@@ -47,7 +58,7 @@ const Preview = ({ previewPanelRef, darkMode }) => {
               </center>
             )}
             <Row className="py-2 border-bottom preview-section-header">
-              <Col className="d-flex align-items-center">Preview</Col>
+              <Col className="d-flex align-items-center color-slate9">Preview</Col>
               <Col className="keys text-center d-flex align-items-center">
                 <ListGroup
                   className={`query-preview-list-group rounded ${darkMode ? 'dark' : ''}`}

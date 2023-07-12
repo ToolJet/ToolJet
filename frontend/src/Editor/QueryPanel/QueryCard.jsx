@@ -72,7 +72,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
         role="button"
       >
         <div className="col-auto query-icon d-flex">
-          <DataSourceIcon source={dataQuery} />
+          <DataSourceIcon source={dataQuery} height={16} />
         </div>
         <div className="col query-row-query-name">
           {renamingQuery ? (

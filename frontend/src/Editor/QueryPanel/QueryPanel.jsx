@@ -170,11 +170,11 @@ const QueryPanel = ({
           </h5>
           <button
             onClick={toggleQueryEditor}
-            className={`cursor-pointer m-1  d-flex bg-transparent border-0 ${darkMode ? 'theme-dark' : ''}`}
+            className={`cursor-pointer m-1  d-flex btn-query-panel-header w-auto color-indigo9`}
             data-tooltip-id="tooltip-for-show-query-editor"
             data-tooltip-content="Show query editor"
           >
-            <Maximize height="15" width="15" viewBox="0 0 25 6" stroke="var(--slate12)" /> Expand
+            <Maximize height="16" width="16" viewBox="0 0 25 12" stroke="var(--indigo9)" /> Expand
           </button>
         </div>
       </div>
