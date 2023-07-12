@@ -674,34 +674,18 @@ class TableComponent extends React.Component {
           {column.columnType === 'link' && (
             <>
               <div className="field mb-2">
-                <label className="form-label">{this.props.t('w', 'Link key')}</label>
+                <label className="form-label">{this.props.t('w', 'Href')}</label>
                 <CodeHinter
                   currentState={this.props.currentState}
-                  initialValue={column.linkKey ?? 'https://dev.to/'}
+                  initialValue={column?.href || '{{cellValue}}'}
                   theme={this.props.darkMode ? 'monokai' : 'default'}
                   mode="javascript"
                   lineNumbers={false}
                   placeholder={''}
-                  onChange={(value) => this.onColumnItemChange(index, 'linkkey', value)}
-                  componentName={this.getPopoverFieldSource(column.columnType, 'linkKey')}
+                  onChange={(value) => this.onColumnItemChange(index, 'href', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'href')}
                   popOverCallback={(showing) => {
-                    this.setColumnPopoverRootCloseBlocker('linkKey', showing);
-                  }}
-                />
-              </div>
-              <div className="field mb-2">
-                <label className="form-label">{this.props.t('w', 'Link label')}</label>
-                <CodeHinter
-                  currentState={this.props.currentState}
-                  initialValue={column.linkLabel ?? ''}
-                  theme={this.props.darkMode ? 'monokai' : 'default'}
-                  mode="javascript"
-                  lineNumbers={false}
-                  placeholder={''}
-                  onChange={(value) => this.onColumnItemChange(index, 'linkLabel', value)}
-                  componentName={this.getPopoverFieldSource(column.columnType, 'linkLabel')}
-                  popOverCallback={(showing) => {
-                    this.setColumnPopoverRootCloseBlocker('linkLabel', showing);
+                    this.setColumnPopoverRootCloseBlocker('href', showing);
                   }}
                 />
               </div>

@@ -1,16 +1,16 @@
 import React from 'react';
 
-export const Link = ({ linkKey = 'https://dev.to/', linkLabel, linkTarget }) => {
+export const Link = ({ href, cellValue, linkTarget }) => {
   return (
     <div>
       <a
-        href={linkKey}
+        href={href}
         target={linkTarget}
         onClick={(e) => {
           e.stopPropagation();
         }}
       >
-        {linkLabel ?? linkKey}
+        {cellValue}
       </a>
     </div>
   );
