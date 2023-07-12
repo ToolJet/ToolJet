@@ -9,6 +9,7 @@ import { useQueryPanelStore, useQueryPanelActions, useShowCreateQuery } from '@/
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 import Maximize from '../../_ui/Icon/solidIcons/Maximize';
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
+import { ButtonSolid } from '../../_ui/AppButton/AppButton';
 
 const QueryPanel = ({
   dataQueriesChanged,
@@ -168,14 +169,10 @@ const QueryPanel = ({
           <h5 className="mb-0 font-weight-500 cursor-pointer" onClick={toggleQueryEditor}>
             QUERIES
           </h5>
-          <button
-            onClick={toggleQueryEditor}
-            className={`cursor-pointer m-1  d-flex btn-query-panel-header w-auto color-indigo9`}
-            data-tooltip-id="tooltip-for-show-query-editor"
-            data-tooltip-content="Show query editor"
-          >
-            <Maximize height="16" width="16" viewBox="0 0 25 12" stroke="var(--indigo9)" /> Expand
-          </button>
+          <ButtonSolid variant="ghostBlue" size="sm" onClick={toggleQueryEditor}>
+            <Maximize height="16" width="16" viewBox="0 0 25 12" stroke="var(--indigo9)" />
+            Expand
+          </ButtonSolid>
         </div>
       </div>
       <div

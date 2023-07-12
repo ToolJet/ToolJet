@@ -116,6 +116,7 @@ import Mail from './Mail.jsx';
 import Logs from './Logs.jsx';
 import Marketplace from './Marketplace.jsx';
 import Minimize from './Minimize.jsx';
+import Maximize from './Maximize.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -351,6 +352,8 @@ const Icon = (props) => {
       return <Marketplace {...props} />;
     case 'minimize':
       return <Minimize {...props} />;
+    case 'maximize':
+      return <Maximize {...props} />;
     default:
       return <Apps {...props} />;
   }
