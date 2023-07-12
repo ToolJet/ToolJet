@@ -115,8 +115,7 @@ export const CustomSelect = ({ currentEnvironment, onSelectVersion, ...props }) 
         setShowEditAppVersion={setShowEditAppVersion}
         currentEnvironment={currentEnvironment}
       />
-      <EditVersion {...props} showEditAppVersion={showEditAppVersion} setShowEditAppVersion={setShowEditAppVersion} />
-      {/*  When we merge this code to EE update the defaultAppEnvironments object with rest of default environments (then delete this comment)*/}
+      {/* TODO[future]:: use environments list instead of hard coded defaultAppEnvironments data */}
       <ConfirmDialog
         show={deleteVersion.showModal}
         message={`${
