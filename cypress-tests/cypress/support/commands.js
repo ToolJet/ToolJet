@@ -55,9 +55,17 @@ Cypress.Commands.add("createApp", (appName) => {
     } else {
       cy.get(commonSelectors.appCreateButton).click();
     }
-    cy.intercept("GET", "/api/v2/data_sources").as("appDs");
-    cy.wait("@appDs", { timeout: 15000 });
-    cy.skipEditorPopover();
+    if (Cypress.env("environment") === "Community") {
+      cy.intercept("GET", "/api/v2/data_sources").as("appDs");
+      cy.wait("@appDs", { timeout: 15000 });
+      cy.skipEditorPopover();
+    }
+    else {
+      cy.intercept("GET", "/api/app-environments/**").as("appDs");
+      cy.wait("@appDs", { timeout: 15000 });
+      cy.skipEditorPopover();
+    }
+
   });
 });
 
@@ -107,9 +115,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).type(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
     if (!Array.isArray(value)) {
       cy.wrap(subject).type(value, {
@@ -184,9 +192,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).type(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );

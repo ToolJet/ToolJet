@@ -60,7 +60,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-      Math.random() * (endDate.getTime() - startDate.getTime())
+    Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -95,19 +95,21 @@ export const deleteDownloadsFolder = () => {
 };
 
 export const navigateToAppEditor = (appName) => {
-  cy.intercept("GET", "/api/v2/data_sources").as("appEditor");
   cy.get(commonSelectors.appCard(appName))
     .trigger("mousehover")
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
     .click({ force: true });
-  cy.wait("@appEditor");
-  cy.wait(1000);
-  cy.get("body").then(($el) => {
-    if ($el.text().includes("Skip", { timeout: 10000 })) {
-      cy.get(commonSelectors.skipButton).click();
-    }
-  });
+  if (Cypress.env("environment") === "Community") {
+    cy.intercept("GET", "/api/v2/data_sources").as("appDs");
+    cy.wait("@appDs", { timeout: 15000 });
+    cy.skipEditorPopover();
+  }
+  else {
+    cy.intercept("GET", "/api/app-environments/**").as("appDs");
+    cy.wait("@appDs", { timeout: 15000 });
+    cy.skipEditorPopover();
+  }
 };
 
 export const viewAppCardOptions = (appName) => {
