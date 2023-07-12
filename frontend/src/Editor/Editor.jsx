@@ -131,7 +131,7 @@ class EditorComponent extends React.Component {
       isSourceSelected: false,
       isSaving: false,
       isUnsavedQueriesAvailable: false,
-      selectionInProgress: false,
+      // selectionInProgress: false,
       scrollOptions: {},
       currentPageId: defaultPageId,
       pages: {},
@@ -905,12 +905,12 @@ class EditorComponent extends React.Component {
     this.switchSidebarTab(1);
   };
 
-  handleComponentHover = (id) => {
-    if (this.state.selectionInProgress) return;
-    this.setState({
-      hoveredComponent: id,
-    });
-  };
+  // handleComponentHover = (id) => {
+  //   if (this.props.selectionInProgress) return;
+  //   this.setState({
+  //     // hoveredComponent: id,
+  //   });
+  // };
 
   sideBarDebugger = {
     error: (data) => {
@@ -945,9 +945,9 @@ class EditorComponent extends React.Component {
 
   onAreaSelectionStart = (e) => {
     const isMultiSelect = e.inputEvent.shiftKey || this.state.selectedComponents.length > 0;
+    this.props.setSelectionInProgress(true);
     this.setState((prevState) => {
       return {
-        selectionInProgress: true,
         selectedComponents: [...(isMultiSelect ? prevState.selectedComponents : [])],
       };
     });
@@ -957,7 +957,8 @@ class EditorComponent extends React.Component {
     e.added.forEach((el) => {
       el.classList.add('resizer-select');
     });
-    if (this.state.selectionInProgress) {
+
+    if (this.props.selectionInProgress) {
       e.removed.forEach((el) => {
         el.classList.remove('resizer-select');
       });
@@ -966,7 +967,7 @@ class EditorComponent extends React.Component {
 
   onAreaSelectionEnd = (e) => {
     const currentPageId = this.state.currentPageId;
-    this.setState({ selectionInProgress: false });
+    this.props.setSelectionInProgress(false);
     e.selected.forEach((el, index) => {
       const id = el.getAttribute('widgetid');
       const component = this.state.appDefinition.pages[currentPageId].components[id].component;
@@ -986,13 +987,13 @@ class EditorComponent extends React.Component {
   onAreaSelectionDrag = (e) => {
     if (this.selectionDragRef.current) {
       e.stop();
-      this.state.selectionInProgress && this.setState({ selectionInProgress: false });
+      this.props.selectionInProgress && this.props.setSelectionInProgress(false);
     }
   };
 
   onAreaSelectionDragEnd = () => {
     this.selectionDragRef.current = false;
-    this.state.selectionInProgress && this.setState({ selectionInProgress: false });
+    this.props.selectionInProgress && this.props.setSelectionInProgress(false);
   };
 
   addNewPage = ({ name, handle }) => {
@@ -1457,7 +1458,6 @@ class EditorComponent extends React.Component {
       deviceWindowWidth,
       apps,
       defaultComponentStateComputed,
-      hoveredComponent,
       queryConfirmationList,
     } = this.state;
     const editingVersion = this.props?.editingVersion;
@@ -1618,12 +1618,12 @@ class EditorComponent extends React.Component {
                         transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
                       }}
                     >
-                      {config.ENABLE_MULTIPLAYER_EDITING && (
+                      {/* {config.ENABLE_MULTIPLAYER_EDITING && (
                         <RealtimeCursors
                           editingVersionId={editingVersion?.id}
                           editingPageId={this.state.currentPageId}
                         />
-                      )}
+                      )} */}
                       {isLoading && (
                         <div className="apploader">
                           <div className="col col-* editor-center-wrapper">
@@ -1671,8 +1671,6 @@ class EditorComponent extends React.Component {
                             handleRedo={this.handleRedo}
                             removeComponent={this.removeComponent}
                             onComponentClick={this.handleComponentClick}
-                            onComponentHover={this.handleComponentHover}
-                            hoveredComponent={hoveredComponent}
                             sideBarDebugger={this.sideBarDebugger}
                             currentPageId={this.state.currentPageId}
                           />
@@ -1759,10 +1757,12 @@ class EditorComponent extends React.Component {
 }
 
 const withStore = (Component) => (props) => {
-  const { showComments, currentLayout } = useEditorDataStore(
+  const { showComments, currentLayout, selectionInProgress, setSelectionInProgress } = useEditorDataStore(
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,
+      selectionInProgress: state?.selectionInProgress,
+      setSelectionInProgress: state?.actions?.setSelectionInProgress,
     }),
     shallow
   );
@@ -1777,6 +1777,8 @@ const withStore = (Component) => (props) => {
       currentLayout={currentLayout}
       isVersionReleased={isVersionReleased}
       editingVersion={editingVersion}
+      selectionInProgress={selectionInProgress}
+      setSelectionInProgress={setSelectionInProgress}
     />
   );
 };

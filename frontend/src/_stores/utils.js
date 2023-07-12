@@ -1,3 +1,4 @@
+import { isString } from 'lodash';
 import { create as _create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
@@ -20,4 +21,11 @@ export const resetAllStores = () => {
   for (const resetter of resetters) {
     resetter();
   }
+};
+
+export const appendStoreNameToActions = (actionName, storeName) => {
+  if (isString(actionName) && isString(storeName) && actionName && storeName) {
+    return `${actionName}/${storeName}`;
+  }
+  return '';
 };

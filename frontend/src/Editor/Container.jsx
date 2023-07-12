@@ -41,8 +41,6 @@ export const Container = ({
   socket,
   handleUndo,
   handleRedo,
-  onComponentHover,
-  hoveredComponent,
   sideBarDebugger,
   currentPageId,
 }) => {
@@ -186,7 +184,6 @@ export const Container = ({
   useEffect(() => {
     setIsDragging(draggingState);
   }, [draggingState]);
-
   const [, drop] = useDrop(
     () => ({
       accept: [ItemTypes.BOX, ItemTypes.COMMENT],
@@ -215,7 +212,6 @@ export const Container = ({
         const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
         const componentMeta = componentTypes.find((component) => component.component === item.component.component);
         console.log('adding new component');
-
         const newComponent = addNewWidgetToTheEditor(
           componentMeta,
           monitor,
@@ -245,114 +241,123 @@ export const Container = ({
     [moveBox]
   );
 
-  function onDragStop(e, componentId, direction, currentLayout) {
-    if (isVersionReleased) {
-      enableReleasedVersionPopupState();
-      return;
-    }
-    // const id = componentId ? componentId : uuidv4();
+  const onDragStop = useCallback(
+    (e, componentId, direction, currentLayout) => {
+      if (isVersionReleased) {
+        enableReleasedVersionPopupState();
+        return;
+      }
+      // const id = componentId ? componentId : uuidv4();
 
-    // Get the width of the canvas
-    const canvasBounds = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-    const canvasWidth = canvasBounds?.width;
-    const nodeBounds = direction.node.getBoundingClientRect();
+      // Get the width of the canvas
+      const canvasBounds = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+      const canvasWidth = canvasBounds?.width;
+      const nodeBounds = direction.node.getBoundingClientRect();
 
-    // Computing the left offset
-    const leftOffset = nodeBounds.x - canvasBounds.x;
-    const currentLeftOffset = boxes[componentId].layouts[currentLayout].left;
-    const leftDiff = currentLeftOffset - convertXToPercentage(leftOffset, canvasWidth);
+      // Computing the left offset
+      const leftOffset = nodeBounds.x - canvasBounds.x;
+      const currentLeftOffset = boxes[componentId]?.layouts?.[currentLayout]?.left;
+      const leftDiff = currentLeftOffset - convertXToPercentage(leftOffset, canvasWidth);
 
-    // Computing the top offset
-    // const currentTopOffset = boxes[componentId].layouts[currentLayout].top;
-    const topDiff = boxes[componentId].layouts[currentLayout].top - (nodeBounds.y - canvasBounds.y);
+      // Computing the top offset
+      // const currentTopOffset = boxes[componentId].layouts[currentLayout].top;
+      const topDiff = boxes[componentId].layouts[currentLayout].top - (nodeBounds.y - canvasBounds.y);
 
-    let newBoxes = { ...boxes };
+      let newBoxes = { ...boxes };
 
-    for (const selectedComponent of selectedComponents) {
-      newBoxes = produce(newBoxes, (draft) => {
-        if (draft[selectedComponent.id]) {
-          const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
-          const leftOffset = draft[selectedComponent.id].layouts[currentLayout].left;
+      for (const selectedComponent of selectedComponents) {
+        newBoxes = produce(newBoxes, (draft) => {
+          if (draft[selectedComponent.id]) {
+            const topOffset = draft[selectedComponent.id].layouts[currentLayout].top;
+            const leftOffset = draft[selectedComponent.id].layouts[currentLayout].left;
 
-          draft[selectedComponent.id].layouts[currentLayout].top = topOffset - topDiff;
-          draft[selectedComponent.id].layouts[currentLayout].left = leftOffset - leftDiff;
-        }
-      });
-    }
+            draft[selectedComponent.id].layouts[currentLayout].top = topOffset - topDiff;
+            draft[selectedComponent.id].layouts[currentLayout].left = leftOffset - leftDiff;
+          }
+        });
+      }
 
-    setBoxes(newBoxes);
-  }
+      setBoxes(newBoxes);
+    },
+    [isVersionReleased, enableReleasedVersionPopupState, boxes, setBoxes, selectedComponents]
+  );
 
-  function onResizeStop(id, e, direction, ref, d, position) {
-    if (isVersionReleased) {
-      enableReleasedVersionPopupState();
-      return;
-    }
-    const deltaWidth = d.width;
-    const deltaHeight = d.height;
+  const onResizeStop = useCallback(
+    (id, e, direction, ref, d, position) => {
+      if (isVersionReleased) {
+        enableReleasedVersionPopupState();
+        return;
+      }
+      const deltaWidth = d.width;
+      const deltaHeight = d.height;
 
-    let { x, y } = position;
+      let { x, y } = position;
 
-    const defaultData = {
-      top: 100,
-      left: 0,
-      width: 445,
-      height: 500,
-    };
+      const defaultData = {
+        top: 100,
+        left: 0,
+        width: 445,
+        height: 500,
+      };
 
-    let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
+      let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
 
-    const boundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
-    const canvasWidth = boundingRect?.width;
+      const boundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+      const canvasWidth = boundingRect?.width;
 
-    width = Math.round(width + (deltaWidth * 43) / canvasWidth); // convert the width delta to percentage
-    height = height + deltaHeight;
+      width = Math.round(width + (deltaWidth * 43) / canvasWidth); // convert the width delta to percentage
+      height = height + deltaHeight;
 
-    top = y;
-    left = (x * 100) / canvasWidth;
+      top = y;
+      left = (x * 100) / canvasWidth;
 
-    let newBoxes = {
-      ...boxes,
-      [id]: {
-        ...boxes[id],
-        layouts: {
-          ...boxes[id]['layouts'],
-          [currentLayout]: {
-            ...boxes[id]['layouts'][currentLayout],
-            width,
-            height,
-            top,
-            left,
+      let newBoxes = {
+        ...boxes,
+        [id]: {
+          ...boxes[id],
+          layouts: {
+            ...boxes[id]['layouts'],
+            [currentLayout]: {
+              ...boxes[id]['layouts'][currentLayout],
+              width,
+              height,
+              top,
+              left,
+            },
           },
         },
-      },
-    };
+      };
 
-    setBoxes(newBoxes);
-  }
+      setBoxes(newBoxes);
+    },
+    [setBoxes, currentLayout, boxes, enableReleasedVersionPopupState, isVersionReleased]
+  );
 
-  function paramUpdated(id, param, value) {
-    if (Object.keys(value).length > 0) {
-      setBoxes((boxes) =>
-        update(boxes, {
-          [id]: {
-            $merge: {
-              component: {
-                ...boxes[id].component,
-                definition: {
-                  ...boxes[id].component.definition,
-                  properties: {
-                    ...boxes[id].component.definition.properties,
-                    [param]: value,
+  const paramUpdated = useCallback(
+    (id, param, value) => {
+      if (Object.keys(value).length > 0) {
+        setBoxes((boxes) =>
+          update(boxes, {
+            [id]: {
+              $merge: {
+                component: {
+                  ...boxes[id].component,
+                  definition: {
+                    ...boxes[id].component.definition,
+                    properties: {
+                      ...boxes[id].component.definition.properties,
+                      [param]: value,
+                    },
                   },
                 },
               },
             },
-          },
-        })
-      );
-    }
-  }
+          })
+        );
+      }
+    },
+    [setBoxes]
+  );
 
   React.useEffect(() => {}, [selectedComponents]);
 
@@ -461,6 +466,68 @@ export const Container = ({
     return componentWithChildren;
   }, [components]);
 
+  const resizingStatusChanged = useCallback(
+    (status) => {
+      setIsResizing(status);
+    },
+    [setIsResizing]
+  );
+
+  const draggingStatusChanged = useCallback(
+    (status) => {
+      setIsDragging(status);
+    },
+    [setIsDragging]
+  );
+
+  const containerProps = useMemo(() => {
+    return {
+      mode,
+      snapToGrid,
+      onComponentClick,
+      onEvent,
+      appDefinition,
+      appDefinitionChanged,
+      currentState,
+      onComponentOptionChanged,
+      onComponentOptionsChanged,
+      appLoading,
+      zoomLevel,
+      setSelectedComponent,
+      removeComponent,
+      currentLayout,
+      deviceWindowWidth,
+      selectedComponents,
+      darkMode,
+      sideBarDebugger,
+      // addDefaultChildren,
+      currentPageId,
+      childComponents,
+    };
+  }, [
+    mode,
+    snapToGrid,
+    onComponentClick,
+    onEvent,
+    appDefinition,
+    appDefinitionChanged,
+    currentState,
+    onComponentOptionChanged,
+    onComponentOptionsChanged,
+    appLoading,
+    zoomLevel,
+    setSelectedComponent,
+    removeComponent,
+    currentLayout,
+    deviceWindowWidth,
+    selectedComponents,
+    darkMode,
+    sideBarDebugger,
+    // addDefaultChildren,
+    currentPageId,
+    childComponents,
+  ]);
+
   return (
     <div
       {...(config.COMMENT_FEATURE_ENABLE && showComments && { onClick: handleAddThread })}
@@ -524,8 +591,8 @@ export const Container = ({
               id={key}
               {...boxes[key]}
               mode={mode}
-              resizingStatusChanged={(status) => setIsResizing(status)}
-              draggingStatusChanged={(status) => setIsDragging(status)}
+              resizingStatusChanged={resizingStatusChanged}
+              draggingStatusChanged={draggingStatusChanged}
               inCanvas={true}
               zoomLevel={zoomLevel}
               setSelectedComponent={setSelectedComponent}
@@ -535,36 +602,10 @@ export const Container = ({
                 mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false
               }
               darkMode={darkMode}
-              onComponentHover={onComponentHover}
-              hoveredComponent={hoveredComponent}
               sideBarDebugger={sideBarDebugger}
               isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
               childComponents={childComponents[key]}
-              containerProps={{
-                mode,
-                snapToGrid,
-                onComponentClick,
-                onEvent,
-                appDefinition,
-                appDefinitionChanged,
-                currentState,
-                onComponentOptionChanged,
-                onComponentOptionsChanged,
-                appLoading,
-                zoomLevel,
-                setSelectedComponent,
-                removeComponent,
-                currentLayout,
-                deviceWindowWidth,
-                selectedComponents,
-                darkMode,
-                onComponentHover,
-                hoveredComponent,
-                sideBarDebugger,
-                addDefaultChildren,
-                currentPageId,
-                childComponents,
-              }}
+              containerProps={containerProps}
             />
           );
         }
