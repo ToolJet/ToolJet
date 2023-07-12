@@ -97,7 +97,7 @@ export const Modal = function Modal({
     const handleModalClose = () => {
       const canvasElement = document.getElementsByClassName('canvas-area')[0];
       const realCanvasEl = document.getElementsByClassName('real-canvas')[0];
-      const canvasHeight = realCanvasEl.getAttribute('canvas-height');
+      const canvasHeight = realCanvasEl?.getAttribute('canvas-height');
 
       if (canvasElement && realCanvasEl && canvasHeight) {
         canvasElement.style.height = '';
