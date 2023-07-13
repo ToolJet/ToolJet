@@ -129,7 +129,6 @@ The page which is marked home will have a **Home** icon on the left of the Page 
 </div>
 :::
 
-
 ### Hide Page
 
 Hide Page option can be used to hide a page from the **page navigation sidebar** in viewer mode.
@@ -156,6 +155,14 @@ You can go to the options again and **unhide** the app from the **page navigatio
 <img className="screenshot-full" src="/img/v2-beta/pages/unhide.png" alt="Pages Panel" width="300" />
 
 </div>
+
+:::info
+After hiding a page, although the page may not appear in the pages navigation sidebar, it can still be accessed by utilizing either the **switch page action** or the **page URL**. 
+
+<div style={{textAlign: 'center'}}>
+<img className="screenshot-full" src="/img/v2-beta/pages/accesshidden.gif" alt="Pages Panel" />
+</div>
+:::
 
 ### Duplicate
 
