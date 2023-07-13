@@ -98,6 +98,7 @@ export const DraggableBox = function DraggableBox({
   sideBarDebugger,
   isMultipleComponentsSelected,
   childComponents = null,
+  isVersionReleased,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -268,6 +269,7 @@ export const DraggableBox = function DraggableBox({
                     widgetHeight={layoutData.height}
                     isMultipleComponentsSelected={isMultipleComponentsSelected}
                     configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
+                    isVersionReleased={isVersionReleased}
                   />
                 )}
               <ErrorBoundary showFallback={mode === 'edit'}>

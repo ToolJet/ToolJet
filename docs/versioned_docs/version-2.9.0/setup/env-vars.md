@@ -320,3 +320,7 @@ By default, only embedding of public apps is permitted. By setting this variable
 | Variable        | Description                           |
 | --------------- | ------------------------------------- |
 | ENABLE_PRIVATE_APP_EMBED | `true` or `false` |
+
+:::caution
+The option is only available starting from ToolJet Enterprise Edition `2.8.0` or higher, and `2.10.0` for the Community edition and cloud version.
+:::
