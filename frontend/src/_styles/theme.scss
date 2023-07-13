@@ -378,6 +378,10 @@ button {
 
     p {
       margin: 0 8px 0 15px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      max-width: 19ch;
     }
 
     &:hover {
