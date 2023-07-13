@@ -62,8 +62,6 @@ class EditorComponent extends React.Component {
 
     const appId = this.props.params.id;
 
-    const pageHandle = this.props.params.pageHandle;
-
     const { socket } = createWebsocketConnection(appId);
 
     this.renameQueryNameId = React.createRef();
@@ -194,6 +192,15 @@ class EditorComponent extends React.Component {
         threshold: 0,
       },
     });
+    const globals = {
+      theme: { name: this.props.darkMode ? 'dark' : 'light' },
+      urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+    };
+    const page = {
+      handle: this.props.pageHandle,
+      variables: {},
+    };
+    useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
   }
 
   /**
@@ -1466,7 +1473,7 @@ class EditorComponent extends React.Component {
       hoveredComponent,
       queryConfirmationList,
     } = this.state;
-    const currentState = useCurrentStateStore.getState();
+    const currentState = this.props?.currentState;
     const editingVersion = this.props?.editingVersion;
     const appVersionPreviewLink = editingVersion
       ? `/applications/${app.id}/versions/${editingVersion.id}/${currentState.page.handle}`
@@ -1775,7 +1782,16 @@ const withStore = (Component) => (props) => {
     shallow
   );
 
-  return <Component {...props} isVersionReleased={isVersionReleased} editingVersion={editingVersion} />;
+  const currentState = useCurrentStateStore();
+
+  return (
+    <Component
+      {...props}
+      isVersionReleased={isVersionReleased}
+      editingVersion={editingVersion}
+      currentState={currentState}
+    />
+  );
 };
 
 export const Editor = withTranslation()(withRouter(withStore(EditorComponent)));

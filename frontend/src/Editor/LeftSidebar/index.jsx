@@ -223,7 +223,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
       <LeftSidebarInspector
         darkMode={darkMode}
         selectedSidebarItem={selectedSidebarItem}
-        setSelectedSidebarItem={handleSelectedSidebarItem}
         appDefinition={appDefinition}
         setSelectedComponent={setSelectedComponent}
         removeComponent={removeComponent}
@@ -231,7 +230,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         popoverContentHeight={popoverContentHeight}
         setPinned={handlePin}
         pinned={pinned}
-        isVersionReleased={isVersionReleased}
       />
     ),
     database: (
@@ -243,7 +241,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         dataQueriesChanged={dataQueriesChanged}
         toggleDataSourceManagerModal={toggleDataSourceManagerModal}
         showDataSourceManagerModal={showDataSourceManagerModal}
-        isVersionReleased={isVersionReleased}
         onDeleteofAllDataSources={() => {
           handleSelectedSidebarItem(null);
           handlePin(false);

@@ -372,7 +372,7 @@ export const executeAction = debounce(executeActionWithDebounce);
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
   if (event) {
     if (event.runOnlyIf) {
-      const shouldRun = resolveReferences(event.runOnlyIf, _ref.state.currentState, undefined, customVariables);
+      const shouldRun = resolveReferences(event.runOnlyIf, useCurrentStateStore.getState(), undefined, customVariables);
       if (!shouldRun) {
         return false;
       }
