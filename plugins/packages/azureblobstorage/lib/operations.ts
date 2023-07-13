@@ -1,21 +1,29 @@
 import { QueryOptions } from './types';
 
-export async function listContainers(client: any): Promise<string[]> {
+export async function createContainer(blobServiceClient, options: QueryOptions): Promise<any> {
+  const { containerName } = options;
+  const containerClient = blobServiceClient.getContainerClient(containerName);
+  const createContainerResponse = await containerClient.create();
+  return createContainerResponse;
+}
+
+export async function listContainers(blobServiceClient: any): Promise<string[]> {
   const options = {
     includeDeleted: false,
     includeMetadata: true,
     includeSystem: true,
     prefix: '',
   };
+
   const containers: string[] = [];
-  for await (const containerItem of client.listContainers(options)) {
+  for await (const containerItem of blobServiceClient.listContainers(options)) {
     containers.push(containerItem.name);
   }
   return containers;
 }
 
-function getContainerClient(client, containerName: string) {
-  return client.getContainerClient(containerName);
+function getContainerClient(blobServiceClient, containerName: string) {
+  return blobServiceClient.getContainerClient(containerName);
 }
 
 function getBlobClient(containerClient, blobName: string) {
@@ -62,33 +70,32 @@ export async function uploadBlob(client, options: QueryOptions): Promise<string>
       blobContentEncoding: options.encoding,
     },
   };
-  const file = new Buffer(options.data);
+  const file = Buffer.from(options.data);
   const uploadBlobResponse = await blockBlobClient.uploadData(file, blobOptions);
 
   return `Blob was uploaded successfully. requestId: ${uploadBlobResponse.requestId}`;
 }
 
-export async function readBlob(client, options) {
-  async function streamToBuffer(readableStream) {
-    return new Promise((resolve, reject) => {
-      const chunks = [];
-      readableStream.on('data', (data) => {
-        chunks.push(data instanceof Buffer ? data : Buffer.from(data));
-      });
-      readableStream.on('end', () => {
-        resolve(Buffer.concat(chunks));
-      });
-      readableStream.on('error', reject);
+async function streamToBuffer(readableStream) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    readableStream.on('data', (data) => {
+      chunks.push(data instanceof Buffer ? data : Buffer.from(data));
     });
-  }
+    readableStream.on('end', () => {
+      resolve(Buffer.concat(chunks));
+    });
+    readableStream.on('error', reject);
+  });
+}
 
+export async function readBlob(client, options) {
   const containerClient = getContainerClient(client, options.containerName);
   const blobClient = await containerClient.getBlobClient(options.blobName);
 
   const downloadResponse = await blobClient.download();
-  const downloaded = await streamToBuffer(downloadResponse.readableStreamBody);
-
-  return downloaded.toString();
+  const downloaded = (await streamToBuffer(downloadResponse.readableStreamBody)).toString();
+  return downloaded;
 }
 
 export async function deleteBlob(client, options) {

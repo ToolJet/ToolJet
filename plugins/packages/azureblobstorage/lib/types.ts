@@ -14,6 +14,7 @@ export type QueryOptions = {
 };
 
 export enum Operation {
+  CreateContainer = 'create_container',
   ListContainers = 'list_containers',
   ListBlobs = 'list_blobs',
   UploadBlob = 'upload_blob',

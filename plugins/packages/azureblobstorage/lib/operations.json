@@ -12,6 +12,10 @@
       "description": "Single select dropdown for operation",
       "list": [
         {
+          "value": "create_container",
+          "name": "Create container"
+        },
+        {
           "value": "list_containers",
           "name": "List containers"
         },
@@ -37,62 +41,65 @@
       "containerName": {
         "label": "Container",
         "key": "containerName",
-        "type": "text",
+        "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter container name",
         "width": "320px",
         "height": "36px",
-        "placeholder": "Enter container name"
+        "placeholder": "Enter container name",
+        "className": "codehinter-plugins"
       },
       "prefix": {
         "label": "Prefix",
         "key": "prefix",
-        "type": "text",
+        "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter prefix",
         "width": "320px",
         "height": "36px",
-        "placeholder": "Enter prefix"
+        "placeholder": "Enter prefix",
+        "className": "codehinter-plugins"
       },
       "maxPageSize": {
         "label": "Page Size",
         "key": "maxPageSize",
-        "type": "text",
+        "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter page size",
         "width": "320px",
         "height": "36px",
-        "placeholder": "Enter page size"
+        "placeholder": "Enter page size",
+        "className": "codehinter-plugins"
       },
       "continuationToken": {
         "label": "Continuation Token",
         "key": "continuationToken",
-        "type": "text",
+        "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter continuation token",
         "width": "320px",
         "height": "36px",
-        "placeholder": "Enter continuation token"
+        "placeholder": "Enter continuation token",
+        "className": "codehinter-plugins"
       }
     },
     "upload_blob": {
       "containerName": {
         "label": "Container",
         "key": "containerName",
-        "type": "text",
+        "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter container name",
-        "width": "320px",
         "height": "36px",
-        "placeholder": "Enter container name"
+        "placeholder": "Enter container name",
+        "className": "codehinter-plugins"
       },
       "blobName": {
         "label": "Blob Name",
         "key": "blobName",
         "type": "codehinter",
         "lineNumbers": false,
-        "description": "Enter container name",
-        "width": "320px",
+        "description": "Enter blob name",
         "height": "36px",
         "placeholder": "Enter blob name",
         "className": "codehinter-plugins"
@@ -103,7 +110,6 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter content type",
-        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins"
       },
@@ -113,7 +119,6 @@
         "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter upload data",
-        "width": "320px",
         "height": "36px",
         "className": "codehinter-plugins"
       },
@@ -133,44 +138,59 @@
       "containerName": {
         "label": "Container Name",
         "key": "containerName",
-        "type": "text",
+        "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter container name",
         "width": "320px",
         "height": "36px",
-        "placeholder": "Enter container name"
+        "placeholder": "Enter container name",
+        "className": "codehinter-plugins"
       },
       "blobName": {
         "label": "Blob Name",
         "key": "blobName",
-        "type": "text",
+        "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter blob name",
         "width": "320px",
         "height": "36px",
-        "placeholder": "Enter blob name"
+        "placeholder": "Enter blob name",
+        "className": "codehinter-plugins"
       }
     },
     "delete_blob": {
       "containerName": {
         "label": "Container Name",
         "key": "containerName",
-        "type": "text",
+        "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter container name",
         "width": "320px",
         "height": "36px",
-        "placeholder": "Enter container name"
+        "placeholder": "Enter container name",
+        "className": "codehinter-plugins"
       },
       "blobName": {
         "label": "Blob Name",
         "key": "blobName",
-        "type": "text",
+        "type": "codehinter",
         "lineNumbers": false,
         "description": "Enter blob name",
         "width": "320px",
         "height": "36px",
-        "placeholder": "Enter blob name"
+        "placeholder": "Enter blob name",
+        "className": "codehinter-plugins"
+      }
+    },
+    "create_container": {
+      "containerName": {
+        "label": "Container Name",
+        "key": "containerName",
+        "type": "codehinter",
+        "lineNumbers": false,
+        "description": "Enter Container name",
+        "height": "36px",
+        "className": "codehinter-plugins"
       }
     }
   }
