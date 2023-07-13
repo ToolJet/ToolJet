@@ -20,17 +20,49 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
   const [action, setAction] = useState();
   const [search, setSearch] = useState('');
   const { sortDataQueries } = useDataQueriesActions();
+  const globalDataSources = useGlobalDataSources();
+  const [sources, setSources] = useState([...staticDataSources, ...globalDataSources]);
 
   const searchBoxRef = useRef(null);
 
   const { sortBy, sortOrder } = useDataQueriesStore();
-  const globalDataSources = useGlobalDataSources();
 
   useState(() => {
     if (action === 'filter-by-datasource' && searchBoxRef.current) {
       searchBoxRef.current.focus();
     }
   }, [action]);
+
+  useEffect(() => {
+    if (showMenu) {
+      const seen = new Set();
+      setSearch('');
+      setSources(
+        [...staticDataSources, ...globalDataSources]
+          .filter((source) => {
+            if (seen.has(source.kind)) {
+              return false;
+            }
+            seen.add(source.kind);
+            return true;
+          })
+          .sort((a, b) => {
+            const aChecked = selectedDataSources.includes(a.kind);
+            const bChecked = selectedDataSources.includes(b.kind);
+            if (aChecked === bChecked) {
+              return a.name.localeCompare(b.name);
+            }
+            if (aChecked && !bChecked) {
+              return -1;
+            }
+            if (!aChecked && bChecked) {
+              return 1;
+            }
+            return 0;
+          })
+      );
+    }
+  }, [showMenu]);
 
   const handlePageCallback = (action) => {
     setAction(action);
@@ -48,7 +80,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
           <DataSourceSelector
             search={search}
             setSearch={setSearch}
-            sources={[...staticDataSources, ...globalDataSources]}
+            sources={sources}
             onFilterDatasourcesChange={onFilterDatasourcesChange}
             onBackBtnClick={() => setAction()}
             selectedDataSources={selectedDataSources}
@@ -147,13 +179,8 @@ const DataSourceSelector = ({
   }, []);
 
   useEffect(() => {
-    const seen = new Set();
     setSources(
       _sources.filter((source) => {
-        if (seen.has(source.kind)) {
-          return false;
-        }
-        seen.add(source.kind);
         if (!search || !source?.name) {
           return true;
         }
@@ -176,10 +203,11 @@ const DataSourceSelector = ({
             placeholder="Select datasource"
             onChange={(e) => setSearch(e.target.value)}
             ref={searchBoxRef}
+            value={search}
           />
         </div>
       </div>
-      <div className="tj-scrollbar" style={{ maxHeight: '250px', overflowY: 'scroll' }}>
+      <div className="tj-scrollbar" style={{ maxHeight: '250px', overflowY: 'auto' }}>
         {sources.map((source) => (
           <div
             className={cx('px-2 py-2 tj-list-btn', {
