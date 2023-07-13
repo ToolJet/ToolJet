@@ -1,85 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <% if (process.env.NODE_ENV === 'production' && process.env.SERVE_CLIENT
-    !=='false' ) { %>
-    <base href="__REPLACE_SUB_PATH__" />
-    <% } else { %>
-    <base href="/" />
-    <% } %>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>&lrm;</title>
 
-    <style>
-      a {
-        cursor: pointer;
-      }
-      
-      .load{
-        display: flex;
-        justify-content: center;
-        margin: 200px auto;
+<head>
+  <% if (process.env.NODE_ENV==='production' && process.env.SERVE_CLIENT !=='false' ) { %>
+  <base href="__REPLACE_SUB_PATH__" />
+  <% } else { %>
+  <base href="/" />
+  <% } %>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lrm;</title>
+
+  <style>
+    a {
+      cursor: pointer;
     }
 
-    .load div{
-        width: 20px;
-        height: 20px;
-        background-color: #3E63DD;
-        border-radius: 50%;
-        margin: 0 5px;
-        animation-name: up-and-down;
-        animation-duration: 0.8s;
-        animation-iteration-count: infinite;
-        animation-direction: alternate;
+    .load {
+      display: flex;
+      justify-content: center;
+      margin: 200px auto;
     }
 
-    .load .two{
-        animation-delay: 0.3s;
+    .load div {
+      width: 20px;
+      height: 20px;
+      background-color: #3E63DD;
+      border-radius: 50%;
+      margin: 0 5px;
+      animation-name: up-and-down;
+      animation-duration: 0.8s;
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
     }
 
-    .load .three{
-        animation-delay: 0.6s;
+    .load .two {
+      animation-delay: 0.3s;
+    }
+
+    .load .three {
+      animation-delay: 0.6s;
     }
 
     @keyframes up-and-down {
-      
-        to{
-            opacity: 0.2;
-            transform: translateY(-20px);
-            
-        }
+      to {
+        opacity: 0.2;
+        transform: translateY(-20px);
+
+      }
     }
-    </style>
 
-    <link
-      rel="icon"
-      href="assets/images/logo.svg"
-      sizes="any"
-      type="image/svg+xml"
-    />
+    /* roboto-100 - latin */
+    @font-face {
+      font-display: swap;
+      /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+      font-family: 'Roboto';
+      font-style: normal;
+      font-weight: 100;
+      src: url('/assets/fonts/roboto-v30-latin/roboto-v30-latin-100.woff2') format('woff2');
+      /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+    }
 
-    <link rel="preconnect" href="https://fonts.gstatic.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.2/full/pyodide.js"></script>
-  </head>
+    /* roboto-300 - latin */
+    @font-face {
+      font-display: swap;
+      /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+      font-family: 'Roboto';
+      font-style: normal;
+      font-weight: 300;
+      src: url('/assets/fonts/roboto-v30-latin/roboto-v30-latin-300.woff2') format('woff2');
+      /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+    }
 
-  <body>
-    <div id="app">
-      <div style="width: 100%">
-        <div class="load">
-          <div class="one"></div>
-          <div class="two"></div>
-          <div class="three"></div>
-        </div>
+    /* roboto-regular - latin */
+    @font-face {
+      font-display: swap;
+      /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+      font-family: 'Roboto';
+      font-style: normal;
+      font-weight: 400;
+      src: url('/assets/fonts/roboto-v30-latin/roboto-v30-latin-regular.woff2') format('woff2');
+      /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+    }
+
+    /* roboto-500 - latin */
+    @font-face {
+      font-display: swap;
+      /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+      font-family: 'Roboto';
+      font-style: normal;
+      font-weight: 500;
+      src: url('/assets/fonts/roboto-v30-latin/roboto-v30-latin-500.woff2') format('woff2');
+      /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+    }
+
+    /* source-code-pro-regular - latin */
+    @font-face {
+      font-display: swap;
+      /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+      font-family: 'Source Code Pro';
+      font-style: normal;
+      font-weight: 400;
+      src: url('/assets/fonts/source-code-pro-v22-latin/source-code-pro-v22-latin-regular.woff2') format('woff2');
+      /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+    }
+  </style>
+
+  <link rel="icon" href="assets/images/logo.svg" sizes="any" type="image/svg+xml" />
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.23.2/full/pyodide.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <div style="width: 100%">
+      <div class="load">
+        <div class="one"></div>
+        <div class="two"></div>
+        <div class="three"></div>
       </div>
     </div>
-  </body>
+  </div>
+</body>
+
 </html>
