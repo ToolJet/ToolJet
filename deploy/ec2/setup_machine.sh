@@ -71,9 +71,7 @@ mkdir -p ~/app
 sudo echo -n $SSH_PRIVATE_KEY | base64 -d  >> ~/.ssh/id_rsa
 sudo chmod 400 ~/.ssh/id_rsa
 ssh-keyscan github.com >> .ssh/known_hosts
-git clone -b release/v2.10.1-ee2.2.2 git@github.com:ToolJet/tj-ee.git ~/app && cd ~/app
-
-# need to change branch back to develop from release/v2.10.1-ee2.2.2
+git clone -b develop git@github.com:ToolJet/tj-ee.git ~/app && cd ~/app
 
 mv /tmp/.env ~/app/.env
 mv /tmp/setup_app ~/app/setup_app
