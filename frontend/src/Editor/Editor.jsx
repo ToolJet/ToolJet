@@ -46,7 +46,7 @@ import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError'
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorDataStore } from '@/_stores/editorDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { resetAllStores } from '@/_stores/utils';
 import { shallow } from 'zustand/shallow';
@@ -286,8 +286,8 @@ class EditorComponent extends React.Component {
     useDataSourcesStore.getState().actions.fetchGlobalDataSources(organizationId);
   };
 
-  fetchDataQueries = (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
-    useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, this);
+  fetchDataQueries = async (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
+    await useDataQueriesStore.getState().actions.fetchDataQueries(id, selectFirstQuery, runQueriesOnAppLoad, this);
   };
 
   toggleAppMaintenance = () => {
@@ -351,9 +351,7 @@ class EditorComponent extends React.Component {
           computeComponentState(this, this.state.appDefinition.pages[homePageId]?.components ?? {}).then(async () => {
             this.setWindowTitle(data.name);
 
-            useEditorDataStore
-              .getState()
-              .actions.setShowComments(!!queryString.parse(this.props.location.search).threadId);
+            useEditorStore.getState().actions.setShowComments(!!queryString.parse(this.props.location.search).threadId);
             for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
               await this.handleEvent(event.eventId, event);
             }
@@ -362,9 +360,12 @@ class EditorComponent extends React.Component {
       );
 
       this.fetchDataSources(data.editing_version?.id);
-      this.fetchDataQueries(data.editing_version?.id, true, true);
+      await this.fetchDataQueries(data.editing_version?.id, true, true);
       this.fetchGlobalDataSources();
       initEditorWalkThrough();
+      for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
+        await this.handleEvent(event.eventId, event);
+      }
     };
 
     this.setState(
@@ -828,11 +829,6 @@ class EditorComponent extends React.Component {
     return canvasBoundingRect?.width;
   };
 
-  getCanvasHeight = () => {
-    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
-    return canvasBoundingRect?.height;
-  };
-
   computeCanvasBackgroundColor = () => {
     const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#edeff5';
     if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
@@ -1117,6 +1113,7 @@ class EditorComponent extends React.Component {
       newPageData.components = Object.keys(newPageData.components).reduce((acc, key) => {
         const newComponentId = uuid();
         acc[newComponentId] = newPageData.components[key];
+        acc[newComponentId].id = newComponentId;
         oldToNewIdMapping[key] = newComponentId;
         return acc;
       }, {});
@@ -1432,6 +1429,7 @@ class EditorComponent extends React.Component {
   };
 
   handleEditorMarginLeftChange = (value) => this.setState({ editorMarginLeft: value });
+
   render() {
     const {
       currentSidebarTab,
@@ -1589,11 +1587,9 @@ class EditorComponent extends React.Component {
                       className="canvas-area"
                       style={{
                         width: this.props.currentLayout === 'desktop' ? '100%' : '450px',
-                        minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                         maxWidth:
                           +this.state.appDefinition.globalSettings.canvasMaxWidth +
                           this.state.appDefinition.globalSettings.canvasMaxWidthType,
-                        maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                         /**
                          * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
                          * default canvas min width = calc(((screen width - width component editor side bar) - width of editor sidebar on left) - width of left sidebar popover)
@@ -1636,7 +1632,6 @@ class EditorComponent extends React.Component {
                         <>
                           <Container
                             canvasWidth={this.getCanvasWidth()}
-                            canvasHeight={this.getCanvasHeight()}
                             socket={this.socket}
                             appDefinition={appDefinition}
                             appDefinitionChanged={this.appDefinitionChanged}
@@ -1748,7 +1743,7 @@ const withStore = (Component) => (props) => {
     setSelectionInProgress,
     selectedComponents,
     setSelectedComponents,
-  } = useEditorDataStore(
+  } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,

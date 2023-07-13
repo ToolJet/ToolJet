@@ -1,6 +1,7 @@
 import { create, zustandDevTools } from './utils';
 
 const STORE_NAME = 'Editor';
+
 const ACTIONS = {
   SET_SHOW_COMMENTS: 'SET_SHOW_COMMENTS',
   SET_HOVERED_COMPONENT: 'SET_HOVERED_COMPONENT',
@@ -18,7 +19,7 @@ const initialState = {
   selectedComponents: [],
 };
 
-export const useEditorDataStore = create(
+export const useEditorStore = create(
   zustandDevTools(
     (set, get) => ({
       ...initialState,

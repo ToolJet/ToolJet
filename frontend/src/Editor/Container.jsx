@@ -16,12 +16,11 @@ import { useHotkeys } from 'react-hotkeys-hook';
 const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorDataStore } from '@/_stores/editorDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
 export const Container = ({
   canvasWidth,
-  canvasHeight,
   mode,
   snapToGrid,
   onComponentClick,
@@ -43,6 +42,12 @@ export const Container = ({
   sideBarDebugger,
   currentPageId,
 }) => {
+  const styles = {
+    width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
+    maxWidth: `${canvasWidth}px`,
+    backgroundSize: `${canvasWidth / 43}px 10px`,
+  };
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const components = appDefinition.pages[currentPageId]?.components ?? {};
   const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
@@ -53,7 +58,7 @@ export const Container = ({
     }),
     shallow
   );
-  const { showComments, currentLayout, selectedComponents } = useEditorDataStore(
+  const { showComments, currentLayout, selectedComponents } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,
@@ -61,19 +66,14 @@ export const Container = ({
     }),
     shallow
   );
-  const styles = {
-    width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
-    maxWidth: `${canvasWidth}px`,
-    height: `${canvasHeight}px`,
-    position: 'absolute',
-    backgroundSize: `${canvasWidth / 43}px 10px`,
-  };
+
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [newThread, addNewThread] = useState({});
   const [isContainerFocused, setContainerFocus] = useState(false);
+  const [canvasHeight, setCanvasHeight] = useState(null);
   const router = useRouter();
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
@@ -128,6 +128,12 @@ export const Container = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(components)]);
 
+  //listening to no of component change to handle addition/deletion of widgets
+  const noOfBoxs = Object.values(boxes || []).length;
+  useEffect(() => {
+    updateCanvasHeight(boxes);
+  }, [noOfBoxs]);
+
   const moveBox = useCallback(
     (id, layouts) => {
       setBoxes(
@@ -181,9 +187,29 @@ export const Container = ({
     return (x * 100) / canvasWidth;
   }
 
+  const updateCanvasHeight = useCallback(
+    (components) => {
+      const maxHeight = Object.values(components).reduce((max, component) => {
+        const layout = component?.layouts?.[currentLayout];
+        if (!layout) {
+          return max;
+        }
+        const sum = layout.top + layout.height;
+        return Math.max(max, sum);
+      }, 0);
+
+      const bottomPadding = mode === 'view' ? 100 : 300;
+      const frameHeight = mode === 'view' ? 45 : 85;
+
+      setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`);
+    },
+    [setCanvasHeight, currentLayout, mode]
+  );
+
   useEffect(() => {
     setIsDragging(draggingState);
   }, [draggingState]);
+
   const [, drop] = useDrop(
     () => ({
       accept: [ItemTypes.BOX, ItemTypes.COMMENT],
@@ -222,7 +248,7 @@ export const Container = ({
           zoomLevel
         );
 
-        setBoxes({
+        const newBoxes = {
           ...boxes,
           [newComponent.id]: {
             component: newComponent.component,
@@ -231,7 +257,9 @@ export const Container = ({
             },
             withDefaultChildren: newComponent.withDefaultChildren,
           },
-        });
+        };
+
+        setBoxes(newBoxes);
 
         setSelectedComponent(newComponent.id, newComponent.component);
 
@@ -278,8 +306,9 @@ export const Container = ({
       }
 
       setBoxes(newBoxes);
+      updateCanvasHeight(newBoxes);
     },
-    [isVersionReleased, enableReleasedVersionPopupState, boxes, setBoxes, selectedComponents]
+    [isVersionReleased, enableReleasedVersionPopupState, boxes, setBoxes, selectedComponents, updateCanvasHeight]
   );
 
   const onResizeStop = useCallback(
@@ -329,8 +358,9 @@ export const Container = ({
       };
 
       setBoxes(newBoxes);
+      updateCanvasHeight(newBoxes);
     },
-    [setBoxes, currentLayout, boxes, enableReleasedVersionPopupState, isVersionReleased]
+    [setBoxes, currentLayout, boxes, enableReleasedVersionPopupState, isVersionReleased, updateCanvasHeight]
   );
 
   const paramUpdated = useCallback(
@@ -531,7 +561,7 @@ export const Container = ({
         canvasRef.current = el;
         drop(el);
       }}
-      style={styles}
+      style={{ ...styles, height: canvasHeight }}
       className={cx('real-canvas', {
         'show-grid': isDragging || isResizing,
       })}
@@ -603,15 +633,17 @@ export const Container = ({
         }
       })}
       {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
-        <div className="mx-auto w-50 p-5 bg-light no-components-box" style={{ marginTop: '10%' }}>
-          <center className="text-muted">
-            You haven&apos;t added any components yet. Drag components from the right sidebar and drop here. Check out
-            our{' '}
-            <a href="https://docs.tooljet.com/docs#the-very-quick-quickstart" target="_blank" rel="noreferrer">
-              guide
-            </a>{' '}
-            on adding components.
-          </center>
+        <div style={{ paddingTop: '10%' }}>
+          <div className="mx-auto w-50 p-5 bg-light no-components-box">
+            <center className="text-muted">
+              You haven&apos;t added any components yet. Drag components from the right sidebar and drop here. Check out
+              our&nbsp;
+              <a href="https://docs.tooljet.com/docs#the-very-quick-quickstart" target="_blank" rel="noreferrer">
+                guide
+              </a>{' '}
+              on adding components.
+            </center>
+          </div>
         </div>
       )}
     </div>

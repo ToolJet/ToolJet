@@ -14,7 +14,7 @@ import { LeftSidebarItem } from './SidebarItem';
 import Popover from '@/_ui/Popover';
 import { usePanelHeight } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorDataStore } from '@/_stores/editorDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { useDataSources } from '@/_stores/dataSourcesStore';
 import { shallow } from 'zustand/shallow';
 
@@ -67,7 +67,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
     }),
     shallow
   );
-  const { showComments } = useEditorDataStore(
+  const { showComments } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
     }),

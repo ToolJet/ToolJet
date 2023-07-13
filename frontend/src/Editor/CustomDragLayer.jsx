@@ -3,7 +3,7 @@ import { useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { BoxDragPreview } from './BoxDragPreview';
 import { snapToGrid } from '@/_helpers/appUtils';
-import { useEditorDataStore } from '../_stores/editorDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
 const layerStyles = {
@@ -70,7 +70,7 @@ export const CustomDragLayer = ({ canvasWidth, onDragging }) => {
       delta: monitor.getDifferenceFromInitialOffset(),
     })
   );
-  const { currentLayout } = useEditorDataStore(
+  const { currentLayout } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
     }),

@@ -281,7 +281,7 @@ describe("List view widget", () => {
     deleteInnerWidget(data.widgetName, "button1");
     deleteInnerWidget(data.widgetName, "image1");
 
-    dropWidgetToListview("Text Input", 450, 20, data.widgetName);
+    dropWidgetToListview("Text Input", 250, 20, data.widgetName);
 
     cy.forceClickOnCanvas();
     openEditorSidebar(data.widgetName);

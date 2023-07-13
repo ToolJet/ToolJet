@@ -30,7 +30,7 @@ import { Navigate } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 import { toast } from 'react-hot-toast';
 import { withRouter } from '@/_hoc/withRouter';
-import { useEditorDataStore } from '@/_stores/editorDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { shallow } from 'zustand/shallow';
 
@@ -144,7 +144,7 @@ class ViewerComponent extends React.Component {
     const currentPage = pages.find((page) => page.id === currentPageId);
 
     useDataQueriesStore.getState().actions.setDataQueries(data.data_queries);
-    useEditorDataStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
+    useEditorStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
     this.setState(
       {
         currentUser,
@@ -342,7 +342,7 @@ class ViewerComponent extends React.Component {
   componentDidMount() {
     this.setupViewer();
     const isMobileDevice = this.state.deviceWindowWidth < 600;
-    useEditorDataStore.getState().actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
+    useEditorStore.getState().actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
   }
 
   componentDidUpdate(prevProps) {
@@ -520,7 +520,9 @@ class ViewerComponent extends React.Component {
       const startingPageHandle = this.props?.params?.pageHandle;
       const homePageHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
       if (!startingPageHandle && homePageHandle) {
-        return <Navigate to={homePageHandle} replace />;
+        return (
+          <Navigate to={`${homePageHandle}${this.props.params.pageHandle ? '' : window.location.search}`} replace />
+        );
       }
       if (this.state.app?.is_maintenance_on) {
         return (
@@ -603,9 +605,7 @@ class ViewerComponent extends React.Component {
                         className="canvas-area"
                         style={{
                           width: currentCanvasWidth,
-                          minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                           maxWidth: canvasMaxWidth,
-                          maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                           backgroundColor: this.computeCanvasBackgroundColor(),
                           margin: 0,
                           padding: 0,
@@ -664,7 +664,7 @@ class ViewerComponent extends React.Component {
 }
 
 const withStore = (Component) => (props) => {
-  const { currentLayout } = useEditorDataStore(
+  const { currentLayout } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
     }),

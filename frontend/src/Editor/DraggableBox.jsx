@@ -9,7 +9,7 @@ import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
-import { useEditorDataStore } from '../_stores/editorDataStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
 const resizerClasses = {
@@ -106,7 +106,7 @@ export const DraggableBox = React.memo(
       selectionInProgress,
       isSelectedComponent,
       isMultipleComponentsSelected,
-    } = useEditorDataStore(
+    } = useEditorStore(
       (state) => ({
         currentLayout: state?.currentLayout,
         setHoveredComponent: state?.actions?.setHoveredComponent,
