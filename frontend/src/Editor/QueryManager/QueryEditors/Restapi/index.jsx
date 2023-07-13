@@ -133,12 +133,12 @@ class Restapi extends React.Component {
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
 
     return (
-      <div className="row">
+      <div className={`row ${dataSourceURL ? 'mt-3' : ''}`}>
         <div className="col-md-3 color-slate9 font-weight-500">Request</div>
         <div className="col-md-9">
           <div className="rest-api-methods-select-element-container">
-            <div className={`${this.props.darkMode && 'dark'} me-2`} style={{ width: '90px', height: '32px' }}>
-              <label className="font-weight-bold text-dark">Method</label>
+            <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
+              <label className="font-weight-bold color-slate12">Method</label>
               <Select
                 options={[
                   { label: 'GET', value: 'get' },
@@ -160,25 +160,27 @@ class Restapi extends React.Component {
               />
             </div>
 
-            <div className={`field w-100 rest-methods-url ${this.props.darkMode && 'dark'}`}>
-              <div className="font-weight-bold text-dark">URL</div>
-              {dataSourceURL && (
-                <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
-              )}
-              <div className="">
-                <CodeHinter
-                  currentState={this.props.currentState}
-                  initialValue={options.url}
-                  theme={this.props.darkMode ? 'monokai' : 'default'}
-                  onChange={(value) => {
-                    changeOption(this, 'url', value);
-                  }}
-                  placeholder="Enter request URL"
-                  componentName={`${queryName}::url`}
-                  mode="javascript"
-                  lineNumbers={false}
-                  height={'32px'}
-                />
+            <div className={`field w-100 rest-methods-url`}>
+              <div className="font-weight-bold color-slate12">URL</div>
+              <div className="d-flex">
+                {dataSourceURL && (
+                  <BaseUrl theme={this.props.darkMode ? 'monokai' : 'default'} dataSourceURL={dataSourceURL} />
+                )}
+                <div className={`flex-grow-1 ${dataSourceURL ? 'url-input-group' : ''}`}>
+                  <CodeHinter
+                    currentState={this.props.currentState}
+                    initialValue={options.url}
+                    theme={this.props.darkMode ? 'monokai' : 'default'}
+                    onChange={(value) => {
+                      changeOption(this, 'url', value);
+                    }}
+                    placeholder={dataSourceURL ? 'Enter request endpoint' : 'Enter request URL'}
+                    componentName={`${queryName}::url`}
+                    mode="javascript"
+                    lineNumbers={false}
+                    height={'32px'}
+                  />
+                </div>
               </div>
             </div>
           </div>

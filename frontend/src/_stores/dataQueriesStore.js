@@ -95,7 +95,7 @@ export const useDataQueriesStore = create(
             .then((data) => {
               set((state) => ({
                 isCreatingQueryInProcess: false,
-                dataQueries: [{ ...selectedQuery, ...data }, ...state.dataQueries],
+                dataQueries: [{ ...selectedQuery, ...data, data_source_id: dataSourceId }, ...state.dataQueries],
               }));
               actions.setSelectedQuery(data.id, data);
               if (shouldRunQuery) actions.setQueryToBeRun(data);
