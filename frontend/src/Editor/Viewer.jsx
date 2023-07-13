@@ -360,6 +360,8 @@ class ViewerComponent extends React.Component {
   componentDidMount() {
     this.setupViewer();
     window.addEventListener('message', this.handleMessage);
+    const isMobileDevice = this.state.deviceWindowWidth < 600;
+    useEditorStore.getState().actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
   }
 
   componentDidUpdate(prevProps) {
