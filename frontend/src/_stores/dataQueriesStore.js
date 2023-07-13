@@ -47,10 +47,12 @@ export const useDataQueriesStore = create(
           dataqueryService
             .del(queryId)
             .then(() => {
-              const { actions, selectedQuery } = useQueryPanelStore.getState();
-              if (queryId === selectedQuery?.id) {
+              const { actions } = useQueryPanelStore.getState();
+              const { dataQueries } = useDataQueriesStore.getState();
+              const newSelectedQuery = dataQueries.find((query) => query.id !== queryId);
+              actions.setSelectedQuery(newSelectedQuery?.id || null);
+              if (!newSelectedQuery?.id) {
                 actions.setSelectedDataSource(null);
-                actions.setSelectedQuery(null);
               }
               set((state) => ({
                 isDeletingQueryInProcess: false,

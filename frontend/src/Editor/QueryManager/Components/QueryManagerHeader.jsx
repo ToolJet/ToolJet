@@ -31,7 +31,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
   const isCreationInProcess = useQueryCreationLoading();
   const isUpdationInProcess = useQueryUpdationLoading();
   const selectedDataSource = useSelectedDataSource();
-  const [showCreateQuery] = useShowCreateQuery();
+  const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
   const queryName = selectedQuery?.name ?? '';
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -40,6 +40,12 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
     }),
     shallow
   );
+
+  useEffect(() => {
+    if (selectedQuery?.name) {
+      setShowCreateQuery(false);
+    }
+  }, [selectedQuery?.name]);
 
   const buttonDisabled = isUpdationInProcess || isCreationInProcess;
   const isInDraft = selectedQuery?.status === 'draft';

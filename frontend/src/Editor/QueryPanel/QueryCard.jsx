@@ -173,15 +173,14 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
           </div>
         )}
       </div>
-      {showDeleteConfirmation ? (
-        <Confirm
-          show={showDeleteConfirmation}
-          message={'Do you really want to delete this query?'}
-          confirmButtonLoading={isDeletingQueryInProcess}
-          onConfirm={executeDataQueryDeletion}
-          darkMode={darkMode}
-        />
-      ) : null}
+      <Confirm
+        show={showDeleteConfirmation}
+        message={'Do you really want to delete this query?'}
+        confirmButtonLoading={isDeletingQueryInProcess}
+        onConfirm={executeDataQueryDeletion}
+        onCancel={() => setShowDeleteConfirmation(false)}
+        darkMode={darkMode}
+      />
     </>
   );
 };
