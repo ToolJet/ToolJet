@@ -32,18 +32,15 @@ export const manageUsersElements = () => {
   cy.contains("td", usersText.adminUserEmail)
     .parent()
     .within(() => {
-      cy.get(usersSelector.userName(usersText.adminUserName)).verifyVisibleElement(
-        "have.text",
-        usersText.adminUserName
-      );
-      cy.get(usersSelector.userEmail(usersText.adminUserName)).verifyVisibleElement(
-        "have.text",
-        usersText.adminUserEmail
-      );
-      cy.get(usersSelector.userStatus(usersText.adminUserName)).verifyVisibleElement(
-        "have.text",
-        usersText.activeStatus
-      );
+      cy.get(
+        usersSelector.userName(usersText.adminUserName)
+      ).verifyVisibleElement("have.text", usersText.adminUserName);
+      cy.get(
+        usersSelector.userEmail(usersText.adminUserName)
+      ).verifyVisibleElement("have.text", usersText.adminUserEmail);
+      cy.get(
+        usersSelector.userStatus(usersText.adminUserName)
+      ).verifyVisibleElement("have.text", usersText.activeStatus);
       cy.get("td button").verifyVisibleElement(
         "have.text",
         usersText.adminUserState
@@ -73,12 +70,21 @@ export const manageUsersElements = () => {
     commonText.labelFullNameInput
   );
   cy.get(commonSelectors.inputFieldFullName).should("be.visible");
-  // cy.get(commonSelectors.labelEmailInput).verifyVisibleElement(
-  //   "have.text",
-  //   commonText.labelEmailInput
-  // );
+  cy.get(commonSelectors.labelEmailInput).verifyVisibleElement(
+    "have.text",
+    commonText.labelEmailInput
+  );
+
   cy.get(commonSelectors.inputFieldEmailAddress).should("be.visible");
 
+  cy.get(commonSelectors.groupInputFieldLabel).verifyVisibleElement(
+    "have.text",
+    commonText.groupInputFieldLabel
+  );
+  cy.get(".dropdown-heading-value > .gray").verifyVisibleElement(
+    "have.text",
+    "Select groups to add for this user"
+  );
   cy.get(commonSelectors.cancelButton).verifyVisibleElement(
     "have.text",
     usersText.cancelButton
@@ -131,15 +137,13 @@ export const inviteUser = (firstName, email) => {
     workspaceId,
     userId,
     url = "";
-  cy.get(usersSelector.buttonAddUsers).click();
-  cy.clearAndType(commonSelectors.inputFieldFullName, firstName);
-  cy.clearAndType(commonSelectors.inputFieldEmailAddress, email);
-
+  fillUserInviteForm(firstName, email);
   cy.get(usersSelector.buttonInviteUsers).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     usersText.userCreatedToast
   );
+
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
     sql: `select invitation_token from users where email='${email}';`,
@@ -171,21 +175,6 @@ export const inviteUser = (firstName, email) => {
         });
       });
     });
-  });
-};
-
-export const addNewUser = (firstName, email) => {
-  cy.intercept("POST", "/api/organization_users").as("appLibrary");
-  cy.clearAndType(commonSelectors.inputFieldFullName, firstName);
-  cy.clearAndType(commonSelectors.inputFieldEmailAddress, email);
-
-  cy.get(usersSelector.createUserButton).click();
-  cy.wait("@appLibrary").then((res) => {
-    const invitation1 = res.response.body.users.user.invitation_token;
-    const invitation2 = res.response.body.users.invitation_token;
-    const url = `http://localhost:8082/invitations/${invitation1}/workspaces/${invitation2}`;
-    common.logout();
-    cy.visit(url);
   });
 };
 
@@ -268,4 +257,59 @@ export const bulkUserUpload = (file, fileName, toastMessage) => {
   cy.get(usersSelector.toastCloseButton).click();
 
   cy.wait(200);
+};
+
+export const inviteUserWithUserGroup = (firstName, email, group1, group2) => {
+  fillUserInviteForm(firstName, email);
+  selectUserGroup(group1);
+  cy.wait(200);
+  selectUserGroup(group2);
+  cy.get(usersSelector.buttonInviteUsers).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    usersText.userCreatedToast
+  );
+  copyInvitationLink(firstName, email);
+  cy.clearAndType(commonSelectors.passwordInputField, "password");
+  cy.get(commonSelectors.acceptInviteButton).click();
+};
+
+export const copyInvitationLink = (firstName, email) => {
+  cy.window().then((win) => {
+    cy.stub(win, "prompt").returns(win.prompt).as("copyToClipboardPrompt");
+  });
+  common.searchUser(email);
+  cy.contains("td", email)
+    .parent()
+    .within(() => {
+      cy.get('[data-cy="copy-icon"]').click();
+    });
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    usersText.inviteCopiedToast
+  );
+  cy.get("@copyToClipboardPrompt").then((prompt) => {
+    common.logout();
+    cy.visit(prompt.args[0][1]);
+  });
+};
+
+export const fillUserInviteForm = (firstName, email) => {
+  cy.get(usersSelector.buttonAddUsers).click();
+  cy.clearAndType(commonSelectors.inputFieldFullName, firstName);
+  cy.clearAndType(commonSelectors.inputFieldEmailAddress, email);
+};
+
+export const selectUserGroup = (groupName) => {
+  cy.get("body").then(($body) => {
+    if (!$body.find(".search > input").length > 0) {
+      cy.get(".dropdown-heading-value > .gray").click();
+      cy.clearAndType(".search > input", groupName);
+      cy.get("li > .select-item > .item-renderer").last().click();
+    }
+    else {
+      cy.clearAndType(".search > input", groupName);
+      cy.get("li > .select-item > .item-renderer").last().click();
+    }
+  });
 };
