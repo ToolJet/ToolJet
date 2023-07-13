@@ -143,39 +143,7 @@ export const inviteUser = (firstName, email) => {
     commonSelectors.toastMessage,
     usersText.userCreatedToast
   );
-
-  cy.task("updateId", {
-    dbconfig: Cypress.env("app_db"),
-    sql: `select invitation_token from users where email='${email}';`,
-  }).then((resp) => {
-    invitationToken = resp.rows[0].invitation_token;
-
-    cy.task("updateId", {
-      dbconfig: Cypress.env("app_db"),
-      sql: "select id from organizations where name='My workspace';",
-    }).then((resp) => {
-      workspaceId = resp.rows[0].id;
-
-      cy.task("updateId", {
-        dbconfig: Cypress.env("app_db"),
-        sql: `select id from users where email='${email}';`,
-      }).then((resp) => {
-        userId = resp.rows[0].id;
-
-        cy.task("updateId", {
-          dbconfig: Cypress.env("app_db"),
-          sql: `select invitation_token from organization_users where user_id='${userId}';`,
-        }).then((resp) => {
-          organizationToken = resp.rows[1].invitation_token;
-
-          url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
-          common.logout();
-          cy.wait(500);
-          cy.visit(url);
-        });
-      });
-    });
-  });
+  fetchAndVisitInviteLink(email);
 };
 
 export const confirmInviteElements = () => {
@@ -269,7 +237,8 @@ export const inviteUserWithUserGroup = (firstName, email, group1, group2) => {
     commonSelectors.toastMessage,
     usersText.userCreatedToast
   );
-  copyInvitationLink(firstName, email);
+  // copyInvitationLink(firstName, email);
+  fetchAndVisitInviteLink(email)
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.acceptInviteButton).click();
 };
@@ -306,10 +275,44 @@ export const selectUserGroup = (groupName) => {
       cy.get(".dropdown-heading-value > .gray").click();
       cy.clearAndType(".search > input", groupName);
       cy.get("li > .select-item > .item-renderer").last().click();
-    }
-    else {
+    } else {
       cy.clearAndType(".search > input", groupName);
       cy.get("li > .select-item > .item-renderer").last().click();
     }
+  });
+};
+
+export const fetchAndVisitInviteLink = (email) => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select invitation_token from users where email='${email}';`,
+  }).then((resp) => {
+    invitationToken = resp.rows[0].invitation_token;
+
+    cy.task("updateId", {
+      dbconfig: Cypress.env("app_db"),
+      sql: "select id from organizations where name='My workspace';",
+    }).then((resp) => {
+      workspaceId = resp.rows[0].id;
+
+      cy.task("updateId", {
+        dbconfig: Cypress.env("app_db"),
+        sql: `select id from users where email='${email}';`,
+      }).then((resp) => {
+        userId = resp.rows[0].id;
+
+        cy.task("updateId", {
+          dbconfig: Cypress.env("app_db"),
+          sql: `select invitation_token from organization_users where user_id='${userId}';`,
+        }).then((resp) => {
+          organizationToken = resp.rows[1].invitation_token;
+
+          url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
+          common.logout();
+          cy.wait(500);
+          cy.visit(url);
+        });
+      });
+    });
   });
 };

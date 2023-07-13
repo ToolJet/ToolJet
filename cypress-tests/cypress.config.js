@@ -77,13 +77,7 @@ module.exports = defineConfig({
     experimentalModfyObstructiveThirdPartyCode: true,
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
-    specPattern: [
-      // "cypress/e2e/selfHost/*.cy.js",
-      // "cypress/e2e/authentication/*.cy.js",
-      "cypress/e2e/workspace/shareApp.cy.js",
-      "cypress/e2e/globalDataSources/*.cy.js",
-      // "cypress/e2e/editor/data-source/*.cy.js",
-    ],
+    specPattern: "cypress/e2e/**/*.cy.js"
     downloadsFolder: "cypress/downloads",
     numTestsKeptInMemory: 25,
     redirectionLimit: 10,
