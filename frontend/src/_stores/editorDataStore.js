@@ -7,6 +7,7 @@ const ACTIONS = {
   TOGGLE_COMMENTS: 'TOGGLE_COMMENTS',
   TOGGLE_CURRENT_LAYOUT: 'TOGGLE_CURRENT_LAYOUT',
   SET_SELECTION_IN_PROGRESS: 'SET_SELECTION_IN_PROGRESS',
+  SET_SELECTED_COMPONENTS: 'SET_SELECTED_COMPONENTS',
 };
 
 const initialState = {
@@ -14,6 +15,7 @@ const initialState = {
   showComments: false,
   hoveredComponent: '',
   selectionInProgress: false,
+  selectedComponents: [],
 };
 
 export const useEditorDataStore = create(
@@ -47,6 +49,15 @@ export const useEditorDataStore = create(
             },
             false,
             { type: ACTIONS.SET_SELECTION_IN_PROGRESS }
+          );
+        },
+        setSelectedComponents: (selectedComponents) => {
+          set(
+            {
+              selectedComponents,
+            },
+            false,
+            { type: ACTIONS.SET_SELECTED_COMPONENTS }
           );
         },
       },

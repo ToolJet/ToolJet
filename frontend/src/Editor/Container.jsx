@@ -36,7 +36,6 @@ export const Container = ({
   zoomLevel,
   removeComponent,
   deviceWindowWidth,
-  selectedComponents,
   darkMode,
   socket,
   handleUndo,
@@ -54,10 +53,11 @@ export const Container = ({
     }),
     shallow
   );
-  const { showComments, currentLayout } = useEditorDataStore(
+  const { showComments, currentLayout, selectedComponents } = useEditorDataStore(
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,
+      selectedComponents: state?.selectedComponents,
     }),
     shallow
   );
@@ -359,8 +359,6 @@ export const Container = ({
     [setBoxes]
   );
 
-  React.useEffect(() => {}, [selectedComponents]);
-
   const handleAddThread = async (e) => {
     e.stopPropogation && e.stopPropogation();
 
@@ -500,7 +498,6 @@ export const Container = ({
       selectedComponents,
       darkMode,
       sideBarDebugger,
-      // addDefaultChildren,
       currentPageId,
       childComponents,
     };
@@ -523,7 +520,6 @@ export const Container = ({
     selectedComponents,
     darkMode,
     sideBarDebugger,
-    // addDefaultChildren,
     currentPageId,
     childComponents,
   ]);
@@ -598,14 +594,10 @@ export const Container = ({
               setSelectedComponent={setSelectedComponent}
               removeComponent={removeComponent}
               deviceWindowWidth={deviceWindowWidth}
-              isSelectedComponent={
-                mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false
-              }
               darkMode={darkMode}
               sideBarDebugger={sideBarDebugger}
-              isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
               childComponents={childComponents[key]}
-              containerProps={containerProps}
+              containerProps={{ ...containerProps, addDefaultChildren }}
             />
           );
         }

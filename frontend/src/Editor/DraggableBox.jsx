@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import cx from 'classnames';
 import { useDrag } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
@@ -87,7 +87,6 @@ export const DraggableBox = React.memo(
     setSelectedComponent,
     removeComponent,
     layouts,
-    isSelectedComponent,
     draggingStatusChanged,
     darkMode,
     canvasWidth,
@@ -95,18 +94,27 @@ export const DraggableBox = React.memo(
     customResolvables,
     parentId,
     sideBarDebugger,
-    isMultipleComponentsSelected,
     childComponents = null,
   }) => {
     const [isResizing, setResizing] = useState(false);
     const [isDragging2, setDragging] = useState(false);
     const [canDrag, setCanDrag] = useState(true);
-    const { currentLayout, setHoveredComponent, mouseOver, selectionInProgress } = useEditorDataStore(
+    const {
+      currentLayout,
+      setHoveredComponent,
+      mouseOver,
+      selectionInProgress,
+      isSelectedComponent,
+      isMultipleComponentsSelected,
+    } = useEditorDataStore(
       (state) => ({
         currentLayout: state?.currentLayout,
         setHoveredComponent: state?.actions?.setHoveredComponent,
         mouseOver: state?.hoveredComponent === id,
         selectionInProgress: state?.selectionInProgress,
+        isSelectedComponent:
+          mode === 'edit' ? state?.selectedComponents?.some((component) => component?.id === id) : false,
+        isMultipleComponentsSelected: state?.selectedComponents?.length > 1 ? true : false,
       }),
       shallow
     );
@@ -166,9 +174,12 @@ export const DraggableBox = React.memo(
       };
     }
 
-    function changeCanDrag(newState) {
-      setCanDrag(newState);
-    }
+    const changeCanDrag = useCallback(
+      (newState) => {
+        setCanDrag(newState);
+      },
+      [setCanDrag]
+    );
 
     const defaultData = {
       top: 100,

@@ -510,9 +510,6 @@ export const SubContainer = ({
                 setSelectedComponent={setSelectedComponent}
                 selectedComponent={selectedComponent}
                 deviceWindowWidth={deviceWindowWidth}
-                isSelectedComponent={
-                  mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false
-                }
                 removeComponent={customRemoveComponent}
                 canvasWidth={_containerCanvasWidth}
                 readOnly={readOnly}
@@ -522,7 +519,6 @@ export const SubContainer = ({
                 hoveredComponent={hoveredComponent}
                 parentId={parentComponent?.name}
                 sideBarDebugger={sideBarDebugger}
-                isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
                 exposedVariables={exposedVariables ?? {}}
                 childComponents={childComponents[key]}
                 containerProps={{
