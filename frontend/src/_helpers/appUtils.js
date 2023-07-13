@@ -101,7 +101,17 @@ export function getDataFromLocalStorage(key) {
 }
 
 async function executeRunPycode(_ref, code, query, isPreview, mode) {
-  const pyodide = await loadPyodide();
+  let pyodide;
+  try {
+    pyodide = await loadPyodide();
+  } catch (errorMessage) {
+    return {
+      data: {
+        status: 'failed',
+        message: errorMessage,
+      },
+    };
+  }
 
   function log(line) {
     console.log({ line });
@@ -162,7 +172,17 @@ async function executeRunPycode(_ref, code, query, isPreview, mode) {
 }
 
 async function exceutePycode(payload, code, currentState, query, mode) {
-  const pyodide = await loadPyodide();
+  let pyodide;
+  try {
+    pyodide = await loadPyodide();
+  } catch (errorMessage) {
+    return {
+      data: {
+        status: 'failed',
+        message: errorMessage,
+      },
+    };
+  }
 
   const evaluatePython = async (pyodide) => {
     let result = {};
