@@ -15,7 +15,7 @@ import { staticDataSources } from '../QueryManager/constants';
 import { Tooltip } from 'react-tooltip';
 
 const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasourcesChange }) => {
-  const [showMenu, setShowMenu] = useShowPopover(false, '#query-sort-filter-popover');
+  const [showMenu, setShowMenu] = useShowPopover(false, '#query-sort-filter-popover', '#query-sort-filter-popover-btn');
   const closeMenu = () => setShowMenu(false);
   const [action, setAction] = useState();
   const [search, setSearch] = useState('');
@@ -132,7 +132,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
   return (
     <OverlayTrigger
       placement={'bottom-end'}
-      rootClose={true}
+      // rootClose={true}
       show={showMenu}
       overlay={
         <Popover
@@ -148,7 +148,11 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
     >
       <span>
         <button
-          onClick={() => setShowMenu(true)}
+          id="query-sort-filter-popover-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowMenu((showMenu) => !showMenu);
+          }}
           className={cx('position-relative  btn-query-panel-header', { active: showMenu })}
           style={{ ...(showMenu && { background: 'var(--slate5)' }) }}
           data-tooltip-id="tooltip-for-open-filter"
@@ -209,12 +213,13 @@ const DataSourceSelector = ({
       </div>
       <div className="tj-scrollbar" style={{ maxHeight: '250px', overflowY: 'auto' }}>
         {sources.map((source) => (
-          <div
-            className={cx('px-2 py-2 tj-list-btn', {
+          <label
+            className={cx('px-2 py-2 tj-list-btn d-block', {
               active: selectedDataSources.includes(source.kind),
             })}
             key={source.kind}
             role="button"
+            for={`default-${source.kind}`}
           >
             <Form.Check // prettier-ignore
               type={'checkbox'}
@@ -229,7 +234,7 @@ const DataSourceSelector = ({
                 </>
               }
             />
-          </div>
+          </label>
         ))}
       </div>
     </div>
