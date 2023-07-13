@@ -125,12 +125,13 @@ export const DraggableBox = function DraggableBox({
         parent,
         layouts,
         canvasWidth,
+        currentLayout,
       },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
     }),
-    [id, title, component, index, zoomLevel, parent, layouts, canvasWidth]
+    [id, title, component, index, zoomLevel, parent, layouts, canvasWidth, currentLayout]
   );
 
   useEffect(() => {
