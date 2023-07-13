@@ -5,6 +5,7 @@ import RunpyIcon from '@/Editor/Icons/runpy.svg';
 import AddIcon from '@assets/images/icons/add-source.svg';
 import { useTranslation } from 'react-i18next';
 import { getSvgIcon } from '@/_helpers/appUtils';
+import { ToolTip } from '../../../_components/ToolTip';
 
 function DataSourceLister({
   dataSources,
