@@ -13,7 +13,11 @@ export default (_show, selector, triggerSelector) => {
   };
 
   useEffect(() => {
-    show && document.addEventListener('mousedown', handleClickOutside);
+    if (show) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
