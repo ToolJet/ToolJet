@@ -48,6 +48,7 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { resetAllStores } from '@/_stores/utils';
+import { setCookie } from '@/_helpers/cookie';
 import { shallow } from 'zustand/shallow';
 
 setAutoFreeze(false);
@@ -178,7 +179,24 @@ class EditorComponent extends React.Component {
     });
   }
 
+  /**
+   *
+   * ThandleMessage event listener in the login component fir iframe communication.
+   * It now checks if the received message has a type of 'redirectTo' and extracts the redirectPath value from the payload.
+   * If the value is present, it sets a cookie named 'redirectPath' with the received value and a one-day expiration.
+   * This allows for redirection to a specific path after the login process is completed.
+   */
+  handleMessage = (event) => {
+    const { data } = event;
+
+    if (data?.type === 'redirectTo') {
+      const redirectCookie = data?.payload['redirectPath'];
+      setCookie('redirectPath', redirectCookie, 1);
+    }
+  };
+
   componentDidMount() {
+    window.addEventListener('message', this.handleMessage);
     this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
@@ -836,11 +854,6 @@ class EditorComponent extends React.Component {
     return canvasBoundingRect?.width;
   };
 
-  getCanvasHeight = () => {
-    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
-    return canvasBoundingRect?.height;
-  };
-
   computeCanvasBackgroundColor = () => {
     const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#edeff5';
     if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
@@ -1452,7 +1465,9 @@ class EditorComponent extends React.Component {
       return defaultCanvasMinWidth;
     }
   };
+
   handleEditorMarginLeftChange = (value) => this.setState({ editorMarginLeft: value });
+
   render() {
     const {
       currentSidebarTab,
@@ -1621,11 +1636,9 @@ class EditorComponent extends React.Component {
                       className="canvas-area"
                       style={{
                         width: currentLayout === 'desktop' ? '100%' : '450px',
-                        minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                         maxWidth:
                           +this.state.appDefinition.globalSettings.canvasMaxWidth +
                           this.state.appDefinition.globalSettings.canvasMaxWidthType,
-                        maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                         /**
                          * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
                          * default canvas min width = calc(((screen width - width component editor side bar) - width of editor sidebar on left) - width of left sidebar popover)
@@ -1668,7 +1681,6 @@ class EditorComponent extends React.Component {
                         <>
                           <Container
                             canvasWidth={this.getCanvasWidth()}
-                            canvasHeight={this.getCanvasHeight()}
                             socket={this.socket}
                             showComments={showComments}
                             appDefinition={appDefinition}
