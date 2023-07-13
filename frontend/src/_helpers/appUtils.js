@@ -581,7 +581,6 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
 export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
-  console.log('Event: ', _ref, eventName, options, (mode = 'edit'));
 
   const { customVariables } = options;
 
@@ -754,6 +753,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onOpen',
       'onClose',
       'onRowClicked',
+      'onRecordClicked',
       'onCancelChanges',
       'onSort',
       'onCellValueChanged',

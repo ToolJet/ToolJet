@@ -76,7 +76,7 @@ export const QueryManagerBody = ({
         : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind)
     );
     setSelectedQueryId(selectedQuery?.id);
-    defaultOptions.current = selectedQuery?.options;
+    defaultOptions.current = selectedQuery?.options && JSON.parse(JSON.stringify(selectedQuery?.options));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedQuery]);
 
