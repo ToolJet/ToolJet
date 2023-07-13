@@ -5,35 +5,13 @@ import { Tooltip } from 'react-tooltip';
 import PlusRectangle from '@/_ui/Icon/solidIcons/PlusRectangle';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import ArgumentFormOverlay from './ArgumentFormOverlay';
 
-const ArgumentFormPopup = ({
-  darkMode,
-  onSubmit,
-  isEdit,
-  name: _name,
-  defaultValue: _defaultValue,
-  onRemove,
-  currentState,
-}) => {
+const ArgumentFormPopup = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, currentState }) => {
   const [showModal, setShowModal] = useState(false);
   const closeMenu = () => setShowModal(false);
-  const [name, setName] = useState();
-  const [defaultValue, setDefaultValue] = useState();
 
   useEffect(() => {
-    setName(_name);
-    setDefaultValue(_defaultValue);
-  }, [_name, _defaultValue, showModal]);
-
-  useEffect(() => {
-    const getParents = (el) => {
-      for (var parents = []; el; el = el.parentNode) {
-        parents.push(el);
-      }
-
-      return parents;
-    };
-
     const handleClickOutside = (event) => {
       if (showModal && event.target.closest('#argument-form-popover') === null) {
         closeMenu();
@@ -47,10 +25,8 @@ const ArgumentFormPopup = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
 
-  const handleSubmit = (event) => {
-    console.log(event);
-    event.preventDefault();
-    onSubmit && onSubmit({ name, defaultValue });
+  const handleSubmit = (args) => {
+    onSubmit && onSubmit(args);
     setShowModal(false);
   };
 
@@ -66,7 +42,16 @@ const ArgumentFormPopup = ({
           className={`query-manager-sort-filter-popup ${darkMode && 'popover-dark-themed'}`}
           style={{ width: '268px' }}
         >
-          <Popover.Header style={{ fontSize: '12px' }}>
+          <ArgumentFormOverlay
+            darkMode={darkMode}
+            isEdit={isEdit}
+            name={name}
+            defaultValue={defaultValue}
+            onSubmit={handleSubmit}
+            showModal={showModal}
+            currentState={currentState}
+          />
+          {/* <Popover.Header style={{ fontSize: '12px' }}>
             {isEdit ? 'UPDATE ARGUMENT' : 'ADD NEW ARGUMENT'}
           </Popover.Header>
           <Popover.Body key={'1'} bsPrefix="popover-body" className="px-0">
@@ -107,13 +92,13 @@ const ArgumentFormPopup = ({
                 Save
               </Button>
             </Form>
-          </Popover.Body>
+          </Popover.Body> */}
         </Popover>
       }
     >
       <span>
         {isEdit ? (
-          <PillButton name={_name} onClick={() => setShowModal(true)} onRemove={onRemove} />
+          <PillButton name={name} onClick={() => setShowModal(true)} onRemove={onRemove} />
         ) : (
           <Button
             variant="link"
@@ -133,8 +118,8 @@ const ArgumentFormPopup = ({
   );
 };
 
-const PillButton = ({ name, onClick, onRemove }) => (
-  <ButtonGroup aria-label="Argument Badge" className="ms-2">
+export const PillButton = ({ name, onClick, onRemove, marginBottom }) => (
+  <ButtonGroup aria-label="Argument Badge" className={cx('ms-2', { 'mb-2': marginBottom })}>
     <Button
       size="sm"
       className="custom-bg-secondary custom-text-dark"
@@ -145,23 +130,26 @@ const PillButton = ({ name, onClick, onRemove }) => (
         textTransform: 'none',
         padding: '0.8rem',
         fontWeight: 500,
+        ...(!onRemove && { borderRadius: '15px' }),
       }}
     >
       {name}
     </Button>
-    <Button
-      onClick={onRemove}
-      size="sm"
-      className="custom-bg-secondary custom-text-dark"
-      style={{
-        borderTopRightRadius: '15px',
-        borderBottomRightRadius: '15px',
-        paddingLeft: 0,
-        paddingRight: '0.75rem',
-      }}
-    >
-      <Remove fill="#000000" />
-    </Button>
+    {onRemove && (
+      <Button
+        onClick={onRemove}
+        size="sm"
+        className="custom-bg-secondary custom-text-dark"
+        style={{
+          borderTopRightRadius: '15px',
+          borderBottomRightRadius: '15px',
+          paddingLeft: 0,
+          paddingRight: '0.75rem',
+        }}
+      >
+        <Remove fill="#000000" />
+      </Button>
+    )}
   </ButtonGroup>
 );
 

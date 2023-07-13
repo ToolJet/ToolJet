@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { changeOption } from './utils';
 import { defaults } from 'lodash';
 import { Badge, Button, ButtonGroup, Card, CloseButton } from 'react-bootstrap';
 import CardHeader from 'react-bootstrap/esm/CardHeader';
-import ArgumentFormPopup from './ArgumentFormPopup';
+import ArgumentFormPopup, { PillButton } from './ArgumentFormPopup';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
+import { RunjsArgumentList } from './RunjsArgumentList';
 
 const Runjs = (props) => {
   const [options, setOptions] = useState(() => {
@@ -37,21 +38,34 @@ const Runjs = (props) => {
 
   return (
     <Card className="runjs-editor">
-      <CardHeader>
+      {/* <div className="card-header" ref={containerRef}>
         Parameters
-        {options.arguments.map((argument, index) => (
-          <ArgumentFormPopup
-            isEdit
-            key={index}
-            onSubmit={(arg) => handleArgumentChange(index, arg)}
-            onRemove={() => handleArgumentRemove(index)}
-            name={argument.name}
-            defaultValue={argument.defaultValue}
-            currentState={props.currentState}
-          />
-        ))}
+        {formattedArguments
+          .filter((arg) => arg.isVisible)
+          .map((argument, index) => {
+            return (
+              <ArgumentFormPopup
+                isEdit
+                key={index}
+                onSubmit={(arg) => handleArgumentChange(index, arg)}
+                onRemove={() => handleArgumentRemove(index)}
+                name={argument.name}
+                defaultValue={argument.defaultValue}
+                currentState={props.currentState}
+              />
+            );
+          })}
+        {formattedArguments.some((arg) => !arg.isVisible) && <PillButton name="More" />}
         <ArgumentFormPopup onSubmit={handleAddArgument} currentState={props.currentState} />
-      </CardHeader>
+      </div> */}
+      <RunjsArgumentList
+        args={options.arguments}
+        handleAddArgument={handleAddArgument}
+        handleArgumentChange={handleArgumentChange}
+        handleArgumentRemove={handleArgumentRemove}
+        currentState={props.currentState}
+      />
+
       <CodeHinter
         currentState={props.currentState}
         initialValue={props.options.code}
