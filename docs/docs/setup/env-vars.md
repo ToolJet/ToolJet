@@ -96,7 +96,7 @@ Use this environment variable to enable/disable the developement mode that allow
 
 | variable         | description                                     |
 | ---------------- | ----------------------------------------------- |
-| USER_SESSION_EXPIRY | This variable controls the user session expiry time. By default, the session expires after 2 days. The variable expects the value in minutes. ex: USER_SESSION_EXPIRY = 120 which is 2 hours |
+| USER_SESSION_EXPIRY | This variable controls the user session expiry time. By default, the session expires after **10** days. The variable expects the value in minutes. ex: USER_SESSION_EXPIRY = 120 which is 2 hours |
 
 ### Enable ToolJet Database ( optional )
 
@@ -320,3 +320,7 @@ By default, only embedding of public apps is permitted. By setting this variable
 | Variable        | Description                           |
 | --------------- | ------------------------------------- |
 | ENABLE_PRIVATE_APP_EMBED | `true` or `false` |
+
+:::caution
+The option is only available starting from ToolJet Enterprise Edition `2.8.0` or higher, and `2.10.0` for the Community edition and cloud version.
+:::
