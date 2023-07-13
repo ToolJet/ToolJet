@@ -66,10 +66,12 @@ const QueryPanel = ({
 
   useEffect(() => {
     handleQueryPaneExpanding(isExpanded);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded]);
 
   useEffect(() => {
     onQueryPaneDragging(isDragging);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging]);
 
   useEffect(() => {
@@ -79,6 +81,7 @@ const QueryPanel = ({
     } else {
       onQueryPaneDragging(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowSize.height, isExpanded, isWindowResizing]);
 
   const onMouseUp = () => {

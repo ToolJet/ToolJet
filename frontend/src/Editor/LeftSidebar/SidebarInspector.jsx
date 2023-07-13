@@ -23,6 +23,7 @@ export const LeftSidebarInspector = ({
   runQuery,
   setPinned,
   pinned,
+  isVersionReleased,
 }) => {
   const dataSources = useGlobalDataSources();
 
@@ -144,7 +145,9 @@ export const LeftSidebarInspector = ({
       for: 'components',
       actions: [
         { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
-        { name: 'Delete Component', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' },
+        ...(!isVersionReleased
+          ? [{ name: 'Delete Component', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' }]
+          : []),
       ],
       enableForAllChildren: false,
       enableFor1stLevelChildren: true,

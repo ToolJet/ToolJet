@@ -2,7 +2,6 @@ import React from 'react';
 import AppCard from './AppCard';
 import { useTranslation } from 'react-i18next';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
-import { TJPreviewIcon } from '../_ui/Icon/solidIcons/index';
 
 const AppList = (props) => {
   const { t } = useTranslation();
@@ -61,8 +60,6 @@ const AppList = (props) => {
           </span>
         </div>
       )}
-
-      <TJPreviewIcon />
     </div>
   );
 };

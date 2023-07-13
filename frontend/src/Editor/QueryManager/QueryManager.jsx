@@ -50,6 +50,7 @@ const QueryManager = ({
       runQuery(editorRef, queryToBeRun.id, queryToBeRun.name);
       setQueryToBeRun(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editorRef, queryToBeRun]);
 
   useEffect(() => {

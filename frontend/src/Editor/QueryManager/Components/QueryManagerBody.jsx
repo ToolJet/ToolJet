@@ -309,7 +309,7 @@ export const QueryManagerBody = ({
       return '';
     }
     return (
-      <div className="mt-2 row">
+      <div className={cx('mt-2 row', { 'disabled ': isVersionReleased })}>
         <div className={`col-md-3 query-manager-border-color px-4 hr-text-left py-2 form-label font-weight-500`}>
           Change Datasource
         </div>
