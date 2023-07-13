@@ -43,6 +43,15 @@ describe("Basic components", () => {
   });
 
   it("Should verify Toggle switch", () => {
+    if (Cypress.env("environment") === "Community") {
+      cy.intercept("GET", "/api/v2/data_sources").as("appDs");
+      cy.wait("@appDs", { timeout: 15000 });
+    }
+    else {
+      cy.intercept("GET", "/api/app-environments/**").as("appDs");
+      cy.wait("@appDs", { timeout: 15000 });
+    }
+
     cy.dragAndDropWidget("Toggle Switch", 50, 50);
     verifyComponent("toggleswitch1");
 
@@ -65,7 +74,7 @@ describe("Basic components", () => {
     ).should("have.text", "label");
 
     cy.go("back");
-    cy.wait("@appVersion");
+    cy.wait("@appDs");
     deleteComponentAndVerify("toggleswitch2");
     cy.get(commonSelectors.editorPageLogo).click();
 
@@ -73,7 +82,7 @@ describe("Basic components", () => {
   });
 
   it("Should verify Checkbox", () => {
-    cy.dragAndDropWidget("Checkbox", 50, 50);
+    cy.dragAndDropWidget("Checkbox", 250, 250);
     // cy.resizeWidget("checkbox1", 50, 200);
     cy.forceClickOnCanvas();
     verifyComponent("checkbox1");
@@ -102,7 +111,7 @@ describe("Basic components", () => {
   });
 
   it("Should verify Radio Button", () => {
-    cy.dragAndDropWidget("Radio Button", 50, 50);
+    cy.dragAndDropWidget("Radio Button", 250, 250);
     // cy.resizeWidget("radiobutton1", 100, 200);
     cy.forceClickOnCanvas();
     verifyComponent("radiobutton1");
@@ -130,7 +139,7 @@ describe("Basic components", () => {
     cy.deleteApp(data.appName);
   });
   it("Should verify Dropdown", () => {
-    cy.dragAndDropWidget("Dropdown", 50, 50);
+    cy.dragAndDropWidget("Dropdown", 250, 250);
     // cy.resizeWidget("radiobutton1", 100, 200);
     cy.forceClickOnCanvas();
     verifyComponent("dropdown1");
@@ -216,7 +225,7 @@ describe("Basic components", () => {
   });
 
   it("Should verify Calendar", () => {
-    cy.dragAndDropWidget("Calendar", 50, 50);
+    cy.dragAndDropWidget("Calendar", 250, 250);
     cy.get('[data-cy="draggable-widget-calendar1"]').click({ force: true });
     cy.forceClickOnCanvas();
     verifyComponent("calendar1");
@@ -238,7 +247,7 @@ describe("Basic components", () => {
   });
 
   it("Should verify Chart", () => {
-    cy.dragAndDropWidget("Chart", 50, 50);
+    cy.dragAndDropWidget("Chart", 250, 250);
     cy.get('[data-cy="draggable-widget-chart1"]').click({ force: true });
     cy.forceClickOnCanvas();
     verifyComponent("chart1");
@@ -337,7 +346,7 @@ describe("Basic components", () => {
   });
   //needed fix
   it.skip("Should verify Custom Component", () => {
-    cy.dragAndDropWidget("Custom Component", 50, 50);
+    cy.dragAndDropWidget("Custom Component", 250, 250);
     cy.get('[data-cy="draggable-widget-customcomponent1"]').click({
       force: true,
     });
@@ -375,7 +384,7 @@ describe("Basic components", () => {
   });
 
   it("Should verify Container", () => {
-    cy.dragAndDropWidget("Container", 50, 50);
+    cy.dragAndDropWidget("Container", 250, 250);
     cy.forceClickOnCanvas();
     verifyComponent("container1");
 
@@ -440,10 +449,10 @@ describe("Basic components", () => {
   });
 
   it("Should verify Form", () => {
-    cy.dragAndDropWidget("Form", 50, 50);
+    cy.dragAndDropWidget("Form", 250, 250);
     verifyComponent("form1");
 
-    cy.resizeWidget("form1", 650, 400);
+    cy.resizeWidget("form1", 850, 600);
 
     openEditorSidebar("form1");
     editAndVerifyWidgetName("form2");
@@ -498,7 +507,7 @@ describe("Basic components", () => {
   });
 
   it("Should verify Map", () => {
-    cy.dragAndDropWidget("Map", 50, 50);
+    cy.dragAndDropWidget("Map", 250, 250);
     cy.get("body").then(($body) => {
       if ($body.find(".dismissButton").length > 0) {
         cy.get(".dismissButton").click();
@@ -529,7 +538,7 @@ describe("Basic components", () => {
   });
 
   it("Should verify PDF", () => {
-    cy.dragAndDropWidget("PDF", 50, 50);
+    cy.dragAndDropWidget("PDF", 250, 250);
     verifyComponent("pdf1");
 
     cy.resizeWidget("pdf1", 650, 400);
@@ -617,7 +626,7 @@ describe("Basic components", () => {
   });
 
   it("Should verify Tabs", () => {
-    cy.dragAndDropWidget("Tabs", 50, 50);
+    cy.dragAndDropWidget("Tabs", 250, 250);
     verifyComponent("tabs1");
     deleteComponentAndVerify("image1");
 

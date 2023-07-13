@@ -27,9 +27,9 @@ import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetD
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
 import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
-
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -101,7 +101,17 @@ export function getDataFromLocalStorage(key) {
 }
 
 async function executeRunPycode(_ref, code, query, isPreview, mode) {
-  const pyodide = await loadPyodide();
+  let pyodide;
+  try {
+    pyodide = await loadPyodide();
+  } catch (errorMessage) {
+    return {
+      data: {
+        status: 'failed',
+        message: errorMessage,
+      },
+    };
+  }
 
   function log(line) {
     console.log({ line });
@@ -162,7 +172,17 @@ async function executeRunPycode(_ref, code, query, isPreview, mode) {
 }
 
 async function exceutePycode(payload, code, currentState, query, mode) {
-  const pyodide = await loadPyodide();
+  let pyodide;
+  try {
+    pyodide = await loadPyodide();
+  } catch (errorMessage) {
+    return {
+      data: {
+        status: 'failed',
+        message: errorMessage,
+      },
+    };
+  }
 
   const evaluatePython = async (pyodide) => {
     let result = {};
@@ -370,8 +390,13 @@ function debounce(func) {
 export const executeAction = debounce(executeActionWithDebounce);
 
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
-  console.log('nopski', customVariables);
   if (event) {
+    if (event.runOnlyIf) {
+      const shouldRun = resolveReferences(event.runOnlyIf, _ref.state.currentState, undefined, customVariables);
+      if (!shouldRun) {
+        return false;
+      }
+    }
     switch (event.actionId) {
       case 'show-alert': {
         const message = resolveReferences(event.message, _ref.state.currentState, undefined, customVariables);
@@ -576,7 +601,6 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
 export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
-  console.log('Event: ', eventName);
 
   const { customVariables } = options;
 
@@ -749,6 +773,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onOpen',
       'onClose',
       'onRowClicked',
+      'onRecordClicked',
       'onCancelChanges',
       'onSort',
       'onCellValueChanged',
@@ -842,7 +867,7 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
       queryExecutionPromise = dataqueryService.preview(
         query,
         options,
-        _ref?.state?.editingVersion?.id,
+        useAppVersionStore.getState().editingVersion?.id,
         currentAppEnvironmentId
       );
     }
@@ -868,13 +893,13 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
           setPreviewLoading(false);
           setPreviewData(finalData);
         }
-
         const queryStatus =
           query.kind === 'tooljetdb'
             ? data.statusText
             : query.kind === 'runpy'
             ? data?.data?.status ?? 'ok'
             : data.status;
+
         switch (queryStatus) {
           case 'Bad Request':
           case 'failed': {

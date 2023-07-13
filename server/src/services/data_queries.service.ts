@@ -93,7 +93,7 @@ export class DataQueriesService {
   }
 
   async fetchServiceAndParsedParams(dataSource, dataQuery, queryOptions, organization_id) {
-    const sourceOptions = await this.parseSourceOptions(dataSource.options);
+    const sourceOptions = await this.parseSourceOptions(dataSource.options, organization_id);
     const parsedQueryOptions = await this.parseQueryOptions(dataQuery.options, queryOptions, organization_id);
     const service = await this.pluginsHelper.getService(dataSource.pluginId, dataSource.kind);
 
@@ -380,7 +380,7 @@ export class DataQueriesService {
     environmentId?: string,
     organizationId?: string
   ): Promise<void> {
-    const sourceOptions = await this.parseSourceOptions(dataSource.options);
+    const sourceOptions = await this.parseSourceOptions(dataSource.options, organizationId);
     let tokenOptions: any;
     if (['googlesheets', 'slack', 'zendesk'].includes(dataSource.kind)) {
       tokenOptions = await this.fetchAPITokenFromPlugins(dataSource, code, sourceOptions);
@@ -406,9 +406,20 @@ export class DataQueriesService {
     return;
   }
 
-  async parseSourceOptions(options: any): Promise<object> {
+  async parseSourceOptions(options: any, organization_id: string): Promise<object> {
     // For adhoc queries such as REST API queries, source options will be null
     if (!options) return {};
+
+    for (const key of Object.keys(options)) {
+      const currentOption = options[key]?.['value'];
+      const variablesMatcher = /(%%.+?%%)/g;
+      const matched = variablesMatcher.exec(currentOption);
+      if (matched) {
+        const resolved = await this.resolveVariable(currentOption, organization_id);
+
+        options[key]['value'] = resolved;
+      }
+    }
 
     const parsedOptions = {};
 
@@ -418,7 +429,14 @@ export class DataQueriesService {
       if (encrypted) {
         const credentialId = option['credential_id'];
         const value = await this.credentialsService.getValue(credentialId);
-        parsedOptions[key] = value;
+
+        if (value.includes('%%server')) {
+          const resolved = await this.resolveVariable(value, organization_id);
+          parsedOptions[key] = resolved;
+          continue;
+        } else {
+          parsedOptions[key] = value;
+        }
       } else {
         parsedOptions[key] = option['value'];
       }
@@ -430,15 +448,26 @@ export class DataQueriesService {
   async resolveVariable(str: string, organization_id: string) {
     const tempStr: string = str.replace(/%%/g, '');
     let result = tempStr;
-    if (new RegExp('^server.[A-Za-z0-9]+$').test(tempStr)) {
+
+    const isServerVariable = new RegExp('^server').test(tempStr);
+    const isClientVariable = new RegExp('^client').test(tempStr);
+
+    if (isServerVariable || isClientVariable) {
       const splitArray = tempStr.split('.');
+      const variableType = splitArray[0];
+      const variableName = splitArray[splitArray.length - 1];
+
       const variableResult = await this.orgEnvironmentVariablesRepository.findOne({
-        variableType: 'server',
+        variableType: variableType,
         organizationId: organization_id,
-        variableName: splitArray[splitArray.length - 1],
+        variableName: variableName,
       });
 
-      if (variableResult) {
+      if (isClientVariable && variableResult) {
+        result = variableResult.value;
+      }
+
+      if (isServerVariable && variableResult) {
         result = await this.encryptionService.decryptColumnValue(
           'org_environment_variables',
           organization_id,
@@ -446,6 +475,7 @@ export class DataQueriesService {
         );
       }
     }
+
     return result;
   }
 

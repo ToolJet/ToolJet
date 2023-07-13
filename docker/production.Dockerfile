@@ -96,10 +96,16 @@ COPY --from=builder /app/server/scripts ./app/server/scripts
 COPY --from=builder /app/server/dist ./app/server/dist
 
 # Define non-sudo user
-RUN useradd --create-home appuser \
+RUN useradd --create-home --home-dir /home/appuser appuser \
     && chown -R appuser:0 /app \
+    && chown -R appuser:0 /home/appuser \
     && chmod u+x /app \
     && chmod -R g=u /app
+
+# Set npm cache directory
+ENV npm_config_cache /home/appuser/.npm
+
+ENV HOME=/home/appuser
 USER appuser
 
 WORKDIR /app

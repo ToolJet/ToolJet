@@ -124,7 +124,7 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
       const code = serverMatch.replace(/%%/g, '');
 
       if (code.includes('server.') && !/^server\.[A-Za-z0-9]+$/.test(code)) {
-        resolvedStr = resolvedStr.replace(serverMatch, '');
+        resolvedStr = resolvedStr.replace(serverMatch, 'HiddenEnvironmentVariable');
       } else {
         const resolvedCode = resolveCode(code, state, customObjects, withError, reservedKeyword, false);
         if (forPreviewBox) {
@@ -714,6 +714,7 @@ export const loadPyodide = async () => {
     return pyodide;
   } catch (error) {
     console.log('loadPyodide error', error);
+    throw 'Could not load Pyodide to execute Python';
   }
 };
 export function safelyParseJSON(json) {
@@ -850,6 +851,8 @@ export function isExpectedDataType(data, expectedDataType) {
   return data;
 }
 
+export const returnDevelopmentEnv = (environments) => environments.find((env) => env.priority === 1);
+
 export const validateName = (name, nameType, showError = false, allowSpecialChars = true) => {
   const newName = name.trim();
   let errorMsg = '';
@@ -922,3 +925,9 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
     }
   }
 };
+
+export const defaultAppEnvironments = [
+  { name: 'development', isDefault: false, priority: 1 },
+  { name: 'staging', isDefault: false, priority: 2 },
+  { name: 'production', isDefault: true, priority: 3 },
+];

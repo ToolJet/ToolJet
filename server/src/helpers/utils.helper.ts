@@ -88,9 +88,9 @@ export const retrieveWhiteLabelText = () => {
 };
 
 export const defaultAppEnvironments = [
-  { name: 'production', isDefault: true },
-  { name: 'staging', isDefault: false },
-  { name: 'development', isDefault: false },
+  { name: 'development', isDefault: false, priority: 1 },
+  { name: 'staging', isDefault: false, priority: 2 },
+  { name: 'production', isDefault: true, priority: 3 },
 ];
 
 export const isSuperAdmin = (user) => {
@@ -195,6 +195,15 @@ export async function getServiceAndRpcNames(protoDefinition) {
   return serviceNamesAndMethods;
 }
 
+export class MigrationProgress {
+  private progress = 0;
+  constructor(private fileName: string, private totalCount: number) {}
+
+  show() {
+    this.progress++;
+    console.log(`${this.fileName} Progress ${Math.round((this.progress / this.totalCount) * 100)} %`);
+  }
+}
 export const generateNextName = (firstWord: string) => {
   return `${firstWord} ${Date.now()}`;
 };

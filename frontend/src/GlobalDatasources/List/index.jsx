@@ -9,7 +9,7 @@ import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg'
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 
 export const List = ({ updateSelectedDatasource }) => {
-  const { dataSources, fetchDataSources, selectedDataSource, setSelectedDataSource, toggleDataSourceManagerModal } =
+  const { dataSources, fetchDataSources, environments, selectedDataSource, setSelectedDataSource } =
     useContext(GlobalDataSourcesContext);
 
   const [loading, setLoading] = useState(true);
@@ -19,17 +19,19 @@ export const List = ({ updateSelectedDatasource }) => {
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
-    fetchDataSources(true)
-      .then(() => {
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-        toast.error('Failed to fetch datasources');
-        return;
-      });
+    if (environments.length > 0) {
+      fetchDataSources(true)
+        .then(() => {
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+          toast.error('Failed to fetch datasources');
+          return;
+        });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [environments]);
 
   const deleteDataSource = (selectedSource) => {
     setSelectedDataSource(selectedSource);

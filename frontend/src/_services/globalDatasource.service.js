@@ -20,13 +20,14 @@ function getAll(organizationId, appVersionId, environmentId) {
   return fetch(`${config.apiUrl}/v2/data_sources?` + searchParams, requestOptions).then(handleResponse);
 }
 
-function create({ plugin_id, name, kind, options, scope }) {
+function create({ plugin_id, name, kind, options, scope, environment_id }) {
   const body = {
     plugin_id,
     name,
     kind,
     options,
     scope,
+    environment_id,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), body: JSON.stringify(body), credentials: 'include' };

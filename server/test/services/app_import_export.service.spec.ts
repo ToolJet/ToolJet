@@ -84,13 +84,17 @@ describe('AppImportExportService', () => {
         groups: ['all_users', 'admin'],
       });
       const adminUser = adminUserData.user;
-      const application = await createApplication(nestApp, {
-        user: adminUser,
-        name: 'sample app',
-        isPublic: true,
-      });
-      const appVersion1 = await createApplicationVersion(nestApp, application, { name: 'v1', definition: {} });
+      const application = await createApplication(
+        nestApp,
+        {
+          user: adminUser,
+          name: 'sample app',
+          isPublic: true,
+        },
+        false
+      );
       await createAppEnvironments(nestApp, adminUser.organizationId);
+      const appVersion1 = await createApplicationVersion(nestApp, application, { name: 'v1', definition: {} });
       const dataSource1 = await createDataSource(nestApp, {
         appVersion: appVersion1,
         kind: 'test_kind',

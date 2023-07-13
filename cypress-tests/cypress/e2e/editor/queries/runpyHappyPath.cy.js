@@ -147,14 +147,16 @@ actions.unsetPageVariable('pageVar')`
     cy.url().should("contain", "/home");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Modal");
+    cy.dragAndDropWidget("Modal", 300, 300);
     cy.waitForAutoSave();
     addInputOnQueryField("runpy", "actions.showModal('modal1')");
     query("run");
+    cy.closeToastMessage();
     cy.get('[data-cy="modal-title"]').should("be.visible");
     cy.get('[data-cy="runpy-input-field"]').click({ force: true });
 
     addInputOnQueryField("runpy", "actions.closeModal('modal1')");
+    cy.wait(2000);
     query("run");
     cy.intercept("GET", "api/data_queries?**").as("addQuery");
     cy.wait("@addQuery");
@@ -162,7 +164,7 @@ actions.unsetPageVariable('pageVar')`
       commonSelectors.toastMessage,
       "Query (runpy1) completed."
     );
-    cy.wait(3000);
+    cy.wait(10000);
     cy.notVisible('[data-cy="modal-title"]');
 
     addInputOnQueryField("runpy", "actions.copyToClipboard('data from runpy')");
@@ -188,7 +190,8 @@ actions.unsetPageVariable('pageVar')`
       commonSelectors.toastMessage,
       "Query (runpy1) completed."
     );
-    cy.wait(2000);
+    cy.wait(5000);
+
     cy.getAllLocalStorage().then((result) => {
       expect(result[Cypress.config().baseUrl].localStorage).to.deep.equal(
         "data from runpy"
@@ -316,7 +319,7 @@ actions.unsetPageVariable('pageVar')`
     );
     query("save");
     cy.reload();
-    cy.wait(3000);
+    cy.wait(5000);
     cy.get('[data-cy="modal-confirm-button"]').realClick();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,

@@ -85,8 +85,7 @@ module.exports = defineConfig({
       "cypress/e2e/editor/globalSetingsHappyPath.cy.js",
       "cypress/e2e/editor/inspectorHappypath.cy.js",
       "cypress/e2e/editor/queries/runpyHappyPath.cy.js",
-      "cypress/e2e/editor/queries/runjsHappyPath.cy.js"
-
+      "cypress/e2e/editor/queries/runjsHappyPath.cy.js",
     ],
     numTestsKeptInMemory: 1,
     redirectionLimit: 7,

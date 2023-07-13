@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, UseGuards, Post, Put, Delete, Param, Body, Query } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { ForbiddenException } from '@nestjs/common';
@@ -14,11 +14,22 @@ export class AppEnvironmentsController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async index(@User() user) {
+  async index(@User() user, @Query('app_id') appId: string) {
     const { organizationId } = user;
     // TODO: add fetchEnvironments privilege
-    const environments = await this.appEnvironmentServices.getAll(organizationId);
+    const environments = await this.appEnvironmentServices.getAll(organizationId, null, appId);
     return decamelizeKeys({ environments });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/versions')
+  async getVersionsByEnvironment(@User() user, @Param('id') environmentId: string, @Query('app_id') appId: string) {
+    const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(
+      user?.organizationId,
+      appId,
+      environmentId
+    );
+    return decamelizeKeys({ appVersions });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -35,7 +46,7 @@ export class AppEnvironmentsController {
     if (!ability.can('createEnvironments', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const env = await this.appEnvironmentServices.create(organizationId, createAppEnvironmentDto.name);
+    const env = await this.appEnvironmentServices.create(organizationId, createAppEnvironmentDto.name, false, 1);
     return decamelizeKeys(env);
   }
 
@@ -71,5 +82,12 @@ export class AppEnvironmentsController {
     }
 
     return await this.appEnvironmentServices.delete(id, organizationId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('versions')
+  async getVersions(@User() user, @Query('app_id') appId: string) {
+    const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(user?.organizationId, appId);
+    return decamelizeKeys({ appVersions });
   }
 }

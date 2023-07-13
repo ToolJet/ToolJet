@@ -60,7 +60,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
 
   const environmentChanged = (env, dataSourceId) => {
     setCurrentEnvironment(env);
-    fetchDataSourceByEnvironment(dataSourceId, env?.id);
+    dataSourceId && fetchDataSourceByEnvironment(dataSourceId, env?.id);
   };
 
   const dataSourcesChanged = (resetSelection, dataSource) => {

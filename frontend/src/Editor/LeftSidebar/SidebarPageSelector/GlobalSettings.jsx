@@ -1,17 +1,22 @@
 import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import MenuIcon from '@assets/images/icons/3dots-menu.svg';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
-export const GlobalSettings = ({
-  darkMode,
-  showHideViewerNavigationControls,
-  showPageViwerPageNavitation,
-  isVersionReleased,
-  setReleasedVersionPopupState,
-}) => {
+export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, showPageViwerPageNavitation }) => {
+  const { isVersionReleased, enableReleasedVersionPopupState, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+    }),
+    shallow
+  );
+
   const onChange = () => {
-    if (isVersionReleased) {
-      setReleasedVersionPopupState();
+    if (isVersionReleased || isEditorFreezed) {
+      enableReleasedVersionPopupState();
       return;
     }
     showHideViewerNavigationControls();

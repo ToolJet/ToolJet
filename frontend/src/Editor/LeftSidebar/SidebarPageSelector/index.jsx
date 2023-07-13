@@ -10,6 +10,8 @@ import EmptyIllustration from '@assets/images/no-results.svg';
 import posthog from 'posthog-js';
 import { authenticationService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 const LeftSidebarPageSelector = ({
   appDefinition,
@@ -33,15 +35,21 @@ const LeftSidebarPageSelector = ({
   apps,
   pinned,
   setPinned,
-  isVersionReleased,
   setReleasedVersionPopupState,
 }) => {
   const [allpages, setPages] = useState(pages);
   const router = useRouter();
   const [haveUserPinned, setHaveUserPinned] = useState(false);
-
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const { enableReleasedVersionPopupState, isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
 
   const filterPages = (value) => {
     if (!value || value.length === 0) return clearSearch();
@@ -80,8 +88,6 @@ const LeftSidebarPageSelector = ({
                 darkMode={darkMode}
                 showHideViewerNavigationControls={showHideViewerNavigationControls}
                 showPageViwerPageNavitation={appDefinition?.showViewerNavigation || false}
-                isVersionReleased={isVersionReleased}
-                setReleasedVersionPopupState={setReleasedVersionPopupState}
               />
             }
           >
@@ -95,8 +101,8 @@ const LeftSidebarPageSelector = ({
                       authenticationService?.currentSessionValue?.current_organization_id,
                     appId: router.query.id,
                   });
-                  if (isVersionReleased) {
-                    setReleasedVersionPopupState();
+                  if (isVersionReleased || isEditorFreezed) {
+                    enableReleasedVersionPopupState();
                     return;
                   }
                   setNewPageBeingCreated(true);
@@ -169,8 +175,6 @@ const LeftSidebarPageSelector = ({
                 apps={apps}
                 allpages={pages}
                 components={appDefinition?.components ?? {}}
-                isVersionReleased={isVersionReleased}
-                setReleasedVersionPopupState={setReleasedVersionPopupState}
                 pinPagesPopover={pinPagesPopover}
                 haveUserPinned={haveUserPinned}
               />

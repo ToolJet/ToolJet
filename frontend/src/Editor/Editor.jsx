@@ -49,13 +49,15 @@ import EditorHeader from './Header';
 import '@/_styles/editor/react-select-search.scss';
 import { withRouter } from '@/_hoc/withRouter';
 import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError';
+import { FreezeVersionInfo } from './EnvironmentsManager/FreezeVersionInfo';
 
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
-import { useAppDataStore } from '@/_stores/appDataStore';
 import { resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
+import { shallow } from 'zustand/shallow';
 
 setAutoFreeze(false);
 enablePatches();
@@ -112,7 +114,6 @@ class EditorComponent extends React.Component {
       isLoading: true,
       users: null,
       appId,
-      editingVersion: null,
       showLeftSidebar: true,
       showComments: false,
       zoomLevel: 1.0,
@@ -137,7 +138,6 @@ class EditorComponent extends React.Component {
       },
       apps: [],
       queryConfirmationList: [],
-      showCreateVersionModalPrompt: false,
       isSourceSelected: false,
       isSaving: false,
       isUnsavedQueriesAvailable: false,
@@ -210,7 +210,6 @@ class EditorComponent extends React.Component {
 
   componentDidMount() {
     window.addEventListener('message', this.handleMessage);
-    resetAllStores();
     this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
@@ -242,7 +241,7 @@ class EditorComponent extends React.Component {
     if (!config.ENABLE_MULTIPLAYER_EDITING) return null;
 
     this.props.ymap?.observe(() => {
-      if (!isEqual(this.state.editingVersion?.id, this.props.ymap?.get('appDef').editingVersionId)) return;
+      if (!isEqual(this.props.editingVersion?.id, this.props.ymap?.get('appDef').editingVersionId)) return;
       if (isEqual(this.state.appDefinition, this.props.ymap?.get('appDef').newDefinition)) return;
 
       this.realtimeSave(this.props.ymap?.get('appDef').newDefinition, { skipAutoSave: true, skipYmapUpdate: true });
@@ -295,25 +294,14 @@ class EditorComponent extends React.Component {
     }
   }
 
-  isVersionReleased = (version = this.state.editingVersion) => {
-    if (isEmpty(version)) {
-      return false;
-    }
-    return this.state.app.current_version_id === version.id;
-  };
-
-  closeCreateVersionModalPrompt = () => {
-    this.setState({ isSaving: false, showCreateVersionModalPrompt: false });
-  };
-
   initEventListeners() {
     this.socket?.addEventListener('message', (event) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
       if (data === 'versionReleased') this.fetchApp();
       else if (data === 'dataQueriesChanged') {
-        this.fetchDataQueries(this.state.editingVersion?.id);
+        this.fetchDataQueries(this.props.editingVersion?.id);
       } else if (data === 'dataSourcesChanged') {
-        this.fetchDataSources(this.state.editingVersion?.id, this.state.currentAppEnvironmentId);
+        this.fetchDataSources(this.props.editingVersion?.id, this.state.currentAppEnvironmentId);
       }
     });
   }
@@ -379,6 +367,12 @@ class EditorComponent extends React.Component {
     );
   };
 
+  getStoreData = async (currentVersionId, currentSelectedEnvId) => {
+    this.fetchDataSources(currentVersionId, currentSelectedEnvId);
+    await this.fetchDataQueries(currentVersionId, true, true);
+    this.fetchGlobalDataSources(currentVersionId, currentSelectedEnvId);
+  };
+
   fetchApp = (startingPageHandle) => {
     const appId = this.props.params.id;
 
@@ -389,13 +383,12 @@ class EditorComponent extends React.Component {
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
       const homePageId = startingPageId ?? dataDefinition.homePageId;
 
-      useAppDataStore.getState().actions.updateEditingVersion(data.editing_version);
-
+      useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
+      useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
       this.setState(
         {
           app: data,
           isLoading: false,
-          editingVersion: data.editing_version,
           appDefinition: dataDefinition,
           slug: data.slug,
           currentPageId: homePageId,
@@ -418,10 +411,7 @@ class EditorComponent extends React.Component {
           });
         }
       );
-
-      this.fetchDataSources(data.editing_version?.id, this.state.currentAppEnvironmentId);
-      await this.fetchDataQueries(data.editing_version?.id, true, true);
-      this.fetchGlobalDataSources(data.editing_version?.id, this.state.currentAppEnvironmentId);
+      await this.getStoreData(data.editing_version?.id, data.editing_version?.current_environment_id);
       initEditorWalkThrough();
       for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
         await this.handleEvent(event.eventId, event);
@@ -438,8 +428,8 @@ class EditorComponent extends React.Component {
     );
   };
 
-  setAppDefinitionFromVersion = (version, shouldWeEditVersion = true) => {
-    if (version?.id !== this.state.editingVersion?.id) {
+  setAppDefinitionFromVersion = (version, shouldWeEditVersion = true, freezeEditor = false) => {
+    if (version?.id !== this.props.editingVersion?.id) {
       this.appDefinitionChanged(defaults(version.definition, this.defaultDefinition), {
         skipAutoSave: true,
         skipYmapUpdate: true,
@@ -448,17 +438,17 @@ class EditorComponent extends React.Component {
       if (version?.id === this.state.app?.current_version_id) {
         (this.canUndo = false), (this.canRedo = false);
       }
-      useAppDataStore.getState().actions.updateEditingVersion(version);
+      useAppVersionStore.getState().actions.updateEditingVersion(version);
+      useAppVersionStore.getState().actions.onEditorFreeze(freezeEditor);
 
       this.setState(
         {
-          editingVersion: version,
           isSaving: false,
         },
         () => {
           shouldWeEditVersion && this.saveEditingVersion(true);
-          this.fetchDataSources(this.state.editingVersion?.id, this.state.currentAppEnvironmentId);
-          this.fetchDataQueries(this.state.editingVersion?.id, true);
+          this.fetchDataSources(this.props.editingVersion?.id, this.state.currentAppEnvironmentId);
+          this.fetchDataQueries(this.props.editingVersion?.id, true);
           this.initComponentVersioning();
         }
       );
@@ -477,7 +467,7 @@ class EditorComponent extends React.Component {
         })
       );
     } else {
-      this.fetchDataSources(this.state.editingVersion?.id, this.state.currentAppEnvironmentId);
+      this.fetchDataSources(this.props.editingVersion?.id, this.state.currentAppEnvironmentId);
     }
   };
 
@@ -497,7 +487,7 @@ class EditorComponent extends React.Component {
         })
       );
     } else {
-      this.fetchDataQueries(this.state.editingVersion?.id);
+      this.fetchDataQueries(this.props.editingVersion?.id);
     }
   };
 
@@ -565,7 +555,7 @@ class EditorComponent extends React.Component {
         () => {
           this.props.ymap?.set('appDef', {
             newDefinition: appDefinition,
-            editingVersionId: this.state.editingVersion?.id,
+            editingVersionId: this.props.editingVersion?.id,
           });
 
           this.autoSave();
@@ -596,7 +586,7 @@ class EditorComponent extends React.Component {
         () => {
           this.props.ymap?.set('appDef', {
             newDefinition: appDefinition,
-            editingVersionId: this.state.editingVersion?.id,
+            editingVersionId: this.props.editingVersion?.id,
           });
 
           this.autoSave();
@@ -609,7 +599,10 @@ class EditorComponent extends React.Component {
     let currentPageId = this.state.currentPageId;
     if (isEqual(this.state.appDefinition, newDefinition)) return;
     if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
-      this.props.ymap?.set('appDef', { newDefinition, editingVersionId: this.state.editingVersion?.id });
+      this.props.ymap?.set('appDef', {
+        newDefinition,
+        editingVersionId: this.props.editingVersion?.id,
+      });
     }
 
     if (opts?.versionChanged) {
@@ -651,7 +644,9 @@ class EditorComponent extends React.Component {
   };
 
   removeComponents = () => {
-    if (!this.isVersionReleased() && this.state?.selectedComponents?.length > 1) {
+    // will not remove components if version is released or editor is freezed
+    if (this.props.isEditorFreezed || this.props.isVersionReleased) return;
+    if (!this.props.isVersionReleased && this.state?.selectedComponents?.length > 1) {
       let newDefinition = cloneDeep(this.state.appDefinition);
       const selectedComponents = this.state?.selectedComponents;
 
@@ -667,17 +662,17 @@ class EditorComponent extends React.Component {
         });
       }
       this.appDefinitionChanged(newDefinition, {
-        skipAutoSave: this.isVersionReleased(),
+        skipAutoSave: this.props.isVersionReleased,
       });
       this.handleInspectorView();
-    } else if (this.isVersionReleased()) {
-      this.setReleasedVersionPopupState();
+    } else if (this.props.isVersionReleased) {
+      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     }
   };
 
   removeComponent = (component) => {
     const currentPageId = this.state.currentPageId;
-    if (!this.isVersionReleased()) {
+    if (!this.props.isVersionReleased) {
       let newDefinition = cloneDeep(this.state.appDefinition);
       // Delete child components when parent is deleted
 
@@ -709,17 +704,17 @@ class EditorComponent extends React.Component {
         });
       }
       this.appDefinitionChanged(newDefinition, {
-        skipAutoSave: this.isVersionReleased(),
+        skipAutoSave: this.props.isVersionReleased,
       });
       this.handleInspectorView();
     } else {
-      this.setState({ isUserEditingTheVersion: true });
+      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
     }
   };
 
   componentDefinitionChanged = (componentDefinition) => {
-    if (this.isVersionReleased()) {
-      this.setReleasedVersionPopupState();
+    if (this.props.isVersionReleased) {
+      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
       return;
     }
     let _self = this;
@@ -745,14 +740,10 @@ class EditorComponent extends React.Component {
         this.autoSave();
         this.props.ymap?.set('appDef', {
           newDefinition: newDefinition.appDefinition,
-          editingVersionId: this.state.editingVersion?.id,
+          editingVersionId: this.props.editingVersion?.id,
         });
       });
     }
-  };
-
-  setReleasedVersionPopupState = () => {
-    this.setState({ isUserEditingTheVersion: true });
   };
 
   handleEditorEscapeKeyPress = () => {
@@ -797,8 +788,9 @@ class EditorComponent extends React.Component {
   };
 
   cutComponents = () => {
-    if (this.isVersionReleased()) {
-      this.setReleasedVersionPopupState();
+    if (this.props.isVersionReleased) {
+      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
+
       return;
     }
     cloneComponents(this, this.appDefinitionChanged, false, true);
@@ -807,8 +799,8 @@ class EditorComponent extends React.Component {
   copyComponents = () => cloneComponents(this, this.appDefinitionChanged, false);
 
   cloneComponents = () => {
-    if (this.isVersionReleased()) {
-      this.setReleasedVersionPopupState();
+    if (this.props.isVersionReleased) {
+      useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
       return;
     }
     cloneComponents(this, this.appDefinitionChanged, true);
@@ -831,7 +823,7 @@ class EditorComponent extends React.Component {
       () => {
         this.props.ymap?.set('appDef', {
           newDefinition: appDefinition,
-          editingVersionId: this.state.editingVersion?.id,
+          editingVersionId: this.props.editingVersion?.id,
         });
         this.autoSave();
       }
@@ -868,6 +860,7 @@ class EditorComponent extends React.Component {
   };
 
   onVersionRelease = (versionId) => {
+    useAppVersionStore.getState().actions.updateReleasedVersionId(versionId);
     this.setState(
       {
         app: {
@@ -897,11 +890,6 @@ class EditorComponent extends React.Component {
     return canvasBoundingRect?.width;
   };
 
-  getCanvasHeight = () => {
-    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
-    return canvasBoundingRect?.height;
-  };
-
   computeCanvasBackgroundColor = () => {
     const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#edeff5';
     if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
@@ -920,24 +908,25 @@ class EditorComponent extends React.Component {
   handleQueryPaneExpanding = (isQueryPaneExpanded) => this.setState({ isQueryPaneExpanded });
 
   saveEditingVersion = (isUserSwitchedVersion = false) => {
-    if (this.isVersionReleased() && !isUserSwitchedVersion) {
+    if (this.props.isVersionReleased && !isUserSwitchedVersion) {
       this.setState({ isSaving: false });
-    } else if (!isEmpty(this.state.editingVersion)) {
+    } else if (!isEmpty(this.props?.editingVersion)) {
       appVersionService
         .save(
           this.state.appId,
-          this.state.editingVersion.id,
+          this.props.editingVersion?.id,
           { definition: this.state.appDefinition },
           isUserSwitchedVersion
         )
         .then(() => {
+          const _editingVersion = {
+            ...this.props.editingVersion,
+            ...{ definition: this.state.appDefinition },
+          };
+          useAppVersionStore.getState().actions.updateEditingVersion(_editingVersion);
           this.setState(
             {
               saveError: false,
-              editingVersion: {
-                ...this.state.editingVersion,
-                ...{ definition: this.state.appDefinition },
-              },
             },
             () => {
               this.setState({
@@ -1084,11 +1073,19 @@ class EditorComponent extends React.Component {
 
   addNewPage = ({ name, handle }) => {
     // check for unique page handles
-    const pageExists = Object.values(this.state.appDefinition.pages).some((page) => page.handle === handle);
+    const pageExists = Object.values(this.state.appDefinition.pages).some((page) => page.name === name);
 
     if (pageExists) {
-      toast.error('Page with same handle already exists');
+      toast.error('Page name already exists');
       return;
+    }
+
+    const pageHandles = Object.values(this.state.appDefinition.pages).map((page) => page.handle);
+
+    let newHandle = handle;
+    // If handle already exists, finds a unique handle by incrementing a number until it is not found in the array of existing page handles.
+    for (let handleIndex = 1; pageHandles.includes(newHandle); handleIndex++) {
+      newHandle = `${handle}-${handleIndex}`;
     }
 
     const newAppDefinition = {
@@ -1097,7 +1094,7 @@ class EditorComponent extends React.Component {
         ...this.state.appDefinition.pages,
         [uuid()]: {
           name,
-          handle,
+          handle: newHandle,
           components: {},
         },
       },
@@ -1208,11 +1205,33 @@ class EditorComponent extends React.Component {
     }
 
     const newPageData = cloneDeep(currentPage);
+    const oldToNewIdMapping = {};
     if (!isEmpty(currentPage?.components)) {
       newPageData.components = Object.keys(newPageData.components).reduce((acc, key) => {
-        acc[uuid()] = newPageData.components[key];
+        const newComponentId = uuid();
+        acc[newComponentId] = newPageData.components[key];
+        acc[newComponentId].id = newComponentId;
+        oldToNewIdMapping[key] = newComponentId;
         return acc;
       }, {});
+
+      Object.values(newPageData.components).map((comp) => {
+        if (comp.parent) {
+          let newParentId = oldToNewIdMapping[comp.parent];
+          if (newParentId) {
+            comp.parent = newParentId;
+          } else {
+            const oldParentId = Object.keys(oldToNewIdMapping).find(
+              (parentId) =>
+                comp.parent.startsWith(parentId) &&
+                ['Tabs', 'Calendar'].includes(currentPage?.components[parentId]?.component?.component)
+            );
+            const childTabId = comp.parent.split('-').at(-1);
+            comp.parent = `${oldToNewIdMapping[oldParentId]}-${childTabId}`;
+          }
+        }
+        return comp;
+      });
     }
 
     const newPage = {
@@ -1316,6 +1335,9 @@ class EditorComponent extends React.Component {
   };
 
   renamePage = (pageId, newName) => {
+    if (Object.entries(this.state.appDefinition.pages).some(([pId, { name }]) => newName === name && pId !== pageId)) {
+      return toast.error('Page name already exists');
+    }
     if (newName.trim().length === 0) {
       toast.error('Page name cannot be empty');
       return;
@@ -1394,8 +1416,12 @@ class EditorComponent extends React.Component {
 
   switchPage = (pageId, queryParams = []) => {
     document.getElementById('real-canvas').scrollIntoView();
-    if (this.state.currentPageId === pageId) return;
-
+    if (
+      this.state.currentPageId === pageId &&
+      this.state.currentState.page.handle === this.state.appDefinition?.pages[pageId]?.handle
+    ) {
+      return;
+    }
     const { name, handle, events } = this.state.appDefinition.pages[pageId];
     const currentPageId = this.state.currentPageId;
 
@@ -1498,7 +1524,9 @@ class EditorComponent extends React.Component {
       return defaultCanvasMinWidth;
     }
   };
+
   handleEditorMarginLeftChange = (value) => this.setState({ editorMarginLeft: value });
+
   formCustomPageSelectorClass = () => {
     const handle = this.state.appDefinition?.pages[this.state.currentPageId]?.handle;
     return `_tooljet-page-${handle}`;
@@ -1521,17 +1549,14 @@ class EditorComponent extends React.Component {
       apps,
       defaultComponentStateComputed,
       showComments,
-      editingVersion,
-      showCreateVersionModalPrompt,
       hoveredComponent,
       queryConfirmationList,
       currentAppEnvironmentId,
     } = this.state;
-
+    const editingVersion = this.props?.editingVersion;
     const appVersionPreviewLink = editingVersion
       ? `/applications/${app.id}/versions/${editingVersion.id}/environments/${this.state.currentAppEnvironmentId}/${this.state.currentState.page.handle}`
       : '';
-
     return (
       <div className="editor wrapper">
         <Confirm
@@ -1552,17 +1577,8 @@ class EditorComponent extends React.Component {
           onCancel={() => this.cancelDeletePageRequest()}
           darkMode={this.props.darkMode}
         />
-        {this.isVersionReleased() && (
-          <ReleasedVersionError
-            isUserEditingTheVersion={this.state.isUserEditingTheVersion}
-            changeBackTheState={() => {
-              this.state.isUserEditingTheVersion &&
-                this.setState({
-                  isUserEditingTheVersion: false,
-                });
-            }}
-          />
-        )}
+        {this.props.isVersionReleased && <ReleasedVersionError />}
+        {!this.props.isVersionReleased && this.props.isEditorFreezed && <FreezeVersionInfo />}
         <EditorContextWrapper>
           <EditorHeader
             darkMode={this.props.darkMode}
@@ -1572,7 +1588,6 @@ class EditorComponent extends React.Component {
             appDefinition={appDefinition}
             toggleAppMaintenance={this.toggleAppMaintenance}
             editingVersion={editingVersion}
-            showCreateVersionModalPrompt={showCreateVersionModalPrompt}
             app={app}
             appVersionPreviewLink={appVersionPreviewLink}
             slug={slug}
@@ -1584,22 +1599,20 @@ class EditorComponent extends React.Component {
             toggleCurrentLayout={this.toggleCurrentLayout}
             isSaving={this.state.isSaving}
             saveError={this.state.saveError}
-            isVersionReleased={this.isVersionReleased}
             onNameChanged={this.onNameChanged}
             currentAppEnvironmentId={currentAppEnvironmentId}
             setAppDefinitionFromVersion={this.setAppDefinitionFromVersion}
-            closeCreateVersionModalPrompt={this.closeCreateVersionModalPrompt}
             handleSlugChange={this.handleSlugChange}
             onVersionRelease={this.onVersionRelease}
             saveEditingVersion={this.saveEditingVersion}
             appEnvironmentChanged={this.appEnvironmentChanged}
             onVersionDelete={this.onVersionDelete}
             currentUser={this.state.currentUser}
+            getStoreData={this.getStoreData}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
               <LeftSidebar
-                appVersionsId={this.state?.editingVersion?.id}
                 currentAppEnvironmentId={this.state.currentAppEnvironmentId}
                 showComments={showComments}
                 errorLogs={currentState.errors}
@@ -1641,8 +1654,6 @@ class EditorComponent extends React.Component {
                 updateOnSortingPages={this.updateOnSortingPages}
                 apps={apps}
                 setEditorMarginLeft={this.handleEditorMarginLeftChange}
-                isVersionReleased={this.isVersionReleased()}
-                setReleasedVersionPopupState={this.setReleasedVersionPopupState}
               />
               {!showComments && (
                 <Selecto
@@ -1678,6 +1689,7 @@ class EditorComponent extends React.Component {
                       (this.state.editorMarginLeft ? this.state.editorMarginLeft - 1 : this.state.editorMarginLeft) +
                       `px solid ${this.computeCanvasBackgroundColor()}`,
                     height: this.computeCanvasContainerHeight(),
+                    background: !this.props.darkMode && '#f4f6fa',
                   }}
                   onMouseUp={(e) => {
                     if (['real-canvas', 'modal'].includes(e.target.className)) {
@@ -1694,11 +1706,9 @@ class EditorComponent extends React.Component {
                       className={`canvas-area ${this.formCustomPageSelectorClass()}`}
                       style={{
                         width: currentLayout === 'desktop' ? '100%' : '450px',
-                        minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                         maxWidth:
                           +this.state.appDefinition.globalSettings.canvasMaxWidth +
                           this.state.appDefinition.globalSettings.canvasMaxWidthType,
-                        maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                         /**
                          * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
                          * default canvas min width = calc(((screen width - width component editor side bar) - width of editor sidebar on left) - width of left sidebar popover)
@@ -1710,7 +1720,7 @@ class EditorComponent extends React.Component {
                     >
                       {config.ENABLE_MULTIPLAYER_EDITING && (
                         <RealtimeCursors
-                          editingVersionId={this.state?.editingVersion?.id}
+                          editingVersionId={editingVersion?.id}
                           editingPageId={this.state.currentPageId}
                         />
                       )}
@@ -1741,10 +1751,8 @@ class EditorComponent extends React.Component {
                         <>
                           <Container
                             canvasWidth={this.getCanvasWidth()}
-                            canvasHeight={this.getCanvasHeight()}
                             socket={this.socket}
                             showComments={showComments}
-                            appVersionsId={this.state?.editingVersion?.id}
                             appDefinition={appDefinition}
                             appDefinitionChanged={this.appDefinitionChanged}
                             snapToGrid={true}
@@ -1768,8 +1776,6 @@ class EditorComponent extends React.Component {
                             hoveredComponent={hoveredComponent}
                             sideBarDebugger={this.sideBarDebugger}
                             currentPageId={this.state.currentPageId}
-                            setReleasedVersionPopupState={this.setReleasedVersionPopupState}
-                            isVersionReleased={this.isVersionReleased()}
                           />
                           <CustomDragLayer
                             snapToGrid={true}
@@ -1792,10 +1798,8 @@ class EditorComponent extends React.Component {
                   apps={apps}
                   allComponents={appDefinition.pages[this.state.currentPageId]?.components ?? {}}
                   appId={appId}
-                  editingVersionId={editingVersion?.id}
                   appDefinition={appDefinition}
                   dataSourceModalHandler={this.dataSourceModalHandler}
-                  isVersionReleased={this.isVersionReleased()}
                   editorRef={this}
                 />
                 <ReactTooltip id="tooltip-for-add-query" className="tooltip" />
@@ -1828,7 +1832,6 @@ class EditorComponent extends React.Component {
                         darkMode={this.props.darkMode}
                         appDefinitionLocalVersion={this.state.appDefinitionLocalVersion}
                         pages={this.getPagesWithIds()}
-                        isVersionReleased={this.isVersionReleased()}
                       ></Inspector>
                     ) : (
                       <center className="mt-5 p-2">
@@ -1844,14 +1847,12 @@ class EditorComponent extends React.Component {
                     zoomLevel={zoomLevel}
                     currentLayout={currentLayout}
                     darkMode={this.props.darkMode}
-                    isVersionReleased={this.isVersionReleased()}
                   ></WidgetManager>
                 )}
               </div>
               {config.COMMENT_FEATURE_ENABLE && showComments && (
                 <CommentNotifications
                   socket={this.socket}
-                  appVersionsId={this.state?.editingVersion?.id}
                   toggleComments={this.toggleComments}
                   pageId={this.state.currentPageId}
                 />
@@ -1864,4 +1865,24 @@ class EditorComponent extends React.Component {
   }
 }
 
-export const Editor = withTranslation()(withRouter(EditorComponent));
+const withStore = (Component) => (props) => {
+  const { isVersionReleased, editingVersion, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      editingVersion: state.editingVersion,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
+
+  return (
+    <Component
+      {...props}
+      isVersionReleased={isVersionReleased}
+      editingVersion={editingVersion}
+      isEditorFreezed={isEditorFreezed}
+    />
+  );
+};
+
+export const Editor = withTranslation()(withRouter(withStore(EditorComponent)));
