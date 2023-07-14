@@ -67,7 +67,7 @@ export async function uploadBlob(client, options: QueryOptions): Promise<string>
   const blobOptions = {
     blobHTTPHeaders: {
       blobContentType: options.contentType,
-      blobContentEncoding: options.encoding,
+      blobContentEncoding: options.encoding || 'utf8',
     },
   };
   const file = Buffer.from(options.data);
