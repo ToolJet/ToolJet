@@ -95,6 +95,7 @@ export const deleteDownloadsFolder = () => {
 };
 
 export const navigateToAppEditor = (appName) => {
+  cy.reloadAppForTheElement(appName);
   cy.get(commonSelectors.appCard(appName))
     .trigger("mousehover")
     .trigger("mouseenter")

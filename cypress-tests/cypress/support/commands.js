@@ -247,6 +247,7 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
       cy.reload();
     }
   });
+  cy.wait(3000);
 });
 
 Cypress.Commands.add("skipEditorPopover", () => {
