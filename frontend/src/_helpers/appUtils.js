@@ -10,7 +10,7 @@ import {
   loadPyodide,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
-import _, { isEmpty } from 'lodash';
+import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { componentTypes } from '@/Editor/WidgetManager/components';
@@ -399,7 +399,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'run-query': {
         const { queryId, queryName } = event;
-        const args = isEmpty(customVariables) ? event['arguments'] : customVariables;
+        const args = _.isEmpty(customVariables) ? event['arguments'] : customVariables;
         const resolvedArgs = {};
         if (args) {
           Object.keys(args).map(
