@@ -677,15 +677,15 @@ class TableComponent extends React.Component {
                 <label className="form-label">{this.props.t('w', 'Href')}</label>
                 <CodeHinter
                   currentState={this.props.currentState}
-                  initialValue={column?.href || '{{cellValue}}'}
+                  initialValue={column?.linkHref ?? '{{cellValue}}'}
                   theme={this.props.darkMode ? 'monokai' : 'default'}
                   mode="javascript"
                   lineNumbers={false}
                   placeholder={''}
-                  onChange={(value) => this.onColumnItemChange(index, 'href', value)}
-                  componentName={this.getPopoverFieldSource(column.columnType, 'href')}
+                  onChange={(value) => this.onColumnItemChange(index, 'linkHref', value)}
+                  componentName={this.getPopoverFieldSource(column.columnType, 'linkHref')}
                   popOverCallback={(showing) => {
-                    this.setColumnPopoverRootCloseBlocker('href', showing);
+                    this.setColumnPopoverRootCloseBlocker('linkHref', showing);
                   }}
                 />
               </div>

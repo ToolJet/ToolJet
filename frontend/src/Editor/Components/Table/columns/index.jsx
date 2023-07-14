@@ -445,11 +445,7 @@ export default function generateColumnsData({
           }
           case 'link': {
             const linkTarget = resolveReferences(column?.linkTarget ?? '_blank', currentState);
-            const href =
-              cell.column?.href === 'undefined' || typeof cell.column?.href === 'undefined'
-                ? cellValue
-                : cell.column.href;
-            const linkHref = resolveReferences(href, currentState, '', {
+            const linkHref = resolveReferences(column?.linkHref ?? cellValue, currentState, '', {
               cellValue,
               rowData,
             });
