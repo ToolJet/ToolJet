@@ -130,6 +130,12 @@ function DataSourceLister({
         menuPortalTarget={document.querySelector('.main-wrapper')}
         maxMenuHeight={400}
         minMenuHeight={300}
+        filterOption={(data, search) => {
+          if (data?.data?.source) {
+            return data.data.source.name.toLowerCase().includes(search.toLowerCase());
+          }
+          return true;
+        }}
       />
     </div>
   );
