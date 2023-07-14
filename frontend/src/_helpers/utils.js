@@ -698,6 +698,7 @@ export const loadPyodide = async () => {
     return pyodide;
   } catch (error) {
     console.log('loadPyodide error', error);
+    throw 'Could not load Pyodide to execute Python';
   }
 };
 export function safelyParseJSON(json) {
