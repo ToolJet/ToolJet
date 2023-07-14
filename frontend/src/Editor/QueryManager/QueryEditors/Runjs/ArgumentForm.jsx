@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, OverlayTrigger, Popover, Row, Col } from 'react-bootstrap';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { Button, Form, Popover, Row, Col } from 'react-bootstrap';
+import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 
 const isValidVariableName = (str) => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(str);
 
-const ArgumentFormOverlay = ({
+const ArgumentForm = ({
   darkMode,
   isEdit,
   name: _name,
@@ -84,4 +84,4 @@ const ArgumentFormOverlay = ({
   );
 };
 
-export default ArgumentFormOverlay;
+export default ArgumentForm;

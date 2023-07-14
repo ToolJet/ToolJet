@@ -1,12 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
-import { changeOption } from './utils';
+import React, { useState, useEffect } from 'react';
+import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { defaults } from 'lodash';
-import { Badge, Button, ButtonGroup, Card, CloseButton } from 'react-bootstrap';
-import CardHeader from 'react-bootstrap/esm/CardHeader';
-import ArgumentFormPopup, { PillButton } from './ArgumentFormPopup';
-import Remove from '@/_ui/Icon/bulkIcons/Remove';
-import { RunjsArgumentList } from './RunjsArgumentList';
+import { Card } from 'react-bootstrap';
+import ArgumentList from './ArgumentList';
 
 const Runjs = (props) => {
   const initialOptions = defaults({ ...props.options }, { code: '//Type your JavaScript code here', arguments: [] });
@@ -40,7 +36,7 @@ const Runjs = (props) => {
 
   return (
     <Card className="runjs-editor">
-      <RunjsArgumentList
+      <ArgumentList
         args={options.arguments}
         handleAddArgument={handleAddArgument}
         handleArgumentChange={handleArgumentChange}

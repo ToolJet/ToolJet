@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Button, ButtonGroup, Col, Form, OverlayTrigger, Popover, Row } from 'react-bootstrap';
+import { Button, ButtonGroup, OverlayTrigger, Popover, Row } from 'react-bootstrap';
 import cx from 'classnames';
-import { Tooltip } from 'react-tooltip';
 import PlusRectangle from '@/_ui/Icon/solidIcons/PlusRectangle';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
-import ArgumentFormOverlay from './ArgumentFormOverlay';
+import ArgumentForm from './ArgumentForm';
 
-const ArgumentFormPopup = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, currentState, otherArgs }) => {
+const ArgumentDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, currentState, otherArgs }) => {
   const [showModal, setShowModal] = useState(false);
   const closeMenu = () => setShowModal(false);
 
@@ -42,7 +40,7 @@ const ArgumentFormPopup = ({ darkMode, onSubmit, isEdit, name, defaultValue, onR
           className={`query-manager-sort-filter-popup ${darkMode && 'popover-dark-themed dark-theme theme-dark'}`}
           style={{ width: '268px' }}
         >
-          <ArgumentFormOverlay
+          <ArgumentForm
             darkMode={darkMode}
             isEdit={isEdit}
             otherArgs={otherArgs}
@@ -112,4 +110,4 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom }) => (
   </ButtonGroup>
 );
 
-export default ArgumentFormPopup;
+export default ArgumentDetails;

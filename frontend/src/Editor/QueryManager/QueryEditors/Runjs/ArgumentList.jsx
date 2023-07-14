@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import ArgumentFormPopup, { PillButton } from './ArgumentFormPopup';
+import ArgumentDetails, { PillButton } from './ArgumentDetails';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
-import ArgumentFormOverlay from './ArgumentFormOverlay';
+import ArgumentForm from './ArgumentForm';
 
-const RunjsArgumentList = ({
+const ArgumentList = ({
   args,
   handleAddArgument,
   handleArgumentChange,
@@ -60,7 +60,7 @@ const RunjsArgumentList = ({
         .filter((arg) => arg.isVisible)
         .map((argument) => {
           return (
-            <ArgumentFormPopup
+            <ArgumentDetails
               isEdit
               key={argument.name}
               onSubmit={(arg) => handleArgumentChange(argument.index, arg)}
@@ -85,7 +85,7 @@ const RunjsArgumentList = ({
             style={{ minWidth: '268px', maxWidth: 'fit-content' }}
           >
             {selectedArg ? (
-              <ArgumentFormOverlay
+              <ArgumentForm
                 darkMode={darkMode}
                 isEdit={true}
                 name={selectedArg.name}
@@ -129,9 +129,9 @@ const RunjsArgumentList = ({
           )}
         </span>
       </OverlayTrigger>
-      <ArgumentFormPopup onSubmit={handleAddArgument} currentState={currentState} darkMode={darkMode} />
+      <ArgumentDetails onSubmit={handleAddArgument} currentState={currentState} darkMode={darkMode} />
     </div>
   );
 };
 
-export { RunjsArgumentList };
+export default ArgumentList;
