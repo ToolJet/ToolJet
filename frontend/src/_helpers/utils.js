@@ -394,14 +394,15 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
 
   const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
-  const queryDetails = get(_ref, 'state.app.data_queries', []).find((q) => q.id === queryId);
-  const defaultArguments = queryDetails?.options?.arguments.reduce(
-    (defaultVals, arg) => ({
-      ...defaultVals,
-      [arg.name]: resolveReferences(arg.defaultValue, _ref.state.currentState, undefined),
-    }),
-    {}
-  );
+  const queryDetails = useDataQueriesStore.getState().dataQueries.find((q) => q.id === queryId);
+  const defaultArguments =
+    queryDetails?.options?.arguments?.reduce(
+      (defaultVals, arg) => ({
+        ...defaultVals,
+        [arg.name]: resolveReferences(arg.defaultValue, _ref.state.currentState, undefined),
+      }),
+      {}
+    ) || {};
 
   const formattedArgs = { ...defaultArguments, ...args };
   Object.keys(formattedArgs).map((key) => {
@@ -414,8 +415,8 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
       ...currentState.queries[key],
       run: (...args) => {
         const processedArgs = {};
-        const query = get(_ref, 'state.app.data_queries', []).find((q) => q.name === key);
-        query.options.arguments.forEach((arg, index) => (processedArgs[arg.name] = args[index]));
+        const query = useDataQueriesStore.getState().dataQueries.find((q) => q.name === key);
+        query.options.arguments?.forEach((arg, index) => (processedArgs[arg.name] = args[index]));
         actions.runQuery(key, processedArgs);
       },
     };
@@ -526,8 +527,8 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     : {};
   const runQuery = (queryName = '', args) => {
     const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
-    const processedArgs = {};
 
+    const processedArgs = {};
     if (_.isEmpty(query) || queryId === query?.id) {
       const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
       toast.error(errorMsg);
@@ -535,11 +536,11 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     }
 
     if (!_.isEmpty(query?.options?.arguments)) {
-      query.options.arguments.forEach((arg, index) => (processedArgs[arg.name] = args[arg.name]));
+      query.options.arguments?.forEach((arg, index) => args && (processedArgs[arg.name] = args?.[arg.name]));
     }
 
     if (isPreview) {
-      return previewQuery(_ref, query, true);
+      return previewQuery(_ref, query, true, processedArgs);
     }
 
     const event = {
