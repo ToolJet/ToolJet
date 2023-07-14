@@ -1560,11 +1560,11 @@ export const computeQueryState = (queries, _ref) => {
       queryState[query.name] = {
         ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
         kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
-        ...getCurrentState().queries[query.name],
+        ...getCurrentState()?.queries[query.name],
       };
     }
   });
-  const hasDiffQueryState = !_.isEqual(_ref.state?.currentState?.queries, queryState);
+  const hasDiffQueryState = !_.isEqual(getCurrentState()?.queries, queryState);
   if (hasDiffQueryState) {
     useCurrentStateStore.getState().actions.setCurrentState({
       queries: {
