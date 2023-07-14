@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-escape */
 import moment from 'moment';
-import _, { get } from 'lodash';
+import _ from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
@@ -535,7 +535,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     }
 
     if (!_.isEmpty(query?.options?.arguments)) {
-      query.options.arguments?.forEach((arg, index) => args && (processedArgs[arg.name] = args?.[arg.name]));
+      query.options.arguments?.forEach((arg) => args && (processedArgs[arg.name] = args?.[arg.name]));
     }
 
     if (isPreview) {

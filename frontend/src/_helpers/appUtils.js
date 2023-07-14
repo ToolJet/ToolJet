@@ -399,7 +399,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'run-query': {
         const { queryId, queryName } = event;
-        const args = _.isEmpty(customVariables) ? event['arguments'] : customVariables;
+        const args = event['arguments'];
         const resolvedArgs = {};
         if (args) {
           Object.keys(args).map(
