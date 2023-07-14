@@ -146,7 +146,7 @@ class EditorComponent extends React.Component {
           lastName: currentUser.last_name,
           groups: currentSession.group_permissions?.map((group) => group.group),
         };
-
+        this.setState({ currentUser });
         useCurrentStateStore.getState().actions.setCurrentState({
           globals: {
             ...this.props.currentState.globals,

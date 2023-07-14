@@ -32,8 +32,7 @@ import { toast } from 'react-hot-toast';
 import { withRouter } from '@/_hoc/withRouter';
 import { setCookie } from '@/_helpers/cookie';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { useCurrentStateStore } from '../_stores/currentStateStore';
-
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 class ViewerComponent extends React.Component {
   constructor(props) {
     super(props);
