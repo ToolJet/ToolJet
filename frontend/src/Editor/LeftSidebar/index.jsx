@@ -5,7 +5,7 @@ import { LeftSidebarInspector } from './SidebarInspector';
 import { LeftSidebarDataSources } from './SidebarDatasources';
 import { DarkModeToggle } from '../../_components/DarkModeToggle';
 import useRouter from '../../_hooks/use-router';
-import { LeftSidebarDebugger } from './SidebarDebugger';
+import { LeftSidebarDebugger } from './SidebarDebugger/SidebarDebugger';
 import { LeftSidebarComment } from './SidebarComment';
 import LeftSidebarPageSelector from './SidebarPageSelector';
 import { ConfirmDialog } from '@/_components';
