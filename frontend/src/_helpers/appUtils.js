@@ -912,7 +912,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       queryExecutionPromise = tooljetDbOperations.perform(
         query.options,
         currentSessionValue?.current_organization_id,
-        _self.state.currentState
+        getCurrentState()
       );
     } else {
       queryExecutionPromise = dataqueryService.run(queryId, options);
