@@ -408,7 +408,6 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
   Object.keys(formattedArgs).map((key) => {
     formattedArgs[key] = args[key] === undefined ? defaultArguments[key] : args[key];
   });
-  // debugger;
 
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
