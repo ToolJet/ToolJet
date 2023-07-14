@@ -235,6 +235,7 @@ export const EventManager = ({
   };
 
   function eventPopover(event, index) {
+    const dataQuery = event.queryId && dataQueries.find((dataquery) => dataquery.id === event.queryId);
     return (
       <Popover
         id="popover-basic"
@@ -441,34 +442,32 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                {event.queryId &&
-                  !isEmpty(dataQueries.find((dataquery) => dataquery.id === event.queryId)?.options?.arguments) && (
-                    <div className="row mt-3">
-                      {dataQueries
-                        .find((dataquery) => dataquery.id === event.queryId)
-                        ?.options?.arguments.map((args) => (
-                          <>
-                            <div className="col-3 p-2" key={args.name}>
-                              {args.name}
-                            </div>
-                            <div className="col-9 p-2">
-                              <CodeHinter
-                                theme={darkMode ? 'monokai' : 'default'}
-                                currentState={currentState}
-                                initialValue={event.arguments?.[args.name] || args.defaultValue}
-                                onChange={(value) => {
-                                  const newArgs = { ...events?.[index]?.arguments };
-                                  console.log('args.name', args.name);
-                                  newArgs[args.name] = value;
-                                  handlerChanged(index, 'arguments', newArgs);
-                                }}
-                                usePortalEditor={false}
-                              />
-                            </div>
-                          </>
-                        ))}
-                    </div>
-                  )}
+                {event.queryId && !isEmpty(dataQuery?.options?.arguments) && (
+                  <div className="row mt-3">
+                    <label className="form-label mt-2">Arguments</label>
+                    {dataQuery?.options?.arguments.map((args) => (
+                      <>
+                        <div className="col-3 p-2" key={args.name}>
+                          {args.name}
+                        </div>
+                        <div className="col-9">
+                          <CodeHinter
+                            theme={darkMode ? 'monokai' : 'default'}
+                            currentState={currentState}
+                            initialValue={event.arguments?.[args.name] || args.defaultValue}
+                            onChange={(value) => {
+                              const newArgs = { ...events?.[index]?.arguments };
+                              console.log('args.name', args.name);
+                              newArgs[args.name] = value;
+                              handlerChanged(index, 'arguments', newArgs);
+                            }}
+                            usePortalEditor={false}
+                          />
+                        </div>
+                      </>
+                    ))}
+                  </div>
+                )}
               </>
             )}
 
