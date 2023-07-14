@@ -1,8 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
-import AddRectangle from '../../../../_ui/Icon/bulkIcons/AddRectangle';
-import Remove from '../../../../_ui/Icon/solidIcons/Remove';
+import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
+import Remove from '@/_ui/Icon/solidIcons/Remove';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export default ({
   options = [],
@@ -80,17 +81,11 @@ export default ({
           />
         </div>
       ) : (
-        <div className="d-flex" style={{ maxHeight: '32px' }}>
-          <button
-            className={`d-flex align-items-center justify-content-center add-tabs bg-transparent border-0 color-light-indigo-09`}
-            style={{ background: darkMode ? 'inherit' : '#F8F9FA', height: '32px' }}
-            onClick={() => addNewKeyValuePair(paramType)}
-            role="button"
-          >
+        <div className="d-flex mb-2" style={{ maxHeight: '32px' }}>
+          <ButtonSolid variant="ghostBlue" size="sm" onClick={() => addNewKeyValuePair(paramType)}>
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
             &nbsp;&nbsp;{t('editor.inspector.eventManager.addKeyValueParam', 'Add more')}
-          </button>
-          <div className="col" style={{ flex: '1', background: darkMode ? '' : '#ffffff' }}></div>
+          </ButtonSolid>
         </div>
       )}
     </div>

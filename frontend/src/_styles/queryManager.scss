@@ -642,7 +642,6 @@ $border-radius: 4px;
   .list-group-item:hover {
     color: $color-light-slate-12 !important;
     background-color: $color-light-slate-03 !important;
-    border-radius: 6px;
   }
 
   .list-group-item+.list-group-item.active {
@@ -1592,7 +1591,6 @@ $border-radius: 4px;
   .rest-methods-url {
     .code-hinter.codehinter-default-input {
       border: solid inherit !important;
-      border-radius: 0 6px 6px 0 !important;
 
       .CodeMirror.cm-s-monokai.CodeMirror-wrap {
         background-color: transparent !important;

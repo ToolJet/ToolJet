@@ -55,7 +55,10 @@ const QueryManager = ({
 
   useEffect(() => {
     if (selectedQuery) {
-      if (selectedQuery?.kind in defaultSources && !selectedQuery?.data_source_id) {
+      if (
+        selectedQuery?.kind in defaultSources &&
+        (!selectedQuery?.data_source_id || ['runjs', 'runpy'].includes(selectedQuery?.data_source_id))
+      ) {
         return setSelectedDataSource(defaultSources[selectedQuery?.kind]);
       }
       setSelectedDataSource(

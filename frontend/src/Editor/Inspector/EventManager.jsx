@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { Tooltip } from 'react-tooltip';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const EventManager = ({
   component,
@@ -968,15 +969,11 @@ export const EventManager = ({
   return (
     <>
       {renderHandlers(events)}
-      <div className="mb-3 px-2 font-weight-bold">
-        <button
-          className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
-          onClick={addHandler}
-          data-cy="add-more-event-handler"
-        >
+      <div className="mb-3">
+        <ButtonSolid variant="ghostBlue" size="sm" onClick={addHandler} data-cy="add-more-event-handler">
           <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
           &nbsp;&nbsp;{t('editor.inspector.eventManager.addHandler', 'Add handler')}
-        </button>
+        </ButtonSolid>
       </div>
     </>
   );

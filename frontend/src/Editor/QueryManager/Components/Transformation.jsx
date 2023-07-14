@@ -135,8 +135,11 @@ return [row for row in data if row['amount'] > 1000]
   };
 
   const popoverForRecommendation = (
-    <Popover id="transformation-popover-container">
-      <div className="transformation-popover card text-center">
+    <Popover
+      id={`transformation-popover-container`}
+      className={`${darkMode && 'popover-dark-themed theme-dark dark-theme'}`}
+    >
+      <div className={`transformation-popover card text-center ${darkMode && 'tj-dark-mode'}`}>
         <img src="/assets/images/icons/copilot.svg" alt="AI copilot" height={64} width={64} />
         <div className="d-flex flex-column card-body">
           <h4 className="mb-2">ToolJet x OpenAI</h4>
@@ -284,7 +287,7 @@ const EducativeLebel = ({ popoverForRecommendation, darkMode }) => {
       <Button.UnstyledButton styles={{ height: '28px' }} darkMode={darkMode} classNames="mx-1">
         <Button.Content title={title} iconSrc={'assets/images/icons/flash.svg'} direction="left" />
       </Button.UnstyledButton>
-      <OverlayTrigger overlay={popoverForRecommendation} trigger="click">
+      <OverlayTrigger overlay={popoverForRecommendation} rootClose trigger="click" placement="right">
         <span style={{ cursor: 'pointer' }} data-cy={`transformation-info-icon`} className="lh-1">
           <Information width={18} fill={'var(--indigo9)'} />
         </span>

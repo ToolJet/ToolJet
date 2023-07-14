@@ -5048,7 +5048,6 @@ div#driver-page-overlay {
 }
 
 #transformation-popover-container {
-  margin-left: 80px !important;
   margin-bottom: -2px !important;
 }
 
@@ -10827,7 +10826,7 @@ tbody {
 */
 .tj-dark-mode {
   background-color: var(--base) !important;
-  color: var(--base-black);
+  color: var(--base-black) !important;
 }
 
 .tj-list-btn {
