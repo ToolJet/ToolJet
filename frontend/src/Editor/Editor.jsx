@@ -221,8 +221,7 @@ class EditorComponent extends React.Component {
     });
 
     this.dataQueriesStoreListner = useDataQueriesStore.subscribe(({ dataQueries }) => {
-      const publishedQueries = dataQueries.filter(({ status }) => status === 'published');
-      computeQueryState(publishedQueries, this);
+      computeQueryState(dataQueries, this);
     }, shallow);
   }
 

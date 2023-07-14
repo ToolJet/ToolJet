@@ -44,7 +44,9 @@ export const CustomComponent = (props) => {
           if (e.data.message === 'UPDATE_DATA') {
             setCustomProps({ ...customPropRef.current, ...e.data.updatedObj });
           } else if (e.data.message === 'RUN_QUERY') {
-            const filteredQuery = dataQueryRef.current.filter((query) => query.name === e.data.queryName);
+            const filteredQuery = dataQueryRef.current.filter(
+              (query) => query.name === e.data.queryName && query.status !== 'draft'
+            );
             filteredQuery.length === 1 &&
               fireEvent('onTrigger', { queryId: filteredQuery[0].id, queryName: filteredQuery[0].name });
           } else {

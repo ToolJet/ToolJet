@@ -500,7 +500,14 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
     : {};
   const runQuery = (queryName = '') => {
-    const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
+    const query = useDataQueriesStore.getState().dataQueries.find((query) => {
+      const isFound = query.name === queryName;
+      if (isPreview) {
+        return isFound;
+      } else {
+        return isFound && query.status !== 'draft';
+      }
+    });
 
     if (_.isEmpty(query) || queryId === query?.id) {
       const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
