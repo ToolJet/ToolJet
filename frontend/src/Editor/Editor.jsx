@@ -149,7 +149,7 @@ class EditorComponent extends React.Component {
 
         useCurrentStateStore.getState().actions.setCurrentState({
           globals: {
-            ...useCurrentState().globals,
+            ...this.props.currentState.globals,
             currentUser: userVars,
           },
         });
@@ -935,7 +935,7 @@ class EditorComponent extends React.Component {
   changeDarkMode = (newMode) => {
     useCurrentStateStore.getState().actions.setCurrentState({
       globals: {
-        ...useCurrentState().globals,
+        ...this.props.currentState.globals,
         theme: { name: newMode ? 'dark' : 'light' },
       },
     });
@@ -1349,7 +1349,7 @@ class EditorComponent extends React.Component {
     document.getElementById('real-canvas').scrollIntoView();
     if (
       this.state.currentPageId === pageId &&
-      useCurrentState().page.handle === this.state.appDefinition?.pages[pageId]?.handle
+      this.props.currentState.page.handle === this.state.appDefinition?.pages[pageId]?.handle
     ) {
       return;
     }
@@ -1362,7 +1362,7 @@ class EditorComponent extends React.Component {
 
     this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.appId}/${handle}?${queryParamsString}`);
 
-    const { globals: existingGlobals } = useCurrentState();
+    const { globals: existingGlobals } = this.props.currentState;
 
     const page = {
       id: pageId,
@@ -1383,7 +1383,7 @@ class EditorComponent extends React.Component {
           [currentPageId]: {
             ...(this.state.pages?.[currentPageId] ?? {}),
             variables: {
-              ...(useCurrentState()?.page?.variables ?? {}),
+              ...(this.props.currentState?.page?.variables ?? {}),
             },
           },
         },
