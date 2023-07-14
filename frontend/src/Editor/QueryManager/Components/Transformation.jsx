@@ -159,28 +159,6 @@ return [row for row in data if row['amount'] > 1000]
     </Popover>
   );
 
-  const EducativeLebel = () => {
-    const title = () => {
-      return (
-        <>
-          Powered by <strong style={{ fontWeight: 700, color: '#3E63DD' }}>AI copilot</strong>
-        </>
-      );
-    };
-    return (
-      <div className="d-flex">
-        <Button.UnstyledButton styles={{ height: '28px' }} darkMode={darkMode} classNames="mx-1">
-          <Button.Content title={title} iconSrc={'assets/images/icons/flash.svg'} direction="left" />
-        </Button.UnstyledButton>
-        <OverlayTrigger trigger="click" overlay={popoverForRecommendation} rootClose>
-          <span style={{ cursor: 'pointer' }} data-cy={`transformation-info-icon`} className="lh-1">
-            <Information width={18} fill={'var(--indigo9)'} />
-          </span>
-        </OverlayTrigger>
-      </div>
-    );
-  };
-
   return (
     <div className="field  transformation-editor">
       <div className="align-items-center gap-2" style={{ display: 'flex', position: 'relative', height: '20px' }}>
@@ -202,7 +180,7 @@ return [row for row in data if row['amount'] > 1000]
                   <span className="ps-1">Enable</span>
                 </span>
               </div>
-              <EducativeLebel />
+              <EducativeLebel popoverForRecommendation={popoverForRecommendation} darkMode={darkMode} />
             </div>
             <div></div>
           </div>
@@ -289,6 +267,28 @@ return [row for row in data if row['amount'] > 1000]
           )}
         </div>
       </Row>
+    </div>
+  );
+};
+
+const EducativeLebel = ({ popoverForRecommendation, darkMode }) => {
+  const title = () => {
+    return (
+      <>
+        Powered by <strong style={{ fontWeight: 700, color: '#3E63DD' }}>AI copilot</strong>
+      </>
+    );
+  };
+  return (
+    <div className="d-flex">
+      <Button.UnstyledButton styles={{ height: '28px' }} darkMode={darkMode} classNames="mx-1">
+        <Button.Content title={title} iconSrc={'assets/images/icons/flash.svg'} direction="left" />
+      </Button.UnstyledButton>
+      <OverlayTrigger overlay={popoverForRecommendation} trigger="click">
+        <span style={{ cursor: 'pointer' }} data-cy={`transformation-info-icon`} className="lh-1">
+          <Information width={18} fill={'var(--indigo9)'} />
+        </span>
+      </OverlayTrigger>
     </div>
   );
 };
