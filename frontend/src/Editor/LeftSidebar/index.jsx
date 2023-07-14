@@ -71,6 +71,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const [errorLogs, setErrorLogs] = useState([]);
   const [errorHistory, setErrorHistory] = useState({ appLevel: [], pageLevel: [] });
   const [unReadErrorCount, setUnReadErrorCount] = useState({ read: 0, unread: 0 });
+  const [allLog, setAllLog] = useState([]);
 
   const sideBarBtnRefs = useRef({});
 
@@ -121,7 +122,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         };
       });
     }
-    debuggerActions.flush();
+    // debuggerActions.flush();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ errors })]);
 
@@ -253,16 +254,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
     debugger: (
       <LeftSidebarDebugger
         darkMode={darkMode}
-        selectedSidebarItem={selectedSidebarItem}
-        components={components}
         errors={errorLogs}
-        debuggerActions={debuggerActions}
-        currentPageId={currentPageId}
-        popoverContentHeight={popoverContentHeight}
         clearErrorLogs={clearErrorLogs}
         setPinned={handlePin}
         pinned={pinned}
-        setEditorMarginLeft={setEditorMarginLeft}
       />
     ),
   };
