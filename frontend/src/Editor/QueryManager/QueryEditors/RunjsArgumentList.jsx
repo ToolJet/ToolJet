@@ -66,6 +66,7 @@ const RunjsArgumentList = ({
               onSubmit={(arg) => handleArgumentChange(argument.index, arg)}
               onRemove={() => handleArgumentRemove(argument.index)}
               name={argument.name}
+              otherArgs={formattedArguments.filter((a) => a.name !== argument.name)}
               defaultValue={argument.defaultValue}
               currentState={currentState}
               darkMode={darkMode}

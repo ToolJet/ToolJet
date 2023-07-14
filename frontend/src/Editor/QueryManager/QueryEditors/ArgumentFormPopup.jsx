@@ -7,7 +7,7 @@ import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import ArgumentFormOverlay from './ArgumentFormOverlay';
 
-const ArgumentFormPopup = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, currentState }) => {
+const ArgumentFormPopup = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, currentState, otherArgs }) => {
   const [showModal, setShowModal] = useState(false);
   const closeMenu = () => setShowModal(false);
 
@@ -45,6 +45,7 @@ const ArgumentFormPopup = ({ darkMode, onSubmit, isEdit, name, defaultValue, onR
           <ArgumentFormOverlay
             darkMode={darkMode}
             isEdit={isEdit}
+            otherArgs={otherArgs}
             name={name}
             defaultValue={defaultValue}
             onSubmit={handleSubmit}

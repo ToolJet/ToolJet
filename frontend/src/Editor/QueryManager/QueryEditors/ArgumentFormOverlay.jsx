@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Button, Form, OverlayTrigger, Popover, Row, Col } from 'react-bootstrap';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 
+const isValidVariableName = (str) => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(str);
+
 const ArgumentFormOverlay = ({
   darkMode,
   isEdit,
@@ -10,9 +12,11 @@ const ArgumentFormOverlay = ({
   onSubmit,
   currentState,
   showModal,
+  otherArgs = [],
 }) => {
   const [name, setName] = useState();
   const [defaultValue, setDefaultValue] = useState();
+  const [error, setError] = useState();
 
   useEffect(() => {
     setName(_name);
@@ -24,9 +28,18 @@ const ArgumentFormOverlay = ({
     onSubmit && onSubmit({ name, defaultValue });
   };
 
-  const isValidVariableName = (str) => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(str);
+  useEffect(() => {
+    console.log(otherArgs, name);
+    if (!isValidVariableName(name)) {
+      setError('Variable name invalid');
+    } else if (name && otherArgs.some((a) => a.name === name.trim())) {
+      setError('Variable name exists');
+    } else {
+      setError();
+    }
+  }, [name]);
 
-  const isNameValid = isValidVariableName(name);
+  // eslint-disable-next-line no-undef
 
   return (
     <>
@@ -44,7 +57,7 @@ const ArgumentFormOverlay = ({
                 onChange={(event) => setName(event.target.value)}
                 value={name}
               />
-              {name && !isNameValid && <div class="invalid-feedback d-block">Invalid varibale name.</div>}
+              {name && error && <div class="invalid-feedback d-block">{error}</div>}
             </Col>
           </Form.Group>
           <Form.Group as={Row} className="mb-3">
@@ -59,14 +72,10 @@ const ArgumentFormOverlay = ({
                 usePortalEditor={false}
                 height={36}
                 initialValue={defaultValue}
-                // enablePreview={false}
               />
-              <Form.Text id="defaultValue" muted>
-                Expression resolved once on save.
-              </Form.Text>
             </Col>
           </Form.Group>
-          <Button type="submit" className="w-100" disabled={!name || !isNameValid}>
+          <Button type="submit" className="w-100" disabled={!name || error}>
             Save
           </Button>
         </Form>

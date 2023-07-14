@@ -14,11 +14,13 @@
                     fn(props);
                     callbackFn = fn;
                 },
-                runQuery: name => {
+                runQuery: (name, args) => {
+                    debugger;
                     window.parent.postMessage({
                     from: 'customComponent',
                     message: "RUN_QUERY",
                     queryName: name,
+                    queryArgs: JSON.stringify(args || {}),
                     componentId: window.Tooljet.componentId
                 }, "*")},
                 updateProps: obj => window.parent.postMessage({
@@ -76,7 +78,7 @@
                 render() {
                 return <WrappedComponent data={this.state?.data ?? {}} 
                     updateData={(e) => Tooljet.updateProps(e)} 
-                    runQuery={(e) => Tooljet.runQuery(e)}/>
+                    runQuery={(e, args) => Tooljet.runQuery(e, args)}/>
                 }
             }
             return ConnectedComponent;

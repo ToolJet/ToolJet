@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-escape */
 import moment from 'moment';
-import _ from 'lodash';
+import _, { get } from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
@@ -387,19 +387,37 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', args) {
+export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', args = {}) {
   const { currentState } = _ref.state;
   let result = {},
     error = null;
 
   const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
-  console.trace(args);
+  const queryDetails = get(_ref, 'state.app.data_queries', []).find((q) => q.id === queryId);
+  const defaultArguments = queryDetails?.options?.arguments.reduce(
+    (defaultVals, arg) => ({
+      ...defaultVals,
+      [arg.name]: resolveReferences(arg.defaultValue, _ref.state.currentState, undefined),
+    }),
+    {}
+  );
+
+  const formattedArgs = { ...defaultArguments, ...args };
+  Object.keys(formattedArgs).map((key) => {
+    formattedArgs[key] = args[key] === undefined ? defaultArguments[key] : args[key];
+  });
+  // debugger;
 
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
       ...currentState.queries[key],
-      run: (...args) => actions.runQuery(key, args),
+      run: (...args) => {
+        const processedArgs = {};
+        const query = get(_ref, 'state.app.data_queries', []).find((q) => q.name === key);
+        query.options.arguments.forEach((arg, index) => (processedArgs[arg.name] = args[index]));
+        actions.runQuery(key, processedArgs);
+      },
     };
   }
 
@@ -434,7 +452,7 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
         actions,
         currentState?.client,
         currentState?.server,
-        args
+        formattedArgs
       ),
     };
   } catch (err) {
@@ -517,7 +535,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     }
 
     if (!_.isEmpty(query?.options?.arguments)) {
-      query.options.arguments.forEach((arg, index) => (processedArgs[arg.name] = args[index]));
+      query.options.arguments.forEach((arg, index) => (processedArgs[arg.name] = args[arg.name]));
     }
 
     if (isPreview) {

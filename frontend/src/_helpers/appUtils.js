@@ -596,7 +596,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   }
 
   if (eventName === 'onTrigger') {
-    const { component, queryId, queryName } = options;
+    const { component, queryId, queryName, arguments: args } = options;
     _self.setState(
       {
         currentState: {
@@ -610,7 +610,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
       () => {
-        runQuery(_ref, queryId, queryName, true, mode);
+        runQuery(_ref, queryId, queryName, true, mode, args);
       }
     );
   }
