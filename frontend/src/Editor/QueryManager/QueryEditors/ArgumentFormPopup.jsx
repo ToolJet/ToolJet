@@ -39,7 +39,7 @@ const ArgumentFormPopup = ({ darkMode, onSubmit, isEdit, name, defaultValue, onR
       overlay={
         <Popover
           id="argument-form-popover"
-          className={`query-manager-sort-filter-popup ${darkMode && 'popover-dark-themed'}`}
+          className={`query-manager-sort-filter-popup ${darkMode && 'popover-dark-themed dark-theme theme-dark'}`}
           style={{ width: '268px' }}
         >
           <ArgumentFormOverlay
@@ -51,48 +51,6 @@ const ArgumentFormPopup = ({ darkMode, onSubmit, isEdit, name, defaultValue, onR
             showModal={showModal}
             currentState={currentState}
           />
-          {/* <Popover.Header style={{ fontSize: '12px' }}>
-            {isEdit ? 'UPDATE ARGUMENT' : 'ADD NEW ARGUMENT'}
-          </Popover.Header>
-          <Popover.Body key={'1'} bsPrefix="popover-body" className="px-0">
-            <Form className="container px-3 pb-3" onSubmit={handleSubmit}>
-              <Form.Group as={Row} className="mb-3">
-                <Form.Label column htmlFor="argName">
-                  Name
-                </Form.Label>
-                <Col sm="9">
-                  <Form.Control
-                    type="text"
-                    aria-describedby="argName"
-                    onChange={(event) => setName(event.target.value)}
-                    value={name}
-                  />
-                </Col>
-              </Form.Group>
-              <Form.Group as={Row} className="mb-3">
-                <Form.Label column htmlFor="default">
-                  Default Value
-                </Form.Label>
-                <Col sm="9">
-                  <CodeHinter
-                    onChange={(value) => setDefaultValue(value)}
-                    theme={darkMode ? 'monokai' : 'default'}
-                    currentState={currentState}
-                    usePortalEditor={false}
-                    height={36}
-                    initialValue={defaultValue}
-                    // enablePreview={false}
-                  />
-                  <Form.Text id="defaultValue" muted>
-                    Expression resolved once on save.
-                  </Form.Text>
-                </Col>
-              </Form.Group>
-              <Button type="submit" className="w-100" disabled={!name}>
-                Save
-              </Button>
-            </Form>
-          </Popover.Body> */}
         </Popover>
       }
     >
@@ -122,7 +80,7 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom }) => (
   <ButtonGroup aria-label="Argument Badge" className={cx('ms-2', { 'mb-2': marginBottom })}>
     <Button
       size="sm"
-      className="custom-bg-secondary custom-text-dark"
+      className="bg-slate3 color-slate12 argument-badge"
       onClick={onClick}
       style={{
         borderTopLeftRadius: '15px',
@@ -133,13 +91,13 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom }) => (
         ...(!onRemove && { borderRadius: '15px' }),
       }}
     >
-      {name}
+      <span className="text-truncate">{name}</span>
     </Button>
     {onRemove && (
       <Button
         onClick={onRemove}
         size="sm"
-        className="custom-bg-secondary custom-text-dark"
+        className="bg-slate3 color-slate12"
         style={{
           borderTopRightRadius: '15px',
           borderBottomRightRadius: '15px',
@@ -147,7 +105,7 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom }) => (
           paddingRight: '0.75rem',
         }}
       >
-        <Remove fill="#000000" />
+        <Remove fill="var(--slate12)" />
       </Button>
     )}
   </ButtonGroup>

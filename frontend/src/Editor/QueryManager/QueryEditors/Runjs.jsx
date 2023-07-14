@@ -9,10 +9,8 @@ import Remove from '@/_ui/Icon/bulkIcons/Remove';
 import { RunjsArgumentList } from './RunjsArgumentList';
 
 const Runjs = (props) => {
-  const [options, setOptions] = useState(() => {
-    const initialOptions = defaults({ ...props.options }, { code: '//Type your JavaScript code here', arguments: [] });
-    return initialOptions;
-  });
+  const initialOptions = defaults({ ...props.options }, { code: '//Type your JavaScript code here', arguments: [] });
+  const [options, setOptions] = useState(initialOptions);
 
   const handleAddArgument = (newArgument) => {
     setOptions((prevOptions) => ({
@@ -20,6 +18,10 @@ const Runjs = (props) => {
       arguments: [...prevOptions.arguments, newArgument],
     }));
   };
+
+  useEffect(() => {
+    props.optionsChanged(options);
+  }, [options]);
 
   const handleArgumentChange = (index, updatedArgument) => {
     setOptions((prevOptions) => {
@@ -38,32 +40,13 @@ const Runjs = (props) => {
 
   return (
     <Card className="runjs-editor">
-      {/* <div className="card-header" ref={containerRef}>
-        Parameters
-        {formattedArguments
-          .filter((arg) => arg.isVisible)
-          .map((argument, index) => {
-            return (
-              <ArgumentFormPopup
-                isEdit
-                key={index}
-                onSubmit={(arg) => handleArgumentChange(index, arg)}
-                onRemove={() => handleArgumentRemove(index)}
-                name={argument.name}
-                defaultValue={argument.defaultValue}
-                currentState={props.currentState}
-              />
-            );
-          })}
-        {formattedArguments.some((arg) => !arg.isVisible) && <PillButton name="More" />}
-        <ArgumentFormPopup onSubmit={handleAddArgument} currentState={props.currentState} />
-      </div> */}
       <RunjsArgumentList
         args={options.arguments}
         handleAddArgument={handleAddArgument}
         handleArgumentChange={handleArgumentChange}
         handleArgumentRemove={handleArgumentRemove}
         currentState={props.currentState}
+        darkMode={props.darkMode}
       />
 
       <CodeHinter
@@ -75,7 +58,7 @@ const Runjs = (props) => {
         height={400}
         className="query-hinter"
         ignoreBraces={true}
-        onChange={(value) => changeOption(this, 'code', value)}
+        onChange={(value) => setOptions({ ...options, code: value })}
         isMultiLineJs={false}
         enablePreview={false}
         componentName="Runjs"

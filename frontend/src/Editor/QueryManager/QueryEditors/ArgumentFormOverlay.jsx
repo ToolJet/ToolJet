@@ -24,6 +24,10 @@ const ArgumentFormOverlay = ({
     onSubmit && onSubmit({ name, defaultValue });
   };
 
+  const isValidVariableName = (str) => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(str);
+
+  const isNameValid = isValidVariableName(name);
+
   return (
     <>
       <Popover.Header style={{ fontSize: '12px' }}>{isEdit ? 'UPDATE ARGUMENT' : 'ADD NEW ARGUMENT'}</Popover.Header>
@@ -40,6 +44,7 @@ const ArgumentFormOverlay = ({
                 onChange={(event) => setName(event.target.value)}
                 value={name}
               />
+              {name && !isNameValid && <div class="invalid-feedback d-block">Invalid varibale name.</div>}
             </Col>
           </Form.Group>
           <Form.Group as={Row} className="mb-3">
@@ -61,7 +66,7 @@ const ArgumentFormOverlay = ({
               </Form.Text>
             </Col>
           </Form.Group>
-          <Button type="submit" className="w-100" disabled={!name}>
+          <Button type="submit" className="w-100" disabled={!name || !isNameValid}>
             Save
           </Button>
         </Form>

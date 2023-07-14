@@ -21,7 +21,7 @@ const RunjsArgumentList = ({
     let totalWidth = 0;
     const formattedArgs = containerWidth
       ? args.map((arg, index) => {
-          const boxWidth = arg.name.length * 6 + 63 + 8;
+          const boxWidth = Math.min(arg.name.length * 6 + 63 + 8, 178);
           totalWidth += boxWidth;
           return {
             ...arg,
@@ -34,7 +34,24 @@ const RunjsArgumentList = ({
     if (formattedArgs.every((arg) => arg.isVisible)) {
       setShowMore(false);
     }
-  }, [JSON.stringify(args)]);
+  }, [JSON.stringify(args), containerWidth]);
+
+  const handleClickOutside = (event) => {
+    if (showMore && event.target.closest('#argument-more-popover') === null) {
+      setShowMore(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showMore) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMore]);
 
   return (
     <div className="card-header" ref={containerRef}>
@@ -51,6 +68,7 @@ const RunjsArgumentList = ({
               name={argument.name}
               defaultValue={argument.defaultValue}
               currentState={currentState}
+              darkMode={darkMode}
             />
           );
         })}
@@ -62,7 +80,7 @@ const RunjsArgumentList = ({
         overlay={
           <Popover
             id="argument-more-popover"
-            className={`query-manager-sort-filter-popup`}
+            className={`query-manager-sort-filter-popup  ${darkMode && 'popover-dark-themed theme-dark dark-theme'}`}
             style={{ minWidth: '268px', maxWidth: 'fit-content' }}
           >
             {selectedArg ? (
@@ -82,7 +100,7 @@ const RunjsArgumentList = ({
               <Popover.Body
                 key={'1'}
                 bsPrefix="popover-body"
-                className="ps-1 pe-1 me-2 py-2 query-manager"
+                className={`ps-1 pe-1 me-2 py-2 query-manager`}
                 style={{ maxWidth: '500px' }}
               >
                 {formattedArguments
@@ -110,7 +128,7 @@ const RunjsArgumentList = ({
           )}
         </span>
       </OverlayTrigger>
-      <ArgumentFormPopup onSubmit={handleAddArgument} currentState={currentState} />
+      <ArgumentFormPopup onSubmit={handleAddArgument} currentState={currentState} darkMode={darkMode} />
     </div>
   );
 };

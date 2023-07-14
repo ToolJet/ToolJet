@@ -455,11 +455,12 @@ export const EventManager = ({
                               <CodeHinter
                                 theme={darkMode ? 'monokai' : 'default'}
                                 currentState={currentState}
-                                initialValue={event.arguments[args.name] || args.defaultValue}
+                                initialValue={event.arguments?.[args.name] || args.defaultValue}
                                 onChange={(value) => {
-                                  const args = { ...events?.[index]?.arguments };
-                                  args[args.name] = value;
-                                  handlerChanged(index, 'arguments', args);
+                                  const newArgs = { ...events?.[index]?.arguments };
+                                  console.log('args.name', args.name);
+                                  newArgs[args.name] = value;
+                                  handlerChanged(index, 'arguments', newArgs);
                                 }}
                                 usePortalEditor={false}
                               />
