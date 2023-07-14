@@ -472,7 +472,7 @@ class EditorComponent extends React.Component {
   };
 
   globalDataSourcesChanged = () => {
-    this.fetchGlobalDataSources(this.state.editingVersion?.id, this.state.currentAppEnvironmentId);
+    this.fetchGlobalDataSources(this.props.editingVersion?.id, this.state.currentAppEnvironmentId);
   };
 
   /**
@@ -1048,13 +1048,13 @@ class EditorComponent extends React.Component {
     this.state.selectionInProgress && this.setState({ selectionInProgress: false });
   };
 
-  appEnvironmentChanged = (currentAppEnvironmentId, isVersionChanged) => {
+  appEnvironmentChanged = (currentAppEnvironmentId, isVersionChanged, isEnvIdNotAvailableYet = false) => {
     this.setState(
       {
         currentAppEnvironmentId,
       },
       () => {
-        this.fetchDataSources(this.state.editingVersion?.id, this.state.currentAppEnvironmentId);
+        !isEnvIdNotAvailableYet && this.getStoreData(this.props.editingVersion?.id, this.state.currentAppEnvironmentId);
       }
     );
     const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
@@ -1608,7 +1608,6 @@ class EditorComponent extends React.Component {
             appEnvironmentChanged={this.appEnvironmentChanged}
             onVersionDelete={this.onVersionDelete}
             currentUser={this.state.currentUser}
-            getStoreData={this.getStoreData}
           />
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">

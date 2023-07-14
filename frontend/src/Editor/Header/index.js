@@ -46,7 +46,6 @@ export default function EditorHeader({
   saveEditingVersion,
   onVersionDelete,
   currentUser,
-  getStoreData,
 }) {
   const { is_maintenance_on } = app;
   const [environments, setEnvironments] = useState([]);
@@ -62,12 +61,6 @@ export default function EditorHeader({
   );
 
   const updatePresence = useUpdatePresence();
-
-  useEffect(() => {
-    if (editingVersion && editingVersion.id && currentEnvironment) {
-      getStoreData(editingVersion.id, currentEnvironment.id);
-    }
-  }, [currentEnvironment, get(editingVersion, 'id')]);
 
   useEffect(() => {
     const initialPresence = {

@@ -26,7 +26,7 @@ const EnvironmentManager = (props) => {
   );
 
   useEffect(() => {
-    if (!currentEnvironment) editingVersion.id && fetchEnvironments();
+    if (!currentEnvironment) editingVersion.id && fetchEnvironments(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingVersion.id, currentEnvironment]);
 
@@ -45,7 +45,7 @@ const EnvironmentManager = (props) => {
     }
   }, [currentEnvironment, onEditorFreeze, editingVersion.id]);
 
-  const fetchEnvironments = () => {
+  const fetchEnvironments = (isEnvIdNotAvailableYet) => {
     const appId = editingVersion?.app_id || editingVersion?.appId;
     appEnvironmentService.getAllEnvironments(appId).then((data) => {
       const envArray = data?.environments;
@@ -59,13 +59,13 @@ const EnvironmentManager = (props) => {
 
         const envIndex = envArray.findIndex((e) => e.id === env.id);
         setCurrentEnvironment({ ...env, index: envIndex });
-        selectEnvironment(env, true);
+        selectEnvironment(env, true, isEnvIdNotAvailableYet);
       }
     });
   };
 
-  const selectEnvironment = (env, isVersionChanged = false) => {
-    appEnvironmentChanged(env?.id, isVersionChanged);
+  const selectEnvironment = (env, isVersionChanged = false, isEnvIdNotAvailableYet) => {
+    appEnvironmentChanged(env?.id, isVersionChanged, isEnvIdNotAvailableYet);
   };
 
   // if any app is in production, then it is also in staging. So, we need to check if there is any version in production
