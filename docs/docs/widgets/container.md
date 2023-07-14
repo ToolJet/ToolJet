@@ -12,6 +12,14 @@ Containers are used to group widgets together. You can move the desired number o
 
 </div>
 
+:::caution Restricted components
+In order to avoid excessively complex situations, certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the Container component using drag-and-drop functionality.
+
+If the builder attempts to add any of the aforementioned components inside the container, an error message will be displayed:
+
+`<Restricted component> cannot be used as a child component within the container.`
+:::
+
 ## Enabling vertical scroll on container
 
 To enable the vertical scroll on the container, drag and place any component to the bottom grid of the container and the container will automatically enable the scrolling.

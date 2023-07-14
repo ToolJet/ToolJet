@@ -13,6 +13,16 @@ Kanban widget allows you to visually organize and prioritize your tasks with a t
 
 </div>
 
+:::caution Restricted components
+In order to avoid excessively complex situations, certain components are restricted from being placed within the **Card** and **Popout** of the Kanban component.
+- **Card**: Calendar, Kanban, Form, Tabs, Modal, ListView, Container
+- **Popout**: Calendar, Kanban
+
+If the builder attempts to add any of the aforementioned components inside the Kanban Card or Popout, an error message will be displayed:
+
+`<Restricted component> cannot be used as a child component within the Kanban Popout/Card.`
+:::
+
 ## Events
 
 To add an event, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **Add handler**.

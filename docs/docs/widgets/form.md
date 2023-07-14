@@ -11,6 +11,14 @@ Form component can be used to get input from the user and store it in the connec
 
 </div>
 
+:::caution Restricted components
+In order to avoid excessively complex situations, certain components, namely **Kanban**, **calendar**, **modal**, **container**, **ListView**, **Tabs**, and **Form**, are restricted from being placed within the Form component using drag-and-drop functionality.
+
+If the builder attempts to add any of the aforementioned components inside the Form, an error message will be displayed:
+
+`<Restricted component> cannot be used as a child component within the Form.`
+:::
+
 ## Properties
 
 | Properties  | description | Expected value |

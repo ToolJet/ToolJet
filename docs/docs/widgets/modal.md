@@ -12,6 +12,14 @@ Modal widget renders in front of a backdrop, and it blocks interaction with the 
 
 </div>
 
+:::caution Restricted components
+In order to avoid excessively complex situations, certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the Modal component using drag-and-drop functionality.
+
+If the builder attempts to add any of the aforementioned components inside the Modal, an error message will be displayed:
+
+`<Restricted component> cannot be used as a child component within the Modal.`
+:::
+
 ## How To Use Modal Widget
 
 <iframe height="500" src="https://www.youtube.com/embed/co-UZCGpfMI" title="Datepicker Widget" frameborder="0" allowfullscreen width="100%"></iframe>

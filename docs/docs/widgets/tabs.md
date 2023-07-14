@@ -13,6 +13,14 @@ A Tabs widget contains a number of defined containers that can be navigated thro
 
 </div>
 
+:::caution Restricted components
+In order to avoid excessively complex situations, certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the Tabs component using drag-and-drop functionality.
+
+If the builder attempts to add any of the aforementioned components inside the Tabs, an error message will be displayed:
+
+`<Restricted component> cannot be used as a child component within the Tabs.`
+:::
+
 ## How To Use Tabs Widget
 
 <iframe height="500" src="https://www.youtube.com/embed/YmAhpO4Ku5w" title="Tabs Widget" frameborder="0" allowfullscreen width="100%"></iframe>
