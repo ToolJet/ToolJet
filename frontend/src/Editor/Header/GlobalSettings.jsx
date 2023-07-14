@@ -124,7 +124,7 @@ export const GlobalSettings = ({
                 </div>
               </div>
             </div>
-            {/* <div className="d-flex mb-3">
+            <div className="d-flex mb-3">
               <span className="w-full m-auto" data-cy={`label-max-canvas-height`}>
                 {t('leftSidebar.Settings.maxHeightOfCanvas', 'Max height of canvas')}
               </span>
@@ -144,7 +144,7 @@ export const GlobalSettings = ({
                   <span className="input-group-text">px</span>
                 </div>
               </div>
-            </div> */}
+            </div>
             <div className="d-flex align-items-center">
               <span className="w-full" data-cy={`label-bg-canvas`}>
                 {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Background color of canvas')}
