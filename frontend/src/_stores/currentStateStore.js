@@ -19,12 +19,17 @@ const initialState = {
 };
 
 export const useCurrentStateStore = create(
-  zustandDevTools((set) => ({
-    ...initialState,
-    actions: {
-      setCurrentState: (currentState) => set({ ...currentState }),
-    },
-  }))
+  zustandDevTools(
+    (set) => ({
+      ...initialState,
+      actions: {
+        setCurrentState: (currentState) => {
+          set({ ...currentState }), false, { type: 'SET_CURRENT_STATE', currentState };
+        },
+      },
+    }),
+    { name: 'Current State' }
+  )
 );
 
 // Omitting actions here because we don't want to expose it to user
