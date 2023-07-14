@@ -12,6 +12,14 @@ List view widget allows to create a list of repeatable rows of data. Just like a
 
 </div>
 
+:::caution Restricted components
+In order to avoid excessively complex situations, certain components, namely **Calendar** and **Kanban**, are restricted from being placed within the list view component using drag-and-drop functionality.
+
+If the builder attempts to add any of the aforementioned components inside the List view, an error message will be displayed:
+
+`<Restricted component> cannot be used as a child component within the list view.`
+:::
+
 ## Events
 
 To attach an event handler to the list view component, follow these steps:

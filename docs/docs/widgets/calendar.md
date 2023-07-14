@@ -15,6 +15,14 @@ Calendar widget comes with the following features:
 
 </div>
 
+:::caution Restricted components
+In order to avoid excessively complex situations, certain components, namely **Calendar**, and **Kanban** are restricted from being placed within the Calendar component using drag-and-drop functionality.
+
+If the builder attempts to add any of the aforementioned components inside the Calendar, an error message will be displayed:
+
+`<Restricted component> cannot be used as a child component within the Calendar.`
+:::
+
 ## Properties
 
 ### Date format
