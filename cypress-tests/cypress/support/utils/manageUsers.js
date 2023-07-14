@@ -132,11 +132,6 @@ export const manageUsersElements = () => {
 };
 
 export const inviteUser = (firstName, email) => {
-  let invitationToken,
-    organizationToken,
-    workspaceId,
-    userId,
-    url = "";
   fillUserInviteForm(firstName, email);
   cy.get(usersSelector.buttonInviteUsers).click();
   cy.verifyToastMessage(
@@ -283,6 +278,12 @@ export const selectUserGroup = (groupName) => {
 };
 
 export const fetchAndVisitInviteLink = (email) => {
+  let invitationToken,
+    organizationToken,
+    workspaceId,
+    userId,
+    url = "";
+
   cy.task("updateId", {
     dbconfig: Cypress.env("app_db"),
     sql: `select invitation_token from users where email='${email}';`,
