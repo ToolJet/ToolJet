@@ -243,7 +243,7 @@ export default function EditorHeader({
                     data={promoteModalData}
                     editingVersion={editingVersion}
                     onClose={() => setPromoteModalData(null)}
-                    onEnvChange={(id) => appEnvironmentChanged(id)}
+                    onEnvChange={(env) => appEnvironmentChanged(env)}
                   />
                 </div>
               </div>

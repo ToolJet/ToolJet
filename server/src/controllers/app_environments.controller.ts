@@ -22,6 +22,15 @@ export class AppEnvironmentsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('default')
+  async getDefaultEnvironment(@User() user) {
+    const { organizationId } = user;
+    // TODO: add fetchEnvironments privilege
+    const environment = await this.appEnvironmentServices.get(organizationId);
+    return decamelizeKeys({ environment });
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id/versions')
   async getVersionsByEnvironment(@User() user, @Param('id') environmentId: string, @Query('app_id') appId: string) {
     const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(
@@ -89,5 +98,14 @@ export class AppEnvironmentsController {
   async getVersions(@User() user, @Query('app_id') appId: string) {
     const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(user?.organizationId, appId);
     return decamelizeKeys({ appVersions });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/:id')
+  async getEnvironmentById(@User() user, @Param('id') id) {
+    const { organizationId } = user;
+    // TODO: add fetchEnvironments privilege
+    const environment = await this.appEnvironmentServices.get(organizationId, id);
+    return decamelizeKeys({ environment });
   }
 }

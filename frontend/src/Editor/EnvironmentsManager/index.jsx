@@ -65,7 +65,7 @@ const EnvironmentManager = (props) => {
   };
 
   const selectEnvironment = (env, isVersionChanged = false, isEnvIdNotAvailableYet) => {
-    appEnvironmentChanged(env?.id, isVersionChanged, isEnvIdNotAvailableYet);
+    appEnvironmentChanged(env, isVersionChanged, isEnvIdNotAvailableYet);
   };
 
   // if any app is in production, then it is also in staging. So, we need to check if there is any version in production
@@ -110,7 +110,7 @@ const EnvironmentManager = (props) => {
       <EnvironmentSelectBox
         options={options}
         currentEnv={currentEnvironment}
-        onEnvChange={(id) => appEnvironmentChanged(id)}
+        onEnvChange={(env) => appEnvironmentChanged(env)}
         versionId={editingVersion.id}
       />
     </div>

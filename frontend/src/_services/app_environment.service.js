@@ -5,7 +5,13 @@ import queryString from 'query-string';
 export const appEnvironmentService = {
   getAllEnvironments,
   getVersionsByEnvironment,
+  getEnvironment,
 };
+
+function getEnvironment(id) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/app-environments/${id ? id : 'default'}`, requestOptions).then(handleResponse);
+}
 
 function getAllEnvironments(appId) {
   let apiURL = `${config.apiUrl}/app-environments`;
