@@ -47,7 +47,7 @@ import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
 import { resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import { shallow } from 'zustand/shallow';
@@ -149,7 +149,7 @@ class EditorComponent extends React.Component {
 
         useCurrentStateStore.getState().actions.setCurrentState({
           globals: {
-            ...useCurrentStateStore.getState().globals,
+            ...useCurrentState().globals,
             currentUser: userVars,
           },
         });
@@ -935,7 +935,7 @@ class EditorComponent extends React.Component {
   changeDarkMode = (newMode) => {
     useCurrentStateStore.getState().actions.setCurrentState({
       globals: {
-        ...useCurrentStateStore.getState().globals,
+        ...useCurrentState().globals,
         theme: { name: newMode ? 'dark' : 'light' },
       },
     });
@@ -1349,7 +1349,7 @@ class EditorComponent extends React.Component {
     document.getElementById('real-canvas').scrollIntoView();
     if (
       this.state.currentPageId === pageId &&
-      useCurrentStateStore.getState().page.handle === this.state.appDefinition?.pages[pageId]?.handle
+      useCurrentState().page.handle === this.state.appDefinition?.pages[pageId]?.handle
     ) {
       return;
     }
@@ -1362,7 +1362,7 @@ class EditorComponent extends React.Component {
 
     this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.appId}/${handle}?${queryParamsString}`);
 
-    const { globals: existingGlobals } = useCurrentStateStore.getState();
+    const { globals: existingGlobals } = useCurrentState();
 
     const page = {
       id: pageId,
@@ -1383,7 +1383,7 @@ class EditorComponent extends React.Component {
           [currentPageId]: {
             ...(this.state.pages?.[currentPageId] ?? {}),
             variables: {
-              ...(useCurrentStateStore.getState()?.page?.variables ?? {}),
+              ...(useCurrentState()?.page?.variables ?? {}),
             },
           },
         },
@@ -1782,7 +1782,7 @@ const withStore = (Component) => (props) => {
     shallow
   );
 
-  const currentState = useCurrentStateStore();
+  const currentState = useCurrentState();
 
   return (
     <Component

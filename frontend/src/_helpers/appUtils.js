@@ -29,7 +29,7 @@ import { setCookie } from '@/_helpers/cookie';
 import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 const ERROR_TYPES = Object.freeze({
@@ -60,7 +60,7 @@ export function setCurrentStateAsync(_ref, changes) {
 
 export function onComponentOptionsChanged(_ref, component, options) {
   const componentName = component.name;
-  const components = useCurrentStateStore.getState().components;
+  const components = getCurrentState().components;
   let componentData = components[componentName];
   componentData = componentData || {};
 
@@ -76,7 +76,7 @@ export function onComponentOptionsChanged(_ref, component, options) {
 
 export function onComponentOptionChanged(_ref, component, option_name, value) {
   const componentName = component.name;
-  const components = useCurrentStateStore.getState().components;
+  const components = getCurrentState().components;
 
   let componentData = components[componentName];
   componentData = componentData || {};
@@ -112,7 +112,7 @@ async function executeRunPycode(_ref, code, query, isPreview, mode) {
 
   const evaluatePythonCode = async (pyodide) => {
     let result = {};
-    const currentState = useCurrentStateStore.getState();
+    const currentState = getCurrentState();
     try {
       const appStateVars = currentState['variables'] ?? {};
 
@@ -251,7 +251,7 @@ export async function runTransformation(
 
   let result = [];
 
-  const currentState = useCurrentStateStore.getState() || {};
+  const currentState = getCurrentState() || {};
 
   if (transformationLanguage === 'python') {
     result = await runPythonTransformation(currentState, data, transformation, query, mode);
@@ -334,9 +334,9 @@ function showModal(_ref, modal, show) {
   const modalMeta = _ref.state.appDefinition.pages[_ref.state.currentPageId].components[modalId];
 
   const _components = {
-    ...useCurrentStateStore.getState().components,
+    ...getCurrentState().components,
     [modalMeta.component.name]: {
-      ...useCurrentStateStore.getState().components[modalMeta.component.name],
+      ...getCurrentState().components[modalMeta.component.name],
       show: show,
     },
   };
@@ -372,14 +372,14 @@ export const executeAction = debounce(executeActionWithDebounce);
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
   if (event) {
     if (event.runOnlyIf) {
-      const shouldRun = resolveReferences(event.runOnlyIf, useCurrentStateStore.getState(), undefined, customVariables);
+      const shouldRun = resolveReferences(event.runOnlyIf, getCurrentState(), undefined, customVariables);
       if (!shouldRun) {
         return false;
       }
     }
     switch (event.actionId) {
       case 'show-alert': {
-        const message = resolveReferences(event.message, useCurrentStateStore.getState(), undefined, customVariables);
+        const message = resolveReferences(event.message, getCurrentState(), undefined, customVariables);
         switch (event.alertType) {
           case 'success':
           case 'error':
@@ -408,20 +408,20 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'open-webpage': {
-        const url = resolveReferences(event.url, useCurrentStateStore.getState(), undefined, customVariables);
+        const url = resolveReferences(event.url, getCurrentState(), undefined, customVariables);
         window.open(url, '_blank');
         return Promise.resolve();
       }
 
       case 'go-to-app': {
-        const slug = resolveReferences(event.slug, useCurrentStateStore.getState(), undefined, customVariables);
+        const slug = resolveReferences(event.slug, getCurrentState(), undefined, customVariables);
         const queryParams = event.queryParams?.reduce(
           (result, queryParam) => ({
             ...result,
             ...{
-              [resolveReferences(queryParam[0], useCurrentStateStore.getState())]: resolveReferences(
+              [resolveReferences(queryParam[0], getCurrentState())]: resolveReferences(
                 queryParam[1],
-                useCurrentStateStore.getState(),
+                getCurrentState(),
                 undefined,
                 customVariables
               ),
@@ -455,20 +455,15 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         return showModal(_ref, event.modal, false);
 
       case 'copy-to-clipboard': {
-        const contentToCopy = resolveReferences(
-          event.contentToCopy,
-          useCurrentStateStore.getState(),
-          undefined,
-          customVariables
-        );
+        const contentToCopy = resolveReferences(event.contentToCopy, getCurrentState(), undefined, customVariables);
         copyToClipboard(contentToCopy);
 
         return Promise.resolve();
       }
 
       case 'set-localstorage-value': {
-        const key = resolveReferences(event.key, useCurrentStateStore.getState(), undefined, customVariables);
-        const value = resolveReferences(event.value, useCurrentStateStore.getState(), undefined, customVariables);
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
         localStorage.setItem(key, value);
 
         return Promise.resolve();
@@ -476,11 +471,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'generate-file': {
         // const fileType = event.fileType;
-        const data = resolveReferences(event.data, useCurrentStateStore.getState(), undefined, customVariables) ?? [];
-        const fileName =
-          resolveReferences(event.fileName, useCurrentStateStore.getState(), undefined, customVariables) ?? 'data.txt';
-        const fileType =
-          resolveReferences(event.fileType, useCurrentStateStore.getState(), undefined, customVariables) ?? 'csv';
+        const data = resolveReferences(event.data, getCurrentState(), undefined, customVariables) ?? [];
+        const fileName = resolveReferences(event.fileName, getCurrentState(), undefined, customVariables) ?? 'data.txt';
+        const fileType = resolveReferences(event.fileType, getCurrentState(), undefined, customVariables) ?? 'csv';
         const fileData = {
           csv: generateCSV,
           plaintext: (plaintext) => plaintext,
@@ -495,9 +488,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-custom-variable': {
-        const key = resolveReferences(event.key, useCurrentStateStore.getState(), undefined, customVariables);
-        const value = resolveReferences(event.value, useCurrentStateStore.getState(), undefined, customVariables);
-        const customAppVariables = { ...useCurrentStateStore.getState().variables };
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
+        const customAppVariables = { ...getCurrentState().variables };
         customAppVariables[key] = value;
         return useCurrentStateStore.getState().actions.setCurrentState({
           variables: customAppVariables,
@@ -505,8 +498,8 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'unset-custom-variable': {
-        const key = resolveReferences(event.key, useCurrentStateStore.getState(), undefined, customVariables);
-        const customAppVariables = { ...useCurrentStateStore.getState().variables };
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const customAppVariables = { ...getCurrentState().variables };
         delete customAppVariables[key];
         return useCurrentStateStore.getState().actions.setCurrentState({
           variables: customAppVariables,
@@ -514,49 +507,46 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-page-variable': {
-        const key = resolveReferences(event.key, useCurrentStateStore.getState(), undefined, customVariables);
-        const value = resolveReferences(event.value, useCurrentStateStore.getState(), undefined, customVariables);
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const value = resolveReferences(event.value, getCurrentState(), undefined, customVariables);
         const customPageVariables = {
-          ...useCurrentStateStore.getState().page.variables,
+          ...getCurrentState().page.variables,
           [key]: value,
         };
         return useCurrentStateStore.getState().actions.setCurrentState({
           page: {
-            ...useCurrentStateStore.getState().page,
+            ...getCurrentState().page,
             variables: customPageVariables,
           },
         });
       }
 
       case 'unset-page-variable': {
-        const key = resolveReferences(event.key, useCurrentStateStore.getState(), undefined, customVariables);
-        const customPageVariables = _.omit(useCurrentStateStore.getState().page.variables, key);
+        const key = resolveReferences(event.key, getCurrentState(), undefined, customVariables);
+        const customPageVariables = _.omit(getCurrentState().page.variables, key);
         return useCurrentStateStore.getState().actions.setCurrentState({
           page: {
-            ...useCurrentStateStore.getState().page,
+            ...getCurrentState().page,
             variables: customPageVariables,
           },
         });
       }
 
       case 'control-component': {
-        const component = Object.values(useCurrentStateStore.getState()?.components ?? {}).filter(
+        const component = Object.values(getCurrentState()?.components ?? {}).filter(
           (component) => component.id === event.componentId
         )[0];
         const action = component?.[event.componentSpecificActionHandle];
         const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
           ...param,
-          value: resolveReferences(param.value, useCurrentStateStore.getState(), undefined, customVariables),
+          value: resolveReferences(param.value, getCurrentState(), undefined, customVariables),
         }));
         const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
         return actionPromise ?? Promise.resolve();
       }
 
       case 'switch-page': {
-        _ref.switchPage(
-          event.pageId,
-          resolveReferences(event.queryParams, useCurrentStateStore.getState(), [], customVariables)
-        );
+        _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
         return Promise.resolve();
       }
     }
@@ -576,9 +566,9 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     const { component, queryId, queryName } = options;
     useCurrentStateStore.getState().actions.setCurrentState({
       components: {
-        ...useCurrentStateStore.getState().components,
+        ...getCurrentState().components,
         [component.name]: {
-          ...useCurrentStateStore.getState().components[component.name],
+          ...getCurrentState().components[component.name],
         },
       },
     });
@@ -589,9 +579,9 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     const { component, calendarEvent } = options;
     useCurrentStateStore.getState().actions.setCurrentState({
       components: {
-        ...useCurrentStateStore.getState().components,
+        ...getCurrentState().components,
         [component.name]: {
-          ...useCurrentStateStore.getState().components[component.name],
+          ...getCurrentState().components[component.name],
           selectedEvent: { ...calendarEvent },
         },
       },
@@ -603,9 +593,9 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     const { component, selectedSlots } = options;
     useCurrentStateStore.getState().actions.setCurrentState({
       components: {
-        ...useCurrentStateStore.getState().components,
+        ...getCurrentState().components,
         [component.name]: {
-          ...useCurrentStateStore.getState().components[component.name],
+          ...getCurrentState().components[component.name],
           selectedSlots,
         },
       },
@@ -617,9 +607,9 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     const { component, data, action, rowId } = options;
     useCurrentStateStore.getState().actions.setCurrentState({
       components: {
-        ...useCurrentStateStore.getState().components,
+        ...getCurrentState().components,
         [component.name]: {
-          ...useCurrentStateStore.getState().components[component.name],
+          ...getCurrentState().components[component.name],
           selectedRow: data,
           selectedRowId: rowId,
         },
@@ -643,9 +633,9 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
     const { component, column, rowId, row } = options;
     useCurrentStateStore.getState().actions.setCurrentState({
       components: {
-        ...useCurrentStateStore.getState().components,
+        ...getCurrentState().components,
         [component.name]: {
-          ...useCurrentStateStore.getState().components[component.name],
+          ...getCurrentState().components[component.name],
           selectedRow: row,
           selectedRowId: rowId,
         },
@@ -775,7 +765,7 @@ export function getQueryVariables(options, state) {
 }
 
 export function previewQuery(_ref, query, calledFromQuery = false) {
-  const options = getQueryVariables(query.options, useCurrentStateStore.getState());
+  const options = getQueryVariables(query.options, getCurrentState());
 
   const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
   setPreviewLoading(true);
@@ -789,7 +779,7 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
       queryExecutionPromise = tooljetDbOperations.perform(
         query.options,
         currentSessionValue?.current_organization_id,
-        useCurrentStateStore.getState()
+        getCurrentState()
       );
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit');
@@ -875,7 +865,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     return;
   }
 
-  const options = getQueryVariables(dataQuery.options, useCurrentStateStore.getState());
+  const options = getQueryVariables(dataQuery.options, getCurrentState());
 
   if (dataQuery.options.requestConfirmation) {
     // eslint-disable-next-line no-unsafe-optional-chaining
@@ -902,9 +892,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   return new Promise(function (resolve, reject) {
     useCurrentStateStore.getState().actions.setCurrentState({
       queries: {
-        ...useCurrentStateStore.getState().queries,
+        ...getCurrentState().queries,
         [queryName]: {
-          ...useCurrentStateStore.getState().queries[queryName],
+          ...getCurrentState().queries[queryName],
           isLoading: true,
           data: [],
           rawData: [],
@@ -946,7 +936,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           const errorData = query.kind === 'runpy' ? data.data : data;
           useCurrentStateStore.getState().actions.setCurrentState({
             errors: {
-              ...useCurrentStateStore.getState().errors,
+              ...getCurrentState().errors,
               [queryName]: {
                 type: 'query',
                 kind: query.kind,
@@ -957,10 +947,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           });
           useCurrentStateStore.getState().actions.setCurrentState({
             queries: {
-              ...useCurrentStateStore.getState().queries,
+              ...getCurrentState().queries,
               [queryName]: _.assign(
                 {
-                  ...useCurrentStateStore.getState().queries[queryName],
+                  ...getCurrentState().queries[queryName],
                   isLoading: false,
                 },
                 query.kind === 'restapi'
@@ -999,14 +989,14 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
             if (finalData.status === 'failed') {
               useCurrentStateStore.getState().actions.setCurrentState({
                 queries: {
-                  ...useCurrentStateStore.getState().queries,
+                  ...getCurrentState().queries,
                   [queryName]: {
-                    ...useCurrentStateStore.getState().queries[queryName],
+                    ...getCurrentState().queries[queryName],
                     isLoading: false,
                   },
                 },
                 errors: {
-                  ...useCurrentStateStore.getState().errors,
+                  ...getCurrentState().errors,
                   [queryName]: {
                     type: 'transformations',
                     data: finalData,
@@ -1031,10 +1021,10 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
           }
           useCurrentStateStore.getState().actions.setCurrentState({
             queries: {
-              ...useCurrentStateStore.getState().queries,
+              ...getCurrentState().queries,
               [queryName]: _.assign(
                 {
-                  ...useCurrentStateStore.getState().queries[queryName],
+                  ...getCurrentState().queries[queryName],
                   isLoading: false,
                   data: finalData,
                   rawData,
@@ -1064,7 +1054,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
         if (mode !== 'view') toast.error(error ?? 'Unknown error');
         useCurrentStateStore.getState().actions.setCurrentState({
           queries: {
-            ...useCurrentStateStore.getState().queries,
+            ...getCurrentState().queries,
             [queryName]: {
               isLoading: false,
             },
@@ -1082,10 +1072,8 @@ export function setTablePageIndex(_ref, tableId, index) {
     return Promise.resolve();
   }
 
-  const table = Object.entries(useCurrentStateStore.getState().components).filter(
-    (entry) => entry[1].id === tableId
-  )[0][1];
-  const newPageIndex = resolveReferences(index, useCurrentStateStore.getState());
+  const table = Object.entries(getCurrentState().components).filter((entry) => entry[1].id === tableId)[0][1];
+  const newPageIndex = resolveReferences(index, getCurrentState());
   table.setPage(newPageIndex ?? 1);
   return Promise.resolve();
 }
@@ -1101,7 +1089,7 @@ export function renderTooltip({ props, text }) {
 
 export function computeComponentState(_ref, components = {}) {
   let componentState = {};
-  const currentComponents = useCurrentStateStore.getState().components;
+  const currentComponents = getCurrentState().components;
   Object.keys(components).forEach((key) => {
     const component = components[key];
     const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
@@ -1162,7 +1150,7 @@ export const debuggerActions = {
   error: (_self, errors) => {
     useCurrentStateStore.getState().actions.setCurrentState({
       errors: {
-        ...useCurrentStateStore.getState().errors,
+        ...getCurrentState().errors,
         ...errors,
       },
     });
@@ -1566,13 +1554,13 @@ export const computeQueryState = (queries, _ref) => {
       queryState[query.name] = {
         ...query.plugin.manifest_file.data.source.exposedVariables,
         kind: query.plugin.manifest_file.data.source.kind,
-        ...useCurrentStateStore.getState().queries[query.name],
+        ...getCurrentState().queries[query.name],
       };
     } else {
       queryState[query.name] = {
         ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
         kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
-        ...useCurrentStateStore.getState().queries[query.name],
+        ...getCurrentState().queries[query.name],
       };
     }
   });

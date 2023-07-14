@@ -12,7 +12,7 @@ import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUt
 import { useDataQueriesActions, useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource, useUnsavedChanges } from '@/_stores/queryPanelStore';
 import ToggleQueryEditorIcon from '../Icons/ToggleQueryEditorIcon';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 
@@ -40,7 +40,7 @@ export const QueryManagerHeader = forwardRef(
     const { t } = useTranslation();
     const queryName = selectedQuery?.name ?? '';
     const [renamingQuery, setRenamingQuery] = useState(false);
-    const { queries } = useCurrentStateStore((state) => ({ queries: state.queries }), shallow);
+    const { queries } = useCurrentState((state) => ({ queries: state.queries }), shallow);
     const { isVersionReleased, editingVersionId } = useAppVersionStore(
       (state) => ({
         isVersionReleased: state.isVersionReleased,

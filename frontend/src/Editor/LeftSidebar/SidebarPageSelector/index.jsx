@@ -7,7 +7,7 @@ import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 // eslint-disable-next-line import/no-unresolved
 import EmptyIllustration from '@assets/images/no-results.svg';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 
@@ -35,7 +35,7 @@ const LeftSidebarPageSelector = ({
 }) => {
   const [allpages, setPages] = useState(pages);
   const [haveUserPinned, setHaveUserPinned] = useState(false);
-  const currentState = useCurrentStateStore();
+  const currentState = useCurrentState();
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(

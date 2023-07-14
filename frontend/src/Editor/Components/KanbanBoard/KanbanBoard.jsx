@@ -2,7 +2,7 @@ import _ from 'lodash';
 import React from 'react';
 import Board from './Board';
 import { isCardColoumnIdUpdated, updateCardData, updateColumnData, getData, isArray, isValidCardData } from './utils';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const BoardContext = React.createContext({});
 
@@ -18,7 +18,7 @@ export const KanbanBoard = ({
   dataCy,
 }) => {
   const { columns, cardData, enableAddCard } = properties;
-  const currentState = useCurrentStateStore();
+  const currentState = useCurrentState();
   const { visibility, disabledState, width, minWidth, accentColor } = styles;
 
   const [rawColumnData, setRawColumnData] = React.useState([]);

@@ -7,7 +7,7 @@ import { getSvgIcon } from '@/_helpers/appUtils';
 
 import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 
@@ -43,7 +43,7 @@ export const LeftSidebarInspector = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appDefinition['selectedComponent']]);
-  const currentState = useCurrentStateStore();
+  const currentState = useCurrentState();
   const queries = {};
 
   if (!_.isEmpty(dataQueries)) {

@@ -17,7 +17,7 @@ import { orgEnvironmentVariableService } from '../_services';
 
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 const DynamicForm = ({
   schema,
@@ -33,7 +33,7 @@ const DynamicForm = ({
   computeSelectStyles = false,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
-  const currentState = useCurrentStateStore();
+  const currentState = useCurrentState();
   const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
 
   // if(schema.properties)  todo add empty check

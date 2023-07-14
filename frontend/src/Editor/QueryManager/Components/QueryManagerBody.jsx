@@ -25,7 +25,7 @@ import {
   useSelectedDataSource,
   useQueryPanelActions,
 } from '@/_stores/queryPanelStore';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 
@@ -57,7 +57,7 @@ export const QueryManagerBody = forwardRef(
     const { changeDataQuery } = useDataQueriesActions();
 
     const [dataSourceMeta, setDataSourceMeta] = useState(null);
-    const currentState = useCurrentStateStore();
+    const currentState = useCurrentState();
     /* - Added the below line to cause re-rendering when the query is switched
        - QueryEditors are not updating when the query is switched
        - TODO: Remove the below line and make query editors update when the query is switched

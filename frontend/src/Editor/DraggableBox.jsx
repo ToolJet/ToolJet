@@ -9,7 +9,7 @@ import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 const resizerClasses = {
   topRight: 'top-right',
@@ -104,7 +104,7 @@ export const DraggableBox = function DraggableBox({
   const [isDragging2, setDragging] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
   const [mouseOver, setMouseOver] = useState(false);
-  const currentState = useCurrentStateStore();
+  const currentState = useCurrentState();
 
   useEffect(() => {
     setMouseOver(hoveredComponent === id);

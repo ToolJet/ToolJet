@@ -1,4 +1,5 @@
 import { create, zustandDevTools } from './utils';
+import { omit } from 'lodash';
 
 const initialState = {
   queries: {},
@@ -25,3 +26,12 @@ export const useCurrentStateStore = create(
     },
   }))
 );
+
+// Omitting actions here because we don't want to expose it to user
+export const useCurrentState = () => {
+  return omit(useCurrentStateStore(), 'actions');
+};
+
+export const getCurrentState = () => {
+  return omit(useCurrentStateStore.getState(), 'actions');
+};

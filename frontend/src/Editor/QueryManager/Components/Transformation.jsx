@@ -16,13 +16,13 @@ import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { Button } from '@/_ui/LeftSidebar';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { authenticationService } from '@/_services';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const Transformation = ({ changeOption, options, darkMode, queryId }) => {
   const { t } = useTranslation();
   const { current_organization_name } = authenticationService.currentSessionValue;
   const currentOrgName = current_organization_name.replace(/\s/g, '').toLowerCase();
-  const currentState = useCurrentStateStore();
+  const currentState = useCurrentState();
   const [lang, setLang] = React.useState(options?.transformationLanguage ?? 'javascript');
 
   const defaultValue = {

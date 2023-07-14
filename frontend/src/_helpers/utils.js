@@ -8,7 +8,7 @@ import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { getCurrentState } from '@/_stores/currentStateStore';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -397,7 +397,7 @@ export async function executeMultilineJS(
   mode = ''
 ) {
   //:: confirmed arg is unused
-  const currentState = useCurrentStateStore.getState();
+  const currentState = getCurrentState();
   let result = {},
     error = null;
 

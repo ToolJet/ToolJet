@@ -2,7 +2,7 @@ import React from 'react';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import _ from 'lodash';
 import { resolveReferences } from '@/_helpers/utils';
-import { useCurrentStateStore } from '@/_stores/currentStateStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const Code = ({
   param,
@@ -16,7 +16,7 @@ export const Code = ({
   fxActive,
   component,
 }) => {
-  const currentState = useCurrentStateStore();
+  const currentState = useCurrentState();
   const getDefinitionForNewProps = (param) => {
     if (['showAddNewRowButton', 'allowSelection'].includes(param)) {
       if (param === 'allowSelection') {
