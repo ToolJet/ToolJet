@@ -14,7 +14,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 
 import { useDataQueries } from '@/_stores/dataQueriesStore';
-import RunjsParamters from './ActionConfigurationPanels/RunjsParamters';
+import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
 
 export const EventManager = ({
   component,
@@ -442,7 +442,7 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <RunjsParamters
+                <RunjsParameters
                   event={event}
                   currentState={currentState}
                   darkMode={darkMode}

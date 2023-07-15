@@ -387,7 +387,7 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', args = {}) {
+export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
   const { currentState } = _ref.state;
   let result = {},
     error = null;
@@ -395,28 +395,29 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
   const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
   const queryDetails = useDataQueriesStore.getState().dataQueries.find((q) => q.id === queryId);
-  const defaultArguments =
-    queryDetails?.options?.arguments?.reduce(
-      (defaultVals, arg) => ({
-        ...defaultVals,
-        [arg.name]: resolveReferences(arg.defaultValue, _ref.state.currentState, undefined),
+  const defaultParams =
+    queryDetails?.options?.parameters?.reduce(
+      (paramObj, param) => ({
+        ...paramObj,
+        [param.name]: resolveReferences(param.defaultValue, _ref.state.currentState, undefined),
       }),
       {}
     ) || {};
 
-  const formattedArgs = { ...defaultArguments, ...args };
-  Object.keys(formattedArgs).map((key) => {
-    formattedArgs[key] = args[key] === undefined ? defaultArguments[key] : args[key];
+  const formattedParams = { ...defaultParams, ...parameters };
+  Object.keys(formattedParams).map((key) => {
+    /** The value of param is replaced with defaultValue if its passed undefined */
+    formattedParams[key] = parameters[key] === undefined ? defaultParams[key] : parameters[key];
   });
 
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
       ...currentState.queries[key],
-      run: (...args) => {
-        const processedArgs = {};
+      run: (...params) => {
+        const processedParams = {};
         const query = useDataQueriesStore.getState().dataQueries.find((q) => q.name === key);
-        query.options.arguments?.forEach((arg, index) => (processedArgs[arg.name] = args[index]));
-        actions.runQuery(key, processedArgs);
+        query.options.parameters?.forEach((arg, index) => (processedParams[arg.name] = params[index]));
+        actions.runQuery(key, processedParams);
       },
     };
   }
@@ -435,7 +436,7 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
       'actions',
       'client',
       'server',
-      'args',
+      'parameters',
       code
     );
     result = {
@@ -452,7 +453,7 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
         actions,
         currentState?.client,
         currentState?.server,
-        formattedArgs
+        formattedParams
       ),
     };
   } catch (err) {
@@ -524,29 +525,31 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
   const currentComponents = _ref.state?.appDefinition?.pages[currentPageId]?.components
     ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
     : {};
-  const runQuery = (queryName = '', args) => {
+  const runQuery = (queryName = '', parameters) => {
     const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
 
-    const processedArgs = {};
+    const processedParams = {};
     if (_.isEmpty(query) || queryId === query?.id) {
       const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
       toast.error(errorMsg);
       return;
     }
 
-    if (!_.isEmpty(query?.options?.arguments)) {
-      query.options.arguments?.forEach((arg) => args && (processedArgs[arg.name] = args?.[arg.name]));
+    if (!_.isEmpty(query?.options?.parameters)) {
+      query.options.parameters?.forEach(
+        (param) => parameters && (processedParams[param.name] = parameters?.[param.name])
+      );
     }
 
     if (isPreview) {
-      return previewQuery(_ref, query, true, processedArgs);
+      return previewQuery(_ref, query, true, processedParams);
     }
 
     const event = {
       actionId: 'run-query',
       queryId: query.id,
       queryName: query.name,
-      arguments: processedArgs,
+      parameters: processedParams,
     };
 
     return executeAction(_ref, event, mode, {});

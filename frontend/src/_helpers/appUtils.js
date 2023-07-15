@@ -399,16 +399,16 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'run-query': {
         const { queryId, queryName } = event;
-        const args = event['arguments'];
-        const resolvedArgs = {};
-        if (args) {
-          Object.keys(args).map(
-            (k) => (resolvedArgs[k] = resolveReferences(args[k], _ref.state.currentState, undefined))
+        const params = event['parameters'];
+        const resolvedParams = {};
+        if (params) {
+          Object.keys(params).map(
+            (k) => (resolvedParams[k] = resolveReferences(params[k], _ref.state.currentState, undefined))
           );
         }
         const name =
           useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
-        return runQuery(_ref, queryId, name, undefined, mode, resolvedArgs);
+        return runQuery(_ref, queryId, name, undefined, mode, resolvedParams);
       }
       case 'logout': {
         return logoutAction(_ref);
@@ -596,7 +596,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   }
 
   if (eventName === 'onTrigger') {
-    const { component, queryId, queryName, arguments: args } = options;
+    const { component, queryId, queryName, parameters } = options;
     _self.setState(
       {
         currentState: {
@@ -610,7 +610,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
       () => {
-        runQuery(_ref, queryId, queryName, true, mode, args);
+        runQuery(_ref, queryId, queryName, true, mode, parameters);
       }
     );
   }
@@ -828,7 +828,7 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query, calledFromQuery = false, args) {
+export function previewQuery(_ref, query, calledFromQuery = false, parameters) {
   const options = getQueryVariables(query.options, _ref?.state?.currentState);
 
   const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
@@ -837,17 +837,17 @@ export function previewQuery(_ref, query, calledFromQuery = false, args) {
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      const formattedArgs = (query.options.arguments || []).reduce(
-        (argObj, arg) => ({
-          ...argObj,
-          [arg.name]:
-            args?.[arg.name] === undefined
-              ? resolveReferences(arg.defaultValue, _ref.state.currentState)
-              : args?.[arg.name],
+      const formattedParams = (query.options.parameters || []).reduce(
+        (paramObj, param) => ({
+          ...paramObj,
+          [param.name]:
+            parameters?.[param.name] === undefined
+              ? resolveReferences(param.defaultValue, _ref.state.currentState)
+              : parameters?.[param.name],
         }),
         {}
       );
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, query?.id, true, '', formattedArgs);
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, query?.id, true, '', formattedParams);
     } else if (query.kind === 'tooljetdb') {
       const currentSessionValue = authenticationService.currentSessionValue;
       queryExecutionPromise = tooljetDbOperations.perform(
@@ -928,7 +928,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, args) {
   });
 }
 
-export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit', args) {
+export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit', parameters) {
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   let dataQuery = {};
 
@@ -980,7 +980,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
-        queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode, args);
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode, parameters);
       } else if (query.kind === 'runpy') {
         queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode);
       } else if (query.kind === 'tooljetdb') {

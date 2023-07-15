@@ -76,10 +76,10 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
 };
 
 export const PillButton = ({ name, onClick, onRemove, marginBottom }) => (
-  <ButtonGroup aria-label="Parameter Badge" className={cx('ms-2', { 'mb-2': marginBottom })}>
+  <ButtonGroup aria-label="Parameter" className={cx('ms-2', { 'mb-2': marginBottom })}>
     <Button
       size="sm"
-      className="bg-slate3 color-slate12 parameter-badge"
+      className="bg-slate3 color-slate12 runjs-parameter-badge"
       onClick={onClick}
       style={{
         borderTopLeftRadius: '15px',
