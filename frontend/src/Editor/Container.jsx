@@ -193,7 +193,7 @@ export const Container = ({
       return Math.max(max, sum);
     }, 0);
 
-    const bottomPadding = mode === 'view' ? 100 : 300;
+    const bottomPadding = mode === 'view' ? 0 : 300;
     const frameHeight = mode === 'view' ? (appDefinition.globalSettings?.hideHeader ? 0 : 45) : 85;
 
     setCanvasHeight(`max(100vh - ${frameHeight}px, ${maxHeight + bottomPadding}px)`);
