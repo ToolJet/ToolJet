@@ -4,6 +4,7 @@ import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
 import { usePreviewLoading, usePreviewData, useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { getTheme, tabs } from '../constants';
 import RemoveRectangle from '../../../_ui/Icon/solidIcons/RemoveRectangle';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const Preview = ({ darkMode }) => {
   const [key, setKey] = useState('raw');
@@ -86,12 +87,9 @@ const Preview = ({ darkMode }) => {
               </Col>
               <Col className="text-right d-flex align-items-center justify-content-end">
                 {queryPreviewData && (
-                  <button
-                    className={`bg-transparent border-0 ${darkMode ? 'theme-dark' : ''}`}
-                    onClick={() => setPreviewData()}
-                  >
+                  <ButtonSolid variant="ghostBlack" size="sm" onClick={() => setPreviewData()}>
                     <RemoveRectangle width={17} viewBox="0 0 28 28" fill="var(--slate8)" /> Clear
-                  </button>
+                  </ButtonSolid>
                 )}
               </Col>
             </Row>

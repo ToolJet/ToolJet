@@ -110,6 +110,13 @@ export const useDataQueriesStore = create(
         },
         renameQuery: (id, newName) => {
           useAppDataStore.getState().actions.setIsSaving(true);
+          /**
+           * Seting name to store before api call for instant UI update and better UX.
+           * Name is again set to state post api call to handle if renaming fails in backend.
+           * */
+          set((state) => ({
+            dataQueries: state.dataQueries.map((query) => (query.id === id ? { ...query, name: newName } : query)),
+          }));
           dataqueryService
             .update(id, newName)
             .then(() => {
