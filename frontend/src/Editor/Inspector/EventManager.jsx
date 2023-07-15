@@ -7,14 +7,14 @@ import { GotoApp } from './ActionConfigurationPanels/GotoApp';
 import { SwitchPage } from './ActionConfigurationPanels/SwitchPage';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import useDraggableInPortal from '@/_hooks/useDraggableInPortal';
-import _, { isEmpty } from 'lodash';
+import _ from 'lodash';
 import { componentTypes } from '../WidgetManager/components';
 import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 
 import { useDataQueries } from '@/_stores/dataQueriesStore';
-import Arguments from './ActionConfigurationPanels/Arguments';
+import RunjsParamters from './ActionConfigurationPanels/RunjsParamters';
 
 export const EventManager = ({
   component,
@@ -442,7 +442,7 @@ export const EventManager = ({
                     />
                   </div>
                 </div>
-                <Arguments
+                <RunjsParamters
                   event={event}
                   currentState={currentState}
                   darkMode={darkMode}
