@@ -80,6 +80,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
       pluginId: selectedDataSource.pluginId,
       options: _options,
       kind: selectedDataSource.kind,
+      name: queryName,
     };
     previewQuery(editorRef, query)
       .then(() => {

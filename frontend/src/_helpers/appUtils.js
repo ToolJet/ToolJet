@@ -893,7 +893,7 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
           case 'Created':
           case 'Accepted':
           case 'No Content': {
-            toast(`Query completed.`, {
+            toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
               icon: '🚀',
             });
             break;
