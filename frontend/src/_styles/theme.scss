@@ -10193,21 +10193,33 @@ tbody {
     &:hover {
       background: var(--slate1) !important;
       border: 1px solid var(--slate8) !important;
-      -webkit-box-shadow: none ;
-      box-shadow: none ;
+      -webkit-box-shadow: none !important;
+      box-shadow: none !important;
       outline: none;
     }
 
-    &:focus-visible{
+    &:focus-visible {
       background: var(--indigo2) !important;
       border: 1px solid var(--indigo9) !important;
-      box-shadow: none;
+      box-shadow: none !important;
     }
 
+    &:-webkit-autofill {
+      box-shadow: 0 0 0 1000px var(--base) inset !important;
+      -webkit-text-fill-color: var(--slate12) !important;
+
+       &:hover {
+         box-shadow: 0 0 0 1000px var(--slate1) inset !important;
+        -webkit-text-fill-color: var(--slate12) !important;}
+
+       &:focus-visible { 
+        box-shadow: 0 0 0 1000px var(--indigo2) inset !important;
+        -webkit-text-fill-color: var(--slate12) !important;}}
+
   }
-   
+
 }
-  
+
 
 
 .tj-sub-helper-text {
