@@ -107,6 +107,7 @@ export function Table({
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
+  const preSelectRow = useRef(false);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
@@ -696,14 +697,18 @@ export function Table({
         }, []);
         mergeToTableDetails({ selectedRowsDetails });
       });
-    } else if (!showBulkSelector && !highlightSelectedRow) {
+    }
+    if (
+      (!showBulkSelector && !highlightSelectedRow) ||
+      (showBulkSelector && !highlightSelectedRow && preSelectRow.current)
+    ) {
       const selectedRow = selectedFlatRows?.[0]?.original ?? {};
       const selectedRowId = selectedFlatRows?.[0]?.id ?? null;
       setExposedVariables({ selectedRow, selectedRowId }).then(() => {
         mergeToTableDetails({ selectedRow, selectedRowId });
       });
     }
-  }, [selectedFlatRows.length, _.toString(selectedFlatRows)]);
+  }, [selectedFlatRows.length, selectedFlatRows]);
 
   registerAction(
     'downloadTableData',
@@ -730,20 +735,23 @@ export function Table({
       setPageSize(rowsPerPage || 10);
     }
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
-
   useEffect(() => {
     const pageData = page.map((row) => row.original);
-    onComponentOptionsChanged(component, [
-      ['currentPageData', pageData],
-      ['currentData', data],
-      ['selectedRow', []],
-      ['selectedRowId', null],
-    ]).then(() => {
-      if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
-        toggleAllRowsSelected(false);
-        mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
-      }
-    });
+    if (preSelectRow.current) {
+      preSelectRow.current = false;
+    } else {
+      onComponentOptionsChanged(component, [
+        ['currentPageData', pageData],
+        ['currentData', data],
+        ['selectedRow', []],
+        ['selectedRowId', null],
+      ]).then(() => {
+        if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
+          toggleAllRowsSelected(false);
+          mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
+        }
+      });
+    }
   }, [tableData.length, _.toString(page), pageIndex, _.toString(data)]);
 
   useEffect(() => {
@@ -791,23 +799,33 @@ export function Table({
       );
     }
   }, [JSON.stringify(changeSet)]);
-
   useEffect(() => {
-    if (allowSelection && typeof defaultSelectedRow === 'object' && !_.isEmpty(defaultSelectedRow)) {
+    if (
+      allowSelection &&
+      typeof defaultSelectedRow === 'object' &&
+      !_.isEmpty(defaultSelectedRow) &&
+      !_.isEmpty(data)
+    ) {
       const preSelectedRowDetails = getDetailsOfPreSelectedRow();
+      if (_.isEmpty(preSelectedRowDetails)) return;
+
       const selectedRow = preSelectedRowDetails?.original ?? {};
       const selectedRowId = preSelectedRowDetails?.id ?? null;
-      if (page.find((row) => row.id === selectedRowId && _.isEqual(selectedRow, row.original))) {
-        if (highlightSelectedRow) {
-          setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId }).then(() => {
-            toggleRowSelected(selectedRowId, true);
-            mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
-          });
-        } else {
+      const pageNumber = Math.floor(selectedRowId / rowsPerPage) + 1;
+      preSelectRow.current = true;
+      if (highlightSelectedRow) {
+        setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId }).then(() => {
           toggleRowSelected(selectedRowId, true);
-        }
+          mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
+        });
+      } else {
+        toggleRowSelected(selectedRowId, true);
+      }
+      if (pageIndex >= 0 && pageNumber !== pageIndex + 1) {
+        gotoPage(pageNumber - 1);
       }
     }
+
     //hack : in the initial render, data is undefined since, upon feeding data to the table from some query, query inside current state is {}. Hence we added data in the dependency array, now question is should we add data or rows?
   }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data)]);
 
