@@ -12,7 +12,7 @@ Left-sidebar has the following options:
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/newside.png" alt="App Builder: Left-sidebar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/newui.png" alt="App Builder: Left-sidebar"/>
 
 </div>
 
@@ -42,11 +42,13 @@ Check the detailed guide on **[using Inspector](/docs/how-to/use-inspector)**.
 
 ## Debugger
 
-The debugger captures errors that happens while running the queries. For example, when a database query fails due to the unavailability of a database or when a REST API query fails due to an incorrect URL, the errors will be displayed on the debugger. The debugger also displays relevant data related to the error along with the error message.
+Debugger records any errors that occur during the execution of queries. For instance, if a database query fails because the database is unavailable or if a REST API query fails due to an incorrect URL, the errors will be captured and shown in the debugger. Additionally, the debugger provides pertinent information associated with the error alongside the error message.
+
+If you wish to prevent the debugger from closing, you can simply click on the pin icon located in the top-right corner. By doing so, the debugger will stay open until you decide to unpin it.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/newdebug.png" alt="App Builder: Left-sidebar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/debuggertop.png" alt="App Builder: Left-sidebar"/>
 
 </div>
 
