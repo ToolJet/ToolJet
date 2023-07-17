@@ -22,7 +22,7 @@ export class CopilotService {
       encryptedAPIKey
     );
 
-    const response = await got(`${process.env.COPILOT_API_ENDPOINT}/copilot`, {
+    const response = await got(`${process.env.COPILOT_SERVICE_URL}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ export class CopilotService {
       body: JSON.stringify({ workspaceId: workspaceId, action: 'get', apiKey: secretKey, admin: adminEmailId }),
     };
 
-    const response = await fetch(`${process.env.COPILOT_API_ENDPOINT}/api-key`, options);
+    const response = await fetch(`${process.env.COPILOT_AUTH_ENDPOINT}`, options);
     const { isValid } = await response.json();
 
     return {
