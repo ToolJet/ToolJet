@@ -142,16 +142,20 @@ actions.copyToClipboard('contentToCopy')
 ```js
 actions.generateFile('fileName', 'fileType', 'data')
 ```
+`fileName` is the name that you want to give the file(string), `fileType` can be `csv`, `plaintext`, or `pdf` and the `data` is the data that you want to store in the file.
+
 Example for generating CSV file:
 ```js
 actions.generateFile('csvfile1', 'csv', '{{components.table1.currentPageData}}') // generate a csv file named csvfile1 with the data from the current page of table
 ```
 Example for generating Text file:
 ```js
-actions.generateFile('abc', 'textfile1', '{{JSON.stringify(components.table1.currentPageData)}}') // generate a text file named textfile1 with the data from the current page of table
+actions.generateFile('textfile1', 'plaintext', '{{JSON.stringify(components.table1.currentPageData)}}') // generate a text file named textfile1 with the data from the current page of table (stringified)
 ```
-
-**Example:** `fileName` is the name that you want to give the file(string), `fileType` can be `csv` or `text`, and `data` is the data that you want to store in the file.
+Example for generating PDF file:
+```js
+actions.generateFile('Pdffile1', 'pdf', '{{components.table1.currentPageData}}') // generate a text file named Pdffile1 with the data from the current page of table
+```
 
 <div style={{textAlign: 'center'}}>
 
