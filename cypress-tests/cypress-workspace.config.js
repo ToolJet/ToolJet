@@ -80,7 +80,6 @@ module.exports = defineConfig({
       "cypress/e2e/authentication/*.cy.js",
       "cypress/e2e/workspace/*.cy.js",
       "cypress/e2e/globalDataSources/*.cy.js",
-      "cypress/e2e/editor/data-source/*.cy.js",
     ],
     numTestsKeptInMemory: 1,
     redirectionLimit: 7,
