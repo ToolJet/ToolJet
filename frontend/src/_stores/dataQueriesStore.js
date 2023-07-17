@@ -4,6 +4,7 @@ import debounce from 'lodash/debounce';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { runQueries } from '@/_helpers/appUtils';
+import { v4 as uuidv4 } from 'uuid';
 
 const initialState = {
   dataQueries: [],
@@ -90,12 +91,35 @@ export const useDataQueriesStore = create(
           const dataSourceId = selectedDataSource?.id !== 'null' ? selectedDataSource?.id : null;
           const pluginId = selectedDataSource.pluginId || selectedDataSource.plugin_id;
           useAppDataStore.getState().actions.setIsSaving(true);
+          const { dataQueries } = useDataQueriesStore.getState();
+          const currDataQueries = [...dataQueries];
+          const tempId = uuidv4();
+          set(() => ({
+            dataQueries: [
+              {
+                ...selectedQuery,
+                data_source_id: dataSourceId,
+                app_version_id: appVersionId,
+                options,
+                name,
+                kind,
+                id: tempId,
+              },
+              ...currDataQueries,
+            ],
+          }));
+          actions.setSelectedQuery(tempId);
           dataqueryService
             .create(appId, appVersionId, name, kind, options, dataSourceId, pluginId)
             .then((data) => {
               set((state) => ({
                 isCreatingQueryInProcess: false,
-                dataQueries: [{ ...selectedQuery, ...data, data_source_id: dataSourceId }, ...state.dataQueries],
+                dataQueries: state.dataQueries.map((query) => {
+                  if (query.id === tempId) {
+                    return { ...query, ...data, data_source_id: dataSourceId };
+                  }
+                  return query;
+                }),
               }));
               actions.setSelectedQuery(data.id, data);
               if (shouldRunQuery) actions.setQueryToBeRun(data);
