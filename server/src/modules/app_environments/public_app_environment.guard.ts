@@ -4,7 +4,7 @@ import { App } from 'src/entities/app.entity';
 import { getManager } from 'typeorm';
 
 @Injectable()
-export class AppAuthGuard extends AuthGuard('jwt') {
+export class PublicAppEnvironmentGuard extends AuthGuard('jwt') {
   constructor() {
     super();
   }
@@ -12,7 +12,7 @@ export class AppAuthGuard extends AuthGuard('jwt') {
   async canActivate(context: ExecutionContext): Promise<any> {
     const request = context.switchToHttp().getRequest();
 
-    const slug = request.params.slug;
+    const slug = request.query.slug;
     if (!slug) {
       throw new NotFoundException('App not found. Invalid app id');
     }

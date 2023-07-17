@@ -35,7 +35,6 @@ const LeftSidebarPageSelector = ({
   apps,
   pinned,
   setPinned,
-  setReleasedVersionPopupState,
 }) => {
   const [allpages, setPages] = useState(pages);
   const router = useRouter();

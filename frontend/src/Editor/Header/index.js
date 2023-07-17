@@ -64,12 +64,6 @@ export default function EditorHeader({
   const updatePresence = useUpdatePresence();
 
   useEffect(() => {
-    if (editingVersion && editingVersion.id && currentEnvironment) {
-      getStoreData(editingVersion.id, currentEnvironment.id);
-    }
-  }, [currentEnvironment, get(editingVersion, 'id')]);
-
-  useEffect(() => {
     const initialPresence = {
       firstName: currentUser?.first_name ?? '',
       lastName: currentUser?.last_name ?? '',
@@ -250,7 +244,7 @@ export default function EditorHeader({
                     data={promoteModalData}
                     editingVersion={editingVersion}
                     onClose={() => setPromoteModalData(null)}
-                    onEnvChange={(id) => appEnvironmentChanged(id)}
+                    onEnvChange={(env) => appEnvironmentChanged(env)}
                   />
                 </div>
               </div>

@@ -5,7 +5,18 @@ import queryString from 'query-string';
 export const appEnvironmentService = {
   getAllEnvironments,
   getVersionsByEnvironment,
+  getEnvironment,
 };
+
+/* This endpoint now only will work with viewer. For Editor we may need to do some logic changes in backend code */
+function getEnvironment(id, queryParams) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  const query = queryString.stringify(queryParams);
+  return fetch(
+    `${config.apiUrl}/app-environments/${id ? id : 'default'}${query && !id ? `?${query}` : ''}`,
+    requestOptions
+  ).then(handleResponse);
+}
 
 function getAllEnvironments(appId) {
   let apiURL = `${config.apiUrl}/app-environments`;

@@ -126,6 +126,14 @@ class EditorComponent extends React.Component {
         globals: {
           theme: { name: props.darkMode ? 'dark' : 'light' },
           urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
+          environment: {
+            id: null,
+            name: null,
+          },
+          /* Constant value.it will only change for viewer */
+          mode: {
+            value: 'edit',
+          },
         },
         errors: {},
         variables: {},
@@ -472,7 +480,7 @@ class EditorComponent extends React.Component {
   };
 
   globalDataSourcesChanged = () => {
-    this.fetchGlobalDataSources(this.state.editingVersion?.id, this.state.currentAppEnvironmentId);
+    this.fetchGlobalDataSources(this.props.editingVersion?.id, this.state.currentAppEnvironmentId);
   };
 
   /**
@@ -1048,18 +1056,29 @@ class EditorComponent extends React.Component {
     this.state.selectionInProgress && this.setState({ selectionInProgress: false });
   };
 
-  appEnvironmentChanged = (currentAppEnvironmentId, isVersionChanged) => {
+  appEnvironmentChanged = (currentAppEnvironment, isVersionChanged, isEnvIdNotAvailableYet = false) => {
+    const { globals: existingGlobals } = this.state.currentState;
     this.setState(
       {
-        currentAppEnvironmentId,
+        currentAppEnvironmentId: currentAppEnvironment?.id,
+        currentState: {
+          ...this.state.currentState,
+          globals: {
+            ...existingGlobals,
+            environment: {
+              id: currentAppEnvironment?.id,
+              name: currentAppEnvironment?.name,
+            },
+          },
+        },
       },
       () => {
-        this.fetchDataSources(this.state.editingVersion?.id, this.state.currentAppEnvironmentId);
+        !isEnvIdNotAvailableYet && this.getStoreData(this.props.editingVersion?.id, this.state.currentAppEnvironmentId);
       }
     );
     const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
-    if (currentEnvironmentObj[this.state.appId] !== currentAppEnvironmentId) {
-      currentEnvironmentObj[this.state.appId] = currentAppEnvironmentId;
+    if (currentEnvironmentObj[this.state.appId] !== currentAppEnvironment?.id) {
+      currentEnvironmentObj[this.state.appId] = currentAppEnvironment?.id;
       localStorage.setItem('currentEnvironmentIds', JSON.stringify(currentEnvironmentObj));
       !isVersionChanged && window.location.reload(false);
     }
