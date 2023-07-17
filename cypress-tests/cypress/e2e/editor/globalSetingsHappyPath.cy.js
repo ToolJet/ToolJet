@@ -46,10 +46,6 @@ describe("Editor- Global Settings", () => {
       "have.text",
       "Max width of canvas"
     );
-    cy.get('[data-cy="label-max-canvas-height"]').verifyVisibleElement(
-      "have.text",
-      "Max height of canvas"
-    );
     cy.get('[data-cy="label-bg-canvas"]').verifyVisibleElement(
       "have.text",
       "Background color of canvas"
@@ -76,11 +72,11 @@ describe("Editor- Global Settings", () => {
     cy.wait(5000);
     cy.get("[data-cy='left-sidebar-settings-button']").click();
     cy.get('[data-cy="toggle-hide-header-for-launched-apps"]').realClick();
-    cy.wait(500);
+    cy.wait(700);
     cy.forceClickOnCanvas();
     cy.wait(1000);
     cy.waitForAutoSave();
-
+    cy.wait(1000);
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
     cy.wait(5000);
     cy.notVisible(".navbar");

@@ -1,6 +1,12 @@
-export const selectEvent = (event, action, index = 0) => {
-  cy.get('[data-cy="add-event-handler"]').eq(index).click();
-  cy.get('[data-cy="event-handler"]').eq(0).click();
+export const selectEvent = (
+  event,
+  action,
+  index = 0,
+  addEventhandlerSelector = '[data-cy="add-event-handler"]',
+  eventIndex = 0
+) => {
+  cy.get(addEventhandlerSelector).eq(index).click();
+  cy.get('[data-cy="event-handler"]').eq(eventIndex).click();
   cy.get('[data-cy="event-selection"]')
     .click()
     .find("input")
@@ -24,9 +30,9 @@ export const selectCSA = (
     .click()
     .find("input")
     .type(`{selectAll}{backspace}${componentAction}{enter}`);
-  cy.get('[data-cy="-input-field"]').type(
-    `{selectAll}{backspace}${debounce}{enter}`
-  );
+  cy.get('[data-cy="-input-field"]')
+    .eq(1)
+    .type(`{selectAll}{backspace}${debounce}{enter}`);
 };
 
 export const addSupportCSAData = (field, data) => {

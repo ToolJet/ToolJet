@@ -631,7 +631,6 @@ class DataSourceManagerComponent extends React.Component {
   renderEnvironmentsTab = (selectedDataSource) => {
     return (
       selectedDataSource &&
-      selectedDataSource?.id &&
       this.props.environment?.length > 1 && (
         <nav className="nav nav-tabs mt-3">
           {this.props?.environments.map((env) => (
@@ -673,59 +672,61 @@ class DataSourceManagerComponent extends React.Component {
           container={this.props.container}
           {...this.props.modalProps}
         >
-          <Modal.Header className={cx('justify-content-start', { 'd-block': selectedDataSource?.id })}>
-            {selectedDataSource && this.props.showBackButton && (
-              <div
-                className={`back-btn me-3 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
-                role="button"
-                onClick={() => this.setState({ selectedDataSource: false }, () => this.onExit())}
-              >
-                <img
-                  data-cy="button-back-ds-connection-modal"
-                  className="m-0"
-                  src="assets/images/icons/back.svg"
-                  width="30"
-                  height="30"
-                />
-              </div>
-            )}
-            <Modal.Title className="mt-3">
-              {selectedDataSource && (
-                <div className="row selected-ds">
-                  {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
-                  <div className="input-icon" style={{ width: '160px' }}>
-                    <input
-                      type="text"
-                      onChange={(e) => this.onNameChanged(e.target.value)}
-                      className="form-control-plaintext form-control-plaintext-sm"
-                      value={selectedDataSource.name}
-                      style={{ width: '160px' }}
-                      data-cy="data-source-name-input-filed"
-                      autoFocus
-                    />
-                    {!this.props.isEditing && (
-                      <span className="input-icon-addon">
-                        <img src="assets/images/icons/edit-source.svg" width="12" height="12" />
-                      </span>
-                    )}
-                  </div>
+          <Modal.Header className={'d-block'}>
+            <div className="d-flex">
+              {selectedDataSource && this.props.showBackButton && (
+                <div
+                  className={`back-btn me-3 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
+                  role="button"
+                  onClick={() => this.setState({ selectedDataSource: false }, () => this.onExit())}
+                >
+                  <img
+                    data-cy="button-back-ds-connection-modal"
+                    className="m-0"
+                    src="assets/images/icons/back.svg"
+                    width="30"
+                    height="30"
+                  />
                 </div>
               )}
-              {!selectedDataSource && (
-                <span className="" data-cy="title-add-new-datasource">
-                  {this.props.t('editor.queryManager.dataSourceManager.addNewDataSource', 'Add new datasource')}
+              <Modal.Title className="mt-3">
+                {selectedDataSource && (
+                  <div className="row selected-ds">
+                    {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
+                    <div className="input-icon" style={{ width: '160px' }}>
+                      <input
+                        type="text"
+                        onChange={(e) => this.onNameChanged(e.target.value)}
+                        className="form-control-plaintext form-control-plaintext-sm"
+                        value={selectedDataSource.name}
+                        style={{ width: '160px' }}
+                        data-cy="data-source-name-input-filed"
+                        autoFocus
+                      />
+                      {!this.props.isEditing && (
+                        <span className="input-icon-addon">
+                          <img src="assets/images/icons/edit-source.svg" width="12" height="12" />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {!selectedDataSource && (
+                  <span className="" data-cy="title-add-new-datasource">
+                    {this.props.t('editor.queryManager.dataSourceManager.addNewDataSource', 'Add new datasource')}
+                  </span>
+                )}
+              </Modal.Title>
+              {!this.props.isEditing && (
+                <span
+                  data-cy="button-close-ds-connection-modal"
+                  className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
+                  onClick={() => this.hideModal()}
+                >
+                  <img src="assets/images/icons/close.svg" width="12" height="12" />
                 </span>
               )}
-            </Modal.Title>
-            {!this.props.isEditing && (
-              <span
-                data-cy="button-close-ds-connection-modal"
-                className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
-                onClick={() => this.hideModal()}
-              >
-                <img src="assets/images/icons/close.svg" width="12" height="12" />
-              </span>
-            )}
+            </div>
             {this.renderEnvironmentsTab(selectedDataSource)}
           </Modal.Header>
           <Modal.Body>
@@ -814,12 +815,12 @@ class DataSourceManagerComponent extends React.Component {
               <div className="col-auto" data-cy="db-connection-save-button">
                 <ButtonSolid
                   className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
-                  isLoading={isSaving || this.props.isVersionReleased}
-                  disabled={isSaving}
+                  isLoading={isSaving}
+                  disabled={isSaving || this.props.isVersionReleased}
                   variant="primary"
                   onClick={this.createDataSource}
                   leftIcon="floppydisk"
-                  fill={'#FDFDFE'}
+                  fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
                 >
                   {this.props.t('globals.save', 'Save')}
                 </ButtonSolid>
