@@ -1,6 +1,4 @@
 import { authenticationService } from '@/_services';
-import config from 'config';
-import { getSubpath, getWorkspaceId } from './utils';
 
 export function handleResponse(response) {
   return response.text().then((text) => {
@@ -11,7 +9,6 @@ export function handleResponse(response) {
         authenticationService.logout();
         // location.reload(true);
       }
-      handleSpecificAPIErrors(response);
 
       const error = (data && data.message) || response.statusText;
       return Promise.reject({ error, data, statusCode: response?.status });
@@ -31,23 +28,3 @@ export function handleResponseWithoutValidation(response) {
     return data;
   });
 }
-
-/*
-  This fn can be used for handling specific API cases and status code
-  Later. we can improvise the code with switch 
-*/
-const handleSpecificAPIErrors = (response) => {
-  const { url, status } = response;
-  const { apiUrl } = config;
-
-  var index = url.indexOf(apiUrl);
-  const endpoint = url.substring(index + apiUrl.length);
-
-  if (endpoint.includes('/apps/slugs/')) {
-    if ([403].indexOf(status) !== -1) {
-      // Redirect to the dashboard if the user doesn't have view access to the app
-      const subpath = getSubpath();
-      window.location = `${subpath ? `${subpath}` : ''}/${getWorkspaceId()}`;
-    }
-  }
-};

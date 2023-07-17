@@ -23,6 +23,7 @@ import {
   stripTrailingSlash,
   getSubpath,
   excludeWorkspaceIdFromURL,
+  redirectToDashboard,
 } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
@@ -286,6 +287,8 @@ class ViewerComponent extends React.Component {
             this.switchOrganization(errorObj?.organizationId, appId, versionId);
             return;
           }
+          /* router dom Navigate is not working now. so hard reloading */
+          redirectToDashboard();
           return <Navigate replace to={'/'} />;
         } else if (statusCode === 401) {
           window.location = `${getSubpath() ?? ''}/login?redirectTo=${this.props.location.pathname}`;
@@ -294,9 +297,11 @@ class ViewerComponent extends React.Component {
             position: 'top-center',
           });
         }
+        redirectToDashboard();
         return <Navigate replace to={'/'} />;
       }
     } catch (err) {
+      redirectToDashboard();
       return <Navigate replace to={'/'} />;
     }
   };
