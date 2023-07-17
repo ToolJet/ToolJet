@@ -8,9 +8,13 @@ export const appEnvironmentService = {
   getEnvironment,
 };
 
-function getEnvironment(id) {
+function getEnvironment(id, queryParams) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  return fetch(`${config.apiUrl}/app-environments/${id ? id : 'default'}`, requestOptions).then(handleResponse);
+  const query = queryString.stringify(queryParams);
+  return fetch(
+    `${config.apiUrl}/app-environments/${id ? id : 'default'}${query && !id ? `?${query}` : ''}`,
+    requestOptions
+  ).then(handleResponse);
 }
 
 function getAllEnvironments(appId) {

@@ -153,7 +153,7 @@ class ViewerComponent extends React.Component {
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
 
     /* Get current environment details from server, for released apps the environment will be production only (Release preview) */
-    const environmentResult = await this.getEnvironmentDetails();
+    const environmentResult = await this.getEnvironmentDetails(data.is_public);
     const { environment } = environmentResult;
 
     const pages = Object.entries(data.definition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
@@ -545,8 +545,9 @@ class ViewerComponent extends React.Component {
     return `_tooljet-page-${handle}`;
   };
 
-  getEnvironmentDetails = () => {
-    return appEnvironmentService.getEnvironment(this.state.environmentId);
+  getEnvironmentDetails = (isPublic) => {
+    const queryParams = { ...(isPublic && { slug: this.state.slug }) };
+    return appEnvironmentService.getEnvironment(this.state.environmentId, queryParams);
   };
 
   render() {
