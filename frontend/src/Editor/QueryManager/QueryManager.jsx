@@ -55,16 +55,17 @@ const QueryManager = ({
 
   useEffect(() => {
     if (selectedQuery) {
+      const selectedDS = [...dataSources, ...globalDataSources].find(
+        (datasource) => datasource.id === selectedQuery?.data_source_id
+      );
+      //TODO: currently type is not taken into account. May create issues in importing REST apis. to be revamped when import app is revamped
       if (
         selectedQuery?.kind in defaultSources &&
-        (!selectedQuery?.data_source_id || ['runjs', 'runpy'].includes(selectedQuery?.data_source_id))
+        (!selectedQuery?.data_source_id || ['runjs', 'runpy'].includes(selectedQuery?.data_source_id) || !selectedDS)
       ) {
         return setSelectedDataSource(defaultSources[selectedQuery?.kind]);
       }
-      setSelectedDataSource(
-        [...dataSources, ...globalDataSources].find((datasource) => datasource.id === selectedQuery?.data_source_id) ||
-          null
-      );
+      setSelectedDataSource(selectedDS || null);
     } else if (selectedQuery === null) {
       setSelectedDataSource(null);
     }
