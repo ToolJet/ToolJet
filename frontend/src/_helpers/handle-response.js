@@ -1,5 +1,6 @@
 import { authenticationService } from '@/_services';
 import config from 'config';
+import { getSubpath, getWorkspaceId } from './utils';
 
 export function handleResponse(response) {
   return response.text().then((text) => {
@@ -44,7 +45,9 @@ const handleSpecificAPIErrors = (response) => {
 
   if (endpoint.includes('/apps/slugs/')) {
     if ([403].indexOf(status) !== -1) {
-      authenticationService.logout();
+      // Redirect to the dashboard if the user doesn't have view access to the app
+      const subpath = getSubpath();
+      window.location = `${subpath ? `${subpath}` : ''}/${getWorkspaceId()}`;
     }
   }
 };
