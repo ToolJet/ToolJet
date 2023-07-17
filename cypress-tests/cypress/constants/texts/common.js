@@ -170,6 +170,7 @@ export const commonText = {
     // iframeLinkLabel: "Get embeddable link for this application",
     // ifameLinkCopyButton: "copy",
   },
+  groupInputFieldLabel: "Select Group"
 };
 
 export const commonWidgetText = {
