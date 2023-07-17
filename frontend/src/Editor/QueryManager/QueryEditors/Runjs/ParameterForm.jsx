@@ -79,9 +79,6 @@ const ParameterForm = ({
               />
             </Col>
           </Form.Group>
-          {/* <Button type="submit" className="w-100" disabled={!name || error}>
-            Save
-          </Button> */}
         </Form>
       </Popover.Body>
     </>

@@ -387,7 +387,15 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '', parameters = {}) {
+export async function executeMultilineJS(
+  _ref,
+  code,
+  queryId,
+  isPreview,
+  mode = '',
+  parameters = {},
+  hasParamSupport = false
+) {
   const { currentState } = _ref.state;
   let result = {},
     error = null;
@@ -395,6 +403,8 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
   const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
   const queryDetails = useDataQueriesStore.getState().dataQueries.find((q) => q.id === queryId);
+  hasParamSupport = !hasParamSupport ? queryDetails?.options?.hasParamSupport : hasParamSupport;
+
   const defaultParams =
     queryDetails?.options?.parameters?.reduce(
       (paramObj, param) => ({
@@ -424,7 +434,7 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
 
   try {
     const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
-    var evalFn = new AsyncFunction(
+    const fnParams = [
       'moment',
       '_',
       'components',
@@ -436,25 +446,28 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
       'actions',
       'client',
       'server',
-      'parameters',
-      code
-    );
+      ...(hasParamSupport ? ['parameters'] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+      code,
+    ];
+    var evalFn = new AsyncFunction(...fnParams);
+
+    const fnArgs = [
+      moment,
+      _,
+      currentState.components,
+      currentState.queries,
+      currentState.globals,
+      currentState.page,
+      axios,
+      currentState.variables,
+      actions,
+      currentState?.client,
+      currentState?.server,
+      ...(hasParamSupport ? [formattedParams] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+    ];
     result = {
       status: 'ok',
-      data: await evalFn(
-        moment,
-        _,
-        currentState.components,
-        currentState.queries,
-        currentState.globals,
-        currentState.page,
-        axios,
-        currentState.variables,
-        actions,
-        currentState?.client,
-        currentState?.server,
-        formattedParams
-      ),
+      data: await evalFn(...fnArgs),
     };
   } catch (err) {
     console.log('JS execution failed: ', err);

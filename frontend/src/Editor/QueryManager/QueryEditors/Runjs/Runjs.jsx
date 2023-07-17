@@ -5,7 +5,14 @@ import { Card } from 'react-bootstrap';
 import ParameterList from './ParameterList';
 
 const Runjs = (props) => {
-  const initialOptions = defaults({ ...props.options }, { code: '//Type your JavaScript code here', parameters: [] });
+  const initialOptions = defaults(
+    { ...props.options },
+    {
+      code: '//Type your JavaScript code here',
+      parameters: [],
+      hasParamSupport: props.mode === 'create' ? true : props.options?.hasParamSupport, //`hasParamSupport` only for queries added after runjs param support introduced
+    }
+  );
   const [options, setOptions] = useState(initialOptions);
 
   const handleAddParameter = (newParameter) => {
@@ -36,14 +43,16 @@ const Runjs = (props) => {
 
   return (
     <Card className="runjs-editor">
-      <ParameterList
-        parameters={options.parameters}
-        handleAddParameter={handleAddParameter}
-        handleParameterChange={handleParameterChange}
-        handleParameterRemove={handleParameterRemove}
-        currentState={props.currentState}
-        darkMode={props.darkMode}
-      />
+      {(options.hasParamSupport || props.mode === 'create') && (
+        <ParameterList
+          parameters={options.parameters}
+          handleAddParameter={handleAddParameter}
+          handleParameterChange={handleParameterChange}
+          handleParameterRemove={handleParameterRemove}
+          currentState={props.currentState}
+          darkMode={props.darkMode}
+        />
+      )}
 
       <CodeHinter
         currentState={props.currentState}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, ButtonGroup, OverlayTrigger, Popover, Row } from 'react-bootstrap';
+import { Button, ButtonGroup, OverlayTrigger, Popover } from 'react-bootstrap';
 import cx from 'classnames';
 import PlusRectangle from '@/_ui/Icon/solidIcons/PlusRectangle';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
@@ -23,9 +23,11 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showModal]);
 
-  const handleSubmit = (params) => {
-    onSubmit && onSubmit(params);
-    setShowModal(false);
+  const handleSubmit = (param) => {
+    if (param.name) {
+      onSubmit && onSubmit(param);
+      setShowModal(false);
+    }
   };
 
   return (

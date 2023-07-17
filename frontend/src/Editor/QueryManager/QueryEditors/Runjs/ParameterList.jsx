@@ -21,7 +21,7 @@ const ParameterList = ({
     let totalWidth = 0;
     const formattedParams = containerWidth
       ? parameters.map((param, index) => {
-          const boxWidth = Math.min(param.name.length * 6 + 63 + 8, 178);
+          const boxWidth = Math.min((param?.name || '').length * 6 + 63 + 8, 178);
           totalWidth += boxWidth;
           return {
             ...param,

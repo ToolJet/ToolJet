@@ -828,7 +828,7 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query, calledFromQuery = false, parameters) {
+export function previewQuery(_ref, query, calledFromQuery = false, parameters, hasParamSupport) {
   const options = getQueryVariables(query.options, _ref?.state?.currentState);
 
   const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
@@ -847,7 +847,15 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters) {
         }),
         {}
       );
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, query?.id, true, '', formattedParams);
+      queryExecutionPromise = executeMultilineJS(
+        _ref,
+        query.options.code,
+        query?.id,
+        true,
+        '',
+        formattedParams,
+        hasParamSupport
+      );
     } else if (query.kind === 'tooljetdb') {
       const currentSessionValue = authenticationService.currentSessionValue;
       queryExecutionPromise = tooljetDbOperations.perform(
