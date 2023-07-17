@@ -26,8 +26,7 @@ export const Code = ({
 
         return '{{' + `${allowSelection}` + '}}';
       } else if (param === 'defaultSelectedRow') {
-        console.log('kavin');
-        return `{{manish}}`;
+        return `{{{id:1}}}`;
       } else {
         return '{{true}}';
       }
