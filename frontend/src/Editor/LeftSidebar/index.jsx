@@ -16,6 +16,7 @@ import { usePanelHeight } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useDataSources } from '@/_stores/dataSourcesStore';
 import { shallow } from 'zustand/shallow';
+import useDebugger from './SidebarDebugger/useDebugger';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -24,13 +25,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
     switchDarkMode,
     showComments,
     darkMode = false,
-    components,
     toggleComments,
     dataSourcesChanged,
     globalDataSourcesChanged,
     dataQueriesChanged,
-    errorLogs: errors,
-    debuggerActions,
     appDefinition,
     setSelectedComponent,
     removeComponent,
@@ -68,79 +66,13 @@ export const LeftSidebar = forwardRef((props, ref) => {
     shallow
   );
   const [pinned, setPinned] = useState(!!localStorage.getItem('selectedSidebarItem'));
-  const [errorLogs, setErrorLogs] = useState([]);
-  const [errorHistory, setErrorHistory] = useState({ appLevel: [], pageLevel: [] });
-  const [unReadErrorCount, setUnReadErrorCount] = useState({ read: 0, unread: 0 });
-  const [allLog, setAllLog] = useState([]);
+
+  const { errorLogs, clearErrorLogs, unReadErrorCount, allLog } = useDebugger({
+    currentPageId,
+    isDebuggerOpen: !!selectedSidebarItem,
+  });
 
   const sideBarBtnRefs = useRef({});
-
-  const open = !!selectedSidebarItem;
-
-  const clearErrorLogs = () => {
-    setUnReadErrorCount({ read: 0, unread: 0 });
-
-    setErrorLogs([]);
-    setErrorHistory({ appLevel: [], pageLevel: [] });
-  };
-
-  useEffect(() => {
-    if (currentPageId) {
-      const olderPageErrorFromHistory = errorHistory.pageLevel[currentPageId] ?? [];
-      const olderAppErrorFromHistory = errorHistory.appLevel ?? [];
-      setErrorLogs(() => [...olderPageErrorFromHistory, ...olderAppErrorFromHistory]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPageId]);
-
-  useEffect(() => {
-    const newError = _.flow([
-      Object.entries,
-      // eslint-disable-next-line no-unused-vars
-      (arr) => arr.filter(([key, value]) => value.data?.status),
-      Object.fromEntries,
-    ])(errors);
-
-    const newErrorLogs = debuggerActions.generateErrorLogs(newError);
-    const newPageLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'page_level');
-    const newAppLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'app_level');
-    if (newErrorLogs) {
-      setErrorLogs((prevErrors) => {
-        const copy = JSON.parse(JSON.stringify(prevErrors));
-
-        return [...newAppLevelErrorLogs, ...newPageLevelErrorLogs, ...copy];
-      });
-
-      setErrorHistory((prevErrors) => {
-        const copy = JSON.parse(JSON.stringify(prevErrors));
-
-        return {
-          appLevel: [...newAppLevelErrorLogs, ...copy.appLevel],
-          pageLevel: {
-            [currentPageId]: [...newPageLevelErrorLogs, ...(copy.pageLevel[currentPageId] ?? [])],
-          },
-        };
-      });
-    }
-    // debuggerActions.flush();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ errors })]);
-
-  useEffect(() => {
-    if (open) {
-      // eslint-disable-next-line no-unused-vars
-      setUnReadErrorCount((prev) => ({ read: errorLogs.length, unread: 0 }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-
-  useEffect(() => {
-    const unReadErrors = errorLogs.length - unReadErrorCount.read;
-    setUnReadErrorCount((prev) => {
-      return { ...prev, unread: unReadErrors };
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [errorLogs.length]);
 
   useEffect(() => {
     setPopoverContentHeight(((window.innerHeight - queryPanelHeight - 45) / window.innerHeight) * 100);
@@ -258,6 +190,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         clearErrorLogs={clearErrorLogs}
         setPinned={handlePin}
         pinned={pinned}
+        allLog={allLog}
       />
     ),
   };
@@ -325,7 +258,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
           onClick={(e) => handleSelectedSidebarItem('debugger')}
           className={`left-sidebar-item  left-sidebar-layout`}
           badge={true}
-          count={unReadErrorCount.unread}
+          count={unReadErrorCount?.unread}
           tip="Debugger"
           ref={setSideBarBtnRefs('debugger')}
         />

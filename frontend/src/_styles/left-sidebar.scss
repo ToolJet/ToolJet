@@ -54,6 +54,8 @@
     cursor: pointer;
   }
 
+
+
   .global-settings-popover {
     top: 260px;
     max-width: 350px;
@@ -137,6 +139,23 @@
     transform-origin: 100% 0%;
   }
 }
+
+.debugger-content {
+  .text-slate-12 {
+    color : $color-light-slate-12;
+  }
+  .text-tomato-9 {
+    color : $color-light-tomato-09;
+  }
+}
+
+.sidebar-debugger {
+  .nav-item .nav-link {
+    background-color: $color-light-slate-03 !important
+  }
+}
+
+ 
 
 .datasource-modal-button {
   background: #ffffff;
@@ -250,6 +269,8 @@
       .row-deck {
         width: 860px !important;
       }
+
+      
     }
 
     .card {

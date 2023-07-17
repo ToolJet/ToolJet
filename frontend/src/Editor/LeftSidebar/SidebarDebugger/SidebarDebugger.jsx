@@ -2,7 +2,7 @@ import React from 'react';
 import SidebarDebuggerTabs from './SidebarDebuggerTabs';
 import SidebarDebuggerHeader from './SidebarDebuggerHeader';
 
-export const LeftSidebarDebugger = ({ darkMode, errors, clearErrorLogs, setPinned, pinned }) => {
+export const LeftSidebarDebugger = ({ darkMode, errors, clearErrorLogs, setPinned, pinned, allLog }) => {
   return (
     <div>
       <SidebarDebuggerHeader
@@ -11,7 +11,7 @@ export const LeftSidebarDebugger = ({ darkMode, errors, clearErrorLogs, setPinne
         setPinned={setPinned}
         pinned={pinned}
       />
-      <SidebarDebuggerTabs darkMode={darkMode} errors={errors} />
+      <SidebarDebuggerTabs darkMode={darkMode} errors={errors} allLog={allLog} />
     </div>
   );
 };

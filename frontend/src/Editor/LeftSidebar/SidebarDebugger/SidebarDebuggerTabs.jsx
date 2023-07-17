@@ -1,11 +1,10 @@
 import React from 'react';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
-import ErrorLogs from './ErrorLogs';
-import AllLogs from './AllLogs';
+import Logs from './Logs';
 import { useTranslation } from 'react-i18next';
 
-const DebuggerTabContent = ({ logs, LogsComponent, darkMode }) => {
+const DebuggerTabContent = ({ logs, darkMode }) => {
   const { t } = useTranslation();
   return (
     <div className="card-body mb-5">
@@ -15,21 +14,21 @@ const DebuggerTabContent = ({ logs, LogsComponent, darkMode }) => {
 
       <div className="tab-content">
         {logs.map((error, index) => (
-          <LogsComponent key={index} errorProps={error} idx={index} darkMode={darkMode} />
+          <Logs key={index} errorProps={error} logProps={error} idx={index} darkMode={darkMode} />
         ))}
       </div>
     </div>
   );
 };
 
-const SidebarDebuggerTabs = ({ darkMode, errors }) => {
+const SidebarDebuggerTabs = ({ darkMode, errors, allLog }) => {
   return (
-    <Tabs defaultActiveKey="allLog" id="sidebar-debugger" className="mb-3" justify>
+    <Tabs defaultActiveKey="allLog" id="sidebar-debugger" className="mb-3 sidebar-debugger" justify>
       <Tab eventKey="allLog" title="All Log">
-        <DebuggerTabContent logs={errors} LogsComponent={AllLogs} darkMode={darkMode} />
+        <DebuggerTabContent logs={allLog} darkMode={darkMode} />
       </Tab>
       <Tab eventKey="errors" title="Errors">
-        <DebuggerTabContent logs={errors} LogsComponent={ErrorLogs} darkMode={darkMode} />
+        <DebuggerTabContent logs={errors} darkMode={darkMode} />
       </Tab>
     </Tabs>
   );

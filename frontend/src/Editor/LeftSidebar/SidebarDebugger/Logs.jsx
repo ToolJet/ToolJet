@@ -2,26 +2,28 @@ import React from 'react';
 import { capitalize, startCase } from 'lodash';
 import moment from 'moment';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
+import cx from 'classnames';
 
-function AllLogs({ errorProps, idx, darkMode }) {
+function Logs({ logProps, idx, darkMode }) {
   const [open, setOpen] = React.useState(false);
 
-  const errorTitle = ` [${capitalize(errorProps.type)} ${errorProps.key}]`;
-  const errorMessage =
-    errorProps.type === 'component'
-      ? `Invalid property detected: ${errorProps.message}.`
-      : `${startCase(errorProps.type)} failed: ${errorProps.message ?? ''}`;
+  const title = ` [${capitalize(logProps?.type)} ${logProps?.key}]`;
+  const message = logProps?.isQuerySuccessLog
+    ? 'Completed'
+    : logProps?.type === 'component'
+    ? `Invalid property detected: ${logProps?.message}.`
+    : `${startCase(logProps?.type)} failed: ${logProps?.message ?? ''}`;
 
   const defaultStyles = {
     transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
     transition: '0.2s all',
-    display: 'inline-block',
+    display: logProps?.isQuerySuccessLog ? 'none' : 'inline-block',
     cursor: 'pointer',
   };
 
   return (
-    <div className="tab-content debugger-content mb-1" key={`${errorProps.key}-${idx}`}>
-      <p className="text-azure m-0 d-flex" onClick={() => setOpen((prev) => !prev)}>
+    <div className="tab-content debugger-content mb-1" key={`${logProps?.key}-${idx}`}>
+      <p className="m-0 d-flex" onClick={() => setOpen((prev) => !prev)}>
         <span className="mx-1 position-absolute" style={defaultStyles}>
           <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -34,16 +36,23 @@ function AllLogs({ errorProps, idx, darkMode }) {
         </span>
         <span className="ps-3 w-100">
           <span className="d-flex justify-content-between align-items-center  text-truncate">
-            <span className="text-truncate">{errorTitle}</span>
-            <small className="text-muted text-right px-1">{moment(errorProps.timestamp).fromNow()}</small>
+            <span className="text-truncate text-slate-12">{title}</span>
+            <small className="text-muted text-right px-1">{moment(logProps?.timestamp).fromNow()}</small>
           </span>
-          <span className="text-red mx-1">{errorMessage}</span>
+          <span
+            className={cx('mx-1', {
+              'text-tomato-9': !logProps?.isQuerySuccessLog,
+              'color-light-green': logProps?.isQuerySuccessLog,
+            })}
+          >
+            {message}
+          </span>
         </span>
       </p>
 
       {open && (
         <JSONTreeViewer
-          data={errorProps.error}
+          data={logProps.error}
           useIcons={false}
           useIndentedBlock={true}
           enableCopyToClipboard={false}
@@ -58,4 +67,4 @@ function AllLogs({ errorProps, idx, darkMode }) {
   );
 }
 
-export default AllLogs;
+export default Logs;

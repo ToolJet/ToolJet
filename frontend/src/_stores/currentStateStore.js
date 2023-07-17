@@ -16,15 +16,21 @@ const initialState = {
     handle: '',
     variables: {},
   },
+  succededQuery: {},
 };
 
 export const useCurrentStateStore = create(
   zustandDevTools(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
       actions: {
         setCurrentState: (currentState) => {
           set({ ...currentState }), false, { type: 'SET_CURRENT_STATE', currentState };
+        },
+        setErrors: (error) => {
+          set({ errors: { ...get().errors, ...error }, allLog: { ...error, ...get().allLog } }),
+            false,
+            { type: 'SET_ERRORS', error };
         },
       },
     }),
