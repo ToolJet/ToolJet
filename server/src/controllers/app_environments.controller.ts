@@ -7,7 +7,7 @@ import { AppEnvironmentService } from '@services/app_environments.service';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { App } from 'src/entities/app.entity';
 import { CreateAppEnvironmentDto, UpdateAppEnvironmentDto } from '@dto/app_environment.dto';
-import { AppAuthGuard } from 'src/modules/auth/app-auth.guard';
+import { PublicAppEnvironmentGuard } from 'src/modules/app_environments/public_app_environment.guard';
 
 @Controller('app-environments')
 export class AppEnvironmentsController {
@@ -22,7 +22,7 @@ export class AppEnvironmentsController {
     return decamelizeKeys({ environments });
   }
 
-  @UseGuards(AppAuthGuard)
+  @UseGuards(PublicAppEnvironmentGuard)
   @Get('default')
   async getDefaultEnvironment(@User() user, @Req() req) {
     let organizationId: string;

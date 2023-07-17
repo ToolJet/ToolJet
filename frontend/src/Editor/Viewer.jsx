@@ -545,8 +545,8 @@ class ViewerComponent extends React.Component {
     return `_tooljet-page-${handle}`;
   };
 
-  getEnvironmentDetails = (isPublic) => {
-    const queryParams = { ...(isPublic && { slug: this.state.slug }) };
+  getEnvironmentDetails = () => {
+    const queryParams = { slug: this.props.params.slug };
     return appEnvironmentService.getEnvironment(this.state.environmentId, queryParams);
   };
 

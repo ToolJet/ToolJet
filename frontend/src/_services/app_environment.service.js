@@ -8,6 +8,7 @@ export const appEnvironmentService = {
   getEnvironment,
 };
 
+/* This endpoint now only will work with viewer. For Editor we may need to do some logic changes in backend code */
 function getEnvironment(id, queryParams) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   const query = queryString.stringify(queryParams);
