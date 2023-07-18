@@ -59,6 +59,8 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
             return 0;
           })
       );
+    } else {
+      setAction();
     }
   }, [showMenu]);
 
