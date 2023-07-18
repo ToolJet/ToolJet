@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import _ from 'lodash';
 import { validateWidget } from '@/_helpers/utils';
 
@@ -6,7 +6,9 @@ export default function GenerateEachCellValue({
   cellValue,
   globalFilter,
   cellRender,
+  // eslint-disable-next-line no-unused-vars
   rowChangeSet,
+  // eslint-disable-next-line no-unused-vars
   rowData,
   isEditable,
   columnType,
@@ -61,12 +63,12 @@ export default function GenerateEachCellValue({
       };
     }
   }
-
-  useEffect(() => {
-    if (_.isEmpty(rowChangeSet)) {
-      setHighlighterCells(true);
-    }
-  }, [rowData, rowChangeSet]);
+  // commenting following useEffect to  discard it permanently in the future after succesfull checks
+  // useEffect(() => {
+  //   if (_.isEmpty(rowChangeSet)) {
+  //     setHighlighterCells(true);
+  //   }
+  // }, [rowData, rowChangeSet]);
 
   let htmlElement = cellValue;
   if (cellValue?.toString()?.toLowerCase().includes(globalFilter?.toLowerCase())) {
@@ -93,10 +95,14 @@ export default function GenerateEachCellValue({
       onBlur={(e) => {
         e.persist();
         updateCellValue.current = e.target.value;
-        if (!showHighlightedCells && updateCellValue.current === cellValue && _.isEmpty(rowChangeSet)) {
+        //removing _.isEmpty(rowChangeSet) flag from if statement at the end
+        if (!showHighlightedCells && updateCellValue.current === cellValue) {
           updateCellValue.current = null;
           setHighlighterCells(true);
         }
+      }}
+      onKeyUp={(e) => {
+        if (e.key === 'Tab' && isEditable && showHighlightedCells) setHighlighterCells(false);
       }}
       className="w-100 h-100"
     >
