@@ -147,6 +147,7 @@ The table provides different column types based on the data being displayed:
 - [Toggle switch](#toggle-switch)
 - [Date Picker](#date-picker)
 - [Image](#image)
+- [Link](#link)
 
 #### String | Default
 
@@ -352,9 +353,30 @@ The **Image** column type is used to display images in the column cells using th
 
 </div>
 
+#### Link
+
+The **Link** column type enables cells to become clickable links that can be loaded on either the same page or a new page.
+
+| Column property | Description |
+| ----------- | ----------- |
+| Column name | Specifies the name displayed on the table column header. |
+| Key | Specifies the key name associated with the loaded data in the table. The provided **key** can hold either a `string` or a `URL`. |
+| Href | Specifies the key that holds the URL. By default, it is set to `{{cellValue}}`, which sets the href to the data loaded from the specified key. |
+| Link Target | Specifies whether the link should be loaded on the same window or a new window. The values can also be set dynamically to `_set` for same window and `_blank` for new window. |
+| Column Visibility | This option is enabled by default. Disabling it hides the column from the table. Its value can also be dynamically set to `{{true}}` or `{{false}}` to show or hide the column. |
+
+In the screenshot below, the **key** is set to `Title`, this key holds the string values. In the **Href** field, we are using `{{rowData.image}}`, which retrieves the URLs from the image key for their respective row.
+
 :::info
-For a guide on dynamically changing the color of text in a row and column in the table, refer to this **[how-to guide](/docs/how-to/access-cellvalue-rowdata)**.
+For more information on using cellValue and rowData, refer to the **[how-to guide](/docs/how-to/access-cellvalue-rowdata)**.
 :::
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/table/linktype.png" alt="ToolJet - Widget Reference - Table" />
+
+</div>
+
 
 ### Displaying Data
 
