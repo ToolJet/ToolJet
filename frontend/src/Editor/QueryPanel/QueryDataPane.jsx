@@ -30,6 +30,7 @@ export const QueryDataPane = ({
   const [showSearchBox, setShowSearchBox] = useState(false);
   const searchBoxRef = useRef(null);
   const [dataSourcesForFilters, setDataSourcesForFilters] = useState([]);
+  const [searchTermForFilters, setSearchTermForFilters] = useState();
 
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -39,13 +40,17 @@ export const QueryDataPane = ({
   );
 
   useEffect(() => {
-    if (isEmpty(dataSourcesForFilters)) {
-      setFilteredQueries(dataQueries);
+    let filteredDataQueries = [...dataQueries];
+    if (!isEmpty(dataSourcesForFilters)) {
+      filteredDataQueries = [...dataQueries.filter((query) => dataSourcesForFilters.includes(query.kind))];
+    }
+    if (searchTermForFilters) {
+      filterQueries(searchTermForFilters, filteredDataQueries);
     } else {
-      setFilteredQueries(dataQueries.filter((query) => dataSourcesForFilters.includes(query.kind)));
+      setFilteredQueries(filteredDataQueries);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(dataQueries), dataSourcesForFilters]);
+  }, [JSON.stringify(dataQueries), dataSourcesForFilters, searchTermForFilters]);
 
   const handleFilterDatasourcesChange = (kind) => {
     setDataSourcesForFilters((dataSourcesForFilters) => {
@@ -58,9 +63,9 @@ export const QueryDataPane = ({
   };
 
   const filterQueries = useCallback(
-    (value) => {
+    (value, queries) => {
       if (value) {
-        const fuse = new Fuse(dataQueries, { keys: ['name'] });
+        const fuse = new Fuse(queries, { keys: ['name'] });
         const results = fuse.search(value);
         let filterDataQueries = [];
         results.every((result) => {
@@ -78,7 +83,7 @@ export const QueryDataPane = ({
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(dataQueries)]
+    [JSON.stringify(dataQueries), searchTermForFilters]
   );
 
   useEffect(() => {
@@ -145,7 +150,7 @@ export const QueryDataPane = ({
                 ref={searchBoxRef}
                 dataCy={`query-manager`}
                 width="100%"
-                onSubmit={filterQueries}
+                onSubmit={(val) => setSearchTermForFilters(val)}
                 placeholder={t('globals.search', 'Search')}
                 onClearCallback={() => setShowSearchBox(false)}
                 customClass="query-manager-search-box-wrapper"

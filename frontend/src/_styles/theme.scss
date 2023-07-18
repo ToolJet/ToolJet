@@ -10838,6 +10838,11 @@ tbody {
     background-color: var(--slate5);
   }
 }
+.tj-list-option {
+  &.active {
+    background-color: var(--indigo2);
+  }
+}
 .release-buttons {
   .release-button {
       padding: 6px 16px;

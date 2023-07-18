@@ -9,6 +9,7 @@ import Arrowleft from '@/_ui/Icon/bulkIcons/Arrowleft';
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import SortArrowUp from '@/_ui/Icon/bulkIcons/SortArrowUp';
 import SortArrowDown from '@/_ui/Icon/bulkIcons/SortArrowDown';
+import Tick from '@/_ui/Icon/solidIcons/Tick';
 import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { staticDataSources } from '../QueryManager/constants';
@@ -68,8 +69,8 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
     setAction(action);
   };
 
-  const handleSort = (sortBy) => {
-    sortDataQueries(sortBy);
+  const handleSort = (sortBy, sortOrder) => {
+    sortDataQueries(sortBy, sortOrder);
     closeMenu();
   };
 
@@ -89,15 +90,15 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
 
       default:
         return (
-          <div className="card-body p-0">
+          <div className="card-body p-0 tj-scrollbar" style={{ maxHeight: '275px', overflowY: 'auto' }}>
             <div className="color-slate9 px-3 pb-2 w-100">
               <small>Filter By</small>
             </div>
             <MenuButton
               id="filter-by-datasource"
               text="Data Source"
-              customClass="tj-list-btn"
               callback={handlePageCallback}
+              active={selectedDataSources.length > 0}
             />
             <div class="border-bottom"></div>
             <div className="color-slate9 px-3 pb-2 pt-1 w-100">
@@ -105,24 +106,45 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
             </div>
             <MenuButton
               id="name"
-              text="A-Z"
+              order="asc"
+              text="Name: A-Z"
               callback={handleSort}
-              customClass={cx('tj-list-btn', { active: sortBy === 'name' })}
-              sortOrder={sortBy === 'name' && sortOrder}
+              active={sortBy === 'name' && sortOrder === 'asc'}
+            />
+            <MenuButton
+              id="name"
+              order="desc"
+              text="Name: Z-A"
+              callback={handleSort}
+              active={sortBy === 'name' && sortOrder === 'desc'}
             />
             <MenuButton
               id="kind"
-              text="Type"
+              order="asc"
+              text="Type: A-Z"
               callback={handleSort}
-              customClass={cx('tj-list-btn', { active: sortBy === 'kind' })}
-              sortOrder={sortBy === 'kind' && sortOrder}
+              active={sortBy === 'kind' && sortOrder === 'asc'}
+            />
+            <MenuButton
+              id="kind"
+              order="desc"
+              text="Type: Z-A"
+              callback={handleSort}
+              active={sortBy === 'kind' && sortOrder === 'desc'}
             />
             <MenuButton
               id="updated_at"
-              text="Last modified"
+              order="asc"
+              text="Last modified: newest first"
               callback={handleSort}
-              customClass={cx('tj-list-btn', { active: sortBy === 'updated_at' })}
-              sortOrder={sortBy === 'updated_at' && sortOrder}
+              active={sortBy === 'updated_at' && sortOrder === 'asc'}
+            />
+            <MenuButton
+              id="updated_at"
+              order="desc"
+              text="Last modified: oldest first"
+              callback={handleSort}
+              active={sortBy === 'updated_at' && sortOrder === 'desc'}
             />
           </div>
         );
@@ -241,14 +263,14 @@ const DataSourceSelector = ({
   );
 };
 
-const MenuButton = ({ id, text, iconSrc, customClass = '', disabled = false, callback = () => null, sortOrder }) => {
+const MenuButton = ({ id, order, text, iconSrc, disabled = false, callback = () => null, sortOrder, active }) => {
   const handleOnClick = (e) => {
     e.stopPropagation();
-    callback(id);
+    callback(id, order);
   };
 
   return (
-    <div className={`field p-2  ${customClass ? ` ${customClass}` : ''}`}>
+    <div className={`field p-2  tj-list-option ${active ? ` active` : ''}`}>
       <Button.UnstyledButton onClick={handleOnClick} disabled={disabled} classNames="d-flex justify-content-between">
         <Button.Content title={text} iconSrc={iconSrc} direction="left" />
         {sortOrder &&
@@ -257,6 +279,7 @@ const MenuButton = ({ id, text, iconSrc, customClass = '', disabled = false, cal
           ) : (
             <SortArrowDown width="15" height="15" viewBox="0 0 22 22" fill="#4299e1" />
           ))}
+        {active && <Tick width="20" height="20" viewBox="0 0 22 22" fill="var(--indigo9)" />}
       </Button.UnstyledButton>
     </div>
   );

@@ -272,12 +272,15 @@ export const useDataQueriesStore = create(
             })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         }, 1000),
-        sortDataQueries: (sortBy) => {
-          set(({ dataQueries, sortOrder }) => ({
-            sortBy,
-            sortOrder: sortOrder === 'asc' ? 'desc' : 'asc',
-            dataQueries: sortByAttribute(dataQueries, sortBy, sortOrder === 'asc' ? 'desc' : 'asc'),
-          }));
+        sortDataQueries: (sortBy, sortOrder) => {
+          set(({ dataQueries, sortOrder: currSortOrder }) => {
+            const newSortOrder = sortOrder ? sortOrder : currSortOrder === 'asc' ? 'desc' : 'asc';
+            return {
+              sortBy,
+              sortOrder: newSortOrder,
+              dataQueries: sortByAttribute(dataQueries, sortBy, newSortOrder),
+            };
+          });
         },
       },
     }),
