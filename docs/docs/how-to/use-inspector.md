@@ -84,22 +84,34 @@ components section can be used to inspect the properties and values of the compo
 
 ### globals
 
-globals section includes the following sub-sections:
-
-- **currentUser:** The currentUser object contains information about the currently logged-in user such as **email**, **firstName**, and **lastName**.
-- **groups:** The groups array contains the name of the groups the currently logged-in user is added to. Note: The `all_users` is default groups for everyone.
-- **theme:** The theme object contains the name of the currently active theme.
-- **urlparam:** The urlparams contains the information about the url parameters of the application.
-
-:::info
-All the global variables can be accessed anywhere inside the ToolJet applications. Here's an **[example use-case](/docs/how-to/access-currentuser)** of using these variables.
-:::
-
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/how-to/use-inspector/globals.png" alt="How to - Use Inspector" width="500" />
 
 </div>
+
+The globals section consists of the following sub-sections:
+
+- **currentUser:** The currentUser object contains information about the currently logged-in user, such as their **email**, **firstName**, and **lastName**.
+- **groups:** The groups array contains the names of the groups to which the currently logged-in user belongs. Note: The `all_users` group is a default group for everyone.
+- **theme:** The theme object contains the name of the currently active theme.
+- **urlparams:** The urlparams contain information about the URL parameters of the application.
+- **environment:** This variable holds two keys: **id** and **name**. The **id** is a unique identifier generated automatically, and the **name** holds the name of the currently opened environment of the app version.
+- **modes:** This variable holds one of three values: **edit**, **preview**, or **view**, depending on the current state of the app. If the app is opened in editing mode, the mode will be set to **edit**. If the app is opened by clicking the preview button on the app builder, the variable will be set to **preview**. If the app is opened using the URL from the **Share** modal, the mode will be set to **view**.
+
+:::tip
+The **environment** and **mode** variables are only available in **ToolJet Enterprise Edition v2.2.3** and above.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/how-to/use-inspector/env.png" alt="How to - Use Inspector" width="500" />
+
+</div>
+:::
+
+:::info
+All the global variables can be accessed anywhere within ToolJet applications. Here's an **[example use-case](/docs/how-to/access-currentuser)** that demonstrates the usage of these variables.
+:::
 
 ### variables
 
