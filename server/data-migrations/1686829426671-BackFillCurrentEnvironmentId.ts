@@ -14,7 +14,7 @@ export class BackFillCurrentEnvironmentId1686829426671 implements MigrationInter
   async backFillNewColumn(manager: EntityManager) {
     const organizations = await manager.find(Organization, {
       select: ['id'],
-      relations: ['appEnvironments'],
+      // relations: ['appEnvironments'], not getting this data in single query since it timeout in cloud
     });
 
     const migrationProgress = new MigrationProgress('BackFillCurrentEnvironmentId1686829426671', organizations.length);
