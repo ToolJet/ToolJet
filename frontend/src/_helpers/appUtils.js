@@ -1240,6 +1240,11 @@ export const debuggerActions = {
     });
     return querySuccesslogs;
   },
+  flushAllLog: () => {
+    useCurrentStateStore.getState().actions.setCurrentState({
+      succededQuery: {},
+    });
+  },
 };
 
 export const getComponentName = (currentState, id) => {

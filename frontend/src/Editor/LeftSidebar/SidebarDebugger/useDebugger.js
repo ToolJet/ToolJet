@@ -52,7 +52,7 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
         return [...newAppLevelErrorLogs, ...newPageLevelErrorLogs, ...copy];
       });
 
-      setAllLog((prevLog) => [...prevLog, ...newErrorLogs]);
+      setAllLog((prevLog) => [...newErrorLogs, ...prevLog]);
 
       setErrorHistory((prevErrors) => {
         const copy = JSON.parse(JSON.stringify(prevErrors));
@@ -77,23 +77,25 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
         return sortedDatesDesc;
       });
     }
-  }, [succededQuery, errorLogs]);
+    debuggerActions.flushAllLog();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify({ succededQuery })]);
 
   useEffect(() => {
     if (isDebuggerOpen) {
       // eslint-disable-next-line no-unused-vars
-      setUnReadErrorCount((prev) => ({ read: allLog.length, unread: 0 }));
+      setUnReadErrorCount((prev) => ({ read: errorLogs.length, unread: 0 }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDebuggerOpen]);
 
   useEffect(() => {
-    const unReadErrors = allLog.length - unReadErrorCount.read;
+    const unReadErrors = errorLogs.length - unReadErrorCount.read;
     setUnReadErrorCount((prev) => {
       return { ...prev, unread: unReadErrors };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allLog.length]);
+  }, [errorLogs.length]);
 
   return {
     errorLogs,
