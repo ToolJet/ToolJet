@@ -1641,14 +1641,14 @@ export const computeQueryState = (queries, _ref) => {
   queries.forEach((query) => {
     if (query.plugin?.plugin_id) {
       queryState[query.name] = {
-        ...query.plugin.manifest_file.data.source.exposedVariables,
+        ...query.plugin.manifest_file.data?.source?.exposedVariables,
         kind: query.plugin.manifest_file.data.source.kind,
         ..._ref.state.currentState.queries[query.name],
       };
     } else {
       queryState[query.name] = {
-        ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-        kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
+        ...DataSourceTypes.find((source) => source.kind === query.kind)?.exposedVariables,
+        kind: DataSourceTypes.find((source) => source.kind === query.kind)?.kind,
         ..._ref.state.currentState.queries[query.name],
       };
     }

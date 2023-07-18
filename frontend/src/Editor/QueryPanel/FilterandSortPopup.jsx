@@ -1,14 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { OverlayTrigger, Popover, Form } from 'react-bootstrap';
 import cx from 'classnames';
-import { Checkbox } from '@/_ui/CheckBox';
 import { Button } from '@/_ui/LeftSidebar';
 import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import Filter from '@/_ui/Icon/solidIcons/Filter';
 import Arrowleft from '@/_ui/Icon/bulkIcons/Arrowleft';
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
-import SortArrowUp from '@/_ui/Icon/bulkIcons/SortArrowUp';
-import SortArrowDown from '@/_ui/Icon/bulkIcons/SortArrowDown';
 import Tick from '@/_ui/Icon/solidIcons/Tick';
 import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';

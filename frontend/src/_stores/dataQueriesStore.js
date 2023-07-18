@@ -104,6 +104,7 @@ export const useDataQueriesStore = create(
                 name,
                 kind,
                 id: tempId,
+                plugin: selectedDataSource.plugin,
               },
               ...currDataQueries,
             ],
@@ -175,11 +176,12 @@ export const useDataQueriesStore = create(
                 isUpdatingQueryInProcess: false,
                 dataQueries: state.dataQueries.map((query) => {
                   if (query?.id === selectedQuery?.id) {
-                    return { ...query, dataSourceId: newDataSource?.id };
+                    return { ...query, dataSourceId: newDataSource?.id, data_source_id: newDataSource?.id };
                   }
                   return query;
                 }),
               }));
+              useQueryPanelStore.getState().actions.setSelectedQuery(selectedQuery.id);
               useQueryPanelStore.getState().actions.setSelectedDataSource(newDataSource);
             })
             .catch(() => {

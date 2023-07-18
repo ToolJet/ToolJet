@@ -5,7 +5,7 @@ import RunTooljetDbIcon from '@/Editor/Icons/tooljetdb.svg';
 import RunpyIcon from '@/Editor/Icons/runpy.svg';
 
 const DataSourceIcon = ({ source, height = 25 }) => {
-  const iconFile = source?.plugin?.iconFile?.data ?? undefined;
+  const iconFile = source?.plugin?.iconFile?.data ?? source?.plugin?.icon_file?.data;
   const Icon = () => getSvgIcon(source.kind, height, height, iconFile);
 
   switch (source.kind) {

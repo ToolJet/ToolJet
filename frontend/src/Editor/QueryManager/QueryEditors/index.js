@@ -43,6 +43,6 @@ export const allSources = {
 
 export const source = (props) => (
   <div className="query-editor-dynamic-form-container">
-    <DynamicForm schema={props.pluginSchema} {...props} computeSelectStyles={computeSelectStyles} />
+    <DynamicForm schema={props.pluginSchema} {...props} computeSelectStyles={computeSelectStyles} layout="horizontal" />
   </div>
 );
