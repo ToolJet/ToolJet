@@ -24,6 +24,7 @@ import {
   getSubpath,
   excludeWorkspaceIdFromURL,
   redirectToDashboard,
+  getWorkspaceId,
 } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
@@ -291,7 +292,9 @@ class ViewerComponent extends React.Component {
           redirectToDashboard();
           return <Navigate replace to={'/'} />;
         } else if (statusCode === 401) {
-          window.location = `${getSubpath() ?? ''}/login?redirectTo=${this.props.location.pathname}`;
+          window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${
+            this.props.location.pathname
+          }`;
         } else if (statusCode === 404) {
           toast.error(errorDetails?.error ?? 'App not found', {
             position: 'top-center',
