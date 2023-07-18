@@ -162,10 +162,9 @@ export const Folders = function Folders({
 
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
-      if(showUpdateForm){
+      if (showUpdateForm) {
         executeEditFolder();
-      }
-      else {
+      } else {
         saveFolder();
       }
     }
