@@ -17,8 +17,8 @@ jobs:
 
     strategy:
       matrix:
-        label: [run-cypress, run-cypress-app-builder, run-cypress-workspace]
-        config-file: [cypress-run.config.js, cypress-app-builder.config.js, cypress-workspace.config.js]
+        label: [run-cypress-workspace]
+        config-file: [cypress-workspace.config.js]
 
     steps:
       - name: Checkout
