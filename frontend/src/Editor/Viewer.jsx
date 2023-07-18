@@ -196,7 +196,7 @@ class ViewerComponent extends React.Component {
 
   runQueries = (data_queries) => {
     data_queries.forEach((query) => {
-      if (query.options.runOnPageLoad) {
+      if (query.options.runOnPageLoad && query.status === 'published') {
         runQuery(this, query.id, query.name, undefined, 'view');
       }
     });
