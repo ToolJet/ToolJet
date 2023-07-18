@@ -10,7 +10,7 @@ export const deleteVersionText = {
   deleteModalText: (text) => {
     return `Are you sure you want to delete this version - ${cyParamName(
       text
-    )}`;
+    )}?`;
   },
   deleteToastMessage: (version) => {
     return `Version - ${cyParamName(version)} Deleted`;
@@ -29,4 +29,7 @@ export const releasedVersionText = {
     "You cannot delete a released version",
   releasedAppText:
     "This is a released app. Create a new version to make changes.",
+  releasedVersionConfirmText:
+    "Are you sure you want to release this version of the app?",
+  buttonReleaseApp: "Release App",
 };

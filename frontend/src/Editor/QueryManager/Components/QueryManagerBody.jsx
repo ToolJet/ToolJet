@@ -17,7 +17,6 @@ import { EventManager } from '@/Editor/Inspector/EventManager';
 import { allOperations } from '@tooljet/plugins/client';
 import { staticDataSources, customToggles, mockDataQueryAsComponent, schemaUnavailableOptions } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
-
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueries, useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import {
@@ -26,6 +25,8 @@ import {
   useSelectedDataSource,
   useQueryPanelActions,
 } from '@/_stores/queryPanelStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryManagerBody = forwardRef(
   (
@@ -42,7 +43,6 @@ export const QueryManagerBody = forwardRef(
       appDefinition,
       createDraftQuery,
       setOptions,
-      isVersionReleased,
     },
     ref
   ) => {
@@ -57,12 +57,24 @@ export const QueryManagerBody = forwardRef(
     const { changeDataQuery } = useDataQueriesActions();
 
     const [dataSourceMeta, setDataSourceMeta] = useState(null);
+    /* - Added the below line to cause re-rendering when the query is switched
+       - QueryEditors are not updating when the query is switched
+       - TODO: Remove the below line and make query editors update when the query is switched
+       - Ref PR #6763
+    */
+    const [selectedQueryId, setSelectedQueryId] = useState(selectedQuery?.id);
 
     const queryName = selectedQuery?.name ?? '';
     const sourcecomponentName = selectedDataSource?.kind.charAt(0).toUpperCase() + selectedDataSource?.kind.slice(1);
     const ElementToRender = selectedDataSource?.pluginId ? source : allSources[sourcecomponentName];
 
     const defaultOptions = useRef({});
+    const { isVersionReleased } = useAppVersionStore(
+      (state) => ({
+        isVersionReleased: state.isVersionReleased,
+      }),
+      shallow
+    );
 
     useEffect(() => {
       setDataSourceMeta(
@@ -70,9 +82,10 @@ export const QueryManagerBody = forwardRef(
           ? selectedQuery?.manifestFile?.data?.source
           : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind)
       );
-      defaultOptions.current = selectedQuery?.options;
+      setSelectedQueryId(selectedQuery?.id);
+      defaultOptions.current = selectedQuery?.options && JSON.parse(JSON.stringify(selectedQuery?.options));
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedQuery?.id]);
+    }, [selectedQuery]);
 
     const computeQueryName = (kind) => {
       const currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
@@ -379,7 +392,11 @@ export const QueryManagerBody = forwardRef(
 
     const renderChangeDataSource = () => {
       return (
-        <div className="mt-2 pb-4">
+        <div
+          className={cx(`mt-2 pb-4`, {
+            'disabled ': isVersionReleased,
+          })}
+        >
           <div
             className={`border-top query-manager-border-color px-4 hr-text-left py-2 ${
               darkMode ? 'color-white' : 'color-light-slate-12'
@@ -398,6 +415,8 @@ export const QueryManagerBody = forwardRef(
         </div>
       );
     };
+
+    if (selectedQueryId !== selectedQuery?.id) return;
 
     return (
       <div

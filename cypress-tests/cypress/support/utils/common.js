@@ -1,9 +1,10 @@
 import { commonText, path } from "Texts/common";
 import { usersSelector } from "Selectors/manageUsers";
 import { profileSelector } from "Selectors/profile";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
+import { groupsSelector } from "Selectors/manageGroups";
 
 export const navigateToProfile = () => {
   cy.get(commonSelectors.profileSettings).click();
@@ -24,7 +25,26 @@ export const navigateToManageUsers = () => {
 export const navigateToManageGroups = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.manageGroupsOption).click();
+  cy.get(groupsSelector.groupLink("Admin")).click();
+  cy.get(groupsSelector.groupLink("All users")).click();
+  cy.get(groupsSelector.groupLink("Admin")).click();
+  cy.get(groupsSelector.groupLink("All users")).click();
+  cy.wait(500);
+  cy.get("body").then(($title) => {
+    if (
+      $title
+        .text()
+        .includes("Admin has edit access to all apps. These are not editable")
+    ) {
+      cy.get(groupsSelector.groupLink("Admin")).click();
+      cy.get(groupsSelector.groupLink("All users")).click();
+      cy.get(groupsSelector.groupLink("Admin")).click();
+      cy.get(groupsSelector.groupLink("All users")).click();
+      cy.wait(2000);
+    }
+  });
 };
+
 export const navigateToWorkspaceVariable = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.workspaceVariableOption).click();
@@ -69,20 +89,29 @@ export const deleteFolder = (folderName) => {
 };
 
 export const deleteDownloadsFolder = () => {
-  const downloadsFolder = Cypress.config("downloadsFolder");
-  cy.task("deleteFolder", downloadsFolder);
+  cy.exec("cd ./cypress/downloads/ && rm -rf *", {
+    failOnNonZeroExit: false,
+  });
 };
 
 export const navigateToAppEditor = (appName) => {
+  cy.intercept("GET", "/api/v2/data_sources").as("appEditor");
   cy.get(commonSelectors.appCard(appName))
     .trigger("mousehover")
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
     .click({ force: true });
-  //cy.wait("@appEditor");
+  cy.wait("@appEditor");
+  cy.wait(1000);
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Skip", { timeout: 10000 })) {
+      cy.get(commonSelectors.skipButton).click();
+    }
+  });
 };
 
 export const viewAppCardOptions = (appName) => {
+  cy.reloadAppForTheElement(appName);
   cy.contains("div", appName)
     .parent()
     .within(() => {
@@ -91,6 +120,7 @@ export const viewAppCardOptions = (appName) => {
 };
 
 export const viewFolderCardOptions = (folderName) => {
+  cy.reloadAppForTheElement(folderName);
   cy.get(commonSelectors.folderListcard(folderName))
     .parent()
     .within(() => {
@@ -168,7 +198,7 @@ export const createWorkspace = (workspaceName) => {
 
 export const selectAppCardOption = (appName, appCardOption) => {
   viewAppCardOptions(appName);
-  cy.get(appCardOption).should("be.visible").click();
+  cy.get(appCardOption).should("be.visible").click({ force: true });
 };
 
 export const navigateToDatabase = () => {
@@ -177,4 +207,31 @@ export const navigateToDatabase = () => {
 };
 export const randomValue = () => {
   return Math.floor(Math.random() * (1000 - 100) + 100) / 100;
+};
+
+export const verifyTooltip = (selector, message) => {
+  cy.get(selector)
+    .trigger("mouseover", { timeout: 2000 })
+    .trigger("mouseover")
+    .then(() => {
+      cy.get(".tooltip-inner").last().should("have.text", message);
+    });
+};
+
+export const pinInspector = () => {
+  cy.get(commonWidgetSelector.sidebarinspector).click();
+  cy.get(commonSelectors.inspectorPinIcon).click();
+  cy.intercept("GET", "/api/v2/data_sources").as("editor");
+  cy.reload();
+  cy.wait("@editor");
+  cy.get("body").then(($body) => {
+    if (!$body.find(commonSelectors.inspectorPinIcon).length > 0) {
+      cy.get(commonWidgetSelector.sidebarinspector).click();
+      cy.get(commonSelectors.inspectorPinIcon).click();
+      cy.wait(500);
+      cy.intercept("GET", "/api/v2/data_sources").as("editor");
+      cy.reload();
+      cy.wait("@editor");
+    }
+  });
 };

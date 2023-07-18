@@ -3,17 +3,19 @@ import { DraggableBox } from './DraggableBox';
 import Fuse from 'fuse.js';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
-export const WidgetManager = function WidgetManager({
-  componentTypes,
-  zoomLevel,
-  currentLayout,
-  darkMode,
-  isVersionReleased,
-}) {
+export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, darkMode }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
   const [searchQuery, setSearchQuery] = useState('');
   const { t } = useTranslation();
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   function handleSearchQueryChange(e) {
     const { value } = e.target;
@@ -33,15 +35,7 @@ export const WidgetManager = function WidgetManager({
   }
 
   function renderComponentCard(component, index) {
-    return (
-      <DraggableBox
-        key={index}
-        index={index}
-        component={component}
-        zoomLevel={zoomLevel}
-        currentLayout={currentLayout}
-      />
-    );
+    return <DraggableBox key={index} index={index} component={component} zoomLevel={zoomLevel} />;
   }
 
   function renderList(header, items) {

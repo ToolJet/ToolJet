@@ -6,14 +6,14 @@ import * as users from "Support/utils/manageUsers";
 import * as common from "Support/utils/common";
 import { path } from "Texts/common";
 import { dashboardSelector } from "Selectors/dashboard";
+import { updateWorkspaceName } from "Support/utils/userPermissions";
 
 const data = {};
 data.firstName = fake.firstName;
 data.lastName = fake.lastName.replaceAll("[^A-Za-z]", "");
 data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
-data.companyName = fake.companyName;
 
-describe("Manage Users for multiple workspace", () => {
+describe("Manage Users", () => {
   beforeEach(() => {
     cy.appUILogin();
   });
@@ -83,8 +83,8 @@ describe("Manage Users for multiple workspace", () => {
       "have.text",
       "My workspace"
     );
-    cy.get(commonSelectors.workspaceName).click();
-    cy.contains("Untitled workspace").should("exist").click();
+    // cy.get(commonSelectors.workspaceName).click();
+    updateWorkspaceName(data.email);
     cy.get(dashboardSelector.emptyPageHeader).should("be.visible");
 
     common.logout();
@@ -98,7 +98,7 @@ describe("Manage Users for multiple workspace", () => {
       });
   });
 
-  it("Should verify the archive functionality", () => {
+  it("Should verify the user archive functionality", () => {
     common.navigateToManageUsers();
 
     common.searchUser(data.email);
@@ -115,10 +115,7 @@ describe("Manage Users for multiple workspace", () => {
     cy.contains("td", data.email)
       .parent()
       .within(() => {
-        cy.get(usersSelector.userStatus, { timeout: 9000 }).should(
-          "have.text",
-          usersText.archivedStatus
-        );
+        cy.get("td small").should("have.text", usersText.archivedStatus);
       });
 
     common.logout();
@@ -172,7 +169,7 @@ describe("Manage Users for multiple workspace", () => {
             cy.contains("td", data.email)
               .parent()
               .within(() => {
-                cy.get(usersSelector.userStatus, { timeout: 9000 }).should(
+                cy.get("td small").should(
                   "have.text",
                   usersText.invitedStatus
                 );

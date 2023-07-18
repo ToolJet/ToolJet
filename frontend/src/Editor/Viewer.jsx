@@ -30,15 +30,16 @@ import { Navigate } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 import { toast } from 'react-hot-toast';
 import { withRouter } from '@/_hoc/withRouter';
-
+import { useEditorStore } from '@/_stores/editorStore';
+import { setCookie } from '@/_helpers/cookie';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { shallow } from 'zustand/shallow';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
     super(props);
 
     const deviceWindowWidth = window.screen.width - 5;
-    const isMobileDevice = deviceWindowWidth < 600;
 
     const pageHandle = this.props?.params?.pageHandle;
 
@@ -53,7 +54,6 @@ class ViewerComponent extends React.Component {
       appId,
       versionId,
       deviceWindowWidth,
-      currentLayout: isMobileDevice ? 'mobile' : 'desktop',
       currentUser: null,
       isLoading: true,
       users: null,
@@ -113,7 +113,7 @@ class ViewerComponent extends React.Component {
 
     let mobileLayoutHasWidgets = false;
 
-    if (this.state.currentLayout === 'mobile') {
+    if (this.props.currentLayout === 'mobile') {
       const currentComponents = data.definition.pages[data.definition.homePageId].components;
       mobileLayoutHasWidgets =
         Object.keys(currentComponents).filter((componentId) => currentComponents[componentId]['layouts']['mobile'])
@@ -128,8 +128,9 @@ class ViewerComponent extends React.Component {
           ...this.state.currentState.queries[query.name],
         };
       } else {
+        const dataSourceTypeDetail = DataSourceTypes.find((source) => source.kind === query.kind);
         queryState[query.name] = {
-          ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+          ...dataSourceTypeDetail.exposedVariables,
           ...this.state.currentState.queries[query.name],
         };
       }
@@ -144,14 +145,13 @@ class ViewerComponent extends React.Component {
     const currentPage = pages.find((page) => page.id === currentPageId);
 
     useDataQueriesStore.getState().actions.setDataQueries(data.data_queries);
-
+    useEditorStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
     this.setState(
       {
         currentUser,
         currentSidebarTab: 2,
-        currentLayout: mobileLayoutHasWidgets ? 'mobile' : 'desktop',
         canvasWidth:
-          this.state.currentLayout === 'desktop'
+          this.props.currentLayout === 'desktop'
             ? '100%'
             : mobileLayoutHasWidgets
             ? `${this.state.deviceWindowWidth}px`
@@ -340,8 +340,27 @@ class ViewerComponent extends React.Component {
     });
   }
 
+  /**
+   *
+   * ThandleMessage event listener in the login component fir iframe communication.
+   * It now checks if the received message has a type of 'redirectTo' and extracts the redirectPath value from the payload.
+   * If the value is present, it sets a cookie named 'redirectPath' with the received value and a one-day expiration.
+   * This allows for redirection to a specific path after the login process is completed.
+   */
+  handleMessage = (event) => {
+    const { data } = event;
+
+    if (data?.type === 'redirectTo') {
+      const redirectCookie = data?.payload['redirectPath'];
+      setCookie('redirectPath', redirectCookie, 1);
+    }
+  };
+
   componentDidMount() {
     this.setupViewer();
+    const isMobileDevice = this.state.deviceWindowWidth < 600;
+    useEditorStore.getState().actions.toggleCurrentLayout(isMobileDevice ? 'mobile' : 'desktop');
+    window.addEventListener('message', this.handleMessage);
   }
 
   componentDidUpdate(prevProps) {
@@ -414,12 +433,12 @@ class ViewerComponent extends React.Component {
   }
 
   getCanvasWidth = () => {
-    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
+    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0]?.getBoundingClientRect();
     return canvasBoundingRect?.width;
   };
 
   setWindowTitle(name) {
-    document.title = name ?? 'Untitled App';
+    document.title = name ?? 'My App';
   }
 
   computeCanvasBackgroundColor = () => {
@@ -488,7 +507,6 @@ class ViewerComponent extends React.Component {
       appDefinition,
       isLoading,
       isAppLoaded,
-      currentLayout,
       deviceWindowWidth,
       defaultComponentStateComputed,
       dataQueries,
@@ -517,6 +535,13 @@ class ViewerComponent extends React.Component {
         </div>
       );
     } else {
+      const startingPageHandle = this.props?.params?.pageHandle;
+      const homePageHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
+      if (!startingPageHandle && homePageHandle) {
+        return (
+          <Navigate to={`${homePageHandle}${this.props.params.pageHandle ? '' : window.location.search}`} replace />
+        );
+      }
       if (this.state.app?.is_maintenance_on) {
         return (
           <div className="maintenance_container">
@@ -536,6 +561,7 @@ class ViewerComponent extends React.Component {
         //checking if page is hidden
         if (
           pageArray.find((page) => page.handle === this.props.params.pageHandle)?.hidden &&
+          this.state.currentPageId !== this.state.appDefinition?.homePageId && //Prevent page crashing when home page is hidden
           this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
         ) {
           const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
@@ -556,7 +582,7 @@ class ViewerComponent extends React.Component {
           if (this.state.slug) {
             url = `/applications/${this.state.slug}/${homeHandle}`;
           }
-          return <Navigate to={url} replace />;
+          return <Navigate to={`${url}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
         }
 
         return (
@@ -578,7 +604,6 @@ class ViewerComponent extends React.Component {
                 pages={Object.entries(this.state.appDefinition?.pages) ?? []}
                 currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
                 switchPage={this.switchPage}
-                currentLayout={this.state.currentLayout}
               />
               <div className="sub-section">
                 <div className="main">
@@ -586,7 +611,7 @@ class ViewerComponent extends React.Component {
                     <div className="areas d-flex flex-rows justify-content-center">
                       {appDefinition?.showViewerNavigation && (
                         <ViewerNavigation
-                          isMobileDevice={this.state.currentLayout === 'mobile'}
+                          isMobileDevice={this.props.currentLayout === 'mobile'}
                           canvasBackgroundColor={this.computeCanvasBackgroundColor()}
                           pages={Object.entries(this.state.appDefinition?.pages) ?? []}
                           currentPageId={this.state?.currentPageId ?? this.state.appDefinition?.homePageId}
@@ -598,9 +623,7 @@ class ViewerComponent extends React.Component {
                         className="canvas-area"
                         style={{
                           width: currentCanvasWidth,
-                          minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                           maxWidth: canvasMaxWidth,
-                          maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                           backgroundColor: this.computeCanvasBackgroundColor(),
                           margin: 0,
                           padding: 0,
@@ -624,7 +647,6 @@ class ViewerComponent extends React.Component {
                                 onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
                                 mode="view"
                                 deviceWindowWidth={deviceWindowWidth}
-                                currentLayout={currentLayout}
                                 currentState={this.state.currentState}
                                 selectedComponent={this.state.selectedComponent}
                                 onComponentClick={(id, component) => {
@@ -659,4 +681,14 @@ class ViewerComponent extends React.Component {
   }
 }
 
-export const Viewer = withTranslation()(withRouter(ViewerComponent));
+const withStore = (Component) => (props) => {
+  const { currentLayout } = useEditorStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
+  return <Component {...props} currentLayout={currentLayout} />;
+};
+
+export const Viewer = withTranslation()(withStore(withRouter(ViewerComponent)));

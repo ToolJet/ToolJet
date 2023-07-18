@@ -9,7 +9,8 @@ import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { resolveReferences } from '@/_helpers/utils';
-
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 import { useMounted } from '@/_hooks/use-mount';
 
 export const SubContainer = ({
@@ -46,8 +47,8 @@ export const SubContainer = ({
   height = '100%',
   currentPageId,
   childComponents = null,
-  isVersionReleased,
-  setReleasedVersionPopupState,
+  listmode = null,
+  columns = 1,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -56,6 +57,13 @@ export const SubContainer = ({
   });
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
+  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
@@ -64,7 +72,7 @@ export const SubContainer = ({
       setContainerCanvasWidth(canvasWidth);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentRef, getContainerCanvasWidth()]);
+  }, [parentRef, getContainerCanvasWidth(), listmode]);
 
   zoomLevel = zoomLevel || 1;
 
@@ -122,7 +130,6 @@ export const SubContainer = ({
 
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
-
           const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / 43;
           const height = layout.height ? layout.height : componentMeta.defaultSize.height;
           const newComponentDefinition = {
@@ -269,7 +276,6 @@ export const SubContainer = ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
         const componentMeta = componentTypes.find((component) => component.component === item.component.component);
-
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
 
         const newComponent = addNewWidgetToTheEditor(
@@ -305,8 +311,10 @@ export const SubContainer = ({
 
   function getContainerCanvasWidth() {
     if (containerCanvasWidth !== undefined) {
-      return containerCanvasWidth - 2;
+      if (listmode == 'grid') return containerCanvasWidth / columns - 2;
+      else return containerCanvasWidth - 2;
     }
+
     let width = 0;
     if (parentRef.current) {
       const realCanvas = parentRef.current.getElementsByClassName('real-canvas')[0];
@@ -315,13 +323,12 @@ export const SubContainer = ({
         width = canvasBoundingRect.width;
       }
     }
-
     return width;
   }
 
   function onDragStop(e, componentId, direction, currentLayout) {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
     const canvasWidth = getContainerCanvasWidth();
@@ -366,7 +373,7 @@ export const SubContainer = ({
 
   function onResizeStop(id, e, direction, ref, d, position) {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
     const deltaWidth = d.width;
@@ -385,14 +392,12 @@ export const SubContainer = ({
 
     const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
     const subContainerWidth = canvasBoundingRect.width;
-
     top = y;
     if (deltaWidth !== 0) {
       // onResizeStop is triggered for a single click on the border, therefore this conditional logic
       // should not be removed.
       left = (x * 100) / subContainerWidth;
     }
-
     width = width + (deltaWidth * 43) / subContainerWidth;
     height = height + deltaHeight;
 
@@ -502,7 +507,6 @@ export const SubContainer = ({
                 inCanvas={true}
                 zoomLevel={zoomLevel}
                 setSelectedComponent={setSelectedComponent}
-                currentLayout={currentLayout}
                 selectedComponent={selectedComponent}
                 deviceWindowWidth={deviceWindowWidth}
                 isSelectedComponent={

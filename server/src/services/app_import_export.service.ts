@@ -8,7 +8,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { DataSourcesService } from './data_sources.service';
-import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, defaultAppEnvironments, truncateAndReplace } from 'src/helpers/utils.helper';
 import { isEmpty } from 'lodash';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
@@ -159,7 +159,7 @@ export class AppImportExportService {
 
   async createImportedAppForUser(manager: EntityManager, appParams: any, user: User): Promise<App> {
     const importedApp = manager.create(App, {
-      name: appParams.name,
+      name: truncateAndReplace(appParams.name),
       organizationId: user.organizationId,
       userId: user.id,
       slug: null, // Prevent db unique constraint error.
@@ -172,6 +172,10 @@ export class AppImportExportService {
     return importedApp;
   }
 
+  /*
+   * With new multi-env changes. the imported apps will not have any released versions from now (if the importing schema has any currentVersionId).
+   * All version's default environment will be development or least priority environment only.
+   */
   async buildImportedAppAssociations(manager: EntityManager, importedApp: App, appParams: any, user: User) {
     const dataSourceMapping = {};
     const defaultDataSourceIdMapping = {};
@@ -179,7 +183,6 @@ export class AppImportExportService {
     const appVersionMapping = {};
     const appEnvironmentMapping = {};
     const appDefaultEnvironmentMapping = {};
-    let currentVersionId: string;
     const dataSources = appParams?.dataSources || [];
     const dataQueries = appParams?.dataQueries || [];
     const appVersions = appParams?.appVersions || [];
@@ -187,20 +190,58 @@ export class AppImportExportService {
     const dataSourceOptions = appParams?.dataSourceOptions || [];
     const newDataQueries = [];
     let defaultAppEnvironmentId: string;
+    let currentEnvironmentId: string;
 
     if (!appVersions?.length) {
       // Old version without app version
       // Handle exports prior to 0.12.0
+
+      let envIdArray: string[] = [];
+
+      const organization: Organization = await manager.findOne(Organization, {
+        where: { id: user.organizationId },
+        relations: ['appEnvironments'],
+      });
+      envIdArray = [...organization.appEnvironments.map((env) => env.id)];
+
+      if (!envIdArray.length) {
+        await Promise.all(
+          defaultAppEnvironments.map(async (en) => {
+            const env = manager.create(AppEnvironment, {
+              organizationId: user.organizationId,
+              name: en.name,
+              isDefault: en.isDefault,
+              priority: en.priority,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            await manager.save(env);
+            if (defaultAppEnvironments.length === 1 || en.priority === 1) {
+              currentEnvironmentId = env.id;
+            }
+            envIdArray.push(env.id);
+          })
+        );
+      } else {
+        //get starting env from the organization environments list
+        const { appEnvironments } = organization;
+        if (appEnvironments.length === 1) currentEnvironmentId = appEnvironments[0].id;
+        else {
+          appEnvironments.map((appEnvironment) => {
+            if (appEnvironment.priority === 1) currentEnvironmentId = appEnvironment.id;
+          });
+        }
+      }
+
       const version = manager.create(AppVersion, {
         appId: importedApp.id,
         definition: appParams.definition,
         name: 'v1',
+        currentEnvironmentId,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
       await manager.save(version);
-
-      await manager.update(App, importedApp, { currentVersionId: version.id });
 
       // Create default data sources
       const defaultDataSourceIds = await this.createDefaultDataSourceForVersion(
@@ -210,27 +251,6 @@ export class AppImportExportService {
         manager
       );
 
-      let envIdArray: string[] = [];
-      const organization: Organization = await manager.findOne(Organization, {
-        where: { id: user.organizationId },
-        relations: ['appEnvironments'],
-      });
-      envIdArray = [...organization.appEnvironments.map((env) => env.id)];
-      if (!envIdArray.length) {
-        await Promise.all(
-          defaultAppEnvironments.map(async (en) => {
-            const env = manager.create(AppEnvironment, {
-              organizationId: user.organizationId,
-              name: en.name,
-              isDefault: en.isDefault,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            });
-            await manager.save(env);
-            envIdArray.push(env.id);
-          })
-        );
-      }
       for (const source of dataSources) {
         const convertedOptions = this.convertToArrayOfKeyValuePairs(source.options);
 
@@ -293,15 +313,6 @@ export class AppImportExportService {
     // With version support v1 & v2
     // create new app versions
     for (const appVersion of appVersions) {
-      const version = manager.create(AppVersion, {
-        appId: importedApp.id,
-        definition: appVersion.definition,
-        name: appVersion.name,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      await manager.save(version);
-
       let envIdArray: string[] = [];
       const organization: Organization = await manager.findOne(Organization, {
         where: { id: user.organizationId },
@@ -310,12 +321,25 @@ export class AppImportExportService {
       envIdArray = [...organization.appEnvironments.map((env) => env.id)];
       if (appEnvironments.length > 0) defaultAppEnvironmentId = appEnvironments.find((env: any) => env.isDefault)?.id;
 
-      appDefaultEnvironmentMapping[appVersion.id] = envIdArray;
-
-      if (appVersion.id == appParams.currentVersionId) {
-        currentVersionId = version.id;
-        await manager.update(App, importedApp, { currentVersionId });
+      //app is exported to CE
+      if (defaultAppEnvironments.length === 1) {
+        currentEnvironmentId = organization.appEnvironments.find((env: any) => env.isDefault)?.id;
+      } else {
+        //to EE or cloud
+        currentEnvironmentId = organization.appEnvironments.find((env) => env.priority === 1)?.id;
       }
+
+      const version = manager.create(AppVersion, {
+        appId: importedApp.id,
+        definition: appVersion.definition,
+        name: appVersion.name,
+        currentEnvironmentId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      await manager.save(version);
+
+      appDefaultEnvironmentMapping[appVersion.id] = envIdArray;
       appVersionMapping[appVersion.id] = version.id;
     }
 
@@ -387,6 +411,7 @@ export class AppImportExportService {
           kind: source.kind,
           type: source.type || DataSourceTypes.DEFAULT,
           appVersionId: appVersionMapping[appVersion.id],
+          pluginId: source?.pluginId || null,
         });
         await manager.save(newSource);
 
@@ -473,6 +498,7 @@ export class AppImportExportService {
           name: source.name,
           kind: source.kind,
           type: source.type || DataSourceTypes.DEFAULT,
+          pluginId: source?.pluginId || null,
           appVersionId: appVersionMapping[appVersion.id],
         });
         await manager.save(newSource);

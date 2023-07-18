@@ -292,7 +292,7 @@ describe("Date Picker widget", () => {
 
     addTextWidgetToVerifyValue(`components.${data.widgetName}.value`);
     cy.dragAndDropWidget(commonWidgetText.toggleSwitch, 600, 160);
-    cy.waitForAutoSave()
+    cy.waitForAutoSave();
 
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
 
@@ -325,7 +325,12 @@ describe("Date Picker widget", () => {
       .find("input")
       .should("have.css", "border-radius", "20px");
 
-    verifyBoxShadowCss(data.widgetName, data.colour, data.boxShadowParam);
+    verifyBoxShadowCss(
+      `${commonWidgetSelector.draggableWidget(data.widgetName)}>>>input`,
+      data.colour,
+      data.boxShadowParam,
+      "child"
+    );
 
     cy.get(commonWidgetSelector.draggableWidget(commonWidgetText.toggleswitch1))
       .find(".form-check-input")

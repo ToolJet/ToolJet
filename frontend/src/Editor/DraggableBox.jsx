@@ -9,6 +9,8 @@ import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
+import { useEditorStore } from '@/_stores/editorStore';
+import { shallow } from 'zustand/shallow';
 
 const resizerClasses = {
   topRight: 'top-right',
@@ -83,9 +85,7 @@ export const DraggableBox = function DraggableBox({
   containerProps,
   setSelectedComponent,
   removeComponent,
-  currentLayout,
   layouts,
-  _deviceWindowWidth,
   isSelectedComponent,
   draggingStatusChanged,
   darkMode,
@@ -98,12 +98,18 @@ export const DraggableBox = function DraggableBox({
   sideBarDebugger,
   isMultipleComponentsSelected,
   childComponents = null,
+  isVersionReleased,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
   const [mouseOver, setMouseOver] = useState(false);
-
+  const { currentLayout } = useEditorStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
   useEffect(() => {
     setMouseOver(hoveredComponent === id);
   }, [hoveredComponent]);
@@ -125,7 +131,7 @@ export const DraggableBox = function DraggableBox({
         isDragging: monitor.isDragging(),
       }),
     }),
-    [id, title, component, index, zoomLevel, parent, layouts, currentLayout, canvasWidth]
+    [id, title, component, index, zoomLevel, parent, layouts, canvasWidth, currentLayout]
   );
 
   useEffect(() => {
@@ -264,6 +270,7 @@ export const DraggableBox = function DraggableBox({
                     widgetHeight={layoutData.height}
                     isMultipleComponentsSelected={isMultipleComponentsSelected}
                     configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
+                    isVersionReleased={isVersionReleased}
                   />
                 )}
               <ErrorBoundary showFallback={mode === 'edit'}>

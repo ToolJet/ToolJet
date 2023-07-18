@@ -543,7 +543,7 @@ export class OrganizationsService {
         shouldSendWelcomeMail = false;
 
       if (user?.organizationUsers?.some((ou) => ou.organizationId === currentUser.organizationId)) {
-        throw new BadRequestException('User with such email already exists.');
+        throw new BadRequestException('Duplicate email found. Please provide a unique email address.');
       }
 
       if (user?.invitationToken) {
@@ -641,7 +641,9 @@ export class OrganizationsService {
     const existingUsers = [];
     const archivedUsers = [];
     const invalidRows = [];
+    const invalidFields = new Set();
     const invalidGroups = [];
+    let isUserInOtherGroupsAndAdmin = false;
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     const manager = getManager();
 
@@ -674,19 +676,39 @@ export class OrganizationsService {
           }
 
           //Check for invalid groups
-          const receivedGroups: string[] = data?.groups;
-          for (const group of receivedGroups) {
-            if (existingGroups.indexOf(group) === -1) {
-              invalidGroups.push(group);
+          const receivedGroups: string[] | null = data?.groups.length ? data?.groups : null;
+
+          if (Array.isArray(receivedGroups)) {
+            for (const group of receivedGroups) {
+              if (group === 'admin' && receivedGroups.includes('all_users') && receivedGroups.length > 2) {
+                isUserInOtherGroupsAndAdmin = true;
+                break;
+              }
+
+              if (existingGroups.indexOf(group) === -1) {
+                invalidGroups.push(group);
+              }
             }
           }
 
-          return next(null, data.first_name !== '' && data.last_name !== '' && emailPattern.test(data.email));
+          data.first_name = data.first_name?.trim();
+          data.last_name = data.last_name?.trim();
+
+          const isValidName = data.first_name !== '' || data.last_name !== '';
+
+          return next(null, isValidName && emailPattern.test(data.email) && receivedGroups?.length > 0);
         }, manager);
       })
       .on('data', function () {})
       .on('data-invalid', (row, rowNumber) => {
+        const invalidField = Object.keys(row).filter((key) => {
+          if (Array.isArray(row[key])) {
+            return row[key].length === 0;
+          }
+          return !row[key] || row[key] === '';
+        });
         invalidRows.push(rowNumber);
+        invalidFields.add(invalidField);
       })
       .on('end', async (rowCount: number) => {
         try {
@@ -695,14 +717,22 @@ export class OrganizationsService {
           }
 
           if (invalidRows.length) {
+            const invalidFieldsArray = invalidFields.entries().next().value[1];
+            const errorMsg = `Invalid row(s): [${invalidFieldsArray.join(', ')}] in [${
+              invalidRows.length
+            }] row(s). No users were uploaded.`;
+            throw new BadRequestException(errorMsg);
+          }
+
+          if (isUserInOtherGroupsAndAdmin) {
             throw new BadRequestException(
-              `Please fix row number${isPlural(invalidRows)}: ${invalidRows.join(', ')}. No users were uploaded`
+              'Conflicting Group Memberships: User cannot be in both the Admin group and other groups simultaneously.'
             );
           }
 
           if (invalidGroups.length) {
             throw new BadRequestException(
-              `Group${isPlural(invalidGroups)} ${invalidGroups.join(', ')} doesn't exist. No users were uploaded`
+              `${invalidGroups.length} group${isPlural(invalidGroups)} doesn't exist. No users were uploaded`
             );
           }
 
@@ -716,15 +746,19 @@ export class OrganizationsService {
 
           if (existingUsers.length) {
             throw new BadRequestException(
-              `User${isPlural(existingUsers)} with email ${existingUsers.join(
-                ', '
-              )} already exists. No users were uploaded`
+              `${existingUsers.length} users with same email already exist. No users were uploaded `
             );
           }
 
-          this.inviteUserswrapper(users, currentUser).catch((error) => {
-            console.error(error);
-          });
+          if (users.length === 0) {
+            throw new BadRequestException('No users were uploaded');
+          }
+
+          if (users.length > 250) {
+            throw new BadRequestException(`You can only invite 250 users at a time`);
+          }
+
+          await this.inviteUserswrapper(users, currentUser);
           res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
         } catch (error) {
           const { status, response } = error;

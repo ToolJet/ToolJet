@@ -20,7 +20,7 @@ describe("App Import Functionality", () => {
   let appData;
   var data = {};
   data.appName = `${fake.companyName}-App`;
-  data.appReName = `${fake.companyName}-App`;
+  data.appReName = `${fake.companyName}-${fake.companyName}-App`;
   let currentVersion = "";
   let otherVersions = "";
   const toolJetImage = "cypress/fixtures/Image/tooljet.png";
@@ -32,6 +32,9 @@ describe("App Import Functionality", () => {
   });
   before(() => {
     cy.fixture("templates/test-app.json").then((app) => {
+      cy.exec("cd ./cypress/downloads/ && rm -rf *", {
+        failOnNonZeroExit: false,
+      });
       appData = app;
     });
   });
@@ -52,26 +55,28 @@ describe("App Import Functionality", () => {
     });
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      importText.couldNotImportAppToastMessage
+      importText.couldNotImportAppToastMessage,
+      false
     );
 
     cy.get(importSelectors.importOptionInput).selectFile(appFile, {
       force: true,
     });
-    cy.get(".driver-close-btn").click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       importText.appImportedToastMessage
     );
+    cy.get(".driver-close-btn").click();
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-      "have.value",
+      "contain.value",
       appData.name
     );
+    cy.modifyCanvasSize(900, 600);
     cy.dragAndDropWidget(buttonText.defaultWidgetText);
     cy.get(appVersionSelectors.appVersionLabel).should("be.visible");
     cy.renameApp(data.appName);
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-      "have.value",
+      "contain.value",
       data.appName
     );
     cy.waitForAutoSave();
@@ -114,7 +119,7 @@ describe("App Import Functionality", () => {
         let exportedAppData = newApp;
 
         cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-          "have.value",
+          "contain.value",
           exportedAppData.appV2.name
         );
         cy.get(
@@ -136,7 +141,7 @@ describe("App Import Functionality", () => {
     cy.get(appVersionSelectors.appVersionMenuField)
       .should("be.visible")
       .click();
-    createNewVersion(otherVersions = ["v2"], currentVersion = "v1");
+    createNewVersion((otherVersions = ["v2"]), (currentVersion = "v1"));
     cy.get(appVersionSelectors.currentVersionField((otherVersions = "v2")))
       .should("be.visible")
       .click()
@@ -190,7 +195,7 @@ describe("App Import Functionality", () => {
                 let exportedAppData = newApp;
 
                 cy.get(commonSelectors.appNameInput).verifyVisibleElement(
-                  "have.value",
+                  "contain.value",
                   exportedAppData.appV2.name
                 );
                 cy.get(
