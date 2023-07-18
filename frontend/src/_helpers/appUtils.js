@@ -963,16 +963,15 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               ),
             },
           });
-          return () => {
-            resolve(data);
-            onEvent(_self, 'onDataQueryFailure', {
-              definition: { events: dataQuery.options.events },
-            });
-            if (mode !== 'view') {
-              const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
-              toast.error(err?.message);
-            }
-          };
+          resolve(data);
+          onEvent(_self, 'onDataQueryFailure', {
+            definition: { events: dataQuery.options.events },
+          });
+          if (mode !== 'view') {
+            const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
+            toast.error(err?.message);
+          }
+          return;
         } else {
           let rawData = data.data;
           let finalData = data.data;
@@ -1004,12 +1003,11 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                   },
                 },
               });
-              return () => {
-                resolve(finalData);
-                onEvent(_self, 'onDataQueryFailure', {
-                  definition: { events: dataQuery.options.events },
-                });
-              };
+              resolve(finalData);
+              onEvent(_self, 'onDataQueryFailure', {
+                definition: { events: dataQuery.options.events },
+              });
+              return;
             }
           }
 
