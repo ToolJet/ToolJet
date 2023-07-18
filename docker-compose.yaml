@@ -3,20 +3,18 @@ version: "3"
 services:
   plugins:
     build:
-      context: ./
-      dockerfile: ./docker/plugins.Dockerfile.dev
+      context: .
+      dockerfile: docker/plugins.Dockerfile.dev
     image: tooljet-plugins:development
-    platform: linux/x86_64
     volumes:
       - ./plugins:/app/plugins
     command: npm run --prefix plugins start
 
   client:
     build:
-      context: ./
-      dockerfile: ./docker/client.Dockerfile.dev
+      context: .
+      dockerfile: docker/client.Dockerfile.dev
     image: tooljet-client:development
-    platform: linux/x86_64
     volumes:
       - ./frontend:/app/frontend:delegated
       - ./plugins:/app/plugins
@@ -31,10 +29,9 @@ services:
 
   server:
     build:
-      context: ./
-      dockerfile: ./docker/server.Dockerfile.dev
+      context: .
+      dockerfile: docker/server.Dockerfile.dev
     image: tooljet-server:development
-    platform: linux/x86_64
     depends_on:
       postgres:
         condition: service_healthy
