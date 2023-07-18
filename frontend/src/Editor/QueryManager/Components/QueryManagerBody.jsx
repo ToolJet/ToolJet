@@ -244,11 +244,9 @@ export const QueryManagerBody = ({
   const renderEventManager = () => {
     const queryComponent = mockDataQueryAsComponent(options?.events || []);
     return (
-      <div className="row">
-        <div className={`col-md-3 query-manager-border-color hr-text-left color-slate9 font-weight-500`}>
-          {t('editor.queryManager.eventsHandler', 'Events Handler')}
-        </div>
-        <div className="query-manager-events pb-4 col-md-9">
+      <div className="d-flex">
+        <div className={`form-label`}>{t('editor.queryManager.eventsHandler', 'Events')}</div>
+        <div className="query-manager-events pb-4 flex-grow-1">
           <EventManager
             eventsChanged={eventsChanged}
             component={queryComponent.component}
@@ -274,26 +272,25 @@ export const QueryManagerBody = ({
 
   const renderQueryOptions = () => {
     return (
-      <div
-        className={cx(`advanced-options-container font-weight-400 query-manager-border-color row`, {
-          'disabled ': isVersionReleased,
-        })}
-        style={{ paddingLeft: '32px' }}
-      >
-        <div className="col-md-3 advance-options-input-form-container color-slate9 font-weight-500">
-          {t('editor.queryManager.settings', 'Settings')}
-        </div>
-        <div className="advance-options-input-form-container col-md-9">
-          {Object.keys(customToggles).map((toggle, index) => (
-            <CustomToggleFlag
-              {...customToggles[toggle]}
-              toggleOption={toggleOption}
-              value={selectedQuery?.options?.[customToggles[toggle]?.action]}
-              index={index}
-              key={toggle}
-              darkMode={darkMode}
-            />
-          ))}
+      <div style={{ paddingLeft: '32px' }}>
+        <div
+          className={cx(`d-flex mb-3 pb-1`, {
+            'disabled ': isVersionReleased,
+          })}
+        >
+          <div className="form-label">{t('editor.queryManager.settings', 'Settings')}</div>
+          <div className="flex-grow-1">
+            {Object.keys(customToggles).map((toggle, index) => (
+              <CustomToggleFlag
+                {...customToggles[toggle]}
+                toggleOption={toggleOption}
+                value={selectedQuery?.options?.[customToggles[toggle]?.action]}
+                index={index}
+                key={toggle}
+                darkMode={darkMode}
+              />
+            ))}
+          </div>
         </div>
         {renderEventManager()}
         <Preview darkMode={darkMode} />
@@ -309,11 +306,11 @@ export const QueryManagerBody = ({
       return '';
     }
     return (
-      <div className={cx('mt-2 row', { 'disabled ': isVersionReleased })}>
-        <div className={`col-md-3 query-manager-border-color px-4 hr-text-left py-2 form-label font-weight-500`}>
-          Change Datasource
+      <div className={cx('mt-2 d-flex px-4', { 'disabled ': isVersionReleased })}>
+        <div className={`d-flex query-manager-border-color hr-text-left py-2 form-label font-weight-500`}>
+          Datasource
         </div>
-        <div className="col-md-9">
+        <div className="d-flex flex-grow-1">
           <ChangeDataSource
             dataSources={selectableDataSources}
             value={selectedDataSource}

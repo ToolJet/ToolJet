@@ -356,7 +356,7 @@ const DynamicForm = ({
               className={cx('my-2', {
                 'col-md-12': !className && !isHorizontalLayout,
                 [className]: !!className,
-                row: isHorizontalLayout,
+                'd-flex': isHorizontalLayout,
                 'dynamic-form-row': isHorizontalLayout,
               })}
               key={key}
@@ -364,7 +364,7 @@ const DynamicForm = ({
               {!isSpecificComponent && (
                 <div
                   className={cx('d-flex', {
-                    'col-md-3': isHorizontalLayout,
+                    'form-label': isHorizontalLayout,
                     'align-items-center': !isHorizontalLayout,
                   })}
                 >
@@ -405,7 +405,12 @@ const DynamicForm = ({
                   )}
                 </div>
               )}
-              <div className={cx({ 'col-md-9': isHorizontalLayout && !isSpecificComponent })}>
+              <div
+                className={cx({
+                  'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
+                  'w-100': isHorizontalLayout,
+                })}
+              >
                 <Element
                   {...getElementProps(obj[key])}
                   {...computedProps[key]}
@@ -434,14 +439,14 @@ const DynamicForm = ({
             <div
               className={cx('my-2', {
                 'col-md-12': !flipComponentDropdown.className && !isHorizontalLayout,
-                row: isHorizontalLayout,
+                'd-flex': isHorizontalLayout,
                 'dynamic-form-row': isHorizontalLayout,
                 [flipComponentDropdown.className]: !!flipComponentDropdown.className,
               })}
             >
               {(flipComponentDropdown.label || isHorizontalLayout) && (
                 <label
-                  className={cx('form-label', { 'col-md-3': isHorizontalLayout })}
+                  className={cx('form-label')}
                   data-cy={`${String(flipComponentDropdown.label)
                     .toLocaleLowerCase()
                     .replace(/\s+/g, '-')}-dropdown-label`}
@@ -449,7 +454,7 @@ const DynamicForm = ({
                   {flipComponentDropdown.label}
                 </label>
               )}
-              <div data-cy={'query-select-dropdown'} className={cx({ 'col-md-9': isHorizontalLayout })}>
+              <div data-cy={'query-select-dropdown'} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
                 <Select
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}

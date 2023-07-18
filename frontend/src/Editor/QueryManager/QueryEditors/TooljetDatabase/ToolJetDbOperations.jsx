@@ -179,9 +179,9 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode, i
     <TooljetDatabaseContext.Provider value={value}>
       {/* table name dropdown */}
       <div className={cx({ row: !isHorizontalLayout })}>
-        <div className={cx({ 'col-4': !isHorizontalLayout, row: isHorizontalLayout })}>
-          <label className={cx('form-label', { 'col-3': isHorizontalLayout })}>Table name</label>
-          <div className={cx({ 'col-9': isHorizontalLayout })}>
+        <div className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}>
+          <label className={cx('form-label')}>Table name</label>
+          <div className={cx({ 'flex-grow-1': isHorizontalLayout })}>
             <Select
               options={generateListForDropdown(tables)}
               value={selectedTable}
@@ -197,9 +197,12 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode, i
 
       {/* operation selection dropdown */}
       <div className={cx('my-3 py-1', { row: !isHorizontalLayout })}>
-        <div /* className="my-2 col-4"  */ className={cx({ 'col-4': !isHorizontalLayout, row: isHorizontalLayout })}>
-          <label className={cx('form-label', { 'col-3': isHorizontalLayout })}>Operations</label>
-          <div className={cx({ 'col-9': isHorizontalLayout })}>
+        <div
+          /* className="my-2 col-4"  */
+          className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}
+        >
+          <label className={cx('form-label')}>Operations</label>
+          <div className={cx({ 'flex-grow-1': isHorizontalLayout })}>
             <Select
               options={[
                 { name: 'List rows', value: 'list_rows' },

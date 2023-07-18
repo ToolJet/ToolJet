@@ -165,11 +165,11 @@ return [row for row in data if row['amount'] > 1000]
   return (
     <div className="field  transformation-editor">
       <div className="align-items-center gap-2" style={{ display: 'flex', position: 'relative', height: '20px' }}>
-        <div className="d-flex flex-fill row">
-          <span className="color-slate9 col-sm-3 font-weight-500" data-cy={'label-query-transformation'}>
+        <div className="d-flex flex-fill">
+          <span className="color-slate9 font-weight-500 form-label" data-cy={'label-query-transformation'}>
             {t('editor.queryManager.transformation.transformations', 'Transformations')}
           </span>
-          <div className="col-sm-9">
+          <div className="flex-grow-l">
             <div className=" d-flex">
               <div className="mb-0">
                 <span className="d-flex">

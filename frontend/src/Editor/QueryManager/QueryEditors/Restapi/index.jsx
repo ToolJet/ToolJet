@@ -133,9 +133,9 @@ class Restapi extends React.Component {
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
 
     return (
-      <div className={`row ${dataSourceURL ? 'mt-3' : ''}`}>
-        <div className="col-md-3 color-slate9 font-weight-500">Request</div>
-        <div className="col-md-9">
+      <div className={`d-flex ${dataSourceURL ? 'mt-3' : ''}`}>
+        <div className="form-label">Request</div>
+        <div className="flex-grow-1">
           <div className="rest-api-methods-select-element-container">
             <div className={`me-2`} style={{ width: '90px', height: '32px' }}>
               <label className="font-weight-bold color-slate12">Method</label>

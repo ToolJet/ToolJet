@@ -5,6 +5,7 @@ import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { runQueries } from '@/_helpers/appUtils';
 import { v4 as uuidv4 } from 'uuid';
+import { toast } from 'react-hot-toast';
 
 const initialState = {
   dataQueries: [],
@@ -125,10 +126,12 @@ export const useDataQueriesStore = create(
               if (shouldRunQuery) actions.setQueryToBeRun(data);
             })
             .catch((error) => {
-              console.error('error', error);
-              set({
+              set((state) => ({
                 isCreatingQueryInProcess: false,
-              });
+                dataQueries: state.dataQueries.filter((query) => query.id !== tempId),
+              }));
+              actions.setSelectedQuery(null);
+              toast.error(`Failed to create query: ${error.message}`);
             })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },

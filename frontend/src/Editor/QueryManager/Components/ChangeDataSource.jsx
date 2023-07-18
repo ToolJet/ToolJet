@@ -4,7 +4,7 @@ import Select from '@/_ui/Select';
 export const ChangeDataSource = ({ dataSources, onChange, value }) => {
   return (
     <Select
-      className="px-3"
+      className="w-100"
       options={dataSources.map((ds) => ({ label: ds.name, value: ds.id }))}
       value={value?.id}
       onChange={(value) => {
