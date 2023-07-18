@@ -24,6 +24,7 @@ import {
 } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import SuccessNotificationInputs from './SuccessNotificationInputs';
 
 export const QueryManagerBody = ({
   darkMode,
@@ -274,7 +275,7 @@ export const QueryManagerBody = ({
     return (
       <div style={{ paddingLeft: '32px' }}>
         <div
-          className={cx(`d-flex mb-3 pb-1`, {
+          className={cx(`d-flex pb-1`, {
             'disabled ': isVersionReleased,
           })}
         >
@@ -292,6 +293,12 @@ export const QueryManagerBody = ({
             ))}
           </div>
         </div>
+        <SuccessNotificationInputs
+          currentState={currentState}
+          options={options}
+          darkMode={darkMode}
+          optionchanged={optionchanged}
+        />
         {renderEventManager()}
         <Preview darkMode={darkMode} />
       </div>
