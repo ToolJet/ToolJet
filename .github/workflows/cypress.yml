@@ -23,27 +23,15 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Set up environment variables
-        run: |
-          echo "TOOLJET_HOST=https://http://localhost:8082" >> .env
-          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
-          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
-          echo "PG_DB=tooljet_development" >> .env
-          echo "PG_USER=postgres" >> .env
-          echo "PG_HOST=postgres" >> .env
-          echo "PG_PASS=postgres" >> .env
-          echo "PG_PORT=5432" >> .env
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18.3.0
 
-      - name: Set up environment
+      - name: Install PostgreSQL client
         run: |
-          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-          [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-          nvm install 18.3.0
-          nvm use 18.3.0
-          npm i -g npm@8.11.0
-          sudo apt install postgresql postgresql-contrib libpq-dev
+          sudo apt update
+          sudo apt install postgresql-client -y
 
       - name: checking the node version
         run: |
@@ -72,6 +60,17 @@ jobs:
 
       - name: Run the client
         run: cd frontend && npm start
+
+      - name: Set up environment variables
+        run: |
+          echo "TOOLJET_HOST=https://http://localhost:8082" >> .env
+          echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
+          echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
+          echo "PG_DB=tooljet_development" >> .env
+          echo "PG_USER=postgres" >> .env
+          echo "PG_HOST=postgres" >> .env
+          echo "PG_PASS=postgres" >> .env
+          echo "PG_PORT=5432" >> .env
 
       - name: Wait for the server to be ready
         run: |
