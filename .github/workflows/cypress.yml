@@ -98,12 +98,13 @@ jobs:
           mv tmp_cypress.env.json ./cypress-tests/cypress.env.json
 
       - name: Cypress Integration Test
-        if: ${{ github.event.label.name == run-cypress-workspace }}
+        if: ${{ github.event.label.name == 'run-cypress-workspace' }}
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:8082"
           config-file: cypress-workspace.config.js
+
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3
