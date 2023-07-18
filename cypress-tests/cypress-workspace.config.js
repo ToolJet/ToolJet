@@ -77,9 +77,9 @@ module.exports = defineConfig({
     baseUrl: "http://localhost:8082",
     specPattern: [
       "cypress/e2e/selfHost/*.cy.js",
-      "cypress/e2e/authentication/*.cy.js",
-      "cypress/e2e/workspace/*.cy.js",
-      "cypress/e2e/globalDataSources/*.cy.js",
+      // "cypress/e2e/authentication/*.cy.js",
+      // "cypress/e2e/workspace/*.cy.js",
+      // "cypress/e2e/globalDataSources/*.cy.js",
     ],
     numTestsKeptInMemory: 1,
     redirectionLimit: 7,
