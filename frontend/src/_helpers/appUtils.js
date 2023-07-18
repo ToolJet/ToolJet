@@ -615,18 +615,16 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
     });
-    async () => {
-      if (action && action.events) {
-        for (const event of action.events) {
-          if (event.actionId) {
-            // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
-            await executeAction(_self, { ...event, ...event.options }, mode, customVariables);
-          }
+    if (action && action.events) {
+      for (const event of action.events) {
+        if (event.actionId) {
+          // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
+          await executeAction(_self, { ...event, ...event.options }, mode, customVariables);
         }
-      } else {
-        console.log('No action is associated with this event');
       }
-    };
+    } else {
+      console.log('No action is associated with this event');
+    }
   }
 
   if (eventName === 'OnTableToggleCellChanged') {
@@ -641,18 +639,17 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
     });
-    async () => {
-      if (column && column.events) {
-        for (const event of column.events) {
-          if (event.actionId) {
-            // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
-            await executeAction(_self, { ...event, ...event.options }, mode, customVariables);
-          }
+
+    if (column && column.events) {
+      for (const event of column.events) {
+        if (event.actionId) {
+          // the event param uses a hacky workaround for using same format used by event manager ( multiple handlers )
+          await executeAction(_self, { ...event, ...event.options }, mode, customVariables);
         }
-      } else {
-        console.log('No action is associated with this event');
       }
-    };
+    } else {
+      console.log('No action is associated with this event');
+    }
   }
 
   if (
@@ -912,7 +909,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
       queryExecutionPromise = tooljetDbOperations.perform(
         query.options,
         currentSessionValue?.current_organization_id,
-        _self.state.currentState
+        getCurrentState()
       );
     } else {
       queryExecutionPromise = dataqueryService.run(queryId, options);
@@ -961,16 +958,15 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               ),
             },
           });
-          return () => {
-            resolve(data);
-            onEvent(_self, 'onDataQueryFailure', {
-              definition: { events: dataQuery.options.events },
-            });
-            if (mode !== 'view') {
-              const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
-              toast.error(err?.message);
-            }
-          };
+          resolve(data);
+          onEvent(_self, 'onDataQueryFailure', {
+            definition: { events: dataQuery.options.events },
+          });
+          if (mode !== 'view') {
+            const err = query.kind == 'tooljetdb' ? data?.error || data : _.isEmpty(data.data) ? data : data.data;
+            toast.error(err?.message);
+          }
+          return;
         } else {
           let rawData = data.data;
           let finalData = data.data;
@@ -1002,12 +998,11 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                   options: options,
                 },
               });
-              return () => {
-                resolve(finalData);
-                onEvent(_self, 'onDataQueryFailure', {
-                  definition: { events: dataQuery.options.events },
-                });
-              };
+              resolve(finalData);
+              onEvent(_self, 'onDataQueryFailure', {
+                definition: { events: dataQuery.options.events },
+              });
+              return;
             }
           }
 
@@ -1581,7 +1576,7 @@ export const computeQueryState = (queries, _ref) => {
       queryState[query.name] = {
         ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
         kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
-        ...getCurrentState().queries[query.name],
+        ...getCurrentState()?.queries[query.name],
       };
     }
   });
