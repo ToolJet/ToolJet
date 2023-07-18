@@ -18,7 +18,6 @@ import { shallow } from 'zustand/shallow';
 export default function EditorHeader({
   darkMode,
   currentState,
-  currentLayout,
   globalSettingsChanged,
   appDefinition,
   toggleAppMaintenance,
@@ -30,7 +29,6 @@ export default function EditorHeader({
   canRedo,
   handleUndo,
   handleRedo,
-  toggleCurrentLayout,
   isSaving,
   saveError,
   onNameChanged,
@@ -102,8 +100,6 @@ export default function EditorHeader({
                       canRedo={canRedo}
                       handleUndo={handleUndo}
                       handleRedo={handleRedo}
-                      currentLayout={currentLayout}
-                      toggleCurrentLayout={toggleCurrentLayout}
                     />
                     <div className="my-1 mx-3">
                       <span
