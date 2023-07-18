@@ -17,6 +17,7 @@
     "@tooljet/plugins": "../plugins",
     "@uiw/react-codemirror": "^3.0.6",
     "@y-presence/react": "^2.0.1",
+    "antd": "^5.7.0",
     "array-move": "^4.0.0",
     "axios": "^1.3.3",
     "bootstrap": "^5.2.3",
