@@ -71,7 +71,6 @@ export const useDataQueriesStore = create(
         updateDataQuery: (options) => {
           set({ isUpdatingQueryInProcess: true });
           const { actions, selectedQuery } = useQueryPanelStore.getState();
-          useAppDataStore.getState().actions.setIsSaving(true);
           set((state) => ({
             isUpdatingQueryInProcess: false,
             dataQueries: state.dataQueries.map((query) => {
@@ -256,6 +255,7 @@ export const useDataQueriesStore = create(
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
         },
         saveData: debounce((newValues) => {
+          useAppDataStore.getState().actions.setIsSaving(true);
           set({ isUpdatingQueryInProcess: true });
           dataqueryService
             .update(newValues?.id, newValues?.name, newValues?.options)
