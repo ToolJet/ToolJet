@@ -10,16 +10,15 @@ env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref }}
-  cancel-in-progress: true  
-
 jobs:
   Run-Cypress:
-    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress' || github.event.label.name == 'run-cypress-app-builder'|| github.event.label.name == 'run-cypress-workspace')}}
-
     runs-on: ubuntu-22.04
+
+    strategy:
+      matrix:
+        label: [run-cypress, run-cypress-app-builder, run-cypress-workspace]
+        config-file: [cypress-run.config.js, cypress-app-builder.config.js, cypress-workspace.config.js]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -57,30 +56,13 @@ jobs:
           # Move the updated file back to the original location
           mv tmp_cypress.env.json ./cypress-tests/cypress.env.json
 
-
       - name: Cypress Integration Test
-        if: ${{ github.event.label.name == 'run-cypress' }}
+        if: ${{ github.event.label.name == matrix.label }}
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com"
-          config-file: cypress-run.config.js
-
-      - name: Cypress Integration Test (App Builder)
-        if: ${{ github.event.label.name == 'run-cypress-app-builder' }}
-        uses: cypress-io/github-action@v5
-        with:
-          working-directory: ./cypress-tests
-          config: "baseUrl=https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com"
-          config-file: cypress-app-builder.config.js
-
-      - name: Cypress Integration Test (Workspace)
-        if: ${{ github.event.label.name == 'run-cypress-workspace' }}
-        uses: cypress-io/github-action@v5
-        with:
-          working-directory: ./cypress-tests
-          config: "baseUrl=https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com"
-          config-file: cypress-workspace.config.js
+          config-file: ${{ matrix.config-file }}
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3
@@ -88,5 +70,3 @@ jobs:
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
-
-
