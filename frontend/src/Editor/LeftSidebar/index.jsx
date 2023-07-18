@@ -227,7 +227,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
       <Popover
         onInteractOutside={handleInteractOutside}
         open={pinned || !!selectedSidebarItem}
-        popoverContentClassName="p-0 sidebar-h-100-popover"
+        popoverContentClassName={`p-0 sidebar-h-100-popover ${selectedSidebarItem}`}
         side="right"
         popoverContent={SELECTED_ITEMS[selectedSidebarItem]}
         popoverContentHeight={popoverContentHeight}

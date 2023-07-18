@@ -36,7 +36,7 @@ export const useCurrentStateStore = create(
   )
 );
 
-// Omitting actions here because we don't want to expose it to user
+// Omitting 'actions' here because we don't want to expose it to user
 export const useCurrentState = () => {
   return omit(useCurrentStateStore(), 'actions');
 };

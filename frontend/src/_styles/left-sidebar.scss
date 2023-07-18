@@ -140,20 +140,28 @@
   }
 }
 
-.debugger-content {
-  .text-slate-12 {
-    color : $color-light-slate-12;
-  }
-  .text-tomato-9 {
-    color : $color-light-tomato-09;
-  }
-}
+.debugger {
+    .text-slate-12 {
+      color : $color-light-slate-12;
+      font-weight : 500;
+      line-height : 20px;
+    }
+    .text-tomato-9 {
+      color : $color-light-tomato-09;
+    }
+    .nav-item .nav-link {
+      background-color: $color-light-slate-03 !important;
+    }
+    .nav-tabs .nav-link.active {
+      border-radius: 0 !important;
+      border-width: 2px !important;
+      color : $color-light-indigo-09 !important;
+    }
+    .panel-header-container {
+      border-bottom: 0px !important
+    }
+ }
 
-.sidebar-debugger {
-  .nav-item .nav-link {
-    background-color: $color-light-slate-03 !important
-  }
-}
 
  
 
