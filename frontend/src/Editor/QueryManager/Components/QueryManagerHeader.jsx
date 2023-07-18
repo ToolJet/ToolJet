@@ -157,8 +157,10 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
       <div className="col font-weight-500">
         {!selectedQuery && showCreateQuery ? (
           <NewQueryNameInput onNameChange={onNameChange} darkMode={darkMode} isFocussed={showCreateQuery} />
-        ) : (
+        ) : selectedQuery ? (
           <NameInput onInput={executeQueryNameUpdation} value={queryName} darkMode={darkMode} />
+        ) : (
+          ''
         )}
       </div>
       <div className="query-header-buttons me-3">{renderButtons()}</div>
