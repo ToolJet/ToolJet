@@ -10,14 +10,15 @@ env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
+
 jobs:
   Run-Cypress:
     runs-on: ubuntu-22.04
 
     strategy:
       matrix:
-        label: [run-cypress-marketplace, run-cypress-app-builder, run-cypress-workspace]
-        config-file: [cypress-run-marketplace.config.js, cypress-app-builder.config.js, cypress-workspace.config.js]
+        label: [run-cypress, run-cypress-app-builder, run-cypress-workspace]
+        config-file: [cypress-run.config.js, cypress-app-builder.config.js, cypress-workspace.config.js]
 
     steps:
       - name: Checkout
@@ -25,16 +26,46 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Setup Node.js 18.3.0
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.3.0
+      - name: Set up environment variables
+        run: |
+          echo "TOOLJET_HOST=${{ secrets.TOOLJET_HOST }}" >> .env
+          echo "LOCKBOX_MASTER_KEY=${{ secrets.LOCKBOX_MASTER_KEY }}" >> .env
+          echo "SECRET_KEY_BASE=${{ secrets.SECRET_KEY_BASE }}" >> .env
 
-      - name: Checking the PR URL
+      - name: Set up environment
+        run: |
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+          source ~/.nvm/nvm.sh
+          nvm install 18.3.0
+          npm i -g npm@8.11.0
+          sudo apt install postgresql postgresql-contrib libpq-dev
+
+      - name: Install and build dependencies
+        run: |
+          npm install
+          npm install --prefix server
+          npm install --prefix frontend
+          npm run build:plugins
+
+      - name: Set up database
+        run: |
+          npm run --prefix server db:create
+          npm run --prefix server db:reset
+
+      - name: Run plugins compilation in watch mode
+        run: cd plugins && npm start
+
+      - name: Run the server
+        run: cd server && npm run start:dev
+
+      - name: Run the client
+        run: cd frontend && npm start
+
+      - name: Wait for the server to be ready
         run: |
           timeout 1500 bash -c '
-          until curl --silent --fail https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com; do
-            sleep 100
+          until curl --silent --fail http://localhost:8082; do
+            sleep 5
           done'
 
       - name: Create Cypress environment file
@@ -61,7 +92,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
-          config: "baseUrl=https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com"
+          config: "baseUrl=http://localhost:8082"
           config-file: ${{ matrix.config-file }}
 
       - name: Capture Screenshots
