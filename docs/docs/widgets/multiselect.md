@@ -14,12 +14,22 @@ Multiselect widget can be used to collect multiple user inputs from a list of op
 
 ## Events
 
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/multiselect/events.png" alt="ToolJet - Widget Reference - Multiselect" />
+
+</div>
+
 ### On select
 
-On select event is triggered when an option is selected.
+The **On select** event is triggered when a particular option is chosen.
+
+### On search text changed
+
+This event is triggered when a user modifies the search text on the multiselect component. This event also updates the value of the `searchText` **[exposed variable](#exposed-variables)**.
 
 :::info
-Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
+For comprehensive information on all available **Actions**, refer to the [Action Reference](/docs/category/actions-reference) documentation.
 :::
 
 ## Properties
@@ -93,6 +103,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
 | Variables    | Description |
 | ----------- | ----------- |
 | values | This variable holds the values of the multiselect component in an array of objects where the objects are the options in the multiselect. You can access the value dynamically using JS: `{{components.multiselect1.values[1]}}` |
+| searchText | This variable stores the user-entered search text in the multiselect component. The value of this variable is updated with each character entered in the search field. |
 
 ## Component specific actions (CSA)
 await components.multiselect1.clearSelections()
