@@ -68,7 +68,6 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ errors })]);
 
-  console.log(allLog, 'errorLogs');
   useEffect(() => {
     const newErrorLogs = debuggerActions.generateQuerySuccessLogs(succededQuery);
     if (newErrorLogs) {

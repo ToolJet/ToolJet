@@ -28,9 +28,7 @@ export const useCurrentStateStore = create(
           set({ ...currentState }), false, { type: 'SET_CURRENT_STATE', currentState };
         },
         setErrors: (error) => {
-          set({ errors: { ...get().errors, ...error }, allLog: { ...error, ...get().allLog } }),
-            false,
-            { type: 'SET_ERRORS', error };
+          set({ errors: { ...get().errors, ...error } }), false, { type: 'SET_ERRORS', error };
         },
       },
     }),
