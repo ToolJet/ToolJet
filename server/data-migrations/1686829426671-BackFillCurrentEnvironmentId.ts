@@ -1,4 +1,5 @@
 import { App } from 'src/entities/app.entity';
+import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
 import { Organization } from 'src/entities/organization.entity';
 import { MigrationProgress } from 'src/helpers/utils.helper';
@@ -12,17 +13,21 @@ export class BackFillCurrentEnvironmentId1686829426671 implements MigrationInter
 
   async backFillNewColumn(manager: EntityManager) {
     const organizations = await manager.find(Organization, {
-      select: ['id', 'appEnvironments'],
+      select: ['id'],
       relations: ['appEnvironments'],
     });
 
     const migrationProgress = new MigrationProgress('BackFillCurrentEnvironmentId1686829426671', organizations.length);
 
     for (const organization of organizations) {
-      const productionEnvironment = organization.appEnvironments.find((appEnvironment) => appEnvironment.isDefault);
-      const developmentEnvironment = organization.appEnvironments.find(
-        (appEnvironment) => appEnvironment.priority === 1
-      );
+      const appEnvironments = await manager.find(AppEnvironment, {
+        select: ['id', 'isDefault', 'priority'],
+        where: {
+          organizationId: organization.id,
+        },
+      });
+      const productionEnvironment = appEnvironments.find((appEnvironment) => appEnvironment.isDefault);
+      const developmentEnvironment = appEnvironments.find((appEnvironment) => appEnvironment.priority === 1);
       const apps = await manager.find(App, {
         select: ['id', 'appVersions', 'currentVersionId'],
         where: {
