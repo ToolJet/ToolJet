@@ -39,9 +39,9 @@ jobs:
       - name: Check PostgreSQL service status
         run: sudo service postgresql status
 
-      - name: Create PostgreSQL Role
+      - name: Create PostgreSQL User
         run: |
-          PGPASSWORD="postgres" createuser -h localhost -p 5432 -U postgres --createdb --login --echo --pwprompt new_role
+          sudo -u postgres psql -c "CREATE USER cypress PASSWORD 'cypress' CREATEDB;"
 
       - name: checking the node version
         run: |
