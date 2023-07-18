@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 import { Button as AntButton } from 'antd';
+import { CircularProgress } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
 import config from 'config';
 
 export const Button = function Button(props) {
@@ -137,6 +139,23 @@ export const Button = function Button(props) {
         >
           {label}
         </AntButton>
+      )}
+      {config.UI_LIB === 'mui' && (
+        <LoadingButton
+          disabled={disable}
+          className={cx('jet-button btn btn-primary p-1 overflow-hidden')}
+          style={computedStyles}
+          onClick={handleClick}
+          onMouseOver={() => {
+            fireEvent('onHover');
+          }}
+          data-cy={dataCy}
+          type="default"
+          loading={loading}
+          loadingIndicator={<CircularProgress style={{ color: loaderColor }} size={16} />}
+        >
+          {label}
+        </LoadingButton>
       )}
     </div>
   );
