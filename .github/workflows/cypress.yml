@@ -33,6 +33,12 @@ jobs:
           sudo apt update
           sudo apt install postgresql-client -y
 
+      - name: Start PostgreSQL service
+        run: sudo service postgresql start
+
+      - name: Check PostgreSQL service status
+        run: sudo service postgresql status
+
       - name: Create PostgreSQL Role
         run: |
           PGPASSWORD="postgres" createuser -h localhost -p 5432 -U postgres --createdb --login --echo --pwprompt new_role
