@@ -447,7 +447,7 @@ class EditorComponent extends React.Component {
     this.fetchGlobalDataSources();
   };
 
-  dataQueriesChanged = () => {
+  dataQueriesChanged = (options) => {
     /**
      * https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState
      */
@@ -459,6 +459,7 @@ class EditorComponent extends React.Component {
         })
       );
     }
+    options?.isReloadSelf && this.fetchDataQueries(this.props.editingVersion?.id, true);
   };
 
   switchSidebarTab = (tabIndex) => {

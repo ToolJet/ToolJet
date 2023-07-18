@@ -65,7 +65,7 @@ export const LeftSidebarDataSources = ({
         setSelectedDataSource(null);
         dataSourcesChanged();
         globalDataSourcesChanged();
-        dataQueriesChanged();
+        dataQueriesChanged({ isReloadSelf: true });
       })
       .catch(({ error }) => {
         setDeletingDatasource(false);
