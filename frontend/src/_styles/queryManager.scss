@@ -1291,6 +1291,16 @@ $border-radius: 4px;
     .CodeMirror-gutters {
       background-color: $color-light-slate-02;
     }
+
+    .CodeMirror-sizer {
+      margin-left: 29px !important;
+    }
+  }
+
+  .runpy-editor{
+    .CodeMirror-sizer {
+      margin-left: 29px !important;
+    }
   }
 
   .code-hinter,
