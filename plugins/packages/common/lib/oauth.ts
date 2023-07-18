@@ -92,7 +92,7 @@ function handleBasicAuthentication(sourceOptions: any, requestOptions: any): Que
 
 function validateAndMaybeSetOAuthHeaders(sourceOptions, context, headers): QueryResult {
   const authType = sourceOptions['auth_type'];
-  const requiresOauth = authType === 'oauth2';
+  const requiresOauth = authType === 'oauth2' || authType === 'oauth';
 
   if (requiresOauth) {
     const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];

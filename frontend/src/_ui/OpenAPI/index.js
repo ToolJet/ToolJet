@@ -142,7 +142,7 @@ const OpenApi = ({
       case 'apiKey':
         return { name: `${auth.key} (API Key)`, value: auth.key };
       case 'oauth2':
-        return { name: `${auth.key} (Ouath2)`, value: auth.key };
+        return { name: `${auth.key} (Oauth2)`, value: auth.key };
     }
   };
 
