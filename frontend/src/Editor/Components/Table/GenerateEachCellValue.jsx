@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import _ from 'lodash';
 import { validateWidget } from '@/_helpers/utils';
+import { useMounted } from '@/_hooks/use-mount';
 
 export default function GenerateEachCellValue({
   cellValue,
@@ -17,6 +18,7 @@ export default function GenerateEachCellValue({
   cell,
   currentState,
 }) {
+  const mounted = useMounted();
   const updateCellValue = useRef();
   const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
   const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number', undefined];
@@ -63,12 +65,13 @@ export default function GenerateEachCellValue({
       };
     }
   }
-  // commenting following useEffect to  discard it permanently in the future after succesfull checks
-  // useEffect(() => {
-  //   if (_.isEmpty(rowChangeSet)) {
-  //     setHighlighterCells(true);
-  //   }
-  // }, [rowData, rowChangeSet]);
+  useEffect(() => {
+    if (mounted && _.isEmpty(rowChangeSet)) {
+      setHighlighterCells(true);
+    }
+    //In the dependency array to ingnore linting warning, added mounted but it's not working out, any way to avoid ingnoring dependency array
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rowData, rowChangeSet]);
 
   let htmlElement = cellValue;
   if (cellValue?.toString()?.toLowerCase().includes(globalFilter?.toLowerCase())) {
@@ -102,7 +105,7 @@ export default function GenerateEachCellValue({
         }
       }}
       onKeyUp={(e) => {
-        if (e.key === 'Tab' && isEditable && showHighlightedCells) setHighlighterCells(false);
+        if (e.key === 'Tab' && isEditable) setHighlighterCells(false);
       }}
       className="w-100 h-100"
     >
