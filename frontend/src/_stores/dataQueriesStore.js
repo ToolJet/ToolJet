@@ -10,7 +10,7 @@ import { toast } from 'react-hot-toast';
 const initialState = {
   dataQueries: [],
   sortBy: 'updated_at',
-  sortOrder: 'asc',
+  sortOrder: 'desc',
   loadingDataQueries: true,
   isDeletingQueryInProcess: false,
   isCreatingQueryInProcess: false,
@@ -26,10 +26,10 @@ export const useDataQueriesStore = create(
         fetchDataQueries: async (appId, selectFirstQuery = false, runQueriesOnAppLoad = false, editorRef) => {
           set({ loadingDataQueries: true });
           await dataqueryService.getAll(appId).then((data) => {
-            set({
-              dataQueries: data.data_queries,
+            set((state) => ({
+              dataQueries: sortByAttribute(data.data_queries, state.sortBy, state.sortOrder),
               loadingDataQueries: false,
-            });
+            }));
             // Runs query on loading application
             if (runQueriesOnAppLoad) runQueries(data.data_queries, editorRef);
             // Compute query state to be added in the current state

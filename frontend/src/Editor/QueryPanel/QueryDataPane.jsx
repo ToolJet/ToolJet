@@ -44,11 +44,7 @@ export const QueryDataPane = ({
     if (!isEmpty(dataSourcesForFilters)) {
       filteredDataQueries = [...dataQueries.filter((query) => dataSourcesForFilters.includes(query.kind))];
     }
-    if (searchTermForFilters) {
-      filterQueries(searchTermForFilters, filteredDataQueries);
-    } else {
-      setFilteredQueries(filteredDataQueries);
-    }
+    filterQueries(searchTermForFilters, filteredDataQueries);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(dataQueries), dataSourcesForFilters, searchTermForFilters]);
 
@@ -62,29 +58,25 @@ export const QueryDataPane = ({
     });
   };
 
-  const filterQueries = useCallback(
-    (value, queries) => {
-      if (value) {
-        const fuse = new Fuse(queries, { keys: ['name'] });
-        const results = fuse.search(value);
-        let filterDataQueries = [];
-        results.every((result) => {
-          if (result.item.name === value) {
-            filterDataQueries = [];
-            filterDataQueries.push(result.item);
-            return false;
-          }
+  const filterQueries = (value, queries) => {
+    if (value) {
+      const fuse = new Fuse(queries, { keys: ['name'] });
+      const results = fuse.search(value);
+      let filterDataQueries = [];
+      results.every((result) => {
+        if (result.item.name === value) {
+          filterDataQueries = [];
           filterDataQueries.push(result.item);
-          return true;
-        });
-        setFilteredQueries(filterDataQueries);
-      } else {
-        setFilteredQueries(dataQueries);
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(dataQueries), searchTermForFilters]
-  );
+          return false;
+        }
+        filterDataQueries.push(result.item);
+        return true;
+      });
+      setFilteredQueries(filterDataQueries);
+    } else {
+      setFilteredQueries(queries);
+    }
+  };
 
   useEffect(() => {
     showSearchBox && searchBoxRef.current.focus();

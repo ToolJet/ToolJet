@@ -135,14 +135,14 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
             <MenuButton
               id="updated_at"
               order="asc"
-              text="Last modified: newest first"
+              text="Last modified: oldest first"
               callback={handleSort}
               active={sortBy === 'updated_at' && sortOrder === 'asc'}
             />
             <MenuButton
               id="updated_at"
               order="desc"
-              text="Last modified: oldest first"
+              text="Last modified: newest first"
               callback={handleSort}
               active={sortBy === 'updated_at' && sortOrder === 'desc'}
             />
@@ -263,7 +263,7 @@ const DataSourceSelector = ({
   );
 };
 
-const MenuButton = ({ id, order, text, iconSrc, disabled = false, callback = () => null, sortOrder, active }) => {
+const MenuButton = ({ id, order, text, iconSrc, disabled = false, callback = () => null, active }) => {
   const handleOnClick = (e) => {
     e.stopPropagation();
     callback(id, order);
@@ -273,12 +273,6 @@ const MenuButton = ({ id, order, text, iconSrc, disabled = false, callback = () 
     <div className={`field p-2  tj-list-option ${active ? ` active` : ''}`}>
       <Button.UnstyledButton onClick={handleOnClick} disabled={disabled} classNames="d-flex justify-content-between">
         <Button.Content title={text} iconSrc={iconSrc} direction="left" />
-        {sortOrder &&
-          (sortOrder === 'asc' ? (
-            <SortArrowUp width="15" height="15" viewBox="0 0 22 22" fill="#4299e1" />
-          ) : (
-            <SortArrowDown width="15" height="15" viewBox="0 0 22 22" fill="#4299e1" />
-          ))}
         {active && <Tick width="20" height="20" viewBox="0 0 22 22" fill="var(--indigo9)" />}
       </Button.UnstyledButton>
     </div>
