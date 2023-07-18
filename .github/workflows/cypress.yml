@@ -39,11 +39,18 @@ jobs:
           curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
           source ~/.nvm/nvm.sh
           nvm install 18.3.0
+          nvm use 18.3.0
           npm i -g npm@8.11.0
           sudo apt install postgresql postgresql-contrib libpq-dev
 
+      - name: checking the node version
+        run: |
+          node -v
+          npm -v    
+
       - name: Install and build dependencies
         run: |
+          npm cache clean --force
           npm install
           npm install --prefix server
           npm install --prefix frontend
