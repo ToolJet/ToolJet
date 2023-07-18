@@ -70,7 +70,7 @@ const Preview = ({ darkMode }) => {
                     <ListGroup.Item
                       key={tab}
                       eventKey={tab.toLowerCase()}
-                      disabled={!queryPreviewData}
+                      disabled={!queryPreviewData || (tab == 'JSON' && !isJson)}
                       style={{ minWidth: '74px', textAlign: 'center' }}
                       className="rounded"
                     >
@@ -95,16 +95,13 @@ const Preview = ({ darkMode }) => {
             </Row>
             <Row>
               <Tab.Content style={{ overflowWrap: 'anywhere', padding: 0 }}>
-                {!queryPreviewData && <div className="col preview-default-container"></div>}
                 <Tab.Pane eventKey="json" transition={false}>
-                  {previewLoading === false && isJson && (
-                    <div className="w-100 " data-cy="preview-json-data-container">
-                      <JSONTree theme={theme} data={queryPreviewData} invertTheme={!darkMode} collectionLimit={100} />
-                    </div>
-                  )}
+                  <div className="w-100 preview-data-container" data-cy="preview-json-data-container">
+                    <JSONTree theme={theme} data={queryPreviewData} invertTheme={!darkMode} collectionLimit={100} />
+                  </div>
                 </Tab.Pane>
                 <Tab.Pane eventKey="raw" transition={false}>
-                  <div className={`p-3 raw-container `} data-cy="preview-raw-data-container">
+                  <div className={`p-3 raw-container preview-data-container`} data-cy="preview-raw-data-container">
                     {renderRawData()}
                   </div>
                 </Tab.Pane>
