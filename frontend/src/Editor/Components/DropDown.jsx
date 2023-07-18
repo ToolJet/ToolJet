@@ -1,6 +1,9 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
+import config from 'config';
+import { TextField, MenuItem } from '@mui/material';
+
 export const DropDown = function DropDown({
   height,
   validate,
@@ -224,43 +227,63 @@ export const DropDown = function DropDown({
       backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
     }),
   };
+
   return (
     <>
-      <div
-        className="dropdown-widget row g-0"
-        style={{ height, display: visibility ? '' : 'none' }}
-        onMouseDown={(event) => {
-          onComponentClick(id, component, event);
-        }}
-        data-cy={dataCy}
-      >
-        <div className="col-auto my-auto">
-          <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-0 my-0">
-            {label}
-          </label>
-        </div>
-        <div className="col px-0 h-100">
-          <Select
-            isDisabled={disabledState}
-            value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
-            onChange={(selectedOption, actionProps) => {
-              if (actionProps.action === 'select-option') {
-                setCurrentValue(selectedOption.value);
-                setExposedVariable('value', selectedOption.value).then(() => fireEvent('onSelect'));
-                setExposedVariable('selectedOptionLabel', selectedOption.label);
-              }
+      {config.UI_LIB === 'tooljet' && (
+        <>
+          <div
+            className="dropdown-widget row g-0"
+            style={{ height, display: visibility ? '' : 'none' }}
+            onMouseDown={(event) => {
+              onComponentClick(id, component, event);
             }}
-            options={selectOptions}
-            styles={customStyles}
-            isLoading={properties.loadingState}
-            onInputChange={onSearchTextChange}
-            onFocus={(event) => onComponentClick(event, component, id)}
-            menuPortalTarget={document.body}
-            placeholder={placeholder}
-          />
-        </div>
-      </div>
-      <div className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}>{validationError}</div>
+            data-cy={dataCy}
+          >
+            <div className="col-auto my-auto">
+              <label style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }} className="form-label py-0 my-0">
+                {label}
+              </label>
+            </div>
+            <div className="col px-0 h-100">
+              <Select
+                isDisabled={disabledState}
+                value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
+                onChange={(selectedOption, actionProps) => {
+                  if (actionProps.action === 'select-option') {
+                    setCurrentValue(selectedOption.value);
+                    setExposedVariable('value', selectedOption.value).then(() => fireEvent('onSelect'));
+                    setExposedVariable('selectedOptionLabel', selectedOption.label);
+                  }
+                }}
+                options={selectOptions}
+                styles={customStyles}
+                isLoading={properties.loadingState}
+                onInputChange={onSearchTextChange}
+                onFocus={(event) => onComponentClick(event, component, id)}
+                menuPortalTarget={document.body}
+                placeholder={placeholder}
+              />
+            </div>
+          </div>
+          <div className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}>{validationError}</div>
+        </>
+      )}
+      {config.UI_LIB === 'mui' && (
+        <TextField
+          id="outlined-select-currency"
+          select
+          label="Select"
+          defaultValue={value}
+          helperText="Please select your currency"
+        >
+          {selectOptions.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </TextField>
+      )}
     </>
   );
 };
