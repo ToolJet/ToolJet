@@ -48,17 +48,6 @@ export class AppEnvironmentsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get(':id/versions')
-  async getVersionsByEnvironment(@User() user, @Param('id') environmentId: string, @Query('app_id') appId: string) {
-    const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(
-      user?.organizationId,
-      appId,
-      environmentId
-    );
-    return decamelizeKeys({ appVersions });
-  }
-
-  @UseGuards(JwtAuthGuard)
   @Post(':versionId')
   async create(
     @User() user,
