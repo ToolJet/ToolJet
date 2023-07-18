@@ -16,6 +16,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
 export const Container = ({
@@ -32,12 +33,10 @@ export const Container = ({
   appLoading,
   setSelectedComponent,
   zoomLevel,
-  currentLayout,
   removeComponent,
   deviceWindowWidth,
   selectedComponents,
   darkMode,
-  showComments,
   socket,
   handleUndo,
   handleRedo,
@@ -59,6 +58,13 @@ export const Container = ({
       appVersionsId: state?.editingVersion?.id,
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
       isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
+  const { showComments, currentLayout } = useEditorStore(
+    (state) => ({
+      showComments: state?.showComments,
+      currentLayout: state?.currentLayout,
     }),
     shallow
   );
@@ -551,7 +557,6 @@ export const Container = ({
               zoomLevel={zoomLevel}
               setSelectedComponent={setSelectedComponent}
               removeComponent={removeComponent}
-              currentLayout={currentLayout}
               deviceWindowWidth={deviceWindowWidth}
               isSelectedComponent={
                 mode === 'edit' ? selectedComponents.find((component) => component.id === key) : false

@@ -14,6 +14,7 @@ import { LeftSidebarItem } from './SidebarItem';
 import Popover from '@/_ui/Popover';
 import { usePanelHeight } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { useDataSources } from '@/_stores/dataSourcesStore';
 import { shallow } from 'zustand/shallow';
 
@@ -22,10 +23,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const {
     appId,
     switchDarkMode,
-    showComments,
     darkMode = false,
     components,
-    toggleComments,
     dataSourcesChanged,
     globalDataSourcesChanged,
     dataQueriesChanged,
@@ -65,6 +64,12 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
+  const { showComments } = useEditorStore(
+    (state) => ({
+      showComments: state?.showComments,
     }),
     shallow
   );
@@ -314,7 +319,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         <div className={`${isVersionReleased && 'disabled'}`}>
           <LeftSidebarComment
             selectedSidebarItem={showComments ? 'comments' : ''}
-            toggleComments={toggleComments}
             currentPageId={currentPageId}
             ref={setSideBarBtnRefs('comments')}
           />

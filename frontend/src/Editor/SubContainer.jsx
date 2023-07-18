@@ -10,8 +10,8 @@ import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { resolveReferences } from '@/_helpers/utils';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useMounted } from '@/_hooks/use-mount';
 import { shallow } from 'zustand/shallow';
+import { useMounted } from '@/_hooks/use-mount';
 
 export const SubContainer = ({
   mode,
@@ -507,7 +507,6 @@ export const SubContainer = ({
                 inCanvas={true}
                 zoomLevel={zoomLevel}
                 setSelectedComponent={setSelectedComponent}
-                currentLayout={currentLayout}
                 selectedComponent={selectedComponent}
                 deviceWindowWidth={deviceWindowWidth}
                 isSelectedComponent={
