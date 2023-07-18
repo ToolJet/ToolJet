@@ -173,13 +173,13 @@ class EditorComponent extends React.Component {
     }
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     window.addEventListener('message', this.handleMessage);
     this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
     this.fetchApp(this.props.params.pageHandle);
-    this.fetchOrgEnvironmentVariables();
+    await this.fetchOrgEnvironmentVariables();
     this.initComponentVersioning();
     this.initRealtimeSave();
     this.initEventListeners();
@@ -193,10 +193,12 @@ class EditorComponent extends React.Component {
       },
     });
     const globals = {
+      ...this.props.currentState.globals,
       theme: { name: this.props.darkMode ? 'dark' : 'light' },
       urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
     };
     const page = {
+      ...this.props.currentState.page,
       handle: this.props.pageHandle,
       variables: {},
     };
