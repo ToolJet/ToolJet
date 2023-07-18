@@ -20,6 +20,10 @@ Tables can be used for both displaying and editing data.
 
 At the top-left corner of the table component, there is a search box that allows users to input keywords and search for rows within the table data. You can also **[show/hide the search box](/docs/widgets/table#show-search-box)** from the table from the table properties.
 
+:::tip
+You can use the `Tab` key to navigate through cells on the table.
+:::
+
 ### Add new row
 
 When users click on this button, a popup modal appears which enables them to insert new rows. The modal will have a single row initially, and the columns will have the same column type as those on the table. If the user inputs data into the row, it will be stored on the **[`newRows` variable](/docs/widgets/table#exposed-variables)** of the table. If the user selects the **Discard** button, the data in the variable will be cleared. However, if the user closes the popup without taking any action (neither Save nor Discard), the data will still be retained, and a green indicator will appear on the **Add new row** button. The table has an **[Add new rows event handler](/docs//widgets/table#add-new-rows)** that can be utilized to execute queries that store the data into the datasource whenever the **Save** button is clicked.
