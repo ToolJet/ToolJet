@@ -14,10 +14,16 @@ const Runjs = (props) => {
   const [options, setOptions] = useState(initialOptions);
 
   const handleAddParameter = (newParameter) => {
-    setOptions((prevOptions) => ({
-      ...prevOptions,
-      parameters: [...prevOptions.parameters, newParameter],
-    }));
+    setOptions((prevOptions) => {
+      // duplicate check
+      if (prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
+        return { ...prevOptions };
+      }
+      return {
+        ...prevOptions,
+        parameters: [...prevOptions.parameters, newParameter],
+      };
+    });
   };
 
   useEffect(() => {
@@ -26,6 +32,10 @@ const Runjs = (props) => {
 
   const handleParameterChange = (index, updatedParameter) => {
     setOptions((prevOptions) => {
+      // duplicate check
+      if (prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
+        return { ...prevOptions };
+      }
       const updatedParameters = [...prevOptions.parameters];
       updatedParameters[index] = updatedParameter;
       return { ...prevOptions, parameters: updatedParameters };
