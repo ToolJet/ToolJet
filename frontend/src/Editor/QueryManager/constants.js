@@ -79,6 +79,7 @@ export const schemaUnavailableOptions = {
   },
   runjs: {
     code: '',
+    hasParamSupport: true,
   },
   runpy: {},
 };

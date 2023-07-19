@@ -403,7 +403,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const resolvedParams = {};
         if (params) {
           Object.keys(params).map(
-            (k) => (resolvedParams[k] = resolveReferences(params[k], _ref.state.currentState, undefined))
+            (param) => (resolvedParams[param] = resolveReferences(params[param], _ref.state.currentState, undefined))
           );
         }
         const name =
@@ -828,7 +828,7 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query, calledFromQuery = false, parameters, hasParamSupport) {
+export function previewQuery(_ref, query, calledFromQuery = false, parameters = {}, hasParamSupport = false) {
   const options = getQueryVariables(query.options, _ref?.state?.currentState);
 
   const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
@@ -936,7 +936,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters, h
   });
 }
 
-export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit', parameters) {
+export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit', parameters = {}) {
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   let dataQuery = {};
 

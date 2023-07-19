@@ -4,7 +4,7 @@ import { OverlayTrigger, Popover } from 'react-bootstrap';
 import ParameterForm from './ParameterForm';
 
 const ParameterList = ({
-  parameters,
+  parameters = [],
   handleAddParameter,
   handleParameterChange,
   handleParameterRemove,
@@ -129,7 +129,12 @@ const ParameterList = ({
           )}
         </span>
       </OverlayTrigger>
-      <ParameterDetails onSubmit={handleAddParameter} currentState={currentState} darkMode={darkMode} />
+      <ParameterDetails
+        onSubmit={handleAddParameter}
+        currentState={currentState}
+        darkMode={darkMode}
+        otherParams={formattedParameters}
+      />
     </div>
   );
 };

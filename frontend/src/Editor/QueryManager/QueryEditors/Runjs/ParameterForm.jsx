@@ -24,7 +24,7 @@ const ParameterForm = ({
   }, [_name, _defaultValue, showModal]);
 
   useEffect(() => {
-    if (!showModal) {
+    if (!showModal && !error) {
       onSubmit && onSubmit({ name, defaultValue });
     }
   }, [showModal]);

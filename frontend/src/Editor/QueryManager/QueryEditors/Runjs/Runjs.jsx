@@ -9,8 +9,6 @@ const Runjs = (props) => {
     { ...props.options },
     {
       code: '//Type your JavaScript code here',
-      parameters: [],
-      hasParamSupport: props.mode === 'create' ? true : props.options?.hasParamSupport, //`hasParamSupport` only for queries added after runjs param support introduced
     }
   );
   const [options, setOptions] = useState(initialOptions);
