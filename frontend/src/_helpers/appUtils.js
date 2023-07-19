@@ -403,7 +403,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const resolvedParams = {};
         if (params) {
           Object.keys(params).map(
-            (param) => (resolvedParams[param] = resolveReferences(params[param], _ref.state.currentState, undefined))
+            (param) => (resolvedParams[param] = resolveReferences(params[param], getCurrentState(), undefined))
           );
         }
         const name =
