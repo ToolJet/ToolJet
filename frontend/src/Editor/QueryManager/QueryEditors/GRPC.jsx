@@ -148,7 +148,6 @@ const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
         <GRPCComponent.Tabs
           theme={darkMode ? 'monokai' : 'default'}
           metaDataoptions={metaDataOptions}
-          currentState={restProps.currentState}
           onChange={handleOnMetaDataKeyChange}
           onJsonBodyChange={handleJsonBodyChanged}
           removeKeyValuePair={removeMetaDataKeyValuePair}
@@ -164,7 +163,6 @@ const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
 
 function ControlledTabs({
   metaDataoptions,
-  currentState,
   theme,
   onChange,
   onJsonBodyChange,
@@ -198,7 +196,6 @@ function ControlledTabs({
             <Tab.Pane eventKey="metadata" t bsPrefix="rest-api-tabpanes" transition={false}>
               <GRPCComponent.TabContent
                 options={metaDataoptions}
-                currentState={currentState}
                 theme={theme}
                 removeKeyValuePair={removeKeyValuePair}
                 onChange={onChange}
@@ -214,7 +211,6 @@ function ControlledTabs({
               <div className="tab-content-wrapper">
                 <div>
                   <CodeHinter
-                    currentState={currentState}
                     initialValue={messageJSON || '{\n\n}'}
                     mode="javascript"
                     theme={darkMode ? 'monokai' : 'base16-light'}
@@ -237,7 +233,6 @@ function ControlledTabs({
 
 const TabContent = ({
   options = [],
-  currentState,
   theme,
   onChange,
   componentName,
@@ -256,7 +251,6 @@ const TabContent = ({
               <div className="d-flex justify-content-center align-items-center query-number">{index + 1}</div>
               <div className="field col-4 overflow-hidden">
                 <CodeHinter
-                  currentState={currentState}
                   initialValue={option[0]}
                   theme={theme}
                   height={'32px'}
@@ -267,7 +261,6 @@ const TabContent = ({
               </div>
               <div className="field col overflow-hidden">
                 <CodeHinter
-                  currentState={currentState}
                   initialValue={option[1]}
                   theme={theme}
                   height={'32px'}

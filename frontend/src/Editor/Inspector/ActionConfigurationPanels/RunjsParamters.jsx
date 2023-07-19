@@ -3,7 +3,7 @@ import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { isEmpty } from 'lodash';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 
-function RunjsParameters({ event, currentState, darkMode, index, handlerChanged }) {
+function RunjsParameters({ event, darkMode, index, handlerChanged }) {
   const dataQueries = useDataQueries();
 
   const dataQuery = dataQueries.find((dataquery) => dataquery.id === event.queryId);
@@ -26,7 +26,6 @@ function RunjsParameters({ event, currentState, darkMode, index, handlerChanged 
           <div className="col-9">
             <CodeHinter
               theme={darkMode ? 'monokai' : 'default'}
-              currentState={currentState}
               initialValue={event.parameters?.[param.name] || param.defaultValue}
               onChange={(value) => handleChange(value, param)}
               usePortalEditor={false}

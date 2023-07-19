@@ -7,6 +7,10 @@ import { getSvgIcon } from '@/_helpers/appUtils';
 
 import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
+
 const staticDataSources = [
   { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
   { kind: 'restapi', id: 'null', name: 'REST API' },
@@ -16,17 +20,21 @@ const staticDataSources = [
 
 export const LeftSidebarInspector = ({
   darkMode,
-  currentState,
   appDefinition,
   setSelectedComponent,
   removeComponent,
   runQuery,
   setPinned,
   pinned,
-  isVersionReleased,
 }) => {
   const dataSources = useGlobalDataSources();
   const dataQueries = useDataQueries();
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
   const selectedComponent = React.useMemo(() => {
     return {
@@ -35,7 +43,7 @@ export const LeftSidebarInspector = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appDefinition['selectedComponent']]);
-
+  const currentState = useCurrentState();
   const queries = {};
 
   if (!_.isEmpty(dataQueries)) {
@@ -50,6 +58,7 @@ export const LeftSidebarInspector = ({
     delete jsontreeData.errors;
     delete jsontreeData.client;
     delete jsontreeData.server;
+    delete jsontreeData.actions;
 
     //*Sorted components and queries alphabetically
     const sortedComponents = Object.keys(jsontreeData['components'])
@@ -185,7 +194,6 @@ export const LeftSidebarInspector = ({
           enableCopyToClipboard={true}
           useActions={true}
           actionsList={callbackActions}
-          currentState={appDefinition}
           actionIdentifier="id"
           expandWithLabels={true}
           selectedComponent={selectedComponent}

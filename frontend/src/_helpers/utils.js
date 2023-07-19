@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { getCurrentState } from '@/_stores/currentStateStore';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -198,8 +199,6 @@ export function resolveReferences(
 
     case 'object': {
       if (Array.isArray(object)) {
-        console.log(`[Resolver] Resolving as array ${typeof object}`);
-
         const new_array = [];
 
         object.forEach((element, index) => {
@@ -210,7 +209,6 @@ export function resolveReferences(
         if (withError) return [new_array, error];
         return new_array;
       } else if (!_.isEmpty(object)) {
-        console.log(`[Resolver] Resolving as object ${typeof object}, state: ${state}`);
         Object.keys(object).forEach((key) => {
           const resolved_object = resolveReferences(object[key], state);
           object[key] = resolved_object;
@@ -396,7 +394,7 @@ export async function executeMultilineJS(
   parameters = {},
   hasParamSupport = false
 ) {
-  const { currentState } = _ref.state;
+  const currentState = getCurrentState();
   let result = {},
     error = null;
 

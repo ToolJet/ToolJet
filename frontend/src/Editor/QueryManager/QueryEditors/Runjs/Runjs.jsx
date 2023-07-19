@@ -53,7 +53,6 @@ const Runjs = (props) => {
       )}
 
       <CodeHinter
-        currentState={props.currentState}
         initialValue={props.options.code}
         mode="javascript"
         theme={props.darkMode ? 'monokai' : 'base16-light'}
