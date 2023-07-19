@@ -74,7 +74,6 @@ jobs:
 
       - name: Set up database
         run: |
-          npm run --prefix server db:reset
           npm rub --prefix server db:seed
 
       - name: Run plugins compilation in watch mode
