@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   Run-Cypress:
-    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress' || github.event.label.name == 'run-cypress-app-builder'|| github.event.label.name == 'run-cypress-workspace')}}
+    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress' || github.event.label.name == 'run-cypress-app-builder'|| github.event.label.name == 'run-cypress-workspace' || github.event.label.name == 'run-cypress-platform')}}
 
     runs-on: ubuntu-22.04
     steps:
@@ -82,6 +82,14 @@ jobs:
           working-directory: ./cypress-tests
           config: "baseUrl=https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com"
           config-file: cypress-workspace.config.js
+
+      - name: EE Cypress Integration Test (EE-Workspace)
+        if: ${{ github.event.label.name == 'run-cypress-platform' }}
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: ./cypress-tests
+          config: "baseUrl=https://tooljet-pr-cypress-${{ env.PR_NUMBER }}.onrender.com"
+          config-file: cypress-eeworkspace.config.js
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3

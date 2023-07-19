@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import cx from 'classnames';
 import Textarea from '@/_ui/Textarea';
 import { toast } from 'react-hot-toast';
 import { licenseService } from '@/_services';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-const General = () => {
+const LicenseKey = ({ fetchFeatureAccess, featureAccess }) => {
   const [license, setLicense] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,6 +35,7 @@ const General = () => {
     licenseService
       .update({ key: license.value })
       .then(() => {
+        fetchFeatureAccess();
         setLoading(false);
         toast.success('License key has been updated', {
           position: 'top-center',
@@ -42,6 +44,7 @@ const General = () => {
       })
       .catch(({ error }) => {
         setLoading(false);
+        fetchLicenseSettings();
         toast.error(error, { position: 'top-center' });
       });
   };
@@ -52,14 +55,13 @@ const General = () => {
 
   return (
     <div className="general-wrapper">
-      <div className="col tj-dashboard-header-wrap font-weight-500">General</div>
       {license && (
-        <div className="general-setting-wrapper">
+        <div className="metrics-wrapper">
           <div className="col-md-12">
             <label className="form-label mt-3">License</label>
             <Textarea
               placehlder="Enter your license key"
-              className="form-control"
+              className={cx('form-control', { 'errored-textarea': featureAccess?.licenseStatus?.isExpired })}
               rows="12"
               value={license?.value}
               onChange={(e) => optionChanged(e.target.value)}
@@ -81,4 +83,4 @@ const General = () => {
   );
 };
 
-export { General };
+export { LicenseKey };

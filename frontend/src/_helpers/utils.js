@@ -851,6 +851,22 @@ export function isExpectedDataType(data, expectedDataType) {
   return data;
 }
 
+export function getDateDifferenceInDays(date1, date2) {
+  const oneDay = 24 * 60 * 60 * 1000;
+
+  const timeDiff = Math.abs(date2.getTime() - date1.getTime());
+  const daysDiff = Math.round(timeDiff / oneDay);
+
+  return daysDiff;
+}
+
+export function convertDateFormat(dateString) {
+  const date = new Date(dateString);
+  const options = { day: '2-digit', month: 'short', year: 'numeric' };
+  const formattedDate = date.toLocaleDateString('en-IN', options).replace(/-/g, ' ');
+  return formattedDate;
+}
+
 export const returnDevelopmentEnv = (environments) => environments.find((env) => env.priority === 1);
 
 export const validateName = (name, nameType, showError = false, allowSpecialChars = true) => {

@@ -50,6 +50,17 @@ async function bootstrap() {
   const configService = app.get<ConfigService>(ConfigService);
   const host = new URL(process.env.TOOLJET_HOST);
   const domain = host.hostname;
+  const licenseService = app.get<LicenseService>(LicenseService);
+  await licenseService.init();
+
+  const domains = License.Instance().domains || [];
+
+  if (domains?.length) {
+    const domainExist = domains.some((host) => new URL(host.hostname).hostname === domain);
+    if (!domainExist) {
+      throw new Error('Invalid Hostname');
+    }
+  }
 
   custom.setHttpOptionsDefaults({
     timeout: parseInt(process.env.OIDC_CONNECTION_TIMEOUT || '3500'), // Default 3.5 seconds
@@ -62,6 +73,13 @@ async function bootstrap() {
 
   const hasSubPath = process.env.SUB_PATH !== undefined;
   const UrlPrefix = hasSubPath ? process.env.SUB_PATH : '';
+
+  if (hasSubPath && domains?.length) {
+    const subpathExist = domains.some((host) => new URL(host.hostname).pathname === UrlPrefix);
+    if (!subpathExist) {
+      throw new Error('Invalid Subpath');
+    }
+  }
 
   // Exclude these endpoints from prefix. These endpoints are required for health checks.
   const pathsToExclude = [];

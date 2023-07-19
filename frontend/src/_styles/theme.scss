@@ -7366,6 +7366,17 @@ tbody {
   border-right: 1px solid var(--slate5) !important;
   display: grid !important;
   grid-template-rows: auto 1fr auto !important;
+  position: relative;
+
+  .trial-banner {
+    position: absolute;
+    bottom: 50px;
+    max-height: 130px;
+
+    svg {
+      width: 70px;
+    }
+  }
 }
 .marketplace-page-sidebar {
   height: calc(100vh - 64px);
@@ -7427,6 +7438,10 @@ tbody {
 
   .dropdown-toggle-split {
     border-left: 1px solid var(--indigo11) !important;
+    &:disabled {
+      background-color: var(--slate6) !important;
+      border-left: 1px solid var(--slate6) !important;
+    }
   }
 
   button {
@@ -7440,6 +7455,10 @@ tbody {
   height: 40px;
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
+  &:disabled {
+    background-color: var(--slate6) !important;
+    color: var(--slate9) !important;
+  }
 }
 
 .create-new-app-button+.dropdown-toggle {
@@ -8255,10 +8274,18 @@ tbody {
 
 
 // DASHBOARD SCROLL STYLES--->
+.create-new-app-license-wrapper {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
 .create-new-app-wrapper {
   margin: 0 auto;
   display: flex;
   justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding-top: 4px;
 }
 
@@ -8952,6 +8979,31 @@ tbody {
     width: 880px;
 
   }
+
+  .user-limits {
+    column-gap: 8px;
+    .limit {
+      width: 100px !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 5px;
+      background-color: var(--base);
+      border-radius: 5px;
+      border: 1px solid var(--slate5);
+      font-size: 12px;
+
+      .count {
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      div {
+        width: unset !important;
+        font-size: 11px;
+      }
+    }
+  }
 }
 
 .workspace-user-archive-btn {
@@ -9363,6 +9415,7 @@ tbody {
   outline: 1px solid var(--slate5);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   border-radius: 6px;
+  min-height: 640px;
 }
 
 .org-settings-wrapper-card {
@@ -10104,6 +10157,8 @@ tbody {
 
 
 .manage-users-drawer-content-bulk {
+  margin: 24px 15px;
+  
   form {
     display: flex;
     flex-direction: column;
@@ -10121,7 +10176,7 @@ tbody {
 
 
 .manage-users-drawer-content {
-  margin: 24px 32px;
+  margin: 24px 15px;
 
   .invite-user-by-email {
     display: flex;
@@ -10522,7 +10577,7 @@ tbody {
 }
 
 .tj-user-table-wrapper {
-  height: calc(100vh - 270px); //52+64+40+32+20+62
+  height: calc(100vh - 392px); //52+64+40+32+20+62
   overflow-y: auto;
   background: var(--base);
   border-right: 1px solid var(--slate7);
@@ -11304,6 +11359,19 @@ tbody {
       max-height: 150px;
     }
   }
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: var(--amber4);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  transition: width 0.5s ease-in-out;
 }
 
 .workspace-folder-modal {

@@ -2,14 +2,28 @@ import React from 'react';
 import * as ReactDOM from 'react-dom';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import SolidIcon from '../_ui/Icon/SolidIcons';
+import { authenticationService } from '@/_services';
 
-const LegalReasonsErrorModal = ({ showModal, message, feature, darkMode }) => {
+const LegalReasonsErrorModal = ({
+  showModal,
+  message,
+  feature,
+  darkMode,
+  type = 'Upgrade',
+  body,
+  showFooter = true,
+  toggleModal,
+}) => {
   const [isModalOpen, setShowModal] = React.useState(showModal);
+  const currentUser = authenticationService.currentSessionValue;
 
   React.useEffect(() => {
     if (!isModalOpen) {
       const element = document.getElementById('legal-reason-modal');
-      ReactDOM.unmountComponentAtNode(element.parentNode.child[0]);
+      const parentNode = element?.parentNode;
+      parentNode && ReactDOM.unmountComponentAtNode(parentNode?.child[0]);
+      toggleModal && toggleModal();
     }
   }, [isModalOpen]);
 
@@ -18,32 +32,50 @@ const LegalReasonsErrorModal = ({ showModal, message, feature, darkMode }) => {
   return (
     <>
       <Modal
+        id="legal-reason-modal"
         show={showModal}
         onHide={handleClose}
         size="sm"
         centered={true}
-        contentClassName={darkMode ? 'theme-dark' : ''}
+        contentClassName={`${darkMode ? 'theme-dark dark-theme license-error-modal' : 'license-error-modal'}`}
       >
-        <div className="modal-status bg-warning"></div>
         <Modal.Header data-cy="modal-header">
-          <Modal.Title>Upgrade Your Plan</Modal.Title>
+          <Modal.Title>{type} Your Plan</Modal.Title>
+          <div onClick={toggleModal ?? handleClose} className="cursor-pointer">
+            <SolidIcon name="remove" width="20" />
+          </div>
         </Modal.Header>
-        <Modal.Body data-cy="modal-message">{message}</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-          <Button variant="primary" autoFocus onClick={() => {}}>
-            <a
-              style={{ color: 'white', textDecoration: 'none' }}
-              href="http://tooljet.com/upgrade-account"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Contact support
-            </a>
-          </Button>
-        </Modal.Footer>
+        <Modal.Body data-cy="modal-message">
+          {message}
+          {(message?.includes('editors') || message?.includes('workspaces')) && (
+            <div className="info">
+              <div>
+                <SolidIcon name="idea" />
+              </div>
+              <span>To add more users, please disable the personal workspace in instance settings and retry.</span>
+            </div>
+          )}
+          {body}
+        </Modal.Body>
+        {showFooter && (
+          <Modal.Footer>
+            <Button className="cancel-btn" onClick={handleClose}>
+              Cancel
+            </Button>
+            {currentUser?.super_admin && (
+              <Button className="upgrade-btn" autoFocus onClick={() => {}}>
+                <a
+                  style={{ color: 'white', textDecoration: 'none' }}
+                  href="https://www.tooljet.com/pricing?utm_source=banner&utm_medium=plg&utm_campaign=none"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Upgrade
+                </a>
+              </Button>
+            )}
+          </Modal.Footer>
+        )}
       </Modal>
     </>
   );

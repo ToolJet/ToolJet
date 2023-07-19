@@ -119,6 +119,11 @@ import Logs from './Logs.jsx';
 import Marketplace from './Marketplace.jsx';
 import AuditLogs from './AuditLog.jsx';
 import InstanceSettings from './InstanceSettings.jsx';
+import EnterpriseGradient from './EnterpriseGradient.jsx';
+import Workspace from './Workspace.jsx';
+import CircularToggleDisabled from './CircularToggleDisabled.jsx';
+import CircularToggleEnabled from './CircularToggleEnabled.jsx';
+import Idea from './Idea.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -166,6 +171,10 @@ const Icon = (props) => {
       return <CheveronRight {...props} />;
     case 'cheveronup':
       return <CheveronUp {...props} />;
+    case 'circularToggleDisabled':
+      return <CircularToggleDisabled {...props} />;
+    case 'circularToggleEnabled':
+      return <CircularToggleEnabled {...props} />;
     case 'clearrectangle':
       return <ClearRectangle {...props} />;
     case 'clock':
@@ -192,6 +201,8 @@ const Icon = (props) => {
       return <EditRectangle {...props} />;
     case 'enterprise':
       return <Enterprise {...props} />;
+    case 'enterpriseGradient':
+      return <EnterpriseGradient {...props} />;
     case 'eye':
       return <Eye {...props} />;
     case 'eye1':
@@ -230,6 +241,8 @@ const Icon = (props) => {
       return <InstanceSettings {...props} />;
     case 'interactive':
       return <Interactive {...props} />;
+    case 'idea':
+      return <Idea {...props} />;
     case 'layers':
       return <Layers {...props} />;
     case 'leftarrow':
@@ -358,6 +371,8 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
+    case 'workspace':
+      return <Workspace {...props} />;
     default:
       return <Apps {...props} />;
   }

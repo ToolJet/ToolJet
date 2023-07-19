@@ -65,7 +65,7 @@ describe("dashboard", () => {
     );
     cy.get(usersSelector.usersPageTitle).should(($el) => {
       expect($el.contents().last().text().trim()).to.eq(
-        usersText.usersPageTitle
+        "Manage All Users"
       );
     });
 

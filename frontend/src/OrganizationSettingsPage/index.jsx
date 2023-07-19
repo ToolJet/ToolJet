@@ -11,10 +11,13 @@ import { CopilotSetting } from '@/CopilotSettings';
 import { BreadCrumbContext } from '../App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
+import { licenseService } from '../_services/license.service';
+import { LicenseBanner } from '@/LicenseBanner';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
   const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
+  const [featureAccess, setFeatureAccess] = useState({});
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Copilot', 'Custom styles'];
@@ -37,7 +40,14 @@ export function OrganizationSettings(props) {
     }
   };
 
+  const fetchFeatureAccess = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      setFeatureAccess(data);
+    });
+  };
+
   useEffect(() => {
+    fetchFeatureAccess();
     const subscription = authenticationService.currentSession.subscribe((newOrd) => {
       setAdmin(newOrd?.admin);
       admin ? updateSidebarNAV('Users & permissions') : updateSidebarNAV('Workspace variables');
@@ -75,6 +85,12 @@ export function OrganizationSettings(props) {
                 );
               })}
             </div>
+            <LicenseBanner
+              limits={featureAccess}
+              classes="m-3 trial-banner"
+              size="xsmall"
+              type={featureAccess?.licenseStatus?.licenseType}
+            />
             <OrganizationList />
           </div>
 

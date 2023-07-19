@@ -76,24 +76,20 @@ class LoginPageComponent extends React.Component {
           // redirect to instance settings if license expired
           const path = this.eraseRedirectUrl();
           const redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
-          authenticationService
-            .validateLicense()
-            .then(() => {
-              window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
-            })
-            .catch((e) => {
-              if (newSession?.super_admin) {
+          if (newSession?.super_admin) {
+            authenticationService
+              .validateLicense()
+              .then(() => {
+                window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+              })
+              .catch((e) => {
                 window.location = getSubpath()
                   ? `${getSubpath()}/instance-settings?error=license`
                   : '/instance-settings?error=license';
-              } else {
-                toast.error('You cannot login now. Please contact your administrator for support.', {
-                  style: {
-                    maxWidth: '700px',
-                  },
-                });
-              }
-            });
+              });
+          } else {
+            window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+          }
         }
       }
     });

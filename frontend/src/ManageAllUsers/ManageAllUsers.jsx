@@ -1,5 +1,5 @@
 import React from 'react';
-import { authenticationService, userService, organizationUserService } from '@/_services';
+import { authenticationService, userService, organizationUserService, licenseService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { withTranslation } from 'react-i18next';
@@ -8,6 +8,7 @@ import UsersFilter from '../../ee/components/UsersPage/UsersFilter';
 import OrganizationsModal from './OrganizationsModal';
 import UserEditModal from './UserEditModal';
 import ErrorBoundary from '@/Editor/ErrorBoundary';
+import { LicenseBanner } from '@/LicenseBanner';
 
 class ManageAllUsersComponent extends React.Component {
   constructor(props) {
@@ -31,10 +32,14 @@ class ManageAllUsersComponent extends React.Component {
       selectedUser: null,
       isUpdatingUser: false,
       updatingUser: null,
+      userLimits: {},
+      featureAccess: {},
     };
   }
 
   componentDidMount() {
+    this.fetchAllUserLimits();
+    this.fetchFeatureAccesss();
     this.fetchUsers(1);
   }
 
@@ -52,6 +57,20 @@ class ManageAllUsersComponent extends React.Component {
         isLoading: false,
       });
       this.updateSelectedUser();
+    });
+  };
+
+  fetchFeatureAccesss = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      this.setState({ featureAccess: data });
+    });
+  };
+
+  fetchAllUserLimits = () => {
+    userService.getUserLimits('all').then((data) => {
+      this.setState({
+        userLimits: data,
+      });
     });
   };
 
@@ -74,6 +93,7 @@ class ManageAllUsersComponent extends React.Component {
         });
         this.setState({ archivingUser: null });
         this.fetchUsers(this.state.currentPage, this.state.options);
+        this.fetchAllUserLimits();
       })
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
@@ -92,6 +112,7 @@ class ManageAllUsersComponent extends React.Component {
         });
         this.setState({ unarchivingUser: null });
         this.fetchUsers(this.state.currentPage, this.state.options);
+        this.fetchAllUserLimits();
       })
       .catch(({ error }) => {
         toast.error(error, { position: 'top-center' });
@@ -108,6 +129,7 @@ class ManageAllUsersComponent extends React.Component {
           position: 'top-center',
         });
         this.fetchUsers(this.state.currentPage, this.state.options);
+        this.fetchAllUserLimits();
         this.setState({ archivingFromAllOrgs: false });
       })
       .catch(({ error }) => {
@@ -126,11 +148,13 @@ class ManageAllUsersComponent extends React.Component {
           position: 'top-center',
         });
         this.fetchUsers(this.state.currentPage, this.state.options);
+        this.fetchAllUserLimits();
         this.setState({ isUpdatingUser: false, updatingUser: null });
         this.hideEditModal();
       })
-      .catch(({ error }) => {
-        toast.error(error, { position: 'top-center' });
+      .catch(({ error, statusCode }) => {
+        this.hideEditModal();
+        statusCode !== 451 && toast.error(error, { position: 'top-center' });
         this.setState({ isUpdatingUser: false });
       });
   };
@@ -147,9 +171,46 @@ class ManageAllUsersComponent extends React.Component {
 
   hideEditModal = () => this.setState({ showEditModal: false, updatingUser: null });
 
+  generateBanner() {
+    const { usersCount, editorsCount, viewersCount } = this.state.userLimits;
+
+    if (usersCount?.percentage >= 100) {
+      return <LicenseBanner classes="mt-3" limits={usersCount} type="users" />;
+    } else if (editorsCount?.percentage >= 100) {
+      return <LicenseBanner classes="mt-3" limits={editorsCount} type="builders" />;
+    } else if (viewersCount?.percentage >= 100) {
+      return <LicenseBanner classes="mt-3" limits={viewersCount} type="viewers" />;
+    } else if (
+      usersCount?.percentage >= 90 ||
+      (usersCount?.total <= 10 && usersCount.current === usersCount?.total - 1)
+    ) {
+      return <LicenseBanner classes="mt-3" limits={usersCount} type="users" />;
+    } else if (
+      editorsCount?.percentage >= 90 ||
+      (editorsCount?.total <= 10 && editorsCount.current === editorsCount?.total - 1)
+    ) {
+      return <LicenseBanner classes="mt-3" limits={editorsCount} type="builders" />;
+    } else if (
+      viewersCount?.percentage >= 90 ||
+      (viewersCount?.total <= 10 && viewersCount.current === viewersCount?.total - 1)
+    ) {
+      return <LicenseBanner classes="mt-3" limits={viewersCount} type="viewers" />;
+    }
+  }
+
   render() {
-    const { isLoading, users, archivingUser, unarchivingUser, meta, showEditModal, updatingUser, isUpdatingUser } =
-      this.state;
+    const {
+      isLoading,
+      users,
+      archivingUser,
+      unarchivingUser,
+      meta,
+      showEditModal,
+      updatingUser,
+      isUpdatingUser,
+      userLimits,
+      featureAccess,
+    } = this.state;
 
     return (
       <ErrorBoundary showFallback={true}>
@@ -181,49 +242,70 @@ class ManageAllUsersComponent extends React.Component {
             updateUser={this.updateUser}
           />
 
-          <div className="page-wrapper mt-1">
-            <div className="page-header workspace-page-header">
-              <div className="align-items-center d-flex">
-                <div className="tj-text-sm font-weight-500" data-cy="title-users-page">
-                  {meta?.total_count} users
+          <LicenseBanner classes="mt-3" limits={featureAccess} type="Instance Settings" isAvailable={true}>
+            <div className="page-wrapper mt-1">
+              <div className="page-header workspace-page-header">
+                <div className="align-items-center d-flex">
+                  <div className="tj-text-sm font-weight-500" data-cy="title-users-page">
+                    Manage All Users
+                  </div>
+                  <div className="user-limits d-flex">
+                    {userLimits?.usersCount && (
+                      <div className="limit">
+                        <div>TOTAL USERS</div>
+                        <div className="count">
+                          {userLimits?.usersCount?.current}/{userLimits?.usersCount?.total}
+                        </div>
+                      </div>
+                    )}
+                    {userLimits?.editorsCount && (
+                      <div className="limit">
+                        <div>BUILDERS</div>
+                        <div className="count">
+                          {userLimits?.editorsCount?.current}/{userLimits?.editorsCount?.total}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="page-body">
-              <UsersFilter
-                filterList={this.filterList}
-                darkMode={this.props.darkMode}
-                clearIconPressed={() => this.fetchUsers()}
-              />
-
-              {users?.length === 0 && (
-                <div className="d-flex justify-content-center flex-column">
-                  <span className="text-center pt-5 font-weight-bold">No result found</span>
-                  <small className="text-center text-muted">Try changing the filters</small>
-                </div>
-              )}
-
-              {users?.length !== 0 && (
-                <UsersTable
-                  isLoading={isLoading}
-                  users={users}
-                  unarchivingUser={unarchivingUser}
-                  archivingUser={archivingUser}
-                  meta={meta}
-                  generateInvitationURL={this.generateInvitationURL}
-                  invitationLinkCopyHandler={this.invitationLinkCopyHandler}
-                  unarchiveOrgUser={this.unarchiveOrgUser}
-                  archiveOrgUser={this.archiveOrgUser}
-                  pageChanged={this.pageChanged}
+              {this.generateBanner()}
+              <div className="page-body">
+                <UsersFilter
+                  filterList={this.filterList}
                   darkMode={this.props.darkMode}
-                  translator={this.props.t}
-                  isLoadingAllUsers={true}
-                  openOrganizationModal={this.openOrganizationModal}
-                  openEditModal={this.openEditModal}
+                  clearIconPressed={() => this.fetchUsers()}
                 />
-              )}
+
+                {users?.length === 0 && (
+                  <div className="d-flex justify-content-center flex-column">
+                    <span className="text-center pt-5 font-weight-bold">No result found</span>
+                    <small className="text-center text-muted">Try changing the filters</small>
+                  </div>
+                )}
+
+                {users?.length !== 0 && (
+                  <UsersTable
+                    isLoading={isLoading}
+                    users={users}
+                    unarchivingUser={unarchivingUser}
+                    archivingUser={archivingUser}
+                    meta={meta}
+                    generateInvitationURL={this.generateInvitationURL}
+                    invitationLinkCopyHandler={this.invitationLinkCopyHandler}
+                    unarchiveOrgUser={this.unarchiveOrgUser}
+                    archiveOrgUser={this.archiveOrgUser}
+                    pageChanged={this.pageChanged}
+                    darkMode={this.props.darkMode}
+                    translator={this.props.t}
+                    isLoadingAllUsers={true}
+                    openOrganizationModal={this.openOrganizationModal}
+                    openEditModal={this.openEditModal}
+                  />
+                )}
+              </div>
             </div>
-          </div>
+          </LicenseBanner>
         </div>
       </ErrorBoundary>
     );

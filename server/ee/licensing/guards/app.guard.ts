@@ -14,13 +14,13 @@ export class AppCountGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const appsCount = await this.licenseService.getLicenseTerms(LICENSE_FIELD.APP_COUNT);
-    if (appsCount === 'UNLIMITED') {
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.APP_COUNT, LICENSE_FIELD.IS_EXPIRED]);
+    if (licenseTerms[LICENSE_FIELD.APP_COUNT] === 'UNLIMITED' || licenseTerms[LICENSE_FIELD.IS_EXPIRED]) {
       return true;
     }
 
-    if ((await this.appsRepository.count()) >= appsCount) {
-      throw new HttpException('Maximum application limit reached', 451);
+    if ((await this.appsRepository.count()) >= licenseTerms[LICENSE_FIELD.APP_COUNT]) {
+      throw new HttpException('You have reached your maximum limit for apps.', 451);
     }
     return true;
   }
