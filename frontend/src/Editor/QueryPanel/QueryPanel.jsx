@@ -13,7 +13,6 @@ const QueryPanel = ({
   dataQueriesChanged,
   fetchDataQueries,
   darkMode,
-  currentState,
   apps,
   allComponents,
   appId,
@@ -268,7 +267,6 @@ const QueryPanel = ({
                   mode={editingQuery ? 'edit' : 'create'}
                   dataQueriesChanged={updateDataQueries}
                   appId={appId}
-                  currentState={currentState}
                   darkMode={darkMode}
                   apps={apps}
                   allComponents={allComponents}

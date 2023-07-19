@@ -2,6 +2,7 @@ import React from 'react';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import _ from 'lodash';
 import { resolveReferences } from '@/_helpers/utils';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const Code = ({
   param,
@@ -9,13 +10,13 @@ export const Code = ({
   onChange,
   paramType,
   componentMeta,
-  currentState,
   darkMode,
   componentName,
   onFxPress,
   fxActive,
   component,
 }) => {
+  const currentState = useCurrentState();
   const getDefinitionForNewProps = (param) => {
     if (['showAddNewRowButton', 'allowSelection'].includes(param)) {
       if (param === 'allowSelection') {
@@ -51,7 +52,6 @@ export const Code = ({
     <div className={`mb-2 field ${options.className}`}>
       <CodeHinter
         enablePreview={true}
-        currentState={currentState}
         initialValue={initialValue}
         mode={options.mode}
         theme={darkMode ? 'monokai' : options.theme}

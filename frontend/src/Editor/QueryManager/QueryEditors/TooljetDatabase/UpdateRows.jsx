@@ -6,7 +6,7 @@ import { operators } from '@/TooljetDatabase/constants';
 import { uniqueId } from 'lodash';
 import { isOperatorOptions } from './util';
 
-export const UpdateRows = React.memo(({ currentState, darkMode }) => {
+export const UpdateRows = React.memo(({ darkMode }) => {
   const { columns, updateRowsOptions, handleUpdateRowsOptionsChange } = useContext(TooljetDatabaseContext);
 
   function handleColumnOptionChange(columnOptions) {
@@ -120,7 +120,6 @@ export const UpdateRows = React.memo(({ currentState, darkMode }) => {
               />
             ) : (
               <CodeHinter
-                currentState={currentState}
                 initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
                 className="codehinter-plugins"
                 theme={darkMode ? 'monokai' : 'default'}
@@ -205,7 +204,6 @@ export const UpdateRows = React.memo(({ currentState, darkMode }) => {
 
           <div className="field col-4">
             <CodeHinter
-              currentState={currentState}
               initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
               className="codehinter-plugins"
               theme={darkMode ? 'monokai' : 'default'}

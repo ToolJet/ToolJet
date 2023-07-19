@@ -62,7 +62,6 @@ export function renderElement(
       paramType={paramType}
       components={components}
       componentMeta={componentMeta}
-      currentState={currentState}
       darkMode={darkMode}
       componentName={component.component.name || null}
       type={meta.type}
