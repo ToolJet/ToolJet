@@ -276,7 +276,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
         message={confirmMessage}
         onConfirm={handleExecuteDelete}
         onCancel={handleOnCancelDelete}
-        darkMode={false}
+        darkMode={darkMode}
       />
 
       {isManageVarDrawerOpen && (
