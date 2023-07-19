@@ -91,6 +91,9 @@ const ParameterList = ({
                 name={selectedParameter.name}
                 defaultValue={selectedParameter.defaultValue}
                 onSubmit={(param) => {
+                  if (!param?.name) {
+                    return;
+                  }
                   handleParameterChange(selectedParameter.index, param);
                   setSelectedParameter();
                 }}
