@@ -47,6 +47,27 @@ import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
 
+// utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
+const utilityForNestedNewRow = (row) => {
+  let arr = Object.keys(row);
+  let obj = {};
+  arr.forEach((key) => {
+    let nestedKeys = key.split('.');
+    let tempObj = obj;
+
+    for (let i = 0; i < nestedKeys.length; i++) {
+      let nestedKey = nestedKeys[i];
+
+      if (!tempObj.hasOwnProperty(nestedKey)) {
+        tempObj[nestedKey] = i === nestedKeys.length - 1 ? '' : {};
+      }
+
+      tempObj = tempObj[nestedKey];
+    }
+  });
+  return obj;
+};
+
 export function Table({
   id,
   width,
@@ -233,7 +254,11 @@ export function Table({
         ...obj,
       },
     };
-    obj = _.set({ ...rowData, ...obj }, key, value);
+
+    if (Object.keys(rowData).find((key) => key.includes('.'))) {
+      rowData = utilityForNestedNewRow(rowData);
+    }
+    obj = _.merge({}, rowData, obj);
 
     let newDataUpdates = {
       ...dataUpdates,
@@ -258,7 +283,7 @@ export function Table({
         if (header.key && header.key !== header.exportValue) {
           value = _.get(row.original, header.key);
         } else {
-          value = row.original[header.exportValue];
+          value = _.get(row.original, header.exportValue);
         }
         accumulator.push(value);
         return accumulator;
@@ -1278,6 +1303,7 @@ export function Table({
           defaultColumn={defaultColumn}
           columns={columnsForAddNewRow}
           addNewRowsDetails={tableDetails.addNewRowsDetails}
+          utilityForNestedNewRow={utilityForNestedNewRow}
         />
       )}
     </div>

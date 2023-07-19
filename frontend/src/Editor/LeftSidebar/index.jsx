@@ -14,6 +14,7 @@ import { LeftSidebarItem } from './SidebarItem';
 import Popover from '@/_ui/Popover';
 import { usePanelHeight } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { useDataSources } from '@/_stores/dataSourcesStore';
 import { shallow } from 'zustand/shallow';
 
@@ -22,10 +23,8 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const {
     appId,
     switchDarkMode,
-    showComments,
     darkMode = false,
     components,
-    toggleComments,
     dataSourcesChanged,
     globalDataSourcesChanged,
     dataQueriesChanged,
@@ -64,6 +63,12 @@ export const LeftSidebar = forwardRef((props, ref) => {
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
+  const { showComments } = useEditorStore(
+    (state) => ({
+      showComments: state?.showComments,
     }),
     shallow
   );
@@ -286,6 +291,18 @@ export const LeftSidebar = forwardRef((props, ref) => {
         tip="Inspector"
         ref={setSideBarBtnRefs('inspect')}
       />
+      <LeftSidebarItem
+        icon="debugger"
+        selectedSidebarItem={selectedSidebarItem}
+        // eslint-disable-next-line no-unused-vars
+        onClick={(e) => handleSelectedSidebarItem('debugger')}
+        className={`left-sidebar-item  left-sidebar-layout`}
+        badge={true}
+        count={unReadErrorCount.unread}
+        tip="Debugger"
+        ref={setSideBarBtnRefs('debugger')}
+      />
+
       {dataSources?.length > 0 && (
         <LeftSidebarItem
           selectedSidebarItem={selectedSidebarItem}
@@ -309,7 +326,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         <div className={`${isVersionReleased && 'disabled'}`}>
           <LeftSidebarComment
             selectedSidebarItem={showComments ? 'comments' : ''}
-            toggleComments={toggleComments}
             currentPageId={currentPageId}
             ref={setSideBarBtnRefs('comments')}
           />
@@ -323,18 +339,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         darkMode={darkMode}
       />
       <div className="left-sidebar-stack-bottom">
-        <LeftSidebarItem
-          icon="debugger"
-          selectedSidebarItem={selectedSidebarItem}
-          // eslint-disable-next-line no-unused-vars
-          onClick={(e) => handleSelectedSidebarItem('debugger')}
-          className={`left-sidebar-item  left-sidebar-layout`}
-          badge={true}
-          count={unReadErrorCount.unread}
-          tip="Debugger"
-          ref={setSideBarBtnRefs('debugger')}
-        />
-
         <div className="left-sidebar-item no-border">
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>
