@@ -266,7 +266,7 @@ class ManageOrgVarsComponent extends React.Component {
             <div>
               <div className="row align-items-center ">
                 <div className="workspace-variable-header mb-3">
-                  <Alert svg="tj-info-warnning" cls="workspace-variables-alert-banner" useDarkMode={false}>
+                  <Alert svg="tj-info-warning" cls="workspace-variables-alert-banner" useDarkMode={false}>
                     <div className="d-flex align-items-center">
                       <div class="text-muted">
                         Can&apos;t add or edit workspace variables as we are deprecating them soon. Please use workspace
