@@ -11,7 +11,11 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showModal && event.target.closest('#parameter-form-popover') === null) {
+      if (
+        showModal &&
+        event.target.closest('#parameter-form-popover') === null &&
+        event.target.closest('#cm-complete-0') === null
+      ) {
         closeMenu();
       }
     };

@@ -430,10 +430,13 @@ export async function executeMultilineJS(
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
       ...currentState.queries[key],
-      run: (...params) => {
+      run: (params) => {
+        if (typeof params !== 'object' || params === null) {
+          params = {};
+        }
         const processedParams = {};
         const query = useDataQueriesStore.getState().dataQueries.find((q) => q.name === key);
-        query.options.parameters?.forEach((arg, index) => (processedParams[arg.name] = params[index]));
+        query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
         return actions.runQuery(key, processedParams);
       },
     };
