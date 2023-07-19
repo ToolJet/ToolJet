@@ -1,5 +1,5 @@
 import React from 'react';
-import { CodeHinter } from '../../CodeBuilder/CodeHinter';
+import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { isEmpty } from 'lodash';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 
