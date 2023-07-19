@@ -57,9 +57,9 @@ function del(id) {
   return fetch(`${config.apiUrl}/data_queries/${id}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, variables, options) {
+function run(queryId, resolvedOptions, options) {
   const body = {
-    variables: variables,
+    resolvedOptions: resolvedOptions,
     options: options,
   };
 

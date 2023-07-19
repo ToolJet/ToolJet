@@ -198,7 +198,7 @@ export class DataQueriesController {
     @Param('environmentId') environmentId,
     @Body() updateDataQueryDto: UpdateDataQueryDto
   ) {
-    const { options, variables } = updateDataQueryDto;
+    const { options, resolvedOptions } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
 
@@ -218,7 +218,7 @@ export class DataQueriesController {
     let result = {};
 
     try {
-      result = await this.dataQueriesService.runQuery(user, dataQuery, variables, environmentId);
+      result = await this.dataQueriesService.runQuery(user, dataQuery, resolvedOptions, environmentId);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {
