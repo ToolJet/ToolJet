@@ -97,7 +97,7 @@ export class OrganizationConstantsService {
       const environmentsIds = organizationConstant.environments;
 
       const environmentToUpdate = environmentsIds.map(async (environmentId) => {
-        return await this.appEnvironmentService.get(organizationId, environmentId, manager);
+        return await this.appEnvironmentService.get(organizationId, environmentId, false, manager);
       });
 
       await Promise.all(
@@ -143,7 +143,7 @@ export class OrganizationConstantsService {
 
       await manager.save(constantToUpdate);
 
-      const environmentToUpdate = await this.appEnvironmentService.get(organizationId, environment_id, manager);
+      const environmentToUpdate = await this.appEnvironmentService.get(organizationId, environment_id, false, manager);
 
       await this.appEnvironmentService.updateOrgEnvironmentConstant(
         value,

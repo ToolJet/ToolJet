@@ -208,7 +208,7 @@ export class AppEnvironmentService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
       if (!environmentId) {
-        envId = (await this.get(organizationId, environmentId, null, manager)).id;
+        envId = (await this.get(organizationId, environmentId, false, manager)).id;
       }
 
       const constantId = (await manager.findOne(OrganizationConstant, { where: { constantName, organizationId } })).id;
