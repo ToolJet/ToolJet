@@ -166,7 +166,10 @@ export const LeftSidebarInspector = ({
   ];
 
   return (
-    <div className={`left-sidebar-inspector`} style={{ resize: 'horizontal', minWidth: 288 }}>
+    <div
+      className={`left-sidebar-inspector ${darkMode && 'dark-theme'}`}
+      style={{ resize: 'horizontal', minWidth: 288 }}
+    >
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Inspector">
           <div className="d-flex justify-content-end">
