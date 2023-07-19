@@ -83,9 +83,9 @@ export const QueryManagerBody = forwardRef(
           : DataSourceTypes.find((source) => source.kind === selectedQuery?.kind)
       );
       setSelectedQueryId(selectedQuery?.id);
-      defaultOptions.current = selectedQuery?.options;
+      defaultOptions.current = selectedQuery?.options && JSON.parse(JSON.stringify(selectedQuery?.options));
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedQuery?.id]);
+    }, [selectedQuery]);
 
     const computeQueryName = (kind) => {
       const currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
@@ -392,7 +392,11 @@ export const QueryManagerBody = forwardRef(
 
     const renderChangeDataSource = () => {
       return (
-        <div className="mt-2 pb-4">
+        <div
+          className={cx(`mt-2 pb-4`, {
+            'disabled ': isVersionReleased,
+          })}
+        >
           <div
             className={`border-top query-manager-border-color px-4 hr-text-left py-2 ${
               darkMode ? 'color-white' : 'color-light-slate-12'

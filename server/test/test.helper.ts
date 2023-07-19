@@ -106,11 +106,15 @@ export async function clearDB() {
   }
 }
 
-export async function createApplication(nestApp, { name, user, isPublic, slug }: any) {
+export async function createApplication(nestApp, { name, user, isPublic, slug }: any, shouldCreateEnvs = true) {
   let appRepository: Repository<App>;
   appRepository = nestApp.get('AppRepository');
 
   user = user || (await (await createUser(nestApp, {})).user);
+
+  if (shouldCreateEnvs) {
+    await createAppEnvironments(nestApp, user.organizationId);
+  }
 
   const newApp = await appRepository.save(
     appRepository.create({
@@ -136,17 +140,49 @@ export async function importAppFromTemplates(nestApp, user, identifier) {
   return service.perform(user, identifier);
 }
 
-export async function createApplicationVersion(nestApp, application, { name = 'v0', definition = null } = {}) {
+export async function createApplicationVersion(
+  nestApp,
+  application,
+  { name = 'v0', definition = null, currentEnvironmentId = null } = {}
+) {
   let appVersionsRepository: Repository<AppVersion>;
+  let appEnvironmentsRepository: Repository<AppEnvironment>;
   appVersionsRepository = nestApp.get('AppVersionRepository');
+  appEnvironmentsRepository = nestApp.get('AppEnvironmentRepository');
+
+  const environments = await appEnvironmentsRepository.find({
+    where: {
+      organizationId: application.organizationId,
+    },
+  });
+
+  const envId = currentEnvironmentId
+    ? currentEnvironmentId
+    : defaultAppEnvironments.length > 1
+    ? environments.find((env) => env.priority === 1)?.id
+    : environments[0].id;
 
   return await appVersionsRepository.save(
     appVersionsRepository.create({
       app: application,
       name,
+      currentEnvironmentId: envId,
       definition,
     })
   );
+}
+export async function getAllEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
+  let appEnvironmentRepository: Repository<AppEnvironment>;
+  appEnvironmentRepository = nestApp.get('AppEnvironmentRepository');
+
+  return await appEnvironmentRepository.find({
+    where: {
+      organizationId,
+    },
+    order: {
+      priority: 'ASC',
+    },
+  });
 }
 
 export async function createAppEnvironments(nestApp, organizationId): Promise<AppEnvironment[]> {
@@ -159,6 +195,7 @@ export async function createAppEnvironments(nestApp, organizationId): Promise<Ap
         appEnvironmentRepository.create({
           organizationId,
           name: env.name,
+          priority: env.priority,
           isDefault: env.isDefault,
         })
       );
@@ -667,14 +704,18 @@ export const generateAppDefaults = async (
   user: any,
   { isQueryNeeded = true, isDataSourceNeeded = true, isAppPublic = false, dsKind = 'restapi', dsOptions = [{}] }
 ) => {
-  const application = await createApplication(app, {
-    name: 'name',
-    user: user,
-    isPublic: isAppPublic,
-  });
+  const application = await createApplication(
+    app,
+    {
+      name: 'name',
+      user: user,
+      isPublic: isAppPublic,
+    },
+    false
+  );
 
-  const appVersion = await createApplicationVersion(app, application);
   const appEnvironments = await createAppEnvironments(app, user.organizationId);
+  const appVersion = await createApplicationVersion(app, application);
 
   let dataQuery: any;
   let dataSource: any;

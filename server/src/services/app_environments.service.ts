@@ -1,19 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { DeleteResult, EntityManager } from 'typeorm';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { OrgEnvironmentConstantValue } from 'src/entities/org_environment_constant_values.entity';
 import { OrganizationConstant } from 'src/entities/organization_constants.entity';
+import { EntityManager, FindOneOptions, In, DeleteResult } from 'typeorm';
+import { AppVersion } from 'src/entities/app_version.entity';
 
 @Injectable()
 export class AppEnvironmentService {
-  async get(organizationId: string, id?: string, manager?: EntityManager): Promise<AppEnvironment> {
+  async get(
+    organizationId: string,
+    id?: string,
+    priorityCheck = false,
+    manager?: EntityManager
+  ): Promise<AppEnvironment> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      if (!id) {
-        return await manager.findOneOrFail(AppEnvironment, { where: { organizationId, isDefault: true } });
-      }
-      return await manager.findOneOrFail(AppEnvironment, { where: { id, organizationId } });
+      const condition: FindOneOptions<AppEnvironment> = {
+        where: { organizationId, ...(id ? { id } : !priorityCheck && { isDefault: true }) },
+        ...(priorityCheck && { order: { priority: 'ASC' } }),
+      };
+      return await manager.findOneOrFail(AppEnvironment, condition);
     }, manager);
   }
 
@@ -21,7 +28,7 @@ export class AppEnvironmentService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
       if (!environmentId) {
-        envId = (await this.get(organizationId, null, manager)).id;
+        envId = (await this.get(organizationId, null, false, manager)).id;
       }
       return await manager.findOneOrFail(DataSourceOptions, { where: { environmentId: envId, dataSourceId } });
     });
@@ -31,6 +38,7 @@ export class AppEnvironmentService {
     organizationId: string,
     name: string,
     isDefault = false,
+    priority: number,
     manager?: EntityManager
   ): Promise<AppEnvironment> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -40,6 +48,7 @@ export class AppEnvironmentService {
           name,
           organizationId,
           isDefault,
+          priority,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
@@ -47,10 +56,66 @@ export class AppEnvironmentService {
     }, manager);
   }
 
-  async getAll(organizationId: string, manager?: EntityManager): Promise<AppEnvironment[]> {
+  async getAll(organizationId: string, manager?: EntityManager, appId?: string): Promise<AppEnvironment[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.find(AppEnvironment, { where: { organizationId } });
+      const appEnvironments = await manager.find(AppEnvironment, {
+        where: {
+          organizationId,
+          enabled: true,
+        },
+        order: {
+          priority: 'ASC',
+        },
+      });
+
+      if (appId) {
+        for (const appEnvironment of appEnvironments) {
+          const count = await manager.count(AppVersion, {
+            where: {
+              ...(appEnvironment.priority !== 1 && { currentEnvironmentId: appEnvironment.id }),
+              appId,
+            },
+          });
+
+          appEnvironment['appVersionsCount'] = count;
+        }
+      }
+
+      return appEnvironments;
     }, manager);
+  }
+
+  async getVersionsByEnvironment(organizationId: string, appId: string, currentEnvironmentId?: string) {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const conditions = { appId };
+      if (currentEnvironmentId) {
+        const env = await this.get(organizationId, currentEnvironmentId, false, manager);
+        if (env.priority !== 1) {
+          /* staging environment
+           * this logic will change in future if there is more than 3 environments
+           */
+          if (env.priority === 2) {
+            const productionEnv = await manager.findOne(AppEnvironment, {
+              where: {
+                isDefault: true,
+                organizationId,
+              },
+              select: ['id'],
+            });
+            conditions['currentEnvironmentId'] = In([productionEnv.id, currentEnvironmentId]);
+          } else {
+            conditions['currentEnvironmentId'] = currentEnvironmentId;
+          }
+        }
+      }
+
+      return await manager.find(AppVersion, {
+        where: { ...conditions },
+        order: {
+          createdAt: 'DESC',
+        },
+      });
+    });
   }
 
   async updateOptions(options: object, environmentId: string, dataSourceId: string, manager?: EntityManager) {
@@ -74,6 +139,7 @@ export class AppEnvironmentService {
             organizationId: organizationId,
             name: en.name,
             isDefault: en.isDefault,
+            priority: en.priority,
             createdAt: new Date(),
             updatedAt: new Date(),
           });
@@ -142,7 +208,7 @@ export class AppEnvironmentService {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       let envId: string = environmentId;
       if (!environmentId) {
-        envId = (await this.get(organizationId, null, manager)).id;
+        envId = (await this.get(organizationId, environmentId, null, manager)).id;
       }
 
       const constantId = (await manager.findOne(OrganizationConstant, { where: { constantName, organizationId } })).id;
