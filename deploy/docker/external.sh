@@ -88,7 +88,7 @@ if [[ -z "$PG_USER" ]] || [[ -z "$PG_HOST" ]] || [[ -z "$PG_PASS" ]] || [[ -z "$
     }
   ' .env > temp.env && mv temp.env .env
 
-  echo "Successfully updated the .env file with the provided values."
+  echo "Successfully updated postgresql database values .env file."
 fi
 
 # Copy values from PG to TOOLJET_DB
@@ -106,7 +106,7 @@ awk -v tj_user="$TOOLJET_DB_USER" -v tj_host="$TOOLJET_DB_HOST" -v tj_pass="$TOO
   END { if (!found) print "TOOLJET_DB_USER="tj_user ORS "TOOLJET_DB_HOST="tj_host ORS "TOOLJET_DB_PASS="tj_pass }
 ' .env > temp.env && mv temp.env .env
 
-echo "Successfully updated TOOLJET_DB values in the .env file."
+echo "Successfully updated tooljet database values in the .env file."
 
 # Construct PGRST_DB_URI with user-provided values
 PGRST_DB_URI="postgres://$PG_USER:$PG_PASS@$PG_HOST/tooljet_db"
