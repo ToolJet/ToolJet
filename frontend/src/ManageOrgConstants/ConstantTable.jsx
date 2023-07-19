@@ -73,6 +73,7 @@ const ConstantTable = ({
                         data-tooltip-id="tooltip-for-org-constant-cell"
                         data-tooltip-content={constant.value}
                         data-tooltip-offset={5}
+                        data-tooltip-place={constant.value.length > 50 ? 'right' : 'bottom'}
                       >
                         {String(constant.value).length > (canUpdateDeleteConstant ? 30 : 50)
                           ? String(constant.value).substring(0, canUpdateDeleteConstant ? 30 : 50) + '...'
