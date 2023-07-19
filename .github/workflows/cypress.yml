@@ -41,16 +41,16 @@ jobs:
         run: |
           sudo -u postgres createdb -O cypress tooljet_development
 
-      - name: Set up Docker
-        uses: docker-practice/actions-setup-docker@master
+      # - name: Set up Docker
+      #   uses: docker-practice/actions-setup-docker@master
 
-      - name: Run PostgREST Docker Container
-        run: |
-          docker run -d -p 3001:3000 \
-            -e PGRST_DB_URI="postgres://cypress:cypress@host.docker.internal:5432/tooljet_new_db" \
-            -e PGRST_DB_ANON_ROLE="postgres" \
-            -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
-            postgrest/postgrest
+      # - name: Run PostgREST Docker Container
+      #   run: |
+      #     docker run -d -p 3001:3000 \
+      #       -e PGRST_DB_URI="postgres://cypress:cypress@host.docker.internal:5432/tooljet_new_db" \
+      #       -e PGRST_DB_ANON_ROLE="postgres" \
+      #       -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
+      #       postgrest/postgrest
 
       - name: Checkout
         uses: actions/checkout@v3
