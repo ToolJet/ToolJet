@@ -42,7 +42,7 @@ jobs:
           sudo -u postgres createdb -O cypress tooljet_development
 
       - name: Set up Docker
-        uses: docker/setup-docker@v2
+        uses: docker-practice/actions-setup-docker@master
 
       - name: Run PostgREST Docker Container
         run: |
