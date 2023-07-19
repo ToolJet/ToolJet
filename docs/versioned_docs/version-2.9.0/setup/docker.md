@@ -21,7 +21,7 @@ Install docker and docker-compose on the server.
 ### Deployment options
 
 There are two options to deploy ToolJet using Docker Compose:
-1. **With in-built PostgreSQL database (recommanded)**. This setup uses the official Docker image of PostgreSQL.
+1. **With in-built PostgreSQL database (recommended)**. This setup uses the official Docker image of PostgreSQL.
 2.   **With external PostgreSQL database**. This setup is recommended if you want to use a managed PostgreSQL service such as AWS RDS or Google Cloud SQL.
 
 Confused about which setup to select? Feel free to ask the community via Slack: https://tooljet.com/slack.
@@ -41,8 +41,8 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 
   ```bash
   curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/.env.internal.example
-  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/keys.sh && chmod +x keys.sh
-  mv .env.internal.example .env && ./keys.sh
+  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/internal.sh && chmod +x internal.sh
+  mv .env.internal.example .env && ./internal.sh
   ```
 
   3. To start the docker container, use the following command:
@@ -51,7 +51,7 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   docker-compose up -d
   ```
 
-  4. **[Optional]** `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
+  4. **(Optional)** `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
 
   Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
 
@@ -62,12 +62,13 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   If you've set a custom domain for `TOOLJET_HOST`, add a `A record` entry in your DNS settings to point to the IP address of the server. 
 
   :::info
-  1. Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
+  i. Please make sure that `TOOLJET_HOST` starts with either `http://` or `https://`
 
-  2. Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
+  ii. Setup docker to run without root privileges by following the instructions written here https://docs.docker.com/engine/install/linux-postinstall/
 
-  3. If you're running on a linux server, `docker` might need sudo permissions. In that case you can either run:
-  `sudo docker-compose up -d`:::
+  iii. If you're running on a linux server, `docker` might need sudo permissions. In that case you can either run:
+  `sudo docker-compose up -d`
+  :::
 
 
 
@@ -81,23 +82,18 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/docker-compose.yaml
   ```
 
-  3. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded):
+  3. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
 
   ```bash
   curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/.env.external.example
-  ```
-  ```
-  mv .env.external.example .env
+  curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/external.sh && chmod +x external.sh
+  mv .env.external.example .env && ./external.sh
   ```
 
-  4. Kindly set the postgres credentials according to your external database in the .env file above.
+  4. Kindly set the postgresql database credentials according to your external database in the .env file above.
 
   **Example:**
   ```bash
-  TOOLJET_HOST=http://localhost:8082
-  LOCKBOX_MASTER_KEY=1d291a926ddfd221205a23adb4cc1db66cb9fcaf28d97c8c1950e3538e3b9281
-  SECRET_KEY_BASE=4229d5774cfe7f60e75d6b3bf3a1dbb054a696b6d21b6d5de7b73291899797a222265e12c0a8e8d844f83ebacdf9a67ec42584edf1c2b23e1e7813f8a3339041
-
   # DATABASE CONFIG
   PG_HOST=<posgtres database hostname>
   PG_PORT=5432
@@ -107,15 +103,15 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   ORM_LOGGING=all
   ```
 
-  To set up additional environment variables in `.env` file as explained in [environment variables reference](/docs/setup/env-vars)
-
   5. To start the docker container, use the following command:
 
   ```bash
   docker-compose up -d
   ```
 
-  6. **(Optional)** `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use.
+  6. **(Optional)** `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
+
+  Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
 
   Examples:
   `TOOLJET_HOST=http://12.34.56.78` or
