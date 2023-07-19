@@ -88,6 +88,7 @@ jobs:
 
       - name: Set up database
         run: |
+          npm run --prefix server db:create
           npm run --prefix server db:reset
           npm run --prefix server db:seed
 
