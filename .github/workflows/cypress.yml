@@ -69,6 +69,13 @@ jobs:
           echo "PG_HOST=localhost" >> .env
           echo "PG_PASS=cypress" >> .env
           echo "PG_PORT=5432" >> .env
+          echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
+          echo "PGRST_HOST=http://3.101.151.140:3001" >> .env
+          echo "TOOLJET_DB=tooljet_db" >> .env
+          echo "TOOLJET_DB_USER=cypress" >> .env
+          echo "TOOLJET_DB_HOST=localhost" >> .env
+          echo "TOOLJET_DB_PASS=cypress" >> .env
 
       - name: Set up database
         run: |
@@ -76,24 +83,16 @@ jobs:
           npm run --prefix server db:reset
           npm run --prefix server db:seed
 
-      - name: Set up Docker
-        uses: docker-practice/actions-setup-docker@master
+      # - name: Set up Docker
+      #   uses: docker-practice/actions-setup-docker@master
 
-      - name: Run PostgREST Docker Container
-        run: |
-          docker run -d -p 3001:3000 \
-            -e PGRST_DB_URI="postgres://cypress:cypress@host.docker.internal:5432/tooljet_new_db" \
-            -e PGRST_DB_ANON_ROLE="postgres" \
-            -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
-            postgrest/postgrest
-
-      - name: Set up environment variables
-        run: |
-          echo "ENABLE_TOOLJET_DB=true" >> .env
-          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
-          echo "PGRST_HOST=http://localhost:3001" >> .env
-          echo "TOOLJET_DB=tooljet_db" >> .env
-          echo "TOOLJET_DB_USER=cypress" >> .env
+      # - name: Run PostgREST Docker Container
+      #   run: |
+      #     docker run -d -p 3001:3000 \
+      #       -e PGRST_DB_URI="postgres://cypress:cypress@host.docker.internal:5432/tooljet_new_db" \
+      #       -e PGRST_DB_ANON_ROLE="postgres" \
+      #       -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
+      #       postgrest/postgrest:
 
       - name: Run plugins compilation in watch mode
         run: cd plugins && npm start &
