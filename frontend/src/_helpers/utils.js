@@ -370,7 +370,7 @@ export function validateWidget({ validationObject, widgetValue, currentState, cu
   }
 
   const resolvedCustomRule = resolveWidgetFieldValue(customRule, currentState, false, customResolveObjects);
-  if (typeof resolvedCustomRule === 'string' && resolvedCustomRule === null) {
+  if (typeof resolvedCustomRule === 'string' && resolvedCustomRule !== '') {
     return { isValid: false, validationError: resolvedCustomRule };
   }
 
