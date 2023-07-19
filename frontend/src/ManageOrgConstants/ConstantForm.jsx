@@ -12,6 +12,8 @@ const ConstantForm = ({
   currentEnvironment,
   checkIfConstantNameExists,
 }) => {
+  const isUpdate = !!selectedConstant;
+
   const [fields, setFields] = useState(() => ({
     ...selectedConstant,
     environments: [{ label: currentEnvironment.name, value: currentEnvironment.id }],
@@ -56,6 +58,10 @@ const ConstantForm = ({
     if (invalidValueLength) {
       setError((prev) => ({ ...prev, value: `Value should be less than 10000 characters` }));
     }
+
+    if (isUpdate && name === 'value' && value === selectedConstant.value) {
+      setError((prev) => ({ ...prev, value: 'This value is already in use. Please enter a different value' }));
+    }
   };
 
   const handleFieldChange = (e) => {
@@ -76,7 +82,6 @@ const ConstantForm = ({
       return;
     }
 
-    const isUpdate = !!selectedConstant;
     createOrUpdate(fields, isUpdate);
   };
 
