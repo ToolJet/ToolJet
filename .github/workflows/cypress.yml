@@ -37,8 +37,12 @@ jobs:
 
       - name: Create PostgreSQL User
         run: |
-          sudo -u postgres psql -c "CREATE USER cypress PASSWORD 'cypress' tooljet_development;"
+          sudo -u postgres psql -c "CREATE USER cypress PASSWORD 'cypress' CREATEDB;"
 
+      - name: Create PostgreSQL Database
+        run: |
+          sudo -u postgres createdb -O cypress tooljet_development          
+              
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -70,7 +74,6 @@ jobs:
 
       - name: Set up database
         run: |
-          npm run --prefix server db:create
           npm run --prefix server db:reset
           npm rub --prefix server db:seed
 
