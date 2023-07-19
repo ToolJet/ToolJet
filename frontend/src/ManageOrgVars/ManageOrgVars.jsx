@@ -269,7 +269,7 @@ class ManageOrgVarsComponent extends React.Component {
                   <Alert svg="tj-info-warnning" cls="workspace-variables-alert-banner" useDarkMode={false}>
                     <div className="d-flex align-items-center">
                       <div class="text-muted">
-                        Can&apos;t add or edit workspace workspace as we are deprecating them soon. Please use workspace
+                        Can&apos;t add or edit workspace variables as we are deprecating them soon. Please use workspace
                         constant instead.
                       </div>
                       <div>
