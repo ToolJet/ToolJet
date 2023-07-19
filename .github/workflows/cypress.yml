@@ -18,10 +18,6 @@ jobs:
     if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress' || github.event.label.name == 'run-cypress-app-builder'|| github.event.label.name == 'run-cypress-workspace')}}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -41,7 +37,12 @@ jobs:
 
       - name: Create PostgreSQL User
         run: |
-          sudo -u postgres psql -c "CREATE USER cypress PASSWORD 'cypress' CREATEDB;"
+          sudo -u postgres psql -c "CREATE USER cypress PASSWORD 'cypress' tooljet_development;"
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: checking the node version
         run: |
