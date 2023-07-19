@@ -78,13 +78,13 @@ jobs:
           npm run --prefix server db:seed
 
       - name: Run plugins compilation in watch mode
-        run: cd plugins && npm start
+        run: cd plugins && npm start &
 
       - name: Run the server
-        run: cd server && npm run start:dev
+        run: cd server && npm run start:dev &
 
       - name: Run the client
-        run: cd frontend && npm start
+        run: cd frontend && npm start &
 
       - name: Wait for the server to be ready
         run: |
