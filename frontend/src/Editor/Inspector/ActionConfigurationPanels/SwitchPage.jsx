@@ -71,7 +71,6 @@ export function SwitchPage({ getPages, event, handlerChanged, eventIndex, darkMo
           <div key={index} className="row input-group mt-1">
             <div className="col">
               <CodeHinter
-                currentState={currentState}
                 initialValue={event.queryParams[index][0]}
                 onChange={(value) => queryParamChangeHandler(index, 0, value)}
                 mode="javascript"
@@ -82,7 +81,6 @@ export function SwitchPage({ getPages, event, handlerChanged, eventIndex, darkMo
             </div>
             <div className="col">
               <CodeHinter
-                currentState={currentState}
                 initialValue={event.queryParams[index][1]}
                 onChange={(value) => queryParamChangeHandler(index, 1, value)}
                 mode="javascript"
