@@ -41,6 +41,17 @@ jobs:
         run: |
           sudo -u postgres createdb -O cypress tooljet_development
 
+      - name: Set up Docker
+        uses: docker/setup-docker@v2
+
+      - name: Run PostgREST Docker Container
+        run: |
+          docker run -d -p 3001:3000 \
+            -e PGRST_DB_URI="postgres://postgres:postgres@host.docker.internal:5432/tooljet_new_db" \
+            -e PGRST_DB_ANON_ROLE="postgres" \
+            -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
+            postgrest/postgrest
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -69,6 +80,11 @@ jobs:
           echo "PG_HOST=localhost" >> .env
           echo "PG_PASS=cypress" >> .env
           echo "PG_PORT=5432" >> .env
+          echo "ENABLE_TOOLJET_DB=true" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
+          echo "PGRST_HOST=http://localhost:3001" >> .env
+          echo "TOOLJET_DB=tooljet_db" >> .env
+          echo "TOOLJET_DB_USER=cypress" >> .env
 
       - name: Set up database
         run: |
