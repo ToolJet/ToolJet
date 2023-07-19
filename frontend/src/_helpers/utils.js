@@ -425,7 +425,7 @@ export async function executeMultilineJS(
         const processedParams = {};
         const query = useDataQueriesStore.getState().dataQueries.find((q) => q.name === key);
         query.options.parameters?.forEach((arg, index) => (processedParams[arg.name] = params[index]));
-        actions.runQuery(key, processedParams);
+        return actions.runQuery(key, processedParams);
       },
     };
   }
