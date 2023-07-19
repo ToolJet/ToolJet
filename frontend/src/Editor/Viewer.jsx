@@ -33,6 +33,7 @@ import { withRouter } from '@/_hoc/withRouter';
 import { useEditorStore } from '@/_stores/editorStore';
 import { setCookie } from '@/_helpers/cookie';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 
 class ViewerComponent extends React.Component {
@@ -40,8 +41,6 @@ class ViewerComponent extends React.Component {
     super(props);
 
     const deviceWindowWidth = window.screen.width - 5;
-
-    const pageHandle = this.props?.params?.pageHandle;
 
     const slug = this.props.params.slug;
     const appId = this.props.params.id;
@@ -58,20 +57,6 @@ class ViewerComponent extends React.Component {
       isLoading: true,
       users: null,
       appDefinition: { pages: {} },
-      currentState: {
-        queries: {},
-        components: {},
-        globals: {
-          currentUser: {},
-          theme: { name: props.darkMode ? 'dark' : 'light' },
-          urlparams: {},
-          environment_variables: {},
-          page: {
-            handle: pageHandle,
-          },
-        },
-        variables: {},
-      },
       queryConfirmationList: [],
       isAppLoaded: false,
       errorAppId: null,
@@ -125,13 +110,13 @@ class ViewerComponent extends React.Component {
       if (query.pluginId || query?.plugin?.id) {
         queryState[query.name] = {
           ...query.plugin.manifestFile.data.source.exposedVariables,
-          ...this.state.currentState.queries[query.name],
+          ...this.props.currentState.queries[query.name],
         };
       } else {
         const dataSourceTypeDetail = DataSourceTypes.find((source) => source.kind === query.kind);
         queryState[query.name] = {
           ...dataSourceTypeDetail.exposedVariables,
-          ...this.state.currentState.queries[query.name],
+          ...this.props.currentState.queries[query.name],
         };
       }
     });
@@ -145,6 +130,23 @@ class ViewerComponent extends React.Component {
     const currentPage = pages.find((page) => page.id === currentPageId);
 
     useDataQueriesStore.getState().actions.setDataQueries(data.data_queries);
+    this.props.setCurrentState({
+      queries: queryState,
+      components: {},
+      globals: {
+        currentUser: userVars, // currentUser is updated in setupViewer function as well
+        theme: { name: this.props.darkMode ? 'dark' : 'light' },
+        urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+      },
+      variables: {},
+      page: {
+        id: currentPage.id,
+        handle: currentPage.handle,
+        name: currentPage.name,
+        variables: {},
+      },
+      ...variables,
+    });
     useEditorStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
     this.setState(
       {
@@ -157,23 +159,6 @@ class ViewerComponent extends React.Component {
             ? `${this.state.deviceWindowWidth}px`
             : '1292px',
         selectedComponent: null,
-        currentState: {
-          queries: queryState,
-          components: {},
-          globals: {
-            currentUser: userVars, // currentUser is updated in setupViewer function as well
-            theme: { name: this.props.darkMode ? 'dark' : 'light' },
-            urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
-          },
-          variables: {},
-          page: {
-            id: currentPage.id,
-            handle: currentPage.handle,
-            name: currentPage.name,
-            variables: {},
-          },
-          ...variables,
-        },
         dataQueries: data.data_queries,
         currentPageId: currentPage.id,
         pages: {},
@@ -315,16 +300,15 @@ class ViewerComponent extends React.Component {
             lastName: currentUser.last_name,
             groups: currentSession?.group_permissions?.map((group) => group.group),
           };
-
+          this.props.setCurrentState({
+            globals: {
+              ...this.props.currentState.globals,
+              currentUser: userVars, // currentUser is updated in setStateForContainer function as well
+            },
+          });
           this.setState({
             currentUser,
-            currentState: {
-              ...this.state.currentState,
-              globals: {
-                ...this.state.currentState.globals,
-                currentUser: userVars, // currentUser is updated in setStateForContainer function as well
-              },
-            },
+
             userVars,
           });
           slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
@@ -381,6 +365,19 @@ class ViewerComponent extends React.Component {
 
     if (pageIdCorrespondingToHandleOnURL != this.state.currentPageId) {
       const targetPage = this.state.appDefinition.pages[pageIdCorrespondingToHandleOnURL];
+      this.props.setCurrentState({
+        globals: {
+          ...this.props.currentState.globals,
+          urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+        },
+        page: {
+          ...this.props.currentState.page,
+          name: targetPage.name,
+          handle: targetPage.handle,
+          variables: this.state.pages?.[pageIdCorrespondingToHandleOnURL]?.variables ?? {},
+          id: pageIdCorrespondingToHandleOnURL,
+        },
+      });
       this.setState(
         {
           pages: {
@@ -388,27 +385,13 @@ class ViewerComponent extends React.Component {
             [currentPageId]: {
               ...this.state.pages?.[currentPageId],
               variables: {
-                ...this.state.currentState?.page?.variables,
+                ...this.props.currentState?.page?.variables,
               },
             },
           },
           currentPageId: pageIdCorrespondingToHandleOnURL,
           handle: targetPage.handle,
           name: targetPage.name,
-          currentState: {
-            ...this.state.currentState,
-            globals: {
-              ...this.state.currentState.globals,
-              urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
-            },
-            page: {
-              ...this.state.currentState.page,
-              name: targetPage.name,
-              handle: targetPage.handle,
-              variables: this.state.pages?.[pageIdCorrespondingToHandleOnURL]?.variables ?? {},
-              id: pageIdCorrespondingToHandleOnURL,
-            },
-          },
         },
         async () => {
           computeComponentState(this, this.state.appDefinition?.pages[this.state.currentPageId].components).then(
@@ -446,7 +429,7 @@ class ViewerComponent extends React.Component {
       (this.state.appDefinition.globalSettings?.backgroundFxQuery ||
         this.state.appDefinition.globalSettings?.canvasBackgroundColor) ??
       '#edeff5';
-    const resolvedBackgroundColor = resolveReferences(bgColor, this.state.currentState);
+    const resolvedBackgroundColor = resolveReferences(bgColor, this.props.currentState);
     if (['#2f3c4c', '#edeff5'].includes(resolvedBackgroundColor)) {
       return this.props.darkMode ? '#2f3c4c' : '#edeff5';
     }
@@ -454,14 +437,13 @@ class ViewerComponent extends React.Component {
   };
 
   changeDarkMode = (newMode) => {
-    this.setState({
-      currentState: {
-        ...this.state.currentState,
-        globals: {
-          ...this.state.currentState.globals,
-          theme: { name: newMode ? 'dark' : 'light' },
-        },
+    this.props.setCurrentState({
+      globals: {
+        ...this.props.currentState.globals,
+        theme: { name: newMode ? 'dark' : 'light' },
       },
+    });
+    this.setState({
       showQuerySearchField: false,
     });
     this.props.switchDarkMode(newMode);
@@ -647,7 +629,6 @@ class ViewerComponent extends React.Component {
                                 onEvent={(eventName, options) => onEvent(this, eventName, options, 'view')}
                                 mode="view"
                                 deviceWindowWidth={deviceWindowWidth}
-                                currentState={this.state.currentState}
                                 selectedComponent={this.state.selectedComponent}
                                 onComponentClick={(id, component) => {
                                   this.setState({
@@ -680,15 +661,23 @@ class ViewerComponent extends React.Component {
     }
   }
 }
-
 const withStore = (Component) => (props) => {
+  const currentState = useCurrentStateStore();
   const { currentLayout } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
     }),
     shallow
   );
-  return <Component {...props} currentLayout={currentLayout} />;
+
+  return (
+    <Component
+      {...props}
+      currentState={currentState}
+      setCurrentState={currentState?.actions?.setCurrentState}
+      currentLayout={currentLayout}
+    />
+  );
 };
 
 export const Viewer = withTranslation()(withStore(withRouter(ViewerComponent)));

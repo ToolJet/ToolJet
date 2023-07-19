@@ -25,6 +25,7 @@ import {
   useSelectedDataSource,
   useQueryPanelActions,
 } from '@/_stores/queryPanelStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 
@@ -35,7 +36,6 @@ export const QueryManagerBody = forwardRef(
       mode,
       dataSourceModalHandler,
       options,
-      currentState,
       previewLoading,
       queryPreviewData,
       allComponents,
@@ -57,6 +57,7 @@ export const QueryManagerBody = forwardRef(
     const { changeDataQuery } = useDataQueriesActions();
 
     const [dataSourceMeta, setDataSourceMeta] = useState(null);
+    const currentState = useCurrentState();
     /* - Added the below line to cause re-rendering when the query is switched
        - QueryEditors are not updating when the query is switched
        - TODO: Remove the below line and make query editors update when the query is switched
@@ -249,7 +250,6 @@ export const QueryManagerBody = forwardRef(
         <Transformation
           changeOption={optionchanged}
           options={options ?? {}}
-          currentState={currentState}
           darkMode={darkMode}
           queryId={selectedQuery?.id}
         />
@@ -306,7 +306,6 @@ export const QueryManagerBody = forwardRef(
               eventsChanged={eventsChanged}
               component={queryComponent.component}
               componentMeta={queryComponent.componentMeta}
-              currentState={currentState}
               dataQueries={dataQueries}
               components={allComponents}
               apps={apps}
@@ -330,7 +329,6 @@ export const QueryManagerBody = forwardRef(
           </div>
           <div className="col">
             <CodeHinter
-              currentState={currentState}
               initialValue={options.successMessage}
               height="36px"
               theme={darkMode ? 'monokai' : 'default'}

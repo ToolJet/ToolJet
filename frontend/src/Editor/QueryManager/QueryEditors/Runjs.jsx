@@ -18,7 +18,6 @@ class Runjs extends React.Component {
     return (
       <div className="runjs-editor">
         <CodeHinter
-          currentState={this.props.currentState}
           initialValue={this.props.options.code}
           mode="javascript"
           theme={this.props.darkMode ? 'monokai' : 'base16-light'}

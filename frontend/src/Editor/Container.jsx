@@ -15,6 +15,7 @@ import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
@@ -29,7 +30,6 @@ export const Container = ({
   onEvent,
   appDefinition,
   appDefinitionChanged,
-  currentState,
   onComponentOptionChanged,
   onComponentOptionsChanged,
   appLoading,
@@ -56,6 +56,7 @@ export const Container = ({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const components = appDefinition.pages[currentPageId]?.components ?? {};
+  const currentState = useCurrentState();
   const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
     (state) => ({
       appVersionsId: state?.editingVersion?.id,
@@ -552,7 +553,6 @@ export const Container = ({
               onComponentOptionChanged={onComponentOptionChanged}
               onComponentOptionsChanged={onComponentOptionsChanged}
               key={key}
-              currentState={currentState}
               onResizeStop={onResizeStop}
               onDragStop={onDragStop}
               paramUpdated={paramUpdated}

@@ -30,7 +30,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     dataQueriesChanged,
     errorLogs: errors,
     debuggerActions,
-    currentState,
     appDefinition,
     setSelectedComponent,
     removeComponent,
@@ -219,7 +218,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         showHideViewerNavigationControls={showHideViewerNavigationControls}
         updateOnSortingPages={updateOnSortingPages}
         updateOnPageLoadEvents={updateOnPageLoadEvents}
-        currentState={currentState}
         apps={apps}
         popoverContentHeight={popoverContentHeight}
         setPinned={handlePin}
@@ -230,7 +228,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
       <LeftSidebarInspector
         darkMode={darkMode}
         selectedSidebarItem={selectedSidebarItem}
-        currentState={currentState}
         appDefinition={appDefinition}
         setSelectedComponent={setSelectedComponent}
         removeComponent={removeComponent}
@@ -238,7 +235,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         popoverContentHeight={popoverContentHeight}
         setPinned={handlePin}
         pinned={pinned}
-        isVersionReleased={isVersionReleased}
       />
     ),
     database: (
@@ -250,7 +246,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         dataQueriesChanged={dataQueriesChanged}
         toggleDataSourceManagerModal={toggleDataSourceManagerModal}
         showDataSourceManagerModal={showDataSourceManagerModal}
-        isVersionReleased={isVersionReleased}
         onDeleteofAllDataSources={() => {
           handleSelectedSidebarItem(null);
           handlePin(false);
