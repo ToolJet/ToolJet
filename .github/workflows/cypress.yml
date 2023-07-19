@@ -61,6 +61,11 @@ jobs:
           echo "TOOLJET_HOST=https://http://localhost:8082" >> .env
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
+          echo "PG_DB=tooljet_development" >> .env
+          echo "PG_USER=cypress" >> .env
+          echo "PG_HOST=postgres" >> .env
+          echo "PG_PASS=cypress" >> .env
+          echo "PG_PORT=5432" >> .env
 
       - name: Set up database
         run: |
