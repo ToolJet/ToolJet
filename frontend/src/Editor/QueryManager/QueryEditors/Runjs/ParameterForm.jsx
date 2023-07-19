@@ -35,7 +35,6 @@ const ParameterForm = ({
   };
 
   useEffect(() => {
-    console.log(otherParams, name);
     if (!isValidVariableName(name)) {
       setError('Variable name invalid');
     } else if (name && otherParams.some((param) => param.name === name.trim())) {
