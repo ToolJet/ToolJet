@@ -135,7 +135,7 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   }
 
   return (
-    <div className={`components-container mx-3 ${isVersionReleased || (isEditorFreezed && 'disabled')}`}>
+    <div className={`components-container mx-3 ${(isVersionReleased || isEditorFreezed) && 'disabled'}`}>
       <div className="input-icon">
         <input
           type="text"

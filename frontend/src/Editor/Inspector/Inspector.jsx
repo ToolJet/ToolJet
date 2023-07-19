@@ -321,7 +321,7 @@ export const Inspector = ({
       />
       <div>
         <div className="row inspector-component-title-input-holder">
-          <div className={`col-11 p-0 ${isVersionReleased || (isEditorFreezed && 'disabled')}`}>
+          <div className={`col-11 p-0 ${(isVersionReleased || isEditorFreezed) && 'disabled'}`}>
             <div className="input-icon">
               <input
                 onChange={(e) => setNewComponentName(e.target.value)}
@@ -404,7 +404,7 @@ export const Inspector = ({
           </div>
         </div>
         <hr className="m-0" />
-        <div className={`${isVersionReleased || (isEditorFreezed && 'disabled')}`}>
+        <div className={`${(isVersionReleased || isEditorFreezed) && 'disabled'}`}>
           {selectedTab === 'properties' && propertiesTab}
           {selectedTab === 'styles' && stylesTab}
         </div>
