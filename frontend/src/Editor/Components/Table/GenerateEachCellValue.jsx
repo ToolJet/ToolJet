@@ -7,9 +7,7 @@ export default function GenerateEachCellValue({
   cellValue,
   globalFilter,
   cellRender,
-  // eslint-disable-next-line no-unused-vars
   rowChangeSet,
-  // eslint-disable-next-line no-unused-vars
   rowData,
   isEditable,
   columnType,
