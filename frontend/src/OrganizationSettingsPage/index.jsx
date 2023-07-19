@@ -17,7 +17,7 @@ export function OrganizationSettings(props) {
   const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Workspace Constants', 'Copilot'];
+  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Workspace constants', 'Copilot'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'Users':
@@ -30,7 +30,7 @@ export function OrganizationSettings(props) {
         return 'manageEnvVars';
       case 'Copilot':
         return 'manageCopilot';
-      case 'Workspace Constants':
+      case 'Workspace constants':
         return 'manageOrgConstants';
       default:
         return groupName;
@@ -60,7 +60,7 @@ export function OrganizationSettings(props) {
               {sideBarNavs.map((item, index) => {
                 return (
                   <>
-                    {(admin || item == 'Workspace variables' || item == 'Copilot' || item == 'Workspace Constants') && (
+                    {(admin || item == 'Workspace variables' || item == 'Copilot' || item == 'Workspace constants') && (
                       <FolderList
                         className="workspace-settings-nav-items"
                         key={index}
@@ -70,7 +70,7 @@ export function OrganizationSettings(props) {
                           else updateSidebarNAV(item);
                         }}
                         selectedItem={selectedTab == defaultOrgName(item)}
-                        renderBadgeForItems={['Workspace Constants']}
+                        renderBadgeForItems={['Workspace constants']}
                         renderBadge={() => (
                           <span
                             style={{ width: '40px', textTransform: 'lowercase' }}
