@@ -398,6 +398,11 @@ export async function executeMultilineJS(
   let result = {},
     error = null;
 
+  //if user passes anything other than object, params are reset to empty
+  if (typeof parameters !== 'object' || parameters === null) {
+    parameters = {};
+  }
+
   const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
   const queryDetails = useDataQueriesStore.getState().dataQueries.find((q) => q.id === queryId);
@@ -412,12 +417,16 @@ export async function executeMultilineJS(
       {}
     ) || {};
 
-  const formattedParams = { ...defaultParams, ...parameters };
-  Object.keys(formattedParams).map((key) => {
-    /** The value of param is replaced with defaultValue if its passed undefined */
-    formattedParams[key] = parameters[key] === undefined ? defaultParams[key] : parameters[key];
-  });
-
+  let formattedParams = {};
+  if (queryDetails) {
+    Object.keys(defaultParams).map((key) => {
+      /** The value of param is replaced with defaultValue if its passed undefined */
+      formattedParams[key] = parameters[key] === undefined ? defaultParams[key] : parameters[key];
+    });
+  } else {
+    //this will handle the preview case where you cannot find the queryDetails in state.
+    formattedParams = { ...parameters };
+  }
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
       ...currentState.queries[key],
