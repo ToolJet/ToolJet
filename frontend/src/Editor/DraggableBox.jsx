@@ -9,6 +9,7 @@ import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
 
@@ -76,7 +77,6 @@ export const DraggableBox = function DraggableBox({
   inCanvas,
   onEvent,
   onComponentClick,
-  currentState,
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onResizeStop,
@@ -106,6 +106,8 @@ export const DraggableBox = function DraggableBox({
   const [isDragging2, setDragging] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
   const [mouseOver, setMouseOver] = useState(false);
+  const currentState = useCurrentState();
+
   const { currentLayout } = useEditorStore(
     (state) => ({
       currentLayout: state?.currentLayout,
@@ -289,7 +291,6 @@ export const DraggableBox = function DraggableBox({
                   onComponentOptionChanged={onComponentOptionChanged}
                   onComponentOptionsChanged={onComponentOptionsChanged}
                   onComponentClick={onComponentClick}
-                  currentState={currentState}
                   containerProps={containerProps}
                   darkMode={darkMode}
                   removeComponent={removeComponent}
@@ -318,7 +319,6 @@ export const DraggableBox = function DraggableBox({
               onComponentOptionChanged={onComponentOptionChanged}
               onComponentOptionsChanged={onComponentOptionsChanged}
               onComponentClick={onComponentClick}
-              currentState={currentState}
               darkMode={darkMode}
               removeComponent={removeComponent}
               sideBarDebugger={sideBarDebugger}

@@ -9,6 +9,7 @@ import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { resolveReferences } from '@/_helpers/utils';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { useMounted } from '@/_hooks/use-mount';
@@ -22,7 +23,6 @@ export const SubContainer = ({
   onEvent,
   appDefinition,
   appDefinitionChanged,
-  currentState,
   onComponentOptionChanged,
   onComponentOptionsChanged,
   appLoading,
@@ -59,6 +59,7 @@ export const SubContainer = ({
   });
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
+  const currentState = useCurrentState();
   const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
     (state) => ({
       enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
@@ -503,7 +504,6 @@ export const SubContainer = ({
                 onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
                 onComponentOptionsChanged={onComponentOptionsChanged}
                 key={key}
-                currentState={currentState}
                 onResizeStop={onResizeStop}
                 onDragStop={onDragStop}
                 paramUpdated={paramUpdated}
