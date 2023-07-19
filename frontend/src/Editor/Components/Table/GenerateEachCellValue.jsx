@@ -20,6 +20,7 @@ export default function GenerateEachCellValue({
 }) {
   const mounted = useMounted();
   const updateCellValue = useRef();
+  const isTabKeyPressed = useRef(false);
   const [showHighlightedCells, setHighlighterCells] = React.useState(globalFilter ? true : false);
   const columnTypeAllowToRenderMarkElement = ['text', 'string', 'default', 'number', undefined];
   let validationData = {};
@@ -96,16 +97,24 @@ export default function GenerateEachCellValue({
         }
       }}
       onBlur={(e) => {
-        e.persist();
-        updateCellValue.current = e.target.value;
-        //removing _.isEmpty(rowChangeSet) flag from if statement at the end
-        if (!showHighlightedCells && updateCellValue.current === cellValue) {
-          updateCellValue.current = null;
-          setHighlighterCells(true);
+        e.stopPropagation();
+        if (isTabKeyPressed.current) {
+          isTabKeyPressed.current = false;
+          return;
+        } else {
+          updateCellValue.current = e.target.value;
+          //removing _.isEmpty(rowChangeSet) flag from if statement at the end
+          if (!showHighlightedCells && updateCellValue.current === cellValue) {
+            updateCellValue.current = null;
+            setHighlighterCells(true);
+          }
         }
       }}
       onKeyUp={(e) => {
-        if (e.key === 'Tab' && isEditable) setHighlighterCells(false);
+        if (e.key === 'Tab') {
+          isTabKeyPressed.current = true;
+          setHighlighterCells(false);
+        }
       }}
       className="w-100 h-100"
     >
