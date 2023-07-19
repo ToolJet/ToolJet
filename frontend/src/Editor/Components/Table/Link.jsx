@@ -1,10 +1,10 @@
 import React from 'react';
 
-export const Link = ({ href, cellValue, linkTarget }) => {
+export const Link = ({ cellValue, linkTarget }) => {
   return (
     <div>
       <a
-        href={href}
+        href={cellValue}
         target={linkTarget}
         onClick={(e) => {
           e.stopPropagation();

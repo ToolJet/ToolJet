@@ -445,14 +445,9 @@ export default function generateColumnsData({
           }
           case 'link': {
             const linkTarget = resolveReferences(column?.linkTarget ?? '_blank', currentState);
-            const linkHref = resolveReferences(column?.linkHref ?? cellValue, currentState, '', {
-              cellValue,
-              rowData,
-            });
-
             return (
               <div className="h-100 d-flex align-items-center">
-                <Link href={linkHref} cellValue={cellValue} linkTarget={linkTarget} />
+                <Link cellValue={cellValue} linkTarget={linkTarget} />
               </div>
             );
           }

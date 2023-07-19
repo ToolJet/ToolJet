@@ -672,38 +672,20 @@ class TableComponent extends React.Component {
             </>
           )}
           {column.columnType === 'link' && (
-            <>
-              <div className="field mb-2">
-                <label className="form-label">{this.props.t('w', 'Href')}</label>
-                <CodeHinter
-                  currentState={this.props.currentState}
-                  initialValue={column?.linkHref ?? '{{cellValue}}'}
-                  theme={this.props.darkMode ? 'monokai' : 'default'}
-                  mode="javascript"
-                  lineNumbers={false}
-                  placeholder={''}
-                  onChange={(value) => this.onColumnItemChange(index, 'linkHref', value)}
-                  componentName={this.getPopoverFieldSource(column.columnType, 'linkHref')}
-                  popOverCallback={(showing) => {
-                    this.setColumnPopoverRootCloseBlocker('linkHref', showing);
-                  }}
-                />
-              </div>
-              <div className="field mb-2">
-                <ProgramaticallyHandleToggleSwitch
-                  label="Link target"
-                  currentState={this.state.currentState}
-                  index={index}
-                  darkMode={this.props.darkMode}
-                  callbackFunction={this.onColumnItemChange}
-                  property="linkTarget"
-                  props={column}
-                  component={this.props.component}
-                  paramMeta={{ type: 'select', displayName: 'Link Target' }}
-                  paramType="properties"
-                />
-              </div>
-            </>
+            <div className="field mb-2">
+              <ProgramaticallyHandleToggleSwitch
+                label="Link target"
+                currentState={this.state.currentState}
+                index={index}
+                darkMode={this.props.darkMode}
+                callbackFunction={this.onColumnItemChange}
+                property="linkTarget"
+                props={column}
+                component={this.props.component}
+                paramMeta={{ type: 'select', displayName: 'Link Target' }}
+                paramType="properties"
+              />
+            </div>
           )}
 
           {!['image', 'link'].includes(column.columnType) && (
