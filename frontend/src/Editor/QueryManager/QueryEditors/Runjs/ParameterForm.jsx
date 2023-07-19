@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Form, Popover, Row, Col } from 'react-bootstrap';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 
@@ -10,13 +10,18 @@ const ParameterForm = ({
   name: _name,
   defaultValue: _defaultValue,
   onSubmit,
-  currentState,
   showModal,
   otherParams = [],
 }) => {
   const [name, setName] = useState();
   const [defaultValue, setDefaultValue] = useState();
   const [error, setError] = useState();
+
+  /**
+   * Storing {} in a ref to make sure its not a object instance whenever component reload.
+   * passing currentState={{}} to CodeHinter will consider it as a new value whenver this component rerenders
+   */
+  const emptyObj = useRef({});
 
   useEffect(() => {
     setName(_name);
@@ -71,7 +76,7 @@ const ParameterForm = ({
               <CodeHinter
                 onChange={(value) => setDefaultValue(value)}
                 theme={darkMode ? 'monokai' : 'default'}
-                currentState={currentState}
+                currentState={emptyObj.current}
                 usePortalEditor={false}
                 height={36}
                 initialValue={defaultValue}

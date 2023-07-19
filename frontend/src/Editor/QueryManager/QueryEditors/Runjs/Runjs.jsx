@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
+import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { defaults } from 'lodash';
 import { Card } from 'react-bootstrap';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import ParameterList from './ParameterList';
 
 const Runjs = (props) => {
-  const initialOptions = defaults(
-    { ...props.options },
-    {
-      code: '//Type your JavaScript code here',
-    }
-  );
+  const currentState = useCurrentState();
+  const [currStateForCodeHinter, setCurrStateForCodeHinter] = useState(currentState);
+  const initialOptions = defaults({ ...props.options }, { code: '//Type your JavaScript code here' });
   const [options, setOptions] = useState(initialOptions);
+
+  useEffect(() => {
+    setCurrStateForCodeHinter({
+      ...currentState,
+      parameters: options?.parameters?.reduce((params, param) => ({ ...params, [param.name]: param.defaultValue }), {}),
+    });
+  }, [JSON.stringify(currentState), options?.parameters]);
 
   const handleAddParameter = (newParameter) => {
     setOptions((prevOptions) => {
@@ -75,6 +80,7 @@ const Runjs = (props) => {
         enablePreview={false}
         componentName="Runjs"
         cyLabel={`runjs`}
+        currentState={currStateForCodeHinter}
       />
     </Card>
   );

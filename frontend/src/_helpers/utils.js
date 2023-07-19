@@ -412,7 +412,7 @@ export async function executeMultilineJS(
     queryDetails?.options?.parameters?.reduce(
       (paramObj, param) => ({
         ...paramObj,
-        [param.name]: resolveReferences(param.defaultValue, currentState, undefined),
+        [param.name]: resolveReferences(param.defaultValue, {}, undefined), //default values will not be resolved with currentState
       }),
       {}
     ) || {};

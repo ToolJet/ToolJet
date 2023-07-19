@@ -782,7 +782,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
           ...paramObj,
           [param.name]:
             parameters?.[param.name] === undefined
-              ? resolveReferences(param.defaultValue, getCurrentState())
+              ? resolveReferences(param.defaultValue, {}) //default values will not be resolved with currentState
               : parameters?.[param.name],
         }),
         {}
