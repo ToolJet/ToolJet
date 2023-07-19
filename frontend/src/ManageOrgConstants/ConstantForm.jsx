@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { withTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { capitalize } from 'lodash';
+import _, { capitalize } from 'lodash';
 import { Tooltip } from 'react-tooltip';
 
 const ConstantForm = ({
@@ -25,6 +25,8 @@ const ConstantForm = ({
   }
 
   const handleConstantNameError = (name, value) => {
+    setError((prev) => ({ ...prev, [name]: null }));
+
     const isNameAlreadyExists = name === 'name' && checkIfConstantNameExists(value, currentEnvironment.id);
     const invalidNameLength = name === 'name' && value.length > 32;
     const maxNameLengthReached = name === 'name' && value.length === 32;
@@ -52,14 +54,11 @@ const ConstantForm = ({
     const invalidValueLength = name === 'value' && value.length > 10000;
 
     if (invalidValueLength) {
-      setError({
-        value: `Value should be less than 10000 characters`,
-      });
+      setError((prev) => ({ ...prev, value: `Value should be less than 10000 characters` }));
     }
   };
 
   const handleFieldChange = (e) => {
-    setError({});
     const { name, value } = e.target;
 
     handleConstantNameError(name, value);
@@ -72,12 +71,23 @@ const ConstantForm = ({
   };
   const handlecreateOrUpdate = (e) => {
     e.preventDefault();
+
+    if (error['name'] || error['value']) {
+      return;
+    }
+
     const isUpdate = !!selectedConstant;
     createOrUpdate(fields, isUpdate);
   };
 
   const shouldDisableButton =
-    fields['name'] && fields['value'] && (fields['name'].length > 0 || fields['value'].length > 0) ? false : true;
+    !error?.name &&
+    !error.value &&
+    fields['name'] &&
+    fields['value'] &&
+    (fields['name'].length > 0 || fields['value'].length > 0)
+      ? false
+      : true;
 
   const [isOpen, setIsOpen] = useState(false);
 
