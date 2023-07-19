@@ -90,7 +90,7 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   mv .env.external.example .env && ./external.sh
   ```
 
-  4. Kindly set the postgresql database credentials according to your external database in the .env file above.
+  Kindly set the postgresql database credentials according to your external database in the .env file above.
 
   **Example:**
   ```bash
@@ -103,13 +103,13 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
   ORM_LOGGING=all
   ```
 
-  5. To start the docker container, use the following command:
+  4. To start the docker container, use the following command:
 
   ```bash
   docker-compose up -d
   ```
 
-  6. **(Optional)** `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
+  5. **(Optional)** `TOOLJET_HOST` environment variable can either be the public ipv4 address of your server or a custom domain that you want to use. Which can be modified in the .env file.
 
   Also, for setting up additional environment variables in the .env file, please check our documentation on [environment variable](/docs/setup/env-vars)
 
