@@ -10,7 +10,6 @@ env:
   PR_NUMBER: ${{ github.event.number }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
-
 jobs:
   Run-Cypress:
     runs-on: ubuntu-22.04
@@ -18,7 +17,6 @@ jobs:
     if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress' || github.event.label.name == 'run-cypress-app-builder'|| github.event.label.name == 'run-cypress-workspace')}}
 
     steps:
-
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
@@ -41,8 +39,8 @@ jobs:
 
       - name: Create PostgreSQL Database
         run: |
-          sudo -u postgres createdb -O cypress tooljet_development   
-              
+          sudo -u postgres createdb -O cypress tooljet_development
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -51,7 +49,7 @@ jobs:
       - name: checking the node version
         run: |
           node -v
-          npm -v    
+          npm -v
 
       - name: Install and build dependencies
         run: |
@@ -99,7 +97,7 @@ jobs:
         with:
           name: "cypress.env.json"
           json: ${{ secrets.CYPRESS_SECRETS }}
-          dir: './cypress-tests'
+          dir: "./cypress-tests"
 
       - name: Update "database" value in cypress.env.json
         run: |
@@ -113,13 +111,12 @@ jobs:
           mv tmp_cypress.env.json ./cypress-tests/cypress.env.json
 
       - name: Cypress Integration Test
-        if: ${{ github.event.label.name == 'run-cypress-workspace' }}
+        if: ${{ github.event.label.name == 'run-cypress-app-builder' }}
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:8082"
           config-file: cypress-workspace.config.js
-
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3
