@@ -60,10 +60,7 @@ jobs:
 
       - name: Run PosgtreSQL Database Docker Container
         run: |
-          sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
-
-      - name: docker logs
-        run: sudo docker logs postgres           
+          sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13        
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -78,6 +75,9 @@ jobs:
       - name: docker container check
         run: docker ps 
         
+      - name: docker logs
+        run: sudo docker logs postgres   
+
       - name: Install and build dependencies
         run: |
           npm cache clean --force
@@ -114,8 +114,12 @@ jobs:
       - name: Run PostgREST Docker Container
         run: |
           sudo docker run -d --name postgrest -p 3001:3000 \
-          -e PGRST_DB_URI="postgres://postgres:postgres@host.docker.internal:5432/tooljet" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
-          postgrest/postgrest:v10.1.1.20221215          
+          -e PGRST_DB_URI="postgres://postgres:postgres@local:5432/tooljet" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
+          postgrest/postgrest:v10.1.1.20221215
+
+      - name: Checking docker containers
+        run: |
+          sudo docker ps
 
       - name: Run plugins compilation in watch mode
         run: cd plugins && npm start &
@@ -169,6 +173,10 @@ jobs:
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
+
+
+
+
 
   Cypress-Platform:
     runs-on: ubuntu-22.04
