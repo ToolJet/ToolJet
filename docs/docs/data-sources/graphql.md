@@ -3,36 +3,31 @@ id: graphql
 title: GraphQL
 ---
 
-# GraphQL
-
-ToolJet can connect to GraphQL endpoints to execute queries and mutations.
+ToolJet can establish connections with GraphQL endpoints, enabling the execution of queries and mutations.
 
 ## Connection
 
-To add a new GraphQL datasource, click the `+` button on  data sources panel at the bottom-left corner of the app builder and then select GraphQL from the modal that pops up.
-
-ToolJet requires the following to connect to a GraphQL datasource:
-
-- **URL of the GraphQL endpoint**
-
-The following optional parameters are also supported:
-
-   | Type         | Description |
-   | -----------  | ----------- |
-   | URL params   | Additional query string parameters|
-   | headers      | Any headers the GraphQL source requires|
+To establish a connection with the GraphQL global datasource, you can either click on the **Add new global datasource** button located on the query panel or navigate to the **[Global Datasources](/docs/data-sources/overview)** page through the ToolJet dashboard.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/datasource-reference/graphql/graphql-ds.png" alt="ToolJet - Data source - GraphQl"/>
+<img className="screenshot-full" src="/img/datasource-reference/graphql/graphgds.gif" alt="ToolJet - Data source - REST API" />
 
 </div>
 
-Click on the **Save** button to save the data source.
+ToolJet requires the following to connect to a GraphQL datasource:
+
+- **URL**: URL of the GraphQL endpoint
+- **Headers**: Any headers the GraphQL source requires
+- **URL parameters**: Additional query string parameters
+- __Authentication Type__: The method of authentication to use with GraphQL requests. Supported Types: None, Basic, Bearer, and OAuth 2.0
+  - **Basic**: Requires Username and Password
+  - **Bearer**: Requires a token, typically a JSON Web Token (JWT), to grant access
+  - **OAuth 2.0**: The OAuth 2.0 protocol mandates the provision of the following parameters: access token URL, access token URL custom headers, client ID, client secret, scopes, custom query parameters, authorization URL, custom authentication parameters, and client authentication.
 
 ## Querying GraphQL
 
-Click on `+` button of the query manager at the bottom panel of the editor and select the GraphQL endpoint added in the previous step as the  data source.
+Click on **`+Add`** button of the query manager at the bottom panel of the editor and select the GraphQL global datasource added in previous step.
 
 ### Required Parameters:
 - **Query**
@@ -48,7 +43,7 @@ Click on `+` button of the query manager at the bottom panel of the editor and s
 </div>
 
 
-Click on the 'Create' button to create the query or Click on the `Run` button to create and trigger the query.
+Click on the **Create** button to create the query or Click on the **Run** button to create and trigger the query.
 
 :::tip
 Query results can be transformed using transformations. Read our transformations documentation to see how: [link](/docs/tutorial/transformations)
