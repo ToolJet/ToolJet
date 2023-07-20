@@ -14,6 +14,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 
 import { useDataQueries } from '@/_stores/dataQueriesStore';
+import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
 
 export const EventManager = ({
   component,
@@ -412,28 +413,36 @@ export const EventManager = ({
             )}
 
             {event.actionId === 'run-query' && (
-              <div className="row">
-                <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
-                <div className="col-9" data-cy="query-selection-field">
-                  <Select
-                    className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                    options={dataQueries.map((query) => {
-                      return { name: query.name, value: query.id };
-                    })}
-                    value={event.queryId}
-                    search={true}
-                    onChange={(value) => {
-                      const query = dataQueries.find((dataquery) => dataquery.id === value);
-                      handlerChanged(index, 'queryId', query.id);
-                      handlerChanged(index, 'queryName', query.name);
-                    }}
-                    placeholder={t('globals.select', 'Select') + '...'}
-                    styles={styles}
-                    useMenuPortal={false}
-                    useCustomStyles={true}
-                  />
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
+                  <div className="col-9" data-cy="query-selection-field">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                      options={dataQueries.map((query) => {
+                        return { name: query.name, value: query.id };
+                      })}
+                      value={event.queryId}
+                      search={true}
+                      onChange={(value) => {
+                        const query = dataQueries.find((dataquery) => dataquery.id === value);
+                        const parameters = (query?.options?.parameters ?? []).reduce(
+                          (paramObj, param) => ({ ...paramObj, [param.name]: param.defaultValue }),
+                          {}
+                        );
+                        handlerChanged(index, 'queryId', query.id);
+                        handlerChanged(index, 'queryName', query.name);
+                        handlerChanged(index, 'parameters', parameters);
+                      }}
+                      placeholder={t('globals.select', 'Select') + '...'}
+                      styles={styles}
+                      useMenuPortal={false}
+                      useCustomStyles={true}
+                    />
+                  </div>
                 </div>
-              </div>
+                <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
+              </>
             )}
 
             {event.actionId === 'set-localstorage-value' && (

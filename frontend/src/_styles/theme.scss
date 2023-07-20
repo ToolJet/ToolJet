@@ -2172,6 +2172,7 @@ tr:focus {
 
 .popover-header {
   background-color: #f4f6fa;
+  border-bottom: 0;
 }
 
 .popover-body {
@@ -5013,6 +5014,12 @@ div#driver-page-overlay {
   .popover-body {
     color: #d9dcde !important;
   }
+
+    .popover-header {
+      background-color: var(--slate2);
+      color: var(--slate11);
+      border-bottom-color: var
+    }
 }
 
 .toast-dark-mode {
@@ -10753,6 +10760,10 @@ tbody {
 
 .form-label-restricted {
   display: none;
+}
+
+.runjs-parameter-badge {
+  max-width: 140px;
 }
 
 .release-buttons {
