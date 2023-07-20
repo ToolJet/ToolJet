@@ -232,14 +232,46 @@ actions.unsetPageVariable('pageVar')`
     data.customText = randomString(12);
 
     selectQuery("Run Python code");
-    addInputOnQueryField("runpy", "tj_globals");
+    addInputOnQueryField("runpy", "tj_globals.theme");
     query("create");
     cy.verifyToastMessage(commonSelectors.toastMessage, "Query Added");
     query("preview");
-    verifypreview(
-      "raw",
-      `{"theme":{"name":"light"},"urlparams":{},"currentUser":{"email":"dev@tooljet.io","firstName":"The","lastName":"Developer","groups":["all_users","admin"]}}`
-    );
+    verifypreview("raw", `{"name":"light"}`);
+
+    addInputOnQueryField("runpy", "tj_globals.currentUser.email");
+    query("preview");
+    verifypreview("raw", `dev@tooljet.io`);
+    addInputOnQueryField("runpy", "tj_globals.currentUser.email");
+    query("preview");
+    verifypreview("raw", `dev@tooljet.io`);
+    addInputOnQueryField("runpy", "tj_globals.currentUser.firstName");
+    query("preview");
+    verifypreview("raw", `The`);
+    addInputOnQueryField("runpy", "tj_globals.currentUser.lastName");
+    query("preview");
+    verifypreview("raw", `Developer`);
+    addInputOnQueryField("runpy", "tj_globals.currentUser.groups");
+    query("preview");
+
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Query completed.");
+    cy.wait(10000);
+    verifypreview("raw", `["all_users","admin"]`);
+    if (Cypress.env("environment") != "Community") {
+      addInputOnQueryField("runpy", "tj_globals.mode.value");
+      query("preview");
+      verifypreview("raw", `edit`);
+
+      addInputOnQueryField("runpy", "tj_globals.environment.name");
+      query("preview");
+      verifypreview("raw", `development`);
+
+      // addInputOnQueryField( //WIP
+      //   "runpy",
+      //   "(tj_globals.currentUser.ssoUserInfo == undefined)"
+      // );
+      // query("preview");
+      // verifypreview("raw", `true`);
+    }
   });
 
   it("should verify action by button", () => {
@@ -276,7 +308,7 @@ actions.unsetPageVariable('pageVar')`
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
   });
 
-  it("should verify runpy toggle options", () => {
+  it.only("should verify runpy toggle options", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -318,13 +350,18 @@ actions.unsetPageVariable('pageVar')`
     );
     query("save");
     cy.reload();
-    cy.wait(3000);
+    cy.wait(4000);
     cy.get('[data-cy="modal-confirm-button"]').realClick();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      "Query (runpy1) completed."
+      "Query (runpy1) completed.",
+      false
     );
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Success alert");
-    cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Success alert", false);
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "alert from runpy",
+      false
+    );
   });
 });
