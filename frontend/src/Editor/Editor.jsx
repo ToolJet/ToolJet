@@ -1767,16 +1767,17 @@ const withStore = (Component) => (props) => {
     (state) => ({ isVersionReleased: state.isVersionReleased, editingVersion: state.editingVersion }),
     shallow
   );
+
   const currentState = useCurrentState();
 
   return (
     <Component
       {...props}
-      showComments={showComments}
-      currentLayout={currentLayout}
       isVersionReleased={isVersionReleased}
       editingVersion={editingVersion}
       currentState={currentState}
+      showComments={showComments}
+      currentLayout={currentLayout}
     />
   );
 };
