@@ -82,7 +82,7 @@ const ParameterList = ({
           <Popover
             id="parameter-more-popover"
             className={`query-manager-sort-filter-popup  ${darkMode && 'popover-dark-themed theme-dark dark-theme'}`}
-            style={{ minWidth: '268px', maxWidth: 'fit-content' }}
+            style={{ minWidth: '270px', maxWidth: 'fit-content' }}
           >
             {selectedParameter ? (
               <ParameterForm

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Form, Popover, Row, Col } from 'react-bootstrap';
+import { Form, Popover, Row, Col, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
+import Information from '@/_ui/Icon/solidIcons/Information';
 
 const isValidVariableName = (str) => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(str);
 
@@ -54,13 +55,13 @@ const ParameterForm = ({
   return (
     <>
       <Popover.Header style={{ fontSize: '12px' }}>{isEdit ? 'UPDATE PARAMETER' : 'ADD PARAMETER'}</Popover.Header>
-      <Popover.Body key={'1'} bsPrefix="popover-body" className="px-0">
-        <Form className="container px-3" onSubmit={handleSubmit}>
-          <Form.Group as={Row} className="mb-3">
+      <Popover.Body key={'1'} bsPrefix="popover-body" className="px-0 pe-2 pt-2">
+        <Form className="container px-3" onSubmit={handleSubmit} style={{ paddingRight: '25px !important' }}>
+          <Form.Group as={Row} className="mb-2 pr-1">
             <Form.Label column htmlFor="paramName">
               Name
             </Form.Label>
-            <Col sm="9">
+            <Col sm="12">
               <Form.Control
                 type="text"
                 aria-describedby="paramName"
@@ -73,20 +74,36 @@ const ParameterForm = ({
           <Form.Group as={Row}>
             <Form.Label column htmlFor="defaultValue">
               Default Value
+              <span className="ms-1">
+                <OverlayTrigger
+                  placement="bottom"
+                  overlay={
+                    <Tooltip id="tooltip">
+                      Exposed values such as components, queries, globals etc are not supported in this field.Please use
+                      constant strings, numbers or objects.
+                    </Tooltip>
+                  }
+                >
+                  <span>
+                    <Information width="14" fill="var(--indigo9)" />
+                  </span>
+                </OverlayTrigger>
+              </span>
             </Form.Label>
-            <Col sm="9">
-              <CodeHinter
-                onChange={(value) => setDefaultValue(value)}
-                theme={darkMode ? 'monokai' : 'default'}
-                currentState={emptyObj.current}
-                usePortalEditor={false}
-                height={36}
-                initialValue={defaultValue}
-                enablePreview={false}
-              />
-              <small id="emailHelp" class="form-text" style={{ color: 'var(--slate11)' }}>
-                Exposed variables not supported
-              </small>
+            <Col sm="12">
+              <div className="d-flex">
+                <div className="w-100">
+                  <CodeHinter
+                    onChange={(value) => setDefaultValue(value)}
+                    theme={darkMode ? 'monokai' : 'default'}
+                    currentState={emptyObj.current}
+                    usePortalEditor={false}
+                    height={36}
+                    initialValue={defaultValue}
+                    enablePreview={false}
+                  />
+                </div>
+              </div>
             </Col>
           </Form.Group>
         </Form>
