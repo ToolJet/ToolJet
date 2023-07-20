@@ -268,18 +268,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         darkMode={darkMode}
       />
       <div className="left-sidebar-stack-bottom">
-        <LeftSidebarItem
-          icon="debugger"
-          selectedSidebarItem={selectedSidebarItem}
-          // eslint-disable-next-line no-unused-vars
-          onClick={(e) => handleSelectedSidebarItem('debugger')}
-          className={`left-sidebar-item  left-sidebar-layout`}
-          badge={true}
-          count={unReadErrorCount?.unread}
-          tip="Debugger"
-          ref={setSideBarBtnRefs('debugger')}
-        />
-
         <div className="left-sidebar-item no-border">
           <DarkModeToggle switchDarkMode={switchDarkMode} darkMode={darkMode} tooltipPlacement="right" />
         </div>

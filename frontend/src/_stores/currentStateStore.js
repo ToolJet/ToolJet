@@ -1,3 +1,4 @@
+import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
 import { omit } from 'lodash';
 
@@ -36,10 +37,21 @@ export const useCurrentStateStore = create(
   )
 );
 
-// Omitting 'actions' here because we don't want to expose it to user
-export const useCurrentState = () => {
-  return omit(useCurrentStateStore(), 'actions');
-};
+export const useCurrentState = () =>
+  // Omitting 'actions' here because we don't want to expose it to user
+  useCurrentStateStore((state) => {
+    return {
+      queries: state.queries,
+      components: state.components,
+      globals: state.globals,
+      errors: state.errors,
+      variables: state.variables,
+      client: state.client,
+      server: state.server,
+      page: state.page,
+      succededQuery: state.succededQuery,
+    };
+  }, shallow);
 
 export const getCurrentState = () => {
   return omit(useCurrentStateStore.getState(), 'actions');

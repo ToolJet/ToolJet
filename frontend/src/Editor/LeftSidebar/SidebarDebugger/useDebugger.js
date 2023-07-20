@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useCurrentStateStore } from '../../../_stores/currentStateStore';
+import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
-import { debuggerActions } from '../../../_helpers/appUtils';
+import { debuggerActions } from '@/_helpers/appUtils';
 import { flow } from 'lodash';
 import moment from 'moment';
 
@@ -69,15 +69,15 @@ const useDebugger = ({ currentPageId, isDebuggerOpen }) => {
   }, [JSON.stringify({ errors })]);
 
   useEffect(() => {
-    const newErrorLogs = debuggerActions.generateQuerySuccessLogs(succededQuery);
-    if (newErrorLogs) {
+    const successQueryLogs = debuggerActions.generateQuerySuccessLogs(succededQuery);
+    if (successQueryLogs?.length) {
       setAllLog((prevLogs) => {
-        const temp = [...newErrorLogs, ...prevLogs];
+        const temp = [...successQueryLogs, ...prevLogs];
         const sortedDatesDesc = temp.sort((a, b) => moment(b.timestamp).diff(moment(a.timestamp)));
         return sortedDatesDesc;
       });
+      debuggerActions.flushAllLog();
     }
-    debuggerActions.flushAllLog();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ succededQuery })]);
 

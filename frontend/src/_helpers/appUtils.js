@@ -1036,8 +1036,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
               [queryName]: {
                 type: 'query',
                 kind: query.kind,
-                data: finalData,
-                options: options,
               },
             },
           });
