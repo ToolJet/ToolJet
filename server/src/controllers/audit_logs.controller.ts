@@ -14,7 +14,7 @@ import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
 export class AuditLogsController {
   constructor(private auditLogsQueryService: AuditLogsQueryService) {}
 
-  @UseGuards(JwtAuthGuard, LicenseExpiryGuard, PoliciesGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('accessAuditLogs', UserEntity))
   @Get()
   async index(@User() user, @Query() query): Promise<object> {

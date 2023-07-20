@@ -22,8 +22,15 @@
     }
 
     &:disabled {
-        background: var(--slate3) !important;
-        color: var(--slate8) !important;
+        background: var(--slate6) !important;
+        color: var(--slate9) !important;
+        cursor: auto !important;
+
+        svg {
+            path {
+                fill: var(--slate8)
+            }
+        }
     }
 }
 

@@ -15,6 +15,35 @@ export enum LICENSE_FIELD {
   ALL = 'all',
   USER = 'allUsers',
   VALID = 'valid',
+  WORKSPACES = 'workspaces',
+  FEATURES = 'features',
+  DOMAINS = 'domains',
+  STATUS = 'status',
+}
+
+export enum LICENSE_LIMITS_LABEL {
+  //Users
+  USERS = 'Total Users',
+  SUPERADMINS = 'Superadmins',
+  EDIT_USERS = 'Builders',
+  END_USERS = 'End Users',
+  SUPERADMIN_USERS = 'Super Admins',
+
+  //Apps
+  APPS = 'Apps',
+
+  //Workspaces
+  WORKSPACES = 'Workspaces',
+}
+
+export enum LICENSE_TYPE {
+  BASIC = 'basic',
+  TRIAL = 'trial',
+  ENTERPRISE = 'enterprise',
+}
+
+export enum LICENSE_LIMIT {
+  UNLIMITED = 'UNLIMITED',
 }
 
 export function decrypt(toDecrypt: string): Terms {

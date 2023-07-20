@@ -36,7 +36,7 @@ export default function CustomStylesEditor({ darkMode }) {
       <div className="wrapper animation-fade">
         <div className="page-wrapper">
           <div className="container-xl">
-            <div className="d-block org-settings-wrapper-card">
+            <div className="d-block org-settings-wrapper-card custom-styles-wrapper">
               <div className="col p-3 border-bottom">
                 <h3 className="card-title m-0">Custom Styles</h3>
               </div>

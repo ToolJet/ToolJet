@@ -45,6 +45,22 @@ export const deleteDatasource = (datasourceName) => {
       );
     });
   cy.get('[data-cy="yes-button"]').click();
+
+  cy.wait(1000)
+  cy.get("body").then(($body) => {
+    if (
+      $body.find(`[data-cy="${cyParamName(datasourceName)}-button"]`).length > 0
+    ) {
+      cy.get(`[data-cy="${cyParamName(datasourceName)}-button"]`)
+        .parent()
+        .within(() => {
+          cy.get(
+            `[data-cy="${cyParamName(datasourceName)}-delete-button"]`
+          ).invoke("click");
+        });
+      cy.get('[data-cy="yes-button"]').click();
+    }
+  });
 };
 
 export const closeDSModal = () => {

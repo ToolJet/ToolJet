@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { appService, folderService, authenticationService } from '@/_services';
+import { appService, folderService, authenticationService, licenseService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import Select from '@/_ui/Select';
 import { Folders } from './Folders';
@@ -22,6 +22,8 @@ import { OrganizationList } from '@/_components/OrganizationManager/List';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 import { withRouter } from '@/_hoc/withRouter';
+import { LicenseBanner } from '@/LicenseBanner';
+import { LicenseTooltip } from '@/LicenseTooltip';
 
 const { iconList, defaultIcon } = configs;
 
@@ -59,14 +61,30 @@ class HomePageComponent extends React.Component {
       appOperations: {},
       showTemplateLibraryModal: false,
       app: {},
+      appsLimit: {},
+      featureAccess: {},
     };
   }
 
   componentDidMount() {
     this.fetchApps(1, this.state.currentFolder.id);
     this.fetchFolders();
+    this.fetchFeatureAccesss();
+    this.fetchAppsLimit();
     document.title = `${retrieveWhiteLabelText()} - Dashboard`;
   }
+
+  fetchAppsLimit() {
+    appService.getAppsLimit().then((data) => {
+      this.setState({ appsLimit: data?.appsCount });
+    });
+  }
+
+  fetchFeatureAccesss = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      this.setState({ featureAccess: data });
+    });
+  };
 
   fetchApps = (page = 1, folder, searchKey) => {
     const appSearchKey = searchKey !== '' ? searchKey || this.state.appSearchKey : '';
@@ -127,8 +145,8 @@ class HomePageComponent extends React.Component {
         const workspaceId = getWorkspaceId();
         _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, statusCode }) => {
+        statusCode !== 451 && toast.error(error);
         _self.setState({ creatingApp: false });
       });
   };
@@ -139,21 +157,19 @@ class HomePageComponent extends React.Component {
 
   cloneApp = (app) => {
     this.setState({ isCloningApp: true });
-    appService.getLicenseTerms().then(() => {
-      appService
-        .cloneApp(app.id)
-        .then((data) => {
-          toast.success('App cloned successfully.');
-          this.setState({ isCloningApp: false });
-          const workspaceId = getWorkspaceId();
-          this.props.navigate(`/${workspaceId}/apps/${data.id}`);
-        })
-        .catch(({ _error }) => {
-          toast.error('Could not clone the app.');
-          this.setState({ isCloningApp: false });
-          console.log(_error);
-        });
-    });
+    appService
+      .cloneApp(app.id)
+      .then((data) => {
+        toast.success('App cloned successfully.');
+        this.setState({ isCloningApp: false });
+        const workspaceId = getWorkspaceId();
+        this.props.navigate(`/${workspaceId}/apps/${data.id}`);
+      })
+      .catch(({ _error }) => {
+        _error.statusCode !== 451 && toast.error('Could not clone the app.');
+        this.setState({ isCloningApp: false });
+        console.log(_error);
+      });
   };
 
   exportApp = async (app) => {
@@ -178,11 +194,10 @@ class HomePageComponent extends React.Component {
             this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
           })
           .catch(({ error }) => {
-            toast.error(`Could not import the app: ${error}`);
-            appService.getLicenseTerms().then(() => this.fileInput.current.click());
             this.setState({
               isImportingApp: false,
             });
+            toast.error(`Could not import the app: ${error}`);
           });
       } catch (error) {
         toast.error(`Could not import the app: ${error}`);
@@ -298,6 +313,8 @@ class HomePageComponent extends React.Component {
           this.state.currentFolder.id
         );
         this.fetchFolders();
+        this.fetchAppsLimit();
+        this.fetchFeatureAccesss();
       })
       .catch(({ error }) => {
         toast.error('Could not delete the app.');
@@ -434,7 +451,7 @@ class HomePageComponent extends React.Component {
   };
 
   showTemplateLibraryModal = () => {
-    appService.getLicenseTerms().then(() => this.setState({ showTemplateLibraryModal: true }));
+    this.setState({ showTemplateLibraryModal: true });
   };
   hideTemplateLibraryModal = () => {
     this.setState({ showTemplateLibraryModal: false });
@@ -459,7 +476,10 @@ class HomePageComponent extends React.Component {
       isExportingApp,
       appToBeDeleted,
       app,
+      appsLimit,
+      featureAccess,
     } = this.state;
+
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
@@ -593,41 +613,54 @@ class HomePageComponent extends React.Component {
           <div className="row gx-0">
             <div className="home-page-sidebar col p-0">
               {this.canCreateApp() && (
-                <div className="create-new-app-wrapper">
-                  <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
-                    <Button
-                      className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
-                      onClick={this.createApp}
-                      data-cy="create-new-app-button"
-                    >
-                      {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}
-                      {this.props.t('homePage.header.createNewApplication', 'Create new app')}
-                    </Button>
-                    <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
-                    <Dropdown.Menu className="import-lg-position new-app-dropdown">
-                      <Dropdown.Item
-                        className="homepage-dropdown-style tj-text tj-text-xsm"
-                        onClick={this.showTemplateLibraryModal}
-                        data-cy="choose-from-template-button"
-                      >
-                        {this.props.t('homePage.header.chooseFromTemplate', 'Choose from template')}
-                      </Dropdown.Item>
-                      <label
-                        className="homepage-dropdown-style tj-text tj-text-xsm"
-                        data-cy="import-option-label"
-                        onChange={this.handleImportApp}
-                      >
-                        {this.props.t('homePage.header.import', 'Import')}
-                        <input
-                          type="file"
-                          accept=".json"
-                          ref={this.fileInput}
-                          style={{ display: 'none' }}
-                          data-cy="import-option-input"
+                <div className="create-new-app-license-wrapper">
+                  <LicenseTooltip limits={appsLimit} feature={'apps'} isAvailable={true}>
+                    <div className="create-new-app-wrapper">
+                      <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
+                        <Button
+                          disabled={appsLimit?.percentage >= 100 && !appsLimit?.licenseStatus?.isExpired}
+                          className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
+                          onClick={this.createApp}
+                          data-cy="create-new-app-button"
+                        >
+                          {isImportingApp && (
+                            <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
+                          )}
+                          {this.props.t('homePage.header.createNewApplication', 'Create new app')}
+                        </Button>
+                        <Dropdown.Toggle
+                          disabled={appsLimit?.percentage >= 100 && !appsLimit?.licenseStatus?.isExpired}
+                          split
+                          className="d-inline"
+                          data-cy="import-dropdown-menu"
                         />
-                      </label>
-                    </Dropdown.Menu>
-                  </Dropdown>
+                        <Dropdown.Menu className="import-lg-position new-app-dropdown">
+                          <Dropdown.Item
+                            className="homepage-dropdown-style tj-text tj-text-xsm"
+                            onClick={this.showTemplateLibraryModal}
+                            data-cy="choose-from-template-button"
+                          >
+                            {this.props.t('homePage.header.chooseFromTemplate', 'Choose from template')}
+                          </Dropdown.Item>
+                          <label
+                            className="homepage-dropdown-style tj-text tj-text-xsm"
+                            data-cy="import-option-label"
+                            onChange={this.handleImportApp}
+                          >
+                            {this.props.t('homePage.header.import', 'Import')}
+                            <input
+                              type="file"
+                              accept=".json"
+                              ref={this.fileInput}
+                              style={{ display: 'none' }}
+                              data-cy="import-option-input"
+                            />
+                          </label>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    </div>
+                  </LicenseTooltip>
+                  <LicenseBanner classes="mb-3 small" limits={appsLimit} type="apps" size="small" />
                 </div>
               )}
               <Folders
@@ -652,6 +685,7 @@ class HomePageComponent extends React.Component {
               data-cy="home-page-content"
             >
               <div className="w-100 mb-5 container home-page-content-container">
+                <LicenseBanner classes="mt-3" limits={featureAccess} type={featureAccess?.licenseStatus?.licenseType} />
                 {(meta?.total_count > 0 || appSearchKey) && (
                   <>
                     <HomeHeader onSearchSubmit={this.onSearchSubmit} darkMode={this.props.darkMode} />

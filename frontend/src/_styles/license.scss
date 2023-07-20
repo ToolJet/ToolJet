@@ -1,5 +1,7 @@
 .enterprise-page {
     .license-page {
+        height: calc(100vh - 156px);
+        overflow: auto;
         width: 880px;
         margin: auto;
         box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
@@ -7,7 +9,7 @@
         outline: 1px solid var(--slate3);
 
         .license-page-sidebar {
-            max-width: 288px;
+            max-width: 220px;
             background-color: var(--base);
             border-right: 1px solid var(--slate5) !important;
             display: grid !important;
@@ -15,15 +17,222 @@
 
             .license-nav-list-wrap {
                 padding: 20px 20px 20px 20px;
+
+                .workspace-settings-nav-items {
+                    max-width: 188px !important;
+                }
             }
         }
 
         .license-content-wrapper {
             background-color: var(--base);
-            .general-setting-wrapper {
+            .metrics-wrapper {
                 padding: 40px;
                 padding-top: 10px;
+
+                textarea {
+                    resize: none !important;
+                }
+                .errored-textarea {
+                    border: 1px solid var(--tomato9) !important;
+                }
+
+                .metric {
+                    width: 90%;
+                    margin-bottom: 25px;
+                    justify-content: space-between;
+                }
+
+                .limits-content {
+                    .input-wrapper {
+                        display: flex;
+                        flex-direction: column;
+
+                        .error-text {
+                            color: var(--tomato10);
+                            font-size: 13px;
+                            margin-top: 5px;
+                        }
+
+                        .error-border {
+                            border: 1px solid var(--tomato10);
+                            background-color: var(--tomato2);
+                        }
+                    }
+
+                    input {
+                        width: 200px;
+                    }
+
+                    .license-banner {
+                        width: 90%;
+                    }
+                }
+
+                .access-content {
+                    .form-switch {
+                        padding-left: 0px;
+                    }
+                }
+            }
+
+            .domains-wrapper {
+                padding: 40px;
+                padding-top: 10px;
+
+                .hostname-wrapper {
+                    margin-bottom: 25px;
+                    .heading {
+                        color: var(--slate12);
+                        font-weight: 500;
+                        margin-bottom: 10px;
+                    }
+                    input {
+                        width: 70%;
+                        margin-bottom: 15px;
+                    }
+                }
+            }
+
+            .license-header-wrap {
+                display: flex;
+                justify-content: space-between;
+                padding-right: 40px;
+                align-items: center;
+                height: unset !important;
+
+                .status-container {
+                    border-radius: 20px;
+                    padding: 5px 15px;
+                }
+
+                .valid-status {
+                    background-color: var(--indigo3);
+                    color: var(--indigo9);
+                }
+
+                .expiry-status {
+                    background-color: var(--tomato3);
+                    color: var(--tomato9);
+                }
             }
         }
     }
+}
+.license-banner {
+    background-color: var(--amber2);
+    padding: 15px;
+    border: 1px solid #ffc371;
+    border-radius: 6px;
+    align-items: center;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+
+    .message-wrapper {
+        display: flex;
+        flex-direction: column;
+        margin-left: 10px;
+
+        .heading {
+            display: unset !important;
+            font-weight: 500;
+            color: var(--slate12);
+            .upgrade-link {
+                // color: var(--amber8);
+                background: linear-gradient(to right, #ff5f6d, #ffc371);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .sub-heading {
+                color: var(--slate11);
+                font-weight: 400;
+                cursor: default !important;
+            }
+        }
+
+        .warning-header-container {
+            text-align: center;
+
+            .warning-text {
+                color: var(--amber8);
+                font-weight: 500;
+            }
+        }
+    }
+
+    .upgrade-btn {
+        margin-left: auto;
+        background: linear-gradient(96.1deg, #ff5f6d -15.44%, #ffc371 99.37%);
+        border-radius: 6px;
+        border: 0px;
+        color: var(--slate1);
+        max-height: 52px;
+    }
+}
+
+.secondary {
+    border: 1px solid var(--indigo5);
+    background-color: var(--base1);
+    .warning-header-container {
+        text-align: center;
+
+        .warning-text {
+            color: var(--indigo9) !important;
+            font-weight: 500;
+        }
+    }
+}
+
+.small {
+    width: 248px;
+    max-height: 90px;
+    margin-top: 15px;
+    font-size: 13px;
+
+    svg {
+        width: 90px;
+    }
+}
+
+.license-error-modal {
+    background-color: var(--base);
+
+    .modal-header {
+        background-color: var(--slate3) !important;
+    }
+
+    .info {
+        display: flex;
+        margin-top: 15px;
+        font-size: 12px;
+        color: var(--slate11);
+        background: var(--slate3);
+        padding: 15px;
+        border-radius: 6px;
+
+        svg {
+            margin-right: 4px;
+        }
+    }
+
+    .cancel-btn {
+        border-radius: 6px;
+        font-weight: 600;
+        background-color: var(--slate1);
+        border: 1px solid var(--slate7);
+        color: var(--slate12);
+    }
+
+    .upgrade-btn {
+        border-radius: 6px;
+        font-weight: 600;
+        background: linear-gradient(96.1deg, #ff5f6d -15.44%, #ffc371 99.37%);
+        color: var(--slate12);
+        border: none;
+    }
+}
+
+.license-tooltip {
+    opacity: 0.6;
 }

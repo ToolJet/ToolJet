@@ -23,7 +23,6 @@ import { InviteNewUserDto } from '../dto/invite-new-user.dto';
 import { OrganizationsService } from '@services/organizations.service';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
 
 const MAX_CSV_FILE_SIZE = 1024 * 1024 * 1; // 1MB
 @Controller('organization_users')
@@ -34,7 +33,7 @@ export class OrganizationUsersController {
   ) {}
 
   // Endpoint for inviting new organization users
-  @UseGuards(JwtAuthGuard, PoliciesGuard, LicenseExpiryGuard)
+  @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('inviteUser', UserEntity))
   @Post()
   async create(@User() user, @Body() inviteNewUserDto: InviteNewUserDto) {

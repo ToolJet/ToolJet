@@ -1,5 +1,5 @@
 import React from 'react';
-import { authenticationService, organizationService, organizationUserService } from '@/_services';
+import { authenticationService, organizationService, organizationUserService, userService } from '@/_services';
 import { toast } from 'react-hot-toast';
 // eslint-disable-next-line import/no-unresolved
 import { withTranslation } from 'react-i18next';
@@ -30,6 +30,7 @@ class ManageOrgUsersComponent extends React.Component {
       options: {},
       file: null,
       isInviteUsersDrawerOpen: false,
+      userLimits: {},
     };
   }
 
@@ -77,6 +78,14 @@ class ManageOrgUsersComponent extends React.Component {
         users: data.users,
         meta: data.meta,
         isLoading: false,
+      });
+    });
+  };
+
+  fetchUserLimits = () => {
+    userService.getUserLimits('total').then((data) => {
+      this.setState({
+        userLimits: data,
       });
     });
   };
@@ -138,6 +147,7 @@ class ManageOrgUsersComponent extends React.Component {
             position: 'top-center',
           });
           this.fetchUsers();
+          this.fetchUserLimits();
           this.setState({
             uploadingUsers: false,
             isInviteUsersDrawerOpen: false,
@@ -185,6 +195,7 @@ class ManageOrgUsersComponent extends React.Component {
         .create(this.state.fields.firstName, this.state.fields.lastName, this.state.fields.email, selectedGroups)
         .then(() => {
           toast.success('User has been created');
+          this.fetchUserLimits();
           this.fetchUsers();
           this.setState({
             creatingUser: false,
@@ -192,12 +203,8 @@ class ManageOrgUsersComponent extends React.Component {
             isInviteUsersDrawerOpen: false,
           });
         })
-        .catch(({ error }) => {
-          toast.error(error, {
-            style: {
-              maxWidth: '700px',
-            },
-          });
+        .catch(({ error, statusCode }) => {
+          statusCode !== 451 && toast.error(error);
           this.setState({ creatingUser: false });
         });
     } else {
@@ -242,7 +249,7 @@ class ManageOrgUsersComponent extends React.Component {
   };
 
   render() {
-    const { isLoading, uploadingUsers, users, archivingUser, unarchivingUser, meta } = this.state;
+    const { isLoading, uploadingUsers, users, archivingUser, unarchivingUser, meta, userLimits } = this.state;
     return (
       <ErrorBoundary showFallback={true}>
         <div className="org-wrapper org-users-page animation-fade">
@@ -282,7 +289,7 @@ class ManageOrgUsersComponent extends React.Component {
                 </div>
               </div>
 
-              <div className="page-body">
+              <div>
                 <UsersFilter
                   filterList={this.filterList}
                   darkMode={this.props.darkMode}

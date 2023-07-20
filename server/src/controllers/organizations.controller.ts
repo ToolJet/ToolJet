@@ -35,6 +35,12 @@ export class OrganizationsController {
     private configService: ConfigService
   ) {}
 
+  @UseGuards(JwtAuthGuard)
+  @Get('limits')
+  async getOrganizationsLimit() {
+    return await this.organizationsService.organizationsLimit();
+  }
+
   @UseGuards(JwtAuthGuard, PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can('viewAllUsers', UserEntity))
   @Get('users')

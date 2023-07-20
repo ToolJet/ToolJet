@@ -9,6 +9,7 @@ import {
   UploadedFile,
   Query,
   BadRequestException,
+  Param,
 } from '@nestjs/common';
 import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -23,6 +24,7 @@ import { ChangePasswordDto } from '@dto/app-authentication.dto';
 import { EntityManager } from 'typeorm';
 import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { LIMIT_TYPE } from 'src/helpers/user_lifecycle';
 
 const MAX_AVATAR_FILE_SIZE = 1024 * 1024 * 2; // 2MB
 
@@ -120,5 +122,11 @@ export class UsersController {
     return await this.usersService.update(user.id, {
       password: changePasswordDto.newPassword,
     });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('limits/:type')
+  async getUserLimits(@Param('type') type: LIMIT_TYPE) {
+    return await this.usersService.getUserLimitsByType(type);
   }
 }

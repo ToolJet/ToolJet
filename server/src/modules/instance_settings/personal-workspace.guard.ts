@@ -1,8 +1,8 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { User } from '@sentry/node';
 import { InstanceSettingsService } from '@services/instance_settings.service';
 import { UsersService } from '@services/users.service';
 import { Observable } from 'rxjs';
+import { User } from 'src/entities/user.entity';
 import { isSuperAdmin } from 'src/helpers/utils.helper';
 
 @Injectable()

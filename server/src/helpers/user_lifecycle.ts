@@ -30,6 +30,13 @@ export enum USER_STATUS {
   ARCHIVED = 'archived',
 }
 
+export enum LIMIT_TYPE {
+  TOTAL = 'total',
+  EDITOR = 'editor',
+  VIEWER = 'viewer',
+  ALL = 'all',
+}
+
 export const URL_SSO_SOURCE = 'sso';
 
 export function getUserErrorMessages(status: any) {

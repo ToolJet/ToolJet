@@ -13,6 +13,7 @@ export const userService = {
   updateAvatar,
   updateUserType,
   getLicenseTerms,
+  getUserLimits,
 };
 
 function getInstanceUsers(page, options) {
@@ -83,4 +84,9 @@ function changePassword(currentPassword, newPassword) {
 function getLicenseTerms() {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
   return fetch(`${config.apiUrl}/users/license-terms`, requestOptions).then(handleResponse);
+}
+
+function getUserLimits(type) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/users/limits/${type}`, requestOptions).then(handleResponse);
 }

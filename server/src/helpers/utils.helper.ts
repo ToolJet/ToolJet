@@ -195,6 +195,17 @@ export async function getServiceAndRpcNames(protoDefinition) {
   return serviceNamesAndMethods;
 }
 
+export function generatePayloadForLimits(currentCount: number, totalCount: any, licenseStatus: object, label?: string) {
+  return totalCount !== 'UNLIMITED'
+    ? {
+        percentage: (currentCount / totalCount) * 100,
+        total: totalCount,
+        current: currentCount,
+        licenseStatus: licenseStatus,
+        label: label,
+      }
+    : null;
+}
 export class MigrationProgress {
   private progress = 0;
   constructor(private fileName: string, private totalCount: number) {}

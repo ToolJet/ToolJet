@@ -1,4 +1,4 @@
-import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
+import { AppCountGuard } from '@ee/licensing/guards/app.guard';
 import { Controller, Post, UseGuards, Get, ForbiddenException, Body } from '@nestjs/common';
 import { LibraryAppCreationService } from '@services/library_app_creation.service';
 import { User } from 'src/decorators/user.decorator';
@@ -15,7 +15,7 @@ export class LibraryAppsController {
   ) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, LicenseExpiryGuard)
+  @UseGuards(JwtAuthGuard, AppCountGuard)
   async create(@User() user, @Body('identifier') identifier) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 
