@@ -63,10 +63,7 @@ jobs:
           sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
 
       - name: docker logs
-        run: sudo docker logs postgres
-      
-      - name: docker logs
-        run: sudo docker logs postgrest           
+        run: sudo docker logs postgres           
 
       - name: Checkout
         uses: actions/checkout@v3
