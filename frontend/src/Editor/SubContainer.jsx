@@ -9,6 +9,8 @@ import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { resolveReferences } from '@/_helpers/utils';
+import { toast } from 'react-hot-toast';
+import { restrictedWidgetsObj } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
@@ -283,33 +285,51 @@ export const SubContainer = ({
       drop(item, monitor) {
         const componentMeta = componentTypes.find((component) => component.component === item.component.component);
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+        const parentComp =
+          parentComponent?.component === 'Kanban'
+            ? parent.includes('modal')
+              ? 'Kanban_popout'
+              : 'Kanban_card'
+            : parentComponent.component;
+        if (!restrictedWidgetsObj[parentComp].includes(componentMeta?.component)) {
+          const newComponent = addNewWidgetToTheEditor(
+            componentMeta,
+            monitor,
+            boxes,
+            canvasBoundingRect,
+            item.currentLayout,
+            snapToGrid,
+            zoomLevel,
+            true
+          );
 
-        const newComponent = addNewWidgetToTheEditor(
-          componentMeta,
-          monitor,
-          boxes,
-          canvasBoundingRect,
-          item.currentLayout,
-          snapToGrid,
-          zoomLevel,
-          true
-        );
-
-        setBoxes({
-          ...boxes,
-          [newComponent.id]: {
-            component: newComponent.component,
-            parent: parentRef.current.id,
-            layouts: {
-              ...newComponent.layout,
+          setBoxes({
+            ...boxes,
+            [newComponent.id]: {
+              component: newComponent.component,
+              parent: parentRef.current.id,
+              layouts: {
+                ...newComponent.layout,
+              },
+              withDefaultChildren: newComponent.withDefaultChildren,
             },
-            withDefaultChildren: newComponent.withDefaultChildren,
-          },
-        });
+          });
 
-        setSelectedComponent(newComponent.id, newComponent.component);
+          setSelectedComponent(newComponent.id, newComponent.component);
 
-        return undefined;
+          return undefined;
+        } else {
+          toast.error(
+            ` ${componentMeta?.component} is not compatible as a child component of ${parentComp
+              .replace(/_/g, ' ')
+              .toLowerCase()}`,
+            {
+              style: {
+                wordBreak: 'break-word',
+              },
+            }
+          );
+        }
       },
     }),
     [moveBox]
