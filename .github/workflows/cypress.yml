@@ -46,7 +46,7 @@ jobs:
 
       - name: Run PosgtreSQL Database Docker Container
         run: |
-          docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres POSTGRES_PORT=5432 -v /path/to/host/directory:/var/lib/postgresql/13/main -d postgres:13
+          docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -v /path/to/host/directory:/var/lib/postgresql/13/main -d postgres:13
 
       - name: Run PostgREST Docker Container
         run: |
