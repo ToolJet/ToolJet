@@ -308,7 +308,7 @@ actions.unsetPageVariable('pageVar')`
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
   });
 
-  it.only("should verify runpy toggle options", () => {
+  it("should verify runpy toggle options", () => {
     const data = {};
     data.customText = randomString(12);
 

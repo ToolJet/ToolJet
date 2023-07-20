@@ -214,7 +214,7 @@ describe("RunJS", () => {
     cy.get('[data-cy="sign-in-header"]').should("be.visible");
   });
 
-  it.only("should verify global and page data", () => {
+  it("should verify global and page data", () => {
     const data = {};
     data.customText = randomString(12);
 
