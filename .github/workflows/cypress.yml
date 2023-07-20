@@ -22,25 +22,6 @@ jobs:
         with:
           node-version: 18.3.0
 
-      # - name: Install PostgreSQL client
-      #   run: |
-      #     sudo apt update
-      #     sudo apt install postgresql-client -y
-
-      # - name: Start PostgreSQL service
-      #   run: sudo service postgresql start
-
-      # - name: Check PostgreSQL service status
-      #   run: sudo service postgresql status
-
-      # - name: Create PostgreSQL User
-      #   run: |
-      #     sudo -u postgres psql -c "CREATE USER cypress PASSWORD 'cypress' CREATEDB;"
-
-      # - name: Create PostgreSQL Database
-      #   run: |
-      #     sudo -u postgres createdb -O cypress tooljet_development
-
       - name: Set up Docker
         run: |
           sudo apt update
@@ -60,7 +41,8 @@ jobs:
 
       - name: Run PosgtreSQL Database Docker Container
         run: |
-          sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13        
+          sudo docker network create tooljet
+          sudo docker run -d --name postgres --network tooljet -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13        
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -93,7 +75,7 @@ jobs:
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
           echo "PG_DB=tooljet_development" >> .env
           echo "PG_USER=postgres" >> .env
-          echo "PG_HOST=local" >> .env
+          echo "PG_HOST=localhost" >> .env
           echo "PG_PASS=postgres" >> .env
           echo "PG_PORT=5432" >> .env
           echo "ENABLE_TOOLJET_DB=true" >> .env
@@ -102,7 +84,7 @@ jobs:
           echo "TOOLJET_DB_HOST=localhost" >> .env
           echo "TOOLJET_DB_PASS=postgres" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
-          echo "PGRST_HOST=localhost:3003" >> .env
+          echo "PGRST_HOST=localhost:3001" >> .env
 
 
       - name: Set up database
@@ -116,8 +98,8 @@ jobs:
 
       - name: Run PostgREST Docker Container
         run: |
-          sudo docker run -d --name postgrest -p 3003:3003 \
-          -e PGRST_DB_URI="postgres://postgres:postgres@localhost:5432/tooljet" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
+          sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
+          -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
           postgrest/postgrest:v10.1.1.20221215
 
       - name: Checking docker containers
