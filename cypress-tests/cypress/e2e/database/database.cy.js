@@ -71,8 +71,11 @@ describe("Database Functionality", () => {
   });
   it("Verify all operations of table", () => {
     navigateToDatabase();
+    cy.screenshot();
     navigateToTable(data.tableName);
+    cy.screenshot();
     editTableNameAndVerifyToastMessage(data.newTableName, data.editTableName);
+    cy.screenshot();
     deleteTableAndVerifyToastMessage(data.editTableName);
     createNewColumnAndVerify(
       data.tableName,
@@ -81,10 +84,13 @@ describe("Database Functionality", () => {
       true,
       column1.defaultValueVarchar
     );
+    cy.screenshot();
     addNewRowAndVerify(data.tableName, false);
+    cy.screenshot();
     addNewRowAndVerify(data.tableName, false, [column1.name], true, [
       row1.varcharData,
     ]);
+    cy.screenshot();
     createNewColumnAndVerify(
       data.tableName,
       column2.name,
