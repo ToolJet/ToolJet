@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { dynamoDbText } from "Texts/dynamodb";
@@ -13,6 +14,9 @@ import {
   verifyCouldnotConnectWithAlert,
   deleteDatasource,
 } from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source DynamoDB", () => {
   beforeEach(() => {
@@ -106,7 +110,7 @@ describe("Data source DynamoDB", () => {
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
-      dynamoDbText.cypressDynamoDb
+      `cypress-${data.lastName}-dynamodb`
     );
 
     cy.get('[data-cy="label-region"]')
@@ -159,11 +163,10 @@ describe("Data source DynamoDB", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get('[data-cy="cypress-dynamodb-button"]').verifyVisibleElement(
-      "have.text",
-      dynamoDbText.cypressDynamoDb
-    );
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-dynamodb-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-dynamodb`);
 
-    deleteDatasource("cypress-dynamodb");
+    deleteDatasource(`cypress-${data.lastName}-dynamodb`);
   });
 });

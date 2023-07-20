@@ -21,7 +21,7 @@ import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { CreateAdminDto, CreateUserDto } from '@dto/user.dto';
 import { AcceptInviteDto } from '@dto/accept-organization-invite.dto';
-import { dbTransactionWrap } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, generateNextName } from 'src/helpers/utils.helper';
 import {
   getUserErrorMessages,
   getUserStatusAndSource,
@@ -33,7 +33,7 @@ import {
   WORKSPACE_USER_STATUS,
 } from 'src/helpers/user_lifecycle';
 import { MetadataService } from './metadata.service';
-import { Response } from 'express';
+import { CookieOptions, Response } from 'express';
 import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
@@ -121,7 +121,7 @@ export class AuthService {
           organization = organizationList[0];
         } else {
           // no form login enabled organization available for user - creating new one
-          organization = await this.organizationsService.create('Untitled workspace', user, manager);
+          organization = await this.organizationsService.create(generateNextName('My workspace'), user, manager);
         }
 
         user.organizationId = organization.id;
@@ -257,7 +257,10 @@ export class AuthService {
 
     await dbTransactionWrap(async (manager: EntityManager) => {
       // Create default organization
-      organization = await this.organizationsService.create('Untitled workspace', null, manager);
+      //TODO: check if there any case available that the firstname will be nil
+
+      const organizationName = generateNextName('My workspace');
+      organization = await this.organizationsService.create(organizationName, null, manager);
       const user = await this.usersService.create(
         {
           email,
@@ -323,7 +326,7 @@ export class AuthService {
 
     const result = await dbTransactionWrap(async (manager: EntityManager) => {
       // Create first organization
-      const organization = await this.organizationsService.create(workspace || 'Untitled workspace', null, manager);
+      const organization = await this.organizationsService.create(workspace || 'My workspace', null, manager);
       const user = await this.usersService.create(
         {
           email,
@@ -406,12 +409,6 @@ export class AuthService {
 
         // Activate default workspace
         await this.organizationUsersService.activateOrganization(defaultOrganizationUser, manager);
-
-        if (companyName) {
-          await manager.update(Organization, user.defaultOrganizationId, {
-            name: companyName,
-          });
-        }
       } else {
         throw new BadRequestException('Invalid invitation link');
       }
@@ -596,11 +593,19 @@ export class AuthService {
     };
     user.organizationId = organization.id;
 
-    response.cookie('tj_auth_token', this.jwtService.sign(JWTPayload), {
+    const cookieOptions: CookieOptions = {
       httpOnly: true,
       sameSite: 'strict',
       maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
-    });
+    };
+
+    if (this.configService.get<string>('ENABLE_PRIVATE_APP_EMBED') === 'true') {
+      // disable cookie security
+      cookieOptions.sameSite = 'none';
+      cookieOptions.secure = true;
+    }
+
+    response.cookie('tj_auth_token', this.jwtService.sign(JWTPayload), cookieOptions);
 
     return decamelizeKeys({
       id: user.id,

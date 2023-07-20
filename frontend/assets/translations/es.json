@@ -367,7 +367,7 @@
             "editFolder": "Editar carpeta",
             "deleteFolder": "Borrar carpeta",
             "folderName": "Nombre de la carpeta",
-            "wishToDeleteFolder": "¿Estás seguro de que deseas eliminar la carpeta? Las aplicaciones dentro de la carpeta no se eliminarán."
+            "wishToDeleteFolder": "¿Estás seguro de que deseas eliminar la carpeta {{folderName}}? Las aplicaciones dentro de la carpeta no se eliminarán."
         },
         "header": {
             "createNewApplication": "Crear nueva aplicación",

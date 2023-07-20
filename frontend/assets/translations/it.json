@@ -367,7 +367,7 @@
             "editFolder": "Modifica cartella",
             "deleteFolder": "Elimina cartella",
             "folderName": "Nome cartella",
-            "wishToDeleteFolder": "Vuoi veramente eliminare la cartella? Le applicazioni all'interno della cartella non verranno eliminate."
+            "wishToDeleteFolder": "Vuoi veramente eliminare la cartella {{folderName}}? Le applicazioni all'interno della cartella non verranno eliminate."
         },
         "header": {
             "createNewApplication": "Crea una nuova applicazione",

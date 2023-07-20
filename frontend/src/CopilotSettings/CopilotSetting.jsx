@@ -2,16 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { ApiKeyContainer } from './ApiKeyContainer';
 import { copilotService, orgEnvironmentVariableService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
-import { CustomToggleSwitch } from '@/Editor/QueryManager/CustomToggleSwitch';
+import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
 import { useLocalStorageState } from '@/_hooks/use-local-storage';
 
 export const CopilotSetting = () => {
-  const { current_organization_id } = authenticationService.currentSessionValue;
+  const { current_organization_id, current_organization_name, admin } = authenticationService.currentSessionValue;
+  const currentOrgName = current_organization_name.replace(/\s/g, '').toLowerCase();
+
   const [copilotApiKey, setCopilotApiKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [state, setState] = useLocalStorageState(`copilotEnabled-${current_organization_id}`, false);
+  const [state, setState] = useLocalStorageState(`copilotEnabled-${currentOrgName}`, false);
   const [copilotWorkspaceVarId, set] = useState(null);
 
   const saveCopilotApiKey = async (apikey) => {
@@ -30,7 +32,10 @@ export const CopilotSetting = () => {
             console.log(err);
             return toast.error('Something went wrong');
           })
-          .finally(() => setIsLoading(false));
+          .finally(() => {
+            setIsLoading(false);
+            orgEnvironmentVariableService.create(`copilot_enabled-${current_organization_id}`, 'true', 'client', false);
+          });
       }
 
       if (isCopilotApiKeyPresent === true && copilotWorkspaceVarId) {
@@ -58,7 +63,7 @@ export const CopilotSetting = () => {
   const validateApiKey = (apiKey) => {
     return new Promise((resolve, reject) => {
       copilotService
-        .validateCopilotAPIKey(apiKey)
+        .validateCopilotAPIKey(apiKey, current_organization_id)
         .then(({ status }) => {
           if (status === 'ok') {
             return resolve(true);
@@ -72,33 +77,56 @@ export const CopilotSetting = () => {
     });
   };
 
-  useEffect(() => {
-    if (!state) {
-      return;
-    }
-
-    orgEnvironmentVariableService.getVariables().then((data) => {
-      const isCopilotApiKeyPresent = data.variables.some(
-        (variable) => variable.variable_name === `copilot_api_key-${current_organization_id}`
-      );
-
-      const shouldUpdate = isCopilotApiKeyPresent;
-      if (shouldUpdate) {
-        const copilotVariableId = data.variables.find(
-          (variable) => variable.variable_name === `copilot_api_key-${current_organization_id}`
-        )?.id;
-        const key = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
-        set(copilotVariableId);
-        setCopilotApiKey(key);
-      }
+  const updateCopilotEnabled = (id, value, variableName) => {
+    return orgEnvironmentVariableService.update(id, variableName, `${value}`).catch((err) => {
+      console.log(err);
     });
+  };
+
+  useEffect(() => {
+    if (!admin) {
+      orgEnvironmentVariableService.getVariables().then((data) => {
+        const { value } = data.variables.find(
+          (variable) => variable.variable_name === `copilot_enabled-${current_organization_id}`
+        );
+
+        setState(value === 'true');
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (admin) {
+      orgEnvironmentVariableService.getVariables().then((data) => {
+        const isCopilotApiKeyPresent = data.variables.some(
+          (variable) => variable.variable_name === `copilot_api_key-${current_organization_id}`
+        );
+
+        const { id, variable_name, value } = data.variables.find(
+          (variable) => variable.variable_name === `copilot_enabled-${current_organization_id}`
+        );
+
+        if (value !== `${state}`) updateCopilotEnabled(id, state, variable_name);
+
+        const shouldUpdate = state && isCopilotApiKeyPresent;
+        if (shouldUpdate) {
+          const copilotVariableId = data.variables.find(
+            (variable) => variable.variable_name === `copilot_api_key-${current_organization_id}`
+          )?.id;
+          const key = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+          set(copilotVariableId);
+          setCopilotApiKey(key);
+        }
+      });
+    }
 
     return () => {
       setCopilotApiKey('');
       set(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [state]);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
@@ -111,7 +139,7 @@ export const CopilotSetting = () => {
             padding: '4rem',
           }}
         >
-          <Container isCopilotEnabled={state} handleCopilotToggle={handleCopilotToggle}>
+          <Container isCopilotEnabled={state} handleCopilotToggle={handleCopilotToggle} isAdmin={admin}>
             <div className="row">
               <div className="col-12">
                 <ApiKeyContainer
@@ -120,6 +148,7 @@ export const CopilotSetting = () => {
                   isLoading={isLoading}
                   darkMode={darkMode}
                   isCopilotEnabled={state}
+                  isAdmin={admin}
                 />
               </div>
             </div>
@@ -130,7 +159,7 @@ export const CopilotSetting = () => {
   );
 };
 
-const Container = ({ children, isCopilotEnabled, handleCopilotToggle, darkMode }) => {
+const Container = ({ children, isCopilotEnabled, handleCopilotToggle, darkMode, isAdmin }) => {
   return (
     <div className="card p-2 card-container">
       <div className="card-header row">
@@ -151,6 +180,7 @@ const Container = ({ children, isCopilotEnabled, handleCopilotToggle, darkMode }
                 toggleSwitchFunction={handleCopilotToggle}
                 action="enableTransformation"
                 dataCy={'copilot'}
+                disabled={!isAdmin}
               />
 
               <span className="mx-2 mt-3 font-weight-400 tranformation-label" data-cy={'label-query-transformation'}>

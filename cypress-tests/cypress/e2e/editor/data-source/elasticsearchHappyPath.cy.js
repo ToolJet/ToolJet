@@ -1,3 +1,4 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { elasticsearchText } from "Texts/elasticsearch";
@@ -7,7 +8,14 @@ import {
   fillDataSourceTextField,
   selectDataSource,
 } from "Support/utils/postgreSql";
-import { verifyCouldnotConnectWithAlert,deleteDatasource,closeDSModal } from "Support/utils/dataSource";
+import {
+  verifyCouldnotConnectWithAlert,
+  deleteDatasource,
+  closeDSModal,
+} from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source Elasticsearch", () => {
   beforeEach(() => {
@@ -112,7 +120,7 @@ describe("Data source Elasticsearch", () => {
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
-      elasticsearchText.cypressElasticsearch
+      `cypress-${data.lastName}-elasticsearch`
     );
 
     fillDataSourceTextField(
@@ -181,11 +189,13 @@ describe("Data source Elasticsearch", () => {
       postgreSqlText.toastDSAdded
     );
 
-      cy.get('[data-cy="cypress-elasticsearch-button"]').verifyVisibleElement(
-        "have.text",
-        elasticsearchText.cypressElasticsearch
-      );
-  
-      deleteDatasource("cypress-elasticsearch");
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-elasticsearch-button"]`
+    ).verifyVisibleElement(
+      "have.text",
+      `cypress-${data.lastName}-elasticsearch`
+    );
+
+    deleteDatasource(`cypress-${data.lastName}-elasticsearch`);
   });
 });

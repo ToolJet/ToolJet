@@ -15,19 +15,39 @@ Versioning is really useful if multiple developers are working on an app, it all
 
 You can create new versions from **App Version Manager** on the top-right corner. It displays the version of the app that you're currently working and can be used to switch between the different version of the app. To create a new version:
 
-- Go to the **App Version Manager** from the toolbar and click on the dropdown. It will display all the versions of the app that have been created.
+- Go to the **App Version Manager** from the toolbar and click on the dropdown. It will display all the versions of the app that have been created. The released version name will be in green color.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/tutorial/versioning-and-release/appversionv2.png" alt="app version" width="700"/>
+  <img className="screenshot-full" src="/img/tutorial/versioning-and-release/releasev25.png" alt="app version"/>
 
   </div>
 
-- Click on **Create Version** and a modal will pop-up. Enter a **Version Name** and click on **Create version from** dropdown that will include all the versions of the app, choose a version that you want to use for your new version and then click on `Create Version`.
+- Click on **Create new version** button present at the bottom of the dropdown and a modal will pop-up. Enter a **Version Name** and click on **Create version from** dropdown that will include all the versions of the app, choose a version from the dropdown that you want to use for your new version or ToolJet will automatically select the last created version, and then click on `Create new Version` button to add a new version.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/tutorial/versioning-and-release/modalv2.png" alt="modal" width="400"/>
+  <img className="screenshot-full" src="/img/tutorial/versioning-and-release/newpopup.png" alt="modal" width="400"/>
 
   </div>
+
+### Renaming a version
+
+If you want to change the name of an app version, navigate to the **version manager** and select the version you wish to rename. From there, you can click on the rename button located beside the version name. This will open a modal where you can modify the version name to your desired choice.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/tutorial/versioning-and-release/editv.png" alt="version dropdown" />
+
+</div>
+
+### Deleting a version
+
+If you want to remove an app version, go to the **version manager** and locate the version you wish to delete from the dropdown menu. Next to the version, you will find a delete icon. Click on it to initiate the deletion process.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/tutorial/versioning-and-release/deletev.png" alt="version dropdown" />
+
+</div>
 
 ## Release
 
@@ -52,16 +72,11 @@ To release a version:
   </div>
 
 
-:::tip 
-ToolJet will block editing of the `Released version` of an app and will display a prompt to create a new version to make the changes. This is to prevent accidentally pushing an unfinished app to the live version.
+:::caution
+To prevent the unintended publishing of an unfinished app, ToolJet will prompt you to create a new version for making any edits to the `Released version` of an app. Editing of the `Released version` will be blocked until a new version is created.
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tutorial/versioning-and-release/promptv2.png" alt="release" width="400" />
+<img className="screenshot-full" src="/img/tutorial/versioning-and-release/releasefreeze.png" alt="release" />
 
 </div>
 :::
-
-
-
-
-

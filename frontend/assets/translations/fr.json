@@ -367,7 +367,7 @@
       "editFolder": "Modifier le dossier",
       "deleteFolder": "Supprimer le dossier",
       "folderName": "Nom de dossier",
-      "wishToDeleteFolder": "Êtes-vous sûr de vouloir supprimer le dossier ? Les applications dans le dossier ne seront pas supprimées."
+      "wishToDeleteFolder": "Êtes-vous sûr de vouloir supprimer le dossier {{folderName}}? Les applications dans le dossier ne seront pas supprimées."
     },
     "header": {
       "createNewApplication": "Créer une nouvelle application",

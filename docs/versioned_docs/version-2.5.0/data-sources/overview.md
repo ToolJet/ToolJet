@@ -19,7 +19,15 @@ Global datasources are available only on **ToolJet version 2.3.0 and above**.
 
 ## Connecting global datasources
 
-1. From the ToolJet dashboard, go to the **global datasources page** from the left sidebar.
+1. **Create a new app** from the dashboard, and Select the **Add new global datasource** option from the query panel.
+  <div style={{textAlign: 'center'}}>
+
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/qpanel.png" alt="Datasources: Overview" />
+
+  </div>
+
+  Or you can directly go to the **Global Datasources** page from the left sidebar of the dashboard
+
   <div style={{textAlign: 'center'}}>
 
   <img className="screenshot-full" src="/img/datasource-reference/newui/overview/global.png" alt="Datasources: Overview" />
@@ -40,14 +48,14 @@ Global datasources are available only on **ToolJet version 2.3.0 and above**.
 
   </div>
 
-4. Now, go back to the dashboard, create a new app, and the datasource will be available on the query panel under **Global Datasources**. Added datasources will be available on any of the **existing** or the **new applications**.
+4. Now, go back to the dashboard, create a new app, and the datasource will be available on the query panel under **Global Datasources**. Added datasources will now be available on either of the **existing** and the **new applications**.
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/datasource-reference/overview/globalquery.png" alt="Datasources: Overview" />
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/newquery1.png" alt="Datasources: Overview" />
 
   </div>
 
-5. You can now create queries of the connected global datasource. From the queries, you'll be able to switch to **different connections** of the same datasource if there are more than one connections created.
+5. You can now create queries to the connected global datasource. From the queries, you'll be able to switch to **different connections** of the same datasource if there are more than one connections created.
   <div style={{textAlign: 'center'}}>
 
   <img className="screenshot-full" src="/img/datasource-reference/overview/switch.png" alt="Datasources: Overview" />
@@ -90,7 +98,7 @@ By default, 4 datasources will be available on every app on ToolJet:
 
   <div style={{textAlign: 'center'}}>
 
-  <img className="screenshot-full" src="/img/datasource-reference/overview/default.png" alt="Datasources: Overview" />
+  <img className="screenshot-full" src="/img/datasource-reference/newui/overview/defaultds.png" alt="Datasources: Overview" />
 
   </div>
 

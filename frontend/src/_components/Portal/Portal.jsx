@@ -4,7 +4,8 @@ import { Rnd } from 'react-rnd';
 import { Button } from '@/_ui/LeftSidebar';
 
 const Portal = ({ children, ...restProps }) => {
-  const { isOpen, trigger, styles, className, componentName, dragResizePortal, callgpt } = restProps;
+  const { isOpen, trigger, styles, className, componentName, dragResizePortal, callgpt, isCopilotEnabled } = restProps;
+
   const [name, setName] = React.useState(componentName);
   const handleClose = (e) => {
     e.stopPropagation();
@@ -45,6 +46,7 @@ const Portal = ({ children, ...restProps }) => {
           componentName={name}
           dragResizePortal={dragResizePortal}
           callgpt={callgpt}
+          isCopilotEnabled={isCopilotEnabled}
         >
           {children}
         </Portal.Modal>
@@ -57,7 +59,17 @@ const Container = ({ children, ...restProps }) => {
   return <ReactPortal {...restProps}>{children}</ReactPortal>;
 };
 
-const Modal = ({ children, handleClose, portalStyles, styles, componentName, darkMode, dragResizePortal, callgpt }) => {
+const Modal = ({
+  children,
+  handleClose,
+  portalStyles,
+  styles,
+  componentName,
+  darkMode,
+  dragResizePortal,
+  callgpt,
+  isCopilotEnabled,
+}) => {
   const [loading, setLoading] = React.useState(false);
 
   const handleCallGpt = () => {
@@ -66,11 +78,10 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName, dar
     callgpt().then(() => setLoading(false));
   };
 
-  const isCopilotEnabled = localStorage.getItem('copilotEnabled') === 'true';
   const includeGPT = ['Runjs', 'Runpy', 'transformation'].includes(componentName) && isCopilotEnabled;
 
   const renderModalContent = () => (
-    <div className="modal-content" style={{ ...portalStyles, ...styles }}>
+    <div className="modal-content" style={{ ...portalStyles, ...styles }} onClick={(e) => e.stopPropagation()}>
       <div
         className={`resize-handle portal-header d-flex ${darkMode ? 'dark-mode-border' : ''}`}
         style={{ ...portalStyles }}
@@ -81,6 +92,7 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName, dar
               textTransform: 'none',
             }}
             className="badge tj-badge"
+            data-cy="codehinder-popup-badge"
           >
             {componentName ?? 'Editor'}
           </span>
@@ -95,7 +107,7 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName, dar
               classNames={`${loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`}
               styles={{ width: '100%', fontSize: '12px', fontWeight: 500, borderColor: darkMode && 'transparent' }}
             >
-              <Button.Content title={'Generate code ⌘+L'} />
+              <Button.Content title={'Generate code'} />
             </Button>
           </div>
         )}
@@ -107,7 +119,11 @@ const Modal = ({ children, handleClose, portalStyles, styles, componentName, dar
           size="sm"
           styles={{ width: '50px', padding: '2px' }}
         >
-          <Button.Content iconSrc={'assets/images/icons/portal-close.svg'} direction="left" />
+          <Button.Content
+            iconSrc={'assets/images/icons/portal-close.svg'}
+            direction="left"
+            dataCy={`codehinder-popup-close`}
+          />
         </Button>
       </div>
       <div

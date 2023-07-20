@@ -1,9 +1,10 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonText } from "Texts/common";
-import { closeDSModal,deleteDatasource } from "Support/utils/dataSource";
+import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 import {
   addQuery,
   fillDataSourceTextField,
@@ -15,6 +16,9 @@ import {
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
 
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
@@ -22,10 +26,10 @@ describe("Data sources", () => {
 
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
-    closeDSModal()
+    closeDSModal();
     cy.get(commonSelectors.addNewDataSourceButton)
-    .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
-    .click();
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
+      .click();
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
       postgreSqlText.allDataSources
@@ -94,7 +98,7 @@ describe("Data sources", () => {
     selectDataSource("CosmosDB");
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      "cypress-cosmosdb"
+      `cypress-${data.lastName}-cosmosdb`
     );
 
     fillDataSourceTextField(
@@ -119,10 +123,9 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get('[data-cy="cypress-cosmosdb-button"]').verifyVisibleElement(
-      "have.text",
-      "cypress-cosmosdb"
-    );
-    deleteDatasource("cypress-cosmosdb");
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-cosmosdb-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-cosmosdb`);
+    deleteDatasource(`cypress-${data.lastName}-cosmosdb`);
   });
 });

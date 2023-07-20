@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, MoreThan, Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { AppUser } from 'src/entities/app_user.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -12,7 +12,13 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import { cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
+import {
+  catchDbException,
+  cleanObject,
+  dbTransactionWrap,
+  defaultAppEnvironments,
+  generateNextName,
+} from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 import { VersionEditDto } from '@dto/version-edit.dto';
@@ -21,6 +27,7 @@ import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { AppEnvironmentService } from './app_environments.service';
 import { decode } from 'js-base64';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
+import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 
 @Injectable()
 export class AppsService {
@@ -98,9 +105,10 @@ export class AppsService {
 
   async create(user: User, manager: EntityManager): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
+      const name = await generateNextName('My app');
       const app = await manager.save(
         manager.create(App, {
-          name: 'Untitled app',
+          name,
           createdAt: new Date(),
           updatedAt: new Date(),
           organizationId: user.organizationId,
@@ -109,7 +117,7 @@ export class AppsService {
       );
 
       //create default app version
-      await this.createVersion(user, app, 'v1', null, manager);
+      await this.createVersion(user, app, 'v1', null, null, manager);
 
       await manager.save(
         manager.create(AppUser, {
@@ -173,6 +181,12 @@ export class AppsService {
     return await viewableAppsQuery(user, searchKey).getCount();
   }
 
+  getAppVersionsCount = async (appId: string) => {
+    return await this.appVersionsRepository.count({
+      where: { appId },
+    });
+  };
+
   async all(user: User, page: number, searchKey: string): Promise<App[]> {
     const viewableAppsQb = viewableAppsQuery(user, searchKey);
 
@@ -204,7 +218,32 @@ export class AppsService {
     // removing keys with undefined values
     cleanObject(updatableParams);
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      return await manager.update(App, appId, updatableParams);
+      if (updatableParams.currentVersionId) {
+        //check if the app version is eligible for release
+        const currentEnvironment: AppEnvironment = await manager
+          .createQueryBuilder(AppEnvironment, 'app_environments')
+          .select(['app_environments.id', 'app_environments.isDefault'])
+          .innerJoinAndSelect(
+            'app_versions',
+            'app_versions',
+            'app_versions.current_environment_id = app_environments.id'
+          )
+          .where('app_versions.id = :currentVersionId', {
+            currentVersionId,
+          })
+          .getOne();
+
+        if (!currentEnvironment?.isDefault) {
+          throw new BadRequestException('You can only release when the version is promoted to production');
+        }
+      }
+      return await catchDbException(
+        async () => {
+          return await manager.update(App, appId, updatableParams);
+        },
+        DataBaseConstraints.APP_NAME_UNIQUE,
+        'This app name is already taken.'
+      );
     }, manager);
   }
 
@@ -251,6 +290,7 @@ export class AppsService {
     app: App,
     versionName: string,
     versionFromId: string,
+    environmentId: string,
     manager?: EntityManager
   ): Promise<AppVersion> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
@@ -261,6 +301,20 @@ export class AppsService {
           where: { id: versionFromId },
           relations: ['dataSources', 'dataSources.dataQueries', 'dataSources.dataSourceOptions'],
         });
+
+        if (defaultAppEnvironments.length > 1) {
+          const environmentWhereUserCreatingVersion = await this.appEnvironmentService.get(
+            app.organizationId,
+            environmentId,
+            false,
+            manager
+          );
+
+          //check if the user is creating version from development environment only
+          if (environmentWhereUserCreatingVersion.priority !== 1) {
+            throw new BadRequestException('New versions can only be created in development environment');
+          }
+        }
       }
 
       const noOfVersions = await manager.count(AppVersion, { where: { appId: app?.id } });
@@ -277,12 +331,15 @@ export class AppsService {
         throw new BadRequestException('Version name already exists.');
       }
 
+      const firstPriorityEnv = await this.appEnvironmentService.get(organizationId, null, true, manager);
+
       const appVersion = await manager.save(
         AppVersion,
         manager.create(AppVersion, {
           name: versionName,
           appId: app.id,
           definition: versionFrom?.definition,
+          currentEnvironmentId: firstPriorityEnv?.id,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
@@ -425,7 +482,13 @@ export class AppsService {
 
   private async createEnvironments(appEnvironments: any[], manager: EntityManager, organizationId: string) {
     for (const appEnvironment of appEnvironments) {
-      await this.appEnvironmentService.create(organizationId, appEnvironment.name, appEnvironment.isDefault, manager);
+      await this.appEnvironmentService.create(
+        organizationId,
+        appEnvironment.name,
+        appEnvironment.isDefault,
+        appEnvironment.priority,
+        manager
+      );
     }
   }
 
@@ -521,24 +584,60 @@ export class AppsService {
     }
   }
 
-  async updateVersion(version: AppVersion, body: VersionEditDto) {
+  async updateVersion(version: AppVersion, body: VersionEditDto, organizationId: string) {
+    const { name, currentEnvironmentId, definition } = body;
+    let currentEnvironment: AppEnvironment;
+
     if (version.id === version.app.currentVersionId && !body?.is_user_switched_version)
       throw new BadRequestException('You cannot update a released version');
 
-    const editableParams = {};
-    if (body.definition) editableParams['definition'] = body.definition;
-    if (body.name) editableParams['name'] = body.name;
+    if (currentEnvironmentId || definition) {
+      currentEnvironment = await AppEnvironment.findOne({
+        where: { id: version.currentEnvironmentId },
+      });
+    }
 
-    if (body.name) {
+    const editableParams = {};
+    if (name) {
       //means user is trying to update the name
       const versionNameExists = await this.appVersionsRepository.findOne({
-        where: { name: body.name, appId: version.appId },
+        where: { name, appId: version.appId },
       });
 
       if (versionNameExists) {
         throw new BadRequestException('Version name already exists.');
       }
+      editableParams['name'] = name;
     }
+
+    //check if the user is trying to promote the environment & raise an error if the currentEnvironmentId is not correct
+    if (currentEnvironmentId) {
+      if (version.currentEnvironmentId !== currentEnvironmentId) {
+        throw new NotAcceptableException();
+      }
+      const nextEnvironment = await AppEnvironment.findOne({
+        select: ['id'],
+        where: {
+          priority: MoreThan(currentEnvironment.priority),
+          organizationId,
+        },
+        order: { priority: 'ASC' },
+      });
+      editableParams['currentEnvironmentId'] = nextEnvironment.id;
+    }
+
+    if (definition) {
+      const environments = await AppEnvironment.count({
+        where: {
+          organizationId,
+        },
+      });
+      if (editableParams['definition'] && environments > 1 && currentEnvironment.priority !== 1) {
+        throw new BadRequestException('You cannot update a promoted version');
+      }
+      editableParams['definition'] = definition;
+    }
+
     editableParams['updatedAt'] = new Date();
 
     return await this.appVersionsRepository.update(version.id, editableParams);

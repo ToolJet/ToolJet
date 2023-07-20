@@ -1,33 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { SearchBox } from '@/_components/SearchBox';
+import React, { useState } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { getSvgIcon, checkExistingQueryName } from '@/_helpers/appUtils';
 import { DataSourceTypes } from '../DataSourceManager/SourceComponents';
 import { Confirm } from '../Viewer/Confirm';
 import { toast } from 'react-hot-toast';
-
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions, useSelectedQuery, useUnsavedChanges } from '@/_stores/queryPanelStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryCard = ({
   dataQuery,
   setSaveConfirmation,
   setCancelData,
   setDraftQuery,
-  setSelectedDataSource,
   darkMode = false,
-  fetchDataQueries,
   editorRef,
-  isVersionReleased,
 }) => {
   const selectedQuery = useSelectedQuery();
   const isUnsavedChangesAvailable = useUnsavedChanges();
   const { isDeletingQueryInProcess } = useDataQueriesStore();
   const { deleteDataQueries, renameQuery } = useDataQueriesActions();
-  const { setSelectedQuery, setUnSavedChanges } = useQueryPanelActions();
+  const { setSelectedQuery, setSelectedDataSource, setUnSavedChanges } = useQueryPanelActions();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   const [renamingQuery, setRenamingQuery] = useState(false);
 
   const getSourceMetaData = (dataSource) => {
@@ -66,8 +68,9 @@ export const QueryCard = ({
       if (id === 'draftQuery') {
         toast.success('Query Name Updated');
         setDraftQuery((query) => ({ ...query, name: newName }));
+        setSelectedQuery('draftQuery', { ...dataQuery, name: newName });
       } else {
-        renameQuery(dataQuery?.id, newName, fetchDataQueries);
+        renameQuery(dataQuery?.id, newName, editorRef);
       }
       setRenamingQuery(false);
     } else {
@@ -137,6 +140,7 @@ export const QueryCard = ({
             </OverlayTrigger>
           )}
         </div>
+
         {!isVersionReleased && (
           <div className="col-auto query-rename-delete-btn">
             <div

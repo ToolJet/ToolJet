@@ -1,8 +1,9 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { closeDSModal,deleteDatasource } from "Support/utils/dataSource";
+import { closeDSModal, deleteDatasource } from "Support/utils/dataSource";
 
 import {
   addQuery,
@@ -20,13 +21,15 @@ describe("Data sources", () => {
     cy.appUILogin();
   });
 
+  const data = {};
+  data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
+
   it("Should verify elements on connection form", () => {
     cy.get(commonSelectors.globalDataSourceIcon).click();
     closeDSModal();
     cy.get(commonSelectors.addNewDataSourceButton)
       .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
-
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -109,7 +112,7 @@ describe("Data sources", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-   cy.get('[data-cy="connection-alert-text"]').should(
+    cy.get('[data-cy="connection-alert-text"]').should(
       "have.text",
       "A user name must be specified."
     );
@@ -120,7 +123,7 @@ describe("Data sources", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      "cypress-snowflake"
+      `cypress-${data.lastName}-snowflake`
     );
 
     fillDataSourceTextField(
@@ -161,12 +164,11 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-      cy.get(commonSelectors.globalDataSourceIcon).click();
-      cy.get('[data-cy="cypress-snowflake-button"]').verifyVisibleElement(
-        "have.text",
-        "cypress-snowflake"
-      );
-  
-      deleteDatasource("cypress-snowflake");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-snowflake-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-snowflake`);
+
+    deleteDatasource(`cypress-${data.lastName}-snowflake`);
   });
 });

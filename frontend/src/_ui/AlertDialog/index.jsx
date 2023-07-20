@@ -35,7 +35,7 @@ export default function AlertDialog({
       centered
       data-cy={'modal-component'}
       style={{ zIndex: 9992 }}
-      // backdropClassName="home-modal-backdrop"
+      backdropClassName={!checkForBackground && 'home-modal-backdrop'}
     >
       {title && (
         <Modal.Header>

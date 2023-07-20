@@ -53,7 +53,7 @@ export function OrganizationSettings(props) {
               {sideBarNavs.map((item, index) => {
                 return (
                   <>
-                    {(admin || item == 'Workspace variables') && (
+                    {(admin || item == 'Workspace variables' || item == 'Copilot') && (
                       <FolderList
                         className="workspace-settings-nav-items"
                         key={index}

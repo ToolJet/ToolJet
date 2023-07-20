@@ -1,8 +1,9 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
-import { deleteDatasource,closeDSModal } from "Support/utils/dataSource";
+import { deleteDatasource, closeDSModal } from "Support/utils/dataSource";
 
 import {
   addQuery,
@@ -14,6 +15,9 @@ import {
   addGuiQuery,
   addWidgetsToAddUser,
 } from "Support/utils/postgreSql";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data sources", () => {
   beforeEach(() => {
@@ -119,7 +123,7 @@ describe("Data sources", () => {
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
-      "cypress-sqlserver"
+      `cypress-${data.lastName}-sqlserver`
     );
 
     fillDataSourceTextField(
@@ -163,11 +167,10 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-      cy.get(commonSelectors.globalDataSourceIcon).click();
-      cy.get('[data-cy="cypress-sqlserver-button"]').verifyVisibleElement(
-        "have.text",
-        "cypress-sqlserver"
-      );
-      deleteDatasource("cypress-sqlserver");
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-sqlserver-button"]`
+    ).verifyVisibleElement("have.text", `cypress-${data.lastName}-sqlserver`);
+    deleteDatasource(`cypress-${data.lastName}-sqlserver`);
   });
 });

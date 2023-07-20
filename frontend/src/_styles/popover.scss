@@ -1,9 +1,8 @@
-
 .PopoverContent {
   outline: none;
   border-radius: 4px;
   padding: 12px;
-  min-width: 288px;
+  width: 350px;
   background-color: white;
   will-change: transform, opacity;
   box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
@@ -13,6 +12,10 @@
   select {
     cursor: pointer;
   }
+}
+
+.PopoverContent.global-settings-popover-content{
+  will-change: initial;
 }
 
 .PopoverContent-dark {
@@ -37,23 +40,25 @@
   right: 5px;
 }
 
-.PopoverContent.dark{
+.PopoverContent.dark {
   background-color: #1F2936 !important;
-  .dark.leftsidebar-panel-header{
-    .text-muted{
+
+  .dark.leftsidebar-panel-header {
+    .text-muted {
       color: #C0C8CC !important;
     }
   }
-  .card-body{
+
+  .card-body {
     color: #C0C8CC !important;
   }
+
   &::-webkit-scrollbar {
     width: 0;
     background: transparent;
   }
-} 
-
-div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
-  transform: translate3d(47px,45px,0) !important;
 }
 
+div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
+  transform: translate3d(47px, 45px, 0) !important;
+}

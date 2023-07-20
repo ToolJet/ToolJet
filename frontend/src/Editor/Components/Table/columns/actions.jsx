@@ -17,14 +17,13 @@ const generateActionsData = ({ actions: actionItems, columnSizes, defaultColumn,
               return leftActions(actionButtonsArray).map((action) => (
                 <button
                   key={action.name}
-                  className="btn btn-sm m-1 btn-light"
+                  className="btn btn-sm m-1 btn-light action-button"
                   style={{
                     background: action.backgroundColor,
                     color: action.textColor,
                     borderRadius: action.actionButtonRadius,
                   }}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     setExposedVariables({
                       selectedRowId: cell.row.id,
                       selectedRow: cell.row.original,
@@ -58,14 +57,13 @@ const generateActionsData = ({ actions: actionItems, columnSizes, defaultColumn,
               return rightActions(actionButtonsArray).map((action) => (
                 <button
                   key={action.name}
-                  className="btn btn-sm m-1 btn-light"
+                  className="btn btn-sm m-1 btn-light action-button"
                   style={{
                     background: action.backgroundColor,
                     color: action.textColor,
                     borderRadius: action.actionButtonRadius,
                   }}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     setExposedVariables({
                       selectedRowId: cell.row.id,
                       selectedRow: cell.row.original,

@@ -7,6 +7,8 @@ import { QueryCard } from './QueryCard';
 import Fuse from 'fuse.js';
 import cx from 'classnames';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const QueryDataPane = ({
   setSaveConfirmation,
@@ -14,17 +16,20 @@ export const QueryDataPane = ({
   draftQuery,
   handleAddNewQuery,
   setDraftQuery,
-  setSelectedDataSource,
   darkMode,
   fetchDataQueries,
   editorRef,
-  isVersionReleased,
 }) => {
   const { t } = useTranslation();
   const { loadingDataQueries } = useDataQueriesStore();
   const dataQueries = useDataQueries();
   const [filteredQueries, setFilteredQueries] = useState(dataQueries);
-
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   useEffect(() => {
     setFilteredQueries(dataQueries);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,14 +76,10 @@ export const QueryDataPane = ({
           </div>
           <button
             data-cy={`button-add-new-queries`}
-            className={cx(
-              `col-auto d-flex align-items-center py-1 rounded default-secondary-button ${
-                isVersionReleased && 'disabled'
-              }`,
-              {
-                'theme-dark': darkMode,
-              }
-            )}
+            className={cx(`col-auto d-flex align-items-center py-1 rounded default-secondary-button`, {
+              disabled: isVersionReleased,
+              'theme-dark': darkMode,
+            })}
             onClick={handleAddNewQuery}
             data-tooltip-id="tooltip-for-add-query"
             data-tooltip-content="Add new query"
@@ -110,10 +111,9 @@ export const QueryDataPane = ({
                   setSaveConfirmation={setSaveConfirmation}
                   setCancelData={setCancelData}
                   setDraftQuery={setDraftQuery}
-                  setSelectedDataSource={setSelectedDataSource}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
-                  isVersionReleased={isVersionReleased}
+                  editorRef={editorRef}
                 />
               ) : (
                 ''
@@ -125,11 +125,9 @@ export const QueryDataPane = ({
                   setSaveConfirmation={setSaveConfirmation}
                   setCancelData={setCancelData}
                   setDraftQuery={setDraftQuery}
-                  setSelectedDataSource={setSelectedDataSource}
                   fetchDataQueries={fetchDataQueries}
                   darkMode={darkMode}
                   editorRef={editorRef}
-                  isVersionReleased={isVersionReleased}
                 />
               ))}
             </div>

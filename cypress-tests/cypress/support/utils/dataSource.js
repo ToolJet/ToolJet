@@ -4,7 +4,6 @@ import { cyParamName } from "../../constants/selectors/common";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
 
-
 export const verifyCouldnotConnectWithAlert = (dangerText) => {
   cy.get(postgreSqlSelector.connectionFailedText, {
     timeout: 10000,
@@ -50,8 +49,11 @@ export const deleteDatasource = (datasourceName) => {
 
 export const closeDSModal = () => {
   cy.get("body").then(($body) => {
-    if ($body.find('[data-cy="button-close-ds-connection-modal"]> img').length > 0) {
-      cy.get('[data-cy="button-close-ds-connection-modal"]').realClick()
+    cy.wait(500);
+    if (
+      $body.find('[data-cy="button-close-ds-connection-modal"]> img').length > 0
+    ) {
+      cy.get('[data-cy="button-close-ds-connection-modal"]').realClick();
       closeDSModal();
     }
   });

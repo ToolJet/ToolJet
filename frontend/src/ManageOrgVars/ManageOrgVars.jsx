@@ -74,9 +74,7 @@ class ManageOrgVarsComponent extends React.Component {
     });
 
     orgEnvironmentVariableService.getVariables().then((data) => {
-      const variables = _.cloneDeep(data.variables)?.filter(
-        ({ variable_name }) => !/copilot_api_key/.test(variable_name)
-      );
+      const variables = _.cloneDeep(data.variables)?.filter(({ variable_name }) => !/copilot_/.test(variable_name));
       this.setState({
         variables: variables,
         isLoading: false,

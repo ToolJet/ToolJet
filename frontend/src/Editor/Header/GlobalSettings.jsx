@@ -54,8 +54,12 @@ export const GlobalSettings = ({
         <div>
           <div>
             <div className="d-flex justify-content-start">
+              <span data-cy={`label-hide-header-for-launched-apps`}>
+                {t('leftSidebar.Settings.hideHeader', 'Hide header for launched apps')}
+              </span>
               <div className="form-check form-switch">
                 <input
+                  data-cy={`toggle-hide-header-for-launched-apps`}
                   className="form-check-input"
                   type="checkbox"
                   checked={hideHeader}
@@ -67,8 +71,12 @@ export const GlobalSettings = ({
               </span>
             </div>
             <div className="d-flex   justify-content-start">
+              <span data-cy={`label-maintenance-mode`}>
+                {t('leftSidebar.Settings.maintenanceMode', 'Maintenance mode')}
+              </span>
               <div className="form-check form-switch">
                 <input
+                  data-cy={`toggle-maintenance-mode`}
                   className="form-check-input"
                   type="checkbox"
                   checked={is_maintenance_on}
@@ -80,7 +88,7 @@ export const GlobalSettings = ({
               </span>
             </div>
             <div className="d-flex mb-3 global-popover-div-wrap ">
-              <span className="global-popover-text  ">
+              <span data-cy={`label-max-canvas-width`} className="w-full m-auto">
                 {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}
               </span>
               <div className="global-popover-div-wrap global-popover-div-wrap-width">
@@ -98,6 +106,7 @@ export const GlobalSettings = ({
                   />
                   <select
                     className="maximum-canvas-width-input-select"
+                    data-cy={`dropdown-max-canvas-width-type`}
                     aria-label="Select canvas width type"
                     onChange={(event) => {
                       const newCanvasMaxWidthType = event.currentTarget.value;
@@ -119,8 +128,8 @@ export const GlobalSettings = ({
                 </div>
               </div>
             </div>
-            <div className="d-flex mb-3 global-popover-div-wrap">
-              <span className="  global-popover-text">
+            {/* <div className="d-flex mb-3">
+              <span className="w-full m-auto" data-cy={`label-max-canvas-height`}>
                 {t('leftSidebar.Settings.maxHeightOfCanvas', 'Max height of canvas')}
               </span>
               <div className="global-popover-div-wrap global-popover-div-wrap-width">
@@ -138,9 +147,9 @@ export const GlobalSettings = ({
                   />
                 </div>
               </div>
-            </div>
-            <div className="d-flex align-items-center global-popover-div-wrap ">
-              <span className=" global-popover-text">
+            </div> */}
+            <div className="d-flex align-items-center">
+              <span className="w-full" data-cy={`label-bg-canvas`}>
                 {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Background color of canvas')}
               </span>
               <div className="canvas-codehinter-container">
@@ -148,6 +157,7 @@ export const GlobalSettings = ({
                   <div>
                     <div style={coverStyles} onClick={() => setShowPicker(false)} />
                     <SketchPicker
+                      data-cy={`color-picker-canvas`}
                       className="canvas-background-picker"
                       onFocus={() => setShowPicker(true)}
                       color={canvasBackgroundColor}
@@ -164,7 +174,8 @@ export const GlobalSettings = ({
                     onClick={() => setShowPicker(true)}
                   >
                     <div
-                      className=""
+                      data-cy={`canvas-bg-color-picker`}
+                      className="col-auto"
                       style={{
                         float: 'right',
                         width: '13.33px',
@@ -181,6 +192,7 @@ export const GlobalSettings = ({
                 >
                   {!forceCodeBox && (
                     <CodeHinter
+                      cyLabel={`canvas-bg-colour`}
                       currentState={realState}
                       initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
                       value={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
@@ -196,6 +208,7 @@ export const GlobalSettings = ({
                   )}
                   <div className={`fx-canvas ${!darkMode && 'fx-canvas-light'} `}>
                     <FxButton
+                      dataCy={`canvas-bg-color`}
                       active={!forceCodeBox ? true : false}
                       onPress={() => {
                         setForceCodeBox(!forceCodeBox);
@@ -259,9 +272,12 @@ export const GlobalSettings = ({
       <Popover
         handleToggle={(show) => {
           if (show) setShow('settings');
-          else setShow('');
+          else {
+            setShow('');
+            setShowPicker(false);
+          }
         }}
-        popoverContentClassName="p-0 sidebar-h-100-popover"
+        popoverContentClassName="p-0 sidebar-h-100-popover global-settings-popover-content"
         side="bottom"
         popoverContent={popoverContent}
         popoverContentHeight="auto"

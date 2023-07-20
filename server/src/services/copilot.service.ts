@@ -32,7 +32,7 @@ export class CopilotService {
         query: query,
         context: context,
         language: language,
-        userId: userId,
+        workspaceId: orgnaizationId,
       }),
     });
 
@@ -42,13 +42,13 @@ export class CopilotService {
     };
   }
 
-  async validateCopilotAPIKey(userId: string, secretKey: string) {
+  async validateCopilotAPIKey(workspaceId: string, secretKey: string) {
     const options = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ userId: userId, action: 'get', apiKey: secretKey }),
+      body: JSON.stringify({ workspaceId: workspaceId, action: 'get', apiKey: secretKey }),
     };
 
     const response = await fetch(`${process.env.COPILOT_API_ENDPOINT}/api-key`, options);

@@ -27,8 +27,9 @@ import { tooljetDbOperations } from '@/Editor/QueryManager/QueryEditors/TooljetD
 import { authenticationService } from '@/_services/authentication.service';
 import { setCookie } from '@/_helpers/cookie';
 import { DataSourceTypes } from '@/Editor/DataSourceManager/SourceComponents';
-
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useQueryPanelStore } from '@/_stores/queryPanelStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -99,8 +100,18 @@ export function getDataFromLocalStorage(key) {
   return localStorage.getItem(key);
 }
 
-async function executeRunPycode(_ref, code, query, editorState, isPreview, mode) {
-  const pyodide = await loadPyodide();
+async function executeRunPycode(_ref, code, query, isPreview, mode) {
+  let pyodide;
+  try {
+    pyodide = await loadPyodide();
+  } catch (errorMessage) {
+    return {
+      data: {
+        status: 'failed',
+        message: errorMessage,
+      },
+    };
+  }
 
   function log(line) {
     console.log({ line });
@@ -112,7 +123,7 @@ async function executeRunPycode(_ref, code, query, editorState, isPreview, mode)
     try {
       const appStateVars = currentState['variables'] ?? {};
 
-      const actions = generateAppActions(_ref, query.id, mode, editorState, isPreview);
+      const actions = generateAppActions(_ref, query.id, mode, isPreview);
 
       for (const key of Object.keys(currentState.queries)) {
         currentState.queries[key] = {
@@ -161,7 +172,17 @@ async function executeRunPycode(_ref, code, query, editorState, isPreview, mode)
 }
 
 async function exceutePycode(payload, code, currentState, query, mode) {
-  const pyodide = await loadPyodide();
+  let pyodide;
+  try {
+    pyodide = await loadPyodide();
+  } catch (errorMessage) {
+    return {
+      data: {
+        status: 'failed',
+        message: errorMessage,
+      },
+    };
+  }
 
   const evaluatePython = async (pyodide) => {
     let result = {};
@@ -369,8 +390,13 @@ function debounce(func) {
 export const executeAction = debounce(executeActionWithDebounce);
 
 function executeActionWithDebounce(_ref, event, mode, customVariables) {
-  console.log('nopski', customVariables);
   if (event) {
+    if (event.runOnlyIf) {
+      const shouldRun = resolveReferences(event.runOnlyIf, _ref.state.currentState, undefined, customVariables);
+      if (!shouldRun) {
+        return false;
+      }
+    }
     switch (event.actionId) {
       case 'show-alert': {
         const message = resolveReferences(event.message, _ref.state.currentState, undefined, customVariables);
@@ -393,7 +419,9 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'run-query': {
         const { queryId, queryName } = event;
-        return runQuery(_ref, queryId, queryName, undefined, mode);
+        const name =
+          useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
+        return runQuery(_ref, queryId, name, undefined, mode);
       }
       case 'logout': {
         return logoutAction(_ref);
@@ -551,12 +579,12 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const component = Object.values(_ref.state.currentState?.components ?? {}).filter(
           (component) => component.id === event.componentId
         )[0];
-        const action = component[event.componentSpecificActionHandle];
+        const action = component?.[event.componentSpecificActionHandle];
         const actionArguments = _.map(event.componentSpecificActionParams, (param) => ({
           ...param,
           value: resolveReferences(param.value, _ref.state.currentState, undefined, customVariables),
         }));
-        const actionPromise = action(...actionArguments.map((argument) => argument.value));
+        const actionPromise = action && action(...actionArguments.map((argument) => argument.value));
         return actionPromise ?? Promise.resolve();
       }
 
@@ -573,7 +601,6 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
 export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
-  console.log('Event: ', eventName);
 
   const { customVariables } = options;
 
@@ -746,6 +773,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
       'onOpen',
       'onClose',
       'onRowClicked',
+      'onRecordClicked',
       'onCancelChanges',
       'onSort',
       'onCellValueChanged',
@@ -777,10 +805,19 @@ export function getQueryVariables(options, state) {
   switch (optionsType) {
     case 'string': {
       options = options.replace(/\n/g, ' ');
-      const dynamicVariables = getDynamicVariables(options) || [];
-      dynamicVariables.forEach((variable) => {
-        queryVariables[variable] = resolveReferences(variable, state);
-      });
+      // check if {{var}} and %%var%% are present in the string
+
+      if (options.includes('{{') && options.includes('%%')) {
+        const vars = resolveReferences(options, state);
+        console.log('queryVariables', { options, vars });
+        queryVariables[options] = vars;
+      } else {
+        const dynamicVariables = getDynamicVariables(options) || [];
+        dynamicVariables.forEach((variable) => {
+          queryVariables[variable] = resolveReferences(variable, state);
+        });
+      }
+
       break;
     }
 
@@ -800,24 +837,30 @@ export function getQueryVariables(options, state) {
     default:
       break;
   }
+
   return queryVariables;
 }
 
-export function previewQuery(_ref, query, editorState, calledFromQuery = false) {
-  const options = getQueryVariables(query.options, _ref.props.currentState);
+export function previewQuery(_ref, query, calledFromQuery = false) {
+  const options = getQueryVariables(query.options, _ref?.state?.currentState);
 
-  _ref.setState({ previewLoading: true });
+  const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
+  setPreviewLoading(true);
 
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, editorState, query?.id, true);
+      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, query?.id, true);
     } else if (query.kind === 'tooljetdb') {
       queryExecutionPromise = tooljetDbOperations.perform(query, _ref.state.currentState);
     } else if (query.kind === 'runpy') {
-      queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, editorState, true, 'edit');
+      queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit');
     } else {
-      queryExecutionPromise = dataqueryService.preview(query, options, editorState?.state?.editingVersion?.id);
+      queryExecutionPromise = dataqueryService.preview(
+        query,
+        options,
+        useAppVersionStore.getState().editingVersion?.id
+      );
     }
 
     queryExecutionPromise
@@ -836,17 +879,18 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         }
 
         if (calledFromQuery) {
-          _ref.setState({ previewLoading: false });
+          setPreviewLoading(false);
         } else {
-          _ref.setState({ previewLoading: false, queryPreviewData: finalData });
+          setPreviewLoading(false);
+          setPreviewData(finalData);
         }
-
         const queryStatus =
           query.kind === 'tooljetdb'
             ? data.statusText
             : query.kind === 'runpy'
             ? data?.data?.status ?? 'ok'
             : data.status;
+
         switch (queryStatus) {
           case 'Bad Request':
           case 'failed': {
@@ -874,7 +918,8 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
         resolve({ status: data.status, data: finalData });
       })
       .catch(({ error, data }) => {
-        _ref.setState({ previewLoading: false, queryPreviewData: data });
+        setPreviewLoading(false);
+        setPreviewData(data);
         toast.error(error);
         reject({ error, data });
       });
@@ -882,7 +927,7 @@ export function previewQuery(_ref, query, editorState, calledFromQuery = false) 
 }
 
 export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit') {
-  const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
+  const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   let dataQuery = {};
 
   if (query) {
@@ -933,9 +978,9 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     _self.setState({ currentState: newState }, () => {
       let queryExecutionPromise = null;
       if (query.kind === 'runjs') {
-        queryExecutionPromise = executeMultilineJS(_self, query.options.code, _ref, query?.id, false, confirmed, mode);
+        queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode);
       } else if (query.kind === 'runpy') {
-        queryExecutionPromise = executeRunPycode(_self, query.options.code, query, _ref, false, mode);
+        queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode);
       } else if (query.kind === 'tooljetdb') {
         queryExecutionPromise = tooljetDbOperations.perform(query, _self.state.currentState);
       } else {
