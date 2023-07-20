@@ -42,7 +42,7 @@ function Logs({ logProps, idx, darkMode }) {
         <span className="ps-3 w-100">
           <span className="d-flex justify-content-between align-items-center  text-truncate">
             <span className="text-truncate text-slate-12">{title}</span>
-            <small className="text-muted text-right px-1">{moment(logProps?.timestamp).fromNow()}</small>
+            <small className="text-slate-10 text-right px-1 ">{moment(logProps?.timestamp).fromNow()}</small>
           </span>
           <span
             className={cx('mx-1', {
