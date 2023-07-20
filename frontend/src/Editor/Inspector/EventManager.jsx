@@ -426,8 +426,13 @@ export const EventManager = ({
                       search={true}
                       onChange={(value) => {
                         const query = dataQueries.find((dataquery) => dataquery.id === value);
+                        const parameters = (query?.options?.parameters ?? []).reduce(
+                          (paramObj, param) => ({ ...paramObj, [param.name]: param.defaultValue }),
+                          {}
+                        );
                         handlerChanged(index, 'queryId', query.id);
                         handlerChanged(index, 'queryName', query.name);
+                        handlerChanged(index, 'parameters', parameters);
                       }}
                       placeholder={t('globals.select', 'Select') + '...'}
                       styles={styles}
