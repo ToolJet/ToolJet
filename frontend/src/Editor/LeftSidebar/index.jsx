@@ -5,7 +5,7 @@ import { LeftSidebarInspector } from './SidebarInspector';
 import { LeftSidebarDataSources } from './SidebarDatasources';
 import { DarkModeToggle } from '../../_components/DarkModeToggle';
 import useRouter from '../../_hooks/use-router';
-import { LeftSidebarDebugger } from './SidebarDebugger';
+import { LeftSidebarDebugger } from './SidebarDebugger/SidebarDebugger';
 import { LeftSidebarComment } from './SidebarComment';
 import LeftSidebarPageSelector from './SidebarPageSelector';
 import { ConfirmDialog } from '@/_components';
@@ -17,6 +17,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { useDataSources } from '@/_stores/dataSourcesStore';
 import { shallow } from 'zustand/shallow';
+import useDebugger from './SidebarDebugger/useDebugger';
 
 export const LeftSidebar = forwardRef((props, ref) => {
   const router = useRouter();
@@ -24,12 +25,10 @@ export const LeftSidebar = forwardRef((props, ref) => {
     appId,
     switchDarkMode,
     darkMode = false,
-    components,
     dataSourcesChanged,
     globalDataSourcesChanged,
     dataQueriesChanged,
-    errorLogs: errors,
-    debuggerActions,
+
     appDefinition,
     setSelectedComponent,
     removeComponent,
@@ -73,78 +72,13 @@ export const LeftSidebar = forwardRef((props, ref) => {
     shallow
   );
   const [pinned, setPinned] = useState(!!localStorage.getItem('selectedSidebarItem'));
-  const [errorLogs, setErrorLogs] = useState([]);
-  const [errorHistory, setErrorHistory] = useState({ appLevel: [], pageLevel: [] });
-  const [unReadErrorCount, setUnReadErrorCount] = useState({ read: 0, unread: 0 });
+
+  const { errorLogs, clearErrorLogs, unReadErrorCount, allLog } = useDebugger({
+    currentPageId,
+    isDebuggerOpen: !!selectedSidebarItem,
+  });
 
   const sideBarBtnRefs = useRef({});
-
-  const open = !!selectedSidebarItem;
-
-  const clearErrorLogs = () => {
-    setUnReadErrorCount({ read: 0, unread: 0 });
-
-    setErrorLogs([]);
-    setErrorHistory({ appLevel: [], pageLevel: [] });
-  };
-
-  useEffect(() => {
-    if (currentPageId) {
-      const olderPageErrorFromHistory = errorHistory.pageLevel[currentPageId] ?? [];
-      const olderAppErrorFromHistory = errorHistory.appLevel ?? [];
-      setErrorLogs(() => [...olderPageErrorFromHistory, ...olderAppErrorFromHistory]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPageId]);
-
-  useEffect(() => {
-    const newError = _.flow([
-      Object.entries,
-      // eslint-disable-next-line no-unused-vars
-      (arr) => arr.filter(([key, value]) => value.data?.status),
-      Object.fromEntries,
-    ])(errors);
-
-    const newErrorLogs = debuggerActions.generateErrorLogs(newError);
-    const newPageLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'page_level');
-    const newAppLevelErrorLogs = newErrorLogs.filter((error) => error.strace === 'app_level');
-    if (newErrorLogs) {
-      setErrorLogs((prevErrors) => {
-        const copy = JSON.parse(JSON.stringify(prevErrors));
-
-        return [...newAppLevelErrorLogs, ...newPageLevelErrorLogs, ...copy];
-      });
-
-      setErrorHistory((prevErrors) => {
-        const copy = JSON.parse(JSON.stringify(prevErrors));
-
-        return {
-          appLevel: [...newAppLevelErrorLogs, ...copy.appLevel],
-          pageLevel: {
-            [currentPageId]: [...newPageLevelErrorLogs, ...(copy.pageLevel[currentPageId] ?? [])],
-          },
-        };
-      });
-    }
-    debuggerActions.flush();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify({ errors })]);
-
-  useEffect(() => {
-    if (open) {
-      // eslint-disable-next-line no-unused-vars
-      setUnReadErrorCount((prev) => ({ read: errorLogs.length, unread: 0 }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-
-  useEffect(() => {
-    const unReadErrors = errorLogs.length - unReadErrorCount.read;
-    setUnReadErrorCount((prev) => {
-      return { ...prev, unread: unReadErrors };
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [errorLogs.length]);
 
   useEffect(() => {
     setPopoverContentHeight(((window.innerHeight - queryPanelHeight - 45) / window.innerHeight) * 100);
@@ -258,16 +192,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
     debugger: (
       <LeftSidebarDebugger
         darkMode={darkMode}
-        selectedSidebarItem={selectedSidebarItem}
-        components={components}
         errors={errorLogs}
-        debuggerActions={debuggerActions}
-        currentPageId={currentPageId}
-        popoverContentHeight={popoverContentHeight}
         clearErrorLogs={clearErrorLogs}
         setPinned={handlePin}
         pinned={pinned}
-        setEditorMarginLeft={setEditorMarginLeft}
+        allLog={allLog}
       />
     ),
   };
@@ -316,7 +245,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
       <Popover
         onInteractOutside={handleInteractOutside}
         open={pinned || !!selectedSidebarItem}
-        popoverContentClassName="p-0 sidebar-h-100-popover"
+        popoverContentClassName={`p-0 sidebar-h-100-popover ${selectedSidebarItem}`}
         side="right"
         popoverContent={SELECTED_ITEMS[selectedSidebarItem]}
         popoverContentHeight={popoverContentHeight}

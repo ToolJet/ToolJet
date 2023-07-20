@@ -1,3 +1,4 @@
+import { shallow } from 'zustand/shallow';
 import { create, zustandDevTools } from './utils';
 import { omit } from 'lodash';
 
@@ -16,24 +17,41 @@ const initialState = {
     handle: '',
     variables: {},
   },
+  succededQuery: {},
 };
 
 export const useCurrentStateStore = create(
   zustandDevTools(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
       actions: {
-        setCurrentState: (currentState) => set({ ...currentState }),
+        setCurrentState: (currentState) => {
+          set({ ...currentState }), false, { type: 'SET_CURRENT_STATE', currentState };
+        },
+        setErrors: (error) => {
+          set({ errors: { ...get().errors, ...error } }), false, { type: 'SET_ERRORS', error };
+        },
       },
     }),
     { name: 'Current State' }
   )
 );
 
-// Omitting actions here because we don't want to expose it to user
-export const useCurrentState = () => {
-  return omit(useCurrentStateStore(), 'actions');
-};
+export const useCurrentState = () =>
+  // Omitting 'actions' here because we don't want to expose it to user
+  useCurrentStateStore((state) => {
+    return {
+      queries: state.queries,
+      components: state.components,
+      globals: state.globals,
+      errors: state.errors,
+      variables: state.variables,
+      client: state.client,
+      server: state.server,
+      page: state.page,
+      succededQuery: state.succededQuery,
+    };
+  }, shallow);
 
 export const getCurrentState = () => {
   return omit(useCurrentStateStore.getState(), 'actions');

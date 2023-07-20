@@ -956,17 +956,15 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
 
         if (promiseStatus === 'failed' || promiseStatus === 'Bad Request') {
           const errorData = query.kind === 'runpy' ? data.data : data;
-          useCurrentStateStore.getState().actions.setCurrentState({
-            errors: {
-              ...getCurrentState().errors,
-              [queryName]: {
-                type: 'query',
-                kind: query.kind,
-                data: errorData,
-                options: options,
-              },
+          useCurrentStateStore.getState().actions.setErrors({
+            [queryName]: {
+              type: 'query',
+              kind: query.kind,
+              data: errorData,
+              options: options,
             },
           });
+
           useCurrentStateStore.getState().actions.setCurrentState({
             queries: {
               ...getCurrentState().queries,
@@ -1016,13 +1014,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                     isLoading: false,
                   },
                 },
-                errors: {
-                  ...getCurrentState().errors,
-                  [queryName]: {
-                    type: 'transformations',
-                    data: finalData,
-                    options: options,
-                  },
+              });
+
+              useCurrentStateStore.getState().actions.setErrors({
+                [queryName]: {
+                  type: 'transformations',
+                  data: finalData,
+                  options: options,
                 },
               });
               resolve(finalData);
@@ -1058,16 +1056,16 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
                   : {}
               ),
             },
+            // Used to generate logs
+            succededQuery: {
+              [queryName]: {
+                type: 'query',
+                kind: query.kind,
+              },
+            },
           });
-
           resolve({ status: 'ok', data: finalData });
           onEvent(_self, 'onDataQuerySuccess', { definition: { events: dataQuery.options.events } }, mode);
-
-          if (mode !== 'view') {
-            toast(`Query (${queryName}) completed.`, {
-              icon: '🚀',
-            });
-          }
         }
       })
       .catch(({ error }) => {
@@ -1168,11 +1166,8 @@ export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, s
 
 export const debuggerActions = {
   error: (_self, errors) => {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      errors: {
-        ...getCurrentState().errors,
-        ...errors,
-      },
+    useCurrentStateStore.getState().actions.setErrors({
+      ...errors,
     });
   },
 
@@ -1249,6 +1244,29 @@ export const debuggerActions = {
       });
     });
     return errorsArr;
+  },
+
+  generateQuerySuccessLogs: (logs) => {
+    const querySuccesslogs = [];
+    Object.entries(logs).forEach(([key, value]) => {
+      const generalProps = {
+        key,
+        type: value.type,
+        page: value.page,
+        timestamp: moment(),
+        message: 'Completed',
+        description: value?.data?.description ?? '',
+        isQuerySuccessLog: true,
+      };
+
+      querySuccesslogs.push(generalProps);
+    });
+    return querySuccesslogs;
+  },
+  flushAllLog: () => {
+    useCurrentStateStore.getState().actions.setCurrentState({
+      succededQuery: {},
+    });
   },
 };
 
