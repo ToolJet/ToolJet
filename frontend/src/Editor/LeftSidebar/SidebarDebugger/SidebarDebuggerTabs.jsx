@@ -3,6 +3,7 @@ import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import Logs from './Logs';
 import { useTranslation } from 'react-i18next';
+import cx from 'classnames';
 
 const DebuggerTabContent = ({ logs, darkMode, tabName }) => {
   const { t } = useTranslation();
@@ -16,7 +17,11 @@ const DebuggerTabContent = ({ logs, darkMode, tabName }) => {
         </center>
       )}
 
-      <div className="tab-content">
+      <div
+        className={cx('tab-content', {
+          'theme-dark dark-theme': darkMode,
+        })}
+      >
         {logs.map((error, index) => (
           <Logs key={index} errorProps={error} logProps={error} idx={index} darkMode={darkMode} />
         ))}
@@ -27,7 +32,14 @@ const DebuggerTabContent = ({ logs, darkMode, tabName }) => {
 
 const SidebarDebuggerTabs = ({ darkMode, errors, allLog }) => {
   return (
-    <Tabs defaultActiveKey="allLog" id="sidebar-debugger" className="mb-3 sidebar-debugger" justify>
+    <Tabs
+      defaultActiveKey="allLog"
+      id="sidebar-debugger"
+      className={cx('mb-3 sidebar-debugger', {
+        'theme-dark dark-theme': darkMode,
+      })}
+      justify
+    >
       <Tab eventKey="allLog" title="All Log">
         <DebuggerTabContent logs={allLog} darkMode={darkMode} tabName={'allLogs'} />
       </Tab>
