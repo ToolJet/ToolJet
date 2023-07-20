@@ -23,6 +23,7 @@ export const Datepicker = function Datepicker({
 
   const [date, setDate] = useState(null);
   const [excludedDates, setExcludedDates] = useState([]);
+  const [showValidationError, setShowValidationError] = useState(false);
 
   const selectedDateFormat = enableTime ? `${format} LT` : format;
 
@@ -37,6 +38,7 @@ export const Datepicker = function Datepicker({
   };
 
   const onDateChange = (date) => {
+    setShowValidationError(true);
     setDate(date);
     const dateString = computeDateString(date);
     setExposedVariable('value', dateString).then(() => {
@@ -89,9 +91,9 @@ export const Datepicker = function Datepicker({
       }}
     >
       <DatePickerComponent
-        className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
-          darkMode ? 'bg-dark color-white' : 'bg-light'
-        }`}
+        className={`input-field form-control ${
+          !isValid && showValidationError ? 'is-invalid' : ''
+        } validation-without-icon px-2 ${darkMode ? 'bg-dark color-white' : 'bg-light'}`}
         selected={date}
         value={date !== null ? computeDateString(date) : 'select date'}
         onChange={(date) => onDateChange(date)}
@@ -108,7 +110,7 @@ export const Datepicker = function Datepicker({
       />
 
       <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
-        {validationError}
+        {showValidationError && validationError}
       </div>
     </div>
   );
