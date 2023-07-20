@@ -3,6 +3,7 @@ import { Button, ButtonGroup, OverlayTrigger, Popover } from 'react-bootstrap';
 import cx from 'classnames';
 import PlusRectangle from '@/_ui/Icon/solidIcons/PlusRectangle';
 import Remove from '@/_ui/Icon/bulkIcons/Remove';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import ParameterForm from './ParameterForm';
 
 const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRemove, currentState, otherParams }) => {
@@ -63,18 +64,12 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
         {isEdit ? (
           <PillButton name={name} onClick={() => setShowModal(true)} onRemove={onRemove} />
         ) : (
-          <Button
-            variant="link"
-            onClick={() => setShowModal(true)}
-            className="border-0 ms-2"
-            size="sm"
-            style={{ textDecoration: 'none' }}
-          >
-            <span className="me-1">
+          <ButtonSolid variant="ghostBlue" size="sm" onClick={() => setShowModal(true)} className="ms-2">
+            <span className="m-0">
               <PlusRectangle fill={'#3E63DD'} width={15} />
             </span>
             Add
-          </Button>
+          </ButtonSolid>
         )}
       </span>
     </OverlayTrigger>

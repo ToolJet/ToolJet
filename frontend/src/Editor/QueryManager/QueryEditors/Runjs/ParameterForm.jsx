@@ -36,7 +36,9 @@ const ParameterForm = ({
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    onSubmit && onSubmit({ name, defaultValue });
+    if (!error) {
+      onSubmit && onSubmit({ name, defaultValue });
+    }
   };
 
   useEffect(() => {

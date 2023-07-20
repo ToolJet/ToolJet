@@ -25,7 +25,7 @@ const ParameterList = ({
           totalWidth += boxWidth;
           return {
             ...param,
-            isVisible: totalWidth <= containerWidth - 57 - 125 - 57,
+            isVisible: totalWidth <= containerWidth - 57 - 125 - 85,
             index,
           };
         })
@@ -128,7 +128,10 @@ const ParameterList = ({
       >
         <span>
           {formattedParameters.some((param) => !param.isVisible) && (
-            <PillButton name="More" onClick={() => setShowMore(true)} />
+            <PillButton
+              name={`${formattedParameters.reduce((count, param) => count + (!param.isVisible ? 1 : 0), 0)} More`}
+              onClick={() => setShowMore(true)}
+            />
           )}
         </span>
       </OverlayTrigger>
