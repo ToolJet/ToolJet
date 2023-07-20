@@ -78,6 +78,7 @@ class ViewerComponent extends React.Component {
       errorVersionId: null,
       errorDetails: null,
       pages: {},
+      homepage: null,
     };
   }
 
@@ -177,6 +178,7 @@ class ViewerComponent extends React.Component {
         dataQueries: data.data_queries,
         currentPageId: currentPage.id,
         pages: {},
+        homepage: this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle,
       },
       () => {
         computeComponentState(this, data?.definition?.pages[currentPage.id]?.components).then(async () => {
@@ -363,13 +365,16 @@ class ViewerComponent extends React.Component {
     window.addEventListener('message', this.handleMessage);
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     if (this.props.params.slug && this.props.params.slug !== prevProps.params.slug) {
       this.setState({ isLoading: true });
       this.loadApplicationBySlug(this.props.params.slug);
     }
 
     if (this.state.initialComputationOfStateDone) this.handlePageSwitchingBasedOnURLparam();
+    if (this.state.homepage !== prevState.homepage && !this.state.isLoading) {
+      <Navigate to={`${this.state.homepage}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
+    }
   }
 
   handlePageSwitchingBasedOnURLparam() {
@@ -535,13 +540,6 @@ class ViewerComponent extends React.Component {
         </div>
       );
     } else {
-      const startingPageHandle = this.props?.params?.pageHandle;
-      const homePageHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
-      if (!startingPageHandle && homePageHandle) {
-        return (
-          <Navigate to={`${homePageHandle}${this.props.params.pageHandle ? '' : window.location.search}`} replace />
-        );
-      }
       if (this.state.app?.is_maintenance_on) {
         return (
           <div className="maintenance_container">
