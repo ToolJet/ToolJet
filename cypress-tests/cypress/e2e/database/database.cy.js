@@ -103,12 +103,14 @@ describe("Database Functionality", () => {
       [column1.name, column2.name],
       [row2.varcharData, row2.intData]
     );
+    cy.screenshot();
     addNewRowAndVerify(
       data.tableName,
       true,
       [column1.name, column2.name],
       [row3.varcharData, row3.intData]
     );
+    cy.screenshot();
     filterOperation(
       data.tableName,
       [databaseText.idColumnName],
