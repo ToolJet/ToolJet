@@ -50,7 +50,7 @@ jobs:
 
       - name: Run PostgREST Docker Container
         run: |
-          docker run -d -p 3001:3000 \
+          docker run -d --name postgrest -p 3001:3000 \
             -e PGRST_DB_URI="postgres://postgres:postgres@localhost:5432/tooljet_db" \
             -e PGRST_DB_ANON_ROLE="postgres" \
             -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
@@ -137,6 +137,9 @@ jobs:
 
           # Move the updated file back to the original location
           mv tmp_cypress.env.json ./cypress-tests/cypress.env.json
+
+      - name: docker logs
+        run: docker logs postgrest
 
       - name: App builder
         if: ${{ github.event.label.name == 'run-cypress-app-builder' }}
