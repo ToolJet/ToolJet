@@ -399,9 +399,16 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'run-query': {
         const { queryId, queryName } = event;
+        const params = event['parameters'];
+        const resolvedParams = {};
+        if (params) {
+          Object.keys(params).map(
+            (param) => (resolvedParams[param] = resolveReferences(params[param], getCurrentState(), undefined))
+          );
+        }
         const name =
           useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId)?.name ?? queryName;
-        return runQuery(_ref, queryId, name, undefined, mode);
+        return runQuery(_ref, queryId, name, undefined, mode, resolvedParams);
       }
       case 'logout': {
         return logoutAction(_ref);
@@ -563,7 +570,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   }
 
   if (eventName === 'onTrigger') {
-    const { component, queryId, queryName } = options;
+    const { component, queryId, queryName, parameters } = options;
     useCurrentStateStore.getState().actions.setCurrentState({
       components: {
         ...getCurrentState().components,
@@ -572,7 +579,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
     });
-    runQuery(_ref, queryId, queryName, true, mode);
+    runQuery(_ref, queryId, queryName, true, mode, parameters);
   }
 
   if (eventName === 'onCalendarEventSelect') {
@@ -761,7 +768,7 @@ export function getQueryVariables(options, state) {
   return queryVariables;
 }
 
-export function previewQuery(_ref, query, calledFromQuery = false) {
+export function previewQuery(_ref, query, calledFromQuery = false, parameters = {}, hasParamSupport = false) {
   const options = getQueryVariables(query.options, getCurrentState());
 
   const { setPreviewLoading, setPreviewData } = useQueryPanelStore.getState().actions;
@@ -770,7 +777,25 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
   return new Promise(function (resolve, reject) {
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_ref, query.options.code, query?.id, true);
+      const formattedParams = (query.options.parameters || []).reduce(
+        (paramObj, param) => ({
+          ...paramObj,
+          [param.name]:
+            parameters?.[param.name] === undefined
+              ? resolveReferences(param.defaultValue, {}) //default values will not be resolved with currentState
+              : parameters?.[param.name],
+        }),
+        {}
+      );
+      queryExecutionPromise = executeMultilineJS(
+        _ref,
+        query.options.code,
+        query?.id,
+        true,
+        '',
+        formattedParams,
+        hasParamSupport
+      );
     } else if (query.kind === 'tooljetdb') {
       const currentSessionValue = authenticationService.currentSessionValue;
       queryExecutionPromise = tooljetDbOperations.perform(
@@ -851,7 +876,7 @@ export function previewQuery(_ref, query, calledFromQuery = false) {
   });
 }
 
-export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit') {
+export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode = 'edit', parameters = {}) {
   const query = useDataQueriesStore.getState().dataQueries.find((query) => query.id === queryId);
   let dataQuery = {};
 
@@ -901,7 +926,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
     });
     let queryExecutionPromise = null;
     if (query.kind === 'runjs') {
-      queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode);
+      queryExecutionPromise = executeMultilineJS(_self, query.options.code, query?.id, false, mode, parameters);
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_self, query.options.code, query, false, mode);
     } else if (query.kind === 'tooljetdb') {

@@ -390,26 +390,61 @@ export async function executeMultilineJS(
   code,
   queryId,
   isPreview,
-  // eslint-disable-next-line no-unused-vars
-  mode = ''
+  mode = '',
+  parameters = {},
+  hasParamSupport = false
 ) {
-  //:: confirmed arg is unused
   const currentState = getCurrentState();
   let result = {},
     error = null;
 
+  //if user passes anything other than object, params are reset to empty
+  if (typeof parameters !== 'object' || parameters === null) {
+    parameters = {};
+  }
+
   const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
+  const queryDetails = useDataQueriesStore.getState().dataQueries.find((q) => q.id === queryId);
+  hasParamSupport = !hasParamSupport ? queryDetails?.options?.hasParamSupport : hasParamSupport;
+
+  const defaultParams =
+    queryDetails?.options?.parameters?.reduce(
+      (paramObj, param) => ({
+        ...paramObj,
+        [param.name]: resolveReferences(param.defaultValue, {}, undefined), //default values will not be resolved with currentState
+      }),
+      {}
+    ) || {};
+
+  let formattedParams = {};
+  if (queryDetails) {
+    Object.keys(defaultParams).map((key) => {
+      /** The value of param is replaced with defaultValue if its passed undefined */
+      formattedParams[key] = parameters[key] === undefined ? defaultParams[key] : parameters[key];
+    });
+  } else {
+    //this will handle the preview case where you cannot find the queryDetails in state.
+    formattedParams = { ...parameters };
+  }
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
       ...currentState.queries[key],
-      run: () => actions.runQuery(key),
+      run: (params) => {
+        if (typeof params !== 'object' || params === null) {
+          params = {};
+        }
+        const processedParams = {};
+        const query = useDataQueriesStore.getState().dataQueries.find((q) => q.name === key);
+        query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
+        return actions.runQuery(key, processedParams);
+      },
     };
   }
 
   try {
     const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
-    var evalFn = new AsyncFunction(
+    const fnParams = [
       'moment',
       '_',
       'components',
@@ -421,23 +456,28 @@ export async function executeMultilineJS(
       'actions',
       'client',
       'server',
-      code
-    );
+      ...(hasParamSupport ? ['parameters'] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+      code,
+    ];
+    var evalFn = new AsyncFunction(...fnParams);
+
+    const fnArgs = [
+      moment,
+      _,
+      currentState.components,
+      currentState.queries,
+      currentState.globals,
+      currentState.page,
+      axios,
+      currentState.variables,
+      actions,
+      currentState?.client,
+      currentState?.server,
+      ...(hasParamSupport ? [formattedParams] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+    ];
     result = {
       status: 'ok',
-      data: await evalFn(
-        moment,
-        _,
-        currentState.components,
-        currentState.queries,
-        currentState.globals,
-        currentState.page,
-        axios,
-        currentState.variables,
-        actions,
-        currentState?.client,
-        currentState?.server
-      ),
+      data: await evalFn(...fnArgs),
     };
   } catch (err) {
     console.log('JS execution failed: ', err);
@@ -508,24 +548,33 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
   const currentComponents = _ref.state?.appDefinition?.pages[currentPageId]?.components
     ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
     : {};
-  const runQuery = (queryName = '') => {
+  const runQuery = (queryName = '', parameters) => {
     const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
 
+    const processedParams = {};
     if (_.isEmpty(query) || queryId === query?.id) {
       const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
       toast.error(errorMsg);
       return;
     }
 
+    if (!_.isEmpty(query?.options?.parameters)) {
+      query.options.parameters?.forEach(
+        (param) => parameters && (processedParams[param.name] = parameters?.[param.name])
+      );
+    }
+
     if (isPreview) {
-      return previewQuery(_ref, query, true);
+      return previewQuery(_ref, query, true, processedParams);
     }
 
     const event = {
       actionId: 'run-query',
       queryId: query.id,
       queryName: query.name,
+      parameters: processedParams,
     };
+
     return executeAction(_ref, event, mode, {});
   };
 

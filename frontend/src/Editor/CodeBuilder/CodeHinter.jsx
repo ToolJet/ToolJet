@@ -71,6 +71,7 @@ export function CodeHinter({
   cyLabel = '',
   callgpt = () => null,
   isCopilotEnabled = false,
+  currentState: _currentState,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -105,9 +106,13 @@ export function CodeHinter({
   const prevCountRef = useRef(false);
 
   useEffect(() => {
-    setRealState(currentState);
+    if (_currentState) {
+      setRealState(_currentState);
+    } else {
+      setRealState(currentState);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentState.components]);
+  }, [currentState.components, _currentState]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

@@ -142,7 +142,7 @@ export const QueryManagerBody = forwardRef(
     const cleanFocusedFields = (newOptions) => {
       const diffFields = diff(newOptions, defaultOptions.current);
       const updatedOptions = { ...newOptions };
-      Object.keys(diffFields).forEach((key) => {
+      Object.keys(diffFields || {}).forEach((key) => {
         if (newOptions[key] === '' && defaultOptions.current[key] === undefined) {
           delete updatedOptions[key];
         }
@@ -275,6 +275,7 @@ export const QueryManagerBody = forwardRef(
                 darkMode={darkMode}
                 isEditMode={true} // Made TRUE always to avoid setting default options again
                 queryName={queryName}
+                mode={mode}
               />
               {renderTransformation()}
             </div>
