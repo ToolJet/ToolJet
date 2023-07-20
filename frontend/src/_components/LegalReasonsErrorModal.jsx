@@ -47,7 +47,7 @@ const LegalReasonsErrorModal = ({
         </Modal.Header>
         <Modal.Body data-cy="modal-message">
           {message}
-          {(message?.includes('editors') || message?.includes('workspaces')) && (
+          {(message?.includes('builders') || message?.includes('workspaces')) && (
             <div className="info">
               <div>
                 <SolidIcon name="idea" />

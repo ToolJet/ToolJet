@@ -95,7 +95,7 @@ class ManageInstanceSettingsComponent extends React.Component {
           <ReactTooltip type="dark" effect="solid" delayShow={250} />
 
           <div className="page-wrapper">
-            <div className="page-body container-xl">
+            <div className="container-xl">
               <LicenseBanner classes="mt-3" limits={featureAccess} type="Instance Settings" isAvailable={true}>
                 <div className="card">
                   <div className="card-header">

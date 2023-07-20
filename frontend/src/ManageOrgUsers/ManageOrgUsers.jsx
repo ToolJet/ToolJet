@@ -289,7 +289,7 @@ class ManageOrgUsersComponent extends React.Component {
                 </div>
               </div>
 
-              <div className="page-body">
+              <div>
                 <UsersFilter
                   filterList={this.filterList}
                   darkMode={this.props.darkMode}

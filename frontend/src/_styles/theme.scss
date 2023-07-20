@@ -9415,7 +9415,7 @@ tbody {
   outline: 1px solid var(--slate5);
   box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
   border-radius: 6px;
-  min-height: 640px;
+  max-height: calc(100vh - 156px);
 }
 
 .org-settings-wrapper-card {
@@ -10577,7 +10577,7 @@ tbody {
 }
 
 .tj-user-table-wrapper {
-  height: calc(100vh - 392px); //52+64+40+32+20+62
+  height: calc(100vh - 270px); //52+64+40+32+20+62
   overflow-y: auto;
   background: var(--base);
   border-right: 1px solid var(--slate7);
@@ -11434,6 +11434,11 @@ tbody {
   text-decoration: underline;
   text-decoration-color: red;
   text-decoration-style: dashed;
+}
+
+.custom-styles-wrapper {
+  height: calc(100vh - 156px);
+  overflow: auto;
 }
 
 .org-settings-info {

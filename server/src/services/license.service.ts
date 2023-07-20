@@ -103,6 +103,25 @@ export class LicenseService {
     return await this.instanceSettingsService.getSettings('LICENSE_KEY', InstanceSettingsType.SYSTEM);
   }
 
+  validateHostnameSubpath(domainsList = []) {
+    //check for valid hostname
+    const domain = process.env.TOOLJET_HOST;
+    const subPath = process.env.SUB_PATH;
+    const domains = domainsList.length ? domainsList : License.Instance().domains || [];
+
+    if (domains?.length) {
+      if (subPath) {
+        if (!domains.some((host) => host.subpath === subPath && host.hostname === domain)) {
+          throw new BadRequestException(`Domain configurations does not match with ${domain}${subPath || ''}`);
+        }
+      } else {
+        if (!domains.some((host) => host.hostname === domain && !host.subPath)) {
+          throw new BadRequestException(`Domain configurations does not match with ${domain}${subPath || ''}`);
+        }
+      }
+    }
+  }
+
   async updateLicense(dto: LicenseUpdateDto): Promise<void> {
     const licenseSetting: InstanceSettings = await this.instanceSettingsService.getSettings(
       'LICENSE_KEY',
@@ -110,30 +129,7 @@ export class LicenseService {
     );
     try {
       const licenseTerms = decrypt(dto.key);
-
-      //check for valid hostname
-      const host = new URL(process.env.TOOLJET_HOST);
-      const domain = host.hostname;
-      const domains = licenseTerms.domains || [];
-
-      if (domains?.length) {
-        const domainExist = domains.some((host) => new URL(host.hostname).hostname === domain);
-        if (!domainExist) {
-          throw new BadRequestException('Hostname is invalid');
-        }
-      }
-
-      //check for valid subpath
-      const hasSubPath = process.env.SUB_PATH !== undefined;
-      const UrlPrefix = hasSubPath ? process.env.SUB_PATH : '';
-
-      if (hasSubPath && domains?.length) {
-        const subpathExist = domains.some((host) => new URL(host.hostname).pathname === UrlPrefix);
-        if (!subpathExist) {
-          throw new BadRequestException('Subpath is invalid');
-        }
-      }
-
+      this.validateHostnameSubpath(licenseTerms.domains);
       await this.instanceSettingsService.update([{ id: licenseSetting.id, value: dto.key }]);
     } catch (err) {
       throw new BadRequestException(err?.response?.message || 'License key is invalid');
