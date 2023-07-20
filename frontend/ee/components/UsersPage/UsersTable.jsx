@@ -24,10 +24,11 @@ const UsersTable = ({
   isLoadingAllUsers,
   openOrganizationModal,
   openEditModal,
+  customStyles,
 }) => {
   return (
     <div className="workspace-settings-table-wrap mb-4">
-      <div className="tj-user-table-wrapper">
+      <div style={customStyles} className="tj-user-table-wrapper">
         <div className="card-table fixedHeader table-responsive  ">
           <table data-testid="usersTable" className="users-table table table-vcenter h-100">
             <thead>
