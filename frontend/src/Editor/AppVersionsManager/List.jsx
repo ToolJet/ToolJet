@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
-import { appVersionService } from '@/_services';
+import { appVersionService, appEnvironmentService } from '@/_services';
 import { CustomSelect } from './CustomSelect';
 import { toast } from 'react-hot-toast';
+import { shallow } from 'zustand/shallow';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 export const AppVersionsManager = function ({
   appId,
-  editingVersion,
   releasedVersionId,
   setAppDefinitionFromVersion,
-  showCreateVersionModalPrompt,
-  closeCreateVersionModalPrompt,
   onVersionDelete,
 }) {
   const [appVersions, setAppVersions] = useState([]);
@@ -20,14 +19,21 @@ export const AppVersionsManager = function ({
     versionName: '',
     showModal: false,
   });
+
+  const { editingVersion } = useAppVersionStore(
+    (state) => ({
+      editingVersion: state.editingVersion,
+    }),
+    shallow
+  );
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
     setGetAppVersionStatus('loading');
-    appVersionService
-      .getAll(appId)
+    appEnvironmentService
+      .getVersionsByEnvironment(appId)
       .then((data) => {
-        setAppVersions(data.versions);
+        setAppVersions(data.app_versions);
         setGetAppVersionStatus('success');
       })
       .catch((error) => {
@@ -122,8 +128,6 @@ export const AppVersionsManager = function ({
     setAppVersions,
     setAppDefinitionFromVersion,
     editingVersion,
-    showCreateVersionModalPrompt,
-    closeCreateVersionModalPrompt,
     setDeleteVersion,
     deleteVersion,
     deleteAppVersion,
