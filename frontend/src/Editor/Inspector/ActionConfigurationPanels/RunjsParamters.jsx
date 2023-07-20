@@ -26,7 +26,9 @@ function RunjsParameters({ event, darkMode, index, handlerChanged }) {
           <div className="col-9">
             <CodeHinter
               theme={darkMode ? 'monokai' : 'default'}
-              initialValue={event.parameters?.[param.name] || param.defaultValue}
+              initialValue={
+                event.parameters?.[param.name] === undefined ? '{{undefined}}' : event.parameters?.[param.name]
+              }
               onChange={(value) => handleChange(value, param)}
               usePortalEditor={false}
             />

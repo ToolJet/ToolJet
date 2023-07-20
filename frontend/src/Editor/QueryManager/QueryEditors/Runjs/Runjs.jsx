@@ -16,7 +16,7 @@ const Runjs = (props) => {
       ...currentState,
       parameters: options?.parameters?.reduce((params, param) => ({ ...params, [param.name]: param.defaultValue }), {}),
     });
-  }, [JSON.stringify(currentState), options?.parameters]);
+  }, [currentState?.components, options?.parameters]);
 
   const handleAddParameter = (newParameter) => {
     setOptions((prevOptions) => {

@@ -80,7 +80,11 @@ const ParameterForm = ({
                 usePortalEditor={false}
                 height={36}
                 initialValue={defaultValue}
+                enablePreview={false}
               />
+              <small id="emailHelp" class="form-text" style={{ color: 'var(--slate11)' }}>
+                Exposed variables not supported
+              </small>
             </Col>
           </Form.Group>
         </Form>
