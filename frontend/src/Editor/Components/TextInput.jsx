@@ -92,12 +92,12 @@ export const TextInput = function TextInput({
           }
         }}
         onChange={(e) => {
-          setShowValidationError(true);
           setValue(e.target.value);
           setExposedVariable('value', e.target.value);
           fireEvent('onChange');
         }}
         onBlur={(e) => {
+          setShowValidationError(true);
           e.stopPropagation();
           fireEvent('onBlur');
         }}
