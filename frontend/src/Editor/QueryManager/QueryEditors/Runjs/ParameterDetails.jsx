@@ -12,6 +12,10 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      const isClickedOnAddButton = !!event.target.closest('#runjs-param-add-btn');
+      if (isClickedOnAddButton) {
+        return; //modal closing on this even will be taken care by onClick attached to trigger button
+      }
       if (
         showModal &&
         event.target.closest('#parameter-form-popover') === null &&
@@ -21,7 +25,11 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
       }
     };
 
-    document.addEventListener('mouseup', handleClickOutside);
+    if (showModal) {
+      document.addEventListener('mouseup', handleClickOutside);
+    } else {
+      document.removeEventListener('mouseup', handleClickOutside);
+    }
     return () => {
       document.removeEventListener('mouseup', handleClickOutside);
     };
@@ -64,7 +72,13 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
         {isEdit ? (
           <PillButton name={name} onClick={() => setShowModal(true)} onRemove={onRemove} />
         ) : (
-          <ButtonSolid variant="ghostBlue" size="sm" onClick={() => setShowModal(true)} className="ms-2">
+          <ButtonSolid
+            variant="ghostBlue"
+            size="sm"
+            onClick={() => setShowModal((show) => !show)}
+            className="ms-2"
+            id="runjs-param-add-btn"
+          >
             <span className="m-0">
               <PlusRectangle fill={'#3E63DD'} width={15} />
             </span>
