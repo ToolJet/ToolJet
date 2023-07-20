@@ -22,24 +22,39 @@ jobs:
         with:
           node-version: 18.3.0
 
-      - name: Install PostgreSQL client
+      # - name: Install PostgreSQL client
+      #   run: |
+      #     sudo apt update
+      #     sudo apt install postgresql-client -y
+
+      # - name: Start PostgreSQL service
+      #   run: sudo service postgresql start
+
+      # - name: Check PostgreSQL service status
+      #   run: sudo service postgresql status
+
+      # - name: Create PostgreSQL User
+      #   run: |
+      #     sudo -u postgres psql -c "CREATE USER cypress PASSWORD 'cypress' CREATEDB;"
+
+      # - name: Create PostgreSQL Database
+      #   run: |
+      #     sudo -u postgres createdb -O cypress tooljet_development
+
+      - name: Set up Docker
+        uses: docker-practice/actions-setup-docker@master
+
+      - name: PosgtreSQL database 
         run: |
-          sudo apt update
-          sudo apt install postgresql-client -y
+          docker run --name postgres:13 -p 5432:5432 -e POSTGRES_PASSWORD=postgres -v /path/to/host/directory:/var/lib/postgresql/13/main -d postgres:13
 
-      - name: Start PostgreSQL service
-        run: sudo service postgresql start
-
-      - name: Check PostgreSQL service status
-        run: sudo service postgresql status
-
-      - name: Create PostgreSQL User
+      - name: Run PostgREST Docker Container
         run: |
-          sudo -u postgres psql -c "CREATE USER cypress PASSWORD 'cypress' CREATEDB;"
-
-      - name: Create PostgreSQL Database
-        run: |
-          sudo -u postgres createdb -O cypress tooljet_development
+          docker run -d -p 3001:3000 \
+            -e PGRST_DB_URI="postgres://postgres:postgres@host.docker.internal:5432/tooljet_db" \
+            -e PGRST_DB_ANON_ROLE="postgres" \
+            -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
+            postgrest/postgrest:v10.1.1.20221215
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -65,34 +80,23 @@ jobs:
           echo "LOCKBOX_MASTER_KEY=cd97331a419c09387bef49787f7da8d2a81d30733f0de6bed23ad8356d2068b2" >> .env
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
           echo "PG_DB=tooljet_development" >> .env
-          echo "PG_USER=cypress" >> .env
+          echo "PG_USER=postgres" >> .env
           echo "PG_HOST=localhost" >> .env
-          echo "PG_PASS=cypress" >> .env
+          echo "PG_PASS=postgres" >> .env
           echo "PG_PORT=5432" >> .env
           echo "ENABLE_TOOLJET_DB=true" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
-          echo "PGRST_HOST=http://3.101.151.140:3001" >> .env
+          echo "PGRST_HOST=http://localhost:3001" >> .env
           echo "TOOLJET_DB=tooljet_db" >> .env
-          echo "TOOLJET_DB_USER=cypress" >> .env
+          echo "TOOLJET_DB_USER=postgres" >> .env
           echo "TOOLJET_DB_HOST=localhost" >> .env
-          echo "TOOLJET_DB_PASS=cypress" >> .env
+          echo "TOOLJET_DB_PASS=postgres" >> .env
 
       - name: Set up database
         run: |
           npm run --prefix server db:create
           npm run --prefix server db:reset
           npm run --prefix server db:seed
-
-      # - name: Set up Docker
-      #   uses: docker-practice/actions-setup-docker@master
-
-      # - name: Run PostgREST Docker Container
-      #   run: |
-      #     docker run -d -p 3001:3000 \
-      #       -e PGRST_DB_URI="postgres://cypress:cypress@host.docker.internal:5432/tooljet_new_db" \
-      #       -e PGRST_DB_ANON_ROLE="postgres" \
-      #       -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
-      #       postgrest/postgrest:
 
       - name: Run plugins compilation in watch mode
         run: cd plugins && npm start &
