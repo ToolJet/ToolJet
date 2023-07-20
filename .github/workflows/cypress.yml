@@ -46,7 +46,7 @@ jobs:
 
       - name: PosgtreSQL database 
         run: |
-          docker run --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -v /path/to/host/directory:/var/lib/postgresql/13/main -d postgres:13
+          docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -v /path/to/host/directory:/var/lib/postgresql/13/main -d postgres:13
 
       - name: Run PostgREST Docker Container
         run: |
@@ -66,6 +66,9 @@ jobs:
           node -v
           npm -v
 
+      - name: docker container check
+        run: docker ps 
+        
       - name: Install and build dependencies
         run: |
           npm cache clean --force
