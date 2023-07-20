@@ -128,6 +128,7 @@ export const Container = ({
   const noOfBoxs = Object.values(boxes || []).length;
   useEffect(() => {
     updateCanvasHeight(boxes);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noOfBoxs]);
 
   const moveBox = useCallback(
