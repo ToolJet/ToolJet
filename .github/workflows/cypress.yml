@@ -42,23 +42,37 @@ jobs:
       #     sudo -u postgres createdb -O cypress tooljet_development
 
       - name: Set up Docker
-        uses: docker-practice/actions-setup-docker@master
+        run: |
+          sudo apt update
+          sudo apt install apt-transport-https ca-certificates curl software-properties-common
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt update
+          sudo apt install docker-ce
+          sudo systemctl start docker
+          sudo systemctl enable docker
+          sudo usermod -aG docker $USER
+
+      - name: checking docker version
+        run: |
+          docker --version
+          docker info
 
       - name: Run PosgtreSQL Database Docker Container
         run: |
-          docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
+          sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
 
       - name: Run PostgREST Docker Container
         run: |
-          docker run -d --name postgrest -p 3001:3000 \
-          -e PGRST_DB_URI="postgres://postgres:postgres@host.docker.internal:5432/tooljet_db" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
+          sudo docker run -d --name postgrest -p 3001:3000 \
+          -e PGRST_DB_URI="postgres://postgres:postgres@host.docker.internal:5432/tooljet" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
           postgrest/postgrest:v10.1.1.20221215
 
       - name: docker logs
-        run: docker logs postgres
+        run: sudo docker logs postgres
       
       - name: docker logs
-        run: docker logs postgrest           
+        run: sudo docker logs postgrest           
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -92,7 +106,7 @@ jobs:
           echo "PG_PASS=postgres" >> .env
           echo "PG_PORT=5432" >> .env
           echo "ENABLE_TOOLJET_DB=true" >> .env
-          echo "TOOLJET_DB=tooljet_db" >> .env
+          echo "TOOLJET_DB=tooljet" >> .env
           echo "TOOLJET_DB_USER=postgres" >> .env
           echo "TOOLJET_DB_HOST=localhost" >> .env
           echo "TOOLJET_DB_PASS=postgres" >> .env
@@ -142,7 +156,7 @@ jobs:
           mv tmp_cypress.env.json ./cypress-tests/cypress.env.json
 
       - name: docker logs
-        run: docker logs postgrest
+        run: sudo docker logs postgrest
 
       - name: App builder
         if: ${{ github.event.label.name == 'run-cypress-app-builder' }}
