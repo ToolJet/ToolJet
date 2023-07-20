@@ -34,11 +34,6 @@ jobs:
           sudo systemctl enable docker
           sudo usermod -aG docker $USER
 
-      - name: checking docker version
-        run: |
-          docker --version
-          docker info
-
       - name: Run PosgtreSQL Database Docker Container
         run: |
           sudo docker network create tooljet
@@ -52,13 +47,7 @@ jobs:
       - name: checking the node version
         run: |
           node -v
-          npm -v
-
-      - name: docker container check
-        run: docker ps 
-        
-      - name: docker logs
-        run: sudo docker logs postgres   
+          npm -v 
 
       - name: Install and build dependencies
         run: |
@@ -86,25 +75,20 @@ jobs:
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
 
-
       - name: Set up database
         run: |
           npm run --prefix server db:create
           npm run --prefix server db:reset
           npm run --prefix server db:seed
 
-      - name: sleep 10
-        run: sleep 10
+      - name: sleep 5
+        run: sleep 5
 
       - name: Run PostgREST Docker Container
         run: |
           sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
           -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
           postgrest/postgrest:v10.1.1.20221215
-
-      - name: Checking docker containers
-        run: |
-          sudo docker ps
 
       - name: Run plugins compilation in watch mode
         run: cd plugins && npm start &
@@ -164,11 +148,6 @@ jobs:
           sudo systemctl enable docker
           sudo usermod -aG docker $USER
 
-      - name: checking docker version
-        run: |
-          docker --version
-          docker info
-
       - name: Run PosgtreSQL Database Docker Container
         run: |
           sudo docker network create tooljet
@@ -177,18 +156,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-
-      - name: checking the node version
-        run: |
-          node -v
-          npm -v
-
-      - name: docker container check
-        run: docker ps 
-        
-      - name: docker logs
-        run: sudo docker logs postgres   
+          ref: ${{ github.event.pull_request.head.ref }} 
 
       - name: Install and build dependencies
         run: |
@@ -216,25 +184,20 @@ jobs:
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
 
-
       - name: Set up database
         run: |
           npm run --prefix server db:create
           npm run --prefix server db:reset
           npm run --prefix server db:seed
 
-      - name: sleep 10
-        run: sleep 10
+      - name: sleep 5
+        run: sleep 5
 
       - name: Run PostgREST Docker Container
         run: |
           sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
           -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
           postgrest/postgrest:v10.1.1.20221215
-
-      - name: Checking docker containers
-        run: |
-          sudo docker ps
 
       - name: Run plugins compilation in watch mode
         run: cd plugins && npm start &
@@ -251,9 +214,6 @@ jobs:
           until curl --silent --fail http://localhost:8082; do
             sleep 5
           done'
-
-      - name: docker logs
-        run: sudo docker logs postgrest
 
       - name: Workspace
         if: ${{ github.event.label.name == 'run-cypress-workspace' }}
@@ -294,11 +254,6 @@ jobs:
           sudo systemctl enable docker
           sudo usermod -aG docker $USER
 
-      - name: checking docker version
-        run: |
-          docker --version
-          docker info
-
       - name: Run PosgtreSQL Database Docker Container
         run: |
           sudo docker network create tooljet
@@ -308,17 +263,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-
-      - name: checking the node version
-        run: |
-          node -v
-          npm -v
-
-      - name: docker container check
-        run: docker ps 
-        
-      - name: docker logs
-        run: sudo docker logs postgres   
 
       - name: Install and build dependencies
         run: |
@@ -353,18 +297,14 @@ jobs:
           npm run --prefix server db:reset
           npm run --prefix server db:seed
 
-      - name: sleep 10
-        run: sleep 10
+      - name: sleep 5
+        run: sleep 5
 
       - name: Run PostgREST Docker Container
         run: |
           sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
           -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
           postgrest/postgrest:v10.1.1.20221215
-
-      - name: Checking docker containers
-        run: |
-          sudo docker ps
 
       - name: Run plugins compilation in watch mode
         run: cd plugins && npm start &
@@ -381,9 +321,6 @@ jobs:
           until curl --silent --fail http://localhost:8082; do
             sleep 5
           done'
-
-      - name: docker logs
-        run: sudo docker logs postgrest
 
       - name: Marketplace
         if: ${{ github.event.label.name == 'run-cypress-marketplace' }}
