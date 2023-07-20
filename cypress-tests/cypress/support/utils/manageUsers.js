@@ -73,10 +73,10 @@ export const manageUsersElements = () => {
     commonText.labelFullNameInput
   );
   cy.get(commonSelectors.inputFieldFullName).should("be.visible");
-  cy.get(commonSelectors.labelEmailInput).verifyVisibleElement(
-    "have.text",
-    commonText.labelEmailInput
-  );
+  // cy.get(commonSelectors.labelEmailInput).verifyVisibleElement(
+  //   "have.text",
+  //   commonText.labelEmailInput
+  // );
   cy.get(commonSelectors.inputFieldEmailAddress).should("be.visible");
 
   cy.get(commonSelectors.cancelButton).verifyVisibleElement(

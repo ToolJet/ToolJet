@@ -3801,6 +3801,28 @@ export const widgets = [
           schema: { type: 'array', element: { type: 'object' } },
         },
       },
+      mode: {
+        type: 'select',
+        displayName: 'Mode',
+        options: [
+          { name: 'list', value: 'list' },
+          { name: 'grid', value: 'grid' },
+        ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      columns: {
+        type: 'number',
+        displayName: 'Columns',
+        validation: {
+          schema: { type: 'number' },
+        },
+        conditionallyRender: {
+          key: 'mode',
+          value: 'grid',
+        },
+      },
       rowHeight: {
         type: 'code',
         displayName: 'Row height',
@@ -3813,6 +3835,10 @@ export const widgets = [
         displayName: 'Show bottom border',
         validation: {
           schema: { type: 'boolean' },
+        },
+        conditionallyRender: {
+          key: 'mode',
+          value: 'list',
         },
       },
       enablePagination: {
@@ -3831,7 +3857,8 @@ export const widgets = [
       },
     },
     events: {
-      onRowClicked: { displayName: 'Row clicked' },
+      onRowClicked: { displayName: 'Row clicked (Deprecated)' },
+      onRecordClicked: { displayName: 'Record clicked' },
     },
     styles: {
       backgroundColor: {
@@ -3886,6 +3913,8 @@ export const widgets = [
     { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 3' },
   ]}}`,
         },
+        mode: { value: 'list' },
+        columns: { value: '{{3}}' },
         rowHeight: {
           value: '100',
         },

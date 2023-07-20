@@ -231,7 +231,6 @@ class StripeComponent extends React.Component {
                             </div>
                             <div className="col field overflow-hidden">
                               <CodeHinter
-                                currentState={this.props.currentState}
                                 initialValue={this.state.options.params.path[param.name]}
                                 mode="text"
                                 placeholder={'Value'}
@@ -288,7 +287,6 @@ class StripeComponent extends React.Component {
                             </div>
                             <div className="col field overflow-hidden">
                               <CodeHinter
-                                currentState={this.props.currentState}
                                 initialValue={this.state.options.params?.query[param.name] ?? ''}
                                 mode="text"
                                 placeholder={'Value'}
@@ -345,7 +343,6 @@ class StripeComponent extends React.Component {
                             </div>
                             <div className="col field overflow-hidden">
                               <CodeHinter
-                                currentState={this.props.currentState}
                                 initialValue={this.state.options.params?.request[param] ?? ''}
                                 mode="text"
                                 placeholder={'Value'}

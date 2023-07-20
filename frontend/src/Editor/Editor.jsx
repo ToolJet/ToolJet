@@ -46,8 +46,11 @@ import { ReleasedVersionError } from './AppVersionsManager/ReleasedVersionError'
 import { useDataSourcesStore } from '@/_stores/dataSourcesStore';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorStore } from '@/_stores/editorStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
+import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
 import { resetAllStores } from '@/_stores/utils';
+import { setCookie } from '@/_helpers/cookie';
 import { shallow } from 'zustand/shallow';
 
 setAutoFreeze(false);
@@ -59,8 +62,6 @@ class EditorComponent extends React.Component {
     resetAllStores();
 
     const appId = this.props.params.id;
-
-    const pageHandle = this.props.params.pageHandle;
 
     const { socket } = createWebsocketConnection(appId);
 
@@ -106,27 +107,9 @@ class EditorComponent extends React.Component {
       users: null,
       appId,
       showLeftSidebar: true,
-      showComments: false,
       zoomLevel: 1.0,
-      currentLayout: 'desktop',
       deviceWindowWidth: 450,
       appDefinition: this.defaultDefinition,
-      currentState: {
-        queries: {},
-        components: {},
-        globals: {
-          theme: { name: props.darkMode ? 'dark' : 'light' },
-          urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
-        },
-        errors: {},
-        variables: {},
-        client: {},
-        server: {},
-        page: {
-          handle: pageHandle,
-          variables: {},
-        },
-      },
       apps: [],
       queryConfirmationList: [],
       isSourceSelected: false,
@@ -162,28 +145,40 @@ class EditorComponent extends React.Component {
           lastName: currentUser.last_name,
           groups: currentSession.group_permissions?.map((group) => group.group),
         };
-
-        this.setState({
-          currentUser,
-          currentState: {
-            ...this.state.currentState,
-            globals: {
-              ...this.state.currentState.globals,
-              currentUser: userVars,
-            },
+        this.setState({ currentUser });
+        useCurrentStateStore.getState().actions.setCurrentState({
+          globals: {
+            ...this.props.currentState.globals,
+            currentUser: userVars,
           },
-          userVars,
         });
       }
     });
   }
 
-  componentDidMount() {
+  /**
+   *
+   * ThandleMessage event listener in the login component fir iframe communication.
+   * It now checks if the received message has a type of 'redirectTo' and extracts the redirectPath value from the payload.
+   * If the value is present, it sets a cookie named 'redirectPath' with the received value and a one-day expiration.
+   * This allows for redirection to a specific path after the login process is completed.
+   */
+  handleMessage = (event) => {
+    const { data } = event;
+
+    if (data?.type === 'redirectTo') {
+      const redirectCookie = data?.payload['redirectPath'];
+      setCookie('redirectPath', redirectCookie, 1);
+    }
+  };
+
+  async componentDidMount() {
+    window.addEventListener('message', this.handleMessage);
     this.getCurrentOrganizationDetails();
     this.autoSave();
     this.fetchApps(0);
     this.fetchApp(this.props.params.pageHandle);
-    this.fetchOrgEnvironmentVariables();
+    await this.fetchOrgEnvironmentVariables();
     this.initComponentVersioning();
     this.initRealtimeSave();
     this.initEventListeners();
@@ -196,6 +191,17 @@ class EditorComponent extends React.Component {
         threshold: 0,
       },
     });
+    const globals = {
+      ...this.props.currentState.globals,
+      theme: { name: this.props.darkMode ? 'dark' : 'light' },
+      urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+    };
+    const page = {
+      ...this.props.currentState.page,
+      handle: this.props.pageHandle,
+      variables: {},
+    };
+    useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
   }
 
   /**
@@ -226,12 +232,10 @@ class EditorComponent extends React.Component {
           client_variables[variable.variable_name] = variable.value;
         }
       });
-      this.setState({
-        currentState: {
-          ...this.state.currentState,
-          server: server_variables,
-          client: client_variables,
-        },
+
+      useCurrentStateStore.getState().actions.setCurrentState({
+        server: server_variables,
+        client: client_variables,
       });
     });
   };
@@ -329,6 +333,14 @@ class EditorComponent extends React.Component {
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
       const homePageId = startingPageId ?? dataDefinition.homePageId;
 
+      useCurrentStateStore.getState().actions.setCurrentState({
+        page: {
+          handle: dataDefinition.pages[homePageId]?.handle,
+          name: dataDefinition.pages[homePageId]?.name,
+          id: homePageId,
+          variables: {},
+        },
+      });
       useAppVersionStore.getState().actions.updateEditingVersion(data.editing_version);
       useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
       this.setState(
@@ -338,25 +350,27 @@ class EditorComponent extends React.Component {
           appDefinition: dataDefinition,
           slug: data.slug,
           currentPageId: homePageId,
-          currentState: {
-            ...this.state.currentState,
-            page: {
-              handle: dataDefinition.pages[homePageId]?.handle,
-              name: dataDefinition.pages[homePageId]?.name,
-              id: homePageId,
-              variables: {},
-            },
-          },
         },
+
         async () => {
           computeComponentState(this, this.state.appDefinition.pages[homePageId]?.components ?? {}).then(async () => {
             this.setWindowTitle(data.name);
-            this.setState({
-              showComments: !!queryString.parse(this.props.location.search).threadId,
-            });
+
+            useEditorStore.getState().actions.setShowComments(!!queryString.parse(this.props.location.search).threadId);
+            for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
+              await this.handleEvent(event.eventId, event);
+            }
           });
         }
       );
+      useCurrentStateStore.getState().actions.setCurrentState({
+        page: {
+          handle: dataDefinition.pages[homePageId]?.handle,
+          name: dataDefinition.pages[homePageId]?.name,
+          id: homePageId,
+          variables: {},
+        },
+      });
 
       this.fetchDataSources(data.editing_version?.id);
       await this.fetchDataQueries(data.editing_version?.id, true, true);
@@ -705,8 +719,8 @@ class EditorComponent extends React.Component {
 
     for (const selectedComponent of this.state.selectedComponents) {
       newComponents = produce(newComponents, (draft) => {
-        let top = draft[selectedComponent.id].layouts[this.state.currentLayout].top;
-        let left = draft[selectedComponent.id].layouts[this.state.currentLayout].left;
+        let top = draft[selectedComponent.id].layouts[this.props.currentLayout].top;
+        let left = draft[selectedComponent.id].layouts[this.props.currentLayout].left;
 
         const gridWidth = (1 * 100) / 43; // width of the canvas grid in percentage
 
@@ -725,8 +739,8 @@ class EditorComponent extends React.Component {
             break;
         }
 
-        draft[selectedComponent.id].layouts[this.state.currentLayout].top = top;
-        draft[selectedComponent.id].layouts[this.state.currentLayout].left = left;
+        draft[selectedComponent.id].layouts[this.props.currentLayout].top = top;
+        draft[selectedComponent.id].layouts[this.props.currentLayout].left = left;
       });
     }
     appDefinition.pages[this.state.currentPageId].components = newComponents;
@@ -783,10 +797,6 @@ class EditorComponent extends React.Component {
     this.setWindowTitle(newName);
   };
 
-  toggleComments = () => {
-    this.setState({ showComments: !this.state.showComments });
-  };
-
   setSelectedComponent = (id, component, multiSelect = false) => {
     if (this.state.selectedComponents.length === 0 || !multiSelect) {
       this.switchSidebarTab(1);
@@ -834,11 +844,6 @@ class EditorComponent extends React.Component {
   getCanvasWidth = () => {
     const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
     return canvasBoundingRect?.width;
-  };
-
-  getCanvasHeight = () => {
-    const canvasBoundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
-    return canvasBoundingRect?.height;
   };
 
   computeCanvasBackgroundColor = () => {
@@ -927,13 +932,10 @@ class EditorComponent extends React.Component {
   };
 
   changeDarkMode = (newMode) => {
-    this.setState({
-      currentState: {
-        ...this.state.currentState,
-        globals: {
-          ...this.state.currentState.globals,
-          theme: { name: newMode ? 'dark' : 'light' },
-        },
+    useCurrentStateStore.getState().actions.setCurrentState({
+      globals: {
+        ...this.props.currentState.globals,
+        theme: { name: newMode ? 'dark' : 'light' },
       },
     });
     this.props.switchDarkMode(newMode);
@@ -1346,7 +1348,7 @@ class EditorComponent extends React.Component {
     document.getElementById('real-canvas').scrollIntoView();
     if (
       this.state.currentPageId === pageId &&
-      this.state.currentState.page.handle === this.state.appDefinition?.pages[pageId]?.handle
+      this.props.currentState.page.handle === this.state.appDefinition?.pages[pageId]?.handle
     ) {
       return;
     }
@@ -1359,7 +1361,7 @@ class EditorComponent extends React.Component {
 
     this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.appId}/${handle}?${queryParamsString}`);
 
-    const { globals: existingGlobals } = this.state.currentState;
+    const { globals: existingGlobals } = this.props.currentState;
 
     const page = {
       id: pageId,
@@ -1372,7 +1374,7 @@ class EditorComponent extends React.Component {
       ...existingGlobals,
       urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
     };
-
+    useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
     this.setState(
       {
         pages: {
@@ -1380,18 +1382,14 @@ class EditorComponent extends React.Component {
           [currentPageId]: {
             ...(this.state.pages?.[currentPageId] ?? {}),
             variables: {
-              ...(this.state.currentState?.page?.variables ?? {}),
+              ...(this.props.currentState?.page?.variables ?? {}),
             },
           },
-        },
-        currentState: {
-          ...this.state.currentState,
-          globals,
-          page,
         },
         currentPageId: pageId,
       },
       () => {
+        // Move this callback to zustand
         computeComponentState(this, this.state.appDefinition.pages[pageId]?.components ?? {}).then(async () => {
           for (const event of events ?? []) {
             await this.handleEvent(event.eventId, event);
@@ -1428,12 +1426,6 @@ class EditorComponent extends React.Component {
     return Object.entries(this.state.appDefinition.pages).map(([id, page]) => ({ ...page, id }));
   };
 
-  toggleCurrentLayout = (selectedLayout) => {
-    this.setState({
-      currentLayout: selectedLayout,
-    });
-  };
-
   getCanvasMinWidth = () => {
     /**
      * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
@@ -1452,7 +1444,9 @@ class EditorComponent extends React.Component {
       return defaultCanvasMinWidth;
     }
   };
+
   handleEditorMarginLeftChange = (value) => this.setState({ editorMarginLeft: value });
+
   render() {
     const {
       currentSidebarTab,
@@ -1462,20 +1456,18 @@ class EditorComponent extends React.Component {
       slug,
       app,
       showLeftSidebar,
-      currentState,
       isLoading,
       zoomLevel,
-      currentLayout,
       deviceWindowWidth,
       apps,
       defaultComponentStateComputed,
-      showComments,
       hoveredComponent,
       queryConfirmationList,
     } = this.state;
+    const currentState = this.props?.currentState;
     const editingVersion = this.props?.editingVersion;
     const appVersionPreviewLink = editingVersion
-      ? `/applications/${app.id}/versions/${editingVersion.id}/${this.state.currentState.page.handle}`
+      ? `/applications/${app.id}/versions/${editingVersion.id}/${currentState.page.handle}`
       : '';
     return (
       <div className="editor wrapper">
@@ -1501,8 +1493,6 @@ class EditorComponent extends React.Component {
         <EditorContextWrapper>
           <EditorHeader
             darkMode={this.props.darkMode}
-            currentState={currentState}
-            currentLayout={this.state.currentLayout}
             globalSettingsChanged={this.globalSettingsChanged}
             appDefinition={appDefinition}
             toggleAppMaintenance={this.toggleAppMaintenance}
@@ -1515,7 +1505,6 @@ class EditorComponent extends React.Component {
             canRedo={this.canRedo}
             handleUndo={this.handleUndo}
             handleRedo={this.handleRedo}
-            toggleCurrentLayout={this.toggleCurrentLayout}
             isSaving={this.state.isSaving}
             saveError={this.state.saveError}
             onNameChanged={this.onNameChanged}
@@ -1529,7 +1518,6 @@ class EditorComponent extends React.Component {
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
               <LeftSidebar
-                showComments={showComments}
                 errorLogs={currentState.errors}
                 components={currentState.components}
                 appId={appId}
@@ -1538,9 +1526,7 @@ class EditorComponent extends React.Component {
                 dataQueriesChanged={this.dataQueriesChanged}
                 globalDataSourcesChanged={this.globalDataSourcesChanged}
                 onZoomChanged={this.onZoomChanged}
-                toggleComments={this.toggleComments}
                 switchDarkMode={this.changeDarkMode}
-                currentState={currentState}
                 debuggerActions={this.sideBarDebugger}
                 appDefinition={{
                   components: appDefinition.pages[this.state.currentPageId]?.components ?? {},
@@ -1570,7 +1556,7 @@ class EditorComponent extends React.Component {
                 apps={apps}
                 setEditorMarginLeft={this.handleEditorMarginLeftChange}
               />
-              {!showComments && (
+              {!this.props.showComments && (
                 <Selecto
                   dragContainer={'.canvas-container'}
                   selectableTargets={['.react-draggable']}
@@ -1620,12 +1606,10 @@ class EditorComponent extends React.Component {
                     <div
                       className="canvas-area"
                       style={{
-                        width: currentLayout === 'desktop' ? '100%' : '450px',
-                        minHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
+                        width: this.props.currentLayout === 'desktop' ? '100%' : '450px',
                         maxWidth:
                           +this.state.appDefinition.globalSettings.canvasMaxWidth +
                           this.state.appDefinition.globalSettings.canvasMaxWidthType,
-                        maxHeight: +this.state.appDefinition.globalSettings.canvasMaxHeight,
                         /**
                          * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
                          * default canvas min width = calc(((screen width - width component editor side bar) - width of editor sidebar on left) - width of left sidebar popover)
@@ -1668,23 +1652,19 @@ class EditorComponent extends React.Component {
                         <>
                           <Container
                             canvasWidth={this.getCanvasWidth()}
-                            canvasHeight={this.getCanvasHeight()}
                             socket={this.socket}
-                            showComments={showComments}
                             appDefinition={appDefinition}
                             appDefinitionChanged={this.appDefinitionChanged}
                             snapToGrid={true}
                             darkMode={this.props.darkMode}
                             mode={'edit'}
                             zoomLevel={zoomLevel}
-                            currentLayout={currentLayout}
                             deviceWindowWidth={deviceWindowWidth}
                             selectedComponents={selectedComponents}
                             appLoading={isLoading}
                             onEvent={this.handleEvent}
                             onComponentOptionChanged={this.handleOnComponentOptionChanged}
                             onComponentOptionsChanged={this.handleOnComponentOptionsChanged}
-                            currentState={this.state.currentState}
                             setSelectedComponent={this.setSelectedComponent}
                             handleUndo={this.handleUndo}
                             handleRedo={this.handleRedo}
@@ -1697,7 +1677,6 @@ class EditorComponent extends React.Component {
                           />
                           <CustomDragLayer
                             snapToGrid={true}
-                            currentLayout={currentLayout}
                             canvasWidth={this.getCanvasWidth()}
                             onDragging={(isDragging) => this.setState({ isDragging })}
                           />
@@ -1712,7 +1691,6 @@ class EditorComponent extends React.Component {
                   dataQueriesChanged={this.dataQueriesChanged}
                   fetchDataQueries={this.fetchDataQueries}
                   darkMode={this.props.darkMode}
-                  currentState={currentState}
                   apps={apps}
                   allComponents={appDefinition.pages[this.state.currentPageId]?.components ?? {}}
                   appId={appId}
@@ -1742,7 +1720,6 @@ class EditorComponent extends React.Component {
                         componentDefinitionChanged={this.componentDefinitionChanged}
                         removeComponent={this.removeComponent}
                         selectedComponentId={selectedComponents[0].id}
-                        currentState={currentState}
                         allComponents={appDefinition.pages[this.state.currentPageId]?.components}
                         key={selectedComponents[0].id}
                         switchSidebarTab={this.switchSidebarTab}
@@ -1763,17 +1740,12 @@ class EditorComponent extends React.Component {
                   <WidgetManager
                     componentTypes={componentTypes}
                     zoomLevel={zoomLevel}
-                    currentLayout={currentLayout}
                     darkMode={this.props.darkMode}
                   ></WidgetManager>
                 )}
               </div>
-              {config.COMMENT_FEATURE_ENABLE && showComments && (
-                <CommentNotifications
-                  socket={this.socket}
-                  toggleComments={this.toggleComments}
-                  pageId={this.state.currentPageId}
-                />
+              {config.COMMENT_FEATURE_ENABLE && this.props.showComments && (
+                <CommentNotifications socket={this.socket} pageId={this.state.currentPageId} />
               )}
             </div>
           </DndProvider>
@@ -1784,12 +1756,29 @@ class EditorComponent extends React.Component {
 }
 
 const withStore = (Component) => (props) => {
+  const { showComments, currentLayout } = useEditorStore(
+    (state) => ({
+      showComments: state?.showComments,
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({ isVersionReleased: state.isVersionReleased, editingVersion: state.editingVersion }),
     shallow
   );
+  const currentState = useCurrentState();
 
-  return <Component {...props} isVersionReleased={isVersionReleased} editingVersion={editingVersion} />;
+  return (
+    <Component
+      {...props}
+      showComments={showComments}
+      currentLayout={currentLayout}
+      isVersionReleased={isVersionReleased}
+      editingVersion={editingVersion}
+      currentState={currentState}
+    />
+  );
 };
 
 export const Editor = withTranslation()(withRouter(withStore(EditorComponent)));

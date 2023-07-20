@@ -44,6 +44,7 @@ export const LeftSidebarDataSources = ({
     if (dataSources.length === 0) {
       onDeleteofAllDataSources();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSources.length]);
 
   const { admin } = authenticationService.currentSessionValue;
@@ -223,14 +224,7 @@ export const LeftSidebarDataSources = ({
   );
 };
 
-const LeftSidebarDataSourcesContainer = ({
-  darkMode,
-  RenderDataSource,
-  dataSources = [],
-
-  setPinned,
-  pinned,
-}) => {
+const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [], setPinned, pinned }) => {
   const { t } = useTranslation();
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({

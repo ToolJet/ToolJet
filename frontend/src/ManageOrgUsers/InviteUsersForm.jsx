@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
 import { FileDropzone } from './FileDropzone';
+import Multiselect from '@/_ui/Multiselect/Multiselect';
 
 function InviteUsersForm({
   onClose,
@@ -15,9 +16,11 @@ function InviteUsersForm({
   uploadingUsers,
   onCancel,
   inviteBulkUsers,
+  groups = [],
 }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(1);
+  const [selectedGroups, setSelectedGroups] = useState([]);
 
   const hiddenFileInput = useRef(null);
 
@@ -33,6 +36,16 @@ function InviteUsersForm({
 
   const handleClick = () => {
     hiddenFileInput.current.click();
+  };
+
+  const onChangeHandler = (items) => {
+    setSelectedGroups(items);
+  };
+
+  const handleCreateUser = (e) => {
+    e.preventDefault();
+    const selectedGroupsIds = selectedGroups.map((group) => group.value);
+    createUser(selectedGroupsIds);
   };
 
   return (
@@ -79,7 +92,7 @@ function InviteUsersForm({
           {activeTab == 1 ? (
             <div className="manage-users-drawer-content">
               <div className="invite-user-by-email">
-                <form onSubmit={createUser} noValidate className="invite-email-body" id="inviteByEmail">
+                <form onSubmit={handleCreateUser} noValidate className="invite-email-body" id="inviteByEmail">
                   <label className="form-label" data-cy="label-full-name-input-field">
                     {t('header.organization.menus.manageUsers.fullName', 'Enter full name')}
                   </label>
@@ -118,6 +131,19 @@ function InviteUsersForm({
                         {errors['email']}
                       </span>
                     </div>
+                  </div>
+                  <div className="form-group mb-3 manage-groups-invite-form manage-groups-app-dropdown">
+                    <label className="form-label" data-cy="label-email-input-field">
+                      {t('header.organization.menus.manageUsers.selectGroup', 'Select Group')}
+                    </label>
+                    <Multiselect
+                      value={selectedGroups}
+                      onChange={onChangeHandler}
+                      options={groups}
+                      overrideStrings={{
+                        selectSomeItems: 'Select groups to add for this user',
+                      }}
+                    />
                   </div>
                 </form>
               </div>
