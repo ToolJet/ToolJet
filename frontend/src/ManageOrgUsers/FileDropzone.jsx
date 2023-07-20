@@ -15,6 +15,7 @@ export function FileDropzone({ handleClick, hiddenFileInput, errors, handleFileC
         toast.error('Please upload a CSV file');
       }
     },
+    noClick: true,
     maxFiles: 1,
     onFileDialogCancel: () => {
       toast.error('Please upload a CSV file');
