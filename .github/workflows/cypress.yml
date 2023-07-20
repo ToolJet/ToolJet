@@ -85,12 +85,14 @@ jobs:
           echo "PG_PASS=postgres" >> .env
           echo "PG_PORT=5432" >> .env
           echo "ENABLE_TOOLJET_DB=true" >> .env
-          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
-          echo "PGRST_HOST=http://localhost:3001" >> .env
           echo "TOOLJET_DB=tooljet_db" >> .env
           echo "TOOLJET_DB_USER=postgres" >> .env
           echo "TOOLJET_DB_HOST=localhost" >> .env
           echo "TOOLJET_DB_PASS=postgres" >> .env
+          echo "PGRST_DB_URI=postgres://postgres:postgres@localhost:5432/tooljet_db" >> .env
+          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
+          echo "PGRST_HOST=http://localhost:3001" >> .env
+
 
       - name: Set up database
         run: |
