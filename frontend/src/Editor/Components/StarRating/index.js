@@ -12,7 +12,7 @@ export const StarRating = function StarRating({ properties, styles, fireEvent, s
   const allowHalfStar = properties.allowHalfStar ?? false;
   const tooltips = properties.tooltips;
 
-  const { visibility, disabledState, textColor, labelColor } = styles;
+  const { visibility, disabledState, textColor, labelColor, boxShadow } = styles;
   const color = textColor ?? '#ffb400';
   const labelColorStyle = labelColor === '#333' ? (darkMode ? '#fff' : '#333') : labelColor;
 
@@ -71,10 +71,10 @@ export const StarRating = function StarRating({ properties, styles, fireEvent, s
     <div
       data-disabled={disabledState}
       className="star-rating"
-      style={{ display: visibility ? '' : 'none' }}
+      style={{ display: visibility ? '' : 'none', boxShadow }}
       data-cy={dataCy}
     >
-      <span className="label form-check-label col-auto" style={{ color: labelColorStyle }}>
+      <span className={label && `label form-check-label col-auto`} style={{ color: labelColorStyle }}>
         {label}
       </span>
       <div className="col px-1 py-0 mt-0">

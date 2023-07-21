@@ -92,6 +92,7 @@ export default function generateColumnsData({
       regex: column.regex,
       customRule: column?.customRule,
       sortType,
+      columnVisibility: column?.columnVisibility ?? true,
       Cell: function ({ cell, isEditable, newRowsChangeSet = null }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
@@ -262,7 +263,7 @@ export default function generateColumnsData({
                 readOnly={!isEditable}
                 style={{ maxWidth: width }}
                 onBlur={(e) => {
-                  if (isEditable) {
+                  if (isEditable && e.target.defaultValue !== e.target.value) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}

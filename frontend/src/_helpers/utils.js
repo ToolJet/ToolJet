@@ -387,16 +387,7 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(
-  _ref,
-  code,
-  queryId,
-  isPreview,
-  // eslint-disable-next-line no-unused-vars
-  confirmed = undefined,
-  mode = ''
-) {
-  //:: confirmed arg is unused
+export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '') {
   const { currentState } = _ref.state;
   let result = {},
     error = null;
@@ -707,6 +698,7 @@ export const loadPyodide = async () => {
     return pyodide;
   } catch (error) {
     console.log('loadPyodide error', error);
+    throw 'Could not load Pyodide to execute Python';
   }
 };
 export function safelyParseJSON(json) {
@@ -913,3 +905,5 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
     }
   }
 };
+
+export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
