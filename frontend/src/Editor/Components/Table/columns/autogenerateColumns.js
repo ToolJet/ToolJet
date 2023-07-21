@@ -34,7 +34,7 @@ export default function autogenerateColumns(
     we trygo inside the if statrment to check it's depth and support auto generation of
     columns till one level.
      */
-    if (Object.prototype.toString.call(currentValue[1]).slice(8, -1).toLowerCase() === 'object') {
+    if (typeof currentValue[1] === 'object' && !Array.isArray(currentValue[1])) {
       accumulator.push(
         ...Object.entries(currentValue[1]).reduce((acc, cv) => {
           /*
@@ -43,7 +43,7 @@ export default function autogenerateColumns(
             generate column for it. Else, if it comes out to be object,that means it has more than one level
             of nexted data, so we do not auto generate column for the same.
             */
-          if (Object.prototype.toString.call(cv[1]).slice(8, -1).toLowerCase() !== 'object') {
+          if (typeof cv[1] !== 'object' || Array.isArray(cv[1])) {
             acc.push(`${currentValue[0]}.${cv[0]}`);
           }
           return acc;
