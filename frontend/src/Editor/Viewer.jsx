@@ -588,6 +588,7 @@ class ViewerComponent extends React.Component {
         return (
           <div className="viewer wrapper">
             <Confirm
+              darkMode={this.props.darkMode}
               show={queryConfirmationList.length > 0}
               message={'Do you want to run this query?'}
               onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
