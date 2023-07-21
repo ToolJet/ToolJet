@@ -107,9 +107,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).type(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
     if (!Array.isArray(value)) {
       cy.wrap(subject).type(value, {
@@ -183,9 +183,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).type(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
@@ -239,6 +239,7 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
       cy.reload();
     }
   });
+  cy.wait(3000);
 });
 
 Cypress.Commands.add("skipEditorPopover", () => {
