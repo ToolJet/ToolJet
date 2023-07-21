@@ -24,7 +24,8 @@ export const verifypreview = (type, data) => {
   cy.get(`[data-cy="preview-tab-${type}"]`).click();
   cy.get(`[data-cy="preview-${type}-data-container"]`).verifyVisibleElement(
     "contain.text",
-    data
+    data,
+    [{ timeout: 15000 }]
   );
 };
 

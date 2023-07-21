@@ -1,10 +1,18 @@
 import React from 'react';
 import cx from 'classnames';
 import { Tooltip } from 'react-tooltip';
+import { useEditorStore } from '@/_stores/editorStore';
+import { shallow } from 'zustand/shallow';
 
-function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout, toggleCurrentLayout }) {
+function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
+  const { currentLayout, toggleCurrentLayout } = useEditorStore(
+    (state) => ({
+      currentLayout: state.currentLayout,
+      toggleCurrentLayout: state.actions.toggleCurrentLayout,
+    }),
+    shallow
+  );
   return (
     <div className="editor-header-actions">
       <div style={{ borderRadius: 6, marginRight: 12 }}>
