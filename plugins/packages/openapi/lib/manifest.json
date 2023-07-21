@@ -12,7 +12,7 @@
       "rawData": {}
     },
     "options": {
-      "password":{
+      "password": {
         "encrypted": true
       },
       "bearer_token": {
@@ -62,31 +62,19 @@
       "value": ""
     },
     "headers": {
-      "value": [
-        [
-          "",
-          ""
-        ]
-      ]
+      "value": [["", ""]]
     },
     "custom_query_params": {
-      "value": [
-        [
-          "",
-          ""
-        ]
-      ]
+      "value": [["", ""]]
     },
     "custom_auth_params": {
-      "value": [
-        [
-          "",
-          ""
-        ]
-      ]
+      "value": [["", ""]]
     },
     "client_auth": {
       "value": "header"
+    },
+    "access_token_custom_headers": {
+      "value": [["", ""]]
     }
   },
   "properties": {
