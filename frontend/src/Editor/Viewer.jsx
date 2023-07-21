@@ -63,6 +63,7 @@ class ViewerComponent extends React.Component {
       errorVersionId: null,
       errorDetails: null,
       pages: {},
+      homepage: null,
     };
   }
 
@@ -162,6 +163,7 @@ class ViewerComponent extends React.Component {
         dataQueries: data.data_queries,
         currentPageId: currentPage.id,
         pages: {},
+        homepage: this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle,
       },
       () => {
         computeComponentState(this, data?.definition?.pages[currentPage.id]?.components).then(async () => {
@@ -347,13 +349,16 @@ class ViewerComponent extends React.Component {
     window.addEventListener('message', this.handleMessage);
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     if (this.props.params.slug && this.props.params.slug !== prevProps.params.slug) {
       this.setState({ isLoading: true });
       this.loadApplicationBySlug(this.props.params.slug);
     }
 
     if (this.state.initialComputationOfStateDone) this.handlePageSwitchingBasedOnURLparam();
+    if (this.state.homepage !== prevState.homepage && !this.state.isLoading) {
+      <Navigate to={`${this.state.homepage}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
+    }
   }
 
   handlePageSwitchingBasedOnURLparam() {
@@ -517,13 +522,6 @@ class ViewerComponent extends React.Component {
         </div>
       );
     } else {
-      const startingPageHandle = this.props?.params?.pageHandle;
-      const homePageHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
-      if (!startingPageHandle && homePageHandle) {
-        return (
-          <Navigate to={`${homePageHandle}${this.props.params.pageHandle ? '' : window.location.search}`} replace />
-        );
-      }
       if (this.state.app?.is_maintenance_on) {
         return (
           <div className="maintenance_container">
@@ -537,34 +535,6 @@ class ViewerComponent extends React.Component {
       } else {
         if (errorDetails) {
           this.handleError(errorDetails, errorAppId, errorVersionId);
-        }
-
-        const pageArray = Object.values(this.state.appDefinition?.pages || {});
-        //checking if page is hidden
-        if (
-          pageArray.find((page) => page.handle === this.props.params.pageHandle)?.hidden &&
-          this.state.currentPageId !== this.state.appDefinition?.homePageId && //Prevent page crashing when home page is hidden
-          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
-        ) {
-          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
-          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/${homeHandle}`;
-          if (this.state.slug) {
-            url = `/applications/${this.state.slug}/${homeHandle}`;
-          }
-          return <Navigate to={url} replace />;
-        }
-
-        //checking if page exists
-        if (
-          !pageArray.find((page) => page.handle === this.props.params.pageHandle) &&
-          this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
-        ) {
-          const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
-          let url = `/applications/${this.state.appId}/versions/${this.state.versionId}/${homeHandle}`;
-          if (this.state.slug) {
-            url = `/applications/${this.state.slug}/${homeHandle}`;
-          }
-          return <Navigate to={`${url}${this.props.params.pageHandle ? '' : window.location.search}`} replace />;
         }
 
         return (
