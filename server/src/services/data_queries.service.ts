@@ -223,7 +223,7 @@ export class DataQueriesService {
               app: { id: app?.id, isPublic: app?.isPublic },
             }
           );
-        } else if (dataSource.kind === 'restapi' || dataSource.kind === 'openapi') {
+        } else if (dataSource.kind === 'restapi' || dataSource.kind === 'openapi' || dataSource.kind === 'graphql') {
           return {
             status: 'needs_oauth',
             data: {
