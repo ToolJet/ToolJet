@@ -10665,6 +10665,30 @@ tbody {
     }
   }
 }
+.generate-cell-value-component-div-wrapper{
+  
+  .form-control-plaintext:focus-visible {
+    outline-color: #dadcde;
+    border-radius: 4px;
+  }
+  
+  .form-control-plaintext:hover {
+    outline-color: #dadcde;
+    border-radius: 4px;
+  }
+}
+.dark-theme{
+  .generate-cell-value-component-div-wrapper{
+  
+    .form-control-plaintext:focus-visible {
+      filter: invert(-1);
+    }
+    
+    .form-control-plaintext:hover {
+      filter: invert(-1);
+    }
+  }
+}
 
 .workspace-folder-modal {
   .tj-app-input {
