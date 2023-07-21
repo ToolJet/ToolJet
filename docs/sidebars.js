@@ -39,6 +39,7 @@ const sidebars = {
         'setup/v2-migration-guide'
       ]
     },
+    'licensing',
     'tooljet-database',
     'tooljet-copilot',
     {
