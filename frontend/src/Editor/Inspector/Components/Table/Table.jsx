@@ -1113,7 +1113,7 @@ class TableComponent extends React.Component {
       ...(displayServerSideFilter ? ['serverSideFilter'] : []),
       'showBulkUpdateActions',
       'allowSelection',
-      ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector'] : []),
+      ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow'] : []),
       'hideColumnSelectorButton',
     ];
 
