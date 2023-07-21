@@ -220,7 +220,7 @@ export const Modal = function Modal({
       >
         {!loadingState ? (
           <>
-            <SubContainer parent={id} {...containerProps} parentRef={parentRef} />
+            <SubContainer parent={id} {...containerProps} parentRef={parentRef} parentComponent={component} />
             <SubCustomDragLayer
               snapToGrid={true}
               parentRef={parentRef}

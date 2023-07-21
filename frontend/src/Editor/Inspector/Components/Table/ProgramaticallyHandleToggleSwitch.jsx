@@ -2,7 +2,6 @@ import React from 'react';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 
 export const ProgramaticallyHandleToggleSwitch = ({
-  currentState,
   darkMode,
   // eslint-disable-next-line no-unused-vars
   label,
@@ -25,14 +24,37 @@ export const ProgramaticallyHandleToggleSwitch = ({
 
       case 'columnVisibility':
         return props.columnVisibility;
+      case 'linkTarget':
+        return props.linkTarget;
       default:
         return;
     }
   };
+  const getOptionsForSelectElement = (property, paramMeta) => {
+    switch (property) {
+      case 'linkTarget':
+        return {
+          ...paramMeta,
+          options: [
+            { name: 'Same window', value: '_self' },
+            { name: 'New window', value: '_blank' },
+          ],
+        };
+
+      default:
+        break;
+    }
+  };
+  if (paramMeta.type === 'select') {
+    paramMeta = getOptionsForSelectElement(property, paramMeta);
+  }
 
   const getInitialValue = (property, definition) => {
     if (property === 'columnVisibility') {
       return definition?.value ?? `{{true}}`;
+    }
+    if (property === 'linkTarget') {
+      return definition?.value ?? '_blank';
     }
     return definition?.value ?? `{{false}}`;
   };
@@ -47,7 +69,6 @@ export const ProgramaticallyHandleToggleSwitch = ({
     <div className={`mb-2 field ${options.className}`} onClick={(e) => e.stopPropagation()}>
       <CodeHinter
         enablePreview={true}
-        currentState={currentState}
         initialValue={initialValue}
         mode={options.mode}
         theme={darkMode ? 'monokai' : options.theme}

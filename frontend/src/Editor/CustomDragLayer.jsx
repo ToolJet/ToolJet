@@ -3,6 +3,9 @@ import { useDragLayer } from 'react-dnd';
 import { ItemTypes } from './ItemTypes';
 import { BoxDragPreview } from './BoxDragPreview';
 import { snapToGrid } from '@/_helpers/appUtils';
+import { useEditorStore } from '@/_stores/editorStore';
+import { shallow } from 'zustand/shallow';
+
 const layerStyles = {
   position: 'fixed',
   pointerEvents: 'none',
@@ -55,7 +58,7 @@ function getItemStyles(delta, item, initialOffset, currentOffset, currentLayout,
     width: 'fit-content',
   };
 }
-export const CustomDragLayer = ({ canvasWidth, currentLayout, onDragging }) => {
+export const CustomDragLayer = ({ canvasWidth, onDragging }) => {
   const { itemType, isDragging, item, initialOffset, currentOffset, delta, initialClientOffset } = useDragLayer(
     (monitor) => ({
       item: monitor.getItem(),
@@ -67,6 +70,12 @@ export const CustomDragLayer = ({ canvasWidth, currentLayout, onDragging }) => {
       delta: monitor.getDifferenceFromInitialOffset(),
     })
   );
+  const { currentLayout } = useEditorStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
 
   useEffect(() => {
     onDragging(isDragging);
@@ -77,7 +86,7 @@ export const CustomDragLayer = ({ canvasWidth, currentLayout, onDragging }) => {
   function renderItem() {
     switch (itemType) {
       case ItemTypes.BOX:
-        return <BoxDragPreview item={item} currentLayout={currentLayout} canvasWidth={canvasWidth} />;
+        return <BoxDragPreview item={item} canvasWidth={canvasWidth} />;
       default:
         return null;
     }

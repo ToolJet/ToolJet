@@ -24,6 +24,7 @@ export const CreateVersion = ({
     }),
     shallow
   );
+
   const createVersion = () => {
     if (versionName.trim().length > 25) {
       toast.error('Version name should not be longer than 25 characters');
