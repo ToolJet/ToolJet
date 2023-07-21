@@ -127,14 +127,13 @@ export const Multiselect = function Multiselect({
   );
 
   const filterOptions = (options, filter) => {
-    if (!filter) return options;
-
     setSearched(filter);
 
     if (searched !== filter) {
       setExposedVariable('searchText', filter);
       fireEvent('onSearchTextChanged');
     }
+    if (!filter) return options;
 
     return options.filter(
       ({ label, value }) => label != null && value != null && label.toLowerCase().includes(filter.toLowerCase())
