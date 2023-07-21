@@ -7,7 +7,6 @@ import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export default ({
   options = [],
-  currentState,
   theme,
   onChange,
   jsonBody,
@@ -32,7 +31,6 @@ export default ({
                 <div className="fields-container mb-2">
                   <div className="field col-4 overflow-hidden border-top border-bottom border-start rounded-start">
                     <CodeHinter
-                      currentState={currentState}
                       initialValue={option[0]}
                       theme={theme}
                       height={'32px'}
@@ -43,7 +41,6 @@ export default ({
                   </div>
                   <div className="field col overflow-hidden border rounded-end">
                     <CodeHinter
-                      currentState={currentState}
                       initialValue={option[1]}
                       theme={theme}
                       height={'32px'}
@@ -69,7 +66,6 @@ export default ({
       {bodyToggle ? (
         <div>
           <CodeHinter
-            currentState={currentState}
             initialValue={jsonBody}
             mode="javascript"
             theme={darkMode ? 'monokai' : 'base16-light'}

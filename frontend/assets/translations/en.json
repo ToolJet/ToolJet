@@ -921,6 +921,7 @@
             "tip": "Debugger",
             "errors": "Errors",
             "noErrors": "No errors found",
+            "noLogs" : "No logs found",
             "clear": "clear"
         },
         "Comments": {

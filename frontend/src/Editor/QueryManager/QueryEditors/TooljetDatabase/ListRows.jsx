@@ -7,7 +7,7 @@ import { operators } from '@/TooljetDatabase/constants';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-export const ListRows = React.memo(({ currentState, darkMode }) => {
+export const ListRows = React.memo(({ darkMode }) => {
   const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange } = useContext(TooljetDatabaseContext);
 
   function handleWhereFiltersChange(filters) {
@@ -96,7 +96,6 @@ export const ListRows = React.memo(({ currentState, darkMode }) => {
                   updateFilterOptionsChanged={updateFilterOptionsChanged}
                   darkMode={darkMode}
                   removeFilterConditionPair={removeFilterConditionPair}
-                  currentState={currentState}
                 />
               ))}
 
@@ -159,7 +158,6 @@ export const ListRows = React.memo(({ currentState, darkMode }) => {
             </label>
             <div className="field flex-grow-1">
               <CodeHinter
-                currentState={currentState}
                 initialValue={listRowsOptions?.limit ?? ''}
                 className="codehinter-plugins"
                 theme={darkMode ? 'monokai' : 'default'}
@@ -261,7 +259,6 @@ const RenderFilterFields = ({
   updateFilterOptionsChanged,
   removeFilterConditionPair,
   darkMode,
-  currentState,
 }) => {
   let displayColumns = columns.map(({ accessor }) => ({
     value: accessor,
@@ -317,7 +314,6 @@ const RenderFilterFields = ({
             />
           ) : (
             <CodeHinter
-              currentState={currentState}
               initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
               className="codehinter-plugins"
               theme={darkMode ? 'monokai' : 'default'}

@@ -47,8 +47,13 @@ export const CustomComponent = (props) => {
             const filteredQuery = dataQueryRef.current.filter(
               (query) => query.name === e.data.queryName && query.status !== 'draft'
             );
+            const parameters = e.data.parameters ? JSON.parse(e.data.parameters) : {};
             filteredQuery.length === 1 &&
-              fireEvent('onTrigger', { queryId: filteredQuery[0].id, queryName: filteredQuery[0].name });
+              fireEvent('onTrigger', {
+                queryId: filteredQuery[0].id,
+                queryName: filteredQuery[0].name,
+                parameters,
+              });
           } else {
             sendMessageToIframe(e.data);
           }

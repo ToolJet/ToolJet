@@ -7,7 +7,6 @@ import { CustomToggleSwitch } from '../../Components/CustomToggleSwitch';
 
 function ControlledTabs({
   options,
-  currentState,
   theme,
   onChange,
   onJsonBodyChange,
@@ -20,6 +19,7 @@ function ControlledTabs({
 }) {
   const [key, setKey] = React.useState('headers');
   const tabs = ['Headers', 'Params', 'Body'];
+
   return (
     <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="headers">
       <Row>
@@ -52,7 +52,6 @@ function ControlledTabs({
                 addNewKeyValuePair={addNewKeyValuePair}
                 onChange={onChange}
                 options={options['headers']}
-                currentState={currentState}
                 theme={theme}
                 darkMode={darkMode}
                 componentName={componentName}
@@ -64,7 +63,6 @@ function ControlledTabs({
                 addNewKeyValuePair={addNewKeyValuePair}
                 onChange={onChange}
                 options={options['url_params']}
-                currentState={currentState}
                 theme={theme}
                 darkMode={darkMode}
                 componentName={componentName}
@@ -78,7 +76,6 @@ function ControlledTabs({
                 onJsonBodyChange={onJsonBodyChange}
                 options={options['body']}
                 jsonBody={options['json_body']}
-                currentState={currentState}
                 theme={theme}
                 bodyToggle={bodyToggle}
                 darkMode={darkMode}

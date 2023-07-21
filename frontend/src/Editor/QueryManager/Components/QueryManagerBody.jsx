@@ -22,6 +22,7 @@ import {
   useQueryPanelActions,
   useShowCreateQuery,
 } from '@/_stores/queryPanelStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';

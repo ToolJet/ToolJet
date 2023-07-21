@@ -183,3 +183,7 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 .border-slate3-top {
   border-top: 1px solid var(--slate3) !important;
 }
+
+.bg-slate3 {
+  background-color: var(--slate3) !important;
+}

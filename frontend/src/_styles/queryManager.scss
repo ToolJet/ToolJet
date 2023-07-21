@@ -541,10 +541,21 @@ $border-radius: 4px;
         }
       }
 
+      @font-face {
+        font-display: swap;
+        /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+        font-family: 'Source Code Pro';
+        font-size: 12px;
+        font-weight: 400;
+        src: url('/assets/fonts/source-code-pro-v22-latin/source-code-pro-v22-latin-regular.woff2') format('woff2');
+        /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+      }
+
       .CodeMirror {
         border-radius: 0 !important;
-        font-size: 12px;
+        font-family: 'Source Code Pro', monospace;
       }
+
     }
 
     .content-title {

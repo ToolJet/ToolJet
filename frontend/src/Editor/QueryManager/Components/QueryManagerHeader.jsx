@@ -20,6 +20,7 @@ import {
   usePreviewLoading,
   useShowCreateQuery,
 } from '@/_stores/queryPanelStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
@@ -33,6 +34,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
   const selectedDataSource = useSelectedDataSource();
   const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
   const queryName = selectedQuery?.name ?? '';
+  const { queries } = useCurrentState((state) => ({ queries: state.queries }), shallow);
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -82,7 +84,8 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
       kind: selectedDataSource.kind,
       name: queryName,
     };
-    previewQuery(editorRef, query)
+    const hasParamSupport = selectedQuery?.options?.hasParamSupport;
+    previewQuery(editorRef, query, false, undefined, hasParamSupport)
       .then(() => {
         ref.current.scrollIntoView();
       })
@@ -106,7 +109,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
   };
 
   const renderRunButton = () => {
-    const { isLoading } = currentState?.queries[selectedQuery?.name] ?? false;
+    const { isLoading } = queries[selectedQuery?.name] ?? false;
     return (
       <span
         {...(isInDraft && {

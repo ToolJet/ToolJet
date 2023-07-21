@@ -189,7 +189,6 @@ class Restapi extends React.Component {
             <Tabs
               theme={this.props.darkMode ? 'monokai' : 'default'}
               options={this.state.options}
-              currentState={this.props.currentState}
               onChange={this.handleChange}
               onJsonBodyChange={this.handleJsonBodyChanged}
               removeKeyValuePair={this.removeKeyValuePair}

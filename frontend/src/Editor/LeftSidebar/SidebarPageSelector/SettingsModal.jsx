@@ -9,7 +9,6 @@ export const SettingsModal = ({
   handleClose,
   darkMode,
   updateOnPageLoadEvents,
-  currentState,
   apps,
   pages,
   components,
@@ -64,7 +63,6 @@ export const SettingsModal = ({
               },
             }}
             componentMeta={{ events: { onPageLoad: { displayName: 'On page load' } }, name: 'page' }}
-            currentState={currentState}
             components={components}
             apps={apps}
             pages={allpages}

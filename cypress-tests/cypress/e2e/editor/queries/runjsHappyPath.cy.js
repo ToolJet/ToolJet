@@ -219,14 +219,53 @@ describe("RunJS", () => {
     data.customText = randomString(12);
 
     selectQuery("Run JavaScript code");
-    addInputOnQueryField("runjs", "return [page.handle,page.name,globals]");
+    addInputOnQueryField("runjs", "return [page.handle,page.name]");
     query("create");
     cy.verifyToastMessage(commonSelectors.toastMessage, "Query Added");
     query("preview");
-    verifypreview(
-      "raw",
-      `["home","Home",{"theme":{"name":"light"},"urlparams":{},"currentUser":{"email":"dev@tooljet.io","firstName":"The","lastName":"Developer","groups":["all_users","admin"]}}]`
-    );
+    verifypreview("raw", `["home","Home"]`);
+
+    addInputOnQueryField("runjs", "return globals.theme");
+    query("preview");
+    verifypreview("raw", `{"name":"light"}`);
+
+    // addInputOnQueryField("runjs", "return globals.currentUser");
+    // query("preview");
+    // verifypreview(
+    //   "raw",
+    //   `{"email":"dev@tooljet.io","firstName":"The","lastName":"Developer","groups":["all_users","admin"]}`
+    // );
+    addInputOnQueryField("runjs", "return globals.currentUser.email");
+    query("preview");
+    verifypreview("raw", `dev@tooljet.io`);
+    addInputOnQueryField("runjs", "return globals.currentUser.email");
+    query("preview");
+    verifypreview("raw", `dev@tooljet.io`);
+    addInputOnQueryField("runjs", "return globals.currentUser.firstName");
+    query("preview");
+    verifypreview("raw", `The`);
+    addInputOnQueryField("runjs", "return globals.currentUser.lastName");
+    query("preview");
+    verifypreview("raw", `Developer`);
+    addInputOnQueryField("runjs", "return globals.currentUser.groups");
+    query("preview");
+    verifypreview("raw", `["all_users","admin"]`);
+    if (Cypress.env("environment") != "Community") {
+      addInputOnQueryField("runjs", "return globals.mode");
+      query("preview");
+      verifypreview("raw", `{"value":"edit"}`);
+
+      addInputOnQueryField("runjs", "return globals.environment.name");
+      query("preview");
+      verifypreview("raw", `development`);
+
+      addInputOnQueryField(
+        "runjs",
+        "return globals.currentUser.ssoUserInfo == undefined"
+      );
+      query("preview");
+      verifypreview("raw", `true`);
+    }
   });
 
   it("should verify action by button", () => {

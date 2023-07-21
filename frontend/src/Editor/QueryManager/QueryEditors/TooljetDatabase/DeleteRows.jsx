@@ -7,7 +7,7 @@ import { operators } from '@/TooljetDatabase/constants';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-export const DeleteRows = React.memo(({ currentState, darkMode }) => {
+export const DeleteRows = React.memo(({ darkMode }) => {
   const { columns, deleteOperationLimitOptionChanged, deleteRowsOptions, handleDeleteRowsOptionsChange } =
     useContext(TooljetDatabaseContext);
 
@@ -62,7 +62,6 @@ export const DeleteRows = React.memo(({ currentState, darkMode }) => {
               deleteRowsOptions={deleteRowsOptions}
               columns={columns}
               darkMode={darkMode}
-              currentState={currentState}
             />
           ))}
 
@@ -89,7 +88,6 @@ export const DeleteRows = React.memo(({ currentState, darkMode }) => {
         </label>
         <div className="field flex-grow-1">
           <CodeHinter
-            currentState={currentState}
             initialValue={deleteRowsOptions?.limit ?? 1}
             className="codehinter-plugins"
             theme={darkMode ? 'monokai' : 'default'}
@@ -112,7 +110,6 @@ const RenderFilterFields = ({
   columns,
   updateFilterOptionsChanged,
   deleteRowsOptions,
-  currentState,
   darkMode,
 }) => {
   let displayColumns = columns.map(({ accessor }) => ({
@@ -167,7 +164,6 @@ const RenderFilterFields = ({
             />
           ) : (
             <CodeHinter
-              currentState={currentState}
               initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
               className="codehinter-plugins"
               theme={darkMode ? 'monokai' : 'default'}

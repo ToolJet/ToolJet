@@ -7,7 +7,7 @@ import { uniqueId } from 'lodash';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-export const UpdateRows = React.memo(({ currentState, darkMode }) => {
+export const UpdateRows = React.memo(({ darkMode }) => {
   const { columns, updateRowsOptions, handleUpdateRowsOptionsChange } = useContext(TooljetDatabaseContext);
 
   function handleColumnOptionChange(columnOptions) {
@@ -86,7 +86,6 @@ export const UpdateRows = React.memo(({ currentState, darkMode }) => {
               columns={columns}
               updateFilterOptionsChanged={updateFilterOptionsChanged}
               updateRowsOptions={updateRowsOptions}
-              currentState={currentState}
               darkMode={darkMode}
               removeFilterConditionPair={removeFilterConditionPair}
             />
@@ -125,7 +124,6 @@ export const UpdateRows = React.memo(({ currentState, darkMode }) => {
                 columns={columns}
                 updateRowsOptions={updateRowsOptions}
                 handleColumnOptionChange={handleColumnOptionChange}
-                currentState={currentState}
                 darkMode={darkMode}
                 removeColumnOptionsPair={removeColumnOptionsPair}
               />
@@ -162,7 +160,6 @@ const RenderFilterFields = ({
   columns,
   updateFilterOptionsChanged,
   updateRowsOptions,
-  currentState,
   darkMode,
   removeFilterConditionPair,
 }) => {
@@ -218,7 +215,6 @@ const RenderFilterFields = ({
             />
           ) : (
             <CodeHinter
-              currentState={currentState}
               initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
               className="codehinter-plugins"
               theme={darkMode ? 'monokai' : 'default'}
@@ -257,7 +253,6 @@ const RenderColumnOptions = ({
   columns,
   updateRowsOptions,
   handleColumnOptionChange,
-  currentState,
   darkMode,
   removeColumnOptionsPair,
 }) => {
@@ -313,7 +308,6 @@ const RenderColumnOptions = ({
 
         <div className="field col-4">
           <CodeHinter
-            currentState={currentState}
             initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
             className="codehinter-plugins"
             theme={darkMode ? 'monokai' : 'default'}

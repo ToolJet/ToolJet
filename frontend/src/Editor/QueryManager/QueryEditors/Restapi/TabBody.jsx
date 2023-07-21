@@ -4,7 +4,6 @@ import TabContent from './TabContent';
 export default ({
   options = [],
   jsonBody,
-  currentState,
   theme,
   removeKeyValuePair,
   addNewKeyValuePair,
@@ -17,7 +16,6 @@ export default ({
     <>
       <TabContent
         options={options}
-        currentState={currentState}
         theme={theme}
         removeKeyValuePair={removeKeyValuePair}
         onChange={onChange}

@@ -117,6 +117,7 @@ import Logs from './Logs.jsx';
 import Marketplace from './Marketplace.jsx';
 import Minimize from './Minimize.jsx';
 import Maximize from './Maximize.jsx';
+import PlusRectangle from './PlusRectangle.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -272,6 +273,8 @@ const Icon = (props) => {
       return <Plus {...props} />;
     case 'plus01':
       return <Plus01 {...props} />;
+    case 'plusrectangle':
+      return <PlusRectangle {...props} />;
     case 'reload':
       return <Reload {...props} />;
     case 'remove':
