@@ -504,6 +504,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         const fileData = {
           csv: generateCSV,
           plaintext: (plaintext) => plaintext,
+          pdf: (pdfData) => pdfData,
         }[fileType](data);
         generateFile(fileName, fileData, fileType);
         return Promise.resolve();
