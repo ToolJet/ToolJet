@@ -606,7 +606,11 @@ class HomePageComponent extends React.Component {
                         'Create new app'
                       )}
                     </Button>
-                    <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
+
+                    {this.props.appType !== 'workflow' && (
+                      <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
+                    )}
+
                     <Dropdown.Menu className="import-lg-position new-app-dropdown">
                       <Dropdown.Item
                         className="homepage-dropdown-style tj-text tj-text-xsm"
