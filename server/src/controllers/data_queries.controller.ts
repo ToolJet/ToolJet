@@ -27,7 +27,6 @@ import { EntityManager } from 'typeorm';
 import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { App } from 'src/entities/app.entity';
-import { UpdateDataQueryStatusDto } from '@dto/data-query-update-status.dto';
 import { isEmpty } from 'class-validator';
 
 @Controller('data_queries')
@@ -154,26 +153,6 @@ export class DataQueriesController {
     const decamelizedQuery = decamelizeKeys({ ...dataQuery, ...result });
     decamelizedQuery['options'] = result.options;
     return decamelizedQuery;
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Put(':id/status')
-  async updateStatus(
-    @User() user,
-    @Param('id') dataQueryId,
-    @Body() updateDataQueryStatusDto: UpdateDataQueryStatusDto
-  ) {
-    const { status } = updateDataQueryStatusDto;
-
-    const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
-    const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.app.id);
-
-    if (!ability.can('updateQuery', dataQuery.app)) {
-      throw new ForbiddenException('you do not have permissions to perform this action');
-    }
-
-    await this.dataQueriesService.updateStatus(dataQueryId, status);
-    return updateDataQueryStatusDto;
   }
 
   @UseGuards(JwtAuthGuard)
