@@ -163,44 +163,6 @@ export const BlankPage = function BlankPage({
                 </div>
               </div>
               {appType !== 'workflow' && templateOptionsView}
-              <div className="hr-text" data-cy="action-option">
-                Or choose from templates
-              </div>
-              <div className="row" data-cy="app-template-row">
-                {staticTemplates.map(({ id, name }) => {
-                  return (
-                    <div key={id} className="col-4 app-template-card-wrapper" onClick={() => deployApp(id)}>
-                      <div
-                        className="template-card cursor-pointer"
-                        data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-card`}
-                      >
-                        <div
-                          className="img-responsive img-responsive-21x9 card-img-top template-card-img"
-                          style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}
-                          data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-image`}
-                        />
-                        <div className="card-body">
-                          <h3
-                            className="tj-text-md font-weight-500"
-                            data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-title`}
-                          >
-                            {name}
-                          </h3>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="m-auto text-center mt-4">
-                <button
-                  className="see-all-temlplates-link tj-text-sm font-weight-600 bg-transparent border-0"
-                  onClick={viewTemplateLibraryModal}
-                  data-cy="see-all-apps-template-buton"
-                >
-                  See all templates
-                </button>
-              </div>
             </div>
           </div>
         </div>
