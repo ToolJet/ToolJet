@@ -10,19 +10,16 @@ export const CustomComponent = function CustomComponent({
   componentMeta,
   components,
   darkMode,
-  currentState,
   layoutPropertyChanged,
 }) {
   const code = component.component.definition.properties.code;
   const args = component.component.definition.properties.data;
-
   let items = [];
 
   items.push({
     title: 'Data',
     children: (
       <CodeHinter
-        currentState={currentState}
         initialValue={args.value ?? {}}
         theme={darkMode ? 'monokai' : 'base16-light'}
         onChange={(value) => paramUpdated({ name: 'data' }, 'value', value, 'properties')}
@@ -35,7 +32,6 @@ export const CustomComponent = function CustomComponent({
     title: 'Code',
     children: (
       <CodeHinter
-        currentState={currentState}
         initialValue={code.value ?? {}}
         theme={darkMode ? 'monokai' : 'base16-light'}
         mode="jsx"
@@ -62,7 +58,6 @@ export const CustomComponent = function CustomComponent({
           dataQueries,
           'showOnDesktop',
           'others',
-          currentState,
           components
         )}
         {renderElement(
@@ -72,7 +67,6 @@ export const CustomComponent = function CustomComponent({
           dataQueries,
           'showOnMobile',
           'others',
-          currentState,
           components
         )}
       </>
