@@ -91,7 +91,7 @@ function WorkflowEditor(props) {
 
   const saveAppName = async (name) => {
     if (!name.trim()) {
-      toast("App name can't be empty or whitespace", {
+      toast("Workflow name can't be empty or whitespace", {
         icon: '🚨',
       });
       return;
@@ -103,7 +103,7 @@ function WorkflowEditor(props) {
         document.title = `${name} - ToolJet`;
       })
       .catch(() => {
-        toast('Something went wrong while editing app name', {
+        toast('Something went wrong while editing workflow name', {
           icon: '🚨',
         });
       });

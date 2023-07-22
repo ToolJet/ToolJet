@@ -173,8 +173,6 @@ export function CodeHinter({
         };
       }
       return variablesExposedForPreview[component.id];
-    } else if (!component) {
-      return variablesExposedForPreview;
     }
     return {};
   };

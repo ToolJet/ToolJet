@@ -26,6 +26,7 @@ export function Workflows({ options, optionsChanged, currentState }) {
       ...options,
       params,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params]);
 
   return (
