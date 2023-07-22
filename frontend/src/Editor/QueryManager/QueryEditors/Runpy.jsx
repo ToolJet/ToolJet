@@ -18,7 +18,6 @@ export class Runpy extends React.Component {
     return (
       <div>
         <CodeHinter
-          currentState={this.props.currentState}
           initialValue={this.props.options.code}
           mode="python"
           theme={this.props.darkMode ? 'monokai' : 'base16-light'}
@@ -30,6 +29,7 @@ export class Runpy extends React.Component {
           isMultiLineJs={false}
           enablePreview={false}
           componentName="Runpy"
+          cyLabel={`runpy`}
         />
       </div>
     );

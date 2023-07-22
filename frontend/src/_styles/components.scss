@@ -42,6 +42,7 @@ $btn-dark-color: #FFFFFF;
 
   &:hover {
     background: lighten($btn-dark-bg, 10%);
+    border-color: #D7DBDF !important;
   }
 
   img {
@@ -242,6 +243,11 @@ $btn-dark-color: #FFFFFF;
   border: 1px solid #FFF1E7 !important;
 }
 
+.copilot-alert {
+  background-color: #F8F9FA !important;
+  border: 1px solid #E6E8EB !important;
+}
+
 .page-handle-edit-container {
   height: 60px;
   width: 100%;
@@ -325,4 +331,14 @@ $btn-dark-color: #FFFFFF;
 #popover-change-scope {
   border: 1px solid  rgba(101, 109, 119, 0.16);
   box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.25);
+}
+
+.tj-badge {
+  background: #F0F4FF;
+  color: #3E63DD;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 20px;
 }

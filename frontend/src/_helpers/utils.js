@@ -8,6 +8,9 @@ import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { workflowExecutionsService } from '@/_services';
 
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { getCurrentState } from '@/_stores/currentStateStore';
+
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');
@@ -90,8 +93,62 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
   if (withError) return [result, error];
   return result;
 }
+export function resolveString(str, state, customObjects, reservedKeyword, withError, forPreviewBox) {
+  let resolvedStr = str;
 
-export function resolveReferences(object, state, defaultValue, customObjects = {}, withError = false) {
+  // Resolve {{object}}
+  const codeRegex = /(\{\{.+?\}\})/g;
+  const codeMatches = resolvedStr.match(codeRegex);
+
+  if (codeMatches) {
+    codeMatches.forEach((codeMatch) => {
+      const code = codeMatch.replace('{{', '').replace('}}', '');
+
+      if (reservedKeyword.includes(code)) {
+        resolvedStr = resolvedStr.replace(codeMatch, '');
+      } else {
+        const resolvedCode = resolveCode(code, state, customObjects, withError, reservedKeyword, true);
+        if (forPreviewBox) {
+          resolvedStr = resolvedStr.replace(codeMatch, resolvedCode[0]);
+        } else {
+          resolvedStr = resolvedStr.replace(codeMatch, resolvedCode);
+        }
+      }
+    });
+  }
+
+  // Resolve %%object%%
+  const serverRegex = /(%%.+?%%)/g;
+  const serverMatches = resolvedStr.match(serverRegex);
+
+  if (serverMatches) {
+    serverMatches.forEach((serverMatch) => {
+      const code = serverMatch.replace(/%%/g, '');
+
+      if (code.includes('server.') && !/^server\.[A-Za-z0-9]+$/.test(code)) {
+        resolvedStr = resolvedStr.replace(serverMatch, '');
+      } else {
+        const resolvedCode = resolveCode(code, state, customObjects, withError, reservedKeyword, false);
+        if (forPreviewBox) {
+          resolvedStr = resolvedStr.replace(serverMatch, resolvedCode[0]);
+        } else {
+          resolvedStr = resolvedStr.replace(serverMatch, resolvedCode);
+        }
+      }
+    });
+  }
+
+  return resolvedStr;
+}
+
+export function resolveReferences(
+  object,
+  state,
+  defaultValue,
+  customObjects = {},
+  withError = false,
+  forPreviewBox = false
+) {
   if (object === '{{{}}}') return '';
   const reservedKeyword = ['app']; //Keywords that slows down the app
   object = _.clone(object);
@@ -99,6 +156,10 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
   let error;
   switch (objectType) {
     case 'string': {
+      if (object.includes('{{') && object.includes('}}') && object.includes('%%') && object.includes('%%')) {
+        object = resolveString(object, state, customObjects, reservedKeyword, withError, forPreviewBox);
+      }
+
       if (object.startsWith('{{') && object.endsWith('}}')) {
         const code = object.replace('{{', '').replace('}}', '');
 
@@ -139,8 +200,6 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
 
     case 'object': {
       if (Array.isArray(object)) {
-        console.log(`[Resolver] Resolving as array ${typeof object}`);
-
         const new_array = [];
 
         object.forEach((element, index) => {
@@ -151,7 +210,6 @@ export function resolveReferences(object, state, defaultValue, customObjects = {
         if (withError) return [new_array, error];
         return new_array;
       } else if (!_.isEmpty(object)) {
-        console.log(`[Resolver] Resolving as object ${typeof object}, state: ${state}`);
         Object.keys(object).forEach((key) => {
           const resolved_object = resolveReferences(object[key], state);
           object[key] = resolved_object;
@@ -331,30 +389,63 @@ export function validateEmail(email) {
 export async function executeMultilineJS(
   _ref,
   code,
-  editorState,
   queryId,
   isPreview,
-  // eslint-disable-next-line no-unused-vars
-  confirmed = undefined,
-  mode = ''
+  mode = '',
+  parameters = {},
+  hasParamSupport = false
 ) {
-  //:: confirmed arg is unused
-  const { currentState } = _ref.state;
+  const currentState = getCurrentState();
   let result = {},
     error = null;
 
-  const actions = generateAppActions(_ref, queryId, mode, editorState, isPreview);
+  //if user passes anything other than object, params are reset to empty
+  if (typeof parameters !== 'object' || parameters === null) {
+    parameters = {};
+  }
 
+  const actions = generateAppActions(_ref, queryId, mode, isPreview);
+
+  const queryDetails = useDataQueriesStore.getState().dataQueries.find((q) => q.id === queryId);
+  hasParamSupport = !hasParamSupport ? queryDetails?.options?.hasParamSupport : hasParamSupport;
+
+  const defaultParams =
+    queryDetails?.options?.parameters?.reduce(
+      (paramObj, param) => ({
+        ...paramObj,
+        [param.name]: resolveReferences(param.defaultValue, {}, undefined), //default values will not be resolved with currentState
+      }),
+      {}
+    ) || {};
+
+  let formattedParams = {};
+  if (queryDetails) {
+    Object.keys(defaultParams).map((key) => {
+      /** The value of param is replaced with defaultValue if its passed undefined */
+      formattedParams[key] = parameters[key] === undefined ? defaultParams[key] : parameters[key];
+    });
+  } else {
+    //this will handle the preview case where you cannot find the queryDetails in state.
+    formattedParams = { ...parameters };
+  }
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
       ...currentState.queries[key],
-      run: () => actions.runQuery(key),
+      run: (params) => {
+        if (typeof params !== 'object' || params === null) {
+          params = {};
+        }
+        const processedParams = {};
+        const query = useDataQueriesStore.getState().dataQueries.find((q) => q.name === key);
+        query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
+        return actions.runQuery(key, processedParams);
+      },
     };
   }
 
   try {
     const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
-    var evalFn = new AsyncFunction(
+    const fnParams = [
       'moment',
       '_',
       'components',
@@ -366,23 +457,28 @@ export async function executeMultilineJS(
       'actions',
       'client',
       'server',
-      code
-    );
+      ...(hasParamSupport ? ['parameters'] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+      code,
+    ];
+    var evalFn = new AsyncFunction(...fnParams);
+
+    const fnArgs = [
+      moment,
+      _,
+      currentState.components,
+      currentState.queries,
+      currentState.globals,
+      currentState.page,
+      axios,
+      currentState.variables,
+      actions,
+      currentState?.client,
+      currentState?.server,
+      ...(hasParamSupport ? [formattedParams] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+    ];
     result = {
       status: 'ok',
-      data: await evalFn(
-        moment,
-        _,
-        currentState.components,
-        currentState.queries,
-        currentState.globals,
-        currentState.page,
-        axios,
-        currentState.variables,
-        actions,
-        currentState?.client,
-        currentState?.server
-      ),
+      data: await evalFn(...fnArgs),
     };
   } catch (err) {
     console.log('JS execution failed: ', err);
@@ -448,31 +544,38 @@ export const hightlightMentionedUserInComment = (comment) => {
   return comment.replace(regex, '<span class=mentioned-user>$2</span>');
 };
 
-export const generateAppActions = (_ref, queryId, mode, editorState, isPreview = false) => {
+export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
   const currentPageId = _ref.state.currentPageId;
   const currentComponents = _ref.state?.appDefinition?.pages[currentPageId]?.components
     ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
     : {};
-  const runQuery = (queryName = '') => {
-    const query = isPreview
-      ? _ref.state.dataQueries.find((query) => query.name === queryName)
-      : _ref.state.app.data_queries.find((query) => query.name === queryName);
+  const runQuery = (queryName = '', parameters) => {
+    const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
 
+    const processedParams = {};
     if (_.isEmpty(query) || queryId === query?.id) {
       const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
       toast.error(errorMsg);
       return;
     }
 
+    if (!_.isEmpty(query?.options?.parameters)) {
+      query.options.parameters?.forEach(
+        (param) => parameters && (processedParams[param.name] = parameters?.[param.name])
+      );
+    }
+
     if (isPreview) {
-      return previewQuery(_ref, query, editorState, true);
+      return previewQuery(_ref, query, true, processedParams);
     }
 
     const event = {
       actionId: 'run-query',
       queryId: query.id,
       queryName: query.name,
+      parameters: processedParams,
     };
+
     return executeAction(_ref, event, mode, {});
   };
 
@@ -525,7 +628,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
       actionId: 'show-modal',
       modal,
     };
-    return executeAction(editorState, event, mode, {});
+    return executeAction(_ref, event, mode, {});
   };
 
   const closeModal = (modalName = '') => {
@@ -540,7 +643,7 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
       actionId: 'close-modal',
       modal,
     };
-    return executeAction(editorState, event, mode, {});
+    return executeAction(_ref, event, mode, {});
   };
 
   const setLocalStorage = (key = '', value = '') => {
@@ -647,10 +750,11 @@ export const generateAppActions = (_ref, queryId, mode, editorState, isPreview =
 
 export const loadPyodide = async () => {
   try {
-    const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.22.0/full/' });
+    const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.2/full/' });
     return pyodide;
   } catch (error) {
     console.log('loadPyodide error', error);
+    throw 'Could not load Pyodide to execute Python';
   }
 };
 export function safelyParseJSON(json) {
@@ -716,11 +820,11 @@ export const getWorkspaceIdFromURL = () => {
     'integrations',
   ];
 
-  if (pathname.includes('login')) {
+  const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
+  if (workspaceId === 'login') {
     return subpath ? pathnameArray[subpathArray.length + 1] : pathnameArray[1];
   }
 
-  const workspaceId = subpath ? pathnameArray[subpathArray.length] : pathnameArray[0];
   return !existedPaths.includes(workspaceId) ? workspaceId : '';
 };
 
@@ -790,3 +894,77 @@ export const executeWorkflow = async (self, workflowId, _blocking = false, param
   const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams);
   return { data: executionResponse.result };
 };
+export const validateName = (name, nameType, showError = false, allowSpecialChars = true) => {
+  const newName = name.trim();
+  let errorMsg = '';
+  if (!newName) {
+    errorMsg = `${nameType} can't be empty`;
+    showError &&
+      toast.error(errorMsg, {
+        id: '1',
+      });
+    return {
+      status: false,
+      errorMsg,
+    };
+  }
+
+  //check for alphanumeric
+  if (!allowSpecialChars && newName.match(/^[a-z0-9 -]+$/) === null) {
+    if (/[A-Z]/.test(newName)) {
+      errorMsg = 'Only lowercase letters are accepted.';
+    } else {
+      errorMsg = `Special characters are not accepted.`;
+    }
+    showError &&
+      toast.error(errorMsg, {
+        id: '2',
+      });
+    return {
+      status: false,
+      errorMsg,
+    };
+  }
+
+  if (newName.length > 50) {
+    errorMsg = `Maximum length has been reached.`;
+    showError &&
+      toast.error(errorMsg, {
+        id: '3',
+      });
+    return {
+      status: false,
+      errorMsg,
+    };
+  }
+
+  return {
+    status: true,
+    errorMsg: '',
+  };
+};
+
+export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => {
+  switch (statusCode) {
+    case 500: {
+      toast.error(
+        `Something went wrong on our end and this ${feature_name} could not be created. Please try \n again or contact our support team if the \n problem persists.`
+      );
+      break;
+    }
+    case 503: {
+      toast.error(
+        `We weren't able to connect to our servers to complete this request. Please check your \n internet connection and try again.`
+      );
+      break;
+    }
+    default: {
+      toast.error(error ? error : 'Something went wrong. please try again.', {
+        position: 'top-center',
+      });
+      break;
+    }
+  }
+};
+
+export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];

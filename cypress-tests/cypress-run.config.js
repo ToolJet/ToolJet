@@ -13,7 +13,7 @@ module.exports = defineConfig({
   requestTimeout: 10000,
   pageLoadTimeout: 20000,
   responseTimeout: 10000,
-  viewportWidth: 1200,
+  viewportWidth: 1440,
   viewportHeight: 960,
   chromeWebSecurity: false,
   trashAssetsBeforeRuns: true,
@@ -62,7 +62,7 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        UpdateId({ dbconfig, sql }) {
+        updateId({ dbconfig, sql }) {
           const client = new pg.Pool(dbconfig);
           return client.query(sql);
         },
@@ -76,6 +76,10 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: [
+      // "cypress/e2e/selfHost/*.cy.js",
+      // "cypress/e2e/authentication/*.cy.js",
+      // "cypress/e2e/workspace/*.cy.js",
+      // "cypress/e2e/editor/data-source/*.cy.js",
       "cypress/e2e/editor/app-version/version.cy.js",
       "cypress/e2e/exportImport/export.cy.js",
       "cypress/e2e/exportImport/import.cy.js",
@@ -84,10 +88,14 @@ module.exports = defineConfig({
       "cypress/e2e/editor/multipage/*.cy.js",
     ],
     numTestsKeptInMemory: 1,
-    redirectionLimit: 10,
+    redirectionLimit: 7,
     experimentalRunAllSpecs: true,
     experimentalMemoryManagement: true,
     video: false,
     videoUploadOnPasses: false,
+    retries: {
+      runMode: 2,
+      openMode: 0,
+    },
   },
 });

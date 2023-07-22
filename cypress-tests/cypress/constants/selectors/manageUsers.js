@@ -1,19 +1,20 @@
+import { cyParamName } from "./common";
+
 export const usersSelector = {
   dropdown: "[data-cy=workspace-dropdown]",
   buttonAddUsers: "[data-cy=button-invite-new-user]",
   usersElements: {
     usersTableNameColumnHeader: '[data-cy="users-table-name-column-header"]',
     usersTableEmailColumnHeader: '[data-cy="users-table-email-column-header"]',
-    usersTableStatusColumnHeader: '[data-cy="users-table-status-column-header"]',
-    usersFilterLabel: '[data-cy="users-filter-label"]'
+    usersTableStatusColumnHeader:
+      '[data-cy="users-table-status-column-header"]',
+    usersFilterLabel: '[data-cy="users-filter-label"]',
   },
   usersPageTitle: '[data-cy="title-users-page"]',
   userFilterInput: '[data-cy="users-filter-input"]',
   adminUserName: "[data-cy=user-name]",
   adminUserEmail: "[data-cy=user-email]",
-  userStatus: "[data-cy=user-status]:eq(0)",
   userState: "[data-cy=user-state]:eq(0)",
-  userStatus: "[data-cy=user-status]",
   addUsersCardTitle: '[data-cy="add-users-card-title"]',
 
   inputFieldName: "[data-cy=first-name-input]",
@@ -54,9 +55,24 @@ export const usersSelector = {
   buttonDownloadTemplate: '[data-cy="button-download-template"]',
   buttonUploadUsers: '[data-cy="button-upload-users"]',
   helperTextBulkUpload: '[data-cy="helper-text-bulk-upload"]',
-  iconBulkUpload:'[data-cy="icon-bulk-upload"]',
-  helperTextSelectFile:'[data-cy="helper-text-select-file"]',
+  iconBulkUpload: '[data-cy="icon-bulk-upload"]',
+  helperTextSelectFile: '[data-cy="helper-text-select-file"]',
   helperTextDropFile: '[data-cy="helper-text-drop-file"]',
   inputFieldBulkUpload: '[data-cy="input-field-bulk-upload"]',
   copyInvitationLink: '[data-cy="copy-invitation-link"]',
+  uploadedFileData: '[data-cy="uploaded-file-data"]',
+  toastCloseButton:
+    '.drawer-container > [style="position: fixed; z-index: 9999; inset: 16px; pointer-events: none;"] > .go4109123758 > .go2072408551 > [data-cy="toast-close-button"]',
+
+
+  userName: (userName) => {
+    return `[data-cy="${cyParamName(userName)}-user-name"]`;
+  },
+  userEmail: (userName) => {
+    return `[data-cy="${cyParamName(userName)}-user-email"]`;
+  },
+  userStatus: (userName) => {
+    return `[data-cy="${cyParamName(userName)}-user-status"]`;
+  },
+
 };

@@ -10,6 +10,7 @@ import { resolveReferences } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import Popover from '@/_ui/Popover';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -17,12 +18,12 @@ export const GlobalSettings = ({
   darkMode,
   toggleAppMaintenance,
   is_maintenance_on,
-  currentState,
 }) => {
   const { t } = useTranslation();
   const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } =
     globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
+  const currentState = useCurrentState();
   const [forceCodeBox, setForceCodeBox] = React.useState(true);
   const [realState, setRealState] = React.useState(currentState);
   const [showConfirmation, setConfirmationShow] = React.useState(false);
@@ -56,9 +57,12 @@ export const GlobalSettings = ({
         <div className="card-body">
           <div>
             <div className="d-flex mb-3">
-              <span>{t('leftSidebar.Settings.hideHeader', 'Hide header for launched apps')}</span>
+              <span data-cy={`label-hide-header-for-launched-apps`}>
+                {t('leftSidebar.Settings.hideHeader', 'Hide header for launched apps')}
+              </span>
               <div className="ms-auto form-check form-switch position-relative">
                 <input
+                  data-cy={`toggle-hide-header-for-launched-apps`}
                   className="form-check-input"
                   type="checkbox"
                   checked={hideHeader}
@@ -67,9 +71,12 @@ export const GlobalSettings = ({
               </div>
             </div>
             <div className="d-flex mb-3">
-              <span>{t('leftSidebar.Settings.maintenanceMode', 'Maintenance mode')}</span>
+              <span data-cy={`label-maintenance-mode`}>
+                {t('leftSidebar.Settings.maintenanceMode', 'Maintenance mode')}
+              </span>
               <div className="ms-auto form-check form-switch position-relative">
                 <input
+                  data-cy={`toggle-maintenance-mode`}
                   className="form-check-input"
                   type="checkbox"
                   checked={is_maintenance_on}
@@ -78,7 +85,9 @@ export const GlobalSettings = ({
               </div>
             </div>
             <div className="d-flex mb-3">
-              <span className="w-full m-auto">{t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}</span>
+              <span data-cy={`label-max-canvas-width`} className="w-full m-auto">
+                {t('leftSidebar.Settings.maxWidthOfCanvas', 'Max width of canvas')}
+              </span>
               <div className="position-relative">
                 <div className="input-with-icon">
                   <input
@@ -93,6 +102,7 @@ export const GlobalSettings = ({
                     value={canvasMaxWidth}
                   />
                   <select
+                    data-cy={`dropdown-max-canvas-width-type`}
                     className="form-select"
                     aria-label="Select canvas width type"
                     onChange={(event) => {
@@ -115,8 +125,8 @@ export const GlobalSettings = ({
                 </div>
               </div>
             </div>
-            <div className="d-flex mb-3">
-              <span className="w-full m-auto">
+            {/* <div className="d-flex mb-3">
+              <span className="w-full m-auto" data-cy={`label-max-canvas-height`}>
                 {t('leftSidebar.Settings.maxHeightOfCanvas', 'Max height of canvas')}
               </span>
               <div className="position-relative">
@@ -135,9 +145,9 @@ export const GlobalSettings = ({
                   <span className="input-group-text">px</span>
                 </div>
               </div>
-            </div>
+            </div> */}
             <div className="d-flex align-items-center">
-              <span className="w-full">
+              <span className="w-full" data-cy={`label-bg-canvas`}>
                 {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Background color of canvas')}
               </span>
               <div className="canvas-codehinter-container">
@@ -145,6 +155,7 @@ export const GlobalSettings = ({
                   <div>
                     <div style={coverStyles} onClick={() => setShowPicker(false)} />
                     <SketchPicker
+                      data-cy={`color-picker-canvas`}
                       className="canvas-background-picker"
                       onFocus={() => setShowPicker(true)}
                       color={canvasBackgroundColor}
@@ -161,6 +172,7 @@ export const GlobalSettings = ({
                     onClick={() => setShowPicker(true)}
                   >
                     <div
+                      data-cy={`canvas-bg-color-picker`}
                       className="col-auto"
                       style={{
                         float: 'right',
@@ -180,6 +192,7 @@ export const GlobalSettings = ({
                 >
                   {!forceCodeBox && (
                     <CodeHinter
+                      cyLabel={`canvas-bg-colour`}
                       currentState={realState}
                       initialValue={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
                       value={backgroundFxQuery ? backgroundFxQuery : canvasBackgroundColor}
@@ -195,6 +208,7 @@ export const GlobalSettings = ({
                   )}
                   <div className={`fx-canvas ${!darkMode && 'fx-canvas-light'} `}>
                     <FxButton
+                      dataCy={`canvas-bg-color`}
                       active={!forceCodeBox ? true : false}
                       onPress={() => {
                         setForceCodeBox(!forceCodeBox);
@@ -226,9 +240,12 @@ export const GlobalSettings = ({
       <Popover
         handleToggle={(show) => {
           if (show) setShow('settings');
-          else setShow('');
+          else {
+            setShow('');
+            setShowPicker(false);
+          }
         }}
-        popoverContentClassName="p-0 sidebar-h-100-popover"
+        popoverContentClassName="p-0 sidebar-h-100-popover global-settings-popover-content"
         side="bottom"
         popoverContent={popoverContent}
         popoverContentHeight="auto"

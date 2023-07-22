@@ -3,10 +3,10 @@ export const postgreSqlSelector = {
   labelDataSources: "[data-cy='label-datasources']",
   addDatasourceLink: "[data-cy='add-datasource-link']",
 
-  allDatasourceLabelAndCount: '[data-rb-event-key="#alldatasources"]',
-  databaseLabelAndCount: '[data-rb-event-key="#databases"]',
-  apiLabelAndCount: '[data-rb-event-key="#apis"]',
-  cloudStorageLabelAndCount: '[data-rb-event-key="#cloudstorage"]',
+  allDatasourceLabelAndCount: '[data-rr-ui-event-key="#alldatasources"]',
+  databaseLabelAndCount: '[data-rr-ui-event-key="#databases"]',
+  apiLabelAndCount: '[data-rr-ui-event-key="#apis"]',
+  cloudStorageLabelAndCount: '[data-rr-ui-event-key="#cloudstorage"]',
   dataSourceSearchInputField: '[data-cy="datasource-search-input"]',
 
   postgresDataSource: "[data-cy='data-source-postgresql']",
@@ -24,7 +24,7 @@ export const postgreSqlSelector = {
   buttonTestConnection: '[data-cy="test-connection-button"]',
   connectionFailedText: '[data-cy="test-connection-failed-text"]',
   buttonSave: '[data-cy="db-connection-save-button"]',
-  dangerAlertNotSupportSSL: '[class="alert alert-danger"]',
+  dangerAlertNotSupportSSL: '.go3958317564',
 
   passwordTextField: '[data-cy="password-text-field"]',
   textConnectionVerified: '[data-cy="test-connection-verified-text"]',

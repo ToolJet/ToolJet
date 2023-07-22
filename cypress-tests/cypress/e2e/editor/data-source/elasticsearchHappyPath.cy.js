@@ -1,28 +1,32 @@
+import { fake } from "Fixtures/fake";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
 import { elasticsearchText } from "Texts/elasticsearch";
 import { commonSelectors } from "Selectors/common";
+import { commonText } from "Texts/common";
 import {
   fillDataSourceTextField,
   selectDataSource,
 } from "Support/utils/postgreSql";
-import { verifyCouldnotConnectWithAlert } from "Support/utils/dataSource";
+import {
+  verifyCouldnotConnectWithAlert,
+  deleteDatasource,
+  closeDSModal,
+} from "Support/utils/dataSource";
+
+const data = {};
+data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 
 describe("Data source Elasticsearch", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
   });
 
   it("Should verify elements on Elasticsearch connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+    closeDSModal();
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
@@ -46,7 +50,7 @@ describe("Data source Elasticsearch", () => {
       elasticsearchText.elasticSearch
     );
     cy.get("[data-cy*='data-source-']")
-      .eq(0)
+      .eq(1)
       .should("contain", elasticsearchText.elasticSearch);
     cy.get('[data-cy="data-source-elasticsearch"]').click();
 
@@ -105,7 +109,7 @@ describe("Data source Elasticsearch", () => {
       "have.text",
       postgreSqlText.buttonTextSave
     );
-    cy.get(postgreSqlSelector.dangerAlertNotSupportSSL).verifyVisibleElement(
+    cy.get('[data-cy="connection-alert-text"]').verifyVisibleElement(
       "have.text",
       elasticsearchText.errorConnectionRefused
     );
@@ -116,7 +120,7 @@ describe("Data source Elasticsearch", () => {
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
-      elasticsearchText.cypressElasticsearch
+      `cypress-${data.lastName}-elasticsearch`
     );
 
     fillDataSourceTextField(
@@ -153,7 +157,9 @@ describe("Data source Elasticsearch", () => {
       "elasticsearch_user"
     );
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert("write EPROTO C062440602000000:error:0A00010B:SSL routines:ssl3_get_record:wrong version number:../deps/openssl/openssl/ssl/record/ssl3_record.c:355:");
+    verifyCouldnotConnectWithAlert(
+      "write EPROTO 4041EA0502000000:error:0A00010B:SSL routines:ssl3_get_record:wrong version number:../deps/openssl/openssl/ssl/record/ssl3_record.c:355:"
+    );
 
     fillDataSourceTextField(
       postgreSqlText.labelUserName,
@@ -164,11 +170,13 @@ describe("Data source Elasticsearch", () => {
       .clear()
       .type("elasticsearch_password");
     cy.get(postgreSqlSelector.buttonTestConnection).click();
-    verifyCouldnotConnectWithAlert("write EPROTO C062440602000000:error:0A00010B:SSL routines:ssl3_get_record:wrong version number:../deps/openssl/openssl/ssl/record/ssl3_record.c:355:");
+    verifyCouldnotConnectWithAlert(
+      "write EPROTO 4041EA0502000000:error:0A00010B:SSL routines:ssl3_get_record:wrong version number:../deps/openssl/openssl/ssl/record/ssl3_record.c:355:"
+    );
     cy.get(postgreSqlSelector.passwordTextField)
       .clear()
       .type(Cypress.env("elasticsearch_password"));
-      cy.get('.form-check-input').click()
+    cy.get(".form-check-input").click();
 
     cy.get(postgreSqlSelector.buttonTestConnection).click();
     cy.get(postgreSqlSelector.textConnectionVerified, {
@@ -181,9 +189,13 @@ describe("Data source Elasticsearch", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.datasourceLabelOnList)
-      .should("have.text", elasticsearchText.cypressElasticsearch)
-      .should("be.visible");
+    cy.get(
+      `[data-cy="cypress-${data.lastName}-elasticsearch-button"]`
+    ).verifyVisibleElement(
+      "have.text",
+      `cypress-${data.lastName}-elasticsearch`
+    );
+
+    deleteDatasource(`cypress-${data.lastName}-elasticsearch`);
   });
 });

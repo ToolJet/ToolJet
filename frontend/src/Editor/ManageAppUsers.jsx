@@ -148,6 +148,7 @@ class ManageAppUsersComponent extends React.Component {
           viewBox="0 0 33 33"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
+          data-cy="share-button-link"
         >
           <rect x="0.363281" y="0.220703" width="32" height="32" rx="6" fill="#F0F4FF" />
           <path
@@ -169,7 +170,7 @@ class ManageAppUsersComponent extends React.Component {
           contentClassName={this.props.darkMode ? 'theme-dark' : ''}
         >
           <Modal.Header>
-            <Modal.Title>{this.props.t('editor.share', 'Share')}</Modal.Title>
+            <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
             <button className="btn-close" aria-label="Close" onClick={this.hideModal} data-cy="modal-close-button" />
           </Modal.Header>
           <Modal.Body>
@@ -187,20 +188,24 @@ class ManageAppUsersComponent extends React.Component {
                       onClick={this.toggleAppVisibility}
                       checked={this.state.app.is_public}
                       disabled={this.state.ischangingVisibility}
+                      data-cy="make-public-app-toggle"
                     />
-                    <span className="form-check-label">
+                    <span className="form-check-label" data-cy="make-public-app-label">
                       {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public?')}
                     </span>
                   </div>
                 </div>
+
                 <div className="shareable-link mb-3">
-                  <label className="form-label">
+                  <label className="form-label" data-cy="shareable-app-link-label">
                     <small>
                       {this.props.t('editor.shareModal.shareableLink', 'Get shareable link for this application')}
                     </small>
                   </label>
                   <div className="input-group">
-                    <span className="input-group-text">{appLink}</span>
+                    <span className="input-group-text" data-cy="app-link">
+                      {appLink}
+                    </span>
                     <div className="input-with-icon">
                       <input
                         type="text"
@@ -211,6 +216,7 @@ class ManageAppUsersComponent extends React.Component {
                           this.delayedSlugChange(e);
                         }}
                         defaultValue={this.props.slug}
+                        data-cy="app-name-slug-input"
                       />
                       {isSlugVerificationInProgress && (
                         <div className="icon-container">
@@ -220,7 +226,7 @@ class ManageAppUsersComponent extends React.Component {
                     </div>
                     <span className="input-group-text">
                       <CopyToClipboard text={shareableLink} onCopy={() => toast.success('Link copied to clipboard')}>
-                        <button className="btn btn-secondary btn-sm">
+                        <button className="btn btn-secondary btn-sm" data-cy="copy-app-link-button">
                           {this.props.t('editor.shareModal.copy', 'copy')}
                         </button>
                       </CopyToClipboard>
@@ -229,38 +235,46 @@ class ManageAppUsersComponent extends React.Component {
                   </div>
                 </div>
                 <hr />
-                <div className="shareable-link mb-3">
-                  <label className="form-label">
-                    <small>
-                      {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
-                    </small>
-                  </label>
-                  <div className="input-group">
-                    <Textarea
-                      disabled
-                      className={`input-with-icon ${this.props.darkMode && 'text-light'}`}
-                      rows={5}
-                      value={embeddableLink}
-                    />
-                    <span className="input-group-text">
-                      <CopyToClipboard
-                        text={embeddableLink}
-                        onCopy={() => toast.success('Embeddable link copied to clipboard')}
-                      >
-                        <button className="btn btn-secondary btn-sm">
-                          {this.props.t('editor.shareModal.copy', 'copy')}
-                        </button>
-                      </CopyToClipboard>
-                    </span>
+                {(this.state.app.is_public || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
+                  <div className="shareable-link mb-3">
+                    <label className="form-label" data-cy="iframe-link-label">
+                      <small>
+                        {this.props.t('editor.shareModal.embeddableLink', 'Get embeddable link for this application')}
+                      </small>
+                    </label>
+                    <div className="input-group">
+                      <Textarea
+                        disabled
+                        className={`input-with-icon ${this.props.darkMode && 'text-light'}`}
+                        rows={5}
+                        value={embeddableLink}
+                        data-cy="iframe-link"
+                      />
+                      <span className="input-group-text">
+                        <CopyToClipboard
+                          text={embeddableLink}
+                          onCopy={() => toast.success('Embeddable link copied to clipboard')}
+                        >
+                          <button className="btn btn-secondary btn-sm" data-cy="iframe-link-copy-button">
+                            {this.props.t('editor.shareModal.copy', 'copy')}
+                          </button>
+                        </CopyToClipboard>
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </Modal.Body>
 
           <Modal.Footer>
             {this.isUserAdmin && (
-              <Link to={getPrivateRoute('workspace_settings')} target="_blank" className="btn color-primary mt-3">
+              <Link
+                to={getPrivateRoute('workspace_settings')}
+                target="_blank"
+                className="btn color-primary mt-3"
+                data-cy="manage-users-button"
+              >
                 Manage users
               </Link>
             )}

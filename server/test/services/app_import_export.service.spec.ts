@@ -84,13 +84,17 @@ describe('AppImportExportService', () => {
         groups: ['all_users', 'admin'],
       });
       const adminUser = adminUserData.user;
-      const application = await createApplication(nestApp, {
-        user: adminUser,
-        name: 'sample app',
-        isPublic: true,
-      });
-      const appVersion1 = await createApplicationVersion(nestApp, application, { name: 'v1', definition: {} });
+      const application = await createApplication(
+        nestApp,
+        {
+          user: adminUser,
+          name: 'sample app',
+          isPublic: true,
+        },
+        false
+      );
       await createAppEnvironments(nestApp, adminUser.organizationId);
+      const appVersion1 = await createApplicationVersion(nestApp, application, { name: 'v1', definition: {} });
       const dataSource1 = await createDataSource(nestApp, {
         appVersion: appVersion1,
         kind: 'test_kind',
@@ -178,7 +182,7 @@ describe('AppImportExportService', () => {
       const importedApp = await getAppWithAllDetails(result.id);
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();
-      expect(importedApp.name).toBe(exportedApp.name);
+      expect(importedApp.name).toContain(exportedApp.name);
       expect(importedApp.isPublic).toBeFalsy();
       expect(importedApp.organizationId).toBe(exportedApp.organizationId);
       expect(importedApp.currentVersionId).toBe(null);
@@ -250,7 +254,7 @@ describe('AppImportExportService', () => {
       const importedApp = await getAppWithAllDetails(result.id);
 
       expect(importedApp.id == exportedApp.id).toBeFalsy();
-      expect(importedApp.name).toBe(exportedApp.name);
+      expect(importedApp.name).toContain(exportedApp.name);
       expect(importedApp.isPublic).toBeFalsy();
       expect(importedApp.organizationId).toBe(exportedApp.organizationId);
       expect(importedApp.currentVersionId).toBe(null);

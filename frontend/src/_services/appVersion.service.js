@@ -43,8 +43,8 @@ function del(appId, versionId) {
   return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
-function save(appId, versionId, values) {
-  const body = {};
+function save(appId, versionId, values, isUserSwitchedVersion = false) {
+  const body = { is_user_switched_version: isUserSwitchedVersion };
   if (values.definition) body['definition'] = values.definition;
   if (values.name) body['name'] = values.name;
 

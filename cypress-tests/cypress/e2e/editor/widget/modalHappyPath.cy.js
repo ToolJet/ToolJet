@@ -4,7 +4,6 @@ import { fake } from "Fixtures/fake";
 import { commonWidgetText } from "Texts/common";
 
 import { verifyControlComponentAction } from "Support/utils/button";
-import { selectEvent } from "Support/utils/events";
 import {
   launchModal,
   closeModal,
@@ -25,7 +24,6 @@ import {
   verifyAndModifyStylePickerFx,
   verifyWidgetColorCss,
   selectColourFromColourPicker,
-  verifyLoaderColor,
   fillBoxShadowParams,
   verifyBoxShadowCss,
   verifyLayout,
@@ -34,6 +32,11 @@ import {
   verifyPropertiesGeneralAccordion,
   verifyStylesGeneralAccordion,
 } from "Support/utils/commonWidget";
+import {
+  selectCSA,
+  selectEvent,
+  addSupportCSAData,
+} from "Support/utils/events";
 
 describe("Modal", () => {
   beforeEach(() => {
@@ -418,6 +421,28 @@ describe("Modal", () => {
       .find(".form-check-input")
       .click();
     launchModal("modal1");
+    cy.wait(1000);
+    cy.notVisible('[data-cy="modal-close-button"]');
+  });
+
+  it("should verify csa", () => {
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 200);
+    selectEvent("On click", "Control Component");
+    selectCSA("modal1", "open");
+
+    cy.get(commonWidgetSelector.draggableWidget("button1")).click();
+    cy.get('[data-cy="modal-title"]').verifyVisibleElement(
+      "have.text",
+      "This title can be changed"
+    );
+
+    cy.get(".close-svg > path").click();
+    cy.dragAndDropWidget("Button", 500, 300, "Button", "[id*=canvas]:eq(2)");
+    selectEvent("On click", "Control Component");
+    selectCSA("modal1", "close");
+    // cy.realPress("Escape");
+    cy.get(commonWidgetSelector.draggableWidget("button2")).click();
     cy.notVisible('[data-cy="modal-close-button"]');
   });
 });

@@ -24,6 +24,11 @@ import {
   randomNumber,
   closeAccordions,
 } from "Support/utils/commonWidget";
+import {
+  selectCSA,
+  selectEvent,
+  addSupportCSAData,
+} from "Support/utils/events";
 
 describe("Text Input", () => {
   beforeEach(() => {
@@ -398,6 +403,77 @@ describe("Text Input", () => {
     verifyTooltip(
       commonWidgetSelector.draggableWidget(textInputText.defaultWidgetName),
       data.tooltipText
+    );
+  });
+
+  it("should verify CSA", () => {
+    const data = {};
+    data.customText = randomString(12);
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 200);
+    selectEvent("On click", "Control Component");
+    selectCSA("textinput1", "Visibility");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget("Text input", 500, 50);
+    selectEvent("On change", "Control Component");
+    selectCSA("textinput1", "Set text", "500");
+    addSupportCSAData("text", "{{components.textinput2.value");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 275);
+    selectEvent("On click", "Control Component");
+    selectCSA("textinput1", "Clear", "500");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 350);
+    selectEvent("On click", "Control Component");
+    selectCSA("textinput1", "Disable", "500");
+    cy.get('[data-cy="Value-toggle-button"]').click();
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 425);
+    selectEvent("On click", "Control Component");
+    selectCSA("textinput1", "Set blur", "500");
+
+    cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
+    cy.dragAndDropWidget(buttonText.defaultWidgetText, 500, 500);
+    selectEvent("On click", "Control Component");
+    selectCSA("textinput1", "Set focus");
+
+    cy.clearAndType(
+      commonWidgetSelector.draggableWidget("textinput2"),
+      data.customText
+    );
+    cy.get(
+      commonWidgetSelector.draggableWidget("textinput1")
+    ).verifyVisibleElement("have.value", data.customText);
+
+    cy.get(commonWidgetSelector.draggableWidget("button2")).click();
+    cy.get(
+      commonWidgetSelector.draggableWidget("textinput1")
+    ).verifyVisibleElement("have.value", "");
+
+    cy.get(commonWidgetSelector.draggableWidget("button5")).click();
+    cy.realType(data.customText);
+    cy.get(
+      commonWidgetSelector.draggableWidget("textinput1")
+    ).verifyVisibleElement("have.value", data.customText);
+    cy.get(commonWidgetSelector.draggableWidget("button4")).click();
+    cy.realType("not working");
+    cy.get(
+      commonWidgetSelector.draggableWidget("textinput1")
+    ).verifyVisibleElement("have.value", data.customText);
+
+    cy.get(commonWidgetSelector.draggableWidget("button3")).click();
+    cy.get(commonWidgetSelector.draggableWidget("textinput1"))
+      .parent()
+      .should("have.attr", "data-disabled", "true");
+
+    cy.get(commonWidgetSelector.draggableWidget("button1")).click();
+    cy.get(commonWidgetSelector.draggableWidget("textinput1")).should(
+      "not.be.visible"
     );
   });
 });

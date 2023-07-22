@@ -9,28 +9,25 @@ export const SettingsModal = ({
   handleClose,
   darkMode,
   updateOnPageLoadEvents,
-  currentState,
   apps,
   pages,
   components,
-  dataQueries,
+  pinPagesPopover,
 }) => {
   const [isSaving, _setIsSaving] = useState(false);
-  console.log({ dataQueries });
 
   const allpages = pages.filter((p) => p.id !== page.id);
 
   return (
-    <div onClick={(event) => event.stopPropagation()}>
+    <div>
       <Modal
         show={show}
-        // onHide={handleClose}
+        onHide={handleClose}
         size="sm"
         centered
         className={`${darkMode && 'theme-dark'} page-handle-edit-modal`}
         backdrop="static"
         enforceFocus={false}
-        onClick={(event) => event.stopPropagation()}
       >
         <Modal.Header>
           <Modal.Title style={{ fontSize: '16px', fontWeight: '400' }} data-cy={'modal-title-page-events'}>
@@ -55,7 +52,7 @@ export const SettingsModal = ({
             </svg>
           </span>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body onClick={() => pinPagesPopover(true)}>
           <b data-cy={'page-events-labe'}>Events</b>
           <EventManager
             component={{
@@ -66,8 +63,6 @@ export const SettingsModal = ({
               },
             }}
             componentMeta={{ events: { onPageLoad: { displayName: 'On page load' } }, name: 'page' }}
-            currentState={currentState}
-            dataQueries={dataQueries}
             components={components}
             apps={apps}
             pages={allpages}

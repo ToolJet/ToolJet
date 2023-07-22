@@ -33,7 +33,7 @@ export const dashboardText = {
     sunIcon: "sun",
     tableIcon: "table",
     menuHomeIcon: "menu-home",
-    dragHandleIcon: "drag-handle"
+    dragHandleIcon: "drag-handle",
   },
   seeAllAppsTemplateButton: "See all templates",
   addToFolderTitle: "Add to folder",
@@ -41,7 +41,7 @@ export const dashboardText = {
   darkModeText: "Dark Mode",
   lightModeText: "Light Mode",
   dashboardAppsHeaderLabel: " All apps",
-  
+
   moveAppText: (appName) => {
     return `Move "${appName}" to`;
   },
@@ -49,5 +49,4 @@ export const dashboardText = {
   folderName: (folderName) => {
     return folderName;
   },
-  
 };

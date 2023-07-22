@@ -54,6 +54,8 @@
     cursor: pointer;
   }
 
+
+
   .global-settings-popover {
     top: 260px;
     max-width: 350px;
@@ -138,6 +140,40 @@
   }
 }
 
+.debugger {
+    .text-slate-12 {
+      color :var(--slate12);
+      font-weight : 500;
+      line-height : 20px;
+    }
+    .text-tomato-9 {
+      color : var(--tomato9);
+    }
+    .text-slate-10 {
+      color : var(--slate10)
+    }
+    .nav-tabs {
+      border-bottom: 0px !important;
+    }
+
+    .nav-item .nav-link{
+      background-color: var(--slate3) !important;
+      color : var(--slate11)!important;
+    }
+   
+    .nav-tabs .nav-link.active {
+      border-radius: 0 !important;
+      border-width: 2px !important;
+      color : var(--indigo9)!important;
+    }
+    .panel-header-container {
+      border-bottom: 0px !important
+    }
+ }
+
+
+ 
+
 .datasource-modal-button {
   background: #ffffff;
   border: 1px solid $primary;
@@ -157,7 +193,7 @@
   background: transparent !important;
 
   &:hover {
-    background: $primary  !important;
+    background: $primary !important;
     color: #fffffc !important;
   }
 }
@@ -250,6 +286,8 @@
       .row-deck {
         width: 860px !important;
       }
+
+      
     }
 
     .card {
@@ -416,6 +454,15 @@
 
 .empty-state-wrapper {
   margin-left: 5rem !important;
+
+  input {
+    color: var(--slate12);
+    background-color: var(--base);
+  }
+
+  input:focus {
+    background-color: var(--base);
+  }
 }
 
 .close-btn {

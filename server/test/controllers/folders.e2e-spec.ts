@@ -178,21 +178,29 @@ describe('folders controller', () => {
       folder: folder,
     });
 
-    const appInFolder2 = await createApplication(nestApp, {
-      name: 'App in folder 2',
-      user: adminUserData.user,
-    });
+    const appInFolder2 = await createApplication(
+      nestApp,
+      {
+        name: 'App in folder 2',
+        user: adminUserData.user,
+      },
+      false
+    );
 
     await getManager().save(FolderApp, {
       app: appInFolder2,
       folder: folder2,
     });
 
-    await createApplication(nestApp, {
-      name: 'Public App',
-      user: adminUserData.user,
-      isPublic: true,
-    });
+    await createApplication(
+      nestApp,
+      {
+        name: 'Public App',
+        user: adminUserData.user,
+        isPublic: true,
+      },
+      false
+    );
 
     const anotherUserData = await createUser(nestApp, {
       email: 'admin@organization.com',
@@ -307,7 +315,7 @@ describe('folders controller', () => {
       expect(id).toBeDefined();
       expect(created_at).toBeDefined();
       expect(updated_at).toBeDefined();
-      expect(name).toEqual('My folder');
+      expect(name).toEqual('my folder');
       expect(organization_id).toEqual(user.organizationId);
     });
   });
@@ -352,17 +360,18 @@ describe('folders controller', () => {
         organizationId: adminUserData.organization.id,
       });
 
-      for (const userData of [adminUserData, developerUserData]) {
+      for (const [i, userData] of [adminUserData, developerUserData].entries()) {
+        const name = `folder ${i}`;
         await request(nestApp.getHttpServer())
           .put(`/api/folders/${folder.id}`)
           .set('tj-workspace-id', userData.user.defaultOrganizationId)
           .set('Cookie', userData['tokenCookie'])
-          .send({ name: 'My folder' })
+          .send({ name })
           .expect(200);
 
         const updatedFolder = await getManager().findOne(Folder, folder.id);
 
-        expect(updatedFolder.name).toEqual('My folder');
+        expect(updatedFolder.name).toEqual(name);
       }
 
       await request(nestApp.getHttpServer())

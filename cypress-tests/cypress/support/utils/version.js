@@ -4,7 +4,7 @@ import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import { commonText } from "Texts/common";
 import { verifyModal, closeModal } from "Support/utils/common";
 import {
-  deleteVersionSelectors,
+  confirmVersionModalSelectors,
   editVersionSelectors,
 } from "Selectors/version";
 import {
@@ -100,12 +100,12 @@ export const deleteVersionAndVerify = (value, toastMessageText) => {
         .find(".app-version-delete")
         .click({ force: true });
     });
-  cy.get(deleteVersionSelectors.modalMessage).verifyVisibleElement(
+  cy.get(confirmVersionModalSelectors.modalMessage).verifyVisibleElement(
     "have.text",
     deleteVersionText.deleteModalText(value)
   );
-  cy.get(deleteVersionSelectors.yesButton).click();
-  cy.verifyToastMessage(commonSelectors.toastMessage, toastMessageText);
+  cy.get(confirmVersionModalSelectors.yesButton).click();
+  cy.verifyToastMessage(commonSelectors.toastMessage, toastMessageText, false);
 };
 
 export const verifyDuplicateVersion = (newVersion = [], version) => {
@@ -126,23 +126,19 @@ export const verifyDuplicateVersion = (newVersion = [], version) => {
 };
 export const releasedVersionAndVerify = (currentVersion) => {
   cy.contains("Release").click();
+  cy.get(confirmVersionModalSelectors.modalMessage).verifyVisibleElement(
+    "have.text",
+    releasedVersionText.releasedVersionConfirmText
+  );
+  cy.get(confirmVersionModalSelectors.yesButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,
     releasedVersionText.releasedToastMessage(currentVersion)
   );
   cy.forceClickOnCanvas();
-  cy.wait(2000);
-  verifyModal(
-    appVersionText.createNewVersion,
-    appVersionText.createNewVersion,
-    appVersionSelectors.versionNameInputField
-  );
-  cy.contains(releasedVersionText.releasedModalText).should("be.visible");
-  cy.wait(500);
-  closeModal(commonText.closeButton);
-  cy.get(appVersionSelectors.currentVersionField(currentVersion)).should(
-    "have.class",
-    "color-light-green"
+  cy.get(".released-version-popup-cover").verifyVisibleElement(
+    "have.text",
+    releasedVersionText.releasedAppText
   );
 };
 

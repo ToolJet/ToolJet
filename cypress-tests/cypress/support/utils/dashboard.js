@@ -35,18 +35,21 @@ export const modifyAndVerifyAppCardIcon = (appName) => {
 
   viewAppCardOptions(appName);
   cy.get(commonSelectors.appCardOptions(commonText.changeIconOption)).click();
-  cy.get('.modal-body').parent().within(() => {
-    cy.get(dashboardSelector.appIcon(randomIcon)).first().click();
-  });  
+  cy.get(".modal-body")
+    .parent()
+    .within(() => {
+      cy.get(dashboardSelector.appIcon(randomIcon)).first().click();
+    });
   cancelModal(commonText.cancelButton);
 
   viewAppCardOptions(appName);
   cy.get(commonSelectors.appCardOptions(commonText.changeIconOption)).click();
 
-  cy.get('.modal-body').parent().within(() => {
-    cy.get(dashboardSelector.appIcon(randomIcon)).first().click();
-
-  })
+  cy.get(".modal-body")
+    .parent()
+    .within(() => {
+      cy.get(dashboardSelector.appIcon(randomIcon)).first().click();
+    });
   cy.get(dashboardSelector.changeButton).click();
   cy.verifyToastMessage(
     commonSelectors.toastMessage,

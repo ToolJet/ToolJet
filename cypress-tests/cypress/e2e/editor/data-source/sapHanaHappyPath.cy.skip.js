@@ -16,19 +16,16 @@ import {
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
+    // cy.createApp();
   });
 
   it("Should verify elements on connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+cy.reload();
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
+
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -47,17 +44,13 @@ describe("Data sources", () => {
       postgreSqlText.allCloudStorage
     );
 
-    cy.get(postgreSqlSelector.dataSourceSearchInputField).type(
-     "SAP HANA"
-    );
-    cy.get("[data-cy*='data-source-']")
-      .eq(0)
-      .should("contain","SAP HANA");
+    cy.get(postgreSqlSelector.dataSourceSearchInputField).type("SAP HANA");
+    cy.get("[data-cy*='data-source-']").eq(1).should("contain", "SAP HANA");
     cy.get('[data-cy="data-source-sap hana"]').click();
 
     cy.get(postgreSqlSelector.dataSourceNameInputField).should(
       "have.value",
-     "SAP HANA"
+      "SAP HANA"
     );
     cy.get(postgreSqlSelector.labelHost).verifyVisibleElement(
       "have.text",
@@ -152,7 +145,6 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("have.text", postgreSqlText.psqlName)
       .find("button")

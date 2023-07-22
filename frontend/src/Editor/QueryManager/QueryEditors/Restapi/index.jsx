@@ -155,7 +155,6 @@ class Restapi extends React.Component {
             )}
             <div className="col">
               <CodeHinter
-                currentState={this.props.currentState}
                 initialValue={options.url}
                 theme={this.props.darkMode ? 'monokai' : 'default'}
                 onChange={(value) => {
@@ -175,7 +174,6 @@ class Restapi extends React.Component {
           <Tabs
             theme={this.props.darkMode ? 'monokai' : 'default'}
             options={this.state.options}
-            currentState={this.props.currentState}
             onChange={this.handleChange}
             onJsonBodyChange={this.handleJsonBodyChanged}
             removeKeyValuePair={this.removeKeyValuePair}

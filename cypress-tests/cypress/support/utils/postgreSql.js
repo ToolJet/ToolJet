@@ -7,14 +7,16 @@ import { commonWidgetText } from "Texts/common";
 import { openAccordion, openEditorSidebar } from "Support/utils/commonWidget";
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
+import { closeDSModal } from "Support/utils/dataSource";
+
 
 export const addQuery = (queryName, query, dbName) => {
   cy.get(postgreSqlSelector.buttonAddNewQueries).click();
   cy.get(`[data-cy="${dbName}-add-query-card"]`)
     .should("contain", dbName)
     .click();
-  selectQueryMode(postgreSqlText.queryModeSql, "3");
-  cy.get('[data-cy="query-name-label"]').realHover().then(()=>{
+  // selectQueryMode(postgreSqlText.queryModeSql, "3");
+  cy.get('[data-cy="query-name-label"]').realHover().then(() => {
     cy.get('[class*="breadcrum-rename-query-icon"]').click();
   });
   cy.get(postgreSqlSelector.queryLabelInputField).clear().type(queryName);
@@ -44,8 +46,9 @@ export const addQueryOnGui = (queryName, query) => {
   );
 };
 export const selectDataSource = (dataSource) => {
-  cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-  cy.get(postgreSqlSelector.addDatasourceLink).click();
+  cy.get(commonSelectors.globalDataSourceIcon).click();
+  closeDSModal()
+  cy.get(commonSelectors.addNewDataSourceButton).click();
   cy.get(postgreSqlSelector.dataSourceSearchInputField).type(dataSource);
   cy.get(`[data-cy='data-source-${dataSource.toLowerCase()}']`).click();
 };
@@ -97,9 +100,9 @@ export const openQueryEditor = (dataSourceName) => {
 
 export const selectQueryMode = (mode, index = 2) => {
   cy.get(`${postgreSqlSelector.querySelectDropdown}:eq(0)`)
-      .scrollIntoView()
-      .should("be.visible")
-      .click();
+    .scrollIntoView()
+    .should("be.visible")
+    .click();
   cy.contains("[id*=react-select-]", mode).click();
 };
 
@@ -131,4 +134,4 @@ export const addWidgetsToAddUser = () => {
   addEventHandlerToRunQuery("add_data_using_widgets");
 };
 
-export const addListviewToVerifyData = () => {};
+export const addListviewToVerifyData = () => { };

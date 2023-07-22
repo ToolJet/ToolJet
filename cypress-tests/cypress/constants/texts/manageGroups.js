@@ -34,15 +34,16 @@ export const groupsText = {
   textDefaultGroup: "Default group",
   textAppName: "App name",
   helperTextNoAppsAdded: "No apps are added to the group",
-  helperTextPermissions: "Add app to the group to control permissions for users in this group",
-  helperTextAllUsersIncluded: " All users include every users in the app. This list is not editable",
-  helperTextAdminAppAccess: "Admin has edit access to all apps. These are not editable",
+  helperTextPermissions:
+    "Add app to the group to control permissions for users in this group",
+  helperTextAllUsersIncluded:
+    " All users include every users in the app. This list is not editable",
+  helperTextAdminAppAccess:
+    "Admin has edit access to all apps. These are not editable",
   helperTextAdminPermissions: "Admin has all permissions",
   updateGroupNameModalTitle: "Update group",
   saveButton: "Save",
   groupNameUpdateSucessToast: "Group name updated successfully",
   editGroupNameButton: "Edit name",
   deleteGroupButton: " Delete group",
-
-
 };

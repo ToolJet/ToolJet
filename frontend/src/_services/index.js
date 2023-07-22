@@ -20,3 +20,4 @@ export * from './tooljetDatabase.service';
 export * from './workflow_executions.service';
 export * from './globalDatasource.service';
 export * from './app_environment.service';
+export * from './copilot.service';

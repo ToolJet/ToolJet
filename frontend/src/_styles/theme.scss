@@ -10,9 +10,161 @@
 @import "./designtheme.scss";
 @import "./dropdown-custom.scss";
 @import "./ui-operations.scss";
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,400;1,500;1,600;1,700&display=swap');
 @import 'react-loading-skeleton/dist/skeleton.css';
 
+/* ibm-plex-sans-100 - latin */
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 100;
+  src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-100.woff2') format('woff2');
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* ibm-plex-sans-100italic - latin */
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Sans';
+  font-style: italic;
+  font-weight: 100;
+  src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-100italic.woff2') format('woff2');
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* ibm-plex-sans-200 - latin */
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 200;
+  src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-200.woff2') format('woff2');
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* ibm-plex-sans-200italic - latin */
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Sans';
+  font-style: italic;
+  font-weight: 200;
+  src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-200italic.woff2') format('woff2');
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* ibm-plex-sans-300 - latin */
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 300;
+  src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-300.woff2') format('woff2');
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* ibm-plex-sans-300italic - latin */
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Sans';
+  font-style: italic;
+  font-weight: 300;
+  src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-300italic.woff2') format('woff2');
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* ibm-plex-sans-regular - latin */
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-regular.woff2') format('woff2');
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* ibm-plex-sans-italic - latin */
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Sans';
+  font-style: italic;
+  font-weight: 400;
+  src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-italic.woff2') format('woff2');
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* ibm-plex-sans-500 - latin */
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-500.woff2') format('woff2');
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* ibm-plex-sans-500italic - latin */
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Sans';
+  font-style: italic;
+  font-weight: 500;
+  src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-500italic.woff2') format('woff2');
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* ibm-plex-sans-600 - latin */
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-600.woff2') format('woff2');
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* ibm-plex-sans-600italic - latin */
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Sans';
+  font-style: italic;
+  font-weight: 600;
+  src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-600italic.woff2') format('woff2');
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* ibm-plex-sans-700 - latin */
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-700.woff2') format('woff2');
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* ibm-plex-sans-700italic - latin */
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'IBM Plex Sans';
+  font-style: italic;
+  font-weight: 700;
+  src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-700italic.woff2') format('woff2');
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
 // variables
 $border-radius: 4px;
 
@@ -487,23 +639,29 @@ button {
   }
 
   .main {
-    margin-left: 3%;
-    width: 82%;
+    // margin-left: 3%;
+    // width: 82%;
     top: 0;
+    height: calc(100vh - 84px);
+
+    &.hide-scrollbar {
+      .canvas-container::-webkit-scrollbar {
+        height: 0;
+      }
+    }
 
     .canvas-container::-webkit-scrollbar {
       width: 0;
       background: transparent;
-      height: 0;
+      // height: 0;
+    }
+
+    .canvas-container::-webkit-scrollbar-track {
+      background: transparent !important;
     }
 
     .canvas-container {
       scrollbar-width: none;
-    }
-
-    .canvas-container::-webkit-scrollbar {
-      width: 0;
-      background: transparent;
     }
 
     .canvas-container {
@@ -512,8 +670,8 @@ button {
       position: fixed;
       right: 300px;
       left: 48px;
-      overflow-y: auto;
-      overflow-x: scroll;
+      overflow-y: scroll;
+      overflow-x: auto;
       -webkit-box-pack: center;
       justify-content: center;
       -webkit-box-align: center;
@@ -534,7 +692,6 @@ button {
       }
 
       .canvas-area {
-        min-height: 2400px;
         background: #edeff5;
         margin: 0px auto;
 
@@ -586,7 +743,6 @@ button {
 
       .canvas-area {
         width: 1280px;
-        min-height: 2400px;
         background: #edeff5;
         margin: 0px auto;
         background-size: 80px 80px;
@@ -854,11 +1010,15 @@ button {
         box-sizing: border-box;
         border-radius: 6px;
         color: $primary-light;
-        width: 136px;
+        width: 113px;
         height: 28px;
         background: var(--indigo11) !important;
         border: none;
         color: var(--indigo4);
+        padding: 4px 16px;
+        gap: 6px;
+        height: 28px;
+
 
         &:hover {
           background: var(--indigo10);
@@ -879,15 +1039,18 @@ button {
       }
 
       .launch-button {
-
         box-sizing: border-box;
         border-radius: 6px;
         color: var(--base);
-        width: 92px;
+        width: 113px;
         height: 28px;
         background: var(--base);
         border: 1px solid var(--slate7);
         color: var(--slate12);
+        padding: 4px 16px;
+        gap: 6px;
+        height: 28px !important;
+
 
         &:hover {
           background: var(--slate8);
@@ -1168,6 +1331,38 @@ button {
 
 .component-action-select *.css-1nfapid-container {
   width: 184px !important;
+}
+
+.component-action-select {
+  .css-zz6spl-container {
+    width: inherit;
+  }
+
+  &.fx-container-eventmanager {
+    .fx-common {
+      right: 0;
+    }
+
+    .custom-row {
+      width: 100%
+    }
+  }
+
+  .codeShow-active {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+
+    .custom-row {
+      width: 75%;
+    }
+  }
+
+  .row.fx-container {
+    .col {
+      display: flex;
+    }
+  }
 }
 
 .fx-container-eventmanager *.fx-common {
@@ -1775,6 +1970,10 @@ button {
       margin-top: auto;
       margin-bottom: auto;
     }
+
+    .td-container:has(.action-button) {
+      height: inherit !important;
+    }
   }
 
   td {
@@ -1786,7 +1985,7 @@ button {
       padding: 10px;
       margin-left: -9px;
       background: white;
-      box-shadow: rgba(15, 15, 15, 0/05) 0px 0px 0px 1px,
+      box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px,
         rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
       white-space: initial;
     }
@@ -1797,6 +1996,7 @@ button {
     .text-container:hover {
       outline: none;
     }
+
   }
 
   td {
@@ -2124,6 +2324,7 @@ tr:focus {
 
 .popover-header {
   background-color: #f4f6fa;
+  border-bottom: 0;
 }
 
 .popover-body {
@@ -2544,8 +2745,20 @@ hr {
   height: 28px !important;
 }
 
+.editor {
+  .modal-dialog {
+    overflow-y: initial !important
+  }
+
+  .modal-dialog-scrollable .modal-content {
+    max-height: 88% !important;
+  }
+
+}
+
+
 .modal-component {
-  margin-top: 150px;
+
 
   .modal-body {
     padding: 0;
@@ -2855,6 +3068,10 @@ input:focus-visible {
   .form-control.is-invalid,
   .was-validated .form-control:invalid {
     border-color: #ffb0b0;
+  }
+
+  .form-check-input {
+    cursor: pointer;
   }
 }
 
@@ -4349,7 +4566,8 @@ input[type="text"] {
   }
 
   input:focus {
-    width: 300px;
+    width: 200px;
+    background-color: var(--base);
   }
 
   .input-icon .input-icon-addon {
@@ -4542,10 +4760,10 @@ input[type="text"] {
     color: #fff;
     background-color: #232e3c !important;
   }
-}
 
-.onboarding-modal.dark .modal-content {
-  @extend .modal-content.home-modal-component.dark;
+  .btn-close {
+    filter: brightness(0) invert(1);
+  }
 }
 
 .modal-content.home-modal-component.dark-theme {
@@ -4948,6 +5166,12 @@ div#driver-page-overlay {
   .popover-body {
     color: #d9dcde !important;
   }
+
+    .popover-header {
+      background-color: var(--slate2);
+      color: var(--slate11);
+      border-bottom-color: var
+    }
 }
 
 .toast-dark-mode {
@@ -5414,10 +5638,11 @@ div#driver-page-overlay {
   .json-tree-icon-container {
     max-width: 20px;
     margin-right: 6px;
+    font-family: 'IBM Plex Sans';
   }
 
   .node-type {
-    color: #a6b6cc;
+    color: var(--slate11);
     padding-top: 2px;
   }
 
@@ -5427,7 +5652,7 @@ div#driver-page-overlay {
   }
 
   .node-length-color {
-    color: #3650af;
+    color: var(--indigo10);
     padding-top: 3px;
   }
 
@@ -5436,15 +5661,15 @@ div#driver-page-overlay {
   }
 
   .json-tree-node-string {
-    color: #f6820c;
+    color: var(--orange9);
   }
 
   .json-tree-node-boolean {
-    color: #3eb25f;
+    color: var(--green9);
   }
 
   .json-tree-node-number {
-    color: #f4b2b0;
+    color: var(--orange9);
   }
 
   .json-tree-node-null {
@@ -5488,10 +5713,10 @@ div#driver-page-overlay {
     }
   }
 
-  .action-icons-group {
-    margin-right: 4rem !important;
-    margin-left: 2rem !important;
-  }
+  // .action-icons-group {
+  //   margin-right: 4rem !important;
+  //   margin-left: 2rem !important;
+  // }
 
   .action-icons-group {
     cursor: pointer;
@@ -5513,7 +5738,7 @@ div#driver-page-overlay {
   .node-key-outline {
     height: 1rem !important;
     border: 1px solid transparent !important;
-    color: #3e525b;
+    color: var(--slate12);
   }
 }
 
@@ -7052,6 +7277,7 @@ tbody {
   display: grid !important;
   grid-template-rows: auto 1fr auto !important;
 }
+
 .marketplace-page-sidebar {
   height: calc(100vh - 64px);
   max-width: 288px;
@@ -7250,6 +7476,7 @@ tbody {
   font-weight: 500;
   height: 28px;
   cursor: pointer;
+  white-space: nowrap;
 
   .query-btn-svg-wrapper {
     width: 16px !important;
@@ -7279,6 +7506,9 @@ tbody {
 
   .query-preview-svg {
     padding: 2.67px 0.067px;
+    width: 16px;
+    height: 16px;
+    margin: 6px 0;
   }
 
   &:active {
@@ -7378,6 +7608,8 @@ tbody {
   width: 16px;
   height: 16px;
   padding: 2.88px 5.22px;
+  display: flex;
+  cursor: pointer;
 }
 
 .theme-dark {
@@ -7480,6 +7712,16 @@ tbody {
   &:focus {
     box-shadow: 0px 0px 0px 4px #DFE3E6;
   }
+
+  .tj-text-xsm {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tj-folder-list {
+    display: block;
+  }
 }
 
 
@@ -7506,6 +7748,9 @@ tbody {
   line-height: 20px;
 }
 
+.app-version-name {
+  max-width: 80px;
+}
 
 .custom-version-selector__option:hover .app-version-delete {
   display: block;
@@ -7536,6 +7781,11 @@ tbody {
 
 .modal-backdrop {
   opacity: 0.5;
+}
+
+.canvas-area>.modal-backdrop {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .ds-delete-btn {
@@ -7991,6 +8241,10 @@ tbody {
   font-size: .765625rem !important;
 }
 
+.tooltip {
+  z-index: 10000;
+}
+
 .add-new-workspace-icon-wrap {
   display: flex;
   flex-direction: row;
@@ -8396,24 +8650,16 @@ tbody {
 }
 
 .edit-button {
-  width: 135px;
-  height: 28px;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 4px 16px;
-  gap: 6px;
-  width: 135px;
   height: 28px;
 }
 
 .launch-button {
   display: flex;
-  width: 93px;
   height: 28px;
-  padding: 4px 16px;
-  gap: 6px;
   align-items: center;
   color: var(--slate12);
   justify-content: center;
@@ -9489,7 +9735,7 @@ tbody {
 .manage-users-drawer-content {
   margin: 24px 32px;
 
-  div:first-child {
+  .invite-user-by-email {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -9503,13 +9749,16 @@ tbody {
   .invite-email-body {
     width: 452px;
 
-    input {
+    input:not([type="checkbox"]) {
       padding: 6px 10px;
-      width: 470px;
       height: 32px;
       color: var(--slate12);
     }
   }
+}
+
+.rmsc .item-renderer {
+  align-items: center !important;
 }
 
 .tj-db-table {
@@ -9775,6 +10024,7 @@ tbody {
       border: 1px solid var(--slate8);
       border-radius: 6px;
       outline: none;
+      padding-left: 12px !important;
     }
 
     &:disabled {
@@ -10046,7 +10296,7 @@ tbody {
   border-radius: 0px !important;
 }
 
-// custom styles for users multiselect in manage users 
+// custom styles for users multiselect in manage users
 .manage-groups-users-multiselect {
   gap: 17px;
   width: 440px;
@@ -10218,6 +10468,65 @@ tbody {
   }
 }
 
+.released-version-popup-container {
+  width: 100%;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  top: 55px;
+
+  .released-version-popup-cover {
+    width: 250px;
+    height: fit-content;
+    margin: 0;
+    z-index: 1;
+
+    .popup-content {
+      background-color: #121212;
+      padding: 16px 18px 0px 16px;
+      border-radius: 6px;
+
+      p {
+        font-size: 14px;
+        font-family: IBM Plex Sans;
+        color: #ECEDEE;
+      }
+    }
+  }
+
+  .error-shake {
+    animation: shake 0.82s cubic-bezier(.36, .07, .19, .97) both;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 10000px;
+  }
+
+  @keyframes shake {
+
+    10%,
+    90% {
+      transform: translate3d(-1px, 0, 0);
+    }
+
+    20%,
+    80% {
+      transform: translate3d(2px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+      transform: translate3d(-4px, 0, 0);
+    }
+
+    40%,
+    60% {
+      transform: translate3d(4px, 0, 0);
+    }
+  }
+
+}
+
 .profile-page-content-wrap {
   background-color: var(--slate2);
   padding-top: 40px;
@@ -10246,10 +10555,25 @@ tbody {
   max-width: 880px;
 }
 
+@media only screen and (min-width: 1584px) and (max-width: 1727px) {
+
+  .edit-button,
+  .launch-button {
+    width: 113px !important;
+  }
+}
+
+
+
 @media only screen and (max-width: 1583px) and (min-width: 1312px) {
 
   .homepage-app-card-list-item {
     max-width: 264px;
+
+    .edit-button,
+    .launch-button {
+      width: 109px !important;
+    }
   }
 
 }
@@ -10258,6 +10582,11 @@ tbody {
 
   .homepage-app-card-list-item {
     max-width: 304px;
+
+    .edit-button,
+    .launch-button {
+      width: 129px !important;
+    }
   }
 
   .home-page-content-container {
@@ -10282,6 +10611,11 @@ tbody {
   .homepage-app-card-list-item {
     max-width: 304px !important;
     flex-basis: 100%;
+
+    .edit-button,
+    .launch-button {
+      width: 129px !important;
+    }
   }
 }
 
@@ -10297,6 +10631,11 @@ tbody {
   .homepage-app-card-list-item {
     max-width: 269px;
     flex-basis: 100%;
+
+    .edit-button,
+    .launch-button {
+      width: 111.5px !important;
+    }
   }
 
   .liner {
@@ -10435,5 +10774,181 @@ tbody {
     .search-box-wrapper input {
       color: var(--base) !important;
     }
+  }
+}
+
+
+.workspace-folder-modal {
+  .tj-app-input {
+    padding-bottom: 0px !important;
+  }
+
+  .tj-input-error {
+    height: 32px;
+    color: #ED5F00;
+    font-weight: 400;
+    font-size: 10px;
+    height: 0px;
+    padding: 4px 0px 20px 0px;
+  }
+}
+
+.table-editor-component-row {
+  .rdt.cell-type-datepicker {
+    margin-top: 0;
+  }
+
+  .has-multiselect {
+    .select-search-input {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.theme-dark .card-container {
+  background-color: #121212 !important
+}
+
+.version-select {
+  .react-select__menu {
+    .react-select__menu-list {
+      max-height: 150px;
+    }
+  }
+}
+.generate-cell-value-component-div-wrapper{
+  
+  .form-control-plaintext:focus-visible {
+    outline-color: #dadcde;
+    border-radius: 4px;
+  }
+  
+  .form-control-plaintext:hover {
+    outline-color: #dadcde;
+    border-radius: 4px;
+  }
+}
+.dark-theme{
+  .generate-cell-value-component-div-wrapper{
+  
+    .form-control-plaintext:focus-visible {
+      filter: invert(-1);
+    }
+    
+    .form-control-plaintext:hover {
+      filter: invert(-1);
+    }
+  }
+}
+
+.workspace-folder-modal {
+  .tj-app-input {
+    padding-bottom: 0px !important;
+  }
+
+  .tj-input-error {
+    height: 32px;
+    color: #ED5F00;
+    font-weight: 400;
+    font-size: 10px;
+    height: 0px;
+    padding: 4px 0px 20px 0px;
+  }
+}
+
+.jet-container-loading {
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+}
+
+.jet-container-json-form {
+  padding: 20px;
+
+  .DateRangePickerInput {
+    width: 100% !important;
+  }
+
+  .dropzone {
+    aside {
+      width: 100% !important;
+    }
+  }
+
+  fieldset {
+    width: 100%;
+
+    .json-form-wrapper {
+      margin-bottom: 4px;
+
+      .widget-button {
+        button {
+          width: auto !important;
+          min-width: 140px !important;
+        }
+      }
+    }
+  }
+}
+
+.freeze-scroll {
+  #real-canvas {
+    overflow: hidden;
+  }
+}
+
+.badge-warning {
+  background-color: var(--amber7) !important;
+}
+
+.workspace-variables-alert-banner {
+  width: inherit;
+  background-color: #FFF9ED;
+  border-color: #FFE3A2;
+  margin-bottom: 0px;
+  padding: 8px 16px;
+  border-radius: 0px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--amber8);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.4px;
+  text-align: left;
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+}
+
+.alert-banner-type-text {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.4px;
+  text-align: left;
+}
+
+.tj-app-input .alert-component.workspace-variables-alert-banner {
+  color: var(--amber8);
+  border-color: var(--amber3);
+}
+
+.form-label-restricted {
+  display: none;
+}
+
+.runjs-parameter-badge {
+  max-width: 140px;
+}
+
+.release-buttons {
+  .release-button {
+    padding: 6px 16px;
+    font-size: 14px;
+  }
+
+  .released-button {
+    background-color: #F1F3F5;
+    color: #C1C8CD;
   }
 }

@@ -264,6 +264,13 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      allowSelection: {
+        type: 'toggle',
+        displayName: 'Allow selection',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       showBulkSelector: {
         type: 'toggle',
         displayName: 'Bulk selection',
@@ -274,6 +281,23 @@ export const widgets = [
       highlightSelectedRow: {
         type: 'toggle',
         displayName: 'Highlight selected row',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      defaultSelectedRow: {
+        type: 'code',
+        displayName: 'Default selected row',
+        validation: {
+          schema: {
+            type: 'object',
+          },
+        },
+      },
+
+      showAddNewRowButton: {
+        type: 'toggle',
+        displayName: 'Show add new row button',
         validation: {
           schema: { type: 'boolean' },
         },
@@ -402,6 +426,23 @@ export const widgets = [
         handle: 'discardNewlyAddedRows',
         displayName: 'Discard newly added rows',
       },
+      {
+        displayName: 'Download table data',
+        handle: 'downloadTableData',
+        params: [
+          {
+            handle: 'type',
+            displayName: 'Type',
+            options: [
+              { name: 'Download as Excel', value: 'xlsx' },
+              { name: 'Download as CSV', value: 'csv' },
+              { name: 'Download as PDF', value: 'pdf' },
+            ],
+            defaultValue: `{{Download as Excel}}`,
+            type: 'select',
+          },
+        ],
+      },
     ],
     definition: {
       others: {
@@ -458,6 +499,9 @@ export const widgets = [
         actions: { value: [] },
         enabledSort: { value: '{{true}}' },
         hideColumnSelectorButton: { value: '{{false}}' },
+        defaultSelectedRow: { value: '{{{"id":1}}}' },
+        showAddNewRowButton: { value: '{{true}}' },
+        allowSelection: { value: '{{true}}' },
       },
       events: [],
       styles: {
@@ -562,7 +606,9 @@ export const widgets = [
         },
       },
     },
-    exposedVariables: {},
+    exposedVariables: {
+      buttonText: 'Button',
+    },
     actions: [
       {
         handle: 'click',
@@ -707,6 +753,21 @@ export const widgets = [
           },
         },
       },
+      barmode: {
+        type: 'select',
+        displayName: 'Bar mode',
+        options: [
+          { name: 'Stack', value: 'stack' },
+          { name: 'Group', value: 'group' },
+          { name: 'Overlay', value: 'overlay' },
+          { name: 'Relative', value: 'relative' },
+        ],
+        validation: {
+          schema: {
+            schemas: { type: 'string' },
+          },
+        },
+      },
     },
     events: {},
     styles: {
@@ -754,6 +815,7 @@ export const widgets = [
         showGridLines: { value: '{{true}}' },
         plotFromJson: { value: '{{false}}' },
         loadingState: { value: `{{false}}` },
+        barmode: { value: `group` },
         jsonDescription: {
           value: `{
             "data": [
@@ -797,7 +859,7 @@ export const widgets = [
     component: 'Modal',
     defaultSize: {
       width: 10,
-      height: 400,
+      height: 34,
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
@@ -849,6 +911,13 @@ export const widgets = [
           { name: 'medium', value: 'lg' },
           { name: 'large', value: 'xl' },
         ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      modalHeight: {
+        type: 'code',
+        displayName: 'Modal Height',
         validation: {
           schema: { type: 'string' },
         },
@@ -940,6 +1009,7 @@ export const widgets = [
         hideCloseButton: { value: '{{false}}' },
         hideOnEsc: { value: '{{true}}' },
         closeOnClickingOutside: { value: '{{false}}' },
+        modalHeight: { value: '400px' },
       },
       events: [],
       styles: {
@@ -1126,6 +1196,20 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      loadingState: {
+        type: 'toggle',
+        displayName: 'Loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+      decimalPlaces: {
+        type: 'code',
+        displayName: 'Decimal places',
+        validation: {
+          schema: { type: 'number' },
+        },
+      },
     },
     events: {
       onChange: { displayName: 'On change' },
@@ -1170,7 +1254,7 @@ export const widgets = [
       },
     },
     exposedVariables: {
-      value: 0,
+      value: 99,
     },
     definition: {
       others: {
@@ -1182,6 +1266,8 @@ export const widgets = [
         maxValue: { value: '' },
         minValue: { value: '' },
         placeholder: { value: '0' },
+        decimalPlaces: { value: '{{2}}' },
+        loadingState: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -2015,7 +2101,7 @@ export const widgets = [
       },
       events: [],
       styles: {
-        backgroundColor: { value: '' },
+        backgroundColor: { value: '#fff00000' },
         textColor: { value: '#000000' },
         textSize: { value: 14 },
         textAlign: { value: 'left' },
@@ -2180,7 +2266,15 @@ export const widgets = [
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop' },
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
-    properties: {},
+    properties: {
+      loadingState: {
+        type: 'toggle',
+        displayName: 'loading state',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
+    },
     events: {},
     styles: {
       backgroundColor: {
@@ -2230,6 +2324,7 @@ export const widgets = [
       },
       properties: {
         visible: { value: '{{true}}' },
+        loadingState: { value: `{{false}}` },
       },
       events: [],
       styles: {
@@ -2265,9 +2360,29 @@ export const widgets = [
           schema: { type: 'string' },
         },
       },
+      placeholder: {
+        type: 'code',
+        displayName: 'Placeholder',
+        validation: {
+          validation: {
+            schema: { type: 'string' },
+          },
+        },
+      },
+      advanced: {
+        type: 'toggle',
+        displayName: 'Advanced',
+        validation: {
+          schema: { type: 'boolean' },
+        },
+      },
       value: {
         type: 'code',
         displayName: 'Default value',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
         validation: {
           schema: {
             type: 'union',
@@ -2278,6 +2393,10 @@ export const widgets = [
       values: {
         type: 'code',
         displayName: 'Option values',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
         validation: {
           schema: {
             type: 'array',
@@ -2288,11 +2407,24 @@ export const widgets = [
       display_values: {
         type: 'code',
         displayName: 'Option labels',
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
         validation: {
           schema: {
             type: 'array',
             element: { type: 'union', schemas: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
           },
+        },
+      },
+
+      schema: {
+        type: 'code',
+        displayName: 'Schema',
+        conditionallyRender: {
+          key: 'advanced',
+          value: true,
         },
       },
       loadingState: {
@@ -2358,6 +2490,7 @@ export const widgets = [
       searchText: '',
       label: 'Select',
       optionLabels: ['one', 'two', 'three'],
+      selectedOptionLabel: 'two',
     },
     actions: [
       {
@@ -2375,12 +2508,18 @@ export const widgets = [
         customRule: { value: null },
       },
       properties: {
+        advanced: { value: `{{false}}` },
+        schema: {
+          value:
+            "{{[\t{label: 'One',value: 1,disable: false,visible: true,default: true},{label: 'Two',value: 2,disable: false,visible: true},{label: 'Three',value: 3,disable: false,visible: true}\t]}}",
+        },
+
         label: { value: 'Select' },
         value: { value: '{{2}}' },
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
-        visible: { value: '{{true}}' },
         loadingState: { value: '{{false}}' },
+        placeholder: { value: 'Select an option' },
       },
       events: [],
       styles: {
@@ -2507,6 +2646,7 @@ export const widgets = [
         values: { value: '{{[1,2,3]}}' },
         display_values: { value: '{{["one", "two", "three"]}}' },
         visible: { value: '{{true}}' },
+        showAllOption: { value: '{{false}}' },
       },
       events: [],
       styles: {
@@ -3661,6 +3801,28 @@ export const widgets = [
           schema: { type: 'array', element: { type: 'object' } },
         },
       },
+      mode: {
+        type: 'select',
+        displayName: 'Mode',
+        options: [
+          { name: 'list', value: 'list' },
+          { name: 'grid', value: 'grid' },
+        ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
+      columns: {
+        type: 'number',
+        displayName: 'Columns',
+        validation: {
+          schema: { type: 'number' },
+        },
+        conditionallyRender: {
+          key: 'mode',
+          value: 'grid',
+        },
+      },
       rowHeight: {
         type: 'code',
         displayName: 'Row height',
@@ -3673,6 +3835,10 @@ export const widgets = [
         displayName: 'Show bottom border',
         validation: {
           schema: { type: 'boolean' },
+        },
+        conditionallyRender: {
+          key: 'mode',
+          value: 'list',
         },
       },
       enablePagination: {
@@ -3691,7 +3857,8 @@ export const widgets = [
       },
     },
     events: {
-      onRowClicked: { displayName: 'Row clicked' },
+      onRowClicked: { displayName: 'Row clicked (Deprecated)' },
+      onRecordClicked: { displayName: 'Record clicked' },
     },
     styles: {
       backgroundColor: {
@@ -3746,6 +3913,8 @@ export const widgets = [
     { imageURL: 'https://www.svgrepo.com/show/34217/image.svg', text: 'Sample text 1', buttonText: 'Button 3' },
   ]}}`,
         },
+        mode: { value: 'list' },
+        columns: { value: '{{3}}' },
         rowHeight: {
           value: '100',
         },
@@ -5466,12 +5635,28 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         validation: {
           schema: { type: 'string' },
         },
+        conditionallyRender: {
+          key: 'advanced',
+          value: false,
+        },
       },
       loadingState: {
         type: 'toggle',
         displayName: 'Loading state',
         validation: {
           schema: { type: 'boolean' },
+        },
+      },
+      advanced: {
+        type: 'toggle',
+        displayName: ' Use custom schema',
+      },
+      JSONSchema: {
+        type: 'code',
+        displayName: 'JSON Schema',
+        conditionallyRender: {
+          key: 'advanced',
+          value: true,
         },
       },
     },
@@ -5540,6 +5725,11 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
       properties: {
         loadingState: { value: '{{false}}' },
+        advanced: { value: '{{false}}' },
+        JSONSchema: {
+          value:
+            "{{ {title: 'User registration form', properties: {firstname: {type: 'textinput',value: 'Maria',label:'First name', validation:{maxLength:6}, styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},lastname:{type: 'textinput',value: 'Doe', label:'Last name', styles: {backgroundColor: '#f6f5ff',textColor: 'black'},},age:{type:'number'},}, submitButton: {value: 'Submit', styles: {backgroundColor: '#3a433b',borderColor:'#595959'}}} }}",
+        },
       },
       events: [],
       styles: {
@@ -5570,6 +5760,14 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         displayName: 'Image Url',
         validation: {
           schema: { type: 'string' },
+        },
+      },
+
+      defaultValue: {
+        type: 'code',
+        displayName: 'Default value',
+        validation: {
+          schema: { type: 'union', schemas: [{ type: 'string' }, { type: 'array', element: { type: 'object' } }] },
         },
       },
       selector: {
@@ -5614,7 +5812,26 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
       },
     },
     exposedVariables: {
-      annotations: [],
+      annotations: [
+        {
+          type: 'RECTANGLE',
+          x: 41,
+          y: 62,
+          width: 40,
+          height: 24,
+          text: 'Car',
+          id: 'ce103db2-b2a6-46f5-a4f0-5f4eaa6f3663',
+        },
+        {
+          type: 'RECTANGLE',
+          x: 41,
+          y: 12,
+          width: 40,
+          height: 24,
+          text: 'Tree',
+          id: 'b1a7315e-2b15-4bc8-a1c6-a042dab44f27',
+        },
+      ],
     },
     actions: [],
     definition: {
@@ -5623,6 +5840,10 @@ ReactDOM.render(<ConnectedComponent />, document.body);`,
         showOnMobile: { value: '{{false}}' },
       },
       properties: {
+        defaultValue: {
+          value:
+            "{{[\t{type: 'RECTANGLE',width: 40,height:24, x:41,y:62,text:'Car'},{type: 'RECTANGLE',width: 40,height:24, x:41,y:12,text:'Tree'}\t]}}",
+        },
         imageUrl: {
           value: `https://burst.shopifycdn.com/photos/three-cars-are-parked-on-stone-paved-street.jpg?width=746&format=pjpg&exif=1&iptc=1`,
         },

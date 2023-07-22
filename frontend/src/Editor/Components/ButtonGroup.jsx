@@ -24,6 +24,7 @@ export const ButtonGroup = function Button({
     disabledState,
     selectedBackgroundColor,
     selectedTextColor,
+    boxShadow,
   } = styles;
 
   const computedStyles = {
@@ -34,20 +35,20 @@ export const ButtonGroup = function Button({
   };
 
   const [defaultActive, setDefaultActive] = useState(defaultSelected);
-  const [data, setData] = useState(
-    // eslint-disable-next-line no-unsafe-optional-chaining
-    values?.length <= labels?.length ? [...labels, ...values?.slice(labels?.length)] : labels
-  );
-  // data is used as state to show what to display , club of label+values / values
+  const [data, setData] = useState(values);
+
   useEffect(() => {
     setDefaultActive(defaultSelected);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(defaultSelected)]);
 
   useEffect(() => {
+    let dataset = values;
     if (labels?.length < values?.length) {
-      // eslint-disable-next-line no-unsafe-optional-chaining
-      setData([...labels, ...values?.slice(labels?.length)]);
+      labels.map((item, index) => {
+        dataset[index] = item;
+      });
+      setData(dataset);
     } else {
       setData(labels);
     }
@@ -94,8 +95,9 @@ export const ButtonGroup = function Button({
               backgroundColor: defaultActive?.includes(values[index]) ? selectedBackgroundColor : backgroundColor,
               color: defaultActive?.includes(values[index]) ? selectedTextColor : textColor,
               transition: 'all .1s ease',
+              boxShadow,
             }}
-            key={item}
+            key={index}
             disabled={disabledState}
             className={'group-button overflow-hidden'}
             onClick={(event) => {

@@ -4,7 +4,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { useTranslation } from 'react-i18next';
 
-export function GotoApp({ getAllApps, currentState, event, handlerChanged, eventIndex, darkMode }) {
+export function GotoApp({ getAllApps, event, handlerChanged, eventIndex, darkMode }) {
   const queryParamChangeHandler = (index, key, value) => {
     event.queryParams[index][key] = value;
     handlerChanged(eventIndex, 'queryParams', event.queryParams);
@@ -69,21 +69,17 @@ export function GotoApp({ getAllApps, currentState, event, handlerChanged, event
           <div key={index} className="row input-group mt-1">
             <div className="col">
               <CodeHinter
-                currentState={currentState}
                 initialValue={event.queryParams[index][0]}
                 onChange={(value) => queryParamChangeHandler(index, 0, value)}
                 mode="javascript"
-                className="form-control codehinter-query-editor-input"
                 height={30}
               />
             </div>
             <div className="col">
               <CodeHinter
-                currentState={currentState}
                 initialValue={event.queryParams[index][1]}
                 onChange={(value) => queryParamChangeHandler(index, 1, value)}
                 mode="javascript"
-                className="form-control codehinter-query-editor-input"
                 height={30}
               />
             </div>

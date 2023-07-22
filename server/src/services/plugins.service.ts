@@ -185,9 +185,11 @@ export class PluginsService {
         fetch(`${host}/marketplace-assets/${id}/lib/manifest.json`),
       ]);
 
-      const files = promises.map((promise) => {
+      const files = promises.map(async (promise) => {
         if (!promise.ok) throw new InternalServerErrorException();
-        return promise.arrayBuffer();
+        const arrayBuffer = await promise.arrayBuffer();
+        const textDecoder = new TextDecoder();
+        return textDecoder.decode(arrayBuffer);
       });
 
       const [indexFile, operationsFile, iconFile, manifestFile] = await Promise.all(files);
@@ -235,15 +237,21 @@ export class PluginsService {
   async install(body: CreatePluginDto) {
     const { id, repo } = body;
     const [index, operations, icon, manifest, version] = await this.fetchPluginFiles(id, repo);
+    let shouldCreate = false;
 
     try {
       // validate manifest and operations as JSON files
       const validManifest = JSON.parse(manifest.toString()) ? manifest : null;
       const validOperations = JSON.parse(operations.toString()) ? operations : null;
+
+      if (validManifest && validOperations) {
+        shouldCreate = true;
+      }
     } catch (error) {
       throw new InternalServerErrorException('Invalid plugin files');
     }
-    return await this.create(body, version, { index, operations, icon, manifest });
+
+    return shouldCreate && (await this.create(body, version, { index, operations, icon, manifest }));
   }
 
   async update(id: string, body: UpdatePluginDto) {

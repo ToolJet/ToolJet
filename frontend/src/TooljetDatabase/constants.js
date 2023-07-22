@@ -19,4 +19,5 @@ export const operators = [
   { value: 'match', label: 'match' },
   { value: 'imatch', label: 'imatch' },
   { value: 'in', label: 'in' },
+  { value: 'is', label: 'is' },
 ];

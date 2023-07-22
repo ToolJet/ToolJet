@@ -5,7 +5,7 @@ import Select from '@/_ui/Select';
 import { uniqueId } from 'lodash';
 import { useMounted } from '@/_hooks/use-mount';
 
-export const CreateRow = React.memo(({ currentState, optionchanged, options, darkMode }) => {
+export const CreateRow = React.memo(({ optionchanged, options, darkMode }) => {
   const mounted = useMounted();
   const { columns } = useContext(TooljetDatabaseContext);
   const [columnOptions, setColumnOptions] = useState(options['create_row'] || {});
@@ -13,7 +13,7 @@ export const CreateRow = React.memo(({ currentState, optionchanged, options, dar
   useEffect(() => {
     mounted && optionchanged('create_row', columnOptions);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columnOptions, optionchanged]);
+  }, [columnOptions]);
 
   function handleColumnOptionChange(columnOptions) {
     setColumnOptions(columnOptions);
@@ -94,7 +94,6 @@ export const CreateRow = React.memo(({ currentState, optionchanged, options, dar
 
           <div className="field col-4">
             <CodeHinter
-              currentState={currentState}
               initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
               className="codehinter-plugins"
               theme={darkMode ? 'monokai' : 'default'}

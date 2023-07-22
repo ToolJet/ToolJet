@@ -1,11 +1,15 @@
-import React, { useMemo, useState } from 'react';
-import { LeftSidebarItem } from './SidebarItem';
+import React, { useMemo } from 'react';
 import { Button, HeaderSection } from '@/_ui/LeftSidebar';
 import JSONTreeViewer from '@/_ui/JSONTreeViewer';
 import _ from 'lodash';
 import { toast } from 'react-hot-toast';
 import { getSvgIcon } from '@/_helpers/appUtils';
-import Popover from '@/_ui/Popover';
+
+import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
+import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 const staticDataSources = [
   { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
@@ -16,19 +20,22 @@ const staticDataSources = [
 
 export const LeftSidebarInspector = ({
   darkMode,
-  currentState,
-  selectedSidebarItem,
-  setSelectedSidebarItem,
   appDefinition,
   setSelectedComponent,
   removeComponent,
   runQuery,
-  dataSources,
-  popoverContentHeight,
+  setPinned,
+  pinned,
 }) => {
-  const [pinned, setPinned] = useState(false);
+  const dataSources = useGlobalDataSources();
+  const dataQueries = useDataQueries();
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
-  const queryDefinitions = appDefinition['queries'];
   const selectedComponent = React.useMemo(() => {
     return {
       id: appDefinition['selectedComponent']?.id,
@@ -36,11 +43,11 @@ export const LeftSidebarInspector = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appDefinition['selectedComponent']]);
-
+  const currentState = useCurrentState();
   const queries = {};
 
-  if (!_.isEmpty(queryDefinitions)) {
-    queryDefinitions.forEach((query) => {
+  if (!_.isEmpty(dataQueries)) {
+    dataQueries.forEach((query) => {
       queries[query.name] = { id: query.id };
     });
   }
@@ -51,6 +58,8 @@ export const LeftSidebarInspector = ({
     delete jsontreeData.errors;
     delete jsontreeData.client;
     delete jsontreeData.server;
+    delete jsontreeData.actions;
+    delete jsontreeData.succededQuery;
 
     //*Sorted components and queries alphabetically
     const sortedComponents = Object.keys(jsontreeData['components'])
@@ -143,7 +152,9 @@ export const LeftSidebarInspector = ({
       for: 'components',
       actions: [
         { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
-        { name: 'Delete Widget', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' },
+        ...(!isVersionReleased
+          ? [{ name: 'Delete Component', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' }]
+          : []),
       ],
       enableForAllChildren: false,
       enableFor1stLevelChildren: true,
@@ -154,8 +165,11 @@ export const LeftSidebarInspector = ({
     },
   ];
 
-  const popoverContent = (
-    <div className={`left-sidebar-inspector`} style={{ resize: 'horizontal', minWidth: 288 }}>
+  return (
+    <div
+      className={`left-sidebar-inspector ${darkMode && 'dark-theme'}`}
+      style={{ resize: 'horizontal', minWidth: 288 }}
+    >
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Inspector">
           <div className="d-flex justify-content-end">
@@ -184,7 +198,6 @@ export const LeftSidebarInspector = ({
           enableCopyToClipboard={true}
           useActions={true}
           actionsList={callbackActions}
-          currentState={appDefinition}
           actionIdentifier="id"
           expandWithLabels={true}
           selectedComponent={selectedComponent}
@@ -192,26 +205,5 @@ export const LeftSidebarInspector = ({
         />
       </div>
     </div>
-  );
-
-  return (
-    <Popover
-      handleToggle={(open) => {
-        if (!open) setSelectedSidebarItem('');
-      }}
-      {...(pinned && { open: true })}
-      side="right"
-      popoverContentClassName="p-0 sidebar-h-100-popover sidebar-h-100-popover-inspector"
-      popoverContent={popoverContent}
-      popoverContentHeight={popoverContentHeight}
-    >
-      <LeftSidebarItem
-        selectedSidebarItem={selectedSidebarItem}
-        onClick={() => setSelectedSidebarItem('inspect')}
-        icon="inspect"
-        className={`left-sidebar-item left-sidebar-layout left-sidebar-inspector`}
-        tip="Inspector"
-      />
-    </Popover>
   );
 };

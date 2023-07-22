@@ -1,6 +1,6 @@
 import { postgreSqlSelector } from "Selectors/postgreSql";
 import { postgreSqlText } from "Texts/postgreSql";
-import { commonWidgetText } from "Texts/common";
+import { commonWidgetText, commonText } from "Texts/common";
 import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import {
   addQuery,
@@ -16,19 +16,17 @@ import {
 describe("Data sources", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.createApp();
+    // cy.createApp();
   });
 
   it("Should verify elements on connection form", () => {
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
-    cy.get(postgreSqlSelector.labelDataSources).should(
-      "have.text",
-      postgreSqlText.labelDataSources
-    );
-
-    cy.get(postgreSqlSelector.addDatasourceLink)
-      .should("have.text", postgreSqlText.labelAddDataSource)
+    cy.get(commonSelectors.globalDataSourceIcon).click();
+cy.reload();
+    cy.get(commonSelectors.addNewDataSourceButton)
+      .verifyVisibleElement("have.text", commonText.addNewDataSourceButton)
       .click();
+
+
 
     cy.get(postgreSqlSelector.allDatasourceLabelAndCount).should(
       "have.text",
@@ -51,7 +49,7 @@ describe("Data sources", () => {
       postgreSqlText.postgreSQL
     );
     cy.get("[data-cy*='data-source-']")
-      .eq(0)
+      .eq(1)
       .should("contain", postgreSqlText.postgreSQL);
     cy.get(postgreSqlSelector.postgresDataSource).click();
 
@@ -164,7 +162,6 @@ describe("Data sources", () => {
       postgreSqlText.toastDSAdded
     );
 
-    cy.get(postgreSqlSelector.leftSidebarDatasourceButton).click();
     cy.get(postgreSqlSelector.datasourceLabelOnList)
       .should("have.text", postgreSqlText.psqlName)
       .find("button")

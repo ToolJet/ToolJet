@@ -74,12 +74,6 @@ module.exports = {
       links: [
         {
           title: 'Docs',
-          items: [
-            {
-              label: 'Tutorial',
-              to: '/docs/category/tutorial',
-            },
-          ],
         },
         {
           title: 'Community',
@@ -127,7 +121,7 @@ module.exports = {
           // Please change this to your repo.
           editUrl: 'https://github.com/ToolJet/Tooljet/blob/develop/docs/',
           includeCurrentVersion: false,
-          lastVersion: '2.4.0',
+          lastVersion: '2.10.0',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

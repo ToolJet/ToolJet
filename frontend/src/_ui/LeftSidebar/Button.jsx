@@ -17,8 +17,8 @@ const Button = ({
   disabled = false,
   isLoading = false,
 }) => {
-  const baseHeight = size === 'sm' ? 28 : 40;
-  const baseWidth = size === 'sm' ? 92 : 150;
+  const baseHeight = size === 'sm' ? 28 : size === 'md' ? 36 : 40;
+  const baseWidth = size === 'sm' ? 92 : size === 'md' ? 100 : 150;
 
   const diabledStyles = {
     ...defaultDisabledStyles,
@@ -57,7 +57,12 @@ const Content = ({ title = null, iconSrc = null, direction = 'left', dataCy }) =
   ) : typeof title === 'function' ? (
     title()
   ) : (
-    <span data-cy={`${String(title).toLowerCase().replace(/\s+/g, '-')}-option-button`} className="mx-1">
+    <span
+      data-cy={`${String(typeof title === 'function' ? title() : title)
+        .toLowerCase()
+        .replace(/\s+/g, '-')}-option-button`}
+      className="mx-1"
+    >
       {title}
     </span>
   );
@@ -66,12 +71,14 @@ const Content = ({ title = null, iconSrc = null, direction = 'left', dataCy }) =
   return content;
 };
 
-const UnstyledButton = ({ children, onClick, classNames = '', styles = {}, disabled = false }) => {
+const UnstyledButton = ({ children, onClick, classNames = '', styles = {}, disabled = false, darkMode = false }) => {
+  const cursorNotPointer = onClick === undefined && { cursor: 'default' };
+
   return (
     <div
       type="button"
-      style={{ ...styles, ...(disabled ? defaultDisabledStyles : {}) }}
-      className={`unstyled-button ${classNames} ${disabled && 'disabled'}`}
+      style={{ ...styles, ...(disabled ? defaultDisabledStyles : {}), ...cursorNotPointer }}
+      className={`unstyled-button ${classNames} ${disabled && 'disabled'} ${darkMode && 'dark'}`}
       onClick={onClick}
     >
       {children}

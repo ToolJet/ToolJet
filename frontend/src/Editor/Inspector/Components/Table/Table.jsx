@@ -195,6 +195,7 @@ class TableComponent extends React.Component {
                 { name: 'Toggle switch', value: 'toggle' },
                 { name: 'Date Picker', value: 'datepicker' },
                 { name: 'Image', value: 'image' },
+                { name: 'Link', value: 'link' },
               ]}
               value={column.columnType}
               search={true}
@@ -436,6 +437,7 @@ class TableComponent extends React.Component {
                     },
                   },
                 }}
+                hideEmptyEventsAlert={true}
                 componentMeta={{ events: { onChange: { displayName: 'On change' } } }}
                 currentState={this.props.currentState}
                 dataQueries={this.props.dataQueries}
@@ -669,8 +671,24 @@ class TableComponent extends React.Component {
               </div>
             </>
           )}
+          {column.columnType === 'link' && (
+            <div className="field mb-2">
+              <ProgramaticallyHandleToggleSwitch
+                label="Link target"
+                currentState={this.state.currentState}
+                index={index}
+                darkMode={this.props.darkMode}
+                callbackFunction={this.onColumnItemChange}
+                property="linkTarget"
+                props={column}
+                component={this.props.component}
+                paramMeta={{ type: 'select', displayName: 'Link Target' }}
+                paramType="properties"
+              />
+            </div>
+          )}
 
-          {column.columnType !== 'image' && (
+          {!['image', 'link'].includes(column.columnType) && (
             <ProgramaticallyHandleToggleSwitch
               label="make editable"
               currentState={this.state.currentState}
@@ -684,6 +702,19 @@ class TableComponent extends React.Component {
               paramType="properties"
             />
           )}
+
+          <ProgramaticallyHandleToggleSwitch
+            label="Column visibility"
+            currentState={this.state.currentState}
+            index={index}
+            darkMode={this.props.darkMode}
+            callbackFunction={this.onColumnItemChange}
+            property="columnVisibility"
+            props={column}
+            component={this.props.component}
+            paramMeta={{ type: 'toggle', displayName: 'Column visibility' }}
+            paramType="properties"
+          />
         </Popover.Body>
       </Popover>
     );
@@ -894,7 +925,7 @@ class TableComponent extends React.Component {
   }
 
   getPopoverFieldSource = (column, field) =>
-    `widget/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
+    `component/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
 
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
@@ -923,7 +954,11 @@ class TableComponent extends React.Component {
     const useDynamicColumn = component.component.definition.properties.useDynamicColumn?.value
       ? resolveReferences(component.component.definition.properties.useDynamicColumn?.value, currentState) ?? false
       : false;
-
+    //from app definition values are of string data type if defined or else,undefined
+    const allowSelection = component.component.definition.properties?.allowSelection?.value
+      ? resolveReferences(component.component.definition.properties.allowSelection?.value, currentState)
+      : resolveReferences(component.component.definition.properties.highlightSelectedRow.value, currentState) ||
+        resolveReferences(component.component.definition.properties.showBulkSelector.value, currentState);
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
     };
@@ -1074,10 +1109,11 @@ class TableComponent extends React.Component {
       ...(enabledSort ? ['serverSideSort'] : []),
       'showDownloadButton',
       'showFilterButton',
+      'showAddNewRowButton',
       ...(displayServerSideFilter ? ['serverSideFilter'] : []),
       'showBulkUpdateActions',
-      'showBulkSelector',
-      'highlightSelectedRow',
+      'allowSelection',
+      ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow'] : []),
       'hideColumnSelectorButton',
     ];
 

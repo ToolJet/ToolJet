@@ -6,6 +6,8 @@ import { SettingsModal } from './SettingsModal';
 import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 import { toast } from 'react-hot-toast';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const PageHandler = ({
   darkMode,
@@ -13,7 +15,7 @@ export const PageHandler = ({
   switchPage,
   deletePage,
   renamePage,
-  // clonePage,
+  clonePage,
   hidePage,
   unHidePage,
   homePageId,
@@ -21,11 +23,11 @@ export const PageHandler = ({
   updateHomePage,
   updatePageHandle,
   updateOnPageLoadEvents,
-  currentState,
   apps,
   pages,
   components,
-  dataQueries,
+  pinPagesPopover,
+  haveUserPinned,
 }) => {
   const isHomePage = page.id === homePageId;
   const isSelected = page.id === currentPageId;
@@ -36,7 +38,12 @@ export const PageHandler = ({
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
   const handleClose = () => {
     setShowEditModal(false);
     setShowPagehandlerMenu(true);
@@ -73,9 +80,9 @@ export const PageHandler = ({
         showSettings();
         break;
 
-      // case 'duplicate-page':
-      //   clonePage(page.id);
-      //   break;
+      case 'clone-page':
+        clonePage(page.id);
+        break;
 
       case 'hide-page':
         hidePage(page.id);
@@ -152,7 +159,7 @@ export const PageHandler = ({
             )}
           </div>
           <div className="col-auto">
-            {(isHovered || isSelected) && (
+            {(isHovered || isSelected) && !isVersionReleased && (
               <PagehandlerMenu
                 page={page}
                 darkMode={darkMode}
@@ -174,14 +181,16 @@ export const PageHandler = ({
             <SettingsModal
               page={page}
               show={showSettingsModal}
-              handleClose={() => setShowSettingsModal(false)}
+              handleClose={() => {
+                setShowSettingsModal(false);
+                !haveUserPinned && pinPagesPopover(false);
+              }}
               darkMode={darkMode}
               updateOnPageLoadEvents={updateOnPageLoadEvents}
-              currentState={currentState}
               apps={apps}
               pages={pages}
               components={components}
-              dataQueries={dataQueries}
+              pinPagesPopover={pinPagesPopover}
             />
           </div>
         </div>

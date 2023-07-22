@@ -1,10 +1,18 @@
 import React from 'react';
 import cx from 'classnames';
 import { Tooltip } from 'react-tooltip';
+import { useEditorStore } from '@/_stores/editorStore';
+import { shallow } from 'zustand/shallow';
 
-function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout, toggleCurrentLayout }) {
+function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
-
+  const { currentLayout, toggleCurrentLayout } = useEditorStore(
+    (state) => ({
+      currentLayout: state.currentLayout,
+      toggleCurrentLayout: state.actions.toggleCurrentLayout,
+    }),
+    shallow
+  );
   return (
     <div className="editor-header-actions">
       <div style={{ borderRadius: 6, marginRight: 12 }}>
@@ -56,7 +64,7 @@ function HeaderActions({ handleUndo, canUndo, handleRedo, canRedo, currentLayout
                 fillRule="evenodd"
                 clipRule="evenodd"
                 d="M6.86328 3.12939C6.44907 3.12939 6.11328 3.46518 6.11328 3.87939V14.3794C6.11328 14.7936 6.44907 15.1294 6.86328 15.1294H12.8633C13.2775 15.1294 13.6133 14.7936 13.6133 14.3794V3.87939C13.6133 3.46518 13.2775 3.12939 12.8633 3.12939H11.3633C11.3633 3.54361 11.0275 3.87939 10.6133 3.87939H9.11328C8.69907 3.87939 8.36328 3.54361 8.36328 3.12939H6.86328ZM4.61328 3.87939C4.61328 2.63675 5.62064 1.62939 6.86328 1.62939H12.8633C14.1059 1.62939 15.1133 2.63675 15.1133 3.87939V14.3794C15.1133 15.622 14.1059 16.6294 12.8633 16.6294H6.86328C5.62064 16.6294 4.61328 15.622 4.61328 14.3794V3.87939ZM9.86328 12.1294C10.2775 12.1294 10.6133 12.4652 10.6133 12.8794V12.8869C10.6133 13.3011 10.2775 13.6369 9.86328 13.6369C9.44907 13.6369 9.11328 13.3011 9.11328 12.8869V12.8794C9.11328 12.4652 9.44907 12.1294 9.86328 12.1294Z"
-                fill="#889096"
+                fill="#11181C"
               />
             </svg>
           </button>

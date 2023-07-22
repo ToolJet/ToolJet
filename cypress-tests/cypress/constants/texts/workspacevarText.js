@@ -10,7 +10,7 @@ export const workspaceVarText = {
   encryptionToggleLabel: "Enable encryption",
   addVariableButton: "Add variable",
   workspaceVarTableNameHeader: "Name",
-  workspaceVarTableValueHeader:"Value",
+  workspaceVarTableValueHeader: "Value",
   workspaceVarTableTypeHeader: "Type",
   workspaceVarCreatedToast: "Variable has been created",
   workspaceVarUpdatedToast: "Variable has been updated",
