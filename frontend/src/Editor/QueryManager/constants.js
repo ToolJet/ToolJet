@@ -2,7 +2,7 @@ export const staticDataSources = [
   { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
   { kind: 'restapi', id: 'null', name: 'REST API' },
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
-  { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
+  { kind: 'workflows', id: 'null', name: 'Run Workflow' },
 ];
 
 export const tabs = ['JSON', 'Raw'];
@@ -90,4 +90,5 @@ export const defaultSources = {
   runjs: { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
   tooljetdb: { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
   runpy: { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
+  workflows: { kind: 'workflows', id: 'null', name: 'Run Workflow' },
 };
