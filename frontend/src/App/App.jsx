@@ -402,9 +402,9 @@ class AppComponent extends React.Component {
                 exact
                 path="/:workspaceId/workflows"
                 element={
-                  <PrivateRoute>
+                  <AdminRoute>
                     <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'workflow'} />
-                  </PrivateRoute>
+                  </AdminRoute>
                 }
               />
               <Route

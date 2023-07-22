@@ -54,36 +54,40 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     </Link>
                   </ToolTip>
                 </li>
-                <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
-                  <ToolTip message="Workflows" placement="right">
-                    <Link
-                      to={getPrivateRoute('workflows')}
-                      className={`tj-leftsidebar-icon-items  ${
-                        router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
-                      }`}
-                      data-cy="icon-database"
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        height: 'fit-content',
-                        gap: '4px',
-                        padding: '8px',
-                      }}
-                    >
-                      <SolidIcon
-                        name="workflows"
-                        fill={
+
+                {admin && (
+                  <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
+                    <ToolTip message="Workflows" placement="right">
+                      <Link
+                        to={getPrivateRoute('workflows')}
+                        className={`tj-leftsidebar-icon-items  ${
                           router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
-                            ? '#3E63DD'
-                            : darkMode
-                            ? '#4C5155'
-                            : '#C1C8CD'
-                        }
-                      />
-                      <Beta className="workflows-beta-tag" />
-                    </Link>
-                  </ToolTip>
-                </li>
+                        }`}
+                        data-cy="icon-database"
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          height: 'fit-content',
+                          gap: '4px',
+                          padding: '8px',
+                        }}
+                      >
+                        <SolidIcon
+                          name="workflows"
+                          fill={
+                            router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
+                              ? '#3E63DD'
+                              : darkMode
+                              ? '#4C5155'
+                              : '#C1C8CD'
+                          }
+                        />
+                        <Beta className="workflows-beta-tag" />
+                      </Link>
+                    </ToolTip>
+                  </li>
+                )}
+
                 {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
                   <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
                     <ToolTip message="Database" placement="right">
