@@ -8,17 +8,13 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUtils';
 
-import {
-  useDataQueriesActions,
-  useQueryCreationLoading,
-  useQueryUpdationLoading,
-  useDataQueries,
-} from '@/_stores/dataQueriesStore';
+import { useDataQueriesActions, useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
 import {
   useSelectedQuery,
   useSelectedDataSource,
   usePreviewLoading,
   useShowCreateQuery,
+  useNameInputFocussed,
 } from '@/_stores/queryPanelStore';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -26,7 +22,7 @@ import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
 
-export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options, editorRef, onNameChange }, ref) => {
+export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, ref) => {
   const { renameQuery, updateDataQueryStatus } = useDataQueriesActions();
   const selectedQuery = useSelectedQuery();
   const isCreationInProcess = useQueryCreationLoading();
@@ -47,6 +43,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
     if (selectedQuery?.name) {
       setShowCreateQuery(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedQuery?.name]);
 
   const buttonDisabled = isUpdationInProcess || isCreationInProcess;
@@ -158,13 +155,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, currentState, options,
   return (
     <div className="row header">
       <div className="col font-weight-500">
-        {!selectedQuery && showCreateQuery ? (
-          <NewQueryNameInput onNameChange={onNameChange} darkMode={darkMode} isFocussed={showCreateQuery} />
-        ) : selectedQuery ? (
-          <NameInput onInput={executeQueryNameUpdation} value={queryName} darkMode={darkMode} />
-        ) : (
-          ''
-        )}
+        {selectedQuery && <NameInput onInput={executeQueryNameUpdation} value={queryName} darkMode={darkMode} />}
       </div>
       <div className="query-header-buttons me-3">{renderButtons()}</div>
     </div>
@@ -189,42 +180,8 @@ const PreviewButton = ({ buttonLoadingState, onClick }) => {
   );
 };
 
-const NewQueryNameInput = ({ darkMode, onNameChange, isFocussed }) => {
-  const dataQueries = useDataQueries();
-  const [value, setValue] = useState();
-
-  useEffect(() => {
-    const name = computeQueryName();
-    setValue(name);
-    onNameChange(name);
-  }, []);
-
-  const handleNameInput = (name) => {
-    if (dataQueries.find((query) => query.name === name) !== undefined) {
-      onNameChange(null);
-      return toast.error('Query name taken');
-    }
-    onNameChange(name);
-  };
-
-  const computeQueryName = () => {
-    let currentNumber = dataQueries.length + 1;
-
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const newName = `query_${currentNumber}`;
-      if (dataQueries.find((query) => query.name === newName) === undefined) {
-        return newName;
-      }
-      currentNumber += 1;
-    }
-  };
-
-  return <NameInput onInput={handleNameInput} value={value} darkMode={darkMode} isFocussed={isFocussed} />;
-};
-
-const NameInput = ({ onInput, value, darkMode, isFocussed: _isFocussed }) => {
-  const [isFocussed, setIsFocussed] = useState(false);
+const NameInput = ({ onInput, value, darkMode }) => {
+  const [isFocussed, setIsFocussed] = useNameInputFocussed(false);
   const [name, setName] = useState(value);
   const isVersionReleased = useAppVersionStore((state) => state.isVersionReleased);
   const inputRef = useRef();
@@ -232,10 +189,6 @@ const NameInput = ({ onInput, value, darkMode, isFocussed: _isFocussed }) => {
   useEffect(() => {
     setName(value);
   }, [value]);
-
-  useEffect(() => {
-    setIsFocussed(_isFocussed);
-  }, [_isFocussed]);
 
   useEffect(() => {
     if (isFocussed) {

@@ -6,6 +6,7 @@ import { capitalize, cloneDeep, isEmpty } from 'lodash';
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
 import DataSourceLister from './DataSourceLister';
+import DataSourcePicker from './DataSourcePicker';
 import { Transformation } from './Transformation';
 import Preview from './Preview';
 import { ChangeDataSource } from './ChangeDataSource';
@@ -21,8 +22,8 @@ import {
   useSelectedDataSource,
   useQueryPanelActions,
   useShowCreateQuery,
+  useNameInputFocussed,
 } from '@/_stores/queryPanelStore';
-import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
@@ -36,7 +37,6 @@ export const QueryManagerBody = ({
   appDefinition,
   setOptions,
   appId,
-  newQueryName,
 }) => {
   const { t } = useTranslation();
   const dataQueries = useDataQueries();
@@ -46,7 +46,8 @@ export const QueryManagerBody = ({
   const selectedDataSource = useSelectedDataSource();
   const { setPreviewData } = useQueryPanelActions();
   const { changeDataQuery, updateDataQuery, createDataQuery } = useDataQueriesActions();
-  const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
+  const [setShowCreateQuery] = useShowCreateQuery();
+  const [, setNameInputFocussed] = useNameInputFocussed(false);
 
   const [dataSourceMeta, setDataSourceMeta] = useState(null);
   /* - Added the below line to cause re-rendering when the query is switched
@@ -81,6 +82,20 @@ export const QueryManagerBody = ({
     defaultOptions.current = selectedQuery?.options && JSON.parse(JSON.stringify(selectedQuery?.options));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedQuery]);
+
+  const computeQueryName = (kind) => {
+    const currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
+    let currentNumber = currentQueriesForKind.length + 1;
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const newName = `${kind}${currentNumber}`;
+      if (dataQueries.find((query) => query.name === newName) === undefined) {
+        return newName;
+      }
+      currentNumber += 1;
+    }
+  };
 
   const changeDataSource = (source) => {
     const isSchemaUnavailable = Object.keys(schemaUnavailableOptions).includes(source.kind);
@@ -119,8 +134,8 @@ export const QueryManagerBody = ({
 
     setOptions({ ...newOptions });
 
-    createDataQuery(appId, editingVersionId, options, source.kind, newQueryName, source, false);
-    setShowCreateQuery(false);
+    createDataQuery(appId, editingVersionId, options, source.kind, computeQueryName(source.kind), source, false);
+    setNameInputFocussed(true);
   };
 
   // Clear the focus field value from options
@@ -165,28 +180,19 @@ export const QueryManagerBody = ({
   };
 
   const renderDataSourcesList = () => {
-    if (!showCreateQuery) {
-      return '';
-    }
-
     return (
       <div
         className={cx(`datasource-picker`, {
           'disabled ': isVersionReleased,
         })}
       >
-        <label className="form-label col-md-3 pb-1" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
-          Datasource
-        </label>
-
-        <DataSourceLister
+        <DataSourcePicker
           dataSources={dataSources}
           staticDataSources={staticDataSources}
           globalDataSources={globalDataSources}
           changeDataSource={changeDataSource}
           handleBackButton={handleBackButton}
           darkMode={darkMode}
-          isDisabled={!newQueryName}
         />
       </div>
     );

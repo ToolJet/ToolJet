@@ -18,7 +18,6 @@ const QueryManager = ({ mode, dataQueriesChanged, appId, darkMode, apps, allComp
   const isUpdationInProcess = useQueryUpdationLoading();
   const selectedQuery = useSelectedQuery();
   const { setSelectedDataSource, setQueryToBeRun } = useQueryPanelActions();
-  const [newQueryName, setNewQueryName] = useState('');
 
   const [options, setOptions] = useState({});
   const mounted = useRef(false);
@@ -67,13 +66,7 @@ const QueryManager = ({ mode, dataQueriesChanged, appId, darkMode, apps, allComp
         'd-none': loadingDataSources,
       })}
     >
-      <QueryManagerHeader
-        darkMode={darkMode}
-        options={options}
-        editorRef={editorRef}
-        onNameChange={setNewQueryName}
-        appId={appId}
-      />
+      <QueryManagerHeader darkMode={darkMode} options={options} editorRef={editorRef} appId={appId} />
       <QueryManagerBody
         darkMode={darkMode}
         options={options}
@@ -82,7 +75,6 @@ const QueryManager = ({ mode, dataQueriesChanged, appId, darkMode, apps, allComp
         appId={appId}
         appDefinition={appDefinition}
         setOptions={setOptions}
-        newQueryName={newQueryName}
       />
     </div>
   );

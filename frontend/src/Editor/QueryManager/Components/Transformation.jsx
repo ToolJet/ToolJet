@@ -191,9 +191,9 @@ return [row for row in data if row['amount'] > 1000]
         </div>
       </div>
       <br></br>
-      <Row>
-        <div className="col-md-3"></div>
-        <div className="col-md-9">
+      <div className="d-flex">
+        <div className="form-label"></div>
+        <div className="col flex-grow-1">
           {enableTransformation && (
             <div
               className="rounded-3"
@@ -269,7 +269,7 @@ return [row for row in data if row['amount'] > 1000]
             </div>
           )}
         </div>
-      </Row>
+      </div>
     </div>
   );
 };

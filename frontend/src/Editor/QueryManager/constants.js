@@ -1,8 +1,8 @@
 export const staticDataSources = [
-  { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
-  { kind: 'restapi', id: 'null', name: 'REST API' },
-  { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
-  { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
+  { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database', shortName: 'ToolJet DB' },
+  { kind: 'restapi', id: 'null', name: 'REST API', shortName: 'REST API' },
+  { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code', shortName: 'JavaScript' },
+  { kind: 'runpy', id: 'runpy', name: 'Run Python code', shortName: 'Python' },
 ];
 
 export const tabs = ['JSON', 'Raw'];
