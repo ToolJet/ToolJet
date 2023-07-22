@@ -25,6 +25,7 @@ export class AppConfigService {
       'TOOLJET_HOST',
       'SUB_PATH',
       'ENABLE_MARKETPLACE_FEATURE',
+      'ENABLE_WORKFLOWS_FEATURE',
       'ENABLE_TOOLJET_DB',
       'LANGUAGE',
       'ENABLE_PRIVATE_APP_EMBED',

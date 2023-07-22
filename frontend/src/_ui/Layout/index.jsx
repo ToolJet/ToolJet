@@ -18,6 +18,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
   const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
+  const workflowsEnabled = admin && window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
 
   return (
     <div className="row m-auto">
@@ -55,7 +56,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                   </ToolTip>
                 </li>
 
-                {admin && (
+                {workflowsEnabled && (
                   <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
                     <ToolTip message="Workflows" placement="right">
                       <Link

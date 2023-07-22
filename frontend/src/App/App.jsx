@@ -36,7 +36,6 @@ import { AppLoader } from '@/AppLoader';
 import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
-import WorkflowEditor from '../WorkflowEditor';
 
 const AppWrapper = (props) => {
   return (
@@ -398,15 +397,18 @@ class AppComponent extends React.Component {
                   </PrivateRoute>
                 }
               />
-              <Route
-                exact
-                path="/:workspaceId/workflows"
-                element={
-                  <AdminRoute>
-                    <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'workflow'} />
-                  </AdminRoute>
-                }
-              />
+              {window.public_config?.ENABLE_WORKFLOWS_FEATURE === 'true' && (
+                <Route
+                  exact
+                  path="/:workspaceId/workflows"
+                  element={
+                    <AdminRoute>
+                      <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'workflow'} />
+                    </AdminRoute>
+                  }
+                />
+              )}
+
               <Route
                 path="*"
                 render={() => {
