@@ -11,7 +11,7 @@ In this how-to guide, we will import a few JavaScript libraries and use it in th
 You can import any of the available libraries using their **CDN**. Find free CDN of the open source projects at **[jsDelivr](https://www.jsdelivr.com/)**
 :::
 
-- Create a new application and then create a new RunPy query from the query panel.
+- Create a new application and then create a new RunJS query from the query panel.
     <div style={{textAlign: 'center'}}>
 
     <img className="screenshot-full" src="/img/how-to/import-js/newquery.png" alt="Import external libraries using RunJS" />
