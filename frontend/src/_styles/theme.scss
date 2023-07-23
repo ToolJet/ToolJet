@@ -10737,6 +10737,12 @@ tbody {
 
 .confirm-dialogue-modal {
   background: var(--base);
+
+  .modal-header {
+    background: var(--base);
+    color: var(--slate12);
+    border-bottom: 1px solid var(--slate5);
+  }
 }
 
 .theme-dark {

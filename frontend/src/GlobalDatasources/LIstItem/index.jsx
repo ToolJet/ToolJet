@@ -4,10 +4,12 @@ import { GlobalDataSourcesContext } from '..';
 import { DataSourceTypes } from '../../Editor/DataSourceManager/SourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
+import useUnsavedChanges from '../../_hooks/useUnsavedChanges';
 
 export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedDatasource }) => {
   const { setSelectedDataSource, toggleDataSourceManagerModal, environments, setCurrentEnvironment } =
     useContext(GlobalDataSourcesContext);
+  const { handleActions } = useUnsavedChanges();
 
   const getSourceMetaData = (dataSource) => {
     if (dataSource.pluginId) {
@@ -25,6 +27,14 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
     element.focus();
   };
 
+  const selectDataSource = () => {
+    setSelectedDataSource(dataSource);
+    setCurrentEnvironment(environments[0]);
+    toggleDataSourceManagerModal(true);
+    focusModal();
+    updateSelectedDatasource(dataSource?.name);
+  };
+
   return (
     <div
       key={key}
@@ -34,13 +44,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
     >
       <div
         role="button"
-        onClick={() => {
-          setSelectedDataSource(dataSource);
-          setCurrentEnvironment(environments[0]);
-          toggleDataSourceManagerModal(true);
-          focusModal();
-          updateSelectedDatasource(dataSource?.name);
-        }}
+        onClick={() => handleActions(selectDataSource)}
         className="col d-flex align-items-center overflow-hidden"
         data-cy={`${String(dataSource.name).toLowerCase().replace(/\s+/g, '-')}-button`}
       >

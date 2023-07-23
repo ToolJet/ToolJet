@@ -907,3 +907,36 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
 };
 
 export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
+
+export const deepEqual = (obj1, obj2, excludedKeys = []) => {
+  if (obj1 === obj2) {
+    return true;
+  }
+
+  if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 === null || obj2 === null) {
+    return false;
+  }
+
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+
+  const uniqueKeys = [...new Set([...keys1, ...keys2])];
+
+  for (let key of uniqueKeys) {
+    if (!excludedKeys.includes(key)) {
+      if (!(key in obj1) || !(key in obj2)) {
+        return false;
+      }
+
+      if (typeof obj1[key] === 'object' && typeof obj2[key] === 'object') {
+        if (!deepEqual(obj1[key], obj2[key], excludedKeys)) {
+          return false;
+        }
+      } else if (obj1[key] !== obj2[key]) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+};

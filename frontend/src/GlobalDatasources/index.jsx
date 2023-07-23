@@ -44,6 +44,7 @@ export const GlobalDatasources = (props) => {
   }
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
+    toggleDataSourceManagerModal(false);
     globalDatasourceService
       .getAll()
       .then((data) => {
