@@ -241,6 +241,19 @@ class ManageOrgVarsComponent extends React.Component {
   render() {
     const { isLoading, addingVar, variables, isManageVarDrawerOpen } = this.state;
 
+    const renderDeprecationText =
+      variables?.length > 0 ? (
+        <div class="text-muted">
+          Can&apos;t add or edit workspace variables as we are deprecating them soon. Please use Workspace constant
+          instead.
+        </div>
+      ) : (
+        <div className="text-muted">
+          There are no Workspace variables. Workspace variables are being deprecated soon, so please use Workspace
+          constants instead.
+        </div>
+      );
+
     return (
       <div className="wrapper org-variables-page animation-fade">
         <ConfirmDialog
@@ -268,10 +281,7 @@ class ManageOrgVarsComponent extends React.Component {
                 <div className="workspace-variable-header mb-3">
                   <Alert svg="tj-info-warning" cls="workspace-variables-alert-banner" useDarkMode={false}>
                     <div className="d-flex align-items-center">
-                      <div class="text-muted">
-                        Can&apos;t add or edit workspace variables as we are deprecating them soon. Please use workspace
-                        constant instead.
-                      </div>
+                      {renderDeprecationText}
                       <div>
                         <Button
                           onClick={this.props.goTooOrgConstantsDashboard}
@@ -314,7 +324,7 @@ class ManageOrgVarsComponent extends React.Component {
               />
             ) : (
               <>
-                {variables?.length > 0 ? (
+                {variables?.length > 0 && (
                   <VariablesTable
                     isLoading={isLoading}
                     variables={variables}
@@ -322,13 +332,6 @@ class ManageOrgVarsComponent extends React.Component {
                     onEditBtnClicked={this.onEditBtnClicked}
                     onDeleteBtnClicked={this.onDeleteBtnClicked}
                   />
-                ) : (
-                  <span className="no-vars-text" data-cy="no-variable-text">
-                    {this.props.t(
-                      'header.organization.menus.manageSSO.environmentVar.noEnvConfig',
-                      `You haven't configured any environment variables, press the 'Add new variable' button to create one`
-                    )}
-                  </span>
                 )}
               </>
             )}

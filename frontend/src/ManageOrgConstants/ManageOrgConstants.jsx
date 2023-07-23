@@ -309,7 +309,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                     }}
                   >
                     <div class="text-muted">
-                      To resolve a workspace constant use{' '}
+                      To resolve a Workspace constant use{' '}
                       <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{constants.access_token}}'}</strong>
                     </div>
                     <div>
