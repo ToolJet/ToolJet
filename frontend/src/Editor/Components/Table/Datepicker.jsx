@@ -88,6 +88,7 @@ export const Datepicker = function Datepicker({
           calculatePosition();
           return renderDefault();
         }}
+        closeOnTab={false}
       />
     </div>
   );

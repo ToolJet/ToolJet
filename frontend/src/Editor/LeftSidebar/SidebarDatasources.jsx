@@ -224,14 +224,7 @@ export const LeftSidebarDataSources = ({
   );
 };
 
-const LeftSidebarDataSourcesContainer = ({
-  darkMode,
-  RenderDataSource,
-  dataSources = [],
-
-  setPinned,
-  pinned,
-}) => {
+const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [], setPinned, pinned }) => {
   const { t } = useTranslation();
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({
