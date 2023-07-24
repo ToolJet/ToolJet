@@ -32,9 +32,14 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
 
   useEffect(() => {
     setGlobalDataSourcesOpts(
-      Object.entries(groupBy(globalDataSources, 'kind')).map(([kind, sources]) => ({
+      Object.entries(groupBy(globalDataSources, 'kind')).map(([kind, sources], index) => ({
         label: (
           <div>
+            {index === 0 && (
+              <div className="color-slate9 mb-2 pb-1" style={{ fontWeight: 500, marginTop: '-8px' }}>
+                Global datasources
+              </div>
+            )}
             <DataSourceIcon source={sources?.[0]} height={16} /> <span className="ms-1 small">{kind}</span>
           </div>
         ),
@@ -56,24 +61,26 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
         </span>
       ),
       isDisabled: true,
+      options: [
+        ...allSources.map((source) => ({
+          label: (
+            <div>
+              <DataSourceIcon source={source} height={16} /> <span className="ms-1 small">{source.name}</span>
+            </div>
+          ),
+          value: source.id,
+          source,
+        })),
+      ],
     },
-    ...allSources.map((source) => ({
-      label: (
-        <div>
-          <DataSourceIcon source={source} height={16} /> <span className="ms-1 small">{source.name}</span>
-        </div>
-      ),
-      value: source.id,
-      source,
-    })),
-    {
-      label: (
-        <span className="color-slate9" style={{ fontWeight: 500 }}>
-          Global datasources
-        </span>
-      ),
-      isDisabled: true,
-    },
+    // {
+    //   label: (
+    //     <span className="color-slate9" style={{ fontWeight: 500 }}>
+    //       Global datasources
+    //     </span>
+    //   ),
+    //   isDisabled: true,
+    // },
     ...globalDataSourcesOpts,
   ];
 
@@ -123,6 +130,8 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
             marginTop: 0,
             marginBottom: 0,
             width: '240px',
+            borderTopRightRadius: 0,
+            borderTopLeftRadius: 0,
           }),
           input: (style) => ({ ...style, ...(darkMode ? { color: '#ffffff' } : {}) }),
           groupHeading: (style) => ({

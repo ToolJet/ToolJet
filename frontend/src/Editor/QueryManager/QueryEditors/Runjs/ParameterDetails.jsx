@@ -90,13 +90,14 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
   );
 };
 
-export const PillButton = ({ name, onClick, onRemove, marginBottom, className, btnClassName1, btnClassName2 }) => (
-  <ButtonGroup aria-label="Parameter" className={cx('ms-2', { 'mb-2': marginBottom, ...{ [className]: true } })}>
+export const PillButton = ({ name, onClick, onRemove, marginBottom, className, size }) => (
+  <ButtonGroup
+    aria-label="Parameter"
+    className={cx('ms-2', { 'mb-2': marginBottom, ...(className && { [className]: true }) })}
+  >
     <Button
       size="sm"
-      className={cx('bg-slate3 color-slate12 runjs-parameter-badge', {
-        ...(btnClassName1 && { [btnClassName1]: true }),
-      })}
+      className={cx('bg-slate3 color-slate12 runjs-parameter-badge', { 'py-0 px-2': size === 'sm' })}
       onClick={onClick}
       style={{
         borderTopLeftRadius: '15px',
@@ -113,7 +114,7 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom, className, b
       <Button
         onClick={onRemove}
         size="sm"
-        className={cx('bg-slate3 color-slate12', { ...(btnClassName2 && { [btnClassName2]: true }) })}
+        className={cx('bg-slate3 color-slate12', { 'p-0 pe-1': size === 'sm' })}
         style={{
           borderTopRightRadius: '15px',
           borderBottomRightRadius: '15px',
