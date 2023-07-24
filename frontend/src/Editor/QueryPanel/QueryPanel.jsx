@@ -129,12 +129,6 @@ const QueryPanel = ({
   useEventListener('mousemove', onMouseMove);
   useEventListener('mouseup', onMouseUp);
 
-  const handleAddNewQuery = () => {
-    setSelectedDataSource(null);
-    setSelectedQuery(null);
-    setShowCreateQuery(true);
-  };
-
   const toggleQueryEditor = useCallback(() => {
     queryManagerPreferences.current = { ...queryManagerPreferences.current, isExpanded: !isExpanded };
     localStorage.setItem('queryManagerPreferences', JSON.stringify(queryManagerPreferences.current));
@@ -189,7 +183,6 @@ const QueryPanel = ({
       >
         <div className="row main-row">
           <QueryDataPane
-            handleAddNewQuery={handleAddNewQuery}
             fetchDataQueries={fetchDataQueries}
             darkMode={darkMode}
             editorRef={editorRef}

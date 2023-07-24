@@ -47,14 +47,11 @@ export const LeftSidebarInspector = ({
   const currentState = useCurrentState();
 
   const memoizedJSONData = React.useMemo(() => {
-    // debugger;
     const updatedQueries = {};
     const { queries: currentQueries } = currentState;
     if (!_.isEmpty(dataQueries)) {
       dataQueries.forEach((query) => {
-        if (query.status === 'published') {
-          updatedQueries[query.name] = _.merge(currentQueries[query.name], { id: query.id });
-        }
+        updatedQueries[query.name] = _.merge(currentQueries[query.name], { id: query.id });
       });
     }
     // const data = _.merge(currentState, { queries: updatedQueries });

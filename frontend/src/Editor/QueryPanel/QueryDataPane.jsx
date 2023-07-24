@@ -12,17 +12,13 @@ import cx from 'classnames';
 import { Tooltip } from 'react-tooltip';
 import { useDataQueriesStore, useDataQueries } from '@/_stores/dataQueriesStore';
 import FilterandSortPopup from './FilterandSortPopup';
-import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { shallow } from 'zustand/shallow';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Plus from '@/_ui/Icon/solidIcons/Plus';
+import useShowPopover from '@/_hooks/useShowPopover';
+import DataSourceSelect from '../QueryManager/Components/DataSourceSelect';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
 
-export const QueryDataPane = ({
-  handleAddNewQuery,
-  darkMode,
-  fetchDataQueries,
-  editorRef,
-  appId,
-  toggleQueryEditor,
-}) => {
+export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, toggleQueryEditor }) => {
   const { t } = useTranslation();
   const { loadingDataQueries } = useDataQueriesStore();
   const dataQueries = useDataQueries();
@@ -31,13 +27,6 @@ export const QueryDataPane = ({
   const searchBoxRef = useRef(null);
   const [dataSourcesForFilters, setDataSourcesForFilters] = useState([]);
   const [searchTermForFilters, setSearchTermForFilters] = useState();
-
-  const { isVersionReleased } = useAppVersionStore(
-    (state) => ({
-      isVersionReleased: state.isVersionReleased,
-    }),
-    shallow
-  );
 
   useEffect(() => {
     let filteredDataQueries = [...dataQueries];
@@ -86,40 +75,7 @@ export const QueryDataPane = ({
     <div className="data-pane">
       <div className={`queries-container ${darkMode && 'theme-dark'}`}>
         <div className="queries-header row d-flex align-items-center justify-content-between">
-          <button
-            data-cy={`button-add-new-queries`}
-            className={cx(`col-auto d-flex align-items-center py-1 rounded default-secondary-button`, {
-              disabled: isVersionReleased,
-              'theme-dark': darkMode,
-            })}
-            onClick={handleAddNewQuery}
-            data-tooltip-id="tooltip-for-add-query"
-            data-tooltip-content="Add new query"
-          >
-            <span className={` d-flex query-manager-btn-svg-wrapper align-items-center query-icon-wrapper`}>
-              <svg width="auto" height="auto" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M8 15.25C7.71667 15.25 7.47917 15.1542 7.2875 14.9625C7.09583 14.7708 7 14.5333 7 14.25V9H1.75C1.46667 9 1.22917 8.90417 1.0375 8.7125C0.845833 8.52083 0.75 8.28333 0.75 8C0.75 7.71667 0.845833 7.47917 1.0375 7.2875C1.22917 7.09583 1.46667 7 1.75 7H7V1.75C7 1.46667 7.09583 1.22917 7.2875 1.0375C7.47917 0.845833 7.71667 0.75 8 0.75C8.28333 0.75 8.52083 0.845833 8.7125 1.0375C8.90417 1.22917 9 1.46667 9 1.75V7H14.25C14.5333 7 14.7708 7.09583 14.9625 7.2875C15.1542 7.47917 15.25 7.71667 15.25 8C15.25 8.28333 15.1542 8.52083 14.9625 8.7125C14.7708 8.90417 14.5333 9 14.25 9H9V14.25C9 14.5333 8.90417 14.7708 8.7125 14.9625C8.52083 15.1542 8.28333 15.25 8 15.25Z"
-                  fill="#3E63DD"
-                />
-              </svg>
-            </span>
-            <span className="query-manager-btn-name">Add</span>
-          </button>
           <div className="col-auto d-flex">
-            <FilterandSortPopup
-              onFilterDatasourcesChange={handleFilterDatasourcesChange}
-              selectedDataSources={dataSourcesForFilters}
-              darkMode={darkMode}
-            />
-            <button
-              onClick={() => setShowSearchBox((showSearchBox) => !showSearchBox)}
-              className={cx('btn-query-panel-header mx-1', { active: showSearchBox })}
-              data-tooltip-id="tooltip-for-query-panel-header-btn"
-              data-tooltip-content="Open quick search"
-            >
-              <Search width="14" height="14" fill="var(--slate12)" />
-            </button>
             <button
               onClick={toggleQueryEditor}
               className="btn-query-panel-header"
@@ -128,8 +84,24 @@ export const QueryDataPane = ({
             >
               <Minimize width="14" height="14" viewBox="0 0 18 20" stroke="var(--slate12)" />
             </button>
+            <button
+              onClick={() => setShowSearchBox((showSearchBox) => !showSearchBox)}
+              className={cx('btn-query-panel-header mx-1', {
+                active: showSearchBox,
+              })}
+              data-tooltip-id="tooltip-for-query-panel-header-btn"
+              data-tooltip-content="Open quick search"
+            >
+              <Search width="14" height="14" fill="var(--slate12)" />
+            </button>
+            <FilterandSortPopup
+              onFilterDatasourcesChange={handleFilterDatasourcesChange}
+              selectedDataSources={dataSourcesForFilters}
+              darkMode={darkMode}
+            />
             <Tooltip id="tooltip-for-query-panel-header-btn" className="tooltip" />
           </div>
+          <AddDataSourceButton darkMode={darkMode} />
         </div>
         <div
           className={cx('queries-header row d-flex align-items-center justify-content-between', {
@@ -184,5 +156,50 @@ export const QueryDataPane = ({
         )}
       </div>
     </div>
+  );
+};
+
+const AddDataSourceButton = ({ darkMode }) => {
+  const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
+  const selectRef = useRef();
+
+  useEffect(() => {
+    if (showMenu) {
+      selectRef.current.focus();
+    }
+  }, [showMenu]);
+
+  return (
+    <OverlayTrigger
+      show={showMenu}
+      placement="right-end"
+      arrowOffsetTop={90}
+      arrowOffsetLeft={90}
+      overlay={
+        <Popover
+          key={'page.i'}
+          id="query-add-ds-popover"
+          className={`${darkMode && 'popover-dark-themed dark-theme tj-dark-mode'}`}
+          style={{ width: '244px', maxWidth: '246px' }}
+        >
+          <DataSourceSelect selectRef={selectRef} closePopup={() => setShowMenu(false)} />
+        </Popover>
+      }
+    >
+      <span className="col-auto" id="query-add-ds-popover-btn">
+        <ButtonSolid
+          size="sm"
+          variant="tertiary"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowMenu((show) => !show);
+          }}
+          className="px-1 pe-2 gap-0"
+        >
+          <Plus style={{ height: '16px' }} />
+          Add
+        </ButtonSolid>
+      </span>
+    </OverlayTrigger>
   );
 };

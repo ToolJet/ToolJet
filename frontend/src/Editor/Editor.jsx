@@ -64,6 +64,7 @@ class EditorComponent extends React.Component {
     resetAllStores();
 
     const appId = this.props.params.id;
+    useAppDataStore.getState().actions.setAppId(appId);
 
     const { socket } = createWebsocketConnection(appId);
 

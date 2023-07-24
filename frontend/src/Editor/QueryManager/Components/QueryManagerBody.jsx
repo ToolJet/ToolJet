@@ -5,7 +5,6 @@ import { capitalize, cloneDeep, isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
-import DataSourceLister from './DataSourceLister';
 import DataSourcePicker from './DataSourcePicker';
 import { Transformation } from './Transformation';
 import Preview from './Preview';
@@ -166,10 +165,6 @@ export const QueryManagerBody = ({
     validateNewOptions(newOptions);
   };
 
-  const handleBackButton = () => {
-    setPreviewData(null);
-  };
-
   const eventsChanged = (events) => {
     optionchanged('events', events);
   };
@@ -190,8 +185,6 @@ export const QueryManagerBody = ({
           dataSources={dataSources}
           staticDataSources={staticDataSources}
           globalDataSources={globalDataSources}
-          changeDataSource={changeDataSource}
-          handleBackButton={handleBackButton}
           darkMode={darkMode}
         />
       </div>

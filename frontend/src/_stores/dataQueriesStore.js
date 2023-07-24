@@ -1,8 +1,10 @@
 import { create, zustandDevTools } from './utils';
+import { getDefaultOptions } from './storeHelper';
 import { dataqueryService } from '@/_services';
 import debounce from 'lodash/debounce';
 import { useAppDataStore } from '@/_stores/appDataStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { runQueries } from '@/_helpers/appUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'react-hot-toast';
@@ -85,7 +87,12 @@ export const useDataQueriesStore = create(
           }));
           actions.setSelectedQuery(selectedQuery.id);
         },
-        createDataQuery: (appId, appVersionId, options, kind, name, selectedDataSource, shouldRunQuery) => {
+        // createDataQuery: (appId, appVersionId, options, kind, name, selectedDataSource, shouldRunQuery) => {
+        createDataQuery: (selectedDataSource, shouldRunQuery) => {
+          const appVersionId = useAppVersionStore.getState().editingVersion?.id;
+          const appId = useAppDataStore.getState().appId;
+          const { options, name } = getDefaultOptions(selectedDataSource);
+          const kind = selectedDataSource.kind;
           set({ isCreatingQueryInProcess: true });
           const { actions, selectedQuery } = useQueryPanelStore.getState();
           const dataSourceId = selectedDataSource?.id !== 'null' ? selectedDataSource?.id : null;

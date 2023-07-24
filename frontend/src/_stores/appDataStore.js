@@ -3,6 +3,7 @@ import { create, zustandDevTools } from './utils';
 const initialState = {
   editingVersion: null,
   isSaving: false,
+  appId: null,
 };
 
 export const useAppDataStore = create(
@@ -12,6 +13,7 @@ export const useAppDataStore = create(
       actions: {
         updateEditingVersion: (version) => set(() => ({ editingVersion: version })),
         setIsSaving: (isSaving) => set(() => ({ isSaving })),
+        setAppId: (appId) => set(() => ({ appId })),
       },
     }),
     { name: 'App Data Store' }

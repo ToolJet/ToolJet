@@ -1,35 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import RunjsIcon from '@/Editor/Icons/runjs.svg';
-import RunTooljetDbIcon from '@/Editor/Icons/tooljetdb.svg';
-import RunpyIcon from '@/Editor/Icons/runpy.svg';
 import Plus from '@/_ui/Icon/solidIcons/Plus';
 import Information from '@/_ui/Icon/solidIcons/Information';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { useTranslation } from 'react-i18next';
-import { getSvgIcon } from '@/_helpers/appUtils';
 import { useNavigate } from 'react-router-dom';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import DataSourceIcon from './DataSourceIcon';
 import { isEmpty } from 'lodash';
 import { Col, Container, Row } from 'react-bootstrap';
+import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
+import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 
-function DataSourcePicker({
-  dataSources,
-  staticDataSources,
-  changeDataSource,
-  handleBackButton,
-  darkMode,
-  globalDataSources,
-}) {
+function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalDataSources }) {
   const [searchTerm, setSearchTerm] = useState();
   const [filteredGlobalDataSources, setFilteredGlobalDataSources] = useState([...globalDataSources]);
   const navigate = useNavigate();
+  const { createDataQuery } = useDataQueriesActions();
+  const { setPreviewData } = useQueryPanelActions();
   const allSources = [...dataSources, ...staticDataSources];
 
   const handleChangeDataSource = (source) => {
-    changeDataSource(source);
-    handleBackButton();
+    createDataQuery(source);
+    setPreviewData(null);
   };
 
   useEffect(() => {
@@ -57,7 +50,7 @@ function DataSourcePicker({
       </h4>
       <p className="w-50 m-auto mb-3" style={{ textAlign: 'center' }}>
         Select a datasource to start creating a new query. To know more queries in ToolJet, you can read our &nbsp;
-        <a target="_blank" href="https://docs.tooljet.com/docs/app-builder/query-panel/#query-manager" rel="noreferrer">
+        <a target="_blank" href="https://docs.tooljet.com/docs/app-builder/query-panel" rel="noreferrer">
           documentation
         </a>
       </p>

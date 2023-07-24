@@ -6,21 +6,22 @@ import DataSourceIcon from './DataSourceIcon';
 import { authenticationService } from '@/_services';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
+import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
+import { staticDataSources } from '../constants';
+import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 
-function DataSourceLister({
-  dataSources,
-  staticDataSources,
-  globalDataSources,
-  changeDataSource,
-  handleBackButton,
-  darkMode,
-  isDisabled,
-}) {
+function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
+  const dataSources = useDataSources();
+  const globalDataSources = useGlobalDataSources();
   const [allSources, setAllSources] = useState([...dataSources, ...staticDataSources]);
   const [globalDataSourcesOpts, setGlobalDataSourcesOpts] = useState([]);
+  const { createDataQuery } = useDataQueriesActions();
+  const { setPreviewData } = useQueryPanelActions();
   const handleChangeDataSource = (source) => {
-    changeDataSource(source);
-    handleBackButton();
+    createDataQuery(source);
+    setPreviewData(null);
+    closePopup();
   };
 
   useEffect(() => {
@@ -75,31 +76,47 @@ function DataSourceLister({
     ...globalDataSourcesOpts,
   ];
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      closePopup();
+    }
+  };
+
   return (
-    <div className="query-datasource-card-container">
+    <div>
       <Select
         onChange={({ source } = {}) => handleChangeDataSource(source)}
         classNames={{
           menu: () => 'tj-scrollbar',
         }}
+        ref={selectRef}
+        controlShouldRenderValue={false}
         menuPlacement="auto"
-        components={{ MenuList: MenuList }}
+        components={{ MenuList: MenuList, IndicatorsContainer: () => '' }}
         styles={{
           control: (style) => ({
             ...style,
-            width: '400px',
+            width: '240px',
             background: 'var(--base)',
             color: 'var(--slate9)',
-            border: '1px solid var(--slate7)',
+            borderWidth: '0',
+            borderBottom: '1px solid var(--slate7)',
+            marginBottom: '1px',
+            borderRadius: '4px 4px 0 0',
+            ':hover': {
+              borderColor: 'var(--slate7)',
+            },
           }),
           menu: (style) => ({
             ...style,
+            position: 'static',
             backgroundColor: 'var(--base)',
             color: 'var(--slate12)',
             boxShadow: 'none',
-            border: '1px solid var(--slate3)',
+            border: '0',
             marginTop: 0,
             marginBottom: 0,
+            width: '240px',
           }),
           input: (style) => ({ ...style, ...(darkMode ? { color: '#ffffff' } : {}) }),
           groupHeading: (style) => ({
@@ -112,8 +129,7 @@ function DataSourceLister({
           option: (style, { data: { isNested, ...data }, isFocused, isDisabled }) => ({
             ...style,
             cursor: 'pointer',
-            backgroundColor:
-              isNested || isDisabled ? 'transparent' : isFocused ? 'var(--slate5)' : style.backgroundColor,
+            backgroundColor: isDisabled ? 'transparent' : isFocused ? 'var(--slate5)' : style.backgroundColor,
             ...(isNested
               ? { padding: '0 8px', marginLeft: '40px', borderLeft: '1px solid var(--slate5)', width: 'auto' }
               : {}),
@@ -122,17 +138,29 @@ function DataSourceLister({
               '.option-nested-datasource-selector': { backgroundColor: 'var(--slate4)' },
             },
           }),
+          container: (styles) => ({
+            ...styles,
+            borderRadius: '6px',
+            border: '1px solid var(--slate-03, #F1F3F5)',
+            background: 'var(--slate-01, #FBFCFD)',
+            boxShadow: '0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10)',
+          }),
         }}
         placeholder="Where do you want to connect to"
         options={DataSourceOptions}
         isDisabled={isDisabled}
-        // menuIsOpen
-        menuPortalTarget={document.querySelector('.main-wrapper')}
+        menuIsOpen
+        // menuPortalTarget={document.querySelector('.main-wrapper')}
         maxMenuHeight={400}
         minMenuHeight={300}
+        onKeyDown={handleKeyDown}
         filterOption={(data, search) => {
           if (data?.data?.source) {
-            return data.data.source.name.toLowerCase().includes(search.toLowerCase());
+            //Disabled below eslint check since already checking in above line)
+            // eslint-disable-next-line no-unsafe-optional-chaining
+            const { name, kind } = data?.data?.source;
+            const searchTerm = search.toLowerCase();
+            return name.toLowerCase().includes(searchTerm) || kind.toLowerCase().includes(searchTerm);
           }
           return true;
         }}
@@ -172,4 +200,4 @@ const MenuList = ({ children, cx, getStyles, innerRef, ...props }) => {
   );
 };
 
-export default DataSourceLister;
+export default DataSourceSelect;
