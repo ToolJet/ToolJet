@@ -47,6 +47,27 @@ import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
 
+// utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
+const utilityForNestedNewRow = (row) => {
+  let arr = Object.keys(row);
+  let obj = {};
+  arr.forEach((key) => {
+    let nestedKeys = key.split('.');
+    let tempObj = obj;
+
+    for (let i = 0; i < nestedKeys.length; i++) {
+      let nestedKey = nestedKeys[i];
+
+      if (!tempObj.hasOwnProperty(nestedKey)) {
+        tempObj[nestedKey] = i === nestedKeys.length - 1 ? '' : {};
+      }
+
+      tempObj = tempObj[nestedKey];
+    }
+  });
+  return obj;
+};
+
 export function Table({
   id,
   width,
@@ -101,11 +122,13 @@ export function Table({
     rowsPerPage,
     enabledSort,
     hideColumnSelectorButton,
+    defaultSelectedRow,
     showAddNewRowButton,
     allowSelection,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
+  const preSelectRow = useRef(false);
 
   const getItemStyle = ({ isDragging, isDropAnimating }, draggableStyle) => ({
     ...draggableStyle,
@@ -233,7 +256,11 @@ export function Table({
         ...obj,
       },
     };
-    obj = _.set({ ...rowData, ...obj }, key, value);
+
+    if (Object.keys(rowData).find((key) => key.includes('.'))) {
+      rowData = utilityForNestedNewRow(rowData);
+    }
+    obj = _.merge({}, rowData, obj);
 
     let newDataUpdates = {
       ...dataUpdates,
@@ -258,7 +285,7 @@ export function Table({
         if (header.key && header.key !== header.exportValue) {
           value = _.get(row.original, header.key);
         } else {
-          value = row.original[header.exportValue];
+          value = _.get(row.original, header.exportValue);
         }
         accumulator.push(value);
         return accumulator;
@@ -579,7 +606,6 @@ export function Table({
         ]);
     }
   );
-
   const currentColOrder = React.useRef();
 
   const sortOptions = useMemo(() => {
@@ -596,6 +622,13 @@ export function Table({
       },
     ];
   }, [JSON.stringify(state)]);
+
+  const getDetailsOfPreSelectedRow = () => {
+    const key = Object?.keys(defaultSelectedRow)[0] ?? '';
+    const value = defaultSelectedRow?.[key] ?? undefined;
+    const preSelectedRowDetails = rows.find((row) => row?.original?.[key] === value);
+    return preSelectedRowDetails;
+  };
 
   useEffect(() => {
     if (!sortOptions) {
@@ -689,14 +722,18 @@ export function Table({
         }, []);
         mergeToTableDetails({ selectedRowsDetails });
       });
-    } else if (!showBulkSelector && !highlightSelectedRow) {
+    }
+    if (
+      (!showBulkSelector && !highlightSelectedRow) ||
+      (showBulkSelector && !highlightSelectedRow && preSelectRow.current)
+    ) {
       const selectedRow = selectedFlatRows?.[0]?.original ?? {};
       const selectedRowId = selectedFlatRows?.[0]?.id ?? null;
       setExposedVariables({ selectedRow, selectedRowId }).then(() => {
         mergeToTableDetails({ selectedRow, selectedRowId });
       });
     }
-  }, [selectedFlatRows.length, selectedFlatRows, _.toString(selectedFlatRows)]);
+  }, [selectedFlatRows.length, selectedFlatRows]);
 
   registerAction(
     'downloadTableData',
@@ -707,10 +744,12 @@ export function Table({
   );
 
   useEffect(() => {
-    setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null }).then(() => {
-      mergeToTableDetails({ selectedRowsDetails: [], selectedRow: {}, selectedRowId: null });
-      toggleAllRowsSelected(false);
-    });
+    if (mounted) {
+      setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null }).then(() => {
+        mergeToTableDetails({ selectedRowsDetails: [], selectedRow: {}, selectedRowId: null });
+        toggleAllRowsSelected(false);
+      });
+    }
   }, [showBulkSelector, highlightSelectedRow, allowSelection]);
 
   React.useEffect(() => {
@@ -721,20 +760,23 @@ export function Table({
       setPageSize(rowsPerPage || 10);
     }
   }, [clientSidePagination, serverSidePagination, rows, rowsPerPage]);
-
   useEffect(() => {
     const pageData = page.map((row) => row.original);
-    onComponentOptionsChanged(component, [
-      ['currentPageData', pageData],
-      ['currentData', data],
-      ['selectedRow', []],
-      ['selectedRowId', null],
-    ]).then(() => {
-      if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
-        toggleAllRowsSelected(false);
-        mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
-      }
-    });
+    if (preSelectRow.current) {
+      preSelectRow.current = false;
+    } else {
+      onComponentOptionsChanged(component, [
+        ['currentPageData', pageData],
+        ['currentData', data],
+        ['selectedRow', []],
+        ['selectedRowId', null],
+      ]).then(() => {
+        if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
+          toggleAllRowsSelected(false);
+          mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
+        }
+      });
+    }
   }, [tableData.length, _.toString(page), pageIndex, _.toString(data)]);
 
   useEffect(() => {
@@ -782,6 +824,35 @@ export function Table({
       );
     }
   }, [JSON.stringify(changeSet)]);
+  useEffect(() => {
+    if (
+      allowSelection &&
+      typeof defaultSelectedRow === 'object' &&
+      !_.isEmpty(defaultSelectedRow) &&
+      !_.isEmpty(data)
+    ) {
+      const preSelectedRowDetails = getDetailsOfPreSelectedRow();
+      if (_.isEmpty(preSelectedRowDetails)) return;
+
+      const selectedRow = preSelectedRowDetails?.original ?? {};
+      const selectedRowId = preSelectedRowDetails?.id ?? null;
+      const pageNumber = Math.floor(selectedRowId / rowsPerPage) + 1;
+      preSelectRow.current = true;
+      if (highlightSelectedRow) {
+        setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId }).then(() => {
+          toggleRowSelected(selectedRowId, true);
+          mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
+        });
+      } else {
+        toggleRowSelected(selectedRowId, true);
+      }
+      if (pageIndex >= 0 && pageNumber !== pageIndex + 1) {
+        gotoPage(pageNumber - 1);
+      }
+    }
+
+    //hack : in the initial render, data is undefined since, upon feeding data to the table from some query, query inside current state is {}. Hence we added data in the dependency array, now question is should we add data or rows?
+  }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data)]);
 
   function downlaodPopover() {
     return (
@@ -1278,6 +1349,7 @@ export function Table({
           defaultColumn={defaultColumn}
           columns={columnsForAddNewRow}
           addNewRowsDetails={tableDetails.addNewRowsDetails}
+          utilityForNestedNewRow={utilityForNestedNewRow}
         />
       )}
     </div>

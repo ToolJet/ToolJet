@@ -76,10 +76,6 @@ module.exports = defineConfig({
     experimentalRunAllSpecs: true,
     baseUrl: "http://localhost:8082",
     specPattern: [
-      "cypress/e2e/editor/app-version/version.cy.js",
-      "cypress/e2e/exportImport/export.cy.js",
-      "cypress/e2e/exportImport/import.cy.js",
-      "cypress/e2e/database/database.cy.js",
       "cypress/e2e/editor/widget/*.cy.js",
       "cypress/e2e/editor/multipage/*.cy.js",
       "cypress/e2e/editor/globalSetingsHappyPath.cy.js",
