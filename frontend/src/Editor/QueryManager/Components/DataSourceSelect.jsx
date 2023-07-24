@@ -126,7 +126,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
             color: 'inherit',
             fontWeight: '400',
           }),
-          option: (style, { data: { isNested, ...data }, isFocused, isDisabled }) => ({
+          option: (style, { data: { isNested }, isFocused, isDisabled }) => ({
             ...style,
             cursor: 'pointer',
             backgroundColor: isDisabled ? 'transparent' : isFocused ? 'var(--slate5)' : style.backgroundColor,
@@ -169,7 +169,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
   );
 }
 
-const MenuList = ({ children, cx, getStyles, innerRef, ...props }) => {
+const MenuList = ({ children, getStyles, innerRef, ...props }) => {
   const navigate = useNavigate();
   console.log('props', props, getStyles('menuList', props));
   const menuListStyles = getStyles('menuList', props);

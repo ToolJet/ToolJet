@@ -43,9 +43,7 @@ export const QueryManagerBody = ({
   const globalDataSources = useGlobalDataSources();
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
-  const { setPreviewData } = useQueryPanelActions();
   const { changeDataQuery, updateDataQuery, createDataQuery } = useDataQueriesActions();
-  const [setShowCreateQuery] = useShowCreateQuery();
   const [, setNameInputFocussed] = useNameInputFocussed(false);
 
   const [dataSourceMeta, setDataSourceMeta] = useState(null);
@@ -94,47 +92,6 @@ export const QueryManagerBody = ({
       }
       currentNumber += 1;
     }
-  };
-
-  const changeDataSource = (source) => {
-    const isSchemaUnavailable = Object.keys(schemaUnavailableOptions).includes(source.kind);
-    let newOptions = {};
-
-    if (isSchemaUnavailable) {
-      newOptions = {
-        ...{ ...schemaUnavailableOptions[source.kind] },
-        ...(source?.kind != 'runjs' && {
-          transformationLanguage: 'javascript',
-          enableTransformation: false,
-        }),
-      };
-    } else {
-      const selectedSourceDefault =
-        source?.plugin?.operationsFile?.data?.defaults ?? allOperations[capitalize(source.kind)]?.defaults;
-      if (selectedSourceDefault) {
-        newOptions = {
-          ...{ ...selectedSourceDefault },
-          ...(source?.kind != 'runjs' && {
-            transformationLanguage: 'javascript',
-            enableTransformation: false,
-          }),
-        };
-      } else {
-        newOptions = {
-          ...(source?.kind != 'runjs' && {
-            transformationLanguage: 'javascript',
-            enableTransformation: false,
-          }),
-        };
-      }
-    }
-
-    defaultOptions.current = { ...newOptions };
-
-    setOptions({ ...newOptions });
-
-    createDataQuery(appId, editingVersionId, options, source.kind, computeQueryName(source.kind), source, false);
-    setNameInputFocussed(true);
   };
 
   // Clear the focus field value from options
