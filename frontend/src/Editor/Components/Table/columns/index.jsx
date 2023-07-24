@@ -7,6 +7,7 @@ import { Tags } from '../Tags';
 import { Radio } from '../Radio';
 import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
+import { Link } from '../Link';
 import moment from 'moment';
 
 export default function generateColumnsData({
@@ -263,7 +264,7 @@ export default function generateColumnsData({
                 readOnly={!isEditable}
                 style={{ maxWidth: width }}
                 onBlur={(e) => {
-                  if (isEditable) {
+                  if (isEditable && e.target.defaultValue !== e.target.value) {
                     handleCellValueChange(cell.row.index, column.key || column.name, e.target.value, cell.row.original);
                   }
                 }}
@@ -439,6 +440,14 @@ export default function generateColumnsData({
                   }}
                   tableRef={tableRef}
                 />
+              </div>
+            );
+          }
+          case 'link': {
+            const linkTarget = resolveReferences(column?.linkTarget ?? '_blank', currentState);
+            return (
+              <div className="h-100 d-flex align-items-center">
+                <Link cellValue={cellValue} linkTarget={linkTarget} />
               </div>
             );
           }

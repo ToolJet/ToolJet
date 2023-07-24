@@ -9,8 +9,14 @@ import _ from 'lodash';
 import { componentTypes } from './WidgetManager/components';
 import { addNewWidgetToTheEditor } from '@/_helpers/appUtils';
 import { resolveReferences } from '@/_helpers/utils';
-
+import { toast } from 'react-hot-toast';
+import { restrictedWidgetsObj } from '@/Editor/WidgetManager/restrictedWidgetsConfig';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 import { useMounted } from '@/_hooks/use-mount';
+
+const NO_OF_GRIDS = 43;
 
 export const SubContainer = ({
   mode,
@@ -19,7 +25,6 @@ export const SubContainer = ({
   onEvent,
   appDefinition,
   appDefinitionChanged,
-  currentState,
   onComponentOptionChanged,
   onComponentOptionsChanged,
   appLoading,
@@ -46,8 +51,8 @@ export const SubContainer = ({
   height = '100%',
   currentPageId,
   childComponents = null,
-  isVersionReleased,
-  setReleasedVersionPopupState,
+  listmode = null,
+  columns = 1,
 }) => {
   //Todo add custom resolve vars for other widgets too
   const mounted = useMounted();
@@ -56,6 +61,16 @@ export const SubContainer = ({
   });
 
   const customResolverVariable = widgetResolvables[parentComponent?.component];
+  const currentState = useCurrentState();
+  const { enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      enableReleasedVersionPopupState: state.actions.enableReleasedVersionPopupState,
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
+
+  const gridWidth = getContainerCanvasWidth() / NO_OF_GRIDS;
 
   const [_containerCanvasWidth, setContainerCanvasWidth] = useState(0);
   useEffect(() => {
@@ -64,7 +79,7 @@ export const SubContainer = ({
       setContainerCanvasWidth(canvasWidth);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentRef, getContainerCanvasWidth()]);
+  }, [parentRef, getContainerCanvasWidth(), listmode]);
 
   zoomLevel = zoomLevel || 1;
 
@@ -123,7 +138,7 @@ export const SubContainer = ({
           const componentMeta = componentTypes.find((component) => component.component === componentName);
           const componentData = JSON.parse(JSON.stringify(componentMeta));
 
-          const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / 43;
+          const width = layout.width ? layout.width : (componentMeta.defaultSize.width * 100) / NO_OF_GRIDS;
           const height = layout.height ? layout.height : componentMeta.defaultSize.height;
           const newComponentDefinition = {
             ...componentData.definition.properties,
@@ -269,35 +284,52 @@ export const SubContainer = ({
       accept: ItemTypes.BOX,
       drop(item, monitor) {
         const componentMeta = componentTypes.find((component) => component.component === item.component.component);
-
         const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
+        const parentComp =
+          parentComponent?.component === 'Kanban'
+            ? parent.includes('modal')
+              ? 'Kanban_popout'
+              : 'Kanban_card'
+            : parentComponent.component;
+        if (!restrictedWidgetsObj[parentComp].includes(componentMeta?.component)) {
+          const newComponent = addNewWidgetToTheEditor(
+            componentMeta,
+            monitor,
+            boxes,
+            canvasBoundingRect,
+            item.currentLayout,
+            snapToGrid,
+            zoomLevel,
+            true
+          );
 
-        const newComponent = addNewWidgetToTheEditor(
-          componentMeta,
-          monitor,
-          boxes,
-          canvasBoundingRect,
-          item.currentLayout,
-          snapToGrid,
-          zoomLevel,
-          true
-        );
-
-        setBoxes({
-          ...boxes,
-          [newComponent.id]: {
-            component: newComponent.component,
-            parent: parentRef.current.id,
-            layouts: {
-              ...newComponent.layout,
+          setBoxes({
+            ...boxes,
+            [newComponent.id]: {
+              component: newComponent.component,
+              parent: parentRef.current.id,
+              layouts: {
+                ...newComponent.layout,
+              },
+              withDefaultChildren: newComponent.withDefaultChildren,
             },
-            withDefaultChildren: newComponent.withDefaultChildren,
-          },
-        });
+          });
 
-        setSelectedComponent(newComponent.id, newComponent.component);
+          setSelectedComponent(newComponent.id, newComponent.component);
 
-        return undefined;
+          return undefined;
+        } else {
+          toast.error(
+            ` ${componentMeta?.component} is not compatible as a child component of ${parentComp
+              .replace(/_/g, ' ')
+              .toLowerCase()}`,
+            {
+              style: {
+                wordBreak: 'break-word',
+              },
+            }
+          );
+        }
       },
     }),
     [moveBox]
@@ -305,8 +337,10 @@ export const SubContainer = ({
 
   function getContainerCanvasWidth() {
     if (containerCanvasWidth !== undefined) {
-      return containerCanvasWidth - 2;
+      if (listmode == 'grid') return containerCanvasWidth / columns - 2;
+      else return containerCanvasWidth - 2;
     }
+
     let width = 0;
     if (parentRef.current) {
       const realCanvas = parentRef.current.getElementsByClassName('real-canvas')[0];
@@ -315,13 +349,12 @@ export const SubContainer = ({
         width = canvasBoundingRect.width;
       }
     }
-
     return width;
   }
 
   function onDragStop(e, componentId, direction, currentLayout) {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
     const canvasWidth = getContainerCanvasWidth();
@@ -366,13 +399,18 @@ export const SubContainer = ({
 
   function onResizeStop(id, e, direction, ref, d, position) {
     if (isVersionReleased) {
-      setReleasedVersionPopupState();
+      enableReleasedVersionPopupState();
       return;
     }
-    const deltaWidth = d.width;
+    const deltaWidth = Math.round(d.width / gridWidth) * gridWidth;
     const deltaHeight = d.height;
 
+    if (deltaWidth === 0 && deltaHeight === 0) {
+      return;
+    }
+
     let { x, y } = position;
+    x = Math.round(x / gridWidth) * gridWidth;
 
     const defaultData = {
       top: 100,
@@ -383,17 +421,14 @@ export const SubContainer = ({
 
     let { left, top, width, height } = boxes[id]['layouts'][currentLayout] || defaultData;
 
-    const canvasBoundingRect = parentRef.current.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
-    const subContainerWidth = canvasBoundingRect.width;
-
     top = y;
     if (deltaWidth !== 0) {
       // onResizeStop is triggered for a single click on the border, therefore this conditional logic
       // should not be removed.
-      left = (x * 100) / subContainerWidth;
+      left = (x * 100) / _containerCanvasWidth;
     }
 
-    width = width + (deltaWidth * 43) / subContainerWidth;
+    width = width + (deltaWidth * NO_OF_GRIDS) / _containerCanvasWidth;
     height = height + deltaHeight;
 
     let newBoxes = {
@@ -443,7 +478,7 @@ export const SubContainer = ({
     width: '100%',
     height: subContainerHeightRef.current,
     position: 'absolute',
-    backgroundSize: `${getContainerCanvasWidth() / 43}px 10px`,
+    backgroundSize: `${gridWidth}px 10px`,
   };
 
   function onComponentOptionChangedForSubcontainer(component, optionName, value, componentId = '') {
@@ -489,7 +524,6 @@ export const SubContainer = ({
                 onComponentOptionChanged={onComponentOptionChangedForSubcontainer}
                 onComponentOptionsChanged={onComponentOptionsChanged}
                 key={key}
-                currentState={currentState}
                 onResizeStop={onResizeStop}
                 onDragStop={onDragStop}
                 paramUpdated={paramUpdated}
@@ -502,7 +536,6 @@ export const SubContainer = ({
                 inCanvas={true}
                 zoomLevel={zoomLevel}
                 setSelectedComponent={setSelectedComponent}
-                currentLayout={currentLayout}
                 selectedComponent={selectedComponent}
                 deviceWindowWidth={deviceWindowWidth}
                 isSelectedComponent={

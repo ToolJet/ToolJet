@@ -35,7 +35,11 @@ export function renderElement(
   const definition = paramTypeDefinition[param] || {};
   const meta = componentMeta[paramType][param];
 
-  if (componentConfig.component == 'DropDown') {
+  if (
+    componentConfig.component == 'DropDown' ||
+    componentConfig.component == 'Form' ||
+    componentConfig.component == 'Listview'
+  ) {
     const paramTypeConfig = componentMeta[paramType] || {};
     const paramConfig = paramTypeConfig[param] || {};
     const { conditionallyRender = null } = paramConfig;
@@ -58,7 +62,6 @@ export function renderElement(
       paramType={paramType}
       components={components}
       componentMeta={componentMeta}
-      currentState={currentState}
       darkMode={darkMode}
       componentName={component.component.name || null}
       type={meta.type}

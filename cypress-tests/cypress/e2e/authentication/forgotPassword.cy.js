@@ -35,7 +35,7 @@ describe("Password reset functionality", () => {
       "Maximum password retry limit reached, please reset your password using forgot password option"
     );
   });
-  it("Verify fogot password page elements and functionality", () => {
+  it("Verify forgot password page elements and functionality", () => {
     cy.visit("/");
     cy.get(commonSelectors.forgotPasswordLink).click();
     cy.get(commonSelectors.pageLogo).should("be.visible");

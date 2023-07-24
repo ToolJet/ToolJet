@@ -32,6 +32,7 @@ import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { camelCase } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 const AllElements = {
   Color,
@@ -46,7 +47,6 @@ const AllElements = {
 export function CodeHinter({
   initialValue,
   onChange,
-  currentState,
   mode,
   theme,
   lineNumbers,
@@ -71,6 +71,7 @@ export function CodeHinter({
   cyLabel = '',
   callgpt = () => null,
   isCopilotEnabled = false,
+  currentState: _currentState,
 }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const options = {
@@ -84,7 +85,7 @@ export function CodeHinter({
     highlightSelectionMatches: true,
     placeholder,
   };
-
+  const currentState = useCurrentState();
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState(initialValue);
   const [isFocused, setFocused] = useState(false);
@@ -100,15 +101,18 @@ export function CodeHinter({
     },
   });
   const { t } = useTranslation();
-
   const { variablesExposedForPreview } = useContext(EditorContext);
 
   const prevCountRef = useRef(false);
 
   useEffect(() => {
-    setRealState(currentState);
+    if (_currentState) {
+      setRealState(_currentState);
+    } else {
+      setRealState(currentState);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentState.components]);
+  }, [currentState.components, _currentState]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -219,7 +223,7 @@ export function CodeHinter({
                 {previewType}
               </div>
               {isFocused && (
-                <div className="preview-icons">
+                <div className="preview-icons position-relative">
                   <CodeHinter.PopupIcon callback={() => copyToClipboard(content)} icon="copy" tip="Copy to clipboard" />
                 </div>
               )}
@@ -302,7 +306,10 @@ export function CodeHinter({
         style={{ width: width, display: codeShow ? 'flex' : 'none' }}
       >
         <div className={`col code-hinter-col`} style={{ marginBottom: '0.5rem' }}>
-          <div className="code-hinter-wrapper" style={{ width: '100%', backgroundColor: darkMode && '#272822' }}>
+          <div
+            className="code-hinter-wrapper position-relative"
+            style={{ width: '100%', backgroundColor: darkMode && '#272822' }}
+          >
             <div
               className={`${defaultClassName} ${className || 'codehinter-default-input'}`}
               key={componentName}
@@ -391,7 +398,7 @@ const PopupIcon = ({ callback, icon, tip, transformation = false }) => {
   const size = transformation ? 20 : 12;
 
   return (
-    <div className="d-flex justify-content-end" style={{ position: 'relative' }}>
+    <div className="d-flex justify-content-end w-100 position-absolute" style={{ top: 0 }}>
       <OverlayTrigger
         trigger={['hover', 'focus']}
         placement="top"

@@ -24,7 +24,7 @@ export const changeQueryToggles = (option) => {
 
 export const renameQueryFromEditor = (name) => {
   cy.get('[data-cy="query-name-label"]').realHover();
-  cy.get('[class="breadcrum-rename-query-icon false"]').click();
+  cy.get('[class="breadcrum-rename-query-icon"]').click();
   cy.get('[data-cy="query-rename-input"]').clear().type(`${name}{enter}`);
   // cy.realType(`{selectAll}{backspace}${name}{enter}`);
 };

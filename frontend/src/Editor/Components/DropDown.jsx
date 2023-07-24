@@ -17,7 +17,7 @@ export const DropDown = function DropDown({
   dataCy,
 }) {
   let { label, value, advanced, schema, placeholder, display_values, values } = properties;
-  const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent } = styles;
+  const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent, boxShadow } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
 
@@ -161,7 +161,7 @@ export const DropDown = function DropDown({
       background: darkMode ? 'rgb(31,40,55)' : 'white',
       minHeight: height,
       height: height,
-      boxShadow: state.isFocused ? null : null,
+      boxShadow: state.isFocused ? boxShadow : boxShadow,
       borderRadius: Number.parseFloat(borderRadius),
     }),
 

@@ -12,6 +12,7 @@ export const ConfigHandle = function ConfigHandle({
   setSelectedComponent = () => null, //! Only Modal widget passes this uses props down. All other widgets use selecto lib
   customClassName = '',
   configWidgetHandlerForModalComponent = false,
+  isVersionReleased,
 }) {
   return (
     <div
@@ -46,7 +47,7 @@ export const ConfigHandle = function ConfigHandle({
           />
           <span>{component.name}</span>
         </div>
-        {!isMultipleComponentsSelected && (
+        {!isMultipleComponentsSelected && !isVersionReleased && (
           <div className="delete-part">
             <img
               style={{ cursor: 'pointer', marginLeft: '5px' }}
