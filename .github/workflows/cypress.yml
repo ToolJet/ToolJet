@@ -185,7 +185,7 @@ jobs:
         with:
           working-directory: ./cypress-tests
           config: "baseUrl=http://localhost:8082"
-          config-file: cypress-worksapce.config.js
+          config-file: cypress-workspace.config.js
 
       - name: Capture Screenshots
         uses: actions/upload-artifact@v3
