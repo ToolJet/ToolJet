@@ -46,12 +46,20 @@ Debugger records any errors that occur during the execution of queries. For inst
 
 If you wish to prevent the debugger from closing, you can simply click on the pin icon located in the top-right corner. By doing so, the debugger will stay open until you decide to unpin it.
 
+Debugger consists of two main sections:
+
+1. **All Log:** In this section, you can view a comprehensive list of all the logs generated during the execution of the application. These logs may include various types of messages, such as success messages, warning, and error messages.
+
+2. **Errors:** This section specifically focuses on displaying the error messages that occurred during the program's execution. These error messages indicate issues or problems that need attention, as they may lead to unexpected behaviors of the application. 
+
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/debuggertop.png" alt="App Builder: Left-sidebar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/leftsidebar/newdebugger.gif" alt="App Builder: Left-sidebar"/>
 
 </div>
 
-## Theme switch
+## Theme Switch
 
-Switch ToolJet into light or dark mode from this button.
+Use the theme switch button to toggle ToolJet between light and dark modes.
+
+While developers can access the current theme's value through global variables using `{{globals.theme.name}}`, it is not currently feasible to change the theme programmatically.
