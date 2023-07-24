@@ -128,6 +128,7 @@ describe("Manage Users", () => {
 
     cy.get(commonSelectors.workspaceName).click();
     cy.contains("My workspace").should("not.exist");
+    cy.visitTheWorkspace('My workspace')
     common.logout();
 
     cy.appUILogin();

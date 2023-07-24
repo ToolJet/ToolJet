@@ -52,7 +52,9 @@ describe("dashboard", () => {
     cy.wait("@emptyDashboard");
     cy.wait("@folders");
     cy.wait("@version");
-    deleteDownloadsFolder();
+    // deleteDownloadsFolder();
+    cy.visitTheWorkspace('My workspace')
+
   });
 
   it("should verify the elements on empty dashboard", () => {
