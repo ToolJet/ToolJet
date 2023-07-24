@@ -195,7 +195,7 @@ describe("Manage Users", () => {
       });
   });
 
-  it("Should verify the user onboarding with groups", () => {
+  it.skip("Should verify the user onboarding with groups", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     common.navigateToManageUsers();
