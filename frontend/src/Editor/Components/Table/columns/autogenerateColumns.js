@@ -29,15 +29,27 @@ export default function autogenerateColumns(
 
   // mapping the keys of first row with one level of nested elements.
   const keysOfTableData = Object.entries(firstRow).reduce((accumulator, currentValue) => {
-    if (typeof currentValue[1] === 'object') {
+    /*
+    if currentValue[1] type is particularly object, that means it has nested data, so 
+    we trygo inside the if statrment to check it's depth and support auto generation of
+    columns till one level.
+     */
+    if (typeof currentValue[1] === 'object' && !Array.isArray(currentValue[1])) {
       accumulator.push(
         ...Object.entries(currentValue[1]).reduce((acc, cv) => {
-          if (typeof cv[1] !== 'object') {
+          /*
+            to only support one level of nesting, we are checking condition, if type of cv[1] value is 
+            premitive data type or array particulary, if it satisfies any one of the condition, then we auto 
+            generate column for it. Else, if it comes out to be object,that means it has more than one level
+            of nexted data, so we do not auto generate column for the same.
+            */
+          if (typeof cv[1] !== 'object' || Array.isArray(cv[1])) {
             acc.push(`${currentValue[0]}.${cv[0]}`);
           }
           return acc;
         }, [])
       );
+
       return accumulator;
     }
     accumulator.push(currentValue[0]);

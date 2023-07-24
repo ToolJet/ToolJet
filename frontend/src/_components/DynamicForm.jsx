@@ -18,6 +18,8 @@ import { orgEnvironmentVariableService } from '../_services';
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import { useEditorStore } from '@/_stores/editorStore';
+import { shallow } from 'zustand/shallow';
 
 const DynamicForm = ({
   schema,
@@ -37,8 +39,15 @@ const DynamicForm = ({
   const [computedProps, setComputedProps] = React.useState({});
   const isHorizontalLayout = layout === 'horizontal';
   const currentState = useCurrentState();
-  const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
 
+  const { isEditorActive } = useEditorStore(
+    (state) => ({
+      isEditorActive: state?.isEditorActive,
+    }),
+    shallow
+  );
+
+  const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
@@ -211,7 +220,12 @@ const DynamicForm = ({
         };
 
       case 'react-component-headers': {
-        const isRenderedAsQueryEditor = currentState != null;
+        let isRenderedAsQueryEditor;
+        if (!isEditorActive) {
+          isRenderedAsQueryEditor = false;
+        } else {
+          isRenderedAsQueryEditor = currentState != null;
+        }
         return {
           getter: key,
           options: isRenderedAsQueryEditor

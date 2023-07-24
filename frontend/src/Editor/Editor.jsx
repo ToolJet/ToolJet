@@ -62,10 +62,10 @@ class EditorComponent extends React.Component {
   constructor(props) {
     super(props);
     resetAllStores();
-
     const appId = this.props.params.id;
-    useAppDataStore.getState().actions.setAppId(appId);
 
+    useAppDataStore.getState().actions.setAppId(appId);
+    useEditorStore.getState().actions.setIsEditorActive(true);
     const { socket } = createWebsocketConnection(appId);
 
     this.renameQueryNameId = React.createRef();
@@ -281,6 +281,7 @@ class EditorComponent extends React.Component {
     if (config.ENABLE_MULTIPLAYER_EDITING) this.props?.provider?.disconnect();
     this.appDataStoreListner && this.appDataStoreListner();
     this.dataQueriesStoreListner && this.dataQueriesStoreListner();
+    useEditorStore.getState().actions.setIsEditorActive(false);
   }
 
   // 1. When we receive an undoable action – we can always undo but cannot redo anymore.
