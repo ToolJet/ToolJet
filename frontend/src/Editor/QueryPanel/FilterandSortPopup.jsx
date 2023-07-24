@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { OverlayTrigger, Popover, Form } from 'react-bootstrap';
+import { OverlayTrigger, Popover, Form, Badge } from 'react-bootstrap';
 import cx from 'classnames';
 import { Button } from '@/_ui/LeftSidebar';
 import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
@@ -11,8 +11,9 @@ import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
 import { staticDataSources } from '../QueryManager/constants';
 import { Tooltip } from 'react-tooltip';
+import { PillButton } from '../QueryManager/QueryEditors/Runjs/ParameterDetails';
 
-const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasourcesChange }) => {
+const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasourcesChange, clearSelectedDataSources }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-sort-filter-popover', '#query-sort-filter-popover-btn');
   const closeMenu = () => setShowMenu(false);
   const [action, setAction] = useState();
@@ -93,12 +94,20 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
             <div className="color-slate9 px-3 pb-2 w-100">
               <small>Filter By</small>
             </div>
-            <MenuButton
-              id="filter-by-datasource"
-              text="Data Source"
-              callback={handlePageCallback}
-              active={selectedDataSources.length > 0}
-            />
+            <div className="d-flex">
+              <MenuButton id="filter-by-datasource" text="Data Source" callback={handlePageCallback} />
+              {selectedDataSources.length ? (
+                <PillButton
+                  name={selectedDataSources.length}
+                  onRemove={clearSelectedDataSources}
+                  className="m-1"
+                  btnClassName1="py-0 px-2"
+                  btnClassName2="p-0 pe-1"
+                />
+              ) : (
+                ''
+              )}
+            </div>
             <div class="border-bottom"></div>
             <div className="color-slate9 px-3 pb-2 pt-1 w-100">
               <small>Sort By</small>
@@ -152,7 +161,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
 
   return (
     <OverlayTrigger
-      placement={'bottom-end'}
+      placement="right-end"
       // rootClose={true}
       show={showMenu}
       overlay={

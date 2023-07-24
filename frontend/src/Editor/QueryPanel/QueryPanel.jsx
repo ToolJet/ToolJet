@@ -161,8 +161,8 @@ const QueryPanel = ({
           style={{ width: '288px', padding: '8px 12px 8px 16px' }}
           className="d-flex justify-content- border-end align-items-center"
         >
-          <ButtonSolid variant="ghostBlue" size="sm" onClick={toggleQueryEditor} className="gap-0">
-            <Maximize stroke="var(--indigo9)" style={{ height: '14px', width: '14px' }} viewBox={null} />
+          <ButtonSolid variant="ghostBlack" size="sm" onClick={toggleQueryEditor} className="gap-0 p-2 mr-2">
+            <Maximize stroke="var(--slate9)" style={{ height: '14px', width: '14px' }} viewBox={null} />
           </ButtonSolid>
           <h5 className="mb-0 font-weight-500 cursor-pointer" onClick={toggleQueryEditor}>
             Query Manager

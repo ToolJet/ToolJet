@@ -46,11 +46,8 @@ const Preview = ({ darkMode }) => {
   };
 
   return (
-    <div
-      className="preview-header preview-section d-flex align-items-baseline font-weight-500 row"
-      ref={previewPanelRef}
-    >
-      <div className="col-md-12 border rounded-top">
+    <div className="preview-header preview-section d-flex align-items-baseline font-weight-500" ref={previewPanelRef}>
+      <div className="w-100 border rounded-top">
         <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="raw">
           <div className="position-relative">
             {previewLoading && (
@@ -58,7 +55,7 @@ const Preview = ({ darkMode }) => {
                 <div className="spinner-border text-azure mt-5" role="status"></div>
               </center>
             )}
-            <Row className="py-2 border-bottom preview-section-header">
+            <Row className="py-2 border-bottom preview-section-header m-0">
               <Col className="d-flex align-items-center color-slate9">Preview</Col>
               <Col className="keys text-center d-flex align-items-center">
                 <ListGroup
@@ -93,7 +90,7 @@ const Preview = ({ darkMode }) => {
                 )}
               </Col>
             </Row>
-            <Row>
+            <Row className="m-0">
               <Tab.Content style={{ overflowWrap: 'anywhere', padding: 0 }}>
                 <Tab.Pane eventKey="json" transition={false}>
                   <div className="w-100 preview-data-container" data-cy="preview-json-data-container">

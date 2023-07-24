@@ -230,7 +230,7 @@ export const QueryManagerBody = ({
 
   const renderQueryOptions = () => {
     return (
-      <div style={{ paddingLeft: '32px' }}>
+      <div style={{ padding: '0 32px' }}>
         <div
           className={cx(`d-flex pb-1`, {
             'disabled ': isVersionReleased,

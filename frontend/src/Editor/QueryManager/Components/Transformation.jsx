@@ -135,34 +135,6 @@ return [row for row in data if row['amount'] > 1000]
     };
   };
 
-  const popoverForRecommendation = (
-    <Popover
-      id={`transformation-popover-container`}
-      className={`${darkMode && 'popover-dark-themed theme-dark dark-theme'}`}
-    >
-      <div className={`transformation-popover card text-center ${darkMode && 'tj-dark-mode'}`}>
-        <img src="/assets/images/icons/copilot.svg" alt="AI copilot" height={64} width={64} />
-        <div className="d-flex flex-column card-body">
-          <h4 className="mb-2">ToolJet x OpenAI</h4>
-          <p className="mb-2">
-            <strong style={{ fontWeight: 700, color: '#3E63DD' }}>AI copilot</strong> helps you write your queries
-            faster. It uses OpenAI&apos;s GPT-3.5 to suggest queries based on your data.
-          </p>
-
-          <Button
-            onClick={() => window.open('https://docs.tooljet.com/docs/tooljet-copilot', '_blank')}
-            darkMode={darkMode}
-            size="sm"
-            classNames="default-secondary-button"
-            styles={{ width: '100%', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
-          >
-            <Button.Content title={'Read more'} />
-          </Button>
-        </div>
-      </div>
-    </Popover>
-  );
-
   return (
     <div className="field  transformation-editor">
       <div className="align-items-center gap-2" style={{ display: 'flex', position: 'relative', height: '20px' }}>
@@ -184,7 +156,7 @@ return [row for row in data if row['amount'] > 1000]
                   <span className="ps-1">Enable</span>
                 </span>
               </div>
-              <EducativeLebel popoverForRecommendation={popoverForRecommendation} darkMode={darkMode} />
+              <EducativeLabel darkMode={darkMode} />
             </div>
             <div></div>
           </div>
@@ -274,7 +246,35 @@ return [row for row in data if row['amount'] > 1000]
   );
 };
 
-const EducativeLebel = ({ popoverForRecommendation, darkMode }) => {
+const EducativeLabel = ({ darkMode }) => {
+  const popoverContent = (
+    <Popover
+      id={`transformation-popover-container`}
+      className={`${darkMode && 'popover-dark-themed theme-dark dark-theme'} p-0`}
+    >
+      <div className={`transformation-popover card text-center ${darkMode && 'tj-dark-mode'}`}>
+        <img src="/assets/images/icons/copilot.svg" alt="AI copilot" height={64} width={64} />
+        <div className="d-flex flex-column card-body">
+          <h4 className="mb-2">ToolJet x OpenAI</h4>
+          <p className="mb-2">
+            <strong style={{ fontWeight: 700, color: '#3E63DD' }}>AI copilot</strong> helps you write your queries
+            faster. It uses OpenAI&apos;s GPT-3.5 to suggest queries based on your data.
+          </p>
+
+          <Button
+            onClick={() => window.open('https://docs.tooljet.com/docs/tooljet-copilot', '_blank')}
+            darkMode={darkMode}
+            size="sm"
+            classNames="default-secondary-button"
+            styles={{ width: '100%', fontSize: '12px', fontWeight: 700, borderColor: darkMode && 'transparent' }}
+          >
+            <Button.Content title={'Read more'} />
+          </Button>
+        </div>
+      </div>
+    </Popover>
+  );
+
   const title = () => {
     return (
       <>
@@ -282,12 +282,19 @@ const EducativeLebel = ({ popoverForRecommendation, darkMode }) => {
       </>
     );
   };
+
   return (
     <div className="d-flex">
       <Button.UnstyledButton styles={{ height: '28px' }} darkMode={darkMode} classNames="mx-1">
         <Button.Content title={title} iconSrc={'assets/images/icons/flash.svg'} direction="left" />
       </Button.UnstyledButton>
-      <OverlayTrigger overlay={popoverForRecommendation} rootClose trigger="click" placement="right">
+      <OverlayTrigger
+        overlay={popoverContent}
+        rootClose
+        trigger="click"
+        placement="right"
+        container={document.getElementsByClassName('query-details')[0]}
+      >
         <span style={{ cursor: 'pointer' }} data-cy={`transformation-info-icon`} className="lh-1">
           <Information width={18} fill={'var(--indigo9)'} />
         </span>

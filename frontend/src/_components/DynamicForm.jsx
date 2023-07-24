@@ -408,7 +408,7 @@ const DynamicForm = ({
               <div
                 className={cx({
                   'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
-                  'w-100': isHorizontalLayout,
+                  'w-100': isHorizontalLayout && type !== 'codehinter',
                 })}
               >
                 <Element

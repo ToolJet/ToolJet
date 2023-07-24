@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Select from 'react-select';
+import Select, { components } from 'react-select';
 import { groupBy } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
@@ -10,6 +10,7 @@ import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { staticDataSources } from '../constants';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
+import Search from '@/_ui/Icon/solidIcons/Search';
 
 function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
   const dataSources = useDataSources();
@@ -92,7 +93,11 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
         ref={selectRef}
         controlShouldRenderValue={false}
         menuPlacement="auto"
-        components={{ MenuList: MenuList, IndicatorsContainer: () => '' }}
+        components={{
+          MenuList: MenuList,
+          IndicatorSeparator: () => null,
+          DropdownIndicator,
+        }}
         styles={{
           control: (style) => ({
             ...style,
@@ -106,6 +111,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
             ':hover': {
               borderColor: 'var(--slate7)',
             },
+            flexDirection: 'row-reverse',
           }),
           menu: (style) => ({
             ...style,
@@ -145,8 +151,12 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
             background: 'var(--slate-01, #FBFCFD)',
             boxShadow: '0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10)',
           }),
+          valueContainer: (styles) => ({
+            ...styles,
+            paddingLeft: 0,
+          }),
         }}
-        placeholder="Where do you want to connect to"
+        placeholder="Search"
         options={DataSourceOptions}
         isDisabled={isDisabled}
         menuIsOpen
@@ -197,6 +207,16 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
         </div>
       )}
     </>
+  );
+};
+
+const DropdownIndicator = (props) => {
+  return (
+    components.DropdownIndicator && (
+      <components.DropdownIndicator {...props}>
+        <Search style={{ width: '16px' }} />
+      </components.DropdownIndicator>
+    )
   );
 };
 

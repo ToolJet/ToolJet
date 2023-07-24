@@ -97,6 +97,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
             <FilterandSortPopup
               onFilterDatasourcesChange={handleFilterDatasourcesChange}
               selectedDataSources={dataSourcesForFilters}
+              clearSelectedDataSources={() => setDataSourcesForFilters([])}
               darkMode={darkMode}
             />
             <Tooltip id="tooltip-for-query-panel-header-btn" className="tooltip" />
