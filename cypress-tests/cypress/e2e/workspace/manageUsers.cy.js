@@ -86,7 +86,6 @@ describe("Manage Users", () => {
       "have.text",
       "My workspace"
     );
-    // cy.get(commonSelectors.workspaceName).click();
     updateWorkspaceName(data.email);
     cy.get(dashboardSelector.emptyPageHeader).should("be.visible");
 
@@ -128,7 +127,6 @@ describe("Manage Users", () => {
 
     cy.get(commonSelectors.workspaceName).click();
     cy.contains("My workspace").should("not.exist");
-    cy.visitTheWorkspace('My workspace')
     common.logout();
 
     cy.appUILogin();

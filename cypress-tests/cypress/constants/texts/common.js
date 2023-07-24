@@ -45,7 +45,7 @@ export const commonText = {
   createFolderButton: "Create folder",
   editFolderOption: "Edit folder",
   deleteFolderOption: "Delete folder",
-  updateFolderTitle: "Update folder",
+  updateFolderTitle: "Edit folder",
   updateFolderButton: "Update folder",
   folderDeleteModalMessage: (folderName) => {
     `Are you sure you want to delete the folder ${folderName}? Apps within the folder will not be deleted.`;

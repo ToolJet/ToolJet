@@ -415,11 +415,28 @@ describe("dashboard", () => {
     ).verifyVisibleElement("have.text", commonText.deleteFolderOption);
 
     cy.get(commonSelectors.editFolderOption(data.folderName)).click();
-    verifyModal(
-      commonText.updateFolderTitle,
-      commonText.updateFolderButton,
-      commonSelectors.folderNameInput
+
+    cy.get(commonSelectors.modalComponent).should("be.visible");
+    cy.get(commonSelectors.modalTitle(commonText.updateFolderTitle))
+      .should("be.visible")
+      .and("have.text", commonText.updateFolderTitle);
+    cy.get(commonSelectors.buttonSelector(commonText.closeButton)).should(
+      "be.visible"
     );
+    cy.get(commonSelectors.buttonSelector(commonText.cancelButton))
+      .should("be.visible")
+      .and("have.text", commonText.cancelButton);
+    cy.get(commonSelectors.buttonSelector(commonText.updateFolderButton))
+      .should("be.visible")
+      .and("have.text", "Edit folder");
+
+    cy.get(commonSelectors.folderNameInput).should("be.visible")
+
+    // verifyModal(
+    //   commonText.updateFolderTitle,
+    //   commonText.updateFolderButton,
+    //   commonSelectors.folderNameInput
+    // );
 
     cy.clearAndType(commonSelectors.folderNameInput, data.updatedFolderName);
     closeModal(commonText.closeButton);
