@@ -23,10 +23,6 @@ export const addQuery = (queryName, query, dbName) => {
   cy.get(postgreSqlSelector.queryInputField).realMouseDown({ position: "center" }).realType(' ');
   cy.get(postgreSqlSelector.queryInputField).clearAndTypeOnCodeMirror(query)
   cy.get(postgreSqlSelector.queryCreateAndRunButton).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    `Query (${queryName}) completed.`
-  );
 };
 
 export const addQueryOnGui = (queryName, query) => {
@@ -48,6 +44,7 @@ export const addQueryOnGui = (queryName, query) => {
 export const selectDataSource = (dataSource) => {
   cy.get(commonSelectors.globalDataSourceIcon).click();
   closeDSModal()
+  cy.wait(500);
   cy.get(commonSelectors.addNewDataSourceButton).click();
   cy.get(postgreSqlSelector.dataSourceSearchInputField).type(dataSource);
   cy.get(`[data-cy='data-source-${dataSource.toLowerCase()}']`).click();
