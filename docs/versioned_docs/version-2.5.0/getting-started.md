@@ -205,7 +205,7 @@ ToolJet applications' user interface is constructed using components such as tab
 ### Preview, Release and Share app
 
 1. Click on the **Preview** on the top-right of app builder to immediately check the currently opened version of the app in production. 
-2. Click on the  **Release** button to publish the currently opneded version of the app and push the changes to production.
+2. Click on the  **Release** button to publish the currently opened version of the app and push the changes to production.
 3. **Share** option allows you to share the **released version** of the application with other users or you can also make the app **public** and anyone with the URL will be able to use the app.
 
 :::tip

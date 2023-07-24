@@ -17,7 +17,7 @@ Check the **[Components Catalog](/docs/widgets/overview)** here to know more abo
 
 ## Component Config Inspector
 
-The Component Config Inspector is also called as component inspector. It contains all the available settings for the selected component and is where you **set values**, **update component names**, and **create event handlers**. The Compoenent Inspector organizes settings into different sections, such as **Property** and **Styles**. 
+The Component Config Inspector is also called as component inspector. It contains all the available settings for the selected component and is where you **set values**, **update component names**, and **create event handlers**. The Component Inspector organizes settings into different sections, such as **Property** and **Styles**. 
 
 To open the Component Config Inspector, click on the component handle that is present on the top of the component including **⚙️ + Component Name** and the component inspector will open up on the right side:
 
