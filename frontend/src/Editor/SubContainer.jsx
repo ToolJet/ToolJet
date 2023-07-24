@@ -429,7 +429,12 @@ export const SubContainer = ({
       left = (x * 100) / _containerCanvasWidth;
     }
 
-    width = width + (deltaWidth * NO_OF_GRIDS) / _containerCanvasWidth;
+    //round the width to nearest multiple of gridwidth before converting to %
+    const currentWidth = (_containerCanvasWidth * width) / NO_OF_GRIDS;
+    let newWidth = currentWidth + deltaWidth;
+    newWidth = Math.round(newWidth / gridWidth) * gridWidth;
+    width = (newWidth * NO_OF_GRIDS) / _containerCanvasWidth;
+
     height = height + deltaHeight;
 
     let newBoxes = {

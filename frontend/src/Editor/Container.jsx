@@ -340,7 +340,12 @@ export const Container = ({
     const boundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
     const canvasWidth = boundingRect?.width;
 
-    width = Math.round(width + (deltaWidth * NO_OF_GRIDS) / canvasWidth); // convert the width delta to percentage
+    //round the width to nearest multiple of gridwidth before converting to %
+    const currentWidth = (canvasWidth * width) / NO_OF_GRIDS;
+    let newWidth = currentWidth + deltaWidth;
+    newWidth = Math.round(newWidth / gridWidth) * gridWidth;
+    width = (newWidth * NO_OF_GRIDS) / canvasWidth;
+
     height = height + deltaHeight;
 
     top = y;

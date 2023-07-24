@@ -186,9 +186,7 @@ export const DraggableBox = function DraggableBox({
 
   const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
   const gridWidth = canvasWidth / NO_OF_GRIDS;
-
-  const aproxWidth = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
-  const width = Math.round(aproxWidth / gridWidth) * gridWidth; //rounding of width of element to nearest mulitple of gridWidth
+  const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
 
   const configWidgetHandlerForModalComponent =
     !isSelectedComponent &&
