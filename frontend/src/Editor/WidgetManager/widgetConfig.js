@@ -292,6 +292,18 @@ export const widgets = [
           schema: { type: 'boolean' },
         },
       },
+      columnHorizontalAlignment: {
+        type: 'select',
+        displayName: 'Column horizontal alignment',
+        options: [
+          { name: 'Left', value: 'left' },
+          { name: 'Center', value: 'center' },
+          { name: 'Right', value: 'right' },
+        ],
+        validation: {
+          schema: { type: 'string' },
+        },
+      },
     },
     others: {
       showOnDesktop: { type: 'toggle', displayName: 'Show on desktop ' },
@@ -491,6 +503,7 @@ export const widgets = [
         hideColumnSelectorButton: { value: '{{false}}' },
         showAddNewRowButton: { value: '{{true}}' },
         allowSelection: { value: '{{true}}' },
+        columnHorizontalAlignment: { value: 'left' },
       },
       events: [],
       styles: {

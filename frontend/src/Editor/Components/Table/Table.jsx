@@ -103,6 +103,7 @@ export function Table({
     hideColumnSelectorButton,
     showAddNewRowButton,
     allowSelection,
+    columnHorizontalAlignment,
   } = loadPropertiesAndStyles(properties, styles, darkMode, component);
 
   const updatedDataReference = useRef([]);
@@ -480,6 +481,7 @@ export function Table({
 
   const computedStyles = {
     // width: `${width}px`,
+    textAlign: columnHorizontalAlignment,
   };
 
   const {

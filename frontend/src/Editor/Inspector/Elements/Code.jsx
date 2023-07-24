@@ -17,7 +17,7 @@ export const Code = ({
   component,
 }) => {
   const getDefinitionForNewProps = (param) => {
-    if (['showAddNewRowButton', 'allowSelection'].includes(param)) {
+    if (['showAddNewRowButton', 'allowSelection', 'columnHorizontalAlignment'].includes(param)) {
       if (param === 'allowSelection') {
         const highlightSelectedRow = component?.component?.definition?.properties?.highlightSelectedRow?.value ?? false;
         const showBulkSelector = component?.component?.definition?.properties?.showBulkSelector?.value ?? false;
@@ -25,6 +25,10 @@ export const Code = ({
           resolveReferences(highlightSelectedRow, currentState) || resolveReferences(showBulkSelector, currentState);
 
         return '{{' + `${allowSelection}` + '}}';
+      } else if (param === 'columnHorizontalAlignment') {
+        const columnHorizontalAlignment =
+          component?.component?.definition?.properties?.columnHorizontalAlignment?.value ?? 'left';
+        return columnHorizontalAlignment;
       } else {
         return '{{true}}';
       }
