@@ -472,7 +472,7 @@ export const widgets = [
         displaySearchBox: { value: '{{true}}' },
         showDownloadButton: { value: '{{true}}' },
         showFilterButton: { value: '{{true}}' },
-        autogenerateColumns: { value: true, generateNestedColumns: false },
+        autogenerateColumns: { value: true, generateNestedColumns: true },
         columns: {
           value: [
             {
