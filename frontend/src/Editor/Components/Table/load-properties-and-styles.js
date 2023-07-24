@@ -59,7 +59,6 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
 
   const showAddNewRowButton = properties?.showAddNewRowButton ?? true;
   const allowSelection = properties?.allowSelection ?? (showBulkSelector || highlightSelectedRow) ? true : false;
-  const columnHorizontalAlignment = properties?.columnHorizontalAlignment ?? 'left';
 
   return {
     color,
@@ -91,6 +90,5 @@ export default function loadPropertiesAndStyles(properties, styles, darkMode, co
     hideColumnSelectorButton,
     showAddNewRowButton,
     allowSelection,
-    columnHorizontalAlignment,
   };
 }

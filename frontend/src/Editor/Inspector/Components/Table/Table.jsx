@@ -945,6 +945,7 @@ class TableComponent extends React.Component {
     const renderCustomElement = (param, paramType = 'properties') => {
       return renderElement(component, componentMeta, paramUpdated, dataQueries, param, paramType, currentState);
     };
+
     let items = [];
 
     items.push({
@@ -1048,7 +1049,6 @@ class TableComponent extends React.Component {
               </DragDropContext>
             </>
           )}
-          <div style={{ marginTop: '30px' }}>{renderCustomElement('columnHorizontalAlignment')}</div>
           <div style={{ marginTop: useDynamicColumn ? '0px' : '30px' }}>{renderCustomElement('useDynamicColumn')}</div>
           {useDynamicColumn && <div>{renderCustomElement('columnData')}</div>}
         </div>
