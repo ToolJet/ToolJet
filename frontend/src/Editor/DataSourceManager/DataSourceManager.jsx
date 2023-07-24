@@ -113,13 +113,12 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   selectDataSource = (source) => {
-    let dataSourceMeta = this.getDataSourceMeta(source);
     this.hideModal();
     this.setState(
       {
         dataSourceMeta: source.manifestFile?.data?.source ?? source,
         selectedDataSource: source.manifestFile?.data?.source ?? source,
-        options: source?.options,
+        options: source?.defaults ?? source?.options,
         selectedDataSourceIcon: source.iconFile?.data,
         name: source.manifestFile?.data?.source?.kind ?? source.kind,
         dataSourceSchema: source.manifestFile?.data,
@@ -161,13 +160,10 @@ class DataSourceManagerComponent extends React.Component {
       connectionTestError: null,
       options: {
         ...this.state.options,
-        ...((value || this.state.options[option].encrypted) && { [option]: { ...this.state.options[option], value } }),
+        [option]: { ...this.state.options[option], value: value },
       },
     };
 
-    if (!value && !this.state.options[option].encrypted) {
-      delete stateToUpdate.options[option].value;
-    }
     return this.setStateAsync(stateToUpdate);
   };
 
@@ -710,7 +706,7 @@ class DataSourceManagerComponent extends React.Component {
     const { isEditing: isDataSourceEditing, isSaving: isDataSourceSaving } = this.props.globalDataSourceStatus;
     const isSaveDisabled = deepEqual(options, selectedDataSource?.options, ['encrypted']);
 
-    if (!isSaveDisabled && !isDataSourceEditing && !isDataSourceSaving) {
+    if (!isSaveDisabled && !isDataSourceEditing && !isDataSourceSaving && selectedDataSource) {
       this.props.setGlobalDataSourceStatus({ isEditing: true });
     }
     return (
