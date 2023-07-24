@@ -1021,7 +1021,10 @@ export function Table({
                                   {...provided.dragHandleProps}
                                   // {...extraProps}
                                   ref={provided.innerRef}
-                                  style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
+                                  style={{
+                                    ...getItemStyle(snapshot, provided.draggableProps.style),
+                                    textAlign: column.horizontalAlignment,
+                                  }}
                                 >
                                   {column.render('Header')}
                                 </div>
@@ -1096,6 +1099,7 @@ export function Table({
                   >
                     {row.cells.map((cell, index) => {
                       let cellProps = cell.getCellProps();
+                      cellProps.style.textAlign = cell.column.horizontalAlignment;
                       if (tableDetails.changeSet) {
                         if (tableDetails.changeSet[cell.row.index]) {
                           const currentColumn = columnData.find((column) => column.id === cell.column.id);

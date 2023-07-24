@@ -93,6 +93,7 @@ export default function generateColumnsData({
       customRule: column?.customRule,
       sortType,
       columnVisibility: column?.columnVisibility ?? true,
+      horizontalAlignment: column?.horizontalAlignment,
       Cell: function ({ cell, isEditable, newRowsChangeSet = null }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;

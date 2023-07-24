@@ -25,6 +25,8 @@ export const ProgramaticallyHandleToggleSwitch = ({
 
       case 'columnVisibility':
         return props.columnVisibility;
+      case 'horizontalAlignment':
+        return props.horizontalAlignment;
       default:
         return;
     }
@@ -33,6 +35,9 @@ export const ProgramaticallyHandleToggleSwitch = ({
   const getInitialValue = (property, definition) => {
     if (property === 'columnVisibility') {
       return definition?.value ?? `{{true}}`;
+    }
+    if (property === 'horizontalAlignment') {
+      return definition?.value ?? 'left';
     }
     return definition?.value ?? `{{false}}`;
   };

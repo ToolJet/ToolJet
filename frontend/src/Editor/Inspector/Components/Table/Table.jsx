@@ -263,6 +263,28 @@ class TableComponent extends React.Component {
               }}
             />
           </div>
+          <div className="field mb-2">
+            <ProgramaticallyHandleToggleSwitch
+              label="Horizontal alignment"
+              currentState={this.state.currentState}
+              index={index}
+              darkMode={this.props.darkMode}
+              callbackFunction={this.onColumnItemChange}
+              property="horizontalAlignment"
+              props={column}
+              component={this.props.component}
+              paramMeta={{
+                type: 'select',
+                displayName: 'HorizontalAlignment',
+                options: [
+                  { name: 'Left', value: 'left' },
+                  { name: 'Right', value: 'right' },
+                  { name: 'Center', value: 'center' },
+                ],
+              }}
+              paramType="properties"
+            />
+          </div>
 
           {(column.columnType === 'string' || column.columnType === undefined || column.columnType === 'default') && (
             <div>
