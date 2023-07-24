@@ -14,7 +14,7 @@ jobs:
   Cypress-App-Builder:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress-app-builder')}}
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder')
 
     steps:
       - name: Setup Node.js
@@ -128,7 +128,7 @@ jobs:
   Cypress-Platform:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress-workspace')}}
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress-workspace')
 
     steps:
       - name: Setup Node.js
@@ -234,7 +234,7 @@ jobs:
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
 
-    if: ${{ github.event.action == 'labeled' && (github.event.label.name == 'run-cypress-marketplace')}}
+    if: contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace')
 
     steps:
       - name: Setup Node.js
