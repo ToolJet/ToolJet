@@ -74,7 +74,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
         </div>
         <div className="d-flex d-flex justify-content-between">
           <label className="form-label py-1" style={{ width: 'auto' }}>
-            Available Datasources
+            {`Available Datasources ${!isEmpty(globalDataSources) ? '(' + globalDataSources.length + ')' : 0}`}
           </label>
           <ButtonSolid size="sm" variant="ghostBlue" onClick={handleAddClick}>
             <Plus style={{ height: '16px' }} fill="var(--indigo9)" />

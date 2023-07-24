@@ -159,15 +159,14 @@ const QueryPanel = ({
       >
         <div
           style={{ width: '288px', padding: '8px 12px 8px 16px' }}
-          className="d-flex justify-content-between border-end align-items-center"
+          className="d-flex justify-content- border-end align-items-center"
         >
-          <h5 className="mb-0 font-weight-500 cursor-pointer" onClick={toggleQueryEditor}>
-            QUERIES
-          </h5>
-          <ButtonSolid variant="ghostBlue" size="sm" onClick={toggleQueryEditor}>
-            <Maximize height="16" width="16" viewBox="0 0 25 12" stroke="var(--indigo9)" />
-            Expand
+          <ButtonSolid variant="ghostBlue" size="sm" onClick={toggleQueryEditor} className="gap-0">
+            <Maximize stroke="var(--indigo9)" style={{ height: '14px', width: '14px' }} viewBox={null} />
           </ButtonSolid>
+          <h5 className="mb-0 font-weight-500 cursor-pointer" onClick={toggleQueryEditor}>
+            Query Manager
+          </h5>
         </div>
       </div>
       <div

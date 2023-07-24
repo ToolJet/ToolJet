@@ -179,7 +179,7 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
 
   if (admin) {
     //offseting for height of button since react-select calculates only the size of options list
-    menuListStyles.maxHeight = menuListStyles.maxHeight - 48;
+    menuListStyles.height = menuListStyles.maxHeight - 48;
   }
 
   const handleAddClick = () => navigate(`/${workspaceId}/global-datasources`);
