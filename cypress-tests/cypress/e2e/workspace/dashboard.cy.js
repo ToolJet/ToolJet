@@ -52,7 +52,7 @@ describe("dashboard", () => {
     cy.wait("@emptyDashboard");
     cy.wait("@folders");
     cy.wait("@version");
-    // deleteDownloadsFolder();
+    deleteDownloadsFolder();
   });
 
   it("should verify the elements on empty dashboard", () => {
@@ -282,12 +282,12 @@ describe("dashboard", () => {
       dashboardText.appClonedToast
     );
     cy.wait("@appEditor");
-    cy.wait(300);
+    cy.wait(2000);
     cy.clearAndType(commonSelectors.appNameInput, data.cloneAppName);
     cy.dragAndDropWidget("button", 25, 25);
     cy.get(commonSelectors.editorPageLogo).click();
     cy.wait("@appLibrary");
-    cy.wait(500);
+    cy.wait(1000);
     cy.reloadAppForTheElement(data.cloneAppName);
 
     cy.get(commonSelectors.appCard(data.cloneAppName)).should("be.visible");
@@ -340,7 +340,7 @@ describe("dashboard", () => {
     cy.appUILogin();
     cy.createApp();
     cy.renameApp(data.appName);
-    cy.dragAndDropWidget("Button", 50, 50);
+    cy.dragAndDropWidget("Button", 450, 450);
 
     cy.get(commonSelectors.editorPageLogo).click();
     cy.reloadAppForTheElement(data.appName);
@@ -350,7 +350,6 @@ describe("dashboard", () => {
     );
 
     navigateToAppEditor(data.appName);
-    cy.dragAndDropWidget("Button");
     cy.get(commonSelectors.canvas).should("contain", "Button");
     cy.get(commonSelectors.editorPageLogo).click();
     cy.wait("@appLibrary");

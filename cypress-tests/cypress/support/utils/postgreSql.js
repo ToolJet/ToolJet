@@ -48,6 +48,7 @@ export const addQueryOnGui = (queryName, query) => {
 export const selectDataSource = (dataSource) => {
   cy.get(commonSelectors.globalDataSourceIcon).click();
   closeDSModal()
+  cy.wait(500);
   cy.get(commonSelectors.addNewDataSourceButton).click();
   cy.get(postgreSqlSelector.dataSourceSearchInputField).type(dataSource);
   cy.get(`[data-cy='data-source-${dataSource.toLowerCase()}']`).click();

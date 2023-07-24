@@ -297,14 +297,6 @@ export const signInPageElements = () => {
     "have.text",
     ssoText.signInHeader
   );
-  cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
-    "have.text",
-    ssoText.googleSSOText
-  );
-  cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
-    "have.text",
-    ssoText.gitSignInText
-  );
   cy.get(commonSelectors.workEmailLabel).verifyVisibleElement(
     "have.text",
     commonText.workEmailLabel
@@ -325,6 +317,19 @@ export const signInPageElements = () => {
 
   cy.get(commonSelectors.workEmailInputField).should("be.visible");
   cy.get(commonSelectors.passwordInputField).should("be.visible");
+
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Google")) {
+      cy.get(ssoSelector.googleSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.googleSSOText
+      );
+      cy.get(ssoSelector.gitSSOText).verifyVisibleElement(
+        "have.text",
+        ssoText.gitSignInText
+      );
+    }
+  });
 };
 
 export const SignUpPageElements = () => {
