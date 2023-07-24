@@ -10,6 +10,7 @@ import { resolveReferences } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import Popover from '@/_ui/Popover';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -17,12 +18,12 @@ export const GlobalSettings = ({
   darkMode,
   toggleAppMaintenance,
   is_maintenance_on,
-  currentState,
 }) => {
   const { t } = useTranslation();
   const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } =
     globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
+  const currentState = useCurrentState();
   const [forceCodeBox, setForceCodeBox] = React.useState(true);
   const [realState, setRealState] = React.useState(currentState);
   const [showConfirmation, setConfirmationShow] = React.useState(false);
@@ -124,7 +125,7 @@ export const GlobalSettings = ({
                 </div>
               </div>
             </div>
-            <div className="d-flex mb-3">
+            {/* <div className="d-flex mb-3">
               <span className="w-full m-auto" data-cy={`label-max-canvas-height`}>
                 {t('leftSidebar.Settings.maxHeightOfCanvas', 'Max height of canvas')}
               </span>
@@ -144,7 +145,7 @@ export const GlobalSettings = ({
                   <span className="input-group-text">px</span>
                 </div>
               </div>
-            </div>
+            </div> */}
             <div className="d-flex align-items-center">
               <span className="w-full" data-cy={`label-bg-canvas`}>
                 {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Background color of canvas')}

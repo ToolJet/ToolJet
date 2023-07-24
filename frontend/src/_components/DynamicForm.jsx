@@ -13,30 +13,58 @@ import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
+import { orgEnvironmentVariableService } from '../_services';
 
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 const DynamicForm = ({
   schema,
+  isGDS,
   optionchanged,
   createDataSource,
   options,
   isSaving,
   selectedDataSource,
-  currentState,
   isEditMode,
   optionsChanged,
   queryName,
   computeSelectStyles = false,
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
+  const currentState = useCurrentState();
+  const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
 
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
       optionsChanged(schema?.defaults ?? {});
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  React.useEffect(() => {
+    if (isGDS) {
+      orgEnvironmentVariableService.getVariables().then((data) => {
+        const client_variables = {};
+        const server_variables = {};
+        data.variables.map((variable) => {
+          if (variable.variable_type === 'server') {
+            server_variables[variable.variable_name] = 'HiddenEnvironmentVariable';
+          } else {
+            client_variables[variable.variable_name] = variable.value;
+          }
+        });
+
+        setWorkspaceVariables({ client: client_variables, server: server_variables });
+      });
+    }
+
+    return () => {
+      setWorkspaceVariables([]);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -148,6 +176,8 @@ const DynamicForm = ({
           ...(type === 'textarea' && { rows: rows }),
           ...(helpText && { helpText }),
           onChange: (e) => optionchanged(key, e.target.value),
+          isGDS,
+          workspaceVariables,
         };
       case 'toggle':
         return {

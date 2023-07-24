@@ -12,6 +12,7 @@ import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUt
 import { useDataQueriesActions, useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource, useUnsavedChanges } from '@/_stores/queryPanelStore';
 import ToggleQueryEditorIcon from '../Icons/ToggleQueryEditorIcon';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 
@@ -24,7 +25,6 @@ export const QueryManagerHeader = forwardRef(
       updateDraftQueryName,
       toggleQueryEditor,
       previewLoading = false,
-      currentState,
       options,
       appId,
       editorRef,
@@ -40,6 +40,7 @@ export const QueryManagerHeader = forwardRef(
     const { t } = useTranslation();
     const queryName = selectedQuery?.name ?? '';
     const [renamingQuery, setRenamingQuery] = useState(false);
+    const { queries } = useCurrentState((state) => ({ queries: state.queries }), shallow);
     const { isVersionReleased, editingVersionId } = useAppVersionStore(
       (state) => ({
         isVersionReleased: state.isVersionReleased,
@@ -118,12 +119,14 @@ export const QueryManagerHeader = forwardRef(
             >
               {renamingQuery ? renderRenameInput() : queryName}
             </span>
-            <span
-              className={cx('breadcrum-rename-query-icon', { 'd-none': renamingQuery && isVersionReleased })}
-              onClick={() => setRenamingQuery(true)}
-            >
-              <RenameIcon />
-            </span>
+            {!isVersionReleased && (
+              <span
+                className={cx('breadcrum-rename-query-icon', { 'd-none': renamingQuery && isVersionReleased })}
+                onClick={() => setRenamingQuery(true)}
+              >
+                <RenameIcon />
+              </span>
+            )}
           </div>
         </>
       );
@@ -145,7 +148,8 @@ export const QueryManagerHeader = forwardRef(
         options: _options,
         kind: selectedDataSource.kind,
       };
-      previewQuery(editorRef, query)
+      const hasParamSupport = mode === 'create' || selectedQuery?.options?.hasParamSupport;
+      previewQuery(editorRef, query, false, undefined, hasParamSupport)
         .then(() => {
           ref.current.scrollIntoView();
         })
@@ -189,14 +193,11 @@ export const QueryManagerHeader = forwardRef(
     };
 
     const renderRunButton = () => {
-      const { isLoading } = currentState?.queries[selectedQuery?.name] ?? false;
+      const { isLoading } = queries[selectedQuery?.name] ?? false;
       return (
         <button
           onClick={() => createOrUpdateDataQuery(true)}
-          className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(
-            isLoading,
-            isVersionReleased
-          )}`}
+          className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(isLoading)}`}
           data-cy="query-run-button"
         >
           <span

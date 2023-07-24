@@ -88,7 +88,7 @@ describe("runpy", () => {
     verifyValue("rawData", "Boolean", "true");
   });
 
-  it.only("should verify actions", () => {
+  it("should verify actions", () => {
     const data = {};
     data.customText = randomString(12);
 
@@ -147,7 +147,7 @@ actions.unsetPageVariable('pageVar')`
     cy.url().should("contain", "/home");
 
     cy.get('[data-cy="real-canvas"]').click("topRight", { force: true });
-    cy.dragAndDropWidget("Modal");
+    cy.dragAndDropWidget("Modal", 300, 300);
     cy.waitForAutoSave();
     addInputOnQueryField("runpy", "actions.showModal('modal1')");
     query("run");
@@ -156,6 +156,7 @@ actions.unsetPageVariable('pageVar')`
     cy.get('[data-cy="runpy-input-field"]').click({ force: true });
 
     addInputOnQueryField("runpy", "actions.closeModal('modal1')");
+    cy.wait(2000);
     query("run");
     cy.intercept("GET", "api/data_queries?**").as("addQuery");
     cy.wait("@addQuery");
@@ -163,7 +164,7 @@ actions.unsetPageVariable('pageVar')`
       commonSelectors.toastMessage,
       "Query (runpy1) completed."
     );
-    cy.wait(1000);
+    cy.wait(10000);
     cy.notVisible('[data-cy="modal-title"]');
 
     addInputOnQueryField("runpy", "actions.copyToClipboard('data from runpy')");
@@ -188,7 +189,7 @@ actions.unsetPageVariable('pageVar')`
       commonSelectors.toastMessage,
       "Query (runpy1) completed."
     );
-    cy.wait(1000);
+    cy.wait(5000);
 
     cy.getAllLocalStorage().then((result) => {
       expect(result[Cypress.config().baseUrl].localStorage).to.deep.equal(
@@ -231,14 +232,46 @@ actions.unsetPageVariable('pageVar')`
     data.customText = randomString(12);
 
     selectQuery("Run Python code");
-    addInputOnQueryField("runpy", "tj_globals");
+    addInputOnQueryField("runpy", "tj_globals.theme");
     query("create");
     cy.verifyToastMessage(commonSelectors.toastMessage, "Query Added");
     query("preview");
-    verifypreview(
-      "raw",
-      `{"theme":{"name":"light"},"urlparams":{},"currentUser":{"email":"dev@tooljet.io","firstName":"The","lastName":"Developer","groups":["all_users","admin"]}}`
-    );
+    verifypreview("raw", `{"name":"light"}`);
+
+    addInputOnQueryField("runpy", "tj_globals.currentUser.email");
+    query("preview");
+    verifypreview("raw", `dev@tooljet.io`);
+    addInputOnQueryField("runpy", "tj_globals.currentUser.email");
+    query("preview");
+    verifypreview("raw", `dev@tooljet.io`);
+    addInputOnQueryField("runpy", "tj_globals.currentUser.firstName");
+    query("preview");
+    verifypreview("raw", `The`);
+    addInputOnQueryField("runpy", "tj_globals.currentUser.lastName");
+    query("preview");
+    verifypreview("raw", `Developer`);
+    addInputOnQueryField("runpy", "tj_globals.currentUser.groups");
+    query("preview");
+
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Query completed.");
+    cy.wait(10000);
+    verifypreview("raw", `["all_users","admin"]`);
+    if (Cypress.env("environment") != "Community") {
+      addInputOnQueryField("runpy", "tj_globals.mode.value");
+      query("preview");
+      verifypreview("raw", `edit`);
+
+      addInputOnQueryField("runpy", "tj_globals.environment.name");
+      query("preview");
+      verifypreview("raw", `development`);
+
+      // addInputOnQueryField( //WIP
+      //   "runpy",
+      //   "(tj_globals.currentUser.ssoUserInfo == undefined)"
+      // );
+      // query("preview");
+      // verifypreview("raw", `true`);
+    }
   });
 
   it("should verify action by button", () => {
@@ -317,13 +350,18 @@ actions.unsetPageVariable('pageVar')`
     );
     query("save");
     cy.reload();
-    cy.wait(3000);
+    cy.wait(4000);
     cy.get('[data-cy="modal-confirm-button"]').realClick();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      "Query (runpy1) completed."
+      "Query (runpy1) completed.",
+      false
     );
-    cy.verifyToastMessage(commonSelectors.toastMessage, "Success alert");
-    cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runpy");
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Success alert", false);
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      "alert from runpy",
+      false
+    );
   });
 });
