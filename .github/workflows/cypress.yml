@@ -157,6 +157,10 @@ jobs:
           echo "PG_HOST=localhost" >> .env
           echo "PG_PASS=postgres" >> .env
           echo "PG_PORT=5432" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
+          echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
+          echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
 
       - name: Set up database
         run: |
@@ -244,6 +248,7 @@ jobs:
           echo "TOOLJET_DB_PASS=postgres" >> .env
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
+          echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
 
 
       - name: Set up database
