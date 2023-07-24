@@ -547,7 +547,9 @@ It's enabled by default. Table footer will show two update buttons **Save change
 
 ### Allow selection
 
-This option is active by default. **Enabling** this functionality allows users to choose a row in the table by utilizing `checkboxes` placed next to each row. If this option is **disabled**, the ability to highlight selected rows and perform bulk selection will not be accessible.
+This option is active by default. **Enabling** this functionality allows users to choose a row in the table by utilizing `checkboxes` placed next to each row. If this option is **disabled**, the ability to highlight selected rows and perform bulk selection will not be accessible. 
+
+If the option for allowing selection is enabled, a new option called **[Default selected row](#default-selected-row)** will become visible. However, if the option for allowing selection is disabled, the **[Default selected row](#default-selected-row)** option will not be displayed.
 
 ### Highlight selected row
 
@@ -556,6 +558,19 @@ Activate this option to visually emphasize the last clicked row. **Enabling** th
 ### Bulk selection
 
 To enable the selection of one or more rows from the current page of a table, you can activate the 'Bulk selection' setting in the inspector. The values of the selected rows will be exposed as '**selectedRows**'.
+
+### Default Selected Row
+
+By enabling this option, you can designate a default row to be pre-selected when the app loads. This means that whenever the app is opened for the first time, a specific row will already be highlighted in the table by default. Additionally, there is an accessible variable that stores the value for this setting. You can find a list of all accessible variables **[here](#exposed-variables)**.
+
+To set a default selected row, you need to provide an object with a single key-value pair. For instance, you can use the `id` key and dynamically obtain the value from a variable, let's say `x`, to specify the default selected row in the table. We assume that the variable `x` holds a valid numerical id.
+
+Example:
+```js
+{{{"id": variables.x}}} //assuming variables.x is already set
+```
+
+Please ensure that the value provided in the object corresponds to a valid id in the table to ensure proper functionality.
 
 ### Disable sorting
 
