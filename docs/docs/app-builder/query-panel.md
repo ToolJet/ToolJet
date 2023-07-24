@@ -3,58 +3,21 @@ id: query-panel
 title: Query Panel
 ---
 
-The Query Panel, located at the bottom of the app-builder, allows you to create queries for interacting with connected **Default** and **Global** datasources. It provides the capability to perform API requests, query **[databases](/docs/data-sources/overview)**, and apply **[transformations](/docs/tutorial/transformations)** or data manipulation using **[JavaScript](/docs/data-sources/run-js)** and **[Python](/docs/data-sources/run-py)**.
+The Query Panel is present at the bottom of the app-builder, this is where you create queries to interact with connected **local** and **global** datasources. You can perform API requests, query **[databases](/docs/data-sources/overview)**, or **[transform](/docs/tutorial/transformations)** or manipulate data with **[JavaScript](/docs/data-sources/run-js)** & **[Python](/docs/data-sources/run-py)**.
 
-The Query Panel consists of two sections:
-- The **[Query Manager](#query-manager)** on the right side, which displays a list of all the created queries.
-- The **[Query Editor](#query-editor)**, used to configure the selected query.
+The Query Panel has two sections:
+- **[Query Manager](#query-manager)** on the right that includes a list of all the created queries
+- **[Query Editor](#query-editor)** is used to configure the selected query
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/add.png" alt="App Builder: Component library- right sidebar"/>
+<img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui/querypanel.png" alt="App Builder: Component library- right sidebar"/>
 
 </div>
 
 ## Query Manager
 
-Query Manager will list all the queries that has been created in the application. Query Manager helps in managing the queries that have been created, you can add,edit,delete,duplicate, search, sort and filter through them.
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/querymanager.png" alt="App Builder: Component library- right sidebar"/>
-
-</div>
-
-### Add
-
-Add button is used to add new query in the application. When Add button is clicked, the Query Editor will show you a list of options for creating a query from **Default** datasources such as **Rest API**, **[ToolJet Database](/docs/tooljet-database)**, **[JavaScript Code](/docs/data-sources/run-js)**, **[Python Code](/docs/data-sources/run-py)** or from connected **[Global Datasources](/docs/data-sources/overview)**
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/add.gif" alt="App Builder: Component library- right sidebar"/>
-
-</div>
-
-### Sort/Filter
-
-On the top of Query Manager, there is button to Sort or Filter queries. The following options are there:
-
-**Filter:**
-- By Datasource
-
-**Sort:**
-- Name: A-Z
-- Name: Z-A
-- Type: A-Z
-- Type: Z-A
-- Last modified: oldest first
-- Last modified: newest First
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui2/sortfilter.gif" alt="App Builder: Component library- right sidebar"/>
-
-</div>
+Query Manager will list all the queries that has been created in the application. Query Manager is used to:
 
 ### Search 
 
@@ -63,6 +26,16 @@ On the top of the query manager is search box that can be used to search for a s
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/search.png" alt="App Builder: Component library- right sidebar"/>
+
+</div>
+
+### Add
+
+Add button is used to add more queries in the application. When Add button is clicked, the Query Editor will show you a list of options for creating a query from: **Rest API**, connected **[datasources](/docs/data-sources/overview)**, **[ToolJet Database](/docs/tooljet-database)**, **[JavaScript Code](/docs/data-sources/run-js)**, **[Python Code](/docs/data-sources/run-py)** or Add a new datasource.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/v2-beta/app-builder/querypanel/newui/add.png" alt="App Builder: Component library- right sidebar"/>
 
 </div>
 
