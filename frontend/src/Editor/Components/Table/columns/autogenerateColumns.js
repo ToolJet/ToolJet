@@ -26,42 +26,56 @@ export default function autogenerateColumns(
     return [];
   }
 
-  const firstRow = tableData?.[0] ?? {};
+  const firstRow = !_.isEmpty(tableData?.[0]) ? tableData?.[0] : {};
+
+  const isValueIsPremitiveOrArray = (value) => {
+    if (typeof value !== 'object' || Array.isArray(value)) return true;
+  };
+
+  const isValueIsPlainObject = (value) => {
+    if (typeof value === 'object' && !Array.isArray(value) && value !== null) return true;
+  };
+
+  const limitToOneLevelNestingHelperFunc = (data, presentKey) => {
+    return Object.entries(data).reduce((accumulator, [key, value]) => {
+      if (isValueIsPremitiveOrArray(value)) {
+        accumulator.push(`${presentKey}.${key}`);
+      }
+      return accumulator;
+    }, []);
+  };
+  const generateNestedColumnsHelperFunc = (data, parentKey = '') => {
+    return Object.entries(data).reduce((accumulator, [key, value]) => {
+      const currentKey = parentKey ? `${parentKey}.${key}` : key;
+      if (isValueIsPlainObject(value)) {
+        // if value is object particularly, then we only want nested keys till one level of nesting
+        accumulator.push(...limitToOneLevelNestingHelperFunc(value, currentKey));
+      } else if (isValueIsPremitiveOrArray(value)) {
+        // check if value is premitive or array then simply push current key in the accumulator.
+        accumulator.push(currentKey);
+      }
+      return accumulator;
+    }, []);
+  };
+
+  const generateColumnKeys = (firstRow, generateNestedColumns) => {
+    if (generateNestedColumns) {
+      // This block is responsible to get all the keys, nested keys till one level of nesting from the firstRow
+      return generateNestedColumnsHelperFunc(firstRow);
+    } else {
+      /*
+        return keys whose value is premitive data type to support backward compatibility for older app,
+        where we do not auto-generate column for nested data
+      */
+      return Object.entries(firstRow).reduce((accumulator, [key, value]) => {
+        if (typeof value !== 'object') accumulator.push(key);
+        return accumulator;
+      }, []);
+    }
+  };
 
   // mapping the keys of first row with one level of nested elements.
-  const keysOfTableData = Object.entries(firstRow).reduce((accumulator, currentValue) => {
-    // if generateNestedColumns is true means we want to generate nested column or else will not generate nested columns
-    if (generateNestedColumns) {
-      /*
-      if currentValue[1] type is particularly object, that means it has nested data, so 
-      we try to go inside the if statrment to check it's depth and support auto generation of
-      columns till one level of nesting
-       */
-      if (typeof currentValue[1] === 'object' && !Array.isArray(currentValue[1])) {
-        accumulator.push(
-          ...Object.entries(currentValue[1]).reduce((acc, cv) => {
-            /*
-              to only support one level of nesting, we are checking condition, if type of cv[1] value is 
-              premitive data type or array particulary, if it satisfies any one of the condition, then we auto 
-              generate column for it. Else, if it comes out to be object,that means it has more than one level
-              of nexted data, so we do not auto generate column for the same.
-              */
-            if (typeof cv[1] !== 'object' || Array.isArray(cv[1])) {
-              acc.push(`${currentValue[0]}.${cv[0]}`);
-            }
-            return acc;
-          }, [])
-        );
-      } else {
-        // else for premitive or particulary array data type, we simply push value inside accumulator
-        accumulator.push(currentValue[0]);
-      }
-    } else if (typeof currentValue[1] !== 'object') {
-      // checking if value is not any kind of object to support backward compatibility
-      accumulator?.push(currentValue[0]);
-    }
-    return accumulator;
-  }, []);
+  const keysOfTableData = generateColumnKeys(firstRow, generateNestedColumns);
 
   const keysOfExistingColumns = existingColumns.map((column) => column.key || column.name);
 
