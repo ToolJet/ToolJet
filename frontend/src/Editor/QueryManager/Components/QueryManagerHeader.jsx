@@ -74,8 +74,7 @@ export const QueryManagerHeader = forwardRef(
       }
     };
 
-    const createOrUpdateDataQuery = async (shouldRunQuery = false) => {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+    const createOrUpdateDataQuery = (shouldRunQuery = false) => {
       if (selectedQuery?.id === 'draftQuery') return createDataQuery(appId, editingVersionId, options, shouldRunQuery);
       if (isUnsavedQueriesAvailable) return updateDataQuery(options, shouldRunQuery);
       shouldRunQuery && runQuery(editorRef, selectedQuery?.id, selectedQuery?.name);
