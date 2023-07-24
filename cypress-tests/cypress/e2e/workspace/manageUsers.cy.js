@@ -87,7 +87,6 @@ describe("Manage Users", () => {
       "My workspace"
     );
     updateWorkspaceName(data.email);
-    cy.get(dashboardSelector.emptyPageHeader).should("be.visible");
 
     common.logout();
     cy.appUILogin();

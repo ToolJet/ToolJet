@@ -226,7 +226,6 @@ export const bulkUserUpload = (file, fileName, toastMessage) => {
 export const inviteUserWithUserGroup = (firstName, email, group1, group2) => {
   fillUserInviteForm(firstName, email);
   selectUserGroup(group1);
-  cy.wait(200);
   selectUserGroup(group2);
   cy.get(usersSelector.buttonInviteUsers).click();
   cy.verifyToastMessage(
@@ -267,6 +266,7 @@ export const fillUserInviteForm = (firstName, email) => {
 };
 
 export const selectUserGroup = (groupName) => {
+  cy.wait(500)
   cy.get("body").then(($body) => {
     if (!$body.find(".search > input").length > 0) {
       cy.get(".dropdown-heading-value > .gray").click();

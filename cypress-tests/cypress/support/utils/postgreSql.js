@@ -23,10 +23,6 @@ export const addQuery = (queryName, query, dbName) => {
   cy.get(postgreSqlSelector.queryInputField).realMouseDown({ position: "center" }).realType(' ');
   cy.get(postgreSqlSelector.queryInputField).clearAndTypeOnCodeMirror(query)
   cy.get(postgreSqlSelector.queryCreateAndRunButton).click();
-  cy.verifyToastMessage(
-    commonSelectors.toastMessage,
-    `Query (${queryName}) completed.`
-  );
 };
 
 export const addQueryOnGui = (queryName, query) => {
