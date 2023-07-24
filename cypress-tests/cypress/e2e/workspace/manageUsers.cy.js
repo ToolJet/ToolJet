@@ -125,6 +125,7 @@ describe("Manage Users", () => {
     cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
     cy.get(commonSelectors.loginButton).click();
 
+    updateWorkspaceName(data.email);
     cy.get(commonSelectors.workspaceName).click();
     cy.contains("My workspace").should("not.exist");
     common.logout();

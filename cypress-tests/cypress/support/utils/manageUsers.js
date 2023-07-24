@@ -138,6 +138,7 @@ export const inviteUser = (firstName, email) => {
     commonSelectors.toastMessage,
     usersText.userCreatedToast
   );
+  cy.wait(1000)
   fetchAndVisitInviteLink(email);
 };
 
@@ -233,6 +234,7 @@ export const inviteUserWithUserGroup = (firstName, email, group1, group2) => {
     usersText.userCreatedToast
   );
   // copyInvitationLink(firstName, email);
+  cy.wait(1000)
   fetchAndVisitInviteLink(email)
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.acceptInviteButton).click();
@@ -310,7 +312,7 @@ export const fetchAndVisitInviteLink = (email) => {
 
           url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
           common.logout();
-          cy.wait(500);
+          cy.wait(1000);
           cy.visit(url);
         });
       });
