@@ -101,7 +101,6 @@ jobs:
         run: sudo docker logs postgrest
 
       - name: App builder
-        if: ${{ github.event.label.name == 'run-cypress-app-builder' }}
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
@@ -158,28 +157,12 @@ jobs:
           echo "PG_HOST=localhost" >> .env
           echo "PG_PASS=postgres" >> .env
           echo "PG_PORT=5432" >> .env
-          echo "ENABLE_TOOLJET_DB=true" >> .env
-          echo "TOOLJET_DB=tooljet" >> .env
-          echo "TOOLJET_DB_USER=postgres" >> .env
-          echo "TOOLJET_DB_HOST=localhost" >> .env
-          echo "TOOLJET_DB_PASS=postgres" >> .env
-          echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
-          echo "PGRST_HOST=localhost:3001" >> .env
 
       - name: Set up database
         run: |
           npm run --prefix server db:create
           npm run --prefix server db:reset
           npm run --prefix server db:seed
-
-      - name: sleep 5
-        run: sleep 5
-
-      - name: Run PostgREST Docker Container
-        run: |
-          sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
-          -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
-          postgrest/postgrest:v10.1.1.20221215
 
       - name: Run plugins compilation in watch mode
         run: cd plugins && npm start &
@@ -197,8 +180,7 @@ jobs:
             sleep 5
           done'
 
-      - name: Workspace
-        if: ${{ github.event.label.name == 'run-cypress-workspace' }}
+      - name: Platform
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
@@ -296,7 +278,6 @@ jobs:
           done'
 
       - name: Marketplace
-        if: ${{ github.event.label.name == 'run-cypress-marketplace' }}
         uses: cypress-io/github-action@v5
         with:
           working-directory: ./cypress-tests
