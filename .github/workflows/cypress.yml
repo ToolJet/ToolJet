@@ -22,6 +22,13 @@ jobs:
         with:
           node-version: 18.3.0
 
+      - name: Redis service
+        run: |
+          sudo apt update
+          sudo apt install redis-server
+          sudo service redis-server start
+          sudo service redis-server status
+
       - name: Set up Docker
         uses: docker-practice/actions-setup-docker@master
 
@@ -66,10 +73,6 @@ jobs:
           echo "PGRST_JWT_SECRET=r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" >> .env
           echo "PGRST_HOST=localhost:3001" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
-          echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
-          echo "REDIS_USER=${{ secrets.REDIS_USER }}" >> .env
-          echo "REDIS_PASSWORD=" >> .env
-          echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
 
       - name: Set up database
         run: |
@@ -102,6 +105,15 @@ jobs:
             sleep 5
           done'
 
+      - name: Create Cypress environment file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: "./cypress-tests"
+
+
       - name: docker logs
         run: sudo docker logs postgrest
 
@@ -131,13 +143,19 @@ jobs:
         with:
           node-version: 18.3.0
 
+      - name: Redis service
+        run: |
+          sudo apt update
+          sudo apt install redis-server
+          sudo service redis-server start
+          sudo service redis-server status
+
       - name: Set up Docker
         uses: docker-practice/actions-setup-docker@master
 
       - name: Run PosgtreSQL Database Docker Container
         run: |
-          sudo docker network create tooljet
-          sudo docker run -d --name postgres --network tooljet -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13        
+          sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13          
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -170,12 +188,7 @@ jobs:
           echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
-          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
-          echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
-          echo "REDIS_USER=${{ secrets.REDIS_USER }}" >> .env
-          echo "REDIS_PASSWORD=" >> .env
-          echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
-          
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env        
 
       - name: Set up database
         run: |
@@ -198,6 +211,14 @@ jobs:
           until curl --silent --fail http://localhost:8082; do
             sleep 5
           done'
+
+      - name: Create Cypress environment file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: "./cypress-tests"
 
       - name: Platform
         uses: cypress-io/github-action@v5
@@ -224,6 +245,13 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 18.3.0
+
+      - name: Redis service
+        run: |
+          sudo apt update
+          sudo apt install redis-server
+          sudo service redis-server start
+          sudo service redis-server status
 
       - name: Set up Docker
         uses: docker-practice/actions-setup-docker@master
@@ -265,11 +293,6 @@ jobs:
           echo "PGRST_HOST=localhost:3001" >> .env
           echo "LICENSE_KEY=${{ secrets.RENDER_LICENSE_KEY }}" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
-          echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
-          echo "REDIS_USER=${{ secrets.REDIS_USER }}" >> .env
-          echo "REDIS_PASSWORD=" >> .env
-          echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
-
 
       - name: Set up database
         run: |
@@ -301,6 +324,14 @@ jobs:
           until curl --silent --fail http://localhost:8082; do
             sleep 5
           done'
+
+      - name: Create Cypress environment file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: "./cypress-tests"
 
       - name: Marketplace
         uses: cypress-io/github-action@v5
