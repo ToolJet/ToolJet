@@ -155,7 +155,7 @@ jobs:
 
       - name: Run PosgtreSQL Database Docker Container
         run: |
-          sudo docker run -d --name postgres --network tooljet -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13          
+          sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13          
 
       - name: Checkout
         uses: actions/checkout@v3
