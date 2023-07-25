@@ -971,14 +971,20 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
         getCurrentState()
       );
     } else {
-      queryExecutionPromise = dataqueryService.run(queryId, options);
+      queryExecutionPromise = dataqueryService.run(queryId, options, currentAppEnvironmentId ?? environmentId);
     }
 
     queryExecutionPromise
       .then(async (data) => {
         if (data.status === 'needs_oauth') {
           const url = data.data.auth_url; // Backend generates and return sthe auth url
-          fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
+          const kind = data.data?.kind;
+          localStorage.setItem('currentAppEnvironmentIdForOauth', currentAppEnvironmentId ?? environmentId);
+          if (['slack', 'googlesheets', 'zendesk'].includes(kind)) {
+            fetchOauthTokenForSlackAndGSheet(query.data_source_id, data.data);
+          } else {
+            fetchOAuthToken(url, dataQuery['data_source_id'] || dataQuery['dataSourceId']);
+          }
         }
 
         const promiseStatus =
