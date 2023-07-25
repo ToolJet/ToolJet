@@ -79,7 +79,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: develop
+          ref: refs/heads/develop
 
       # Create Docker Buildx builder with platform configuration
       - name: Set up Docker Buildx
