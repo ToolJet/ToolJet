@@ -169,6 +169,20 @@ export const Folders = function Folders({
     setNewFolderName(e.target.value);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.keyCode === 13) {
+      e.preventDefault();
+      showUpdateForm ? executeEditFolder() : saveFolder();
+    }
+  };
+
+  const handleKeyUp = (e) => {
+    if (e.key === 'Enter' || e.keyCode === 13) {
+      e.preventDefault();
+      showUpdateForm ? executeEditFolder() : saveFolder();
+    }
+  };
+
   const closeModal = () => {
     setErrorText('');
     showUpdateForm ? setShowUpdateForm(false) : setShowForm(false);
@@ -313,6 +327,8 @@ export const Folders = function Folders({
             <input
               type="text"
               onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onKeyUp={handleKeyUp}
               className="form-control"
               placeholder={t('homePage.foldersSection.folderName', 'folder name')}
               disabled={isCreating || isUpdating}
