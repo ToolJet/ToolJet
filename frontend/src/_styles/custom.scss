@@ -99,3 +99,19 @@ div[data-disabled='true'] {
 body {
   overflow-y: auto !important;
 }
+//to determine the text alignment of input elements in the table cells
+.table-text-align-left{
+  input{
+    text-align: left;
+  }
+}
+.table-text-align-right{
+  input{
+    text-align: right;
+  }
+}
+.table-text-align-center{
+  input{
+    text-align: center;
+  }
+}

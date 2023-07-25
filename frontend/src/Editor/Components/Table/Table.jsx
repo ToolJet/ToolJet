@@ -1149,15 +1149,20 @@ export function Table({
                           data-cy={`${cell.column.columnType ?? ''}${String(
                             cell.column.id === 'rightActions' || cell.column.id === 'leftActions' ? cell.column.id : ''
                           )}${String(cellValue ?? '').toLocaleLowerCase()}-cell-${index}`}
-                          className={cx(`${wrapAction ? wrapAction : 'wrap'}-wrapper`, {
-                            'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
-                            'has-text': cell.column.columnType === 'text' || isEditable,
-                            'has-dropdown': cell.column.columnType === 'dropdown',
-                            'has-multiselect': cell.column.columnType === 'multiselect',
-                            'has-datepicker': cell.column.columnType === 'datepicker',
-                            'align-items-center flex-column': cell.column.columnType === 'selector',
-                            [cellSize]: true,
-                          })}
+                          className={cx(
+                            `table-text-align-${cell.column.horizontalAlignment} ${
+                              wrapAction ? wrapAction : 'wrap'
+                            }-wrapper`,
+                            {
+                              'has-actions': cell.column.id === 'rightActions' || cell.column.id === 'leftActions',
+                              'has-text': cell.column.columnType === 'text' || isEditable,
+                              'has-dropdown': cell.column.columnType === 'dropdown',
+                              'has-multiselect': cell.column.columnType === 'multiselect',
+                              'has-datepicker': cell.column.columnType === 'datepicker',
+                              'align-items-center flex-column': cell.column.columnType === 'selector',
+                              [cellSize]: true,
+                            }
+                          )}
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
                           onClick={(e) => {
