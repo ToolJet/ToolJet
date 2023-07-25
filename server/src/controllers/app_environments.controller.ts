@@ -44,7 +44,7 @@ export class AppEnvironmentsController {
       appId,
       environmentId
     );
-    return decamelizeKeys({ appVersions });
+    return { appVersions };
   }
 
   @UseGuards(JwtAuthGuard)

@@ -64,16 +64,16 @@ export const AppVersionsManager = function ({
     appEnvironmentService
       .getVersionsByEnvironment(appId, currentEnvironment.id)
       .then((data) => {
-        setAppVersions(data.app_versions);
+        setAppVersions(data.appVersions);
         setGetAppVersionStatus('success');
-        if (data.app_versions && data.app_versions.length === 0) {
+        if (data.appVersions && data.appVersions.length === 0) {
           // if no versions in the current environment, then set the current environment to null
           // it will reset the current selected environment as development.
           return setCurrentEnvironment(null);
         }
         // if current selected version is not present in the current environment, then select the first version
-        if (!data.app_versions.find((version) => version.id === editingVersion.id)) {
-          selectVersion(data.app_versions[0].id);
+        if (!data.appVersions.find((version) => version.id === editingVersion.id)) {
+          selectVersion(data.appVersions[0].id);
         }
       })
       .catch((error) => {
