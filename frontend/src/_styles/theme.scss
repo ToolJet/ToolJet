@@ -1970,7 +1970,8 @@ button {
       margin-top: auto;
       margin-bottom: auto;
     }
-    .td-container:has(.action-button){
+
+    .td-container:has(.action-button) {
       height: inherit !important;
     }
   }
@@ -2323,6 +2324,7 @@ tr:focus {
 
 .popover-header {
   background-color: #f4f6fa;
+  border-bottom: 0;
 }
 
 .popover-body {
@@ -5164,6 +5166,12 @@ div#driver-page-overlay {
   .popover-body {
     color: #d9dcde !important;
   }
+
+    .popover-header {
+      background-color: var(--slate2);
+      color: var(--slate11);
+      border-bottom-color: var
+    }
 }
 
 .toast-dark-mode {
@@ -5630,10 +5638,11 @@ div#driver-page-overlay {
   .json-tree-icon-container {
     max-width: 20px;
     margin-right: 6px;
+    font-family: 'IBM Plex Sans';
   }
 
   .node-type {
-    color: #a6b6cc;
+    color: var(--slate11);
     padding-top: 2px;
   }
 
@@ -5643,7 +5652,7 @@ div#driver-page-overlay {
   }
 
   .node-length-color {
-    color: #3650af;
+    color: var(--indigo10);
     padding-top: 3px;
   }
 
@@ -5652,15 +5661,15 @@ div#driver-page-overlay {
   }
 
   .json-tree-node-string {
-    color: #f6820c;
+    color: var(--orange9);
   }
 
   .json-tree-node-boolean {
-    color: #3eb25f;
+    color: var(--green9);
   }
 
   .json-tree-node-number {
-    color: #f4b2b0;
+    color: var(--orange9);
   }
 
   .json-tree-node-null {
@@ -5729,7 +5738,7 @@ div#driver-page-overlay {
   .node-key-outline {
     height: 1rem !important;
     border: 1px solid transparent !important;
-    color: #3e525b;
+    color: var(--slate12);
   }
 }
 
@@ -10808,6 +10817,30 @@ tbody {
     }
   }
 }
+.generate-cell-value-component-div-wrapper{
+  
+  .form-control-plaintext:focus-visible {
+    outline-color: #dadcde;
+    border-radius: 4px;
+  }
+  
+  .form-control-plaintext:hover {
+    outline-color: #dadcde;
+    border-radius: 4px;
+  }
+}
+.dark-theme{
+  .generate-cell-value-component-div-wrapper{
+  
+    .form-control-plaintext:focus-visible {
+      filter: invert(-1);
+    }
+    
+    .form-control-plaintext:hover {
+      filter: invert(-1);
+    }
+  }
+}
 
 .workspace-folder-modal {
   .tj-app-input {
@@ -10900,18 +10933,23 @@ tbody {
   color: var(--amber8);
   border-color: var(--amber3);
 }
+
 .form-label-restricted {
   display: none;
 }
 
+.runjs-parameter-badge {
+  max-width: 140px;
+}
+
 .release-buttons {
   .release-button {
-      padding: 6px 16px;
-      font-size: 14px;
+    padding: 6px 16px;
+    font-size: 14px;
   }
 
   .released-button {
-      background-color:  #F1F3F5;
-      color: #C1C8CD;
+    background-color: #F1F3F5;
+    color: #C1C8CD;
   }
 }
