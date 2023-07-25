@@ -180,7 +180,7 @@ jobs:
           echo "SECRET_KEY_BASE=7073b9a35a15dd20914ae17e36a693093f25b74b96517a5fec461fc901c51e011cd142c731bee48c5081ec8bac321c1f259ef097ef2a16f25df17a3798c03426" >> .env
           echo "PG_DB=tooljet_development" >> .env
           echo "PG_USER=cypress" >> .env
-          echo "PG_HOST=postgres" >> .env
+          echo "PG_HOST=localhost" >> .env
           echo "PG_PASS=cypress" >> .env
           echo "PG_PORT=5432" >> .env
           echo "SSO_OPENID_NAME=tj-oidc-simulator" >> .env
