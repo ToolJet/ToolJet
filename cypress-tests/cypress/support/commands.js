@@ -11,8 +11,8 @@ Cypress.Commands.add(
     cy.clearAndType(commonSelectors.workEmailInputField, email);
     cy.clearAndType(commonSelectors.passwordInputField, password);
     cy.get(commonSelectors.signInButton).click();
-    cy.get(commonSelectors.homePageLogo).should("be.visible");
     cy.wait(2000);
+    cy.get(commonSelectors.homePageLogo).should("be.visible");
   }
 );
 
@@ -49,24 +49,16 @@ Cypress.Commands.add("waitForAutoSave", () => {
 });
 
 Cypress.Commands.add("createApp", (appName) => {
-  cy.get("body").then(($title) => {
-    if ($title.text().includes(commonText.introductionMessage)) {
-      cy.get(commonSelectors.emptyAppCreateButton).eq(0).click();
-    } else {
-      cy.get(commonSelectors.appCreateButton).click();
-    }
-    if (Cypress.env("environment") === "Community") {
-      cy.intercept("GET", "/api/v2/data_sources").as("appDs");
-      cy.wait("@appDs", { timeout: 15000 });
-      cy.skipEditorPopover();
-    }
-    else {
-      cy.intercept("GET", "/api/app-environments/**").as("appDs");
-      cy.wait("@appDs", { timeout: 15000 });
-      cy.skipEditorPopover();
-    }
+  const getAppButtonSelector = ($title) =>
+    $title.text().includes(commonText.introductionMessage)
+      ? commonSelectors.emptyAppCreateButton
+      : commonSelectors.appCreateButton;
 
+  cy.get("body").then(($title) => {
+    cy.get(getAppButtonSelector($title)).click();
   });
+  cy.waitForAppLoad();
+  cy.skipEditorPopover();
 });
 
 Cypress.Commands.add(
@@ -99,8 +91,8 @@ Cypress.Commands.add("appUILogin", () => {
   cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.signInButton).click();
-  cy.get(commonSelectors.homePageLogo).should("be.visible");
   cy.wait(2000);
+  cy.get(commonSelectors.homePageLogo).should("be.visible");
 });
 
 Cypress.Commands.add(
@@ -251,12 +243,38 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
 });
 
 Cypress.Commands.add("skipEditorPopover", () => {
-  cy.wait(1000);
+  cy.wait(2000);
   cy.get("body").then(($el) => {
     if ($el.text().includes("Skip", { timeout: 2000 })) {
       cy.get(commonSelectors.skipButton).realClick();
-    } else {
-      cy.log("instructions modal is skipped ");
     }
   });
+  const log = Cypress.log({
+    name: "Skip Popover",
+    displayName: "Skip Popover",
+    message: " Popover skipped",
+  });
+});
+
+Cypress.Commands.add("waitForAppLoad", () => {
+  const API_ENDPOINT =
+    Cypress.env("environment") === "Community"
+      ? "/api/v2/data_sources"
+      : "/api/app-environments/**";
+
+  const TIMEOUT = 15000;
+
+  cy.intercept("GET", API_ENDPOINT).as("appDs");
+  cy.wait("@appDs", { timeout: TIMEOUT });
+});
+
+Cypress.Commands.add("visitTheWorkspace", (workspaceName) => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select id from organizations where name='${workspaceName}';`,
+  }).then((resp) => {
+    let workspaceId = resp.rows[0].id;
+    cy.visit(workspaceId);
+  });
+  cy.wait(2000);
 });

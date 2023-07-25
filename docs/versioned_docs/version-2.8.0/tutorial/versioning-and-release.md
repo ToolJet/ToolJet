@@ -80,7 +80,10 @@ To release a version:
 
 
 :::caution
-To prevent the unintended publishing of an unfinished app, ToolJet will prompt you to create a new version for making any edits to the `Released version` of an app. Editing of the `Released version` will be blocked until a new version is created.
+- When an app is made **Public** without being released, it functions similarly to previewing the application. This means that the version that is loaded when accessing the app through its Public app URL will be the same version of the app currently loaded in the app builder.
+
+- To prevent the unintended publishing of an unfinished app, ToolJet will prompt you to create a new version for making any edits to the `Released version` of an app. Editing of the `Released version` will be blocked until a new version is created.
+
 <div style={{textAlign: 'center'}}>
 
 <img className="screenshot-full" src="/img/tutorial/versioning-and-release/releasepopup.gif" alt="release" />

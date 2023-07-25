@@ -37,7 +37,7 @@ export const AppVersionsManager = function ({
     appEnvironmentService
       .getVersionsByEnvironment(appId)
       .then((data) => {
-        setAppVersions(data.app_versions);
+        setAppVersions(data.appVersions);
         setGetAppVersionStatus('success');
       })
       .catch((error) => {
