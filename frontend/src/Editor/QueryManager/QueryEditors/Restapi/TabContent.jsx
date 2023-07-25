@@ -51,7 +51,7 @@ export default ({
                     />
                   </div>
                   <button
-                    className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end h-100 ${
+                    className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end ${
                       darkMode ? 'delete-field-option-dark' : ''
                     }`}
                     role="button"
