@@ -6,7 +6,7 @@ import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
 import { isOperatorOptions } from './util';
 
-export const ListRows = React.memo(({ currentState, darkMode }) => {
+export const ListRows = React.memo(({ darkMode }) => {
   const { columns, listRowsOptions, limitOptionChanged, handleOptionsChange } = useContext(TooljetDatabaseContext);
 
   function handleWhereFiltersChange(filters) {
@@ -127,7 +127,6 @@ export const ListRows = React.memo(({ currentState, darkMode }) => {
               />
             ) : (
               <CodeHinter
-                currentState={currentState}
                 initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
                 className="codehinter-plugins"
                 theme={darkMode ? 'monokai' : 'default'}
@@ -288,7 +287,6 @@ export const ListRows = React.memo(({ currentState, darkMode }) => {
             </label>
             <div className="field col-4">
               <CodeHinter
-                currentState={currentState}
                 initialValue={listRowsOptions?.limit ?? ''}
                 className="codehinter-plugins"
                 theme={darkMode ? 'monokai' : 'default'}
