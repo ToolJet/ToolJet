@@ -102,7 +102,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
             />
             <Tooltip id="tooltip-for-query-panel-header-btn" className="tooltip" />
           </div>
-          <AddDataSourceButton darkMode={darkMode} />
+          <AddDataSourceButton darkMode={darkMode} disabled={isEmpty(dataQueries)} />
         </div>
         <div
           className={cx('queries-header row d-flex align-items-center justify-content-between', {
@@ -160,7 +160,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
   );
 };
 
-const AddDataSourceButton = ({ darkMode }) => {
+const AddDataSourceButton = ({ darkMode, disabled }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
   const selectRef = useRef();
 
@@ -172,7 +172,7 @@ const AddDataSourceButton = ({ darkMode }) => {
 
   return (
     <OverlayTrigger
-      show={showMenu}
+      show={showMenu && !disabled}
       placement="right-end"
       arrowOffsetTop={90}
       arrowOffsetLeft={90}
@@ -191,8 +191,12 @@ const AddDataSourceButton = ({ darkMode }) => {
         <ButtonSolid
           size="sm"
           variant="tertiary"
+          disabled={disabled}
           onClick={(e) => {
             e.stopPropagation();
+            if (disabled) {
+              return;
+            }
             setShowMenu((show) => !show);
           }}
           className="px-1 pe-2 gap-0"

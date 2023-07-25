@@ -549,14 +549,7 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
     : {};
   const runQuery = (queryName = '', parameters) => {
-    const query = useDataQueriesStore.getState().dataQueries.find((query) => {
-      const isFound = query.name === queryName;
-      if (isPreview) {
-        return isFound;
-      } else {
-        return isFound && query.status !== 'draft';
-      }
-    });
+    const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
 
     const processedParams = {};
     if (_.isEmpty(query) || queryId === query?.id) {

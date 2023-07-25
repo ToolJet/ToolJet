@@ -47,7 +47,6 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
   }, [selectedQuery?.name]);
 
   const buttonDisabled = isUpdationInProcess || isCreationInProcess;
-  const isInDraft = selectedQuery?.status === 'draft';
 
   const executeQueryNameUpdation = (newName) => {
     const { name } = selectedQuery;
@@ -91,29 +90,10 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
       });
   };
 
-  const renderSaveButton = () => {
-    return (
-      <button
-        className={`default-tertiary-button ${buttonLoadingState(false, isVersionReleased)}`}
-        onClick={() => updateDataQueryStatus('published')}
-        disabled={buttonDisabled}
-        data-cy={`query-publish-button`}
-      >
-        <FloppyDisk width={14} fill="var(--slate9)" />
-        <span>Publish</span>
-      </button>
-    );
-  };
-
   const renderRunButton = () => {
     const { isLoading } = queries[selectedQuery?.name] ?? false;
     return (
-      <span
-        {...(isInDraft && {
-          'data-tooltip-id': 'query-header-btn-run',
-          'data-tooltip-content': 'Publish the query to run',
-        })}
-      >
+      <span>
         <button
           onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name)}
           className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(
@@ -121,11 +101,6 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
             isVersionReleased
           )}`}
           data-cy="query-run-button"
-          disabled={isInDraft}
-          {...(isInDraft && {
-            'data-tooltip-id': 'query-header-btn-run',
-            'data-tooltip-content': 'Publish the query to run',
-          })}
         >
           <span
             className={cx({
@@ -136,7 +111,6 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
           </span>
           <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
         </button>
-        {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
       </span>
     );
   };
@@ -145,7 +119,6 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
     if (selectedQuery === null || showCreateQuery) return;
     return (
       <>
-        {isInDraft && renderSaveButton()}
         <PreviewButton onClick={previewButtonOnClick} buttonLoadingState={buttonLoadingState} />
         {renderRunButton()}
       </>

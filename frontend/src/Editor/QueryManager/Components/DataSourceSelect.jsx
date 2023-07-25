@@ -173,6 +173,12 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
         maxMenuHeight={400}
         minMenuHeight={300}
         onKeyDown={handleKeyDown}
+        onInputChange={() => {
+          const queryDsSelectMenu = document.getElementById('query-ds-select-menu');
+          if (queryDsSelectMenu && !queryDsSelectMenu?.style?.height) {
+            queryDsSelectMenu.style.height = queryDsSelectMenu.offsetHeight + 'px';
+          }
+        }}
         filterOption={(data, search) => {
           if (data?.data?.source) {
             //Disabled below eslint check since already checking in above line)
@@ -190,7 +196,6 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
 
 const MenuList = ({ children, getStyles, innerRef, ...props }) => {
   const navigate = useNavigate();
-  console.log('props', props, getStyles('menuList', props));
   const menuListStyles = getStyles('menuList', props);
 
   const { admin } = authenticationService.currentSessionValue;
@@ -198,14 +203,14 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
 
   if (admin) {
     //offseting for height of button since react-select calculates only the size of options list
-    menuListStyles.height = menuListStyles.maxHeight - 48;
+    menuListStyles.maxHeight = 400 - 48;
   }
 
   const handleAddClick = () => navigate(`/${workspaceId}/global-datasources`);
 
   return (
     <>
-      <div ref={innerRef} style={menuListStyles}>
+      <div ref={innerRef} style={menuListStyles} id="query-ds-select-menu">
         {children}
       </div>
       {admin && (

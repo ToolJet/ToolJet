@@ -102,7 +102,6 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
             >
               <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
                 <span className="text-truncate">{dataQuery.name}</span>{' '}
-                {dataQuery.status === 'draft' && <small className="mx-2 text-secondary">Draft</small>}
               </div>
             </OverlayTrigger>
           )}
