@@ -26,41 +26,56 @@ const ConstantForm = ({
     return validNameRegex.test(name);
   }
 
+  const ERROR_MESSAGES = Object.freeze({
+    name_already_exists: `Constant with this name already exists in ${capitalize(currentEnvironment.name)} environment`,
+    invalid_name_length: 'Constant name should be between 1 and 32 characters',
+    max_name_length_reached: 'Maximum length has been reached',
+    invalid_name:
+      'Constant name should start with a letter or underscore and can only contain letters, numbers and underscores',
+    invalid_value_length: 'Value should be less than 10000 characters',
+    invalid_value: 'This value is already in use. Please enter a different value',
+  });
+
   const handleConstantNameError = (name, value) => {
     setError((prev) => ({ ...prev, [name]: null }));
 
-    const isNameAlreadyExists = name === 'name' && checkIfConstantNameExists(value, currentEnvironment.id);
-    const invalidNameLength = name === 'name' && value.length > 32;
-    const maxNameLengthReached = name === 'name' && value.length === 32;
+    if (name !== 'name') return;
+
+    const isNameAlreadyExists = checkIfConstantNameExists(value, currentEnvironment.id);
+    const invalidNameLength = value.length > 32;
+    const maxNameLengthReached = value.length === 32;
+    const invalidName = !isValidPropertyName(value);
 
     if (isNameAlreadyExists) {
       setError({
-        name: `Constant with this name already exists in ${capitalize(currentEnvironment.name)} environment`,
+        name: ERROR_MESSAGES.name_already_exists,
       });
     } else if (invalidNameLength) {
       setError({
-        name: `Constant name should be between 1 and 32 characters`,
+        name: ERROR_MESSAGES.invalid_name_length,
       });
     } else if (maxNameLengthReached) {
       setError({
-        name: `Maximum length has been reached`,
+        name: ERROR_MESSAGES.max_name_length_reached,
       });
-    } else if (name === 'name' && !isValidPropertyName(value)) {
+    } else if (invalidName) {
       setError({
-        name: `Constant name should start with a letter or underscore and can only contain letters, numbers and underscores`,
+        name: ERROR_MESSAGES.invalid_name,
       });
     }
   };
 
   const handleConstantValueError = (name, value) => {
-    const invalidValueLength = name === 'value' && value.length > 10000;
+    if (name !== 'value') return;
+
+    const invalidValueLength = value.length > 10000;
 
     if (invalidValueLength) {
-      setError((prev) => ({ ...prev, value: `Value should be less than 10000 characters` }));
+      setError((prev) => ({ ...prev, value: ERROR_MESSAGES.invalid_value_length }));
     }
 
-    if (isUpdate && name === 'value' && value === selectedConstant.value) {
-      setError((prev) => ({ ...prev, value: 'This value is already in use. Please enter a different value' }));
+    if (isUpdate && value === selectedConstant.value) {
+      setError((prev) => ({ ...prev, value: ERROR_MESSAGES.invalid_value }));
     }
   };
 
@@ -77,17 +92,21 @@ const ConstantForm = ({
   };
   const handlecreateOrUpdate = (e) => {
     e.preventDefault();
-
     if (error['name'] || error['value']) {
       return;
     }
-
     createOrUpdate(fields, isUpdate);
   };
 
+  const isActiveErrorState = (state) => {
+    if (!state?.name && !state?.value) return false;
+    if (state?.name === ERROR_MESSAGES.max_name_length_reached) return false;
+
+    return true;
+  };
+
   const shouldDisableButton =
-    !error?.name &&
-    !error.value &&
+    !isActiveErrorState(error) &&
     fields['name'] &&
     fields['value'] &&
     (fields['name'].length > 0 || fields['value'].length > 0)
