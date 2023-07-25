@@ -5,7 +5,6 @@ import { SearchBox } from '@/_components/SearchBox';
 import Minimize from '@/_ui/Icon/solidIcons/Minimize';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import Skeleton from 'react-loading-skeleton';
-import EmptyQueriesIllustration from '@assets/images/icons/no-queries-added.svg';
 import { QueryCard } from './QueryCard';
 import Fuse from 'fuse.js';
 import cx from 'classnames';
@@ -17,6 +16,7 @@ import Plus from '@/_ui/Icon/solidIcons/Plus';
 import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceSelect from '../QueryManager/Components/DataSourceSelect';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
+import FolderEmpty from '@/_ui/Icon/solidIcons/FolderEmpty';
 
 export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, toggleQueryEditor }) => {
   const { t } = useTranslation();
@@ -73,7 +73,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
 
   return (
     <div className="data-pane">
-      <div className={`queries-container ${darkMode && 'theme-dark'}`}>
+      <div className={`queries-container ${darkMode && 'theme-dark'} d-flex flex-column h-100`}>
         <div className="queries-header row d-flex align-items-center justify-content-between">
           <div className="col-auto d-flex">
             <button
@@ -131,7 +131,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
             <Skeleton height={'36px'} className="skeleton" />
           </div>
         ) : (
-          <div className="query-list">
+          <div className={`query-list ${filteredQueries.length === 0 ? 'flex-grow-1' : ''}`}>
             <div>
               {filteredQueries.map((query) => (
                 <QueryCard
@@ -146,10 +146,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
             </div>
             {filteredQueries.length === 0 && (
               <div className=" d-flex  flex-column align-items-center justify-content-start">
-                <EmptyQueriesIllustration />
-                <span data-cy="no-query-message" className="mute-text pt-3">
-                  {dataQueries.length === 0 ? 'No queries added' : 'No queries found'}
-                </span>
+                {filteredQueries.length === 0 ? <EmptyDataSource /> : ''}
                 <br />
               </div>
             )}
@@ -159,6 +156,20 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
     </div>
   );
 };
+
+const EmptyDataSource = () => (
+  <div>
+    <div className="text-center">
+      <span
+        className="rounded mb-3 bg-slate3 d-flex justify-content-center align-items-center"
+        style={{ width: '32px', height: '32px' }}
+      >
+        <FolderEmpty style={{ height: '16px' }} />
+      </span>
+    </div>
+    <span>No queries have been added. </span>
+  </div>
+);
 
 const AddDataSourceButton = ({ darkMode, disabled }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
