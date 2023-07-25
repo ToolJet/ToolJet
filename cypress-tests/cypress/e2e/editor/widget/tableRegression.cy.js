@@ -1093,7 +1093,7 @@ describe("Table", () => {
     cy.get(".tooltip-inner").invoke("hide");
     verifyNodeData("components", "Object", "9 entries ");
     openNode("components");
-    verifyNodeData(tableText.defaultWidgetName, "Object", "20 entries ");
+    verifyNodeData(tableText.defaultWidgetName, "Object", "21 entries ");
     openNode(tableText.defaultWidgetName);
     verifyNodeData("newRows", "Array", "0 item ");
 
