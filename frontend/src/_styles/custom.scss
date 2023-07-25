@@ -104,14 +104,58 @@ body {
   input{
     text-align: left;
   }
+  .tags.row,.radio-row{
+    justify-content: left;
+  }
+  &.has-datepicker{
+    .td-container{
+      .w-100.h-100{
+        div{
+          justify-content: left !important;
+        }
+      }
+    }
+  }
 }
 .table-text-align-right{
   input{
     text-align: right;
   }
+  .tags.row,.radio.row{
+    justify-content: right;
+  }
+  &.has-datepicker{
+    .td-container{
+      .w-100.h-100{
+        div{
+          justify-content: right !important;
+        }
+      }
+    }
+  }
 }
 .table-text-align-center{
   input{
     text-align: center;
+  }
+  .tags.row,.radio.row{
+    justify-content: center;
+  }
+  &.has-datepicker{
+    .td-container{
+      .w-100.h-100{
+        div{
+          justify-content: center !important;
+        }
+      }
+    }
+  }
+}
+.table-text-align-center,.table-text-align-left,.table-text-align-right{
+  .radio.row{
+    width: 100%;
+  }
+  .radio.row.g-0 > *{
+   width: fit-content !important;
   }
 }
