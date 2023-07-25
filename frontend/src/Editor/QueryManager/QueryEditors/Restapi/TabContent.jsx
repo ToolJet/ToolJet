@@ -4,6 +4,7 @@ import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import Remove from '@/_ui/Icon/solidIcons/Remove';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import Trash from '@/_ui/Icon/solidIcons/Trash';
 
 export default ({
   options = [],
@@ -39,7 +40,7 @@ export default ({
                       componentName={`${componentName}/${tabType}::key::${index}`}
                     />
                   </div>
-                  <div className="field col overflow-hidden border rounded-end">
+                  <div className="field col overflow-hidden border ">
                     <CodeHinter
                       initialValue={option[1]}
                       theme={theme}
@@ -50,13 +51,15 @@ export default ({
                     />
                   </div>
                   <button
-                    className="d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0"
+                    className={`d-flex justify-content-center align-items-center delete-field-option bg-transparent border-0 rounded-0 border-top border-bottom border-end rounded-end h-100 ${
+                      darkMode ? 'delete-field-option-dark' : ''
+                    }`}
                     role="button"
                     onClick={() => {
                       removeKeyValuePair(paramType, index);
                     }}
                   >
-                    <Remove fill="#11181C" />
+                    <Trash fill="var(--slate9)" style={{ height: '16px' }} />
                   </button>
                 </div>
               </div>

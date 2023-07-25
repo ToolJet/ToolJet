@@ -85,7 +85,9 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
           <EmptyDataSourceBanner />
         ) : (
           <Container className="p-0">
-            <SearchBox onSearch={setSearchTerm} darkMode={darkMode} searchTerm={searchTerm} />
+            {globalDataSources.length > 4 && (
+              <SearchBox onSearch={setSearchTerm} darkMode={darkMode} searchTerm={searchTerm} />
+            )}
             <Row className="mt-2">
               {filteredGlobalDataSources.map((source) => (
                 <Col sm="6" key={source.id} className="ps-1">
@@ -93,7 +95,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
                     key={`${source.id}-${source.kind}`}
                     variant="ghostBlack"
                     size="sm"
-                    className="font-weight-400 py-3 mb-1"
+                    className="font-weight-400 py-3 mb-1 w-100 justify-content-start"
                     onClick={() => {
                       handleChangeDataSource(source);
                     }}

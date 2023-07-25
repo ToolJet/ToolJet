@@ -114,6 +114,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
             borderWidth: '0',
             borderBottom: '1px solid var(--slate7)',
             marginBottom: '1px',
+            boxShadow: 'none',
             borderRadius: '4px 4px 0 0',
             ':hover': {
               borderColor: 'var(--slate7)',
@@ -146,8 +147,9 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
             cursor: 'pointer',
             backgroundColor: isDisabled ? 'transparent' : isFocused ? 'var(--slate5)' : style.backgroundColor,
             ...(isNested
-              ? { padding: '0 8px', marginLeft: '40px', borderLeft: '1px solid var(--slate5)', width: 'auto' }
+              ? { padding: '0 8px', marginLeft: '19px', borderLeft: '1px solid var(--slate5)', width: 'auto' }
               : {}),
+            ...(!isNested && { borderRadius: '4px' }),
             ':hover': {
               backgroundColor: isNested || isDisabled ? 'transparent' : 'var(--slate4)',
               '.option-nested-datasource-selector': { backgroundColor: 'var(--slate4)' },
@@ -205,6 +207,8 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
     //offseting for height of button since react-select calculates only the size of options list
     menuListStyles.maxHeight = 400 - 48;
   }
+
+  menuListStyles.padding = '4px';
 
   const handleAddClick = () => navigate(`/${workspaceId}/global-datasources`);
 

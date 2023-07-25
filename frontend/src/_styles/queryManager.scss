@@ -44,10 +44,10 @@ $border-radius: 4px;
   scrollbar-width: none;
 }
 
-.query-pane::-webkit-scrollbar {
-  width: 0;
-  background: transparent;
-}
+// .query-pane::-webkit-scrollbar {
+//   width: 0;
+//   background: transparent;
+// }
 
 .query-pane {
   z-index: 1;
@@ -408,16 +408,9 @@ $border-radius: 4px;
         }
       }
 
-      .query-list::-webkit-scrollbar {
-        width: 0;
-        background: transparent;
-      }
-
       .query-list {
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        align-items: center;
         padding: 8px;
         gap: 2px;
         width: 100%;
@@ -502,11 +495,15 @@ $border-radius: 4px;
         }
 
         .delete-field-option {
-          max-height: 32px;
+          height: 34px;
           flex: 0 0 28px;
           background: #ffffff;
-          max-width: 28px !important;
-          width: 28px;
+          width: 34px;
+        }
+
+        .delete-field-option-dark {
+          background-color: #272822 !important;
+          border-color: #272822 !important ;
         }
 
         .code-hinter.codehinter-default-input {
