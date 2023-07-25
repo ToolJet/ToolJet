@@ -100,6 +100,14 @@ jobs:
       - name: docker logs
         run: sudo docker logs postgrest
 
+      - name: Create Cypress environment file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: "./cypress-tests"
+
       - name: App builder
         uses: cypress-io/github-action@v5
         with:
@@ -131,8 +139,7 @@ jobs:
 
       - name: Run PosgtreSQL Database Docker Container
         run: |
-          sudo docker network create tooljet
-          sudo docker run -d --name postgres --network tooljet -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13        
+          sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13        
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -183,6 +190,14 @@ jobs:
           until curl --silent --fail http://localhost:8082; do
             sleep 5
           done'
+
+      - name: Create Cypress environment file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: "./cypress-tests"
 
       - name: Platform
         uses: cypress-io/github-action@v5
@@ -281,6 +296,15 @@ jobs:
           until curl --silent --fail http://localhost:8082; do
             sleep 5
           done'
+
+      - name: Create Cypress environment file
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "cypress.env.json"
+          json: ${{ secrets.CYPRESS_SECRETS }}
+          dir: "./cypress-tests"
+
 
       - name: Marketplace
         uses: cypress-io/github-action@v5
