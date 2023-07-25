@@ -111,7 +111,7 @@ export const Text = function Text({
             <Typography
               className="text-widget"
               style={computedStyles}
-              sx={{ width: '100%', fontSize: textSize, opacity: disabledState ? 0.5 : 1 }}
+              sx={{ width: '100%', fontSize: textSize, opacity: disabledState ? 0.5 : 1, wordBreak: 'break-word' }}
             >
               {DOMPurify.sanitize(text)}
             </Typography>
