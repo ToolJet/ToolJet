@@ -176,6 +176,7 @@ export default function generateColumnsData({
                     }}
                     className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
+                    onFocus={(e) => e.stopPropagation()}
                   />
                   <div className="invalid-feedback">{validationError}</div>
                 </div>
@@ -241,6 +242,7 @@ export default function generateColumnsData({
                         );
                       }
                     }}
+                    onFocus={(e) => e.stopPropagation()}
                     className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                   />
@@ -275,6 +277,7 @@ export default function generateColumnsData({
                   }
                 }}
                 defaultValue={cellValue}
+                onFocus={(e) => e.stopPropagation()}
               ></textarea>
             );
           }

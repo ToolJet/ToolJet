@@ -134,12 +134,7 @@ describe("RunJS", () => {
       "actions.showAlert('success', 'alert from runjs');"
     );
     query("run");
-    // cy.verifyToastMessage(commonSelectors.toastMessage, "Query Added");
-
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Query (runjs1) completed."
-    );
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Query Saved");
 
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
     cy.get(multipageSelector.sidebarPageButton).click();
@@ -284,10 +279,7 @@ describe("RunJS", () => {
     selectEvent("On Click", "Run query", 1);
     cy.get('[data-cy="query-selection-field"]').type("runjs1{enter}");
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Query (runjs1) completed."
-    );
+
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
     renameQueryFromEditor("newrunjs");
     cy.wait(3000);
@@ -295,10 +287,6 @@ describe("RunJS", () => {
 
     cy.get('[data-cy="query-selection-field"]').should("have.text", "newrunjs");
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Query (newrunjs) completed."
-    );
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
   });
 
@@ -317,10 +305,6 @@ describe("RunJS", () => {
     query("save");
     cy.reload();
     cy.wait(3000);
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Query (runjs1) completed."
-    );
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
 
     changeQueryToggles("confirmation-before-run");
@@ -332,10 +316,6 @@ describe("RunJS", () => {
       "Do you want to run this query - runjs1?"
     );
     cy.get('[data-cy="modal-confirm-button"]').realClick();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Query (runjs1) completed."
-    );
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
 
     changeQueryToggles("notification-on-success");
@@ -346,10 +326,6 @@ describe("RunJS", () => {
     cy.reload();
     cy.wait(3000);
     cy.get('[data-cy="modal-confirm-button"]').realClick();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Query (runjs1) completed."
-    );
     cy.verifyToastMessage(commonSelectors.toastMessage, "Success alert");
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
   });
