@@ -84,23 +84,12 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 
   3. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
 
+  Kindly set the postgresql database credentials according to your external database.
+
   ```bash
   curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/.env.external.example
   curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/external.sh && chmod +x external.sh
   mv .env.external.example .env && ./external.sh
-  ```
-
-  Kindly set the postgresql database credentials according to your external database in the .env file above.
-
-  **Example:**
-  ```bash
-  # DATABASE CONFIG
-  PG_HOST=<posgtres database hostname>
-  PG_PORT=5432
-  PG_USER=<posgtres db username>
-  PG_PASS=<posgtres db password>
-  PG_DB=tooljet_production
-  ORM_LOGGING=all
   ```
 
   4. To start the docker container, use the following command:
