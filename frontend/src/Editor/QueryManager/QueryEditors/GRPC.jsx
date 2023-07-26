@@ -133,7 +133,6 @@ const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
                 options={selectedServiceName?.rpcs || []}
                 onChange={(value) => {
                   setRpc(value);
-                  console.log('---arpit rpc', { x: value });
                   optionsChanged({
                     ...options,
                     rpc: value,
