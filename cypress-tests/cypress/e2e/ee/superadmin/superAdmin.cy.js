@@ -31,10 +31,8 @@ data.workspaceName = `${fake.companyName}-workspace`;
 describe("dashboard", () => {
   beforeEach(() => {
     cy.appUILogin();
-    resetAllowPersonalWorkspace();
-    common.logout();
-    cy.appUILogin();
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
+    resetAllowPersonalWorkspace();
   });
   it("Verify elements of the instance settings page", () => {
     cy.get(commonEeSelectors.instanceSettingIcon).click();
@@ -306,6 +304,7 @@ describe("dashboard", () => {
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
     cy.get(instanceSettingsSelector.archiveAllButton).click();
     cy.get(commonEeSelectors.modalCloseButton).click();
+    cy.wait(1000)
     cy.get(
       instanceSettingsSelector.userStatus(data.firstName)
     ).verifyVisibleElement("have.text", "archived");
