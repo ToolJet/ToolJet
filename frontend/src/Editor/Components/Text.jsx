@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 
-export const Text = function Text({
-  height,
-  properties,
-  styles,
-  darkMode,
-  registerAction,
-  setExposedVariable,
-  dataCy,
-}) {
+export const Text = function Text({ height, properties, styles, darkMode, setExposedVariable, dataCy }) {
   let {
     textSize,
     textColor,
@@ -45,21 +37,20 @@ export const Text = function Text({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.text]);
 
-  registerAction(
-    'setText',
-    async function (text) {
+  useEffect(() => {
+    setExposedVariable('setText', async function (text) {
       setText(text);
       setExposedVariable('text', text);
-    },
-    [setText]
-  );
-  registerAction(
-    'visibility',
-    async function (value) {
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setText]);
+
+  useEffect(() => {
+    setExposedVariable('visibility', async function (value) {
       setVisibility(value);
-    },
-    [setVisibility]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setVisibility]);
 
   function computeText() {
     return properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;

@@ -13,7 +13,6 @@ export const Tabs = function Tabs({
   removeComponent,
   setExposedVariable,
   fireEvent,
-  registerAction,
   styles,
   darkMode,
   dataCy,
@@ -97,16 +96,15 @@ export const Tabs = function Tabs({
     return id === currentTab ? 'visible' : 'hidden';
   }
 
-  registerAction(
-    'setTab',
-    async function (id) {
+  useEffect(() => {
+    setExposedVariable('setTab', async function (id) {
       if (id) {
         setCurrentTab(id);
         setExposedVariable('currentTab', id).then(() => fireEvent('onTabSwitch'));
       }
-    },
-    [setCurrentTab]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setCurrentTab]);
 
   const renderTabContent = (id, tab) => (
     <div

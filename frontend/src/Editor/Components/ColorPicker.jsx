@@ -8,7 +8,6 @@ export const ColorPicker = function ({
   setExposedVariable,
   darkMode,
   height,
-  registerAction,
   fireEvent,
   dataCy,
 }) {
@@ -46,9 +45,8 @@ export const ColorPicker = function ({
     return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]})`;
   };
 
-  registerAction(
-    'setColor',
-    async function (colorCode) {
+  useEffect(() => {
+    setExposedVariable('setColor', async function (colorCode) {
       if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(colorCode)) {
         if (colorCode !== color) {
           setColor(colorCode);
@@ -62,9 +60,9 @@ export const ColorPicker = function ({
         setExposedVariable('selectedColorRGBA', 'undefined').then(() => fireEvent('onChange'));
         setColor('Invalid Color');
       }
-    },
-    [setColor]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setColor]);
 
   useEffect(() => {
     if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(defaultColor)) {

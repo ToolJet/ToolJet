@@ -63,7 +63,6 @@ export function Table({
   fireEvent,
   setExposedVariable,
   setExposedVariables,
-  registerAction,
   styles,
   properties,
   variablesExposedForPreview,
@@ -604,18 +603,16 @@ export function Table({
     if (mounted) setExposedVariable('sortApplied', sortOptions).then(() => fireEvent('onSort'));
   }, [sortOptions]);
 
-  registerAction(
-    'setPage',
-    async function (targetPageIndex) {
+  useEffect(() => {
+    setExposedVariable('setPage', async function (targetPageIndex) {
       setPaginationInternalPageIndex(targetPageIndex);
       setExposedVariable('pageIndex', targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
-    },
-    [serverSidePagination, clientSidePagination, setPaginationInternalPageIndex]
-  );
-  registerAction(
-    'selectRow',
-    async function (key, value) {
+    });
+  }, [serverSidePagination, clientSidePagination, setPaginationInternalPageIndex]);
+
+  useEffect(() => {
+    setExposedVariable('selectRow', async function (key, value) {
       const item = tableData.filter((item) => item[key] == value);
       const row = rows.find((item, index) => item.original[key] == value);
       if (row != undefined) {
@@ -626,12 +623,10 @@ export function Table({
           fireEvent('onRowClicked');
         });
       }
-    },
-    [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
-  );
-  registerAction(
-    'deselectRow',
-    async function () {
+    });
+  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]);
+  useEffect(() => {
+    setExposedVariable('deselectRow', async function () {
       if (!_.isEmpty(tableDetails.selectedRow)) {
         const selectedRowDetails = { selectedRow: {}, selectedRowId: {} };
         setExposedVariables(selectedRowDetails).then(() => {
@@ -640,12 +635,11 @@ export function Table({
         });
       }
       return;
-    },
-    [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]
-  );
-  registerAction(
-    'discardChanges',
-    async function () {
+    });
+  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]);
+
+  useEffect(() => {
+    setExposedVariable('discardChanges', async function () {
       if (Object.keys(tableDetails.changeSet || {}).length > 0) {
         setExposedVariables({
           changeSet: {},
@@ -654,12 +648,11 @@ export function Table({
           mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
         });
       }
-    },
-    [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]
-  );
-  registerAction(
-    'discardNewlyAddedRows',
-    async function () {
+    });
+  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]);
+
+  useEffect(() => {
+    setExposedVariable('discardNewlyAddedRows', async function () {
       if (
         tableDetails.addNewRowsDetails.addingNewRows &&
         (Object.keys(tableDetails.addNewRowsDetails.newRowsChangeSet || {}).length > 0 ||
@@ -671,13 +664,13 @@ export function Table({
           mergeToAddNewRowsDetails({ newRowsChangeSet: {}, newRowsDataUpdates: {}, addingNewRows: false });
         });
       }
-    },
-    [
-      JSON.stringify(tableDetails.addNewRowsDetails.newRowsChangeSet),
-      tableDetails.addNewRowsDetails.addingNewRows,
-      JSON.stringify(tableDetails.addNewRowsDetails.newRowsDataUpdates),
-    ]
-  );
+    });
+  }, [
+    JSON.stringify(tableDetails.addNewRowsDetails.newRowsChangeSet),
+    tableDetails.addNewRowsDetails.addingNewRows,
+    JSON.stringify(tableDetails.addNewRowsDetails.newRowsDataUpdates),
+  ]);
+
   useEffect(() => {
     if (showBulkSelector) {
       const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
@@ -698,13 +691,11 @@ export function Table({
     }
   }, [selectedFlatRows.length, selectedFlatRows, _.toString(selectedFlatRows)]);
 
-  registerAction(
-    'downloadTableData',
-    async function (format) {
+  useEffect(() => {
+    setExposedVariable('downloadTableData', async function (format) {
       exportData(format, true);
-    },
-    [_.toString(globalFilteredRows), columns]
-  );
+    });
+  }, [_.toString(globalFilteredRows), columns]);
 
   useEffect(() => {
     setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null }).then(() => {

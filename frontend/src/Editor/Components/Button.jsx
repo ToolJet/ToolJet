@@ -3,7 +3,7 @@ import cx from 'classnames';
 var tinycolor = require('tinycolor2');
 
 export const Button = function Button(props) {
-  const { height, properties, styles, fireEvent, registerAction, id, dataCy, setExposedVariable } = props;
+  const { height, properties, styles, fireEvent, id, dataCy, setExposedVariable } = props;
   const { backgroundColor, textColor, borderRadius, loaderColor, disabledState, borderColor, boxShadow } = styles;
 
   const [label, setLabel] = useState(properties.text);
@@ -45,48 +45,43 @@ export const Button = function Button(props) {
     boxShadow: boxShadow,
   };
 
-  registerAction(
-    'click',
-    async function () {
+  useEffect(() => {
+    setExposedVariable('click', async function () {
       if (!disable) {
         fireEvent('onClick');
       }
-    },
-    [disable]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disable]);
 
-  registerAction(
-    'setText',
-    async function (text) {
+  useEffect(() => {
+    setExposedVariable('setText', async function (text) {
       setLabel(text);
       setExposedVariable('buttonText', text);
-    },
-    [setLabel]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setLabel]);
 
-  registerAction(
-    'disable',
-    async function (value) {
+  useEffect(() => {
+    setExposedVariable('disable', async function (value) {
       setDisable(value);
-    },
-    [setDisable]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setDisable]);
 
-  registerAction(
-    'visibility',
-    async function (value) {
+  useEffect(() => {
+    setExposedVariable('visibility', async function (value) {
       setVisibility(value);
-    },
-    [setVisibility]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setVisibility]);
 
-  registerAction(
-    'loading',
-    async function (value) {
+  useEffect(() => {
+    setExposedVariable('loading', async function (value) {
       setLoading(value);
-    },
-    [setLoading]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setLoading]);
 
   const hasCustomBackground = backgroundColor?.charAt() === '#';
   if (hasCustomBackground) {

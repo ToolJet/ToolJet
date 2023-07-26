@@ -6,7 +6,6 @@ export const Checkbox = function Checkbox({
   styles,
   fireEvent,
   setExposedVariable,
-  registerAction,
   darkMode,
   dataCy,
 }) {
@@ -34,14 +33,12 @@ export const Checkbox = function Checkbox({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultValueFromProperties]);
 
-  registerAction(
-    'setChecked',
-    async function (status) {
+  useEffect(() => {
+    setExposedVariable('setChecked', async function (status) {
       setExposedVariable('value', status).then(() => (status ? fireEvent('onCheck') : fireEvent('onUnCheck')));
       setChecked(status);
-    },
-    [setChecked]
-  );
+    });
+  }, [setChecked]);
 
   return (
     <div

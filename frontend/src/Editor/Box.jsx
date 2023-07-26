@@ -310,27 +310,6 @@ export const Box = function Box({
               styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
               setExposedVariable={(variable, value) => onComponentOptionChanged(component, variable, value, id)}
               setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
-              registerAction={(actionName, func, dependencies = []) => {
-                if (
-                  Object.keys(currentState?.components ?? {}).includes(component.name) &&
-                  currentState?.components[component.name].id === id
-                ) {
-                  if (!Object.keys(exposedVariables).includes(actionName)) {
-                    func.dependencies = dependencies;
-                    componentActions.current.add(actionName);
-                    return onComponentOptionChanged(component, actionName, func);
-                  } else if (exposedVariables[actionName]?.dependencies?.length === 0) {
-                    return Promise.resolve();
-                  } else if (
-                    JSON.stringify(dependencies) !== JSON.stringify(exposedVariables[actionName]?.dependencies) ||
-                    !componentActions.current.has(actionName)
-                  ) {
-                    func.dependencies = dependencies;
-                    componentActions.current.add(actionName);
-                    return onComponentOptionChanged(component, actionName, func);
-                  }
-                }
-              }}
               fireEvent={fireEvent}
               validate={validate}
               parentId={parentId}

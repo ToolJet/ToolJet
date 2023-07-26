@@ -13,7 +13,6 @@ export const DropDown = function DropDown({
   id,
   component,
   exposedVariables,
-  registerAction,
   dataCy,
 }) {
   let { label, value, advanced, schema, placeholder, display_values, values } = properties;
@@ -71,14 +70,12 @@ export const DropDown = function DropDown({
       setExposedItem(undefined, undefined, true);
     }
   }
-
-  registerAction(
-    'selectOption',
-    async function (value) {
+  useEffect(() => {
+    setExposedVariable('selectOption', async function (value) {
       selectOption(value);
-    },
-    [JSON.stringify(values), setCurrentValue, JSON.stringify(display_values)]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(values), setCurrentValue, JSON.stringify(display_values)]);
 
   const validationData = validate(value);
   const { isValid, validationError } = validationData;

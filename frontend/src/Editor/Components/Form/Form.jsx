@@ -22,7 +22,6 @@ export const Form = function Form(props) {
     currentState,
     fireEvent,
     properties,
-    registerAction,
     resetComponent,
     childComponents,
     onEvent,
@@ -51,20 +50,24 @@ export const Form = function Form(props) {
   const [isValid, setValidation] = useState(true);
   const [uiComponents, setUIComponents] = useState([]);
   const mounted = useMounted();
-  registerAction('resetForm', async function () {
-    resetComponent();
-  });
-  registerAction(
-    'submitForm',
-    async function () {
+
+  useEffect(() => {
+    setExposedVariable('resetForm', async function () {
+      resetComponent();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setExposedVariable('submitForm', async function () {
       if (isValid) {
         onEvent('onSubmit', { component }).then(() => resetComponent());
       } else {
         fireEvent('onInvalid');
       }
-    },
-    [isValid]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
 
   const extractData = (data) => {
     const result = {};
@@ -108,6 +111,7 @@ export const Form = function Form(props) {
 
     if (childComponents === null) {
       setExposedVariable('data', formattedChildData);
+      setExposedVariable('children', formattedChildData);
       setExposedVariable('isValid', childValidation);
       return setValidation(childValidation);
     }
@@ -129,6 +133,7 @@ export const Form = function Form(props) {
     );
 
     setExposedVariable('data', formattedChildData);
+    setExposedVariable('children', formattedChildData);
     setExposedVariable('isValid', childValidation);
     setValidation(childValidation);
 

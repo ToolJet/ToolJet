@@ -20,7 +20,6 @@ export const Multiselect = function Multiselect({
   onComponentClick,
   darkMode,
   fireEvent,
-  registerAction,
   dataCy,
 }) {
   const { label, value, values, display_values, showAllOption } = properties;
@@ -73,9 +72,8 @@ export const Multiselect = function Multiselect({
     ).then(() => fireEvent('onSelect'));
   };
 
-  registerAction(
-    'selectOption',
-    async function (value) {
+  useEffect(() => {
+    setExposedVariable('selectOption', async function (value) {
       if (
         selectOptions.some((option) => option.value === value) &&
         !selected.some((option) => option.value === value)
@@ -93,12 +91,12 @@ export const Multiselect = function Multiselect({
           newSelected.map((item) => item.value)
         ).then(() => fireEvent('onSelect'));
       }
-    },
-    [selected, setSelected]
-  );
-  registerAction(
-    'deselectOption',
-    async function (value) {
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, setSelected]);
+
+  useEffect(() => {
+    setExposedVariable('deselectOption', async function (value) {
       if (selectOptions.some((option) => option.value === value) && selected.some((option) => option.value === value)) {
         const newSelected = [
           ...selected.filter(function (item) {
@@ -111,19 +109,19 @@ export const Multiselect = function Multiselect({
           newSelected.map((item) => item.value)
         ).then(() => fireEvent('onSelect'));
       }
-    },
-    [selected, setSelected]
-  );
-  registerAction(
-    'clearSelections',
-    async function () {
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, setSelected]);
+
+  useEffect(() => {
+    setExposedVariable('clearSelections', async function () {
       if (selected.length >= 1) {
         setSelected([]);
         setExposedVariable('values', []).then(() => fireEvent('onSelect'));
       }
-    },
-    [selected, setSelected]
-  );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, setSelected]);
 
   return (
     <div
