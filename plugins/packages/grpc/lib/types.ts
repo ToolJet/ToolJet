@@ -12,4 +12,6 @@ export type QueryOptions = {
   operation: string;
   serviceName: string;
   rpc: string;
+  jsonMessage: string;
+  metaDataOptions: string;
 };

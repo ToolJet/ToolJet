@@ -2,7 +2,6 @@ import { QueryError } from 'src/modules/data_sources/query.errors';
 import * as sanitizeHtml from 'sanitize-html';
 import { EntityManager, getManager } from 'typeorm';
 import { isEmpty } from 'lodash';
-const protobuf = require('protobufjs');
 import { ConflictException } from '@nestjs/common';
 import { DataBaseConstraints } from './db_constraints.constants';
 
@@ -112,15 +111,26 @@ export async function dropForeignKey(tableName: string, columnName: string, quer
   await queryRunner.dropForeignKey(tableName, foreignKey);
 }
 
-export async function getServiceAndRpcNames(protoDefinition) {
-  const root = protobuf.parse(protoDefinition).root;
-  const serviceNamesAndMethods = root.nestedArray
-    .filter((item) => item instanceof protobuf.Service)
-    .reduce((acc, service) => {
-      const rpcMethods = service.methodsArray.map((method) => method.name);
-      acc[service.name] = rpcMethods;
-      return acc;
-    }, {});
+export function getServiceAndRpcNames(protoDefinition) {
+  const servicePattern = /service\s+(\w+)\s*{([^}]+)}/gs;
+  const rpcPattern = /rpc\s+(\w+)\s*\(([\w\s,]+)\)\s*returns\s*\(([\w\s,]+)\)/gs;
+  const serviceNamesAndMethods = {};
+
+  let match;
+  while ((match = servicePattern.exec(protoDefinition))) {
+    const serviceName = match[1];
+    const serviceContent = match[2];
+    const rpcMethods = [];
+
+    let rpcMatch;
+    while ((rpcMatch = rpcPattern.exec(serviceContent))) {
+      const rpcMethodName = rpcMatch[1];
+      rpcMethods.push(rpcMethodName);
+    }
+
+    serviceNamesAndMethods[serviceName] = rpcMethods;
+  }
+
   return serviceNamesAndMethods;
 }
 

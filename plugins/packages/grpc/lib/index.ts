@@ -6,7 +6,7 @@ import * as protoLoader from '@grpc/proto-loader';
 
 export default class GRPC implements QueryService {
   async run(sourceOptions: SourceOptions, queryOptions: QueryOptions, dataSourceId: string): Promise<QueryResult> {
-    const { serviceName, rpc } = queryOptions;
+    const { serviceName, rpc, jsonMessage, metaDataOptions } = queryOptions;
 
     if (!sourceOptions.url) {
       throw new QueryError('Missing URL', {}, {});
@@ -32,6 +32,14 @@ export default class GRPC implements QueryService {
     const clientStub: any = new Service(sourceOptions.url, grpc.credentials.createInsecure());
 
     const metadata = new grpc.Metadata();
+    const message = JSON.parse(jsonMessage);
+    const metaDataOptionsParsed = JSON.parse(metaDataOptions);
+
+    if (metaDataOptionsParsed) {
+      Object.keys(metaDataOptionsParsed).forEach((key) => {
+        metadata.add(key, metaDataOptionsParsed[key]);
+      });
+    }
 
     if (authType === 'basic') {
       metadata.add('username', sourceOptions.username);
@@ -47,7 +55,7 @@ export default class GRPC implements QueryService {
     }
 
     const result = await new Promise((resolve, reject) => {
-      clientStub[rpc]({}, metadata, (err: any, response: any) => {
+      clientStub[rpc](message, metadata, (err: any, response: any) => {
         if (err) {
           reject(err);
         }

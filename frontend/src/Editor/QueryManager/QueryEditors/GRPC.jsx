@@ -57,12 +57,17 @@ const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
 
   const handleOnMetaDataKeyChange = (type, index, value) => {
     const currentMetaDataOptions = JSON.parse(JSON.stringify(metaDataOptions));
-    currentMetaDataOptions[index][type === 'key' ? 0 : 1] = value;
+    currentMetaDataOptions[index][type] = value;
+
+    const metaObj = currentMetaDataOptions.reduce((acc, cur) => {
+      acc[cur.key] = cur.value;
+      return acc;
+    }, {});
 
     setMetaDataOptions(currentMetaDataOptions);
     optionsChanged({
       ...options,
-      metaDataOptions: JSON.stringify(currentMetaDataOptions),
+      metaDataOptions: JSON.stringify(metaObj),
     });
   };
 
@@ -128,6 +133,7 @@ const GRPCComponent = ({ darkMode, selectedDataSource, ...restProps }) => {
                 options={selectedServiceName?.rpcs || []}
                 onChange={(value) => {
                   setRpc(value);
+                  console.log('---arpit rpc', { x: value });
                   optionsChanged({
                     ...options,
                     rpc: value,
