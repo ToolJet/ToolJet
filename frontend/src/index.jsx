@@ -3,7 +3,7 @@ import { render } from 'react-dom';
 // import { createRoot } from 'react-dom/client';
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
-import { BrowserTracing } from '@sentry/tracing';
+// import { BrowserTracing } from '@sentry/tracing';
 import { appService } from '@/_services';
 import { App } from './App';
 // eslint-disable-next-line import/no-unresolved
@@ -33,34 +33,35 @@ appService
         },
       });
 
-    if (window.public_config.APM_VENDOR === 'sentry') {
-      const tooljetServerUrl = window.public_config.TOOLJET_SERVER_URL;
-      const tracingOrigins = ['localhost', /^\//];
-      const releaseVersion = window.public_config.RELEASE_VERSION
-        ? `tooljet-${window.public_config.RELEASE_VERSION}`
-        : 'tooljet';
+    // if (window.public_config.APM_VENDOR !== 'sentry') {
+    const tooljetServerUrl = window.public_config.TOOLJET_SERVER_URL;
+    const tracingOrigins = ['localhost', /^\//];
+    const releaseVersion = window.public_config.RELEASE_VERSION
+      ? `tooljet-${window.public_config.RELEASE_VERSION}`
+      : 'tooljet';
 
-      if (tooljetServerUrl) tracingOrigins.push(tooljetServerUrl);
+    if (tooljetServerUrl) tracingOrigins.push(tooljetServerUrl);
 
-      Sentry.init({
-        dsn: window.public_config.SENTRY_DNS,
-        debug: !!window.public_config.SENTRY_DEBUG,
-        release: releaseVersion,
-        integrations: [
-          new BrowserTracing({
-            routingInstrumentation: Sentry.reactRouterV6Instrumentation(
-              React.useEffect,
-              useLocation,
-              useNavigationType,
-              createRoutesFromChildren,
-              matchRoutes
-            ),
-            tracingOrigins: tracingOrigins,
-          }),
-        ],
-        tracesSampleRate: 0.5,
-      });
-    }
+    Sentry.init({
+      dsn: process.env.SENTRY_DNS,
+      debug: false,
+      release: releaseVersion,
+      name: 'react',
+      integrations: [
+        new Sentry.BrowserTracing({
+          routingInstrumentation: Sentry.reactRouterV6Instrumentation(
+            React.useEffect,
+            useLocation,
+            useNavigationType,
+            createRoutesFromChildren,
+            matchRoutes
+          ),
+        }),
+      ],
+      tracesSampleRate: 1.0,
+      tracePropagationTargets: tracingOrigins,
+    });
+    // }
   })
   .then(() => render(<AppWithProfiler />, document.getElementById('app')));
 // .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));
