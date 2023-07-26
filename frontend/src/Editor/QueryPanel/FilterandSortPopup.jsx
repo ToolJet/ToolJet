@@ -95,7 +95,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
 
       default:
         return (
-          <div className="card-body p-0 tj-scrollbar" style={{ height: '275px', overflowY: 'auto' }}>
+          <div className="card-body p-0 tj-scrollbar" style={{ height: '310px', overflowY: 'auto' }}>
             <div className="color-slate9 px-3 pb-2 w-100">
               <small>Filter By</small>
             </div>
@@ -229,7 +229,7 @@ const DataSourceSelector = ({
 
   return (
     <div className="card-body p-0 mt-1">
-      <div className="border-bottom d-flex px-2 mb-2">
+      <div className="border-bottom d-flex px-2">
         <div className="d-flex align-items-center mb-1">
           <button className="border-0 bg-transparent rounded-0 p-0" onClick={onBackBtnClick}>
             <Arrowleft fill="#3E63DD" tailOpacity={1} />
@@ -245,7 +245,7 @@ const DataSourceSelector = ({
           />
         </div>
       </div>
-      <div className="tj-scrollbar" style={{ height: '233px', overflowY: 'auto' }}>
+      <div className="tj-scrollbar py-2" style={{ height: '268px', overflowY: 'auto' }}>
         {sources.map((source) => (
           <label
             className={cx('px-2 py-2 tj-list-btn d-block mx-1', {
