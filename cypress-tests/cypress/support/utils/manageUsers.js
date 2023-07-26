@@ -138,6 +138,7 @@ export const inviteUser = (firstName, email) => {
     commonSelectors.toastMessage,
     usersText.userCreatedToast
   );
+  cy.wait(1000)
   fetchAndVisitInviteLink(email);
 };
 
@@ -225,7 +226,6 @@ export const bulkUserUpload = (file, fileName, toastMessage) => {
 export const inviteUserWithUserGroup = (firstName, email, group1, group2) => {
   fillUserInviteForm(firstName, email);
   selectUserGroup(group1);
-  cy.wait(200);
   selectUserGroup(group2);
   cy.get(usersSelector.buttonInviteUsers).click();
   cy.verifyToastMessage(
@@ -233,6 +233,7 @@ export const inviteUserWithUserGroup = (firstName, email, group1, group2) => {
     usersText.userCreatedToast
   );
   // copyInvitationLink(firstName, email);
+  cy.wait(1000)
   fetchAndVisitInviteLink(email)
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.acceptInviteButton).click();
@@ -265,6 +266,7 @@ export const fillUserInviteForm = (firstName, email) => {
 };
 
 export const selectUserGroup = (groupName) => {
+  cy.wait(500)
   cy.get("body").then(($body) => {
     if (!$body.find(".search > input").length > 0) {
       cy.get(".dropdown-heading-value > .gray").click();
@@ -310,7 +312,7 @@ export const fetchAndVisitInviteLink = (email) => {
 
           url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
           common.logout();
-          cy.wait(500);
+          cy.wait(1000);
           cy.visit(url);
         });
       });
