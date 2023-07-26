@@ -29,21 +29,31 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
   const [searchTermForFilters, setSearchTermForFilters] = useState();
 
   useEffect(() => {
+    // Create a copy of the dataQueries array to perform filtering without modifying the original data.
     let filteredDataQueries = [...dataQueries];
+
+    // Filter the dataQueries based on the selected data sources (dataSourcesForFilters).
     if (!isEmpty(dataSourcesForFilters)) {
-      filteredDataQueries = [...dataQueries.filter((query) => dataSourcesForFilters.includes(query.kind))];
+      const excludedDataSources = ['runjs', 'runpy'];
+      filteredDataQueries = dataQueries.filter((query) => {
+        const queryDSId = excludedDataSources.includes(query.data_source_id) ? null : query.data_source_id;
+        return dataSourcesForFilters.some((source) => source.id == queryDSId && source.kind === query.kind);
+      });
     }
+
+    // Apply additional filtering based on the search term (searchTermForFilters).
     filterQueries(searchTermForFilters, filteredDataQueries);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(dataQueries), dataSourcesForFilters, searchTermForFilters]);
 
-  const handleFilterDatasourcesChange = (kind) => {
+  const handleFilterDatasourcesChange = (source) => {
+    const { id, kind } = source;
     setDataSourcesForFilters((dataSourcesForFilters) => {
-      if (dataSourcesForFilters.includes(kind)) {
-        return dataSourcesForFilters.filter((source) => source !== kind);
-      } else {
-        return [...dataSourcesForFilters, kind];
-      }
+      const exists = dataSourcesForFilters.some((item) => item.id === id && item.kind === kind);
+      return exists
+        ? dataSourcesForFilters.filter((item) => item.id !== id || item.kind !== kind)
+        : [...dataSourcesForFilters, source];
     });
   };
 
@@ -214,7 +224,7 @@ const AddDataSourceButton = ({ darkMode, disabled }) => {
             }
             setShowMenu((show) => !show);
           }}
-          className="px-1 pe-2 gap-0"
+          className="px-1 pe-3 ps-2 gap-0"
         >
           <Plus style={{ height: '16px' }} />
           Add

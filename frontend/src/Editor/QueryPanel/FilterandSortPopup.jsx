@@ -20,11 +20,11 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
   const [search, setSearch] = useState('');
   const { sortDataQueries } = useDataQueriesActions();
   const globalDataSources = useGlobalDataSources();
-  const [sources, setSources] = useState([...staticDataSources, ...globalDataSources]);
+  const [sources, setSources] = useState();
 
   const searchBoxRef = useRef(null);
 
-  const { sortBy, sortOrder } = useDataQueriesStore();
+  const { sortBy, sortOrder, dataQueries } = useDataQueriesStore();
 
   useState(() => {
     if (action === 'filter-by-datasource' && searchBoxRef.current) {
@@ -35,22 +35,27 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
   useEffect(() => {
     if (showMenu) {
       const seen = new Set();
+      const createdSources = dataQueries.map((query) => {
+        const globalDS = globalDataSources.find((source) => source.id === query.data_source_id);
+        if (globalDS) {
+          return globalDS;
+        }
+        return { ...staticDataSources.find((source) => source.kind === query.kind), id: null };
+      });
       setSearch('');
       setSources(
-        [...staticDataSources, ...globalDataSources]
+        createdSources
           .filter((source) => {
-            if (seen.has(source.kind)) {
+            const key = source.kind + '-' + source.id;
+            if (seen.has(key)) {
               return false;
             }
-            seen.add(source.kind);
+            seen.add(key);
             return true;
           })
           .sort((a, b) => {
-            const aChecked = selectedDataSources.includes(a.kind);
-            const bChecked = selectedDataSources.includes(b.kind);
-            if (aChecked === bChecked) {
-              return a.name.localeCompare(b.name);
-            }
+            const aChecked = selectedDataSources.some((item) => item.id === a.id && item.kind === a.kind);
+            const bChecked = selectedDataSources.some((item) => item.id === b.id && item.kind === b.kind);
             if (aChecked && !bChecked) {
               return -1;
             }
@@ -63,7 +68,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
     } else {
       setAction();
     }
-  }, [showMenu]);
+  }, [dataQueries, showMenu]);
 
   const handlePageCallback = (action) => {
     setAction(action);
@@ -90,7 +95,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
 
       default:
         return (
-          <div className="card-body p-0 tj-scrollbar" style={{ maxHeight: '275px', overflowY: 'auto' }}>
+          <div className="card-body p-0 tj-scrollbar" style={{ height: '275px', overflowY: 'auto' }}>
             <div className="color-slate9 px-3 pb-2 w-100">
               <small>Filter By</small>
             </div>
@@ -240,26 +245,26 @@ const DataSourceSelector = ({
           />
         </div>
       </div>
-      <div className="tj-scrollbar" style={{ maxHeight: '250px', overflowY: 'auto' }}>
+      <div className="tj-scrollbar" style={{ height: '233px', overflowY: 'auto' }}>
         {sources.map((source) => (
           <label
-            className={cx('px-2 py-2 tj-list-btn d-block', {
-              active: selectedDataSources.includes(source.kind),
+            className={cx('px-2 py-2 tj-list-btn d-block mx-1', {
+              active: selectedDataSources.some((item) => item.id === source.id && item.kind === source.kind),
             })}
-            key={source.kind}
+            key={source.id || source.kind}
             role="button"
-            for={`default-${source.kind}`}
+            for={`default-${source.id || source.kind}`}
           >
             <Form.Check // prettier-ignore
               type={'checkbox'}
-              id={`default-${source.kind}`}
-              onChange={(e) => onFilterDatasourcesChange(source.kind, e.target.value)}
+              id={`default-${source.id || source.kind}`}
+              onChange={(e) => onFilterDatasourcesChange(source, e.target.value)}
               className="m-0"
-              checked={selectedDataSources.includes(source.kind)}
+              checked={selectedDataSources.some((item) => item.id === source.id && item.kind === source.kind)}
               label={
                 <>
                   <DataSourceIcon source={source} height={12} />
-                  &nbsp;<span className="ms-1">{source.kind}</span>
+                  &nbsp;<span className="ms-1">{source.name}</span>
                 </>
               }
             />
