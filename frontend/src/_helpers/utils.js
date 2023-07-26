@@ -987,7 +987,7 @@ export const deepEqual = (obj1, obj2, excludedKeys = []) => {
         if (!deepEqual(obj1[key], obj2[key], excludedKeys)) {
           return false;
         }
-      } else if (obj1[key] !== obj2[key]) {
+      } else if (obj1[key] != obj2[key]) {
         return false;
       }
     }
