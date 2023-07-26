@@ -161,14 +161,33 @@ export function resolveReferences(
       }
 
       if (object.startsWith('{{') && object.endsWith('}}')) {
-        const code = object.replace('{{', '').replace('}}', '');
+        if ((object.match(/{{/g) || []).length === 1) {
+          const code = object.replace('{{', '').replace('}}', '');
 
-        if (reservedKeyword.includes(code)) {
-          error = `${code} is a reserved keyword`;
-          return [{}, error];
+          if (reservedKeyword.includes(code)) {
+            error = `${code} is a reserved keyword`;
+            return [{}, error];
+          }
+
+          return resolveCode(code, state, customObjects, withError, reservedKeyword, true);
+        } else {
+          const dynamicVariables = getDynamicVariables(object);
+
+          for (const dynamicVariable of dynamicVariables) {
+            const value = resolveString(
+              dynamicVariable,
+              state,
+              customObjects,
+              reservedKeyword,
+              withError,
+              forPreviewBox
+            );
+
+            if (typeof value !== 'function') {
+              object = object.replace(dynamicVariable, value);
+            }
+          }
         }
-
-        return resolveCode(code, state, customObjects, withError, reservedKeyword, true);
       } else if (object.startsWith('%%') && object.endsWith('%%')) {
         const code = object.replaceAll('%%', '');
 
