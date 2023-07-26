@@ -6,9 +6,9 @@ const TerserPlugin = require('terser-webpack-plugin');
 require('dotenv').config({ path: '../.env' });
 const hash = require('string-hash');
 const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
-const fs = require('fs');
-const versionFilePath = '../.version';
-const version = fs.readFileSync(versionFilePath, 'utf-8').trim();
+// const fs = require('fs');
+// const versionFilePath = '../.version';
+// const version = fs.readFileSync(versionFilePath, 'utf-8').trim();
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -160,9 +160,9 @@ module.exports = {
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
-      release: {
-        name: version,
-      },
+      // release: {
+      //   name: version,
+      // },
     }),
   ],
   devServer: {
