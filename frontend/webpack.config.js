@@ -5,6 +5,10 @@ const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 require('dotenv').config({ path: '../.env' });
 const hash = require('string-hash');
+const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
+const fs = require('fs');
+const versionFilePath = '../.version';
+const version = fs.readFileSync(versionFilePath, 'utf-8').trim();
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -53,7 +57,8 @@ module.exports = {
       '@assets': path.resolve(__dirname, 'assets/'),
     },
   },
-  devtool: environment === 'development' ? 'eval-cheap-source-map' : false,
+  // devtool: environment === 'development' ? 'eval-cheap-source-map' : false,
+  devtool: 'source-map', // Source map generation must be turned on
   module: {
     rules: [
       {
@@ -150,6 +155,14 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
       'process.env.SERVE_CLIENT': JSON.stringify(process.env.SERVE_CLIENT),
+    }),
+    sentryWebpackPlugin({
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      release: {
+        name: version,
+      },
     }),
   ],
   devServer: {
