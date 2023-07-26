@@ -124,6 +124,7 @@ import Workspace from './Workspace.jsx';
 import CircularToggleDisabled from './CircularToggleDisabled.jsx';
 import CircularToggleEnabled from './CircularToggleEnabled.jsx';
 import Idea from './Idea.jsx';
+import PlusRectangle from './PlusRectangle.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -293,6 +294,8 @@ const Icon = (props) => {
       return <Plus {...props} />;
     case 'plus01':
       return <Plus01 {...props} />;
+    case 'plusrectangle':
+      return <PlusRectangle {...props} />;
     case 'reload':
       return <Reload {...props} />;
     case 'remove':

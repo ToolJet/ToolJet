@@ -5,7 +5,7 @@ import * as common from "Support/utils/common";
 import { groupsSelector } from "Selectors/manageGroups";
 import { commonText } from "Texts/common";
 import { adminLogin, addNewUserMW } from "Support/utils/userPermissions";
-import { resetDsPermissions } from "Support/utils/eeCommon";
+import { resetDsPermissions, deleteAssignedDatasources } from "Support/utils/eeCommon";
 import { eeGroupsSelector } from "Selectors/eeCommon";
 import { selectDataSource } from "Support/utils/postgreSql";
 import { postgreSqlSelector } from "Selectors/postgreSql";
@@ -21,19 +21,17 @@ data.lastName = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 describe("User permissions", () => {
   beforeEach(() => {
     cy.appUILogin();
+    resetDsPermissions();
+    deleteAssignedDatasources()
   });
 
   it("Should verify the Create and Delete DS permission", () => {
-    resetDsPermissions();
     addNewUserMW(data.firstName, data.email);
     cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
     adminLogin();
 
-    cy.get(groupsSelector.groupLink("Admin")).click();
-    cy.get(groupsSelector.groupLink("All users")).click();
-
     cy.get(groupsSelector.permissionsLink).click();
-    cy.get(groupsSelector.appsCreateCheck).check();
+    cy.wait(1000)
     cy.get(eeGroupsSelector.dsCreateCheck).check();
     common.logout();
 
@@ -57,14 +55,7 @@ describe("User permissions", () => {
       "You do not have permissions to perform this action"
     );
 
-    // cy.get('[data-cy="icon-dashboard"]').click()
-    // cy.createApp();
-    // cy.renameApp(data.appName);
-    // cy.get(commonSelectors.editorPageLogo).click();
-
     adminLogin();
-    cy.get(groupsSelector.groupLink("Admin")).click();
-    cy.get(groupsSelector.groupLink("All users")).click();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(eeGroupsSelector.dsDeleteCheck).check();
     common.logout();
@@ -75,8 +66,6 @@ describe("User permissions", () => {
     cy.verifyToastMessage(commonSelectors.toastMessage, "Data Source Deleted");
 
     adminLogin();
-    cy.get(groupsSelector.groupLink("Admin")).click();
-    cy.get(groupsSelector.groupLink("All users")).click();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(eeGroupsSelector.dsCreateCheck).uncheck();
     common.logout();
@@ -91,8 +80,6 @@ describe("User permissions", () => {
       "You do not have permissions to perform this action"
     );
     adminLogin();
-    cy.get(groupsSelector.groupLink("Admin")).click();
-    cy.get(groupsSelector.groupLink("All users")).click();
     cy.get(groupsSelector.permissionsLink).click();
     cy.get(eeGroupsSelector.dsDeleteCheck).uncheck();
     common.logout();

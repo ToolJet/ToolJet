@@ -3,6 +3,8 @@ name: Tooljet release docker images build
 on:
   release: 
     types: [published]
+    branches:
+      - main
 
   workflow_dispatch:
     inputs:
@@ -35,9 +37,17 @@ jobs:
           docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
           docker buildx use mybuilder
 
+      # Create Docker Buildx builder with platform configuration
+      - name: Set up Docker Buildx
+        run: |
+          mkdir -p ~/.docker/cli-plugins
+          curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
+          chmod a+x ~/.docker/cli-plugins/docker-buildx
+          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
+          docker buildx use mybuilder
+
       - name: Set DOCKER_CLI_EXPERIMENTAL
         run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
-
       - name: use mybuilder buildx
         run: docker buildx use mybuilder
 
@@ -90,9 +100,17 @@ jobs:
           docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
           docker buildx use mybuilder
 
+      # Create Docker Buildx builder with platform configuration
+      - name: Set up Docker Buildx
+        run: |
+          mkdir -p ~/.docker/cli-plugins
+          curl -SL https://github.com/docker/buildx/releases/download/v0.11.0/buildx-v0.11.0.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
+          chmod a+x ~/.docker/cli-plugins/docker-buildx
+          docker buildx create --name mybuilder --platform linux/arm64,linux/amd64,linux/amd64/v2,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/mips64le,linux/mips64,linux/arm/v7,linux/arm/v6
+          docker buildx use mybuilder
+
       - name: Set DOCKER_CLI_EXPERIMENTAL
         run: echo "DOCKER_CLI_EXPERIMENTAL=enabled" >> $GITHUB_ENV
-
       - name: use mybuilder buildx
         run: docker buildx use mybuilder
 

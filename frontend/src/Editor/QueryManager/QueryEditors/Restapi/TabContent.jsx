@@ -3,7 +3,6 @@ import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 
 export default ({
   options = [],
-  currentState,
   theme,
   onChange,
   jsonBody,
@@ -28,7 +27,6 @@ export default ({
                   <div className="d-flex justify-content-center align-items-center query-number">{index + 1}</div>
                   <div className="field col-4 overflow-hidden">
                     <CodeHinter
-                      currentState={currentState}
                       initialValue={option[0]}
                       theme={theme}
                       height={'32px'}
@@ -39,7 +37,6 @@ export default ({
                   </div>
                   <div className="field col overflow-hidden">
                     <CodeHinter
-                      currentState={currentState}
                       initialValue={option[1]}
                       theme={theme}
                       height={'32px'}
@@ -80,7 +77,6 @@ export default ({
       {bodyToggle ? (
         <div>
           <CodeHinter
-            currentState={currentState}
             initialValue={jsonBody}
             mode="javascript"
             theme={darkMode ? 'monokai' : 'base16-light'}
