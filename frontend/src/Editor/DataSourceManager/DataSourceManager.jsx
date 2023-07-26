@@ -89,7 +89,6 @@ class DataSourceManagerComponent extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.selectedDataSource !== this.props.selectedDataSource) {
-      // this.props.setGlobalDataSourceStatus({ isEditing: false });
       let dataSourceMeta = this.getDataSourceMeta(this.props.selectedDataSource);
       this.setState({
         selectedDataSource: this.props.selectedDataSource,
