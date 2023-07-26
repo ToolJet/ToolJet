@@ -35,6 +35,7 @@ describe("Manage Groups", () => {
       groupsText.deleteLabel
     );
 
+    cy.wait(1000)
     cy.get(eeGroupsSelector.dsCreateCheck).check();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,

@@ -19,7 +19,8 @@ describe("Manage SSO for multi workspace", () => {
   });
   it("Should verify openID settings page elements", () => {
     common.navigateToManageSSO();
-    cy.get(ssoEeSelector.oidc).click();
+    cy.wait(1000)
+    cy.get(ssoEeSelector.oidc).dblclick()
 
     cy.get(ssoEeSelector.oidcToggle).should("be.visible");
 
@@ -126,7 +127,7 @@ describe("Manage SSO for multi workspace", () => {
       ssoText.disabledLabel
     );
 
-    cy.get(ssoEeSelector.oidc).should("be.visible").click();
+    cy.get(ssoEeSelector.oidc).should("be.visible").dblclick();
     cy.get(ssoEeSelector.oidcToggle).check();
     cy.get(ssoEeSelector.statusLabel).verifyVisibleElement(
       "have.text",
@@ -187,7 +188,7 @@ describe("Manage SSO for multi workspace", () => {
     cy.get(ssoSelector.googleEnableToggle).uncheck();
     cy.get(ssoSelector.git).click();
     cy.get(ssoSelector.gitEnableToggle).uncheck();
-    cy.get(ssoEeSelector.oidc).click();
+    cy.get(ssoEeSelector.oidc).dblclick()
     cy.get(ssoEeSelector.oidcToggle).uncheck();
 
     SSO.visitWorkspaceLoginPage();
@@ -199,6 +200,10 @@ describe("Manage SSO for multi workspace", () => {
     common.navigateToManageSSO();
     cy.get(ssoSelector.passwordEnableToggle).check();
     SSO.enableDefaultSSO();
+    common.navigateToManageSSO();
+    disableSSO(ssoSelector.google, ssoSelector.googleEnableToggle);
+    disableSSO(ssoSelector.git, ssoSelector.gitEnableToggle);
+    disableSSO(ssoEeSelector.oidc, ssoEeSelector.oidcToggle);
 
     defaultWorkspace();
   });

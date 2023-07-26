@@ -882,7 +882,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                           </tr>
                         ) : (
                           usersInGroup.map((user) => (
-                            <div key={user.id} className="manage-group-users-row">
+                            <div
+                              key={user.id}
+                              className="manage-group-users-row"
+                              data-cy={`${String(user.email).toLowerCase().replace(/\s+/g, '-')}-user-row`}
+                            >
                               <p className="tj-text-sm d-flex align-items-center">
                                 <div className="name-avatar">
                                   {`${user?.first_name?.[0] ?? ''} ${user?.last_name?.[0] ?? ''}`}
