@@ -13,8 +13,10 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
   useEffect(() => {
     const handleClickOutside = (event) => {
       const isClickedOnAddButton = !!event.target.closest('#runjs-param-add-btn');
-      if (isClickedOnAddButton) {
-        return; //modal closing on this even will be taken care by onClick attached to trigger button
+      if (isClickedOnAddButton && !isEdit) {
+        //if the user is in edit mode add button should close other popups open.
+        //modal closing on this even will be taken care by onClick attached to trigger button
+        return;
       }
       if (
         showModal &&
@@ -48,11 +50,12 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
       trigger={'click'}
       placement={'bottom-end'}
       rootClose={true}
+      container={document.getElementsByClassName('query-details ')[0]}
       show={showModal}
       overlay={
         <Popover
           id="parameter-form-popover"
-          className={`query-manager-sort-filter-popup ${darkMode && 'popover-dark-themed dark-theme theme-dark'}`}
+          className={`query-manager-sort-filter-popup p-0 ${darkMode && 'popover-dark-themed dark-theme theme-dark'}`}
           style={{ width: '268px' }}
         >
           <ParameterForm

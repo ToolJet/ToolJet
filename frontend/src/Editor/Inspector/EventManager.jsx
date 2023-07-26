@@ -483,7 +483,7 @@ export const EventManager = ({
                       options={[
                         { name: 'CSV', value: 'csv' },
                         { name: 'Text', value: 'plaintext' },
-                        { name: 'PDF', value: 'pdf' }
+                        { name: 'PDF', value: 'pdf' },
                       ]}
                       value={event.fileType ?? 'csv'}
                       search={true}
