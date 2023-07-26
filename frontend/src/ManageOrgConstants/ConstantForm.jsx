@@ -50,15 +50,18 @@ const ConstantForm = ({
       setError({
         name: ERROR_MESSAGES.name_already_exists,
       });
-    } else if (invalidNameLength) {
+    }
+    if (invalidNameLength) {
       setError({
         name: ERROR_MESSAGES.invalid_name_length,
       });
-    } else if (maxNameLengthReached) {
+    }
+    if (maxNameLengthReached) {
       setError({
         name: ERROR_MESSAGES.max_name_length_reached,
       });
-    } else if (invalidName) {
+    }
+    if (invalidName) {
       setError({
         name: ERROR_MESSAGES.invalid_name,
       });
@@ -93,6 +96,7 @@ const ConstantForm = ({
 
   const isActiveErrorState = (state) => {
     if (!state?.name && !state?.value) return false;
+
     if (state?.name === ERROR_MESSAGES.max_name_length_reached) return false;
 
     return true;
