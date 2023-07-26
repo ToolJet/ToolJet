@@ -47,6 +47,7 @@ export default class RestapiQueryService implements QueryService {
     Object.entries(customQueryParams).map(([key, value]) => authUrl.searchParams.append(key, value));
     return authUrl.toString();
   }
+
   /* Headers of the source will be overridden by headers of the query */
   headers(sourceOptions: any, queryOptions: any, hasDataSource: boolean): Headers {
     const _headers = (queryOptions.headers || []).filter((o) => {
@@ -120,7 +121,7 @@ export default class RestapiQueryService implements QueryService {
     const isUrlEncoded = this.checkIfContentTypeIsURLenc(queryOptions['headers']);
     const isMultiAuthEnabled = sourceOptions['multiple_auth_enabled'];
 
-    /* Chceck if OAuth tokens exists for the source if query requires OAuth */
+    /* Check if OAuth tokens exists for the source if query requires OAuth */
     if (requiresOauth) {
       const tokenData = sourceOptions['tokenData'];
       const isAppPublic = context?.app.isPublic;
@@ -164,7 +165,7 @@ export default class RestapiQueryService implements QueryService {
     const requestOptions: OptionsOfTextResponseBody = {
       method,
       headers,
-      ...this.fetchHttpsCertsForCustomCA(),
+      ...this.fetchHttpsCertsForCustomCA(sourceOptions),
       searchParams: {
         ...paramsFromUrl,
         ...this.searchParams(sourceOptions, queryOptions, hasDataSource),
@@ -232,14 +233,43 @@ export default class RestapiQueryService implements QueryService {
     };
   }
 
-  fetchHttpsCertsForCustomCA() {
-    if (!process.env.NODE_EXTRA_CA_CERTS) return {};
+  fetchHttpsCertsForCustomCA(sourceOptions: any) {
+    let httpsParams: any = {};
+    switch (sourceOptions.ssl_certificate) {
+      case 'ca_certificate':
+        httpsParams = {
+          https: {
+            certificateAuthority: [sourceOptions.ca_cert],
+          },
+        };
+        break;
+      case 'client_certificate':
+        httpsParams = {
+          https: {
+            certificateAuthority: [sourceOptions.ca_cert],
+            key: [sourceOptions.client_key],
+            certificate: [sourceOptions.client_cert],
+          },
+        };
+        break;
+      default:
+        break;
+    }
 
-    return {
-      https: {
-        certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
-      },
-    };
+    if (process.env.NODE_EXTRA_CA_CERTS) {
+      'https' in httpsParams
+        ? (httpsParams.https.certificateAuthority = httpsParams.https?.certificateAuthority.concat([
+            ...tls.rootCertificates,
+            readFileSync(process.env.NODE_EXTRA_CA_CERTS),
+          ]))
+        : (httpsParams = {
+            https: {
+              certificateAuthority: [...tls.rootCertificates, readFileSync(process.env.NODE_EXTRA_CA_CERTS)].join('\n'),
+            },
+          });
+    }
+
+    return httpsParams;
   }
 
   private getResponse(response) {
