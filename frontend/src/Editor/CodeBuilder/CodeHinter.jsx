@@ -88,6 +88,11 @@ export function CodeHinter({
   const currentState = useCurrentState();
   const [realState, setRealState] = useState(currentState);
   const [currentValue, setCurrentValue] = useState(initialValue);
+
+  const [prevCurrentValue, setPrevCurrentValue] = useState(null);
+  const [resolvedValue, setResolvedValue] = useState(null);
+  const [resolvingError, setResolvingError] = useState(null);
+
   const [isFocused, setFocused] = useState(false);
   const [heightRef, currentHeight] = useHeight();
   const isPreviewFocused = useRef(false);
@@ -132,6 +137,28 @@ export function CodeHinter({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [wrapperRef, isFocused, isPreviewFocused, currentValue, prevCountRef, isOpen]);
+
+  useEffect(() => {
+    if (JSON.stringify(currentValue) !== JSON.stringify(prevCurrentValue)) {
+      const customResolvables = getCustomResolvables();
+      const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
+      setPrevCurrentValue(currentValue);
+
+      if (error) {
+        setResolvingError(error);
+        setResolvedValue(null);
+      } else {
+        setResolvingError(null);
+        setResolvedValue(preview);
+      }
+    }
+
+    return () => {
+      setPrevCurrentValue(null);
+      setResolvedValue(null);
+      setResolvingError(null);
+    };
+  }, [JSON.stringify({ currentValue, realState })]);
 
   function valueChanged(editor, onChange, ignoreBraces) {
     if (editor.getValue()?.trim() !== currentValue) {
@@ -179,9 +206,12 @@ export function CodeHinter({
 
   const getPreview = () => {
     if (!enablePreview) return;
-    const customResolvables = getCustomResolvables();
-    const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
+    // const customResolvables = getCustomResolvables();
+    // const [preview, error] = resolveReferences(currentValue, realState, null, customResolvables, true, true);
+
     const themeCls = darkMode ? 'bg-dark  py-1' : 'bg-light  py-1';
+    const preview = resolvedValue;
+    const error = resolvingError;
 
     if (error) {
       const err = String(error);
