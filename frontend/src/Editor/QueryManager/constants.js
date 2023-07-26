@@ -53,7 +53,7 @@ export const customToggles = {
 
 export const mockDataQueryAsComponent = (events) => {
   return {
-    component: { component: { definition: { events } } },
+    component: { component: { definition: { events: events } } },
     componentMeta: {
       events: {
         onDataQuerySuccess: { displayName: 'Query Success' },

@@ -46,7 +46,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedQuery?.name]);
 
-  const buttonDisabled = isUpdationInProcess || isCreationInProcess;
+  const isInDraft = selectedQuery?.status === 'draft';
 
   const executeQueryNameUpdation = (newName) => {
     const { name } = selectedQuery;
@@ -93,7 +93,12 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
   const renderRunButton = () => {
     const { isLoading } = queries[selectedQuery?.name] ?? false;
     return (
-      <span>
+      <span
+        {...(isInDraft && {
+          'data-tooltip-id': 'query-header-btn-run',
+          'data-tooltip-content': 'Connect a data source to run',
+        })}
+      >
         <button
           onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name)}
           className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(
@@ -101,6 +106,11 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
             isVersionReleased
           )}`}
           data-cy="query-run-button"
+          disabled={isInDraft}
+          {...(isInDraft && {
+            'data-tooltip-id': 'query-header-btn-run',
+            'data-tooltip-content': 'Publish the query to run',
+          })}
         >
           <span
             className={cx({
@@ -111,6 +121,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
           </span>
           <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
         </button>
+        {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
       </span>
     );
   };

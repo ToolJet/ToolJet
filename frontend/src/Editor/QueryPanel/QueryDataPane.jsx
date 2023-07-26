@@ -131,7 +131,11 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
             <Skeleton height={'36px'} className="skeleton" />
           </div>
         ) : (
-          <div className={`query-list tj-scrollbar overflow-auto ${filteredQueries.length === 0 ? 'flex-grow-1' : ''}`}>
+          <div
+            className={`query-list tj-scrollbar overflow-auto ${
+              filteredQueries.length === 0 ? 'flex-grow-1 align-items-center justify-content-center' : ''
+            }`}
+          >
             <div>
               {filteredQueries.map((query) => (
                 <QueryCard

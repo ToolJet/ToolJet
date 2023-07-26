@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
-import { capitalize, cloneDeep, isEmpty } from 'lodash';
+import { cloneDeep, isEmpty } from 'lodash';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
 import { allSources, source } from '../QueryEditors';
@@ -11,18 +11,11 @@ import Preview from './Preview';
 import { ChangeDataSource } from './ChangeDataSource';
 import { CustomToggleSwitch } from './CustomToggleSwitch';
 import { EventManager } from '@/Editor/Inspector/EventManager';
-import { allOperations } from '@tooljet/plugins/client';
-import { staticDataSources, customToggles, mockDataQueryAsComponent, schemaUnavailableOptions } from '../constants';
+import { staticDataSources, customToggles, mockDataQueryAsComponent } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
-import { useDataQueries, useDataQueriesActions } from '@/_stores/dataQueriesStore';
-import {
-  useSelectedQuery,
-  useSelectedDataSource,
-  useQueryPanelActions,
-  useShowCreateQuery,
-  useNameInputFocussed,
-} from '@/_stores/queryPanelStore';
+import { useDataQueries, useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import SuccessNotificationInputs from './SuccessNotificationInputs';
@@ -43,8 +36,7 @@ export const QueryManagerBody = ({
   const globalDataSources = useGlobalDataSources();
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
-  const { changeDataQuery, updateDataQuery, createDataQuery } = useDataQueriesActions();
-  const [, setNameInputFocussed] = useNameInputFocussed(false);
+  const { changeDataQuery, updateDataQuery } = useDataQueriesActions();
 
   const [dataSourceMeta, setDataSourceMeta] = useState(null);
   /* - Added the below line to cause re-rendering when the query is switched
@@ -80,20 +72,6 @@ export const QueryManagerBody = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedQuery]);
 
-  const computeQueryName = (kind) => {
-    const currentQueriesForKind = dataQueries.filter((query) => query.kind === kind);
-    let currentNumber = currentQueriesForKind.length + 1;
-
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const newName = `${kind}${currentNumber}`;
-      if (dataQueries.find((query) => query.name === newName) === undefined) {
-        return newName;
-      }
-      currentNumber += 1;
-    }
-  };
-
   // Clear the focus field value from options
   const cleanFocusedFields = (newOptions) => {
     const diffFields = diff(newOptions, defaultOptions.current);
@@ -109,7 +87,7 @@ export const QueryManagerBody = ({
   const validateNewOptions = (newOptions) => {
     const updatedOptions = cleanFocusedFields(newOptions);
     setOptions((options) => ({ ...options, ...updatedOptions }));
-    //Cloning and passing the updated `options` to prevent premature updates of the Zustand store before invoking actions.
+
     updateDataQuery(cloneDeep({ ...options, ...updatedOptions }));
   };
 
@@ -124,6 +102,10 @@ export const QueryManagerBody = ({
 
   const eventsChanged = (events) => {
     optionchanged('events', events);
+    //added this here since the subscriber added in QueryManager component does not detect this change
+    useDataQueriesStore
+      .getState()
+      .actions.saveData({ ...selectedQuery, options: { ...selectedQuery.options, events: events } });
   };
 
   const toggleOption = (option) => {

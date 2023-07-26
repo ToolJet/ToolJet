@@ -10,6 +10,7 @@ import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 import Copy from '@/_ui/Icon/solidIcons/Copy';
 import DataSourceIcon from '../QueryManager/Components/DataSourceIcon';
+import { isQueryRunnable } from '@/_helpers/utils';
 
 export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => {
   const selectedQuery = useSelectedQuery();
@@ -102,6 +103,7 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
             >
               <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
                 <span className="text-truncate">{dataQuery.name}</span>{' '}
+                {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
               </div>
             </OverlayTrigger>
           )}

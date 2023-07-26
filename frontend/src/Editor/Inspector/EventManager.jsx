@@ -18,6 +18,7 @@ import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { Tooltip } from 'react-tooltip';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
+import { isQueryRunnable } from '@/_helpers/utils';
 
 export const EventManager = ({
   component,
@@ -423,7 +424,7 @@ export const EventManager = ({
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
                       options={dataQueries
-                        .filter((qry) => qry.status === 'published')
+                        .filter((qry) => isQueryRunnable(qry))
                         .map((qry) => ({ name: qry.name, value: qry.id }))}
                       value={event.queryId}
                       search={true}
@@ -929,13 +930,13 @@ export const EventManager = ({
     return (
       <>
         <div className="text-left mb-3">
-          <button
-            className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
-            onClick={addHandler}
-            data-cy="add-event-handler"
-          >
-            {t('editor.inspector.eventManager.addEventHandler', '+ Add event handler')}
-          </button>
+          {/* <ButtonSolid className="mt-1" onClick={addHandler} data-cy="add-event-handler" variant="ghostBlue" size="sm">
+            {t('editor.inspector.eventManager.addEventHandler', 'Add event handler')}
+          </ButtonSolid> */}
+          <ButtonSolid variant="ghostBlue" size="sm" onClick={addHandler} data-cy="add-event-handler">
+            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+            &nbsp;&nbsp;{t('editor.inspector.eventManager.addHandler', 'Add handler')}
+          </ButtonSolid>
         </div>
         {!hideEmptyEventsAlert ? (
           <div className="text-left">

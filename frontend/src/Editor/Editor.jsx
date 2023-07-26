@@ -370,11 +370,7 @@ class EditorComponent extends React.Component {
         async () => {
           computeComponentState(this, this.state.appDefinition.pages[homePageId]?.components ?? {}).then(async () => {
             this.setWindowTitle(data.name);
-
             useEditorStore.getState().actions.setShowComments(!!queryString.parse(this.props.location.search).threadId);
-            for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
-              await this.handleEvent(event.eventId, event);
-            }
           });
         }
       );

@@ -27,22 +27,21 @@ export const useDataQueriesStore = create(
         // TODO: Remove editor state while changing currentState
         fetchDataQueries: async (appId, selectFirstQuery = false, runQueriesOnAppLoad = false, editorRef) => {
           set({ loadingDataQueries: true });
-          await dataqueryService.getAll(appId).then((data) => {
-            set((state) => ({
-              dataQueries: sortByAttribute(data.data_queries, state.sortBy, state.sortOrder),
-              loadingDataQueries: false,
-            }));
-            // Runs query on loading application
-            if (runQueriesOnAppLoad) runQueries(data.data_queries, editorRef);
-            // Compute query state to be added in the current state
-            const { actions, selectedQuery } = useQueryPanelStore.getState();
-            if (selectFirstQuery) {
-              actions.setSelectedQuery(data.data_queries[0]?.id, data.data_queries[0]);
-            } else if (selectedQuery?.id) {
-              const query = data.data_queries.find((query) => query.id === selectedQuery?.id);
-              actions.setSelectedQuery(query?.id);
-            }
-          });
+          const data = await dataqueryService.getAll(appId);
+          set((state) => ({
+            dataQueries: sortByAttribute(data.data_queries, state.sortBy, state.sortOrder),
+            loadingDataQueries: false,
+          }));
+          // Runs query on loading application
+          if (runQueriesOnAppLoad) runQueries(data.data_queries, editorRef);
+          // Compute query state to be added in the current state
+          const { actions, selectedQuery } = useQueryPanelStore.getState();
+          if (selectFirstQuery) {
+            actions.setSelectedQuery(data.data_queries[0]?.id, data.data_queries[0]);
+          } else if (selectedQuery?.id) {
+            const query = data.data_queries.find((query) => query.id === selectedQuery?.id);
+            actions.setSelectedQuery(query?.id);
+          }
         },
         setDataQueries: (dataQueries) => set({ dataQueries }),
         deleteDataQueries: (queryId) => {
@@ -280,7 +279,7 @@ export const useDataQueriesStore = create(
               });
             })
             .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
-        }, 1000),
+        }, 500),
         sortDataQueries: (sortBy, sortOrder) => {
           set(({ dataQueries, sortOrder: currSortOrder }) => {
             const newSortOrder = sortOrder ? sortOrder : currSortOrder === 'asc' ? 'desc' : 'asc';

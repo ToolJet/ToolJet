@@ -8,6 +8,7 @@ import {
   computeComponentName,
   generateAppActions,
   loadPyodide,
+  isQueryRunnable,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
@@ -585,7 +586,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
 
   const { customVariables } = options;
-
   if (eventName === 'onPageLoad') {
     await executeActionsForEventId(_ref, 'onPageLoad', { definition: { events: [options] } }, mode, customVariables);
   }
@@ -1600,7 +1600,7 @@ export const checkExistingQueryName = (newName) =>
 
 export const runQueries = (queries, _ref) => {
   queries.forEach((query) => {
-    if (query.options.runOnPageLoad && query.status === 'published') {
+    if (query.options.runOnPageLoad && isQueryRunnable(query)) {
       runQuery(_ref, query.id, query.name);
     }
   });
@@ -1617,8 +1617,8 @@ export const computeQueryState = (queries, _ref) => {
       };
     } else {
       queryState[query.name] = {
-        ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-        kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
+        ...DataSourceTypes.find((source) => source.kind === query.kind)?.exposedVariables,
+        kind: DataSourceTypes.find((source) => source.kind === query.kind)?.kind,
         ...getCurrentState()?.queries[query.name],
       };
     }
