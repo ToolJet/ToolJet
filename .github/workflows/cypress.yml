@@ -169,7 +169,7 @@ jobs:
           npm install
           npm install --prefix server
           npm install --prefix frontend
-          npm run build:plugins:prod
+          npm run build:plugins
 
       - name: Set up environment variables
         run: |
@@ -217,7 +217,7 @@ jobs:
         run: cd plugins && npm start &
 
       - name: Run the server
-        run: cd server && npm run start:prod &
+        run: cd server && npm run start &
 
       - name: Run the client
         run: cd frontend && npm start &
