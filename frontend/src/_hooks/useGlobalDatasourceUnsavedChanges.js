@@ -1,9 +1,9 @@
-import { useGlobalDataSourcesStatus, useDataSourcesActions } from '@/_stores/dataSourcesStore';
+import { useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
 import useRouter from '@/_hooks/use-router';
-import React, { useCallback, useState } from 'react';
+import { useGlobalDataSourcesStatus, useDataSourcesActions } from '@/_stores/dataSourcesStore';
 
-const useUnsavedChanges = () => {
+const useGlobalDatasourceUnsavedChanges = () => {
   const globalDataSourcesStatus = useGlobalDataSourcesStatus();
   const { setGlobalDataSourceStatus } = useDataSourcesActions();
   const { isEditing, isSaving, unSavedModalVisible, action } = globalDataSourcesStatus;
@@ -28,10 +28,10 @@ const useUnsavedChanges = () => {
       if (isEditing) {
         setGlobalDataSourceStatus({ unSavedModalVisible: true, action: action });
       } else if (isSaving) {
-        toast.error('Cannot perform operation until changes are saved');
+        toast.error('Cannot perform operation until changes are saved', { style: { minWidth: '400px' } });
       } else {
         setGlobalDataSourceStatus({ unSavedModalVisible: false, isEditing: false, action: null });
-        action();
+        typeof action === 'function' && action();
       }
     },
     [isEditing, isSaving]
@@ -62,4 +62,4 @@ const useUnsavedChanges = () => {
   };
 };
 
-export default useUnsavedChanges;
+export default useGlobalDatasourceUnsavedChanges;

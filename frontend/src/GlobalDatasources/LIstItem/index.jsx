@@ -4,12 +4,12 @@ import { GlobalDataSourcesContext } from '..';
 import { DataSourceTypes } from '../../Editor/DataSourceManager/SourceComponents';
 import { getSvgIcon } from '@/_helpers/appUtils';
 import DeleteIcon from '../Icons/DeleteIcon.svg';
-import useUnsavedChanges from '../../_hooks/useUnsavedChanges';
+import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 
 export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedDatasource }) => {
   const { setSelectedDataSource, toggleDataSourceManagerModal, environments, setCurrentEnvironment } =
     useContext(GlobalDataSourcesContext);
-  const { handleActions } = useUnsavedChanges();
+  const { handleActions } = useGlobalDatasourceUnsavedChanges();
 
   const getSourceMetaData = (dataSource) => {
     if (dataSource.pluginId) {

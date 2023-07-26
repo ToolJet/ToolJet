@@ -1,11 +1,11 @@
 import React, { useContext } from 'react';
-import useUnsavedChanges from '../../_hooks/useUnsavedChanges';
+import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 import { GlobalDataSourcesContext } from '../index';
 import { List } from '../List';
 
 export const CreateDataSourceModal = ({ updateSelectedDatasource }) => {
   const { handleModalVisibility, setEditing } = useContext(GlobalDataSourcesContext);
-  const { handleActions } = useUnsavedChanges();
+  const { handleActions } = useGlobalDatasourceUnsavedChanges();
 
   const handleAddDatasource = () => {
     handleModalVisibility();

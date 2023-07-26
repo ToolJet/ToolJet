@@ -3,11 +3,13 @@ import { toast } from 'react-hot-toast';
 import { datasourceService } from '@/_services';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 
 export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed }) => {
   const [isTesting, setTestingStatus] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('unknown');
   const [buttonText, setButtonText] = useState('Test Connection');
+  const { handleActions } = useGlobalDatasourceUnsavedChanges();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -62,7 +64,7 @@ export const TestConnection = ({ kind, options, pluginId, onConnectionTestFailed
       {connectionStatus === 'unknown' && (
         <ButtonSolid
           disabled={isTesting || connectionStatus === 'success'}
-          onClick={testDataSource}
+          onClick={() => handleActions(testDataSource)}
           data-cy={`test-connection-button`}
           variant="tertiary"
           leftIcon="arrowsort"

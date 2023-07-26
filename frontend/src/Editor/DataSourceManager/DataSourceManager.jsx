@@ -37,6 +37,7 @@ class DataSourceManagerComponent extends React.Component {
     let selectedDataSourceIcon = null;
     let options = {};
     let dataSourceMeta = {};
+    let datasourceName = '';
 
     if (props.selectedDataSource) {
       selectedDataSource = props.selectedDataSource;
@@ -44,6 +45,7 @@ class DataSourceManagerComponent extends React.Component {
       dataSourceMeta = this.getDataSourceMeta(selectedDataSource);
       dataSourceSchema = props.selectedDataSource?.plugin?.manifestFile?.data;
       selectedDataSourceIcon = props.selectDataSource?.plugin?.iconFile.data;
+      datasourceName = props.selectedDataSource?.name;
     }
 
     this.state = {
@@ -68,6 +70,7 @@ class DataSourceManagerComponent extends React.Component {
       addingDataSource: false,
       createdDataSource: null,
       unsavedChangesModal: false,
+      datasourceName,
     };
   }
 
@@ -86,7 +89,7 @@ class DataSourceManagerComponent extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.selectedDataSource !== this.props.selectedDataSource) {
-      this.props.setGlobalDataSourceStatus({ isEditing: false });
+      // this.props.setGlobalDataSourceStatus({ isEditing: false });
       let dataSourceMeta = this.getDataSourceMeta(this.props.selectedDataSource);
       this.setState({
         selectedDataSource: this.props.selectedDataSource,
@@ -95,6 +98,7 @@ class DataSourceManagerComponent extends React.Component {
         dataSourceSchema: this.props.selectedDataSource?.plugin?.manifestFile?.data,
         selectedDataSourceIcon: this.props.selectedDataSource?.plugin?.iconFile?.data,
         connectionTestError: null,
+        datasourceName: this.props.selectedDataSource?.name,
       });
     }
   }
@@ -123,6 +127,7 @@ class DataSourceManagerComponent extends React.Component {
         name: source.manifestFile?.data?.source?.kind ?? source.kind,
         dataSourceSchema: source.manifestFile?.data,
         selectedDataSourcePluginId: source.id,
+        datasourceName: source.name,
       },
       () => this.createDataSource()
     );
@@ -698,16 +703,17 @@ class DataSourceManagerComponent extends React.Component {
       dataSourceSchema,
       dataSourceConfirmModalProps,
       addingDataSource,
+      datasourceName,
     } = this.state;
     const isPlugin = dataSourceSchema ? true : false;
     const createSelectedDataSource = (dataSource) => {
       this.selectDataSource(dataSource);
     };
-    const { isEditing: isDataSourceEditing, isSaving: isDataSourceSaving } = this.props.globalDataSourceStatus;
-    const isSaveDisabled = deepEqual(options, selectedDataSource?.options, ['encrypted']);
+    const isSaveDisabled =
+      deepEqual(options, selectedDataSource?.options, ['encrypted']) && selectedDataSource?.name === datasourceName;
 
-    if (!isSaveDisabled && !isDataSourceEditing && !isDataSourceSaving && selectedDataSource) {
-      this.props.setGlobalDataSourceStatus({ isEditing: true });
+    if (selectedDataSource) {
+      this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     }
     return (
       <div>
@@ -780,9 +786,7 @@ class DataSourceManagerComponent extends React.Component {
             {this.renderEnvironmentsTab(selectedDataSource)}
           </Modal.Header>
           <Modal.Body>
-            {selectedDataSource && this.props.isEditing && (
-              <div>{this.renderSourceComponent(selectedDataSource.kind, isPlugin)}</div>
-            )}
+            {selectedDataSource && <div>{this.renderSourceComponent(selectedDataSource.kind, isPlugin)}</div>}
             {!selectedDataSource && this.segregateDataSources(this.state.suggestingDatasources, this.props.darkMode)}
           </Modal.Body>
 
@@ -1103,21 +1107,14 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
 };
 
 const withStore = (Component) => (props) => {
-  const { setGlobalDataSourceStatus, globalDataSourceStatus } = useDataSourcesStore(
+  const { setGlobalDataSourceStatus } = useDataSourcesStore(
     (state) => ({
-      globalDataSourceStatus: state.globalDataSourceStatus,
       setGlobalDataSourceStatus: state.actions.setGlobalDataSourceStatus,
     }),
     shallow
   );
 
-  return (
-    <Component
-      {...props}
-      setGlobalDataSourceStatus={setGlobalDataSourceStatus}
-      globalDataSourceStatus={globalDataSourceStatus}
-    />
-  );
+  return <Component {...props} setGlobalDataSourceStatus={setGlobalDataSourceStatus} />;
 };
 
 export const DataSourceManager = withTranslation()(withRouter(withStore(DataSourceManagerComponent)));

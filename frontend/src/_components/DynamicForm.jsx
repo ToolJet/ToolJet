@@ -217,7 +217,7 @@ const DynamicForm = ({
 
       case 'react-component-headers': {
         let isRenderedAsQueryEditor;
-        if (!isEditorActive) {
+        if (!isEditorActive || isGDS) {
           isRenderedAsQueryEditor = false;
         } else {
           isRenderedAsQueryEditor = currentState != null;

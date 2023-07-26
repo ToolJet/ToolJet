@@ -10,7 +10,7 @@ import { authenticationService } from '@/_services';
 import SolidIcon from '../Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { ConfirmDialog } from '@/_components';
-import useUnsavedChanges from '../../_hooks/useUnsavedChanges';
+import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
@@ -19,7 +19,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
   const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
 
   const { checkForUnsavedChanges, resetUnsavedChangesModal, handleDiscardChanges, unSavedModalVisible, nextRoute } =
-    useUnsavedChanges();
+    useGlobalDatasourceUnsavedChanges();
 
   return (
     <div className="row m-auto">
