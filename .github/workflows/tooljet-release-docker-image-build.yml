@@ -117,9 +117,9 @@ jobs:
       - name: Send Slack Notification
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
-            message="Job '${{ env.JOB_NAME }}' succeeded! docker image tooljet/tooljet-ce:${{ github.event.inputs.image }}"
+            message="Job '${{ env.JOB_NAME }}' succeeded! docker image tooljet/tooljet-ee:${{ github.event.inputs.image }}"
           else
-            message="Job '${{ env.JOB_NAME }}' failed! docker image tooljet/tooljet-ce:${{ github.event.inputs.image }}"
+            message="Job '${{ env.JOB_NAME }}' failed! docker image tooljet/tooljet-ee:${{ github.event.inputs.image }}"
           fi
 
           curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
