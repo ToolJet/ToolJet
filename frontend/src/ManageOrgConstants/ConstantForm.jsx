@@ -90,19 +90,20 @@ const ConstantForm = ({
       [name]: value,
     }));
   };
-  const handlecreateOrUpdate = (e) => {
-    e.preventDefault();
-    if (error['name'] || error['value']) {
-      return;
-    }
-    createOrUpdate(fields, isUpdate);
-  };
 
   const isActiveErrorState = (state) => {
     if (!state?.name && !state?.value) return false;
     if (state?.name === ERROR_MESSAGES.max_name_length_reached) return false;
 
     return true;
+  };
+  const handlecreateOrUpdate = (e) => {
+    e.preventDefault();
+
+    if (isActiveErrorState(error) || error['value']) {
+      return;
+    }
+    createOrUpdate(fields, isUpdate);
   };
 
   const shouldDisableButton =
@@ -119,7 +120,7 @@ const ConstantForm = ({
 
   const handleInput = () => {
     const input = inputRef.current;
-    if (fields['value'].length > 30 && input) {
+    if (fields['value'] && fields['value'].length > 30 && input) {
       input.style.height = 'auto';
       input.style.height = `${input.scrollHeight}px`;
       input.style.overflow = fields['value'].length >= 300 ? 'scroll' : 'hidden';
