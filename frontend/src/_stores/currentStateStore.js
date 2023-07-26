@@ -12,6 +12,7 @@ const initialState = {
       id: null,
       name: null,
     },
+    mode: {},
   },
   errors: {},
   variables: {},
@@ -21,7 +22,6 @@ const initialState = {
     handle: '',
     variables: {},
   },
-  mode: {},
   succededQuery: {},
 };
 

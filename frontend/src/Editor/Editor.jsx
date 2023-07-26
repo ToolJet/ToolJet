@@ -209,6 +209,9 @@ class EditorComponent extends React.Component {
       ...this.props.currentState.globals,
       theme: { name: this.props.darkMode ? 'dark' : 'light' },
       urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+      mode: {
+        value: 'edit',
+      },
     };
     const page = {
       ...this.props.currentState.page,
@@ -218,9 +221,6 @@ class EditorComponent extends React.Component {
     useCurrentStateStore.getState().actions.setCurrentState({
       globals,
       page,
-      mode: {
-        value: 'edit',
-      },
     });
   }
 
@@ -1046,10 +1046,12 @@ class EditorComponent extends React.Component {
 
   appEnvironmentChanged = (currentAppEnvironment, isVersionChanged, isEnvIdNotAvailableYet = false) => {
     useCurrentStateStore.getState().actions.setCurrentState({
-      ...this.props.currentState.globals,
-      environment: {
-        id: currentAppEnvironment?.id,
-        name: currentAppEnvironment?.name,
+      globals: {
+        ...this.props.currentState.globals,
+        environment: {
+          id: currentAppEnvironment?.id,
+          name: currentAppEnvironment?.name,
+        },
       },
     });
     this.setState(
