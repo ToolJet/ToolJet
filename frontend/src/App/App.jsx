@@ -39,6 +39,7 @@ import SetupScreenSelfHost from '../SuccessInfoScreen/SetupScreenSelfHost';
 import { InstanceSettings } from '@/InstanceSettingsPage';
 export const BreadCrumbContext = React.createContext({});
 import 'react-tooltip/dist/react-tooltip.css';
+import LdapLoginPage from '../LdapLogin';
 
 const AppWrapper = (props) => {
   return (
@@ -290,6 +291,7 @@ class AppComponent extends React.Component {
               <Route path="/sso/:origin/:configId" exact element={<Oauth />} />
               <Route path="/sso/:origin" exact element={<Oauth />} />
               <Route path="/signup" element={<SignupPage />} />
+              <Route path="/ldap/:organizationId" element={<LdapLoginPage {...this.props} darkMode={darkMode} />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />

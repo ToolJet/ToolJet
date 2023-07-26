@@ -6,6 +6,7 @@ import { Loader } from './Loader';
 import { Git } from './Git';
 import { Form } from './Form';
 import { OpenId } from './OpenId';
+import { Ldap } from './Ldap';
 // eslint-disable-next-line import/no-unresolved
 import ErrorBoundary from '@/Editor/ErrorBoundary';
 import { toast } from 'react-hot-toast';
@@ -19,6 +20,7 @@ export function ManageSSO({ darkMode }) {
     { id: 'google', label: 'Google' },
     { id: 'git', label: 'GitHub' },
     { id: 'openid', label: 'OpenID Connect' },
+    { id: 'ldap', label: 'LDAP' },
   ];
   const protectedMenuItems = [{ id: 'openid', label: 'OpenID Connect' }];
 
@@ -56,6 +58,8 @@ export function ManageSSO({ darkMode }) {
             darkMode={darkMode}
           />
         );
+      case 'ldap':
+        return <Ldap updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'ldap')} />;
       case 'openid':
         return <OpenId updateData={updateData} settings={ssoData?.sso_configs?.find((obj) => obj.sso === 'openid')} />;
       default:

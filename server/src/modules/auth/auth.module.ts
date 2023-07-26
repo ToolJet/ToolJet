@@ -44,6 +44,7 @@ import { MetadataService } from '@services/metadata.service';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { SessionService } from '@services/session.service';
 import { SessionScheduler } from 'src/schedulers/session.scheduler';
+import { LdapService } from '@ee/services/oauth/ldap.service';
 
 @Module({
   imports: [
@@ -102,6 +103,7 @@ import { SessionScheduler } from 'src/schedulers/session.scheduler';
     PluginsHelper,
     SessionService,
     SessionScheduler,
+    LdapService,
   ],
   controllers: [OauthController],
   exports: [AuthService, SessionService],

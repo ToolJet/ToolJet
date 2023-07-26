@@ -6,7 +6,8 @@ import queryString from 'query-string';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
 import OidcSSOLoginButton from '@ee/components/LoginPage/OidcSSOLoginButton';
-import { getSubpath, getWorkspaceId, validateEmail, retrieveWhiteLabelText } from '../_helpers/utils';
+import LdapSSOLoginButton from '@ee/components/LoginPage/LdapSSOLoginButton';
+import { getSubpath, getWorkspaceId, validateEmail, retrieveWhiteLabelText, eraseRedirectUrl } from '@/_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -15,7 +16,7 @@ import EnterIcon from '../../assets/images/onboardingassets/Icons/Enter';
 import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
-import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
+import { setCookie } from '@/_helpers/cookie';
 import { withRouter } from '@/_hoc/withRouter';
 class LoginPageComponent extends React.Component {
   constructor(props) {
@@ -74,7 +75,7 @@ class LoginPageComponent extends React.Component {
           // redirect to home if already logged in
           // set redirect path for sso login
           // redirect to instance settings if license expired
-          const path = this.eraseRedirectUrl();
+          const path = eraseRedirectUrl();
           const redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
           if (newSession?.super_admin) {
             authenticationService
@@ -153,12 +154,6 @@ class LoginPageComponent extends React.Component {
     this.currentSessionObservable && this.currentSessionObservable.unsubscribe();
   }
 
-  eraseRedirectUrl() {
-    const redirectPath = getCookie('redirectPath');
-    redirectPath && eraseCookie('redirectPath');
-    return redirectPath;
-  }
-
   handleChange = (event) => {
     this.setState({ [event.target.name]: event.target.value, emailError: '' });
   };
@@ -209,7 +204,7 @@ class LoginPageComponent extends React.Component {
       from.pathname = `${this.returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
     const redirectPath = from.pathname === '/confirm' ? '/' : from.pathname;
     this.setState({ isLoading: false });
-    this.eraseRedirectUrl();
+    eraseRedirectUrl();
   };
 
   authFailureHandler = (res) => {
@@ -224,7 +219,7 @@ class LoginPageComponent extends React.Component {
   };
 
   redirectToUrl = () => {
-    const redirectPath = this.eraseRedirectUrl();
+    const redirectPath = eraseRedirectUrl();
     return redirectPath ? redirectPath : '/';
   };
 
@@ -265,6 +260,7 @@ class LoginPageComponent extends React.Component {
                         {(this.state?.configs?.google?.enabled ||
                           this.state?.configs?.git?.enabled ||
                           configs?.form?.enabled ||
+                          configs?.ldap?.enabled ||
                           this.state?.configs?.openid?.enabled) && (
                           <>
                             <h2 className="common-auth-section-header sign-in-header" data-cy="sign-in-header">
@@ -308,6 +304,11 @@ class LoginPageComponent extends React.Component {
                               configs={this.state?.configs?.google?.configs}
                               configId={this.state?.configs?.google?.config_id}
                             />
+                          </div>
+                        )}
+                        {this.state?.configs?.ldap?.enabled && (
+                          <div className="login-sso-wrapper">
+                            <LdapSSOLoginButton configs={this.state?.configs?.ldap?.configs} />
                           </div>
                         )}
                         {this.state?.configs?.openid?.enabled && (

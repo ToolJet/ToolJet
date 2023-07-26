@@ -447,7 +447,10 @@ export class AuthService {
 
         isSSOVerify =
           source === URL_SSO_SOURCE &&
-          (user.source === SOURCE.GOOGLE || user.source === SOURCE.GIT || user.source === SOURCE.OPENID);
+          (user.source === SOURCE.GOOGLE ||
+            user.source === SOURCE.GIT ||
+            user.source === SOURCE.OPENID ||
+            user.source === SOURCE.LDAP);
 
         const lifecycleParams = getUserStatusAndSource(
           isSSOVerify ? lifecycleEvents.USER_SSO_ACTIVATE : lifecycleEvents.USER_REDEEM,

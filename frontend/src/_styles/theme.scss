@@ -11519,6 +11519,31 @@ tbody {
   display: none;
 }
 
+.ldap-login-page{
+  .common-auth-signup-container-wrapper {
+    margin-top: 150px;
+  }
+
+  .ldap-login-header {
+    margin-bottom: 10px;
+    h2{
+      color: #111827;
+      font-size: 44px;
+      font-weight: 400;
+    }
+  }
+
+  .signup-password-hide-img {
+    top: 24%;
+  }
+
+  .ldap-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
 .runjs-parameter-badge {
   max-width: 140px;
 }

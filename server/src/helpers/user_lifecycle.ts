@@ -16,6 +16,7 @@ export enum SOURCE {
   GOOGLE = 'google',
   GIT = 'git',
   OPENID = 'openid',
+  LDAP = 'ldap',
 }
 
 export enum USER_TYPE {
@@ -102,5 +103,5 @@ export enum WORKSPACE_USER_STATUS {
   ARCHIVED = 'archived',
 }
 
-type source = 'google' | 'git' | 'signup' | 'invite' | 'openid';
+type source = 'google' | 'git' | 'signup' | 'invite' | 'openid' | 'ldap';
 type status = 'invited' | 'verified' | 'active' | 'archived';

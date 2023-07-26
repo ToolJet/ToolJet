@@ -261,21 +261,33 @@ export class UsersService {
       } else {
         user = existingUser;
       }
-      await this.attachUserGroup(groups, organizationId, user.id, manager);
+      await this.attachUserGroup(groups, organizationId, user.id, source === 'ldap', manager);
     }, manager);
 
     return user;
   }
 
-  async attachUserGroup(groups, organizationId, userId, manager?: EntityManager) {
+  async attachUserGroup(
+    groups: string[],
+    organizationId: string,
+    userId: string,
+    isValidateExistingGroups = false,
+    manager?: EntityManager
+  ) {
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const organizationGroups = await manager.find(GroupPermission, {
+        where: {
+          organizationId,
+        },
+      });
+
+      if (isValidateExistingGroups) {
+        const existedGroups = organizationGroups.map((organizationGroup) => organizationGroup.group);
+        groups = groups.filter((group) => existedGroups.includes(group));
+      }
+
       for (const group of groups) {
-        const orgGroupPermission = await manager.findOne(GroupPermission, {
-          where: {
-            organizationId: organizationId,
-            group: group,
-          },
-        });
+        const orgGroupPermission = organizationGroups.find((organizationGroup) => organizationGroup.group === group);
 
         if (!orgGroupPermission) {
           throw new BadRequestException(`${group} group does not exist for current organization`);
@@ -572,7 +584,7 @@ export class UsersService {
     return { organizationId: app?.organizationId, isPublic: app?.isPublic };
   }
 
-  async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
+  async addAvatar(userId: string, imageBuffer: Buffer, filename: string, manager?: EntityManager) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const user = await manager.findOne(User, userId);
       const currentAvatarId = user.avatarId;
@@ -589,7 +601,7 @@ export class UsersService {
         await this.filesService.remove(currentAvatarId, manager);
       }
       return avatar;
-    });
+    }, manager);
   }
 
   canAnyGroupPerformAction(
