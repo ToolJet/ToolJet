@@ -100,7 +100,12 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
               <small>Filter By</small>
             </div>
             <div className={selectedDataSources.length ? 'd-flex' : ''}>
-              <MenuButton id="filter-by-datasource" text="Data Source" callback={handlePageCallback} />
+              <MenuButton
+                id="filter-by-datasource"
+                text="Data Source"
+                callback={handlePageCallback}
+                disabled={dataQueries.length === 0}
+              />
               {selectedDataSources.length ? (
                 <PillButton
                   name={selectedDataSources.length}
