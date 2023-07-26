@@ -43,7 +43,7 @@ appService
     if (tooljetServerUrl) tracingOrigins.push(tooljetServerUrl);
 
     Sentry.init({
-      dsn: process.env.SENTRY_DNS,
+      dsn: window.public_config.SENTRY_DNS,
       debug: false,
       release: releaseVersion,
       name: 'react',
