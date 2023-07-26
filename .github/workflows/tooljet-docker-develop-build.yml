@@ -1,9 +1,8 @@
 name: Tooljet develop docker image build
 
+# This file will not be used in EE 
+
 on:
-  push:
-    branches:
-      - develop
 
   workflow_dispatch:
     inputs:
@@ -42,9 +41,6 @@ jobs:
 
       - name: Docker Login
         uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker image
         uses: docker/build-push-action@v4
@@ -54,9 +50,6 @@ jobs:
           push: true
           tags: tooljet/tooljet-ce:develop
           platforms: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Send Slack Notification on Failure
         if: failure()
@@ -94,9 +87,7 @@ jobs:
 
         - name: Docker Login
           uses: docker/login-action@v2
-          with:
-            username: ${{ secrets.DOCKER_USERNAME }}
-            password: ${{ secrets.DOCKER_PASSWORD }}
+
 
         - name: Build and Push Docker image
           uses: docker/build-push-action@v4
@@ -106,9 +97,6 @@ jobs:
             push: true
             tags: tooljet/tooljet-server-ce:develop
             platforms: linux/amd64
-          env:
-            DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-            DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
         - name: Send Slack Notification on Failure
           if: failure()
