@@ -84,7 +84,9 @@ Confused about which setup to select? Feel free to ask the community via Slack: 
 
   3. Create `.env` file in the current directory (where the docker-compose.yaml file is downloaded as in step 1):
 
-  Kindly set the postgresql database credentials according to your external database.
+  Kindly set the postgresql database credentials according to your external database. Please enter the database details with the help of the bash as shown below.
+
+  
 
   ```bash
   curl -LO https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/docker/.env.external.example
