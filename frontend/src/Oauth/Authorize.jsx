@@ -3,11 +3,11 @@ import useRouter from '@/_hooks/use-router';
 import { authenticationService } from '@/_services';
 import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
-import { RedirectLoader } from '../_components';
+import { RedirectLoader } from '@/_components';
+import { appendWorkspaceId } from '@/_helpers/utils';
 
 export function Authorize() {
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
   const router = useRouter();
 
   const organizationId = authenticationService.getLoginOrganizationId();
@@ -60,12 +60,15 @@ export function Authorize() {
   const signIn = (authParams, configs) => {
     authenticationService
       .signInViaOAuth(router.query.configId, router.query.origin, authParams)
-      .then(({ redirect_url }) => {
+      .then(({ redirect_url, current_organization_id }) => {
         if (redirect_url) {
           window.location.href = redirect_url;
           return;
         }
-        setSuccess(true);
+        /*for workspace login / normal login response will contain the next organization_id user want to login*/
+        if (current_organization_id) {
+          window.location = appendWorkspaceId(current_organization_id, '/:workspaceId');
+        }
       })
       .catch((err) => setError(`${configs.name} login failed - ${err?.error || 'something went wrong'}`));
   };
@@ -73,7 +76,7 @@ export function Authorize() {
   return (
     <div>
       <RedirectLoader origin={Configs[router.query.origin] ? router.query.origin : 'unknown'} />
-      {(success || error) && (
+      {error && (
         <Navigate
           replace
           to={`/login${error && organizationId ? `/${organizationId}` : ''}`}
