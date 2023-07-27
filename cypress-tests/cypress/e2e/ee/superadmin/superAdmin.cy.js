@@ -309,6 +309,7 @@ describe("dashboard", () => {
       instanceSettingsSelector.userStatus(data.firstName)
     ).verifyVisibleElement("have.text", "archived");
     common.logout();
+    cy.visit('/')
 
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
     cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
@@ -319,7 +320,7 @@ describe("dashboard", () => {
     );
   });
 
-  it("Verify user sign up, archive and unarchive  functionality", () => {
+  it("Verify user sign up, archive and unarchive functionality", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase();
     data.workspaceName = `${fake.companyName}-workspace`;
@@ -369,6 +370,7 @@ describe("dashboard", () => {
     });
     common.logout();
 
+    cy.visit('/')
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
     cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
     cy.get(commonSelectors.signInButton).click();
@@ -425,6 +427,7 @@ describe("dashboard", () => {
       }
     });
     common.logout();
+    cy.visit('/')
     cy.get(commonSelectors.createAnAccountLink).should("not.exist");
 
     cy.appUILogin();
