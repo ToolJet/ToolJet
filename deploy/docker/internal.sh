@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Load the .env file
- source .env
+source .env
 
 # Check if LOCKBOX_MASTER_KEY is present or empty
 if [[ -z "$LOCKBOX_MASTER_KEY" ]]; then
