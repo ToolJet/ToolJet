@@ -198,8 +198,8 @@ export const DraggableBox = function DraggableBox({
       className={
         inCanvas
           ? ''
-          : cx('text-center align-items-center clearfix mb-2', {
-              'col-md-4': component.component !== 'KanbanBoard',
+          : cx('text-center align-items-center clearfix draggable-box-wrapper', {
+              '': component.component !== 'KanbanBoard',
               'd-none': component.component === 'KanbanBoard',
             })
       }

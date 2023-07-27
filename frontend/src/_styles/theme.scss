@@ -165,6 +165,7 @@
   src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-700italic.woff2') format('woff2');
   /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
+
 // variables
 $border-radius: 4px;
 
@@ -437,10 +438,8 @@ button {
     left: 0;
     overflow-x: hidden;
     flex: 1 1 auto;
-    background-color: #fff !important;
+    background-color: var(--base) !important;
     background-clip: border-box;
-    border: solid rgba(0, 0, 0, 0.125);
-    border-width: 0px 1px 3px 0px;
     margin-top: 0px;
     padding-top: 0px;
 
@@ -608,7 +607,6 @@ button {
       .component-image-holder {
         border-radius: 0;
         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        border: 1px solid #d2ddec;
         box-sizing: border-box;
         border-radius: 4px;
 
@@ -622,13 +620,16 @@ button {
       }
 
       .component-title {
-        display: block;
-        margin-top: 10px;
-        color: #3e525b;
-        font-size: 10px;
+        margin-top: 4px;
         max-width: 100%;
         text-align: center;
         word-wrap: break-word;
+        color: var(--slate12);
+        text-align: center;
+        font-size: 10px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 13px;
       }
 
       .component-description {
@@ -724,6 +725,7 @@ button {
     .canvas-container {
       scrollbar-width: auto;
       width: 100%;
+      background-color: var(--slate2);
     }
 
     .canvas-container::-webkit-scrollbar {
@@ -3077,6 +3079,8 @@ input:focus-visible {
 
 .widgets-list {
   --tblr-gutter-x: 0px !important;
+  margin-right: 4px;
+  margin-left: 4px;
 }
 
 .input-with-icon {
@@ -3134,11 +3138,6 @@ input:focus-visible {
     color: white;
   }
 
-
-  .left-sidebar .left-sidebar-item {
-    border-bottom: 1px solid #333c48;
-  }
-
   .nav-tabs .nav-link.active {
     color: #ffffff !important;
   }
@@ -3190,13 +3189,6 @@ input:focus-visible {
     border: 1px solid #1f2936;
   }
 
-  .main .canvas-container .canvas-area {
-    background: #2f3c4c;
-  }
-
-  .main .canvas-container {
-    background-color: #2f3c4c;
-  }
 
   .main .navigation-area {
     background-color: #2f3c4c !important;
@@ -3223,13 +3215,9 @@ input:focus-visible {
   }
 
   .editor .editor-sidebar .components-container .component-image-holder {
-    background: #2f3c4c !important;
-    border: 1px solid #2f3c4c !important;
-
-    center,
-    .component-title {
-      filter: brightness(0) invert(1);
-    }
+    background: var(--slate3) !important;
+    border-radius: 6px;
+    margin-bottom: 4px;
   }
 
   .nav-tabs .nav-link:focus,
@@ -3250,17 +3238,13 @@ input:focus-visible {
     border-bottom: 1px solid rgba(255, 255, 255, 0.09) !important;
   }
 
-  .canvas-container {
-    background-color: #1f2936;
-  }
-
   .editor .main .query-pane {
     border: solid rgba(255, 255, 255, 0.09) !important;
     border-width: 1px 0px 0px 0px !important;
   }
 
   .no-components-box {
-    background-color: #1f2936 !important;
+    background-color: var(--slate4) !important;
 
     center {
       color: white !important;
@@ -3275,10 +3259,6 @@ input:focus-visible {
     .mute-text {
       color: #8092AB;
     }
-  }
-
-  .editor-sidebar {
-    background-color: #1f2936 !important;
   }
 
   .editor-sidebar {
@@ -3406,7 +3386,7 @@ input:focus-visible {
   }
 
   .query-pane {
-    background-color: #1f2936 !important;
+    background-color: var(--base) !important;
   }
 
   .input-icon .input-icon-addon img {
@@ -3675,10 +3655,13 @@ input[type="text"] {
 
 .widget-header {
   text-transform: capitalize;
-  margin-top: 12px !important;
-  font-weight: 500;
+  color: var(--slate11, #687076);
   font-size: 12px;
-  line-height: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+  margin-bottom: 12px;
+  color: var(--slate11);
 }
 
 .query-manager-events {
@@ -5167,11 +5150,11 @@ div#driver-page-overlay {
     color: #d9dcde !important;
   }
 
-    .popover-header {
-      background-color: var(--slate2);
-      color: var(--slate11);
-      border-bottom-color: var
-    }
+  .popover-header {
+    background-color: var(--slate2);
+    color: var(--slate11);
+    border-bottom-color: var
+  }
 }
 
 .toast-dark-mode {
@@ -7761,19 +7744,14 @@ tbody {
 }
 
 .editor .navbar-brand {
-  border-right: 1px solid var(--slate7);
   padding-bottom: 1rem;
-  border-right: 1px solid var(--slate7);
+  border-right: 1px solid var(--slate5);
   width: 48px;
   display: flex;
   justify-content: center;
 }
 
 .theme-dark {
-  .editor .navbar-brand {
-    border-right: 1px solid #333c48;
-  }
-
   .realtime-avatars {
     border-right: 1px solid #333c48;
   }
@@ -10252,14 +10230,14 @@ tbody {
 }
 
 // sidebar styles inside editor :: temporary
-.theme-dark,
-.dark-theme {
-  .editor {
-    .left-sidebar {
-      background-color: #232e3c !important;
-    }
-  }
-}
+// .theme-dark,
+// .dark-theme {
+//   .editor {
+//     .left-sidebar {
+//       background-color: var(--base-black);
+//     }
+//   }
+// }
 
 .tj-db-table {
   table {
@@ -10817,25 +10795,27 @@ tbody {
     }
   }
 }
-.generate-cell-value-component-div-wrapper{
-  
+
+.generate-cell-value-component-div-wrapper {
+
   .form-control-plaintext:focus-visible {
     outline-color: #dadcde;
     border-radius: 4px;
   }
-  
+
   .form-control-plaintext:hover {
     outline-color: #dadcde;
     border-radius: 4px;
   }
 }
-.dark-theme{
-  .generate-cell-value-component-div-wrapper{
-  
+
+.dark-theme {
+  .generate-cell-value-component-div-wrapper {
+
     .form-control-plaintext:focus-visible {
       filter: invert(-1);
     }
-    
+
     .form-control-plaintext:hover {
       filter: invert(-1);
     }
@@ -10951,5 +10931,53 @@ tbody {
   .released-button {
     background-color: #F1F3F5;
     color: #C1C8CD;
+  }
+}
+
+// Editor revamp styles
+.main-wrapper {
+  .editor {
+    .header>.navbar {
+      background-color: var(--base) !important;
+    }
+  }
+}
+
+.component-image-wrapper {
+  background-color: var(--slate3) !important;
+  border-radius: 6px;
+}
+
+.components-container {
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+.draggable-box-wrapper {
+  height: 86px;
+  width: 72px;
+  margin-bottom: 4px;
+}
+
+.component-card-group-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 22px;
+}
+
+.widgets-manager-header {
+  color: var(--slate12);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+  /* 142.857% */
+  margin-top: 16px;
+  margin-bottom: 12px;
+}
+
+.components-container {
+  .tj-input {
+    margin-bottom: 16px;
   }
 }

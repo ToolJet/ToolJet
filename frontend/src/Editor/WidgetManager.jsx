@@ -42,8 +42,10 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
     if (isEmpty(items)) return null;
     return (
       <>
-        <span className="m-1 widget-header">{header}</span>
-        {items.map((component, i) => renderComponentCard(component, i))}
+        <span className="widget-header">{header}</span>
+        <div className="component-card-group-wrapper">
+          {items.map((component, i) => renderComponentCard(component, i))}
+        </div>
       </>
     );
   }
@@ -126,12 +128,13 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   }
 
   return (
-    <div className={`components-container mx-3 ${isVersionReleased && 'disabled'}`}>
+    <div className={`components-container ${isVersionReleased && 'disabled'}`}>
+      <p className="widgets-manager-header">Widgets</p>
       <div className="input-icon">
         <input
           type="text"
-          className={`form-control mt-3 mb-2 ${darkMode && 'dark-theme-placeholder'}`}
-          placeholder={t('globals.search', 'Search') + '...'}
+          className={`form-control tj-input`}
+          placeholder={t('globals.searchWidgets', 'Search widgets')}
           value={searchQuery}
           onChange={(e) => handleSearchQueryChange(e)}
           data-cy="widget-search-box"

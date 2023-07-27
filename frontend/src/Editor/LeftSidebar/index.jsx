@@ -221,6 +221,28 @@ export const LeftSidebar = forwardRef((props, ref) => {
         ref={setSideBarBtnRefs('inspect')}
       />
       <LeftSidebarItem
+        icon="settings"
+        selectedSidebarItem={selectedSidebarItem}
+        // eslint-disable-next-line no-unused-vars
+        onClick={(e) => handleSelectedSidebarItem('settings')}
+        className={`left-sidebar-item  left-sidebar-layout`}
+        badge={true}
+        count={unReadErrorCount.unread}
+        tip="Settings"
+        ref={setSideBarBtnRefs('settings')}
+      />
+      <LeftSidebarItem
+        icon="comments"
+        selectedSidebarItem={selectedSidebarItem}
+        // eslint-disable-next-line no-unused-vars
+        onClick={(e) => handleSelectedSidebarItem('comments')}
+        className={`left-sidebar-item  left-sidebar-layout`}
+        badge={true}
+        count={unReadErrorCount.unread}
+        tip="Comments"
+        ref={setSideBarBtnRefs('comments')}
+      />
+      <LeftSidebarItem
         icon="debugger"
         selectedSidebarItem={selectedSidebarItem}
         // eslint-disable-next-line no-unused-vars

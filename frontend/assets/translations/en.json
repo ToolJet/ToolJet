@@ -38,7 +38,8 @@
         "query": "Query",
         "requestBody": "Request Body",
         "page": "Page",
-        "searchItem": "Search item"
+        "searchItem": "Search item",
+        "searchWidgets": "Search widgets"
     },
     "errorBoundary": "Something went wrong.",
     "viewer": "Sorry!. This app is under maintenance",
@@ -259,7 +260,7 @@
                     "enterLastName": "Enter Last Name",
                     "enterEmail": "Enter email id",
                     "enterFulltName": "Enter full name",
-                    "inviteNewUsers":"Invite new users"
+                    "inviteNewUsers": "Invite new users"
                 },
                 "manageGroups": {
                     "permissions": {
@@ -921,7 +922,7 @@
             "tip": "Debugger",
             "errors": "Errors",
             "noErrors": "No errors found",
-            "noLogs" : "No logs found",
+            "noLogs": "No logs found",
             "clear": "clear"
         },
         "Comments": {

@@ -154,7 +154,6 @@ export const Box = function Box({
 
   let styles = {
     height: '100%',
-    padding: '1px',
   };
 
   if (inCanvas) {
@@ -350,27 +349,25 @@ export const Box = function Box({
             <></>
           )
         ) : (
-          <div className="m-1" style={{ height: '76px', width: '76px', marginLeft: '18px' }}>
+          <div className="component-image-wrapper" style={{ height: '56px', width: '72px' }}>
             <div
-              className="component-image-holder p-2 d-flex flex-column justify-content-center"
+              className="component-image-holder d-flex flex-column justify-content-center"
               style={{ height: '100%' }}
               data-cy={`widget-list-box-${component.displayName.toLowerCase().replace(/\s+/g, '-')}`}
             >
               <center>
                 <div
                   style={{
-                    width: '20px',
-                    height: '20px',
+                    width: '24px',
+                    height: '24px',
                     backgroundSize: 'contain',
                     backgroundImage: `url(assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
                     backgroundRepeat: 'no-repeat',
                   }}
                 ></div>
               </center>
-              <span className="component-title">
-                {t(`widget.${component.name}.displayName`, component.displayName)}
-              </span>
             </div>
+            <span className="component-title">{t(`widget.${component.name}.displayName`, component.displayName)}</span>
           </div>
         )}
       </div>
