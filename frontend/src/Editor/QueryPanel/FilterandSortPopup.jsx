@@ -250,7 +250,7 @@ const DataSourceSelector = ({
           />
         </div>
       </div>
-      <div className="tj-scrollbar py-2" style={{ height: '268px', overflowY: 'auto' }}>
+      <div className="tj-scrollbar py-2" style={{ height: '276px', overflowY: 'auto' }}>
         {sources.map((source) => (
           <label
             className={cx('px-2 py-2 tj-list-btn d-block mx-1', {
