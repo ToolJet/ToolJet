@@ -4,7 +4,7 @@ import { authenticationService } from '@/_services';
 import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
 import { RedirectLoader } from '@/_components';
-import { appendWorkspaceId } from '@/_helpers/utils';
+import { redirectToWorkspace } from '@/_helpers/utils';
 
 export function Authorize() {
   const [error, setError] = useState('');
@@ -67,7 +67,7 @@ export function Authorize() {
         }
         /*for workspace login / normal login response will contain the next organization_id user want to login*/
         if (current_organization_id) {
-          window.location = appendWorkspaceId(current_organization_id, '/:workspaceId');
+          redirectToWorkspace();
         }
       })
       .catch((err) => setError(`${configs.name} login failed - ${err?.error || 'something went wrong'}`));
