@@ -94,7 +94,7 @@ describe("Manage SSO for multi workspace", () => {
     SSO.visitWorkspaceLoginPage();
     cy.get(ssoEeSelector.oidcSSOText).verifyVisibleElement(
       "have.text",
-      ssoEeText.oidcSSOText
+      "Sign in with Open ID"
     );
     SSO.passwordLoginVisible();
 
@@ -133,7 +133,7 @@ describe("Manage SSO for multi workspace", () => {
     );
     cy.get(ssoEeSelector.oidcSSOText).verifyVisibleElement(
       "have.text",
-      ssoEeText.oidcSSOText
+      "Sign in with Open ID"
     );
 
     cy.notVisible(commonSelectors.workEmailInputField);

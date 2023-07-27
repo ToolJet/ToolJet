@@ -108,6 +108,7 @@ describe("Verify OIDC user onboarding", () => {
       }
     });
 
+    WorkspaceInvitationLink("user@tooljet.com");
     VerifyWorkspaceInvitePageElements();
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-button").click();

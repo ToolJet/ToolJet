@@ -22,14 +22,20 @@ describe("User permissions", () => {
   beforeEach(() => {
     cy.appUILogin();
     resetDsPermissions();
-    deleteAssignedDatasources()
+    deleteAssignedDatasources();
   });
+  before(() => {
+    cy.appUILogin();
+    addNewUserMW(data.firstName, data.email);
+    common.logout();
+  })
 
   it("Should verify the Create and Delete DS permission", () => {
-    addNewUserMW(data.firstName, data.email);
+    common.logout();
+    cy.login(data.email, usersText.password);
     cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
-    adminLogin();
 
+    adminLogin();
     cy.get(groupsSelector.permissionsLink).click();
     cy.wait(1000)
     cy.get(eeGroupsSelector.dsCreateCheck).check();
@@ -89,7 +95,7 @@ describe("User permissions", () => {
     common.logout();
   });
   it("Should verify the DS View and Edit permission", () => {
-    cy.get(commonSelectors.globalDataSourceIcon).should("exist");
+
     selectDataSource("bigquery");
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
