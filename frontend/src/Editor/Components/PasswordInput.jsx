@@ -1,4 +1,6 @@
 import React from 'react';
+import config from 'config';
+import { TextField } from '@mui/material';
 
 export const PasswordInput = ({
   height,
@@ -24,31 +26,62 @@ export const PasswordInput = ({
   }, [passwordValue, isValid]);
 
   return (
-    <div>
-      <input
-        disabled={disabledState}
-        onChange={(e) => {
-          setPasswordValue(e.target.value);
-          setExposedVariable('value', e.target.value).then(() => fireEvent('onChange'));
-        }}
-        type={'password'}
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
-          darkMode && 'dark-theme-placeholder'
-        }`}
-        placeholder={placeholder}
-        value={passwordValue}
-        style={{
-          height,
-          display: visibility ? '' : 'none',
-          borderRadius: `${borderRadius}px`,
-          backgroundColor,
-          boxShadow,
-        }}
-        data-cy={dataCy}
-      />
-      <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
-        {validationError}
-      </div>
-    </div>
+    <>
+      {config.UI_LIB === 'tooljet' && (
+        <div>
+          <input
+            disabled={disabledState}
+            onChange={(e) => {
+              setPasswordValue(e.target.value);
+              setExposedVariable('value', e.target.value).then(() => fireEvent('onChange'));
+            }}
+            type={'password'}
+            className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
+              darkMode && 'dark-theme-placeholder'
+            }`}
+            placeholder={placeholder}
+            value={passwordValue}
+            style={{
+              height,
+              display: visibility ? '' : 'none',
+              borderRadius: `${borderRadius}px`,
+              backgroundColor,
+              boxShadow,
+            }}
+            data-cy={dataCy}
+          />
+          <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
+            {validationError}
+          </div>
+        </div>
+      )}
+      {config.UI_LIB === 'mui' && (
+        <>
+          <TextField
+            disabled={disabledState}
+            onChange={(e) => {
+              setPasswordValue(e.target.value);
+              setExposedVariable('value', e.target.value).then(() => fireEvent('onChange'));
+            }}
+            type="password"
+            variant="outlined"
+            value={passwordValue}
+            sx={{
+              width: '100%',
+              '& .MuiOutlinedInput-root': {
+                height,
+                display: visibility ? '' : 'none',
+                borderRadius: `${borderRadius}px`,
+                backgroundColor,
+                boxShadow,
+              },
+            }}
+            error={!isValid}
+            helperText={validationError}
+            placeholder={placeholder}
+          />
+        </>
+      )}
+    </>
   );
 };
