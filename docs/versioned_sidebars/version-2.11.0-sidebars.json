@@ -29,6 +29,7 @@
         "setup/v2-migration-guide"
       ]
     },
+    "licensing",
     "tooljet-database",
     "tooljet-copilot",
     {
@@ -196,6 +197,7 @@
         "app-builder/components-library",
         "app-builder/query-panel",
         "tutorial/pages",
+        "app-builder/customstyles",
         "tutorial/keyboard-shortcuts"
       ]
     },

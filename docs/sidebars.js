@@ -207,6 +207,7 @@ const sidebars = {
         'app-builder/components-library',
         'app-builder/query-panel',
         'tutorial/pages',
+        'app-builder/customstyles',
         'tutorial/keyboard-shortcuts',
       ],
     },
