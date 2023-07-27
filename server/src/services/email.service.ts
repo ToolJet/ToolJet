@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import handlebars from 'handlebars';
+import { generateInviteURL, generateOrgInviteURL } from 'src/helpers/utils.helper';
 const path = require('path');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
@@ -70,13 +71,12 @@ export class EmailService {
     name: string,
     invitationtoken: string,
     organizationInvitationToken?: string,
+    organizationId?: string,
     organizationName?: string,
     sender?: string
   ) {
     const subject = 'Welcome to ToolJet';
-    const inviteUrl = `${this.TOOLJET_HOST}/invitations/${invitationtoken}${
-      organizationInvitationToken ? `/workspaces/${organizationInvitationToken}` : ''
-    }`;
+    const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId, null);
     const html = `
       <!DOCTYPE html>
       <html>
@@ -117,7 +117,7 @@ export class EmailService {
     organizationName: string
   ) {
     const subject = 'Welcome to ToolJet';
-    const inviteUrl = `${this.TOOLJET_HOST}/organization-invitations/${invitationtoken}`;
+    const inviteUrl = generateOrgInviteURL(invitationtoken);
     const html = `
       <!DOCTYPE html>
       <html>
