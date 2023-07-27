@@ -34,7 +34,7 @@ export const PasswordInput = ({
           setShowValidationError(true);
         }}
         type={'password'}
-        className={`form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon ${
+        className={`form-control ${!isValid && showValidationError ? 'is-invalid' : ''} validation-without-icon ${
           darkMode && 'dark-theme-placeholder'
         }`}
         placeholder={placeholder}
