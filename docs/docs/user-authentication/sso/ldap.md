@@ -38,7 +38,7 @@ To set up LDAP as Single Sign-On (SSO) for ToolJet, follow these steps:
 4. After making the necessary configurations, click the Save Changes button located at the bottom.
 
 
-5. Next, proceed to the **[General Settings](/docs/user-authentication/general-settings)** and copy the **Login URL** provided. In the General Settings, you have the option to **Enable Signups** if you wish to automatically add new users when their accounts are not found in the SSO. If you prefer to disable this option, users will receive an error if their accounts are not found.
+5. Next, proceed to the **[General Settings](/docs/user-authentication/general-settings)** and copy the **Login URL** provided. Furthermore, you have the flexibility to choose whether to turn on 'Enable Signups,' allowing users to signup without an invite. Through SSO authentication, we check if the user already exists; if so, they can sign in seamlessly. Otherwise, an error will be displayed. Conversely, with this option disabled, only invited users can log in, provided SSO authentication is successful.
   
   <div style={{textAlign: 'center'}}>
 
