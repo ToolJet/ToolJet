@@ -438,6 +438,7 @@ export class OrganizationsService {
       }
       if (
         this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID') &&
+        this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET') &&
         !result.ssoConfigs?.some((config) => config.sso === 'git')
       ) {
         if (!result.ssoConfigs) {
@@ -459,6 +460,7 @@ export class OrganizationsService {
       }
       if (
         this.configService.get<string>('SSO_OPENID_CLIENT_ID') &&
+        this.configService.get<string>('SSO_OPENID_CLIENT_SECRET') &&
         !result.ssoConfigs?.some((config) => config.sso === 'openid')
       ) {
         if (!result.ssoConfigs) {
@@ -537,6 +539,19 @@ export class OrganizationsService {
             configs[key] = await this.encryptionService.encryptColumnValue('ssoConfigs', key, configs[key]);
           }
         }
+        if (key.toLowerCase().includes('sslCerts')) {
+          if (typeof configs[key] === 'object' && Object.keys(configs[key]).length) {
+            const sslCerts = {};
+            for (const k of Object.keys(configs[key])) {
+              try {
+                sslCerts[k] = await this.encryptionService.encryptColumnValue('ssoConfigs', k, configs[key][k]);
+              } catch (error) {
+                sslCerts[k] = configs[key][k];
+              }
+            }
+            configs[key] = sslCerts;
+          }
+        }
       })
     );
   }
@@ -548,6 +563,19 @@ export class OrganizationsService {
         if (key.toLowerCase().includes('secret')) {
           if (configs[key]) {
             configs[key] = await this.encryptionService.decryptColumnValue('ssoConfigs', key, configs[key]);
+          }
+        }
+        if (key.toLowerCase().includes('sslCerts')) {
+          if (typeof configs[key] === 'object' && Object.keys(configs[key]).length) {
+            const sslCerts = {};
+            for (const k of Object.keys(configs[key])) {
+              try {
+                sslCerts[k] = await this.encryptionService.decryptColumnValue('ssoConfigs', k, configs[key][k]);
+              } catch (error) {
+                sslCerts[k] = configs[key][k];
+              }
+            }
+            configs[key] = sslCerts;
           }
         }
       })
@@ -579,7 +607,7 @@ export class OrganizationsService {
   async updateOrganizationConfigs(organizationId: string, params: any) {
     const { type, configs, enabled } = params;
 
-    if (!(type && ['git', 'google', 'form', 'openid'].includes(type))) {
+    if (!(type && ['git', 'google', 'form', 'openid', 'ldap'].includes(type))) {
       throw new BadRequestException();
     }
 
@@ -688,7 +716,13 @@ export class OrganizationsService {
         // Setting up default organization
         await this.organizationUserService.create(user, defaultOrganization, true, manager);
         await this.validateLicense(manager);
-        await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
+        await this.usersService.attachUserGroup(
+          ['all_users', 'admin'],
+          defaultOrganization.id,
+          user.id,
+          false,
+          manager
+        );
       }
 
       const currentOrganization: Organization = await this.organizationsRepository.findOneOrFail({

@@ -95,7 +95,7 @@ Cypress.Commands.add("appUILogin", () => {
   cy.get(commonSelectors.signInButton).click();
   cy.intercept('GET', 'api/library_apps').as('apps')
   cy.wait('@apps')
-  cy.wait(2000);
+  cy.wait(3000);
   cy.get(commonSelectors.homePageLogo).should("be.visible");
 });
 

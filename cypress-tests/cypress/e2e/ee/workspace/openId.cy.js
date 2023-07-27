@@ -102,7 +102,13 @@ describe("Verify OIDC user onboarding", () => {
     enableDefaultSSO();
     resetAllowPersonalWorkspace();
     common.navigateToManageUsers();
-    inviteUser("user", "user@tooljet.com");
+    cy.get("body").then(($el) => {
+      if (!$el.text().includes("user@tooljet.com", { timeout: 2000 })) {
+        inviteUser("user", "user@tooljet.com");
+      }
+    });
+
+    WorkspaceInvitationLink("user@tooljet.com");
     VerifyWorkspaceInvitePageElements();
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-button").click();
@@ -163,6 +169,7 @@ describe("Verify OIDC user onboarding", () => {
   it("Verify user onboarding using instance level OIDC", () => {
     resetAllowPersonalWorkspace();
     common.logout();
+    cy.visit('/');
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".admin-button").click();
 
@@ -204,7 +211,7 @@ describe("Verify OIDC user onboarding", () => {
       usersText.archivedToast
     );
     common.logout();
-
+    cy.visit('/');
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-two-button").click();
 

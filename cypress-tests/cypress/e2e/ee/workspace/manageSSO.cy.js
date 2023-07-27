@@ -17,48 +17,6 @@ describe("Manage SSO for multi workspace", () => {
   beforeEach(() => {
     cy.appUILogin();
   });
-  it("Should verify openID settings page elements", () => {
-    common.navigateToManageSSO();
-    cy.wait(1000)
-    cy.get(ssoEeSelector.oidc).dblclick()
-
-    cy.get(ssoEeSelector.oidcToggle).should("be.visible");
-
-    cy.get(ssoEeSelector.oidcToggle).then(($el) => {
-      if (!$el.is(":checked")) {
-        cy.get(ssoEeSelector.oidcToggle).check();
-      }
-    });
-    cy.get(ssoEeSelector.statusLabel).should("be.visible");
-
-    for (const elements in ssoEeSelector.oidcPageElements) {
-      cy.get(ssoEeSelector.oidcPageElements[elements]).verifyVisibleElement(
-        "have.text",
-        ssoEeText.oidcPageElements[elements]
-      );
-    }
-    cy.get(ssoEeSelector.nameInput).should("be.visible");
-    cy.get(ssoEeSelector.clientIdInput).should("be.visible");
-    cy.get(ssoEeSelector.clientSecretInput).should("be.visible");
-    cy.get(ssoEeSelector.WellKnownUrlInput).should("be.visible");
-    cy.get(ssoEeSelector.redirectUrl).should("be.visible");
-
-    cy.get(commonEeSelectors.cancelButton).verifyVisibleElement(
-      "have.text",
-      commonEeText.cancelButton
-    );
-    cy.get(commonEeSelectors.saveButton).verifyVisibleElement(
-      "have.text",
-      commonEeText.saveButton
-    );
-
-    oidcSSOPageElements();
-    cy.get(ssoEeSelector.oidcToggle).then(($el) => {
-      if ($el.is(":checked")) {
-        cy.get(ssoEeSelector.oidcToggle).uncheck();
-      }
-    });
-  });
 
   it("Should verify the workspace login page", () => {
     common.navigateToManageSSO();
@@ -136,7 +94,7 @@ describe("Manage SSO for multi workspace", () => {
     SSO.visitWorkspaceLoginPage();
     cy.get(ssoEeSelector.oidcSSOText).verifyVisibleElement(
       "have.text",
-      ssoEeText.oidcSSOText
+      "Sign in with Open ID"
     );
     SSO.passwordLoginVisible();
 
@@ -175,7 +133,7 @@ describe("Manage SSO for multi workspace", () => {
     );
     cy.get(ssoEeSelector.oidcSSOText).verifyVisibleElement(
       "have.text",
-      ssoEeText.oidcSSOText
+      "Sign in with Open ID"
     );
 
     cy.notVisible(commonSelectors.workEmailInputField);
@@ -207,4 +165,48 @@ describe("Manage SSO for multi workspace", () => {
 
     defaultWorkspace();
   });
+  it("Should verify openID settings page elements", () => {
+    common.navigateToManageSSO();
+    cy.wait(1000)
+    cy.get(ssoEeSelector.oidc).dblclick()
+
+    cy.get(ssoEeSelector.oidcToggle).should("be.visible");
+
+    cy.get(ssoEeSelector.oidcToggle).then(($el) => {
+      if (!$el.is(":checked")) {
+        cy.get(ssoEeSelector.oidcToggle).check();
+      }
+    });
+    cy.get(ssoEeSelector.statusLabel).should("be.visible");
+
+    for (const elements in ssoEeSelector.oidcPageElements) {
+      cy.get(ssoEeSelector.oidcPageElements[elements]).verifyVisibleElement(
+        "have.text",
+        ssoEeText.oidcPageElements[elements]
+      );
+    }
+    cy.get(ssoEeSelector.nameInput).should("be.visible");
+    cy.get(ssoEeSelector.clientIdInput).should("be.visible");
+    cy.get(ssoEeSelector.clientSecretInput).should("be.visible");
+    cy.get(ssoEeSelector.WellKnownUrlInput).should("be.visible");
+    cy.get(ssoEeSelector.redirectUrl).should("be.visible");
+
+    cy.get(commonEeSelectors.cancelButton).verifyVisibleElement(
+      "have.text",
+      commonEeText.cancelButton
+    );
+    cy.get(commonEeSelectors.saveButton).verifyVisibleElement(
+      "have.text",
+      commonEeText.saveButton
+    );
+
+    oidcSSOPageElements();
+    cy.get(ssoEeSelector.oidcToggle).then(($el) => {
+      if ($el.is(":checked")) {
+        cy.get(ssoEeSelector.oidcToggle).uncheck();
+      }
+    });
+  });
+
+
 });

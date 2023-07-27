@@ -6,6 +6,7 @@ import JSON5 from 'json5';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
+import { getCookie, eraseCookie } from '@/_helpers/cookie';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
@@ -997,6 +998,20 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
   }
 };
 
+export const returnWorkspaceIdIfNeed = (path, workspaceId = null) => {
+  if (path) {
+    return !['applications', 'integrations', 'instance-settings'].find((subpath) => path.includes(subpath))
+      ? `/${workspaceId ?? getWorkspaceId()}`
+      : '';
+  }
+  return `/${workspaceId ?? getWorkspaceId()}`;
+};
+
+export function eraseRedirectUrl() {
+  const redirectPath = getCookie('redirectPath');
+  redirectPath && eraseCookie('redirectPath');
+  return redirectPath;
+}
 export const defaultAppEnvironments = [
   { name: 'development', isDefault: false, priority: 1 },
   { name: 'staging', isDefault: false, priority: 2 },
