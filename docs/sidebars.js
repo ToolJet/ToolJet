@@ -259,6 +259,7 @@ const sidebars = {
                     'user-authentication/sso/openid/google-openid',
                   ],
                 },
+                'user-authentication/sso/ldap',
               ],
             },
           ],
