@@ -308,8 +308,8 @@ export const widgets = [
       showOnMobile: { type: 'toggle', displayName: 'Show on mobile' },
     },
     defaultSize: {
-      width: 20,
-      height: 358,
+      width: 28.86,
+      height: 456,
     },
     events: {
       onRowHovered: { displayName: 'Row hovered' },
