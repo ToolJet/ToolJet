@@ -68,7 +68,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
     } else {
       setAction();
     }
-  }, [dataQueries, showMenu]);
+  }, [dataQueries, globalDataSources, showMenu]);
 
   const handlePageCallback = (action) => {
     setAction(action);

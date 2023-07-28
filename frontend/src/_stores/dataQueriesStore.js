@@ -250,9 +250,9 @@ export const useDataQueriesStore = create(
             .then((data) => {
               set((state) => ({
                 isCreatingQueryInProcess: false,
-                dataQueries: [{ ...data }, ...state.dataQueries],
+                dataQueries: [{ ...data, data_source_id: queryToClone.data_source_id }, ...state.dataQueries],
               }));
-              actions.setSelectedQuery(data.id, { ...data });
+              actions.setSelectedQuery(data.id, { ...data, data_source_id: queryToClone.data_source_id });
             })
             .catch((error) => {
               console.error('error', error);

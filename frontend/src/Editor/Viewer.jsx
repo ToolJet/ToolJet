@@ -23,6 +23,7 @@ import {
   stripTrailingSlash,
   getSubpath,
   excludeWorkspaceIdFromURL,
+  isQueryRunnable,
 } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
@@ -182,7 +183,7 @@ class ViewerComponent extends React.Component {
 
   runQueries = (data_queries) => {
     data_queries.forEach((query) => {
-      if (query.options.runOnPageLoad && query.status === 'published') {
+      if (query.options.runOnPageLoad && isQueryRunnable(query)) {
         runQuery(this, query.id, query.name, undefined, 'view');
       }
     });
