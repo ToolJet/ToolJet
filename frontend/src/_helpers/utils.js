@@ -126,7 +126,7 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
       const code = serverMatch.replace(/%%/g, '');
 
       if (code.includes('server.') && !/^server\.[A-Za-z0-9]+$/.test(code)) {
-        resolvedStr = resolvedStr.replace(serverMatch, '');
+        resolvedStr = resolvedStr.replace(serverMatch, 'HiddenEnvironmentVariable');
       } else {
         const resolvedCode = resolveCode(code, state, customObjects, withError, reservedKeyword, false);
         if (forPreviewBox) {
@@ -981,4 +981,9 @@ export const redirectToWorkspace = () => {
   const path = eraseRedirectUrl();
   const redirectPath = `${returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
   window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+};
+
+export const redirectToDashboard = () => {
+  const subpath = getSubpath();
+  window.location = `${subpath ? `${subpath}` : ''}/${getWorkspaceId()}`;
 };
