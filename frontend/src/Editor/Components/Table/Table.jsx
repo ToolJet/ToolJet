@@ -899,6 +899,7 @@ export function Table({
         overflow: 'hidden',
         borderRadius: Number.parseFloat(borderRadius),
         boxShadow: styles.boxShadow,
+        padding: '8px',
       }}
       onClick={(event) => {
         onComponentClick(id, component, event);
