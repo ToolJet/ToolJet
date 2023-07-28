@@ -906,8 +906,43 @@ export function Table({
       }}
       ref={tableRef}
     >
+      <div
+        className="table-card-header d-flex justify-content-between align-items-center"
+        style={{ padding: '12px', height: 56 }}
+      >
+        <div className="tj-text tj-header-h7">{component.name}</div>
+        <div className="d-flex">
+          {displaySearchBox && (
+            <GlobalFilter
+              globalFilter={state.globalFilter}
+              useAsyncDebounce={useAsyncDebounce}
+              setGlobalFilter={setGlobalFilter}
+              onComponentOptionChanged={onComponentOptionChanged}
+              component={component}
+              onEvent={onEvent}
+              darkMode={darkMode}
+            />
+          )}
+          {showFilterButton && (
+            <>
+              <span
+                className="btn btn-light btn-sm p-1 mx-1"
+                onClick={() => showFilters()}
+                data-tooltip-id="tooltip-for-filter-data"
+                data-tooltip-content="Filter data"
+              >
+                <img src="assets/images/icons/filter.svg" width="15" height="15" />
+                {tableDetails.filterDetails.filters.length > 0 && (
+                  <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                )}
+              </span>
+              <Tooltip id="tooltip-for-filter-data" className="tooltip" />
+            </>
+          )}
+        </div>
+      </div>
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
-      {(displaySearchBox || showDownloadButton || showFilterButton || showAddNewRowButton) && (
+      {/* {(displaySearchBox || showDownloadButton || showFilterButton || showAddNewRowButton) && (
         <div className={`card-body border-bottom py-3 ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'}`}>
           <div
             className={`d-flex align-items-center ms-auto text-muted ${
@@ -1031,7 +1066,7 @@ export function Table({
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       <div className="table-responsive jet-data-table">
         <table
