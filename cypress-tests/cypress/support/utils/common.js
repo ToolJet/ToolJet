@@ -25,11 +25,16 @@ export const navigateToManageUsers = () => {
 export const navigateToManageGroups = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.manageGroupsOption).click();
+  navigateToAllUserGroup();
+
+};
+
+export const navigateToAllUserGroup = () => {
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("All users")).click();
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("All users")).click();
-  cy.wait(500);
+  cy.wait(1000);
   cy.get("body").then(($title) => {
     if (
       $title
@@ -43,7 +48,7 @@ export const navigateToManageGroups = () => {
       cy.wait(2000);
     }
   });
-};
+}
 
 export const navigateToWorkspaceVariable = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
@@ -95,7 +100,6 @@ export const deleteDownloadsFolder = () => {
 };
 
 export const navigateToAppEditor = (appName) => {
-  cy.reloadAppForTheElement(appName);
   cy.get(commonSelectors.appCard(appName))
     .trigger("mousehover")
     .trigger("mouseenter")
@@ -172,6 +176,12 @@ export const closeModal = (buttonText) => {
 export const cancelModal = (buttonText) => {
   cy.get(commonSelectors.buttonSelector(buttonText)).click();
   cy.get(commonSelectors.modalComponent).should("not.exist");
+};
+
+export const navigateToAuditLogsPage = () => {
+  cy.get(profileSelector.profileDropdown).invoke("show");
+  cy.contains("Audit Logs").click();
+  cy.url().should("include", path.auditLogsPath, { timeout: 1000 });
 };
 
 export const manageUsersPagination = (email) => {

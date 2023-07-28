@@ -2,6 +2,7 @@ import React from 'react';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import _ from 'lodash';
 import { resolveReferences } from '@/_helpers/utils';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const Code = ({
   param,
@@ -9,15 +10,15 @@ export const Code = ({
   onChange,
   paramType,
   componentMeta,
-  currentState,
   darkMode,
   componentName,
   onFxPress,
   fxActive,
   component,
 }) => {
+  const currentState = useCurrentState();
   const getDefinitionForNewProps = (param) => {
-    if (['showAddNewRowButton', 'allowSelection', 'horizontalAlignment'].includes(param)) {
+    if (['showAddNewRowButton', 'allowSelection', 'horizontalAlignment', 'defaultSelectedRow'].includes(param)) {
       if (param === 'allowSelection') {
         const highlightSelectedRow = component?.component?.definition?.properties?.highlightSelectedRow?.value ?? false;
         const showBulkSelector = component?.component?.definition?.properties?.showBulkSelector?.value ?? false;
@@ -28,6 +29,8 @@ export const Code = ({
       } else if (param === 'horizontalAlignment') {
         const horizontalAlignment = component?.component?.definition?.properties?.horizontalAlignment?.value ?? 'left';
         return `{{${horizontalAlignment}}}`;
+      } else if (param === 'defaultSelectedRow') {
+        return `{{{id:1}}}`;
       } else {
         return '{{true}}';
       }
@@ -54,7 +57,6 @@ export const Code = ({
     <div className={`mb-2 field ${options.className}`}>
       <CodeHinter
         enablePreview={true}
-        currentState={currentState}
         initialValue={initialValue}
         mode={options.mode}
         theme={darkMode ? 'monokai' : options.theme}

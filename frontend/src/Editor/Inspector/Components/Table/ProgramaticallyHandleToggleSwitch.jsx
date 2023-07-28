@@ -2,7 +2,6 @@ import React from 'react';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 
 export const ProgramaticallyHandleToggleSwitch = ({
-  currentState,
   darkMode,
   // eslint-disable-next-line no-unused-vars
   label,
@@ -27,19 +26,44 @@ export const ProgramaticallyHandleToggleSwitch = ({
         return props.columnVisibility;
       case 'horizontalAlignment':
         return props.horizontalAlignment;
+      case 'linkTarget':
+        return props.linkTarget;
       default:
         return;
     }
   };
+  const getOptionsForSelectElement = (property, paramMeta) => {
+    switch (property) {
+      case 'linkTarget':
+        return {
+          ...paramMeta,
+          options: [
+            { name: 'Same window', value: '_self' },
+            { name: 'New window', value: '_blank' },
+          ],
+        };
 
-  const getInitialValue = (property, definition) => {
+      default:
+        return {
+          ...paramMeta,
+        };
+    }
+  };
+  if (paramMeta.type === 'select') {
+    paramMeta = getOptionsForSelectElement(property, paramMeta);
+  }
+
+  const getInitialValue = (property, definitionObj) => {
     if (property === 'columnVisibility') {
-      return definition?.value ?? `{{true}}`;
+      return definitionObj?.value ?? `{{true}}`;
     }
     if (property === 'horizontalAlignment') {
-      return definition?.value ?? 'left';
+      return definitionObj?.value ?? 'left';
     }
-    return definition?.value ?? `{{false}}`;
+    if (property === 'linkTarget') {
+      return definitionObj?.value ?? '_blank';
+    }
+    return definitionObj?.value ?? `{{false}}`;
   };
 
   const value = getValueBasedOnProperty(property, props);
@@ -52,7 +76,6 @@ export const ProgramaticallyHandleToggleSwitch = ({
     <div className={`mb-2 field ${options.className}`} onClick={(e) => e.stopPropagation()}>
       <CodeHinter
         enablePreview={true}
-        currentState={currentState}
         initialValue={initialValue}
         mode={options.mode}
         theme={darkMode ? 'monokai' : options.theme}

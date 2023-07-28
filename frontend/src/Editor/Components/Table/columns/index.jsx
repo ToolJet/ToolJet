@@ -7,6 +7,7 @@ import { Tags } from '../Tags';
 import { Radio } from '../Radio';
 import { Toggle } from '../Toggle';
 import { Datepicker } from '../Datepicker';
+import { Link } from '../Link';
 import moment from 'moment';
 
 export default function generateColumnsData({
@@ -176,6 +177,7 @@ export default function generateColumnsData({
                     }}
                     className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
+                    onFocus={(e) => e.stopPropagation()}
                   />
                   <div className="invalid-feedback">{validationError}</div>
                 </div>
@@ -241,6 +243,7 @@ export default function generateColumnsData({
                         );
                       }
                     }}
+                    onFocus={(e) => e.stopPropagation()}
                     className={`form-control-plaintext form-control-plaintext-sm ${!isValid ? 'is-invalid' : ''}`}
                     defaultValue={cellValue}
                   />
@@ -275,6 +278,7 @@ export default function generateColumnsData({
                   }
                 }}
                 defaultValue={cellValue}
+                onFocus={(e) => e.stopPropagation()}
               ></textarea>
             );
           }
@@ -440,6 +444,14 @@ export default function generateColumnsData({
                   }}
                   tableRef={tableRef}
                 />
+              </div>
+            );
+          }
+          case 'link': {
+            const linkTarget = resolveReferences(column?.linkTarget ?? '_blank', currentState);
+            return (
+              <div className="h-100 d-flex align-items-center">
+                <Link cellValue={cellValue} linkTarget={linkTarget} />
               </div>
             );
           }

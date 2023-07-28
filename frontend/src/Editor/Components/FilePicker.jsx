@@ -3,13 +3,13 @@ import { useDropzone } from 'react-dropzone';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx/xlsx.mjs';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const FilePicker = ({
   id,
   width,
   height,
   component,
-  currentState,
   onComponentOptionChanged,
   onEvent,
   darkMode,
@@ -17,6 +17,7 @@ export const FilePicker = ({
   registerAction,
   dataCy,
 }) => {
+  const currentState = useCurrentState();
   //* properties definitions
   const instructionText =
     component.definition.properties.instructionText?.value ?? 'Drag and Drop some files here, or click to select files';
