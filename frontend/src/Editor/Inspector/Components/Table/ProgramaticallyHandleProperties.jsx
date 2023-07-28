@@ -1,7 +1,7 @@
 import React from 'react';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 
-export const ProgramaticallyHandleToggleSwitch = ({
+export const ProgramaticallyHandleProperties = ({
   darkMode,
   // eslint-disable-next-line no-unused-vars
   label,
@@ -32,26 +32,6 @@ export const ProgramaticallyHandleToggleSwitch = ({
         return;
     }
   };
-  const getOptionsForSelectElement = (property, paramMeta) => {
-    switch (property) {
-      case 'linkTarget':
-        return {
-          ...paramMeta,
-          options: [
-            { name: 'Same window', value: '_self' },
-            { name: 'New window', value: '_blank' },
-          ],
-        };
-
-      default:
-        return {
-          ...paramMeta,
-        };
-    }
-  };
-  if (paramMeta.type === 'select') {
-    paramMeta = getOptionsForSelectElement(property, paramMeta);
-  }
 
   const getInitialValue = (property, definitionObj) => {
     if (property === 'columnVisibility') {

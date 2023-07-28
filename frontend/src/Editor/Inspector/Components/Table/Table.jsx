@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { EventManager } from '../../EventManager';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import { withTranslation } from 'react-i18next';
-import { ProgramaticallyHandleToggleSwitch } from './ProgramaticallyHandleToggleSwitch';
+import { ProgramaticallyHandleProperties } from './ProgramaticallyHandleProperties';
 class TableComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -265,7 +265,7 @@ class TableComponent extends React.Component {
             />
           </div>
           <div className="field mb-2">
-            <ProgramaticallyHandleToggleSwitch
+            <ProgramaticallyHandleProperties
               label="Horizontal alignment"
               currentState={this.state.currentState}
               index={index}
@@ -695,7 +695,7 @@ class TableComponent extends React.Component {
           )}
           {column.columnType === 'link' && (
             <div className="field mb-2">
-              <ProgramaticallyHandleToggleSwitch
+              <ProgramaticallyHandleProperties
                 label="Link target"
                 currentState={this.state.currentState}
                 index={index}
@@ -704,14 +704,21 @@ class TableComponent extends React.Component {
                 property="linkTarget"
                 props={column}
                 component={this.props.component}
-                paramMeta={{ type: 'select', displayName: 'Link Target' }}
+                paramMeta={{
+                  type: 'select',
+                  displayName: 'Link Target',
+                  options: [
+                    { name: 'Same window', value: '_self' },
+                    { name: 'New window', value: '_blank' },
+                  ],
+                }}
                 paramType="properties"
               />
             </div>
           )}
 
           {!['image', 'link'].includes(column.columnType) && (
-            <ProgramaticallyHandleToggleSwitch
+            <ProgramaticallyHandleProperties
               label="make editable"
               currentState={this.state.currentState}
               index={index}
@@ -725,7 +732,7 @@ class TableComponent extends React.Component {
             />
           )}
 
-          <ProgramaticallyHandleToggleSwitch
+          <ProgramaticallyHandleProperties
             label="Column visibility"
             currentState={this.state.currentState}
             index={index}
@@ -805,7 +812,7 @@ class TableComponent extends React.Component {
             onChange={(name, value, color) => this.onActionButtonPropertyChanged(index, 'textColor', color)}
             cyLabel={`action-button-text`}
           />
-          <ProgramaticallyHandleToggleSwitch
+          <ProgramaticallyHandleProperties
             label="Disable button"
             currentState={this.state.currentState}
             index={index}
