@@ -202,6 +202,7 @@ const sidebars = {
       'items': [
         'app-builder/overview',
         'app-builder/topbar',
+        'app-builder/share',
         'app-builder/canvas',
         'app-builder/left-sidebar',
         'app-builder/components-library',
