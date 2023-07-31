@@ -49,7 +49,8 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
         Connect to a datasource
       </h4>
       <p className="w-50 m-auto mb-3" style={{ textAlign: 'center' }}>
-        Select a datasource to start creating a new query. To know more queries in ToolJet, you can read our &nbsp;
+        Select a datasource to start creating a new query. To know more about queries in ToolJet, you can read our
+        &nbsp;
         <a target="_blank" href="https://docs.tooljet.com/docs/app-builder/query-panel" rel="noreferrer">
           documentation
         </a>

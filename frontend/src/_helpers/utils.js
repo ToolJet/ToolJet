@@ -976,5 +976,6 @@ export const isQueryRunnable = (query) => {
   if (staticDataSources.find((source) => query.kind === source.kind)) {
     return true;
   }
-  return !!(query?.data_source_id || !isEmpty(query?.plugins));
+  //TODO: both view api and creat/update apis return dataSourceId in two format 1) camelCase 2) snakeCase. Need to unify it.
+  return !!(query?.data_source_id || query?.dataSourceId || !isEmpty(query?.plugins));
 };
