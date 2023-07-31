@@ -1,4 +1,6 @@
 import React, { useRef, useEffect } from 'react';
+import config from 'config';
+import { Box, CircularProgress, TextField } from '@mui/material';
 
 export const NumberInput = function NumberInput({
   height,
@@ -71,26 +73,81 @@ export const NumberInput = function NumberInput({
 
   return (
     <>
-      {!properties.loadingState && (
-        <input
-          ref={inputRef}
-          disabled={styles.disabledState}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          type="number"
-          className="form-control"
-          placeholder={properties.placeholder}
-          style={computedStyles}
-          value={value}
-          data-cy={dataCy}
-        />
+      {config.UI_LIB === 'tooljet' && (
+        <>
+          {!properties.loadingState && (
+            <input
+              ref={inputRef}
+              disabled={styles.disabledState}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              type="number"
+              className="form-control"
+              placeholder={properties.placeholder}
+              style={computedStyles}
+              value={value}
+              data-cy={dataCy}
+            />
+          )}
+          {properties.loadingState === true && (
+            <div style={{ width: '100%' }}>
+              <center>
+                <div className="spinner-border" role="status"></div>
+              </center>
+            </div>
+          )}
+        </>
       )}
-      {properties.loadingState === true && (
-        <div style={{ width: '100%' }}>
-          <center>
-            <div className="spinner-border" role="status"></div>
-          </center>
-        </div>
+      {config.UI_LIB === 'mui' && (
+        <>
+          {!properties.loadingState && (
+            <TextField
+              id={inputRef}
+              variant="outlined"
+              type="number"
+              disabled={styles.disabledState}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              label={properties.placeholder}
+              defaultValue={value}
+              value={value}
+              className="form-control"
+              sx={{
+                width: '100%',
+                borderRadius: `${borderRadius}px`,
+                '& .MuiInputLabel-root': {
+                  color: borderColor,
+                  display: visibility ? '' : 'none',
+                },
+                '& .MuiOutlinedInput-root': {
+                  height,
+                  display: visibility ? '' : 'none',
+                  color: textColor,
+                  borderRadius: `${borderRadius}px`,
+                  backgroundColor:
+                    darkMode && ['#ffffff', '#ffffffff'].includes(backgroundColor) ? '#000000' : backgroundColor,
+                  boxShadow,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: borderColor,
+                },
+              }}
+            />
+          )}
+          {properties.loadingState === true && (
+            <Box
+              role="status"
+              sx={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          )}
+        </>
       )}
     </>
   );
