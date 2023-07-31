@@ -17,7 +17,7 @@ ToolJet ships with its built-in database called **[ToolJet DB](/docs/tooljet-dat
 
 Once the data sources are connected, ToolJet can run **queries** on these data sources to fetch and update data. The data fetched from data sources can be **visualised and modified** using the UI widgets such as tables, charts, forms, etc. You can also use **[Javascript](/docs/data-sources/run-js)** or **[Python](/docs/data-sources/run-py)** queries for writing business logic or interacting with the user interface of the application.
 
-<img src="/img/v2-beta/getting_started/intro.webp" alt="Getting started Demo app" loading="eager"/>
+<img src="/img/v2-beta/getting_started/intro.webp" alt="Getting started Demo app" loading="eager" />
 
 <!-- Why ToolJet section is commented out.
 
