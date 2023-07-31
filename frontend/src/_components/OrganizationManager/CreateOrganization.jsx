@@ -74,6 +74,13 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
     setDisabled(!error?.status || otherInputErrors);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.keyCode === 13) {
+      e.preventDefault();
+      createOrganization();
+    }
+  };
+
   const closeModal = () => {
     setFields({ name: { value: '', error: '' }, slug: { value: null, error: '' } });
     setShowCreateOrg(false);
@@ -101,6 +108,7 @@ export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
               className="form-control"
               placeholder={t('header.organization.workspaceName', 'workspace name')}
               disabled={isCreating}
+              onKeyDown={handleKeyDown}
               maxLength={50}
               data-cy="workspace-name-input-field"
               autoFocus

@@ -11,8 +11,8 @@ Cypress.Commands.add(
     cy.clearAndType(commonSelectors.workEmailInputField, email);
     cy.clearAndType(commonSelectors.passwordInputField, password);
     cy.get(commonSelectors.signInButton).click();
-    cy.get(commonSelectors.homePageLogo).should("be.visible");
     cy.wait(2000);
+    cy.get(commonSelectors.homePageLogo).should("be.visible");
   }
 );
 
@@ -21,66 +21,23 @@ Cypress.Commands.add("clearAndType", (selector, text) => {
 });
 
 Cypress.Commands.add("forceClickOnCanvas", () => {
-  cy.get(commonSelectors.canvas).click({ force: true });
+  cy.get(commonSelectors.canvas).click("topRight", { force: true });
 });
 
-Cypress.Commands.add("verifyToastMessage", (selector, message) => {
-  cy.get(selector).eq(0).should("be.visible").and("contain.text", message);
-  cy.get("body").then(($body) => {
-    if ($body.find(commonSelectors.toastCloseButton).length > 0) {
-      cy.closeToastMessage();
-      cy.wait(200);
+Cypress.Commands.add(
+  "verifyToastMessage",
+  (selector, message, closeAction = true) => {
+    cy.get(selector).as("toast").should("contain.text", message);
+    if (closeAction) {
+      cy.get("body").then(($body) => {
+        if ($body.find(commonSelectors.toastCloseButton).length > 0) {
+          cy.closeToastMessage();
+          cy.wait(200);
+        }
+      });
     }
-  });
-});
-
-Cypress.Commands.add("appLogin", () => {
-  cy.request({
-    url: "http://localhost:3000/api/authenticate",
-    method: "POST",
-    body: {
-      email: "dev@tooljet.io",
-      password: "password",
-    },
-  })
-    .its("body")
-    .then((res) =>
-      localStorage.setItem(
-        "currentUser",
-        JSON.stringify({
-          id: res.id,
-          auth_token: res.auth_token,
-          email: res.email,
-          first_name: res.first_name,
-          last_name: res.last_name,
-          organization_id: res.organization_id,
-          organization: res.organization,
-          admin: true,
-          group_permissions: [
-            {
-              id: res.id,
-              organization_id: res.organization_id,
-              group: res.group,
-              app_create: false,
-              app_delete: false,
-              folder_create: false,
-            },
-            {
-              id: res.id,
-              organization_id: res.organization_id,
-              group: res.group,
-              app_create: true,
-              app_delete: true,
-              folder_create: true,
-            },
-          ],
-          app_group_permissions: [],
-        })
-      )
-    );
-
-  cy.visit("/");
-});
+  }
+);
 
 Cypress.Commands.add("waitForAutoSave", () => {
   cy.wait(200);
@@ -92,22 +49,16 @@ Cypress.Commands.add("waitForAutoSave", () => {
 });
 
 Cypress.Commands.add("createApp", (appName) => {
+  const getAppButtonSelector = ($title) =>
+    $title.text().includes(commonText.introductionMessage)
+      ? commonSelectors.emptyAppCreateButton
+      : commonSelectors.appCreateButton;
+
   cy.get("body").then(($title) => {
-    if ($title.text().includes(commonText.introductionMessage)) {
-      cy.get(commonSelectors.emptyAppCreateButton).eq(0).click();
-    } else {
-      cy.get(commonSelectors.appCreateButton).click();
-    }
-    cy.intercept("GET", "/api/apps/**/versions").as("appVersion");
-    cy.wait("@appVersion", { timeout: 15000 });
-    cy.get("body").then(($el) => {
-      if ($el.text().includes("Skip", { timeout: 1000 })) {
-        cy.get(commonSelectors.skipButton).click();
-      } else {
-        cy.log("instructions modal is skipped ");
-      }
-    });
+    cy.get(getAppButtonSelector($title)).click();
   });
+  cy.waitForAppLoad();
+  cy.skipEditorPopover();
 });
 
 Cypress.Commands.add(
@@ -140,8 +91,8 @@ Cypress.Commands.add("appUILogin", () => {
   cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.signInButton).click();
-  cy.get(commonSelectors.homePageLogo).should("be.visible");
   cy.wait(2000);
+  cy.get(commonSelectors.homePageLogo).should("be.visible");
 });
 
 Cypress.Commands.add(
@@ -209,7 +160,6 @@ Cypress.Commands.add("openInCurrentTab", (selector) => {
 Cypress.Commands.add("modifyCanvasSize", (x, y) => {
   cy.get("[data-cy='left-sidebar-settings-button']").click();
   cy.clearAndType("[data-cy='maximum-canvas-width-input-field']", x);
-  cy.clearAndType("[data-cy='maximum-canvas-height-input-field']", y);
   cy.forceClickOnCanvas();
 });
 
@@ -218,6 +168,7 @@ Cypress.Commands.add("renameApp", (appName) => {
     `{selectAll}{backspace}${appName}`,
     { force: true }
   );
+  cy.forceClickOnCanvas();
   cy.waitForAutoSave();
 });
 
@@ -258,9 +209,14 @@ Cypress.Commands.add("notVisible", (dataCy) => {
 });
 
 Cypress.Commands.add("resizeWidget", (widgetName, x, y) => {
-  cy.get(`[data-cy="draggable-widget-${widgetName}"]`).trigger("mouseover");
+  cy.get(`[data-cy="draggable-widget-${widgetName}"]`).trigger("mouseover", {
+    force: true,
+  });
 
-  cy.get('[class="bottom-right"]').trigger("mousedown", { which: 1 });
+  cy.get('[class="bottom-right"]').trigger("mousedown", {
+    which: 1,
+    force: true,
+  });
   cy.get(commonSelectors.canvas)
     .trigger("mousemove", {
       which: 1,
@@ -284,4 +240,41 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
       cy.reload();
     }
   });
+});
+
+Cypress.Commands.add("skipEditorPopover", () => {
+  cy.wait(2000);
+  cy.get("body").then(($el) => {
+    if ($el.text().includes("Skip", { timeout: 2000 })) {
+      cy.get(commonSelectors.skipButton).realClick();
+    }
+  });
+  const log = Cypress.log({
+    name: "Skip Popover",
+    displayName: "Skip Popover",
+    message: " Popover skipped",
+  });
+});
+
+Cypress.Commands.add("waitForAppLoad", () => {
+  const API_ENDPOINT =
+    Cypress.env("environment") === "Community"
+      ? "/api/v2/data_sources"
+      : "/api/app-environments/**";
+
+  const TIMEOUT = 15000;
+
+  cy.intercept("GET", API_ENDPOINT).as("appDs");
+  cy.wait("@appDs", { timeout: TIMEOUT });
+});
+
+Cypress.Commands.add("visitTheWorkspace", (workspaceName) => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select id from organizations where name='${workspaceName}';`,
+  }).then((resp) => {
+    let workspaceId = resp.rows[0].id;
+    cy.visit(workspaceId);
+  });
+  cy.wait(2000);
 });

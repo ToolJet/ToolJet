@@ -23,7 +23,7 @@ export const multipageSelector = {
   eventHandlerOptionButton: '[data-cy="event-handlers-option-button"]',
 
   disabledDeleteButton:
-    ".menu-options > :nth-child(5)>.unstyled-button.disabled",
+    ".menu-options > :nth-child(6)>.unstyled-button.disabled",
   pagesMenuIcon: '[data-cy="menu-icon"]',
   pageHeaderSettings: '[data-cy="page-settings-header"]',
   disableThePageMenuLabel: '[data-cy="disable-page-menu-label"]',

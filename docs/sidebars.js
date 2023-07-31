@@ -26,9 +26,11 @@ const sidebars = {
         'setup/ec2',
         'setup/ecs',
         'setup/openshift',
+        'setup/helm',
         'setup/kubernetes',
         'setup/kubernetes-gke',
         'setup/kubernetes-aks',
+        'setup/azure-container',
         'setup/google-cloud-run',
         'setup/client',
         'setup/env-vars',
@@ -37,6 +39,7 @@ const sidebars = {
         'setup/v2-migration-guide'
       ]
     },
+    'licensing',
     'tooljet-database',
     'tooljet-copilot',
     {
@@ -198,12 +201,14 @@ const sidebars = {
       'label': 'App Builder',
       'items': [
         'app-builder/overview',
-        'app-builder/toolbar',
+        'app-builder/topbar',
+        'app-builder/share',
         'app-builder/canvas',
         'app-builder/left-sidebar',
         'app-builder/components-library',
         'app-builder/query-panel',
         'tutorial/pages',
+        'app-builder/customstyles',
         'tutorial/keyboard-shortcuts',
       ],
     },
@@ -255,6 +260,7 @@ const sidebars = {
                     'user-authentication/sso/openid/google-openid',
                   ],
                 },
+                'user-authentication/sso/ldap',
               ],
             },
           ],
@@ -305,6 +311,7 @@ const sidebars = {
           'items': [
             'marketplace/plugins/marketplace-plugin-textract',
             'marketplace/plugins/marketplace-plugin-github',
+            'marketplace/plugins/marketplace-plugin-harperdb',
             'marketplace/plugins/marketplace-plugin-openai',
             'marketplace/plugins/marketplace-plugin-plivo',
           ],
@@ -366,6 +373,7 @@ const sidebars = {
             'contributing-guide/setup/macos',
             'contributing-guide/setup/docker',
             'contributing-guide/setup/ubuntu',
+            'contributing-guide/setup/windows',
           ],
         },
         {
@@ -376,6 +384,7 @@ const sidebars = {
             'contributing-guide/marketplace/creating-a-plugin',
           ],
         },
+        'tooljet-cli',
         'contributing-guide/testing',
         'contributing-guide/l10n',
         {
@@ -383,6 +392,7 @@ const sidebars = {
           'label': 'Troubleshooting',
           'items': [
             'contributing-guide/troubleshooting/eslint',
+            'contributing-guide/troubleshooting/runpy-limitations',
           ],
         },
         'contributing-guide/code-of-conduct',

@@ -12,16 +12,14 @@ import cx from 'classnames';
 import config from 'config';
 // eslint-disable-next-line import/no-unresolved
 import { useUpdatePresence } from '@y-presence/react';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export default function EditorHeader({
   darkMode,
-  currentState,
-  currentLayout,
   globalSettingsChanged,
   appDefinition,
   toggleAppMaintenance,
-  editingVersion,
-  showCreateVersionModalPrompt,
   app,
   appVersionPreviewLink,
   slug,
@@ -30,13 +28,10 @@ export default function EditorHeader({
   canRedo,
   handleUndo,
   handleRedo,
-  toggleCurrentLayout,
   isSaving,
   saveError,
-  isVersionReleased,
   onNameChanged,
   setAppDefinitionFromVersion,
-  closeCreateVersionModalPrompt,
   handleSlugChange,
   onVersionRelease,
   saveEditingVersion,
@@ -44,6 +39,13 @@ export default function EditorHeader({
   currentUser,
 }) {
   const { is_maintenance_on } = app;
+  const { isVersionReleased, editingVersion } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      editingVersion: state.editingVersion,
+    }),
+    shallow
+  );
 
   const updatePresence = useUpdatePresence();
   useEffect(() => {
@@ -81,7 +83,6 @@ export default function EditorHeader({
                 <div className="row p-2">
                   <div className="col global-settings-app-wrapper">
                     <GlobalSettings
-                      currentState={currentState}
                       globalSettingsChanged={globalSettingsChanged}
                       globalSettings={appDefinition.globalSettings}
                       darkMode={darkMode}
@@ -97,15 +98,13 @@ export default function EditorHeader({
                       canRedo={canRedo}
                       handleUndo={handleUndo}
                       handleRedo={handleRedo}
-                      currentLayout={currentLayout}
-                      toggleCurrentLayout={toggleCurrentLayout}
                     />
                     <div className="my-1 mx-3">
                       <span
                         className={cx('autosave-indicator', {
                           'autosave-indicator-saving': isSaving,
                           'text-danger': saveError,
-                          'd-none': isVersionReleased(),
+                          'd-none': isVersionReleased,
                         })}
                         data-cy="autosave-indicator"
                       >
@@ -120,11 +119,8 @@ export default function EditorHeader({
                   {editingVersion && (
                     <AppVersionsManager
                       appId={appId}
-                      editingVersion={editingVersion}
                       releasedVersionId={app.current_version_id}
                       setAppDefinitionFromVersion={setAppDefinitionFromVersion}
-                      showCreateVersionModalPrompt={showCreateVersionModalPrompt}
-                      closeCreateVersionModalPrompt={closeCreateVersionModalPrompt}
                       onVersionDelete={onVersionDelete}
                     />
                   )}
@@ -173,11 +169,9 @@ export default function EditorHeader({
                 <div className="nav-item dropdown">
                   {app.id && (
                     <ReleaseVersionButton
-                      isVersionReleased={isVersionReleased()}
                       appId={app.id}
                       appName={app.name}
                       onVersionRelease={onVersionRelease}
-                      editingVersion={editingVersion}
                       saveEditingVersion={saveEditingVersion}
                     />
                   )}

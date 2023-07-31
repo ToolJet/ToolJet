@@ -65,7 +65,7 @@ describe("Basic components", () => {
     ).should("have.text", "label");
 
     cy.go("back");
-    cy.wait("@appVersion");
+    cy.waitForAppLoad();
     deleteComponentAndVerify("toggleswitch2");
     cy.get(commonSelectors.editorPageLogo).click();
 

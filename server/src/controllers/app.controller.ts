@@ -62,8 +62,10 @@ export class AppController {
   @Get('session')
   async getSessionDetails(@User() user, @Query('appId') appId: string, @Query('workspaceSlug') workspaceSlug: string) {
     let organizationId: string;
+    let app: any;
     if (appId) {
-      organizationId = await this.userService.returnOrgIdOfAnApp(appId);
+      app = await this.userService.returnOrgIdOfAnApp(appId);
+      organizationId = app.organizationId;
     } else if (workspaceSlug) {
       const organization = await this.organizationService.getOrganizationbySlug(workspaceSlug);
       if (!organization) {
@@ -72,6 +74,7 @@ export class AppController {
       organizationId = organization?.id;
     }
     if (organizationId) {
+      if (!app?.isPublic) organizationId = app.organizationId;
       if (organizationId && user.organizationIds?.includes(organizationId)) {
         user.organization_id = organizationId;
       }

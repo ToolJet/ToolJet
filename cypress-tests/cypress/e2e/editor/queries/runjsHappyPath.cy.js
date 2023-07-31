@@ -134,12 +134,7 @@ describe("RunJS", () => {
       "actions.showAlert('success', 'alert from runjs');"
     );
     query("run");
-    // cy.verifyToastMessage(commonSelectors.toastMessage, "Query Added");
-
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Query (runjs1) completed."
-    );
+    cy.verifyToastMessage(commonSelectors.toastMessage, "Query Saved");
 
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
     cy.get(multipageSelector.sidebarPageButton).click();
@@ -219,14 +214,53 @@ describe("RunJS", () => {
     data.customText = randomString(12);
 
     selectQuery("Run JavaScript code");
-    addInputOnQueryField("runjs", "return [page.handle,page.name,globals]");
+    addInputOnQueryField("runjs", "return [page.handle,page.name]");
     query("create");
     cy.verifyToastMessage(commonSelectors.toastMessage, "Query Added");
     query("preview");
-    verifypreview(
-      "raw",
-      `["home","Home",{"theme":{"name":"light"},"urlparams":{},"currentUser":{"email":"dev@tooljet.io","firstName":"The","lastName":"Developer","groups":["all_users","admin"]}}]`
-    );
+    verifypreview("raw", `["home","Home"]`);
+
+    addInputOnQueryField("runjs", "return globals.theme");
+    query("preview");
+    verifypreview("raw", `{"name":"light"}`);
+
+    // addInputOnQueryField("runjs", "return globals.currentUser");
+    // query("preview");
+    // verifypreview(
+    //   "raw",
+    //   `{"email":"dev@tooljet.io","firstName":"The","lastName":"Developer","groups":["all_users","admin"]}`
+    // );
+    addInputOnQueryField("runjs", "return globals.currentUser.email");
+    query("preview");
+    verifypreview("raw", `dev@tooljet.io`);
+    addInputOnQueryField("runjs", "return globals.currentUser.email");
+    query("preview");
+    verifypreview("raw", `dev@tooljet.io`);
+    addInputOnQueryField("runjs", "return globals.currentUser.firstName");
+    query("preview");
+    verifypreview("raw", `The`);
+    addInputOnQueryField("runjs", "return globals.currentUser.lastName");
+    query("preview");
+    verifypreview("raw", `Developer`);
+    addInputOnQueryField("runjs", "return globals.currentUser.groups");
+    query("preview");
+    verifypreview("raw", `["all_users","admin"]`);
+    if (Cypress.env("environment") != "Community") {
+      addInputOnQueryField("runjs", "return globals.mode");
+      query("preview");
+      verifypreview("raw", `{"value":"edit"}`);
+
+      addInputOnQueryField("runjs", "return globals.environment.name");
+      query("preview");
+      verifypreview("raw", `development`);
+
+      addInputOnQueryField(
+        "runjs",
+        "return globals.currentUser.ssoUserInfo == undefined"
+      );
+      query("preview");
+      verifypreview("raw", `true`);
+    }
   });
 
   it("should verify action by button", () => {
@@ -245,10 +279,7 @@ describe("RunJS", () => {
     selectEvent("On Click", "Run query", 1);
     cy.get('[data-cy="query-selection-field"]').type("runjs1{enter}");
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Query (runjs1) completed."
-    );
+
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
     renameQueryFromEditor("newrunjs");
     cy.wait(3000);
@@ -256,10 +287,6 @@ describe("RunJS", () => {
 
     cy.get('[data-cy="query-selection-field"]').should("have.text", "newrunjs");
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Query (newrunjs) completed."
-    );
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
   });
 
@@ -278,10 +305,6 @@ describe("RunJS", () => {
     query("save");
     cy.reload();
     cy.wait(3000);
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Query (runjs1) completed."
-    );
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
 
     changeQueryToggles("confirmation-before-run");
@@ -293,10 +316,6 @@ describe("RunJS", () => {
       "Do you want to run this query - runjs1?"
     );
     cy.get('[data-cy="modal-confirm-button"]').realClick();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Query (runjs1) completed."
-    );
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
 
     changeQueryToggles("notification-on-success");
@@ -307,10 +326,6 @@ describe("RunJS", () => {
     cy.reload();
     cy.wait(3000);
     cy.get('[data-cy="modal-confirm-button"]').realClick();
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Query (runjs1) completed."
-    );
     cy.verifyToastMessage(commonSelectors.toastMessage, "Success alert");
     cy.verifyToastMessage(commonSelectors.toastMessage, "alert from runjs");
   });

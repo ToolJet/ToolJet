@@ -3,12 +3,13 @@ import cx from 'classnames';
 
 export const Link = ({ height, properties, styles, fireEvent, registerAction, dataCy }) => {
   const { linkTarget, linkText, targetType } = properties;
-  const { textColor, textSize, underline, visibility } = styles;
+  const { textColor, textSize, underline, visibility, boxShadow } = styles;
   const clickRef = useRef();
 
   const computedStyles = {
     fontSize: textSize,
     height,
+    boxShadow,
   };
 
   registerAction(
@@ -18,7 +19,6 @@ export const Link = ({ height, properties, styles, fireEvent, registerAction, da
     },
     []
   );
-
   return (
     <div
       className={cx('link-widget', { 'd-none': !visibility }, `${underline}`)}
@@ -26,7 +26,7 @@ export const Link = ({ height, properties, styles, fireEvent, registerAction, da
       data-cy={dataCy}
     >
       <a
-        href={linkTarget}
+        {...(linkTarget != '' ? { href: linkTarget } : {})}
         target={targetType === 'new' && '_blank'}
         onClick={(event) => {
           event.stopPropagation();

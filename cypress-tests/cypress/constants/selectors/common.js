@@ -79,7 +79,7 @@ export const commonSelectors = {
   invitedUserName: '[data-cy="invited-user-name"]',
   invitedUserEmail: '[data-cy="invited-user-email"]',
   acceptInviteButton: '[data-cy="accept-invite-button"]',
-  databaseIcon: `[data-cy="database-icon"]`,
+  databaseIcon: '[data-cy="icon-database"]',
   profileSettings: '[data-cy="profile-settings"]',
   workspaceSettingsIcon: '[data-cy="icon-workspace-settings"]',
   manageUsersOption: '[data-cy="users-list-item"]',
@@ -96,7 +96,7 @@ export const commonSelectors = {
   enableToggle: '[data-cy="enable-toggle"]',
   mainWrapper: '[data-cy="main-wrapper"]',
   editRectangleIcon: '[data-cy="edit-rectangle-icon"]',
-  dashboardIcon: '[data-cy="dashboard-icon"]',
+  dashboardIcon: '[data-cy="icon-dashboard"]',
   notificationsIcon: '[data-cy="notifications-icon"]',
   notificationsCard: '[data-cy="notifications-card"]',
   notificationsCardTitle: '[data-cy="notifications-card-title"]',
@@ -211,6 +211,9 @@ export const commonSelectors = {
   editFolderOption: (folderName) => {
     return `[data-cy="${cyParamName(folderName)}-edit-folder-option"]`;
   },
+  inspectorPinIcon: '[data-cy="null-option-icon"]',
+  groupInputFieldLabel: '[data-cy="label-group-input-field"]',
+
 };
 
 export const commonWidgetSelector = {
@@ -311,15 +314,15 @@ export const commonWidgetSelector = {
   shareAppButton: '[data-cy="share-button-link"]',
   shareModalElements: {
     modalHeader: '[data-cy="modal-header"]',
-    makePublicAppToggleLabel:'[data-cy="make-public-app-label"]',
-    shareableAppLink:'[data-cy="shareable-app-link-label"]',
-    copyAppLinkButton:'[data-cy="copy-app-link-button"]',
-    iframeLinkLabel: '[data-cy="iframe-link-label"]',
-    ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
+    makePublicAppToggleLabel: '[data-cy="make-public-app-label"]',
+    shareableAppLink: '[data-cy="shareable-app-link-label"]',
+    copyAppLinkButton: '[data-cy="copy-app-link-button"]',
+    // iframeLinkLabel: '[data-cy="iframe-link-label"]',
+    // ifameLinkCopyButton: '[data-cy="iframe-link-copy-button"]',
   },
-  makePublicAppToggle:'[data-cy="make-public-app-toggle"]',
+  makePublicAppToggle: '[data-cy="make-public-app-toggle"]',
   appLink: '[data-cy="app-link"]',
   appNameSlugInput: '[data-cy="app-name-slug-input"]',
-  iframeLink :'[data-cy="iframe-link"]',
+  // iframeLink: '[data-cy="iframe-link"]',
   modalCloseButton: '[data-cy="modal-close-button"]',
 };

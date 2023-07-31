@@ -99,7 +99,7 @@ export async function catchDbException(operation: () => any, dbConstraints: DbCo
   }
 }
 
-export const defaultAppEnvironments = [{ name: 'production', isDefault: true }];
+export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
 
 export function isPlural(data: Array<any>) {
   return data?.length > 1 ? 's' : '';
@@ -129,6 +129,15 @@ export async function getServiceAndRpcNames(protoDefinition) {
   return serviceNamesAndMethods;
 }
 
+export class MigrationProgress {
+  private progress = 0;
+  constructor(private fileName: string, private totalCount: number) {}
+
+  show() {
+    this.progress++;
+    console.log(`${this.fileName} Progress ${Math.round((this.progress / this.totalCount) * 100)} %`);
+  }
+}
 export const generateNextName = (firstWord: string) => {
   return `${firstWord} ${Date.now()}`;
 };

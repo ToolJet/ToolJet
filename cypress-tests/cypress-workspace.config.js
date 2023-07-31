@@ -19,9 +19,9 @@ module.exports = defineConfig({
   trashAssetsBeforeRuns: true,
 
   e2e: {
-    setupNodeEvents(on, config) {
+    setupNodeEvents (on, config) {
       on("task", {
-        readPdf(pathToPdf) {
+        readPdf (pathToPdf) {
           return new Promise((resolve) => {
             const pdfPath = path.resolve(pathToPdf);
             let dataBuffer = fs.readFileSync(pdfPath);
@@ -33,7 +33,7 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        readXlsx(filePath) {
+        readXlsx (filePath) {
           return new Promise((resolve, reject) => {
             try {
               let dataBuffer = fs.readFileSync(filePath);
@@ -48,7 +48,7 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        deleteFolder(folderName) {
+        deleteFolder (folderName) {
           return new Promise((resolve, reject) => {
             rmdir(folderName, { maxRetries: 10, recursive: true }, (err) => {
               if (err) {
@@ -62,7 +62,7 @@ module.exports = defineConfig({
       });
 
       on("task", {
-        updateId({ dbconfig, sql }) {
+        updateId ({ dbconfig, sql }) {
           const client = new pg.Pool(dbconfig);
           return client.query(sql);
         },
@@ -79,7 +79,8 @@ module.exports = defineConfig({
       "cypress/e2e/selfHost/*.cy.js",
       "cypress/e2e/authentication/*.cy.js",
       "cypress/e2e/workspace/*.cy.js",
-      "cypress/e2e/editor/data-source/*.cy.js",
+      "cypress/e2e/globalDataSources/*.cy.js",
+      "cypress/e2e/editor/app-version/version.cy.js"
     ],
     numTestsKeptInMemory: 1,
     redirectionLimit: 7,

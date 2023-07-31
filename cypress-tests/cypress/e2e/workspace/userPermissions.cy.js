@@ -4,9 +4,7 @@ import { usersText } from "Texts/manageUsers";
 import * as common from "Support/utils/common";
 import { dashboardText, emptyDashboardText } from "Texts/dashboard";
 import { groupsSelector } from "Selectors/manageGroups";
-import { groupsText } from "Texts/manageGroups";
 import * as permissions from "Support/utils/userPermissions";
-import { usersSelector } from "Selectors/manageUsers";
 import { commonText } from "Texts/common";
 import { workspaceVarSelectors } from "Selectors/workspaceVariable";
 import { workspaceVarText } from "Texts/workspacevarText";
@@ -15,19 +13,32 @@ const data = {};
 data.firstName = fake.firstName;
 data.lastName = fake.lastName.replaceAll("[^A-Za-z]", "");
 data.email = fake.email.toLowerCase();
-data.appName = `${fake.companyName} App`;
-data.folderName = `${fake.companyName} Folder`;
-data.companyName = fake.companyName;
+data.appName = `${fake.companyName}-App`;
+data.folderName = `${fake.companyName.toLowerCase()}-folder`;
 
 describe("User permissions", () => {
+  before(() => {
+    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
+    cy.appUILogin();
+    permissions.reset();
+    cy.get(commonSelectors.homePageLogo).click();
+    cy.wait("@homePage");
+    cy.createApp();
+    cy.renameApp(data.appName);
+    cy.dragAndDropWidget("Table", 250, 250);
+    cy.get(commonSelectors.editorPageLogo).click();
+    cy.reloadAppForTheElement(data.appName);
+    permissions.addNewUserMW(data.firstName, data.email);
+    common.logout();
+  });
   beforeEach(() => {
     cy.appUILogin();
+    cy.visitTheWorkspace('My workspace')
   });
 
   it("Should verify the create new app permission", () => {
-    permissions.reset();
-    permissions.addNewUserMW(data.firstName, data.email);
-
+    common.logout();
+    cy.login(data.email, usersText.password);
     cy.get("body").then(($title) => {
       if ($title.text().includes(dashboardText.emptyPageDescription)) {
         cy.get(commonSelectors.dashboardAppCreateButton).click();
@@ -43,23 +54,7 @@ describe("User permissions", () => {
   });
 
   it("Should verify the View and Edit permission", () => {
-    common.navigateToManageUsers();
-    common.searchUser(data.email);
-    cy.contains("td", data.email)
-      .parent()
-      .within(() => {
-        cy.get("td small").should("have.text", usersText.activeStatus);
-      });
-    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
-    cy.get(commonSelectors.homePageLogo).click();
-    cy.wait("@homePage");
-    cy.createApp();
-    cy.renameApp(data.appName);
-    cy.get(commonSelectors.editorPageLogo).click();
-    cy.reload();
     common.navigateToManageGroups();
-    cy.get(groupsSelector.groupLink("Admin")).click();
-    cy.get(groupsSelector.groupLink("All users")).click();
     cy.get(groupsSelector.appSearchBox).click();
     cy.get(groupsSelector.searchBoxOptions).contains(data.appName).click();
     cy.get(groupsSelector.selectAddButton).click();
@@ -93,6 +88,7 @@ describe("User permissions", () => {
       .within(() => {
         cy.get("td input").eq(1).check();
       });
+    cy.verifyToastMessage(commonSelectors.toastMessage, "App permissions updated")
 
     common.logout();
     cy.login(data.email, usersText.password);
@@ -112,7 +108,7 @@ describe("User permissions", () => {
     cy.get(commonSelectors.editButton).should("exist").and("be.enabled");
 
     cy.get(commonSelectors.workspaceName).click();
-    cy.contains("Untitled workspace").click();
+    cy.contains(`${data.email}`).click();
     cy.contains(data.appName).should("not.exist");
 
     cy.get(commonSelectors.workspaceName).click();
@@ -143,10 +139,11 @@ describe("User permissions", () => {
     cy.contains("Delete app").should("not.exist");
 
     cy.createApp();
-    cy.renameApp(data.appName);
+    cy.renameApp(data.email);
+    cy.dragAndDropWidget("Table", 50, 50);
     cy.get(commonSelectors.editorPageLogo).click();
-    cy.reload();
-    common.viewAppCardOptions(data.appName);
+    cy.reloadAppForTheElement(data.email);
+    common.viewAppCardOptions(data.email);
     cy.contains("Delete app").should("exist");
     cy.get(commonSelectors.appCardOptions(commonText.deleteAppOption)).click();
     cy.get(commonSelectors.buttonSelector("Yes")).click();

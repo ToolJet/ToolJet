@@ -195,6 +195,7 @@ class TableComponent extends React.Component {
                 { name: 'Toggle switch', value: 'toggle' },
                 { name: 'Date Picker', value: 'datepicker' },
                 { name: 'Image', value: 'image' },
+                { name: 'Link', value: 'link' },
               ]}
               value={column.columnType}
               search={true}
@@ -436,6 +437,7 @@ class TableComponent extends React.Component {
                     },
                   },
                 }}
+                hideEmptyEventsAlert={true}
                 componentMeta={{ events: { onChange: { displayName: 'On change' } } }}
                 currentState={this.props.currentState}
                 dataQueries={this.props.dataQueries}
@@ -669,8 +671,24 @@ class TableComponent extends React.Component {
               </div>
             </>
           )}
+          {column.columnType === 'link' && (
+            <div className="field mb-2">
+              <ProgramaticallyHandleToggleSwitch
+                label="Link target"
+                currentState={this.state.currentState}
+                index={index}
+                darkMode={this.props.darkMode}
+                callbackFunction={this.onColumnItemChange}
+                property="linkTarget"
+                props={column}
+                component={this.props.component}
+                paramMeta={{ type: 'select', displayName: 'Link Target' }}
+                paramType="properties"
+              />
+            </div>
+          )}
 
-          {column.columnType !== 'image' && (
+          {!['image', 'link'].includes(column.columnType) && (
             <ProgramaticallyHandleToggleSwitch
               label="make editable"
               currentState={this.state.currentState}
@@ -907,7 +925,7 @@ class TableComponent extends React.Component {
   }
 
   getPopoverFieldSource = (column, field) =>
-    `widget/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
+    `component/${this.props.component.component.name}/${column ?? 'default'}::${field}`;
 
   render() {
     const { dataQueries, component, paramUpdated, componentMeta, components, currentState, darkMode } = this.props;
@@ -1095,7 +1113,7 @@ class TableComponent extends React.Component {
       ...(displayServerSideFilter ? ['serverSideFilter'] : []),
       'showBulkUpdateActions',
       'allowSelection',
-      ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector'] : []),
+      ...(allowSelection ? ['highlightSelectedRow', 'showBulkSelector', 'defaultSelectedRow'] : []),
       'hideColumnSelectorButton',
     ];
 

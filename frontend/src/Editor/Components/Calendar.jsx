@@ -28,6 +28,7 @@ const allowedCalendarViews = ['month', 'week', 'day'];
 
 export const Calendar = function ({
   id,
+  component,
   height,
   properties,
   styles,
@@ -120,7 +121,11 @@ export const Calendar = function ({
   };
 
   return (
-    <div id={id} style={{ display: styles.visibility ? 'block' : 'none' }} data-cy={dataCy}>
+    <div
+      id={id}
+      style={{ display: styles.visibility ? 'block' : 'none', boxShadow: styles.boxShadow }}
+      data-cy={dataCy}
+    >
       <ReactCalendar
         className={`calendar-widget
         ${darkMode ? 'dark-mode' : ''}
@@ -177,11 +182,13 @@ export const Calendar = function ({
       />
       <CalendarEventPopover
         calendarWidgetId={id}
+        darkMode={darkMode}
         show={eventPopoverOptions.show}
         offset={eventPopoverOptions.offset}
         containerProps={containerProps}
         removeComponent={removeComponent}
         popoverClosed={popoverClosed}
+        component={component}
       />
     </div>
   );
