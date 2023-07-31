@@ -14,7 +14,7 @@
   }
 }
 
-.PopoverContent.global-settings-popover-content{
+.PopoverContent.global-settings-popover-content {
   will-change: initial;
 }
 
@@ -60,5 +60,7 @@
 }
 
 div[data-radix-popper-content-wrapper]:has(.PopoverContent.drawer-height) {
-  transform: translate3d(47px, 45px, 0) !important;
+  margin-top: 45px;
+  margin-left: 47px !important;
+  transform: none !important;
 }
