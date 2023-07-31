@@ -44,7 +44,6 @@ export const Listview = function Listview({
     borderRadius: borderRadius ?? 0,
     boxShadow,
   };
-
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
   const [positiveColumns, setPositiveColumns] = useState(columns);
 

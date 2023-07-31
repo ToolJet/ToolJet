@@ -6,7 +6,7 @@ import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
 import { isOperatorOptions } from './util';
 
-export const DeleteRows = React.memo(({ currentState, darkMode }) => {
+export const DeleteRows = React.memo(({ darkMode }) => {
   const { columns, deleteOperationLimitOptionChanged, deleteRowsOptions, handleDeleteRowsOptionsChange } =
     useContext(TooljetDatabaseContext);
 
@@ -94,7 +94,6 @@ export const DeleteRows = React.memo(({ currentState, darkMode }) => {
               />
             ) : (
               <CodeHinter
-                currentState={currentState}
                 initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
                 className="codehinter-plugins"
                 theme={darkMode ? 'monokai' : 'default'}
@@ -158,7 +157,6 @@ export const DeleteRows = React.memo(({ currentState, darkMode }) => {
         </label>
         <div className="field col-4">
           <CodeHinter
-            currentState={currentState}
             initialValue={deleteRowsOptions?.limit ?? 1}
             className="codehinter-plugins"
             theme={darkMode ? 'monokai' : 'default'}
