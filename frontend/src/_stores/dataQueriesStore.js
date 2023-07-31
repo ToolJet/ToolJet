@@ -15,6 +15,7 @@ const initialState = {
   sortOrder: 'desc',
   loadingDataQueries: true,
   isDeletingQueryInProcess: false,
+  /** TODO: Below two params are primarily used only for websocket invocation post update. Can be removed onece websocket logic is revamped */
   isCreatingQueryInProcess: false,
   isUpdatingQueryInProcess: false,
 };
@@ -189,31 +190,6 @@ export const useDataQueriesStore = create(
               }));
               useQueryPanelStore.getState().actions.setSelectedQuery(selectedQuery.id);
               useQueryPanelStore.getState().actions.setSelectedDataSource(newDataSource);
-            })
-            .catch(() => {
-              set({
-                isUpdatingQueryInProcess: false,
-              });
-            })
-            .finally(() => useAppDataStore.getState().actions.setIsSaving(false));
-        },
-        updateDataQueryStatus: (status) => {
-          set({ isUpdatingQueryInProcess: true });
-          const { selectedQuery } = useQueryPanelStore.getState();
-          useAppDataStore.getState().actions.setIsSaving(true);
-          dataqueryService
-            .updateStatus(selectedQuery?.id, status)
-            .then(() => {
-              set((state) => ({
-                isUpdatingQueryInProcess: false,
-                dataQueries: state.dataQueries.map((query) => {
-                  if (query.id === selectedQuery.id) {
-                    return { ...query, status };
-                  }
-                  return query;
-                }),
-              }));
-              useQueryPanelStore.getState().actions.setSelectedQuery(selectedQuery.id);
             })
             .catch(() => {
               set({

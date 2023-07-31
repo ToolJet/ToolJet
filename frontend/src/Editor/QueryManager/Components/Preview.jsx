@@ -3,7 +3,7 @@ import { JSONTree } from 'react-json-tree';
 import { Tab, ListGroup, Row, Col } from 'react-bootstrap';
 import { usePreviewLoading, usePreviewData, useQueryPanelActions } from '@/_stores/queryPanelStore';
 import { getTheme, tabs } from '../constants';
-import RemoveRectangle from '../../../_ui/Icon/solidIcons/RemoveRectangle';
+import RemoveRectangle from '@/_ui/Icon/solidIcons/RemoveRectangle';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 const Preview = ({ darkMode }) => {

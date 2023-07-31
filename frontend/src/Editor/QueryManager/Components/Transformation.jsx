@@ -6,7 +6,7 @@ import 'codemirror/addon/search/match-highlighter';
 import 'codemirror/addon/hint/show-hint.css';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { getRecommendation } from '@/Editor/CodeBuilder/utils';
-import { Popover, OverlayTrigger, Row } from 'react-bootstrap';
+import { Popover, OverlayTrigger } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
 import { useLocalStorageState } from '@/_hooks/use-local-storage';

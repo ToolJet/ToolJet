@@ -26,7 +26,6 @@ export default function SuccessNotificationInputs({ currentState, options, darkM
         </div>
       </div>
       <div className="d-flex">
-        {/* <div className="col-auto" style={{ width: '200px' }}> */}
         <label className="form-label" data-cy={'label-notification-duration-input'} style={{ width: 150 }}>
           {t('editor.queryManager.notificationDuration', 'duration (s)')}
         </label>

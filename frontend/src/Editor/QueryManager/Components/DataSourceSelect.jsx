@@ -73,14 +73,6 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
         })),
       ],
     },
-    // {
-    //   label: (
-    //     <span className="color-slate9" style={{ fontWeight: 500 }}>
-    //       Global datasources
-    //     </span>
-    //   ),
-    //   isDisabled: true,
-    // },
     ...globalDataSourcesOpts,
   ];
 
@@ -171,7 +163,6 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
         options={DataSourceOptions}
         isDisabled={isDisabled}
         menuIsOpen
-        // menuPortalTarget={document.querySelector('.main-wrapper')}
         maxMenuHeight={400}
         minMenuHeight={300}
         onKeyDown={handleKeyDown}

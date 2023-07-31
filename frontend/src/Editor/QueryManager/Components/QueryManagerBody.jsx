@@ -53,10 +53,9 @@ export const QueryManagerBody = ({
 
   const defaultOptions = useRef({});
 
-  const { isVersionReleased, editingVersionId } = useAppVersionStore(
+  const { isVersionReleased } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
-      editingVersionId: state.editingVersion?.id,
     }),
     shallow
   );

@@ -23,10 +23,8 @@ import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
 
 export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, ref) => {
-  const { renameQuery, updateDataQueryStatus } = useDataQueriesActions();
+  const { renameQuery } = useDataQueriesActions();
   const selectedQuery = useSelectedQuery();
-  const isCreationInProcess = useQueryCreationLoading();
-  const isUpdationInProcess = useQueryUpdationLoading();
   const selectedDataSource = useSelectedDataSource();
   const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
   const queryName = selectedQuery?.name ?? '';

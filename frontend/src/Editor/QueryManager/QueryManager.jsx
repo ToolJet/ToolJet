@@ -22,6 +22,7 @@ const QueryManager = ({ mode, dataQueriesChanged, appId, darkMode, apps, allComp
   const [options, setOptions] = useState({});
   const mounted = useRef(false);
 
+  /** TODO: Below effect primarily used only for websocket invocation post update. Can be removed onece websocket logic is revamped */
   useEffect(() => {
     if (mounted.current && !isCreationInProcess && !isUpdationInProcess) {
       return dataQueriesChanged();

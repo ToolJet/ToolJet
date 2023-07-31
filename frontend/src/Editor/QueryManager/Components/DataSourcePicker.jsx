@@ -118,9 +118,7 @@ const EmptyDataSourceBanner = () => (
       <Information fill="var(--slate9)" />
     </div>
     <div>
-      {/* No global datasources have been added yet. <br />
-      Add a new datasource to connect it to your app. */}
-      No global datasources have been added yet. 😕 <br />
+      No global datasources have been added yet. <br />
       Add new datasources to connect to your app! 🚀
     </div>
   </div>

@@ -431,7 +431,10 @@ export const EventManager = ({
                       onChange={(value) => {
                         const query = dataQueries.find((dataquery) => dataquery.id === value);
                         const parameters = (query?.options?.parameters ?? []).reduce(
-                          (paramObj, param) => ({ ...paramObj, [param.name]: param.defaultValue }),
+                          (paramObj, param) => ({
+                            ...paramObj,
+                            [param.name]: param.defaultValue,
+                          }),
                           {}
                         );
                         handlerChanged(index, 'queryId', query.id);
@@ -930,12 +933,10 @@ export const EventManager = ({
     return (
       <>
         <div className="text-left mb-3">
-          {/* <ButtonSolid className="mt-1" onClick={addHandler} data-cy="add-event-handler" variant="ghostBlue" size="sm">
-            {t('editor.inspector.eventManager.addEventHandler', 'Add event handler')}
-          </ButtonSolid> */}
           <ButtonSolid variant="ghostBlue" size="sm" onClick={addHandler} data-cy="add-event-handler">
             <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-            &nbsp;&nbsp;{t('editor.inspector.eventManager.addHandler', 'Add handler')}
+            &nbsp;&nbsp;
+            {t('editor.inspector.eventManager.addHandler', 'Add handler')}
           </ButtonSolid>
         </div>
         {!hideEmptyEventsAlert ? (
@@ -961,7 +962,8 @@ export const EventManager = ({
       <div className="mb-3">
         <ButtonSolid variant="ghostBlue" size="sm" onClick={addHandler} data-cy="add-more-event-handler">
           <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-          &nbsp;&nbsp;{t('editor.inspector.eventManager.addHandler', 'Add handler')}
+          &nbsp;&nbsp;
+          {t('editor.inspector.eventManager.addHandler', 'Add handler')}
         </ButtonSolid>
       </div>
     </>

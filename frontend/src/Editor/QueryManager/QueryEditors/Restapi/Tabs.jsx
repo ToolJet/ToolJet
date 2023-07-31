@@ -3,7 +3,7 @@ import Headers from './TabHeaders';
 import Params from './TabParams';
 import Body from './TabBody';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
-import { CustomToggleSwitch } from '../../Components/CustomToggleSwitch';
+import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
 
 function ControlledTabs({
   options,

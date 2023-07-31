@@ -2,7 +2,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { CodeHinter } from '../../../CodeBuilder/CodeHinter';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
-import Remove from '@/_ui/Icon/solidIcons/Remove';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import Trash from '@/_ui/Icon/solidIcons/Trash';
 
