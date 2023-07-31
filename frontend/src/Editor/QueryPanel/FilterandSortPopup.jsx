@@ -114,6 +114,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
                 <PillButton
                   name={selectedDataSources.length}
                   onRemove={clearSelectedDataSources}
+                  onClick={() => handlePageCallback('filter-by-datasource')}
                   className="m-1"
                   size="sm"
                 />
