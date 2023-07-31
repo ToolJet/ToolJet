@@ -110,7 +110,7 @@ export const EventManager = ({
     return componentOptions;
   }
 
-  function getComponentOptionsOfComponentsWithActions(componentType = '') {
+  function getComponentOptionsOfComponentsWithActions(currentState, componentType = '') {
     let componentOptions = [];
     Object.values(currentState?.components || {}).forEach((value) => {
       const targetComponentMeta = componentTypes.find(
@@ -668,7 +668,7 @@ export const EventManager = ({
                   <div className="col-9" data-cy="action-options-component-selection-field">
                     <Select
                       className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                      options={getComponentOptionsOfComponentsWithActions()}
+                      options={getComponentOptionsOfComponentsWithActions(currentState)}
                       value={event?.componentId}
                       search={true}
                       onChange={(value) => {
