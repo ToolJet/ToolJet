@@ -48,16 +48,19 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
 
   const executeQueryNameUpdation = (newName) => {
     const { name } = selectedQuery;
-    if (name === newName) {
-      return;
+    if (name === newName || !newName) {
+      return false;
     }
+
     const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
-    if (newName && !isNewQueryNameAlreadyExists) {
+    if (isNewQueryNameAlreadyExists) {
+      toast.error('Query name already exists');
+      return false;
+    }
+
+    if (newName) {
       renameQuery(selectedQuery?.id, newName, editorRef);
-    } else {
-      if (isNewQueryNameAlreadyExists) {
-        toast.error('Query name already exists');
-      }
+      return true;
     }
   };
 
@@ -184,6 +187,13 @@ const NameInput = ({ onInput, value, darkMode }) => {
     setName(sanitizedValue);
   };
 
+  const handleInput = (newName) => {
+    const result = onInput(newName);
+    if (!result) {
+      setName(value);
+    }
+  };
+
   return (
     <div className="query-name-breadcrum d-flex align-items-center ms-1">
       <span
@@ -206,12 +216,12 @@ const NameInput = ({ onInput, value, darkMode }) => {
               event.persist();
               if (event.keyCode === 13) {
                 setIsFocussed(false);
-                onInput(event.target.value);
+                handleInput(event.target.value);
               }
             }}
             onBlur={({ target }) => {
               setIsFocussed(false);
-              onInput(target.value);
+              handleInput(target.value);
             }}
           />
         ) : (
