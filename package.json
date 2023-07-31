@@ -24,6 +24,7 @@
     "lint-staged": "^13.1.2"
   },
   "scripts": {
+    "heroku-prebuild": "heroku config:set USE_NPM_INSTALL=true",
     "prebuild:plugins": "npm run install:plugins",
     "install:plugins": "npm --prefix plugins install",
     "build:plugins": "npm --prefix plugins run build",

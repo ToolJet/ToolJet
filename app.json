@@ -6,7 +6,7 @@
   "logo": "https://tooljet.com/blue-logo.png",
   "success_url": "/",
   "scripts": {
-    "postdeploy": "export NODE_OPTIONS=\"--max_old_space_size=1024\"; npm run db:migrate"
+    "postdeploy": "npm run db:migrate"
   },
   "env": {
     "NODE_ENV": {
