@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { OverlayTrigger, Popover, Form, Badge } from 'react-bootstrap';
 import cx from 'classnames';
 import { Button } from '@/_ui/LeftSidebar';
-import { useGlobalDataSources } from '@/_stores/dataSourcesStore';
+import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import Filter from '@/_ui/Icon/solidIcons/Filter';
 import Arrowleft from '@/_ui/Icon/bulkIcons/Arrowleft';
 import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
@@ -19,6 +19,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
   const [action, setAction] = useState();
   const [search, setSearch] = useState('');
   const { sortDataQueries } = useDataQueriesActions();
+  const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const [sources, setSources] = useState();
 
@@ -36,11 +37,14 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
     if (showMenu) {
       const seen = new Set();
       const createdSources = dataQueries.map((query) => {
-        const globalDS = globalDataSources.find((source) => source.id === query.data_source_id);
+        const globalDS = [...dataSources, ...globalDataSources].find((source) => source.id === query.data_source_id);
         if (globalDS) {
           return globalDS;
         }
-        return { ...staticDataSources.find((source) => source.kind === query.kind), id: null };
+        return {
+          ...staticDataSources.find((source) => source.kind === query.kind),
+          id: null,
+        };
       });
       setSearch('');
       setSources(
@@ -68,7 +72,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
     } else {
       setAction();
     }
-  }, [dataQueries, globalDataSources, showMenu]);
+  }, [dataQueries, dataSources, globalDataSources, showMenu]);
 
   const handlePageCallback = (action) => {
     setAction(action);
@@ -192,7 +196,9 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
             e.stopPropagation();
             setShowMenu((showMenu) => !showMenu);
           }}
-          className={cx('position-relative  btn-query-panel-header', { active: showMenu })}
+          className={cx('position-relative  btn-query-panel-header', {
+            active: showMenu,
+          })}
           style={{ ...(showMenu && { background: 'var(--slate5)' }) }}
           data-tooltip-id="tooltip-for-open-filter"
           data-tooltip-content="Show sort/filter"
