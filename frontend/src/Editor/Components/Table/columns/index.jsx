@@ -99,10 +99,10 @@ export default function generateColumnsData({
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
 
-        const rowData = tableData[cell.row.index];
+        const rowData = tableData?.[cell?.row?.index];
         if (
           cell.row.index === 0 &&
-          variablesExposedForPreview &&
+          !_.isEmpty(variablesExposedForPreview) &&
           !_.isEqual(variablesExposedForPreview[id]?.rowData, rowData)
         ) {
           const customResolvables = {};
