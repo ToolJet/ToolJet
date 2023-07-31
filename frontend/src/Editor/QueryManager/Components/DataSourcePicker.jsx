@@ -13,12 +13,12 @@ import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 
 function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalDataSources }) {
+  const allUserDefinedSources = [...dataSources, ...globalDataSources];
   const [searchTerm, setSearchTerm] = useState();
-  const [filteredGlobalDataSources, setFilteredGlobalDataSources] = useState([...globalDataSources]);
+  const [filteredUserDefinedDataSources, setFilteredUserDefinedDataSources] = useState(allUserDefinedSources);
   const navigate = useNavigate();
   const { createDataQuery } = useDataQueriesActions();
   const { setPreviewData } = useQueryPanelActions();
-  const allSources = [...dataSources, ...staticDataSources];
 
   const handleChangeDataSource = (source) => {
     createDataQuery(source);
@@ -28,15 +28,15 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
   useEffect(() => {
     if (searchTerm) {
       const formattedSearchTerm = searchTerm.toLowerCase();
-      const filteredResults = globalDataSources.filter(
+      const filteredResults = allUserDefinedSources.filter(
         ({ name, kind }) =>
           name.toLowerCase().includes(formattedSearchTerm) || kind.toLowerCase().includes(formattedSearchTerm)
       );
-      setFilteredGlobalDataSources(filteredResults);
+      setFilteredUserDefinedDataSources(filteredResults);
     } else {
-      setFilteredGlobalDataSources(globalDataSources);
+      setFilteredUserDefinedDataSources(allUserDefinedSources);
     }
-  }, [searchTerm, globalDataSources]);
+  }, [searchTerm, globalDataSources, dataSources]);
 
   const handleAddClick = () => {
     const workspaceId = getWorkspaceId();
@@ -48,17 +48,17 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
       <h4 className="w-100 text-center" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
         Connect to a datasource
       </h4>
-      <p className="w-50 m-auto mb-3" style={{ textAlign: 'center' }}>
+      <p className="mb-3" style={{ textAlign: 'center' }}>
         Select a datasource to start creating a new query. To know more about queries in ToolJet, you can read our
         &nbsp;
         <a target="_blank" href="https://docs.tooljet.com/docs/app-builder/query-panel" rel="noreferrer">
           documentation
         </a>
       </p>
-      <div style={{ width: '475px' }} className="m-auto">
+      <div>
         <label className="form-label">Default</label>
         <div className="query-datasource-card-container d-flex justify-content-between mb-3 mt-2">
-          {allSources.map((source) => {
+          {staticDataSources.map((source) => {
             return (
               <ButtonSolid
                 key={`${source.id}-${source.kind}`}
@@ -75,22 +75,22 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
         </div>
         <div className="d-flex d-flex justify-content-between">
           <label className="form-label py-1" style={{ width: 'auto' }}>
-            {`Available Datasources ${!isEmpty(globalDataSources) ? '(' + globalDataSources.length + ')' : 0}`}
+            {`Available Datasources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
           </label>
           <ButtonSolid size="sm" variant="ghostBlue" onClick={handleAddClick}>
             <Plus style={{ height: '16px' }} fill="var(--indigo9)" />
             Add new
           </ButtonSolid>
         </div>
-        {isEmpty(globalDataSources) ? (
+        {isEmpty(allUserDefinedSources) ? (
           <EmptyDataSourceBanner />
         ) : (
           <Container className="p-0">
-            {globalDataSources.length > 4 && (
+            {allUserDefinedSources.length > 4 && (
               <SearchBox onSearch={setSearchTerm} darkMode={darkMode} searchTerm={searchTerm} />
             )}
             <Row className="mt-2">
-              {filteredGlobalDataSources.map((source) => (
+              {filteredUserDefinedDataSources.map((source) => (
                 <Col sm="6" key={source.id} className="ps-1">
                   <ButtonSolid
                     key={`${source.id}-${source.kind}`}

@@ -130,6 +130,7 @@ export const useDataQueriesStore = create(
                 }),
               }));
               actions.setSelectedQuery(data.id, data);
+              actions.setNameInputFocussed(true);
               if (shouldRunQuery) actions.setQueryToBeRun(data);
             })
             .catch((error) => {

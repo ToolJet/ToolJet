@@ -120,17 +120,19 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
           })}
         >
           <div className="col-auto w-100">
-            <div className={`queries-search ${darkMode && 'theme-dark'}`}>
+            <div className={`queries-search d-flex ${darkMode && 'theme-dark'}`}>
               <SearchBox
                 ref={searchBoxRef}
                 dataCy={`query-manager`}
                 width="100%"
                 onSubmit={(val) => setSearchTermForFilters(val)}
                 placeholder={t('globals.search', 'Search')}
-                onClearCallback={() => setShowSearchBox(false)}
-                customClass="query-manager-search-box-wrapper"
+                customClass="query-manager-search-box-wrapper flex-grow-1"
                 showClearButton
               />
+              <ButtonSolid size="sm" variant="ghostBlue" className="ms-1" onClick={() => setShowSearchBox(false)}>
+                Close
+              </ButtonSolid>
             </div>
           </div>
         </div>

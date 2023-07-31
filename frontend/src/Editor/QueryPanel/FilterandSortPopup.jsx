@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { OverlayTrigger, Popover, Form, Badge } from 'react-bootstrap';
+import { OverlayTrigger, Popover, Form } from 'react-bootstrap';
 import cx from 'classnames';
 import { Button } from '@/_ui/LeftSidebar';
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
