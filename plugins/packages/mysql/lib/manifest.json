@@ -79,12 +79,6 @@
         }
       ],
       "commonFields": {
-        "database": {
-          "label": "Database Name",
-          "key": "database",
-          "type": "text",
-          "description": "Name of the database"
-        },
         "username": {
           "label": "Username",
           "key": "username",
@@ -96,6 +90,12 @@
           "key": "password",
           "type": "password",
           "description": "Enter password"
+        },
+        "database": {
+          "label": "Database Name",
+          "key": "database",
+          "type": "text",
+          "description": "Name of the database"
         }
       }
     },
