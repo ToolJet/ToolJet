@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react';
 import DatePickerComponent from 'react-datepicker';
 import moment from 'moment';
 import 'react-datepicker/dist/react-datepicker.css';
+import config from 'config';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DateTimePicker } from '@mui/x-date-pickers';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import dayjs from 'dayjs';
 
 export const Datepicker = function Datepicker({
   height,
@@ -77,39 +83,73 @@ export const Datepicker = function Datepicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid]);
 
+  const shouldDisableDate = (date) => {
+    if (date) {
+      return excludedDates.some((excludedDates) => excludedDates.getTime() === date.$d.getTime());
+    }
+  };
   return (
-    <div
-      data-disabled={disabledState}
-      className={`datepicker-widget ${darkMode && 'theme-dark'}`}
-      data-cy={dataCy}
-      style={{
-        height,
-        display: visibility ? '' : 'none',
-        background: 'none',
-      }}
-    >
-      <DatePickerComponent
-        className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
-          darkMode ? 'bg-dark color-white' : 'bg-light'
-        }`}
-        selected={date}
-        value={date !== null ? computeDateString(date) : 'select date'}
-        onChange={(date) => onDateChange(date)}
-        showTimeInput={enableTime ? true : false}
-        showTimeSelectOnly={enableDate ? false : true}
-        onFocus={(event) => {
-          onComponentClick(id, component, event);
-        }}
-        showMonthDropdown
-        showYearDropdown
-        dropdownMode="select"
-        excludeDates={excludedDates}
-        customInput={<input style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />}
-      />
+    <>
+      {config.UI_LIB === 'tooljet' && (
+        <div
+          data-disabled={disabledState}
+          className={`datepicker-widget ${darkMode && 'theme-dark'}`}
+          data-cy={dataCy}
+          style={{
+            height,
+            display: visibility ? '' : 'none',
+            background: 'none',
+          }}
+        >
+          <DatePickerComponent
+            className={`input-field form-control ${!isValid ? 'is-invalid' : ''} validation-without-icon px-2 ${
+              darkMode ? 'bg-dark color-white' : 'bg-light'
+            }`}
+            selected={date}
+            value={date !== null ? computeDateString(date) : 'select date'}
+            onChange={(date) => onDateChange(date)}
+            showTimeInput={enableTime ? true : false}
+            showTimeSelectOnly={enableDate ? false : true}
+            onFocus={(event) => {
+              onComponentClick(id, component, event);
+            }}
+            showMonthDropdown
+            showYearDropdown
+            dropdownMode="select"
+            excludeDates={excludedDates}
+            customInput={<input style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />}
+          />
 
-      <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
-        {validationError}
-      </div>
-    </div>
+          <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
+            {validationError}
+          </div>
+        </div>
+      )}
+      {config.UI_LIB === 'mui' && (
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
+            <DateTimePicker
+              label="Basic date picker"
+              format={selectedDateFormat}
+              views={!enableTime ? ['year', 'month', 'day'] : undefined}
+              disableOpenPicker={!enableDate}
+              disabled={disabledState}
+              shouldDisableDate={shouldDisableDate}
+              value={date ? dayjs(date.toISOString()) : ''}
+              onChange={(newValue) => setDate(newValue.$d)}
+              sx={{
+                width: '100%',
+                display: visibility ? '' : 'none',
+                '& .MuiOutlinedInput-root': {
+                  height,
+                  borderRadius: `${borderRadius}px`,
+                  boxShadow: boxShadow,
+                },
+              }}
+            />
+          </DemoContainer>
+        </LocalizationProvider>
+      )}
+    </>
   );
 };
