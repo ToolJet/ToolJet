@@ -33,6 +33,7 @@ describe("User permissions", () => {
   });
   beforeEach(() => {
     cy.appUILogin();
+    cy.visitTheWorkspace('My workspace')
   });
 
   it("Should verify the create new app permission", () => {

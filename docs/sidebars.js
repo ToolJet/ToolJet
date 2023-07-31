@@ -39,6 +39,7 @@ const sidebars = {
         'setup/v2-migration-guide'
       ]
     },
+    'licensing',
     'tooljet-database',
     'tooljet-copilot',
     {
@@ -201,11 +202,13 @@ const sidebars = {
       'items': [
         'app-builder/overview',
         'app-builder/topbar',
+        'app-builder/share',
         'app-builder/canvas',
         'app-builder/left-sidebar',
         'app-builder/components-library',
         'app-builder/query-panel',
         'tutorial/pages',
+        'app-builder/customstyles',
         'tutorial/keyboard-shortcuts',
       ],
     },
@@ -257,6 +260,7 @@ const sidebars = {
                     'user-authentication/sso/openid/google-openid',
                   ],
                 },
+                'user-authentication/sso/ldap',
               ],
             },
           ],
