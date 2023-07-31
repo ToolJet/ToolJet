@@ -911,7 +911,7 @@ export function Table({
         style={{ padding: '12px', height: 56 }}
       >
         <div className="tj-text tj-header-h7">{component.name}</div>
-        <div className="d-flex">
+        <div className="d-flex" style={{ maxHeight: 32 }}>
           {displaySearchBox && (
             <GlobalFilter
               globalFilter={state.globalFilter}

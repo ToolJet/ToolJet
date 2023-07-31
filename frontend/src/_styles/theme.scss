@@ -3298,9 +3298,9 @@ input:focus-visible {
     }
   }
 
-  .jet-table {
-    background-color: #1f2936 !important;
-  }
+  // .jet-table {
+  //   background-color: #1f2936 !important;
+  // }
 
   .jet-container {
     background-color: #1f2936;
@@ -3615,11 +3615,11 @@ input:focus-visible {
   background-color: #2b394b;
 }
 
-.jet-table {
-  .global-search-field {
-    background: transparent;
-  }
-}
+// .jet-table {
+//   .global-search-field {
+//     background: transparent;
+//   }
+// }
 
 .jet-table-image-column {
   margin: 0 auto;
@@ -6398,10 +6398,6 @@ input.hide-input-arrows {
   }
 }
 
-
-.dark-theme-placeholder::placeholder {
-  color: #C8C6C6;
-}
 
 .dark-multiselectinput {
   input {
@@ -10953,3 +10949,6 @@ tbody {
     color: #C1C8CD;
   }
 }
+.jet-table {
+  background-color: var(--base) !important;
+  }

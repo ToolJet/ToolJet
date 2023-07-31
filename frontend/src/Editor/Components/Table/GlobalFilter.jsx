@@ -1,4 +1,5 @@
 import React from 'react';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 // Table Search
 export const GlobalFilter = ({
   globalFilter,
@@ -7,6 +8,7 @@ export const GlobalFilter = ({
   onComponentOptionChanged,
   component,
   onEvent,
+  // eslint-disable-next-line no-unused-vars
   darkMode,
 }) => {
   const [value, setValue] = React.useState(globalFilter);
@@ -19,23 +21,22 @@ export const GlobalFilter = ({
   }, 500);
 
   return (
-    <div className="ms-2 d-flex border px-2 mx-1 btn-light align-items-center" style={{ padding: '0.25rem 0' }}>
-      <img
-        src="assets/images/icons/search.svg"
-        alt="search icon"
-        style={{ width: '15px', height: '15px', marginRight: '0.25rem' }}
-      />
-      <input
-        type="text"
-        className={`global-search-field btn-light align-self-center ${darkMode && 'dark-theme-placeholder'}`}
-        defaultValue={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Search"
-        data-cy="search-input-field"
-        style={{
-          border: '0',
-        }}
-      />
+    <div className="d-flex border align-items-center" style={{ padding: '0.4rem 0.6rem', borderRadius: '6px' }}>
+      <div>
+        <SolidIcon name="search" width="16" height="16" />
+
+        <input
+          type="text"
+          className={`align-self-center bg-transparent tj-text-xsm mx-lg-1`}
+          defaultValue={value || ''}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Search"
+          data-cy="search-input-field"
+          style={{
+            border: '0',
+          }}
+        />
+      </div>
     </div>
   );
 };
