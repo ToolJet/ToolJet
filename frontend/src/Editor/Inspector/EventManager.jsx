@@ -18,7 +18,7 @@ import { useDataQueries } from '@/_stores/dataQueriesStore';
 export const EventManager = ({
   component,
   componentMeta,
-  currentState,
+  currentState = {},
   components,
   eventsChanged,
   apps,
