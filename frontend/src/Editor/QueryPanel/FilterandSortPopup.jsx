@@ -99,16 +99,17 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
 
       default:
         return (
-          <div className="card-body p-0 tj-scrollbar" style={{ height: '310px', overflowY: 'auto' }}>
+          <div className="card-body p-0 tj-scrollbar" style={{ height: '315px', overflowY: 'auto' }}>
             <div className="color-slate9 px-3 pb-2 w-100">
               <small>Filter By</small>
             </div>
-            <div className={selectedDataSources.length ? 'd-flex' : ''}>
+            <div className={`tj-list-btn mx-1 ${selectedDataSources.length ? 'd-flex' : ''}`}>
               <MenuButton
                 id="filter-by-datasource"
                 text="Data Source"
                 callback={handlePageCallback}
                 disabled={dataQueries.length === 0}
+                noMargin
               />
               {selectedDataSources.length ? (
                 <PillButton
@@ -122,7 +123,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
                 ''
               )}
             </div>
-            <div class="border-bottom"></div>
+            <div class="border-bottom mt-1"></div>
             <div className="color-slate9 px-3 pb-2 pt-1 w-100">
               <small>Sort By</small>
             </div>
@@ -257,7 +258,7 @@ const DataSourceSelector = ({
           />
         </div>
       </div>
-      <div className="tj-scrollbar py-2" style={{ height: '276px', overflowY: 'auto' }}>
+      <div className="tj-scrollbar py-2" style={{ height: '281px', overflowY: 'auto' }}>
         {sources.map((source) => (
           <label
             className={cx('px-2 py-2 tj-list-btn d-block mx-1', {
@@ -287,14 +288,23 @@ const DataSourceSelector = ({
   );
 };
 
-const MenuButton = ({ id, order, text, iconSrc, disabled = false, callback = () => null, active }) => {
+const MenuButton = ({
+  id,
+  order,
+  text,
+  iconSrc,
+  disabled = false,
+  callback = () => null,
+  active,
+  noMargin = false,
+}) => {
   const handleOnClick = (e) => {
     e.stopPropagation();
     callback(id, order);
   };
 
   return (
-    <div className={`field p-2  tj-list-option ${active ? ` active` : ''}`}>
+    <div className={`field p-2 ${noMargin ? '' : 'mx-1'} tj-list-btn ${active ? ` active` : ''}`}>
       <Button.UnstyledButton onClick={handleOnClick} disabled={disabled} classNames="d-flex justify-content-between">
         <Button.Content title={text} iconSrc={iconSrc} direction="left" />
         {active && <Tick width="20" height="20" viewBox="0 0 22 22" fill="var(--indigo9)" />}
