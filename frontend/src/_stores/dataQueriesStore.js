@@ -154,18 +154,14 @@ export const useDataQueriesStore = create(
           }));
           dataqueryService
             .update(id, newName)
-            .then(() => {
+            .then((data) => {
               set((state) => ({
-                dataQueries: sortByAttribute(
-                  state.dataQueries.map((query) => {
-                    if (query.id === id) {
-                      return { ...query, name: newName };
-                    }
-                    return query;
-                  }),
-                  state.sortBy,
-                  state.sortOrder
-                ),
+                dataQueries: state.dataQueries.map((query) => {
+                  if (query.id === id) {
+                    return { ...query, name: newName, updated_at: data.updated_at };
+                  }
+                  return query;
+                }),
               }));
               useQueryPanelStore.getState().actions.setSelectedQuery(id);
             })
@@ -244,9 +240,15 @@ export const useDataQueriesStore = create(
           set({ isUpdatingQueryInProcess: true });
           dataqueryService
             .update(newValues?.id, newValues?.name, newValues?.options)
-            .then(() => {
+            .then((data) => {
               localStorage.removeItem('transformation');
-              set(() => ({
+              set((state) => ({
+                dataQueries: state.dataQueries.map((query) => {
+                  if (query.id === newValues?.id) {
+                    return { ...query, updated_at: data.updated_at };
+                  }
+                  return query;
+                }),
                 isUpdatingQueryInProcess: false,
               }));
             })
