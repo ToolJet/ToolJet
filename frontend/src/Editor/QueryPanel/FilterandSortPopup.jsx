@@ -99,7 +99,10 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
 
       default:
         return (
-          <div className="card-body p-0 tj-scrollbar" style={{ height: '315px', overflowY: 'auto' }}>
+          <div
+            className="card-body p-0 tj-scrollbar query-editor-sort-filter-popup"
+            style={{ height: '315px', overflowY: 'auto' }}
+          >
             <div className="color-slate9 px-3 pb-2 w-100">
               <small>Filter By</small>
             </div>
@@ -116,7 +119,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
                   name={selectedDataSources.length}
                   onRemove={clearSelectedDataSources}
                   onClick={() => handlePageCallback('filter-by-datasource')}
-                  className="m-1"
+                  className="m-1 bg-slate6"
                   size="sm"
                 />
               ) : (
@@ -261,9 +264,7 @@ const DataSourceSelector = ({
       <div className="tj-scrollbar py-2" style={{ height: '281px', overflowY: 'auto' }}>
         {sources.map((source) => (
           <label
-            className={cx('px-2 py-2 tj-list-btn d-block mx-1', {
-              active: selectedDataSources.some((item) => item.id === source.id && item.kind === source.kind),
-            })}
+            className={cx('px-2 py-2 tj-list-btn d-block mx-1')}
             key={source.id || source.kind}
             role="button"
             for={`default-${source.id || source.kind}`}
@@ -304,7 +305,7 @@ const MenuButton = ({
   };
 
   return (
-    <div className={`field p-2 ${noMargin ? '' : 'mx-1'} tj-list-btn ${active ? ` active` : ''}`}>
+    <div className={`field p-2 ${noMargin ? '' : 'mx-1'} tj-list-btn`}>
       <Button.UnstyledButton onClick={handleOnClick} disabled={disabled} classNames="d-flex justify-content-between">
         <Button.Content title={text} iconSrc={iconSrc} direction="left" />
         {active && <Tick width="20" height="20" viewBox="0 0 22 22" fill="var(--indigo9)" />}
