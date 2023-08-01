@@ -134,7 +134,7 @@ export class MigrationProgress {
   }
 }
 
-export const processDataInBatches = async (
+export const processDataInBatches = async <T>(
   entityManager: EntityManager,
   getData: (entityManager: EntityManager, skip: number, take: number) => Promise<T[]>,
   processBatch: (entityManager: EntityManager, data: T[]) => Promise<void>,
