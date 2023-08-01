@@ -2,6 +2,7 @@ import { groupsSelector } from "Selectors/manageGroups";
 import { groupsText } from "Texts/manageGroups";
 import { commonSelectors } from "Selectors/common";
 import { commonText } from "Texts/common";
+import { navigateToAllUserGroup } from "../utils/common";
 
 export const manageGroupsElements = () => {
   cy.get(groupsSelector.groupLink("All users")).verifyVisibleElement(
@@ -13,8 +14,7 @@ export const manageGroupsElements = () => {
     groupsText.admin
   );
 
-  cy.get(groupsSelector.groupLink("Admin")).click();
-  cy.get(groupsSelector.groupLink("All users")).click();
+  navigateToAllUserGroup()
 
   cy.get(groupsSelector.groupPageTitle("All Users")).verifyVisibleElement(
     "have.text",
@@ -158,8 +158,7 @@ export const manageGroupsElements = () => {
   );
   cy.get(groupsSelector.workspaceVarCheckbox).uncheck();
 
-  cy.get(groupsSelector.groupLink("Admin")).click();
-  cy.get(groupsSelector.groupLink("All users")).click();
+  navigateToAllUserGroup()
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("Admin")).verifyVisibleElement(
     "have.text",

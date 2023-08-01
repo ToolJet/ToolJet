@@ -721,7 +721,7 @@
             "noActionMessage": "This table doesn't have any action buttons"
         },
         "Button": {
-            "displayName": "Button",
+            "displayName": "Button (ok)",
             "description": "Trigger actions: queries, alerts etc"
         },
         "Chart": {
@@ -733,23 +733,23 @@
             "description": "Modal triggered by events"
         },
         "TextInput": {
-            "displayName": "Text Input",
+            "displayName": "Text Input (ok)",
             "description": "Text field for forms"
         },
         "NumberInput": {
-            "displayName": "Number Input",
+            "displayName": "Number Input (ok)",
             "description": "Number field for forms"
         },
         "PasswordInput": {
-            "displayName": "Password Input",
+            "displayName": "Password Input (ok)",
             "description": "Password input field for forms"
         },
         "Datepicker": {
-            "displayName": "Date Picker",
+            "displayName": "Date Picker (ok)",
             "description": "Select a date and time"
         },
         "Checkbox": {
-            "displayName": "Checkbox",
+            "displayName": "Checkbox (ok)",
             "description": "A single checkbox"
         },
         "Radio-button": {
@@ -757,11 +757,11 @@
             "description": "Radio buttons"
         },
         "ToggleSwitch": {
-            "displayName": "Toggle Switch",
+            "displayName": "Toggle Switch (ok)",
             "description": "Toggle Switch"
         },
         "Textarea": {
-            "displayName": "Textarea",
+            "displayName": "Textarea (ok)",
             "description": "Text area form field"
         },
         "DateRangePicker": {
@@ -769,7 +769,7 @@
             "description": "Select a date range"
         },
         "Text": {
-            "displayName": "Text",
+            "displayName": "Text (ok)",
             "description": "Display markdown or HTML"
         },
         "Image": {
@@ -801,7 +801,7 @@
             "description": "Scan QR codes and hold its data"
         },
         "StarRating": {
-            "displayName": "Rating",
+            "displayName": "Rating (ok)",
             "description": "Star rating"
         },
         "Divider": {
@@ -921,6 +921,7 @@
             "tip": "Debugger",
             "errors": "Errors",
             "noErrors": "No errors found",
+            "noLogs" : "No logs found",
             "clear": "clear"
         },
         "Comments": {

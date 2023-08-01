@@ -43,15 +43,6 @@ describe("Basic components", () => {
   });
 
   it("Should verify Toggle switch", () => {
-    if (Cypress.env("environment") === "Community") {
-      cy.intercept("GET", "/api/v2/data_sources").as("appDs");
-      cy.wait("@appDs", { timeout: 15000 });
-    }
-    else {
-      cy.intercept("GET", "/api/app-environments/**").as("appDs");
-      cy.wait("@appDs", { timeout: 15000 });
-    }
-
     cy.dragAndDropWidget("Toggle Switch", 50, 50);
     verifyComponent("toggleswitch1");
 
@@ -74,7 +65,7 @@ describe("Basic components", () => {
     ).should("have.text", "label");
 
     cy.go("back");
-    cy.wait("@appDs");
+    cy.waitForAppLoad();
     deleteComponentAndVerify("toggleswitch2");
     cy.get(commonSelectors.editorPageLogo).click();
 
