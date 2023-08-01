@@ -6,7 +6,7 @@ import config from 'config';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import 'dayjs/locale/es';
 import dayjs from 'dayjs';
 
 export const Datepicker = function Datepicker({
@@ -85,7 +85,7 @@ export const Datepicker = function Datepicker({
 
   const shouldDisableDate = (date) => {
     if (date) {
-      return excludedDates.some((excludedDates) => excludedDates.getTime() === date.$d.getTime());
+      return excludedDates.some((excludeDate) => excludeDate.getTime() === date.$d.getTime());
     }
   };
   return (
@@ -126,28 +126,26 @@ export const Datepicker = function Datepicker({
         </div>
       )}
       {config.UI_LIB === 'mui' && (
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DemoContainer components={['DateTimePicker', 'DateTimePicker']}>
-            <DateTimePicker
-              label="Basic date picker"
-              format={selectedDateFormat}
-              views={!enableTime ? ['year', 'month', 'day'] : undefined}
-              disableOpenPicker={!enableDate}
-              disabled={disabledState}
-              shouldDisableDate={shouldDisableDate}
-              value={date ? dayjs(date.toISOString()) : ''}
-              onChange={(newValue) => setDate(newValue.$d)}
-              sx={{
-                width: '100%',
-                display: visibility ? '' : 'none',
-                '& .MuiOutlinedInput-root': {
-                  height,
-                  borderRadius: `${borderRadius}px`,
-                  boxShadow: boxShadow,
-                },
-              }}
-            />
-          </DemoContainer>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+          <DateTimePicker
+            label="Seleccione Fecha"
+            format={selectedDateFormat}
+            views={!enableTime ? ['year', 'month', 'day'] : undefined}
+            disableOpenPicker={!enableDate}
+            disabled={disabledState}
+            shouldDisableDate={shouldDisableDate}
+            value={date ? dayjs(date.toISOString()) : ''}
+            onChange={(newValue) => setDate(newValue.$d)}
+            sx={{
+              width: '100%',
+              display: visibility ? '' : 'none',
+              '& .MuiOutlinedInput-root': {
+                height,
+                borderRadius: `${borderRadius}px`,
+                boxShadow: boxShadow,
+              },
+            }}
+          />
         </LocalizationProvider>
       )}
     </>
