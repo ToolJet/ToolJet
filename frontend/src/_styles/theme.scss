@@ -165,6 +165,7 @@
   src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-700italic.woff2') format('woff2');
   /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
+
 // variables
 $border-radius: 4px;
 
@@ -332,7 +333,6 @@ button {
 
   .datasource-picker {
     margin-bottom: 24px;
-    padding: 0 32px;
     width: 475px;
     margin: auto;
   }
@@ -5170,11 +5170,11 @@ div#driver-page-overlay {
     color: #d9dcde !important;
   }
 
-    .popover-header {
-      background-color: var(--slate2);
-      color: var(--slate11);
-      border-bottom-color: var
-    }
+  .popover-header {
+    background-color: var(--slate2);
+    color: var(--slate11);
+    border-bottom-color: var
+  }
 }
 
 .toast-dark-mode {
@@ -10830,25 +10830,27 @@ tbody {
     }
   }
 }
-.generate-cell-value-component-div-wrapper{
-  
+
+.generate-cell-value-component-div-wrapper {
+
   .form-control-plaintext:focus-visible {
     outline-color: #dadcde;
     border-radius: 4px;
   }
-  
+
   .form-control-plaintext:hover {
     outline-color: #dadcde;
     border-radius: 4px;
   }
 }
-.dark-theme{
-  .generate-cell-value-component-div-wrapper{
-  
+
+.dark-theme {
+  .generate-cell-value-component-div-wrapper {
+
     .form-control-plaintext:focus-visible {
       filter: invert(-1);
     }
-    
+
     .form-control-plaintext:hover {
       filter: invert(-1);
     }
@@ -11018,6 +11020,7 @@ tbody {
 
 .tj-list-btn {
   border-radius: 6px;
+
   &:hover {
     background-color: var(--slate4);
   }
@@ -11026,11 +11029,13 @@ tbody {
     background-color: var(--slate5);
   }
 }
+
 .tj-list-option {
   &.active {
     background-color: var(--indigo2);
   }
 }
+
 .runjs-parameter-badge {
   max-width: 140px;
 }

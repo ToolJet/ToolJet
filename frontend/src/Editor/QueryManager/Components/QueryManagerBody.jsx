@@ -115,7 +115,7 @@ export const QueryManagerBody = ({
   const renderDataSourcesList = () => {
     return (
       <div
-        className={cx(`datasource-picker`, {
+        className={cx(`datasource-picker p-0`, {
           'disabled ': isVersionReleased,
         })}
       >
