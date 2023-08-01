@@ -14,7 +14,7 @@ import { EventManager } from '@/Editor/Inspector/EventManager';
 import { staticDataSources, customToggles, mockDataQueryAsComponent } from '../constants';
 import { DataSourceTypes } from '../../DataSourceManager/SourceComponents';
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
-import { useDataQueries, useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { useDataQueriesActions, useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useSelectedQuery, useSelectedDataSource } from '@/_stores/queryPanelStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
@@ -31,7 +31,6 @@ export const QueryManagerBody = ({
   appId,
 }) => {
   const { t } = useTranslation();
-  const dataQueries = useDataQueries();
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const selectedQuery = useSelectedQuery();
@@ -191,8 +190,8 @@ export const QueryManagerBody = ({
             component={queryComponent.component}
             componentMeta={queryComponent.componentMeta}
             currentState={currentState}
-            dataQueries={dataQueries}
             components={allComponents}
+            callerQueryId={selectedQueryId}
             apps={apps}
             popoverPlacement="top"
             pages={

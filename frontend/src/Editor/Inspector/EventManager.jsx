@@ -13,12 +13,13 @@ import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 
-import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
 import { Tooltip } from 'react-tooltip';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
 import { isQueryRunnable } from '@/_helpers/utils';
+import { shallow } from 'zustand/shallow';
 
 export const EventManager = ({
   component,
@@ -31,8 +32,15 @@ export const EventManager = ({
   popoverPlacement,
   pages,
   hideEmptyEventsAlert,
+  callerQueryId,
 }) => {
-  const dataQueries = useDataQueries();
+  const dataQueries = useDataQueriesStore(({ dataQueries = [] }) => {
+    if (callerQueryId) {
+      //filter the same query getting attached to itself
+      return dataQueries.filter((query) => query.id != callerQueryId);
+    }
+    return dataQueries;
+  }, shallow);
   const [events, setEvents] = useState(() => component.component.definition.events || []);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
