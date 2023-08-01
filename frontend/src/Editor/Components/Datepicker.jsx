@@ -105,6 +105,7 @@ export const Datepicker = function Datepicker({
         dropdownMode="select"
         excludeDates={excludedDates}
         customInput={<input style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />}
+        timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
       />
 
       <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
