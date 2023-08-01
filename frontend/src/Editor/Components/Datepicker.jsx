@@ -104,7 +104,7 @@ export const Datepicker = function Datepicker({
         showYearDropdown
         dropdownMode="select"
         excludeDates={excludedDates}
-        customInput={<input style={{ borderRadius: `${borderRadius}px`, height }} />}
+        customInput={<input style={{ borderRadius: `${borderRadius}px`, boxShadow, height }} />}
         timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
       />
 

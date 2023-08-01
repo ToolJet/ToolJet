@@ -11,8 +11,10 @@ Cypress.Commands.add(
     cy.clearAndType(commonSelectors.workEmailInputField, email);
     cy.clearAndType(commonSelectors.passwordInputField, password);
     cy.get(commonSelectors.signInButton).click();
-    cy.get(commonSelectors.homePageLogo).should("be.visible");
+    cy.intercept("GET", "api/library_apps").as("apps");
+    cy.wait("@apps");
     cy.wait(2000);
+    cy.get(commonSelectors.homePageLogo).should("be.visible");
   }
 );
 
@@ -91,8 +93,10 @@ Cypress.Commands.add("appUILogin", () => {
   cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.signInButton).click();
+  cy.intercept("GET", "api/library_apps").as("apps");
+  cy.wait("@apps");
+  cy.wait(3000);
   cy.get(commonSelectors.homePageLogo).should("be.visible");
-  cy.wait(2000);
 });
 
 Cypress.Commands.add(
@@ -168,6 +172,7 @@ Cypress.Commands.add("renameApp", (appName) => {
     `{selectAll}{backspace}${appName}`,
     { force: true }
   );
+  cy.forceClickOnCanvas();
   cy.waitForAutoSave();
 });
 
@@ -239,7 +244,6 @@ Cypress.Commands.add("reloadAppForTheElement", (elementText) => {
       cy.reload();
     }
   });
-  cy.wait(3000);
 });
 
 Cypress.Commands.add("skipEditorPopover", () => {
@@ -266,4 +270,15 @@ Cypress.Commands.add("waitForAppLoad", () => {
 
   cy.intercept("GET", API_ENDPOINT).as("appDs");
   cy.wait("@appDs", { timeout: TIMEOUT });
+});
+
+Cypress.Commands.add("visitTheWorkspace", (workspaceName) => {
+  cy.task("updateId", {
+    dbconfig: Cypress.env("app_db"),
+    sql: `select id from organizations where name='${workspaceName}';`,
+  }).then((resp) => {
+    let workspaceId = resp.rows[0].id;
+    cy.visit(workspaceId);
+  });
+  cy.wait(2000);
 });
