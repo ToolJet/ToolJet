@@ -15,6 +15,9 @@ export const navigateToProfile = () => {
 export const logout = () => {
   cy.get(commonSelectors.profileSettings).click();
   cy.get(commonSelectors.logoutLink).click();
+  cy.intercept('GET', '/api/metadata').as('publicConfig');
+  cy.wait('@publicConfig');
+  cy.wait(500);
 };
 
 export const navigateToManageUsers = () => {

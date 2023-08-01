@@ -962,3 +962,8 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
 };
 
 export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
+
+export const redirectToDashboard = () => {
+  const subpath = getSubpath();
+  window.location = `${subpath ? `${subpath}` : ''}/${getWorkspaceId()}`;
+};
