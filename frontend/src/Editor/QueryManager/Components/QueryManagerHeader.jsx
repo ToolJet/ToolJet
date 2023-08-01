@@ -230,8 +230,11 @@ const NameInput = ({ onInput, value, darkMode }) => {
             onClick={() => setIsFocussed(true)}
             className={'bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500'}
           >
-            {name}{' '}
-            <span className={cx('breadcrum-rename-query-icon', { 'd-none': isFocussed && isVersionReleased })}>
+            <span className="text-truncate">{name} </span>
+            <span
+              className={cx('breadcrum-rename-query-icon', { 'd-none': isFocussed && isVersionReleased })}
+              style={{ minWidth: 14 }}
+            >
               <RenameIcon />
             </span>
           </Button>

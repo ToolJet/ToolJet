@@ -67,6 +67,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
                 onClick={() => {
                   handleChangeDataSource(source);
                 }}
+                className="text-truncate"
               >
                 <DataSourceIcon source={source} height={14} /> {source.shortName}
               </ButtonSolid>
@@ -101,7 +102,8 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
                       handleChangeDataSource(source);
                     }}
                   >
-                    <DataSourceIcon source={source} height={14} /> {source.name}
+                    <DataSourceIcon source={source} height={14} styles={{ minWidth: 14 }} />
+                    <span className="text-truncate">{source.name}</span>
                   </ButtonSolid>
                 </Col>
               ))}

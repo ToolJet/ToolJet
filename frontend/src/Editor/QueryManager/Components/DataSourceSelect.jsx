@@ -15,8 +15,8 @@ import Search from '@/_ui/Icon/solidIcons/Search';
 function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
-  const [allSources, setAllSources] = useState([...dataSources, ...staticDataSources]);
-  const [globalDataSourcesOpts, setGlobalDataSourcesOpts] = useState([]);
+  const [userDefinedSources, setUserDefinedSources] = useState([...dataSources, ...globalDataSources]);
+  const [userDefinedSourcesOpts, setUserDefinedSourcesOpts] = useState([]);
   const { createDataQuery } = useDataQueriesActions();
   const { setPreviewData } = useQueryPanelActions();
   const handleChangeDataSource = (source) => {
@@ -26,13 +26,13 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
   };
 
   useEffect(() => {
-    setAllSources([...dataSources, ...staticDataSources]);
+    setUserDefinedSources([...dataSources, ...globalDataSources]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSources]);
 
   useEffect(() => {
-    setGlobalDataSourcesOpts(
-      Object.entries(groupBy(globalDataSources, 'kind')).map(([kind, sources], index) => ({
+    setUserDefinedSourcesOpts(
+      Object.entries(groupBy(userDefinedSources, 'kind')).map(([kind, sources], index) => ({
         label: (
           <div>
             {index === 0 && (
@@ -44,14 +44,16 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
           </div>
         ),
         options: sources.map((source) => ({
-          label: <div className="py-2 px-2 rounded option-nested-datasource-selector small">{source.name}</div>,
+          label: (
+            <div className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate">{source.name}</div>
+          ),
           value: source.id,
           isNested: true,
           source,
         })),
       }))
     );
-  }, [globalDataSources]);
+  }, [userDefinedSources]);
 
   const DataSourceOptions = [
     {
@@ -62,7 +64,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
       ),
       isDisabled: true,
       options: [
-        ...allSources.map((source) => ({
+        ...staticDataSources.map((source) => ({
           label: (
             <div>
               <DataSourceIcon source={source} height={16} /> <span className="ms-1 small">{source.name}</span>
@@ -73,7 +75,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
         })),
       ],
     },
-    ...globalDataSourcesOpts,
+    ...userDefinedSourcesOpts,
   ];
 
   const handleKeyDown = (event) => {
@@ -126,7 +128,12 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
             borderTopRightRadius: 0,
             borderTopLeftRadius: 0,
           }),
-          input: (style) => ({ ...style, ...(darkMode ? { color: '#ffffff' } : {}) }),
+          input: (style) => ({
+            ...style,
+            color: 'var(--slate12)',
+            'caret-color': 'var(--slate9)',
+            ':placeholder': { color: 'var(--slate9)' },
+          }),
           groupHeading: (style) => ({
             ...style,
             fontSize: '100%',

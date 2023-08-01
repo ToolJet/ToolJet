@@ -276,10 +276,10 @@ const DataSourceSelector = ({
               className="m-0"
               checked={selectedDataSources.some((item) => item.id === source.id && item.kind === source.kind)}
               label={
-                <>
-                  <DataSourceIcon source={source} height={12} />
-                  &nbsp;<span className="ms-1">{source.name}</span>
-                </>
+                <div className="d-flex align-items-center">
+                  <DataSourceIcon source={source} height={12} styles={{ minWidth: 12 }} />
+                  &nbsp;<span className="ms-1 text-truncate">{source.name}</span>
+                </div>
               }
             />
           </label>
