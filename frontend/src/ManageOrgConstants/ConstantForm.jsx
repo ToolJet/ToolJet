@@ -11,9 +11,8 @@ const ConstantForm = ({
   isLoading,
   currentEnvironment,
   checkIfConstantNameExists,
+  mode,
 }) => {
-  const isUpdate = !!selectedConstant;
-
   const [fields, setFields] = useState(() => ({
     ...selectedConstant,
     environments: [{ label: currentEnvironment.name, value: currentEnvironment.id }],
@@ -47,22 +46,22 @@ const ConstantForm = ({
     const invalidName = !isValidPropertyName(value);
 
     if (isNameAlreadyExists) {
-      setError({
+      return setError({
         name: ERROR_MESSAGES.name_already_exists,
       });
     }
     if (invalidNameLength) {
-      setError({
+      return setError({
         name: ERROR_MESSAGES.invalid_name_length,
       });
     }
     if (maxNameLengthReached) {
-      setError({
+      return setError({
         name: ERROR_MESSAGES.max_name_length_reached,
       });
     }
     if (invalidName) {
-      setError({
+      return setError({
         name: ERROR_MESSAGES.invalid_name,
       });
     }
@@ -77,7 +76,7 @@ const ConstantForm = ({
       setError((prev) => ({ ...prev, value: ERROR_MESSAGES.invalid_value_length }));
     }
 
-    if (isUpdate && value === selectedConstant.value) {
+    if (mode === 'edit' && value === selectedConstant.value) {
       setError((prev) => ({ ...prev, value: ERROR_MESSAGES.invalid_value }));
     }
   };
@@ -107,7 +106,7 @@ const ConstantForm = ({
     if (isActiveErrorState(error) || error['value']) {
       return;
     }
-    createOrUpdate(fields, isUpdate);
+    createOrUpdate(fields, mode === 'edit');
   };
 
   const shouldDisableButton =

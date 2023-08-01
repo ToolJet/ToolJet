@@ -13,12 +13,21 @@ import ConstantForm from './ConstantForm';
 import EmptyState from './EmptyState';
 import FolderList from '@/_ui/FolderList/FolderList';
 
+const MODES = Object.freeze({
+  CREATE: 'create',
+  EDIT: 'edit',
+  DELETE: 'delete',
+  NULL: null,
+});
+
 const ManageOrgConstantsComponent = ({ darkMode }) => {
   const [isManageVarDrawerOpen, setIsManageVarDrawerOpen] = useState(false);
   const [constants, setConstants] = useState([]);
   const [environments, setEnvironments] = useState([]);
   const [activeTabEnvironment, setActiveTabEnvironment] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [mode, setMode] = useState(MODES.NULL);
 
   const perPage = 7;
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,14 +41,17 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const onCancelBtnClicked = () => {
     setSelectedConstant(null);
     setIsManageVarDrawerOpen(false);
+    setMode(MODES.NULL);
   };
 
   const onEditBtnClicked = (constant) => {
+    setMode(MODES.EDIT);
     setSelectedConstant(constant);
     setIsManageVarDrawerOpen(true);
   };
 
   const onDeleteBtnClicked = (constant) => {
+    setMode(MODES.DELETE);
     setSelectedConstant(constant);
     setShowConstantDeleteConfirmation(true);
   };
@@ -189,11 +201,11 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
     return envConstants.some((constant) => constant.name === name);
   };
 
-  const createOrUpdate = (variable, isUpdate = false) => {
+  const createOrUpdate = (variable, shouldUpdate = false) => {
     const currentEnv = activeTabEnvironment;
 
     const constantExistsInDiffEnv = checkIfConstantNameExists(variable.name);
-    const shouldUpdateConstant = isUpdate ? true : constantExistsInDiffEnv;
+    const shouldUpdateConstant = mode === 'edit' && shouldUpdate ? true : constantExistsInDiffEnv;
 
     if (shouldUpdateConstant) {
       const variableId = constantExistsInDiffEnv
@@ -229,6 +241,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
   const handleOnCancelDelete = () => {
     setShowConstantDeleteConfirmation(false);
     setSelectedConstant(null);
+    setMode(MODES.NULL);
   };
 
   const handleExecuteDelete = () => {
@@ -238,6 +251,8 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
       .remove(selectedConstant.id, activeTabEnvironment.id)
       .then(() => {
         toast.success('Constant deleted successfully');
+        setSelectedConstant(null);
+        setMode(MODES.NULL);
       })
       .catch(({ error }) => {
         toast.error(error);
@@ -289,6 +304,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
             isLoading={isLoading}
             currentEnvironment={activeTabEnvironment}
             checkIfConstantNameExists={checkIfConstantNameExists}
+            mode={mode}
           />
         </Drawer>
       )}
@@ -357,7 +373,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                             <ButtonSolid
                               data-cy="add-new-constant-button"
                               vaiant="primary"
-                              onClick={() => setIsManageVarDrawerOpen(true)}
+                              onClick={() => {
+                                setMode(MODES.CREATE);
+                                setIsManageVarDrawerOpen(true);
+                              }}
                               className="add-new-constant-button"
                               customStyles={{ minWidth: '200px', height: '32px' }}
                               disabled={isManageVarDrawerOpen}
