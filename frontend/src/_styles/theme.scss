@@ -297,7 +297,7 @@ button {
 .editor {
   .header-container {
     max-width: 100%;
-    padding: 0 10px 0 0;
+    padding: 8px 12px 8px 0px;
     min-height: 45px;
   }
 
@@ -515,11 +515,9 @@ button {
     width: 300px;
     flex: 1 1 auto;
     top: 45px;
-    border-top: 1px solid var(--slate7);
+    border-left: 1px solid var(--slate5);
     background-color: var(--base);
     background-clip: border-box;
-    border: solid rgba(0, 0, 0, 0.125);
-    border-width: 0px 0px 0px 1px;
 
     .nav-tabs .nav-link {
       color: #3e525b;
@@ -630,6 +628,8 @@ button {
         font-style: normal;
         font-weight: 400;
         line-height: 13px;
+        height: 26px;
+        width: 72px;
       }
 
       .component-description {
@@ -752,7 +752,7 @@ button {
       }
 
       .navigation-area {
-        background-color: #ECEEF0;
+        background-color: var(--base);
         padding: 1rem;
 
         a.page-link {
@@ -771,9 +771,6 @@ button {
         }
       }
 
-      .navigation-area.dark {
-        background-color: #2b3546 !important;
-      }
     }
   }
 }
@@ -3079,8 +3076,8 @@ input:focus-visible {
 
 .widgets-list {
   --tblr-gutter-x: 0px !important;
-  margin-right: 4px;
-  margin-left: 4px;
+  padding-right: 4px;
+  padding-left: 4px;
 }
 
 .input-with-icon {
@@ -3191,7 +3188,6 @@ input:focus-visible {
 
 
   .main .navigation-area {
-    background-color: #2f3c4c !important;
 
     a.page-link {
       border-radius: 0;
@@ -3236,11 +3232,6 @@ input:focus-visible {
 
   .modal-header {
     border-bottom: 1px solid rgba(255, 255, 255, 0.09) !important;
-  }
-
-  .editor .main .query-pane {
-    border: solid rgba(255, 255, 255, 0.09) !important;
-    border-width: 1px 0px 0px 0px !important;
   }
 
   .no-components-box {
@@ -3409,11 +3400,6 @@ input:focus-visible {
     .text-muted {
       color: #ffffff !important;
     }
-  }
-
-  .editor .editor-sidebar .inspector .header {
-    border: solid rgba(255, 255, 255, 0.09) !important;
-    border-width: 0px 0px 1px 0px !important;
   }
 
   .home-page-content {
@@ -3660,7 +3646,6 @@ input[type="text"] {
   font-style: normal;
   font-weight: 500;
   line-height: 20px;
-  margin-bottom: 12px;
   color: var(--slate11);
 }
 
@@ -4102,10 +4087,6 @@ input[type="text"] {
   .rbc-today {
     background-color: inherit;
   }
-}
-
-.navbar .navbar-nav {
-  min-height: 2rem;
 }
 
 .navbar-brand-image {
@@ -7713,8 +7694,8 @@ tbody {
   align-items: center;
   width: 176px;
   height: 28px;
-  position: absolute;
-  left: 58%;
+  // position: absolute;
+  // left: 58%;
   border-radius: 6px;
 }
 
@@ -7737,10 +7718,6 @@ tbody {
 
 .custom-version-selector__option:hover .app-version-delete {
   display: block;
-}
-
-.editor .editor-sidebar {
-  border-top: 1px solid var(--slate7);
 }
 
 .editor .navbar-brand {
@@ -7832,12 +7809,12 @@ tbody {
   .editor-header-actions {
     .current-layout {
       .bg-white {
-        background-color: #232E3C !important;
+        background-color: #151718 !important;
       }
 
       svg {
         path {
-          fill: white;
+          fill: #ECEDEE;
         }
       }
     }
@@ -7983,7 +7960,7 @@ tbody {
 
 .release-buttons {
   height: 45px;
-  margin-bottom: 10px;
+  gap: 4px;
 }
 
 .global-settings-app-wrapper {
@@ -10924,13 +10901,22 @@ tbody {
 
 .release-buttons {
   .release-button {
-    padding: 6px 16px;
-    font-size: 14px;
+    display: flex;
+    padding: 4px 12px;
+    align-items: center;
+    gap: 8px;
+    flex: 1 0 0;
+    width: 84px;
+    height: 28px;
   }
 
   .released-button {
     background-color: #F1F3F5;
     color: #C1C8CD;
+  }
+
+  .nav-item {
+    background-color: transparent !important;
   }
 }
 
@@ -10939,6 +10925,7 @@ tbody {
   .editor {
     .header>.navbar {
       background-color: var(--base) !important;
+      border-bottom: 1px solid var(--slate5);
     }
   }
 }
@@ -10963,6 +10950,15 @@ tbody {
   display: flex;
   flex-wrap: wrap;
   column-gap: 22px;
+  // gap: 12px;
+}
+
+.component-card-group-container {
+  display: flex;
+  row-gap: 12px;
+  flex-direction: column;
+  padding-bottom: 12px;
+  padding-top: 12px;
 }
 
 .widgets-manager-header {
@@ -10980,4 +10976,62 @@ tbody {
   .tj-input {
     margin-bottom: 16px;
   }
+}
+
+.tj-widgets-search-input {
+  width: 266px;
+  height: 32px;
+  // padding: 6px 10px 6px 10px;
+  border-radius: 6px;
+  // border: 1px;
+  // gap: 16px;
+  background-color: var(--base) !important;
+}
+
+.release-button {
+  color: var(--indigo-01, #FDFDFE);
+  font-family: IBM Plex Sans;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 20px;
+  /* 166.667% */
+  display: flex;
+  padding: 4px 12px;
+  align-items: center;
+  gap: 8px;
+  flex: 1 0 0;
+}
+
+.editor-header-icon {
+  border-radius: 6px;
+  border: 1px solid var(--bases-transparent, rgba(255, 255, 255, 0.00));
+  background: var(--indigo3);
+  display: flex;
+  padding: 7px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  width: 28px;
+}
+
+.tj-header-avatar {
+  display: flex;
+  width: 27px;
+  height: 26px;
+  padding: 4px 6px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-bottom: 0px !important;
+}
+
+.undo-redo-container {
+  position: absolute;
+  top: 0px;
+  display: flex;
+  right: 218px;
 }

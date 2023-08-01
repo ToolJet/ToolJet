@@ -67,6 +67,7 @@ import _ from 'lodash';
 import { EditorContext } from '@/Editor/Context/EditorContextWrapper';
 import { useTranslation } from 'react-i18next';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import WidgetIcon from '@/../assets/images/icons/widgets';
 
 const AllComponents = {
   Button,
@@ -138,7 +139,6 @@ export const Box = function Box({
   paramUpdated,
   changeCanDrag,
   containerProps,
-  darkMode,
   removeComponent,
   canvasWidth,
   mode,
@@ -161,6 +161,7 @@ export const Box = function Box({
       ...styles,
     };
   }
+  console.log('darkMode----', darkMode);
 
   const componentMeta = useMemo(() => {
     return componentTypes.find((comp) => component.component === comp.component);
@@ -200,6 +201,7 @@ export const Box = function Box({
   const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
   const componentActions = useRef(new Set());
+  const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
     const currentPage = currentState?.page;
@@ -284,8 +286,11 @@ export const Box = function Box({
         style={{
           ...styles,
           backgroundColor,
+          // height: '82px',
+          // width: '72px',
         }}
         role={preview ? 'BoxPreview' : 'Box'}
+        // style={{}}
       >
         {inCanvas ? (
           !resetComponent ? (
@@ -357,17 +362,21 @@ export const Box = function Box({
             >
               <center>
                 <div
+                  className="widget-svg-container"
                   style={{
                     width: '24px',
                     height: '24px',
                     backgroundSize: 'contain',
-                    backgroundImage: `url(assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
+                    // backgroundImage: `url(assets/images/icons/widgets/${component.name.toLowerCase()}.svg)`,
                     backgroundRepeat: 'no-repeat',
                   }}
-                ></div>
+                >
+                  {/* <img src={`assets/images/icons/widgets/${component.name.toLowerCase()}.svg`}></img> */}
+                  <WidgetIcon name={component.name.toLowerCase()} fill={darkMode ? '#3A3F42' : '#D7DBDF'} />
+                </div>
               </center>
             </div>
-            <span className="component-title">{t(`widget.${component.name}.displayName`, component.displayName)}</span>
+            <div className="component-title">{t(`widget.${component.name}.displayName`, component.displayName)}</div>
           </div>
         )}
       </div>

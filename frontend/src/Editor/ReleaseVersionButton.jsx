@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { ConfirmDialog } from '@/_components/ConfirmDialog';
 import { shallow } from 'zustand/shallow';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const ReleaseVersionButton = function DeployVersionButton({
   appId,
@@ -67,39 +68,20 @@ export const ReleaseVersionButton = function DeployVersionButton({
         confirmButtonText="Release App"
       />
       <div>
-        <button
+        <ButtonSolid
           data-cy={`button-release`}
-          className={cx('btn btn-primary btn-sm rounded-2 bg-light-indigo-09 release-button', {
+          className={cx('release-button', {
             disabled: isVersionReleased,
             'btn-loading': isReleasing,
             'released-button': isVersionReleased,
           })}
-          style={{ padding: '6px 16px' }}
+          rightIcon="arrowup"
           onClick={() => setShowPageDeletionConfirmation(true)}
+          iconWidth="14"
+          fill={'#FBFCFD'}
         >
-          {isVersionReleased ? (
-            'Released'
-          ) : (
-            <>
-              {t('editor.release', 'Release')}
-              <svg
-                className="ms-2"
-                width="17"
-                height="17"
-                viewBox="0 0 17 17"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M8.55985 3.74946C8.82019 3.48911 9.2423 3.48911 9.50265 3.74946L13.5027 7.74946C13.763 8.00981 13.763 8.43192 13.5027 8.69227L9.50265 12.6923C9.2423 12.9526 8.82019 12.9526 8.55985 12.6923C8.2995 12.4319 8.2995 12.0098 8.55985 11.7495L11.4218 8.88753H3.69792C3.32973 8.88753 3.03125 8.58906 3.03125 8.22087C3.03125 7.85268 3.32973 7.5542 3.69792 7.5542H11.4218L8.55985 4.69227C8.2995 4.43192 8.2995 4.00981 8.55985 3.74946Z"
-                  fill="#FDFDFE"
-                />
-              </svg>
-            </>
-          )}
-        </button>
+          {isVersionReleased ? 'Released' : <>{t('editor.release', 'Release')}</>}
+        </ButtonSolid>
       </div>
     </>
   );

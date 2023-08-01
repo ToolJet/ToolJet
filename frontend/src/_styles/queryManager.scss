@@ -60,9 +60,7 @@ $border-radius: 4px;
   flex: 1 1 auto;
   font-size: 12px;
   line-height: 20px;
-  background-color: #fff;
-  background-clip: border-box;
-  border: solid rgba(0, 0, 0, 0.125);
+  border: 1px solid var(--slate5);
   border-width: 1px 0px 0px 0px;
 
   .table-responsive {
@@ -147,7 +145,7 @@ $border-radius: 4px;
     }
 
     &:hover {
-      background: $color-light-slate-03 !important;
+      background: $color-light-slate-03  !important;
 
     }
 
@@ -159,11 +157,11 @@ $border-radius: 4px;
   }
 
   .query-row.border {
-    border-color: $color-light-indigo-10 !important;
+    border-color: $color-light-indigo-10  !important;
   }
 
   .query-row-selected {
-    background: $color-light-indigo-04 !important;
+    background: $color-light-indigo-04  !important;
 
     .delete-query {
       svg:hover {
@@ -182,7 +180,7 @@ $border-radius: 4px;
     }
 
     &:hover {
-      background: $color-light-slate-03 !important;
+      background: $color-light-slate-03  !important;
     }
 
     .rename-query.display-none {
@@ -383,7 +381,7 @@ $border-radius: 4px;
               svg {
                 width: auto !important;
                 height: auto !important;
-                stroke: $color-light-indigo-09 !important;
+                stroke: $color-light-indigo-09  !important;
 
               }
             }
@@ -457,7 +455,7 @@ $border-radius: 4px;
   .select-search-dark__value input {
     width: 90px !important;
     height: 32px !important;
-    border-radius: $border-radius !important;
+    border-radius: $border-radius  !important;
   }
 }
 
@@ -580,7 +578,7 @@ $border-radius: 4px;
 
 .query-pane-restapi-tabs.dark {
   .list-group-item {
-    color: $disabled !important;
+    color: $disabled  !important;
 
     &:hover {
       color: #ffffff !important;
@@ -603,7 +601,7 @@ $border-radius: 4px;
   }
 
   .list-group-item.active {
-    color: $white !important;
+    color: $white  !important;
   }
 
   .fields-container {
@@ -613,8 +611,8 @@ $border-radius: 4px;
     }
 
     .field:nth-child(3) {
-      border-left: 1px solid $color-dark-slate-07 !important;
-      border-right: 1px solid $color-dark-slate-07 !important;
+      border-left: 1px solid $color-dark-slate-07  !important;
+      border-right: 1px solid $color-dark-slate-07  !important;
     }
   }
 
@@ -660,8 +658,8 @@ $border-radius: 4px;
   }
 
   .list-group-item:hover {
-    color: $color-light-slate-12 !important;
-    background-color: $color-light-slate-03 !important;
+    color: $color-light-slate-12  !important;
+    background-color: $color-light-slate-03  !important;
     border-radius: 6px;
   }
 
@@ -673,13 +671,13 @@ $border-radius: 4px;
     background-color: transparent !important;
     color: $color-light-indigo-09;
     z-index: inherit !important;
-    border-bottom: 2px solid $color-light-indigo-09 !important;
+    border-bottom: 2px solid $color-light-indigo-09  !important;
   }
 
   .list-group-item.active:hover {
-    background-color: $color-light-indigo-03 !important;
+    background-color: $color-light-indigo-03  !important;
     border-radius: 6px 6px 0 0;
-    color: $color-light-indigo-09 !important;
+    color: $color-light-indigo-09  !important;
   }
 }
 
@@ -690,18 +688,18 @@ $border-radius: 4px;
     }
 
     .list-group-item:hover {
-      color: $color-dark-slate-12 !important;
-      background-color: $color-dark-slate-03 !important;
+      color: $color-dark-slate-12  !important;
+      background-color: $color-dark-slate-03  !important;
     }
 
     .list-group-item.active {
-      color: $color-dark-indigo-09 !important;
-      border-bottom: 2px solid $color-dark-indigo-09 !important;
+      color: $color-dark-indigo-09  !important;
+      border-bottom: 2px solid $color-dark-indigo-09  !important;
     }
 
     .list-group-item.active:hover {
-      background-color: $color-dark-indigo-03 !important;
-      color: $color-dark-indigo-09 !important;
+      background-color: $color-dark-indigo-03  !important;
+      color: $color-dark-indigo-09  !important;
     }
 
   }
@@ -736,8 +734,8 @@ $border-radius: 4px;
   }
 
   .list-group-item:hover {
-    color: $color-light-slate-12 !important;
-    background-color: $color-light-slate-03 !important;
+    color: $color-light-slate-12  !important;
+    background-color: $color-light-slate-03  !important;
     border-radius: 6px;
   }
 
@@ -748,38 +746,38 @@ $border-radius: 4px;
 
   .list-group-item.active {
     background-color: transparent !important;
-    color: $color-light-indigo-09 !important;
+    color: $color-light-indigo-09  !important;
     z-index: inherit !important;
-    border-bottom: 2px solid $color-light-indigo-09 !important;
+    border-bottom: 2px solid $color-light-indigo-09  !important;
     border-radius: 0;
     transition-delay: 5ms;
   }
 
   .list-group-item.active:hover {
-    background-color: $color-light-indigo-03 !important;
+    background-color: $color-light-indigo-03  !important;
     border-radius: 6px 6px 0 0;
-    color: $color-light-indigo-09 !important;
+    color: $color-light-indigo-09  !important;
   }
 }
 
 .query-preview-list-group.dark {
   list-group-item {
-    color: $color-dark-slate-11 !important;
+    color: $color-dark-slate-11  !important;
   }
 
   .list-group-item:hover {
-    color: $color-dark-slate-12 !important;
-    background-color: $color-dark-slate-03 !important;
+    color: $color-dark-slate-12  !important;
+    background-color: $color-dark-slate-03  !important;
   }
 
   .list-group-item.active {
-    color: $color-dark-indigo-09 !important;
-    border-bottom: 2px solid $color-dark-indigo-09 !important;
+    color: $color-dark-indigo-09  !important;
+    border-bottom: 2px solid $color-dark-indigo-09  !important;
   }
 
   .list-group-item.active:hover {
-    background-color: $color-dark-indigo-03 !important;
-    color: $color-dark-indigo-09 !important;
+    background-color: $color-dark-indigo-03  !important;
+    color: $color-dark-indigo-09  !important;
   }
 }
 
@@ -795,7 +793,7 @@ $border-radius: 4px;
   width: 268px !important;
 
   input {
-    border-radius: $border-radius !important;
+    border-radius: $border-radius  !important;
   }
 }
 
@@ -820,7 +818,7 @@ $border-radius: 4px;
   }
 
   .input-group-parent-container {
-    border: 1px solid $color-light-slate-07 !important;
+    border: 1px solid $color-light-slate-07  !important;
     border-radius: 6px !important;
     overflow: hidden;
 
@@ -992,13 +990,13 @@ $border-radius: 4px;
     .delete-query {
       svg {
         path {
-          fill: $color-dark-tomato-10 !important;
+          fill: $color-dark-tomato-10  !important;
         }
       }
 
       svg:hover {
         path {
-          fill: $color-dark-tomato-09 !important;
+          fill: $color-dark-tomato-09  !important;
         }
       }
     }
@@ -1006,13 +1004,13 @@ $border-radius: 4px;
     .rename-query {
       svg {
         path {
-          fill: $color-dark-slate-12 !important;
+          fill: $color-dark-slate-12  !important;
         }
       }
 
       svg:hover {
         path {
-          fill: $color-dark-slate-11 !important;
+          fill: $color-dark-slate-11  !important;
         }
       }
     }
@@ -1041,7 +1039,7 @@ $border-radius: 4px;
         &:hover {
           svg {
             path {
-              fill: $color-light-slate-11 !important;
+              fill: $color-light-slate-11  !important;
             }
           }
         }
@@ -1126,12 +1124,12 @@ $border-radius: 4px;
   }
 
   .query-manager-border-color {
-    border-color: $color-light-slate-05 !important;
+    border-color: $color-light-slate-05  !important;
   }
 
   .query-details {
     .form-label {
-      color: $color-light-slate-12 !important;
+      color: $color-light-slate-12  !important;
       font-size: 12px;
       font-weight: 400;
       line-height: 20px;
@@ -1141,7 +1139,7 @@ $border-radius: 4px;
   .rest-methods-url {
     .code-hinter.codehinter-default-input {
       border-style: solid !important;
-      border-color: $color-light-slate-07 !important;
+      border-color: $color-light-slate-07  !important;
       border-radius: 0 6px 6px 0 !important;
 
       &:focus-within {
@@ -1159,7 +1157,7 @@ $border-radius: 4px;
       .cm-variable,
       .cm-comment {
         font-size: 12px !important;
-        color: $color-light-slate-12 !important;
+        color: $color-light-slate-12  !important;
       }
     }
   }
@@ -1189,7 +1187,7 @@ $border-radius: 4px;
     }
 
     .form-label {
-      color: $color-light-slate-11 !important;
+      color: $color-light-slate-11  !important;
     }
 
     .form-check-label {
@@ -1198,7 +1196,7 @@ $border-radius: 4px;
 
     .cm-s-monokai.CodeMirror,
     .query-manager-input-elem>input {
-      color: $color-light-slate-12 !important;
+      color: $color-light-slate-12  !important;
     }
 
     .codehinter-default-input:focus-within,
@@ -1220,20 +1218,20 @@ $border-radius: 4px;
 
         .event-handler-display,
         .event-name-display {
-          color: $color-light-slate-12 !important;
+          color: $color-light-slate-12  !important;
         }
 
         .text-danger {
           svg {
             path {
-              fill: $color-light-tomato-09 !important;
+              fill: $color-light-tomato-09  !important;
             }
           }
 
           &:hover {
             svg {
               path {
-                fill: $color-light-tomato-10 !important;
+                fill: $color-light-tomato-10  !important;
               }
             }
           }
@@ -1245,7 +1243,7 @@ $border-radius: 4px;
         background-color: transparent;
         font-weight: 400 !important;
         font-size: 12px !important;
-        color: $color-light-indigo-09 !important;
+        color: $color-light-indigo-09  !important;
 
         &:hover {
           background-color: #E6EDFE !important;
@@ -1273,7 +1271,7 @@ $border-radius: 4px;
 
     .transformation-language-select-wrapper {
       background: $color-light-slate-04;
-      border: 1px solid $color-light-slate-07 !important;
+      border: 1px solid $color-light-slate-07  !important;
       border-radius: 0;
       border-radius: 6px 0 0 6px;
       height: 32px;
@@ -1370,7 +1368,7 @@ $border-radius: 4px;
   .delete-field-option:hover {
     svg {
       path {
-        fill: $color-light-tomato-10 !important;
+        fill: $color-light-tomato-10  !important;
       }
     }
   }
@@ -1378,14 +1376,14 @@ $border-radius: 4px;
   .add-tabs:hover {
     svg {
       path {
-        fill: $color-light-indigo-10 !important;
+        fill: $color-light-indigo-10  !important;
       }
     }
   }
 
   .query-datasource-card-container {
     .query-datasource-card {
-      color: $color-light-slate-12 !important;
+      color: $color-light-slate-12  !important;
       font-weight: 400;
       font-size: 12px;
       height: 32px;
@@ -1473,7 +1471,7 @@ $border-radius: 4px;
       background: #2B3546 !important;
 
       &:focus-within {
-        border: 1px solid $color-light-indigo-09 !important;
+        border: 1px solid $color-light-indigo-09  !important;
       }
     }
 
@@ -1482,7 +1480,7 @@ $border-radius: 4px;
     }
 
     .css-ppbcid-singleValue {
-      color: $color-dark-slate-12 !important;
+      color: $color-dark-slate-12  !important;
 
     }
 
@@ -1507,7 +1505,7 @@ $border-radius: 4px;
 
   .advanced-options-container {
     .CodeMirror-code {
-      color: $color-dark-grass-11 !important;
+      color: $color-dark-grass-11  !important;
     }
 
     .form-label {
@@ -1520,7 +1518,7 @@ $border-radius: 4px;
 
     .cm-s-monokai.CodeMirror,
     .query-manager-input-elem>input {
-      color: $color-dark-slate-12 !important;
+      color: $color-dark-slate-12  !important;
     }
 
     .codehinter-default-input:focus-within,
@@ -1542,14 +1540,14 @@ $border-radius: 4px;
       .text-danger {
         svg {
           path {
-            fill: $color-dark-tomato-09 !important;
+            fill: $color-dark-tomato-09  !important;
           }
         }
 
         &:hover {
           svg {
             path {
-              fill: $color-dark-tomato-10 !important;
+              fill: $color-dark-tomato-10  !important;
             }
           }
         }
@@ -1579,7 +1577,7 @@ $border-radius: 4px;
 
         svg {
           path {
-            fill: $color-dark-slate-11 !important;
+            fill: $color-dark-slate-11  !important;
           }
         }
 
@@ -1651,7 +1649,7 @@ $border-radius: 4px;
   .delete-field-option:hover {
     svg {
       path {
-        fill: $color-dark-tomato-10 !important;
+        fill: $color-dark-tomato-10  !important;
       }
     }
   }
@@ -1659,7 +1657,7 @@ $border-radius: 4px;
   .add-tabs:hover {
     svg {
       path {
-        fill: $color-dark-indigo-10 !important;
+        fill: $color-dark-indigo-10  !important;
       }
     }
   }

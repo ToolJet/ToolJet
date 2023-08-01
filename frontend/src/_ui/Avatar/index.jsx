@@ -26,7 +26,7 @@ const Avatar = ({ text, image, avatarId, title = '', borderColor = '', borderSha
       style={{
         ...(image || avatar ? { backgroundImage: `url(${avatar ?? image})` } : {}),
       }}
-      className={cx(`animation-fade avatar tj-avatar ${className}`, {
+      className={cx(`animation-fade avatar tj-avatar tj-header-avatar ${className}`, {
         'avatar-rounded': borderShape === 'rounded',
       })}
       data-cy="avatar-image"

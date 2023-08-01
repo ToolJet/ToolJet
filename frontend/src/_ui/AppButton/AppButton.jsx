@@ -53,7 +53,7 @@ export const ButtonBase = function ButtonBase(props) {
       )}
       {!isLoading && rightIcon && (
         <span className="tj-btn-right-icon">
-          {<SolidIcon className={iconCustomClass} fill={fill} name={rightIcon} />}
+          {<SolidIcon className={iconCustomClass} fill={fill} name={rightIcon} width={iconWidth} />}
         </span>
       )}
     </Element>

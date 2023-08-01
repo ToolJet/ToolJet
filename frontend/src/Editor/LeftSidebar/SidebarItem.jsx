@@ -9,7 +9,8 @@ export const LeftSidebarItem = forwardRef(
     ref
   ) => {
     const { t } = useTranslation();
-    const displayIcon = selectedSidebarItem === icon ? `${icon}-selected` : icon;
+    // const displayIcon = selectedSidebarItem === icon ? `${icon}-selected` : icon;
+    const displayIcon = icon;
 
     const Icon = require('@assets/images/icons/editor/left-sidebar/' + displayIcon + '.svg');
 

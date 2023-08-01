@@ -116,6 +116,10 @@ import Mail from './Mail.jsx';
 import Logs from './Logs.jsx';
 import Marketplace from './Marketplace.jsx';
 import PlusRectangle from './PlusRectangle.jsx';
+import EyeOpen from './EyeOpen.jsx';
+import CloudInvalid from './CloudInvalid.jsx';
+import CloudValid from './CloudValid.jsx';
+import LayersVersion from './LayersVersion.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -351,6 +355,14 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
+    case 'eyeopen':
+      return <EyeOpen {...props} />;
+    case 'layersversion':
+      return <LayersVersion {...props} />;
+    case 'cloudvalid':
+      return <CloudValid {...props} />;
+    case 'cloudinvalid':
+      return <CloudInvalid {...props} />;
     default:
       return <Apps {...props} />;
   }

@@ -88,7 +88,7 @@ class EditorComponent extends React.Component {
         canvasMaxWidth: 1292,
         canvasMaxWidthType: 'px',
         canvasMaxHeight: 2400,
-        canvasBackgroundColor: props.darkMode ? '#1c1c1f' : '#F8F9FA',
+        canvasBackgroundColor: props.darkMode ? '#1A1D1E' : '#F8F9FA',
         backgroundFxQuery: '',
       },
     };
@@ -848,8 +848,8 @@ class EditorComponent extends React.Component {
 
   computeCanvasBackgroundColor = () => {
     const { canvasBackgroundColor } = this.state.appDefinition?.globalSettings ?? '#F8F9FA';
-    if (['#1c1c1f', '#F8F9FA'].includes(canvasBackgroundColor)) {
-      return this.props.darkMode ? '#1c1c1f' : '#F8F9FA';
+    if (['#1A1D1E', '#F8F9FA'].includes(canvasBackgroundColor)) {
+      return this.props.darkMode ? '#1A1D1E' : '#F8F9FA';
     }
     return canvasBackgroundColor;
   };
@@ -1590,7 +1590,7 @@ class EditorComponent extends React.Component {
                       (this.state.editorMarginLeft ? this.state.editorMarginLeft - 1 : this.state.editorMarginLeft) +
                       `px solid ${this.computeCanvasBackgroundColor()}`,
                     height: this.computeCanvasContainerHeight(),
-                    background: !this.props.darkMode && '#f4f6fa',
+                    background: !this.props.darkMode ? '#eceef0' : '#3A3F42',
                   }}
                   onMouseUp={(e) => {
                     if (['real-canvas', 'modal'].includes(e.target.className)) {

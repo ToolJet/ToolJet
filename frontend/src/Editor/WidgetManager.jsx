@@ -41,12 +41,12 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
   function renderList(header, items) {
     if (isEmpty(items)) return null;
     return (
-      <>
+      <div className="component-card-group-container">
         <span className="widget-header">{header}</span>
         <div className="component-card-group-wrapper">
           {items.map((component, i) => renderComponentCard(component, i))}
         </div>
-      </>
+      </div>
     );
   }
 
@@ -129,12 +129,12 @@ export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel,
 
   return (
     <div className={`components-container ${isVersionReleased && 'disabled'}`}>
-      <p className="widgets-manager-header">Widgets</p>
+      <p className="widgets-manager-header">Components</p>
       <div className="input-icon">
         <input
           type="text"
-          className={`form-control tj-input`}
-          placeholder={t('globals.searchWidgets', 'Search widgets')}
+          className={`form-control tj-input tj-widgets-search-input`}
+          placeholder={t('globals.searchComponents', 'Search widgets')}
           value={searchQuery}
           onChange={(e) => handleSearchQueryChange(e)}
           data-cy="widget-search-box"

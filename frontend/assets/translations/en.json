@@ -39,7 +39,7 @@
         "requestBody": "Request Body",
         "page": "Page",
         "searchItem": "Search item",
-        "searchWidgets": "Search widgets"
+        "searchComponents": "Search components"
     },
     "errorBoundary": "Something went wrong.",
     "viewer": "Sorry!. This app is under maintenance",

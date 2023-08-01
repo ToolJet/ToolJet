@@ -231,7 +231,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         tip="Settings"
         ref={setSideBarBtnRefs('settings')}
       />
-      <LeftSidebarItem
+      {/* <LeftSidebarItem
         icon="comments"
         selectedSidebarItem={selectedSidebarItem}
         // eslint-disable-next-line no-unused-vars
@@ -241,7 +241,7 @@ export const LeftSidebar = forwardRef((props, ref) => {
         count={unReadErrorCount.unread}
         tip="Comments"
         ref={setSideBarBtnRefs('comments')}
-      />
+      /> */}
       <LeftSidebarItem
         icon="debugger"
         selectedSidebarItem={selectedSidebarItem}
