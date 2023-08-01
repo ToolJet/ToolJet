@@ -94,7 +94,7 @@ export default function generateColumnsData({
       customRule: column?.customRule,
       sortType,
       columnVisibility: column?.columnVisibility ?? true,
-      horizontalAlignment: column?.horizontalAlignment,
+      horizontalAlignment: column?.horizontalAlignment ?? 'left',
       Cell: function ({ cell, isEditable, newRowsChangeSet = null }) {
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
@@ -184,7 +184,10 @@ export default function generateColumnsData({
               );
             }
             return (
-              <div className="d-flex align-items-center h-100" style={cellStyles}>
+              <div
+                className={`d-flex align-items-center h-100 w-100 justify-content-${cell.column.horizontalAlignment}`}
+                style={cellStyles}
+              >
                 {String(cellValue)}
               </div>
             );
@@ -252,7 +255,11 @@ export default function generateColumnsData({
               );
             }
             return (
-              <div className="d-flex align-items-center h-100" style={cellStyles}>
+              <div
+                c
+                className={`d-flex align-items-center h-100 w-100 justify-content-${cell.column.horizontalAlignment}`}
+                style={cellStyles}
+              >
                 {cellValue}
               </div>
             );
