@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import config from 'config';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormLabel from '@mui/material/FormLabel';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 export const RadioButton = function RadioButton({
   id,
@@ -49,36 +54,71 @@ export const RadioButton = function RadioButton({
   );
 
   return (
-    <div
-      data-disabled={disabledState}
-      className="row py-1"
-      style={{ height, display: visibility ? '' : 'none', boxShadow }}
-      data-cy={dataCy}
-    >
-      <span className="form-check-label col-auto py-0" style={{ color: textColor }}>
-        {label}
-      </span>
-      <div className="col px-1 py-0 mt-0">
-        {selectOptions.map((option, index) => (
-          <label key={index} className="form-check form-check-inline">
-            <input
-              style={{
-                marginTop: '1px',
-                backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
-              }}
-              className="form-check-input"
-              checked={checkedValue === option.value}
-              type="radio"
-              value={option.value}
-              name={`${id}-${uuidv4()}`}
-              onChange={() => onSelect(option.value)}
-            />
-            <span className="form-check-label" style={{ color: textColor }}>
-              {option.name}
-            </span>
-          </label>
-        ))}
-      </div>
-    </div>
+    <>
+      {config.UI_LIB === 'tooljet' && (
+        <div
+          data-disabled={disabledState}
+          className="row py-1"
+          style={{ height, display: visibility ? '' : 'none', boxShadow }}
+          data-cy={dataCy}
+        >
+          <span className="form-check-label col-auto py-0" style={{ color: textColor }}>
+            {label}
+          </span>
+          <div className="col px-1 py-0 mt-0">
+            {selectOptions.map((option, index) => (
+              <label key={index} className="form-check form-check-inline">
+                <input
+                  style={{
+                    marginTop: '1px',
+                    backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
+                  }}
+                  className="form-check-input"
+                  checked={checkedValue === option.value}
+                  type="radio"
+                  value={option.value}
+                  name={`${id}-${uuidv4()}`}
+                  onChange={() => onSelect(option.value)}
+                />
+                <span className="form-check-label" style={{ color: textColor }}>
+                  {option.name}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+      {config.UI_LIB === 'mui' && (
+        <div
+          data-disabled={disabledState}
+          className="row py-1"
+          style={{ height: 'auto', display: visibility ? '' : 'none', boxShadow }}
+          data-cy={dataCy}
+        >
+          <FormLabel style={{ color: textColor }}>{label}</FormLabel>
+          <div className="col px-1 py-0 mt-0">
+            {selectOptions.map((option, index) => (
+              // eslint-disable-next-line react/jsx-key
+              <RadioGroup
+                onChange={() => onSelect(option.value)}
+                value={checkedValue}
+                name={`${id}-${uuidv4()}`}
+                style={{
+                  marginTop: '1px',
+                  backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
+                }}
+              >
+                <FormControlLabel
+                  style={{ color: textColor }}
+                  value={option.value}
+                  control={<Radio />}
+                  label={`${option.name}`}
+                />
+              </RadioGroup>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
 };
