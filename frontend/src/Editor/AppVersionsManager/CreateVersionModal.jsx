@@ -4,22 +4,27 @@ import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Select from '@/_ui/Select';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const CreateVersion = ({
   appId,
   appVersions,
   setAppVersions,
   setAppDefinitionFromVersion,
-  editingVersion,
   showCreateAppVersion,
   setShowCreateAppVersion,
-  showCreateVersionModalPrompt,
-  closeCreateVersionModalPrompt,
+  onSelectVersion,
 }) => {
   const [isCreatingVersion, setIsCreatingVersion] = useState(false);
   const [versionName, setVersionName] = useState('');
   const { t } = useTranslation();
-
+  const { editingVersion } = useAppVersionStore(
+    (state) => ({
+      editingVersion: state.editingVersion,
+    }),
+    shallow
+  );
   const createVersion = () => {
     if (versionName.trim().length > 25) {
       toast.error('Version name should not be longer than 25 characters');
@@ -42,7 +47,6 @@ export const CreateVersion = ({
           const latestVersion = data.versions.at(0);
           setAppDefinitionFromVersion(latestVersion);
           setShowCreateAppVersion(false);
-          closeCreateVersionModalPrompt();
         });
       })
       .catch((error) => {
@@ -57,10 +61,9 @@ export const CreateVersion = ({
 
   return (
     <AlertDialog
-      show={showCreateAppVersion || showCreateVersionModalPrompt}
+      show={showCreateAppVersion}
       closeModal={() => {
         setVersionName('');
-        closeCreateVersionModalPrompt();
         setShowCreateAppVersion(false);
       }}
       title={t('editor.appVersionManager.createVersion', 'Create new version')}
@@ -101,7 +104,7 @@ export const CreateVersion = ({
               options={options}
               defaultValue={options.find((option) => option?.value?.id === editingVersion?.id)}
               onChange={(version) => {
-                setAppDefinitionFromVersion(version, false);
+                onSelectVersion(version.id);
               }}
               useMenuPortal={false}
               width="100%"
@@ -111,30 +114,6 @@ export const CreateVersion = ({
           </div>
         </div>
 
-        {showCreateVersionModalPrompt && (
-          <div className="mb-3">
-            <div className="light border rounded">
-              <div className="container">
-                <div className="row py-3">
-                  <div className="col-auto d-flex align-items-center p-0">
-                    <span className="pe-1">
-                      <img src={'assets/images/icons/editor/bulb-sharp.svg'} />
-                    </span>
-                  </div>
-                  <div className="col">
-                    <span style={{ whiteSpace: 'pre-line' }}>
-                      {t(
-                        'editor.appVersionManager.versionAlreadyReleased',
-                        `You cannot make changes to a version that has already been released. \n Create a new version or switch to a different version if you want to make changes.`
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="mb-3">
           <div className="col d-flex justify-content-end">
             <button
@@ -142,7 +121,6 @@ export const CreateVersion = ({
               data-cy="cancel-button"
               onClick={() => {
                 setVersionName('');
-                closeCreateVersionModalPrompt();
                 setShowCreateAppVersion(false);
               }}
               type="button"

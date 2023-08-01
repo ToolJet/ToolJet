@@ -284,6 +284,21 @@ export const EventManager = ({
             </div>
           </div>
 
+          <div className="row mt-3">
+            <div className="col-3 p-2" data-cy="alert-type-label">
+              {t('editor.inspector.eventManager.runOnlyIf', 'Run Only If')}
+            </div>
+            <div className="col-9" data-cy="alert-message-type">
+              <CodeHinter
+                theme={darkMode ? 'monokai' : 'default'}
+                currentState={currentState}
+                initialValue={event.runOnlyIf}
+                onChange={(value) => handlerChanged(index, 'runOnlyIf', value)}
+                usePortalEditor={false}
+              />
+            </div>
+          </div>
+
           {actionLookup[event.actionId].options?.length > 0 && (
             <div className="hr-text" data-cy="action-option">
               {t('editor.inspector.eventManager.actionOptions', 'Action options')}

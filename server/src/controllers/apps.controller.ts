@@ -318,7 +318,8 @@ export class AppsController {
       user,
       app,
       versionCreateDto.versionName,
-      versionCreateDto.versionFromId
+      versionCreateDto.versionFromId,
+      versionCreateDto.environmentId
     );
     return decamelizeKeys(appUser);
   }
@@ -367,7 +368,7 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    await this.appsService.updateVersion(version, versionEditDto);
+    await this.appsService.updateVersion(version, versionEditDto, app.organizationId);
     return;
   }
 
@@ -387,8 +388,8 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const numVersions = await this.appsService.fetchVersions(user, id);
-    if (numVersions.length <= 1) {
+    const numVersions = await this.appsService.getAppVersionsCount(id);
+    if (numVersions <= 1) {
       throw new ForbiddenException('Cannot delete only version of app');
     }
 

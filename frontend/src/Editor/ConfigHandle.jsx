@@ -1,4 +1,6 @@
 import React from 'react';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const ConfigHandle = function ConfigHandle({
   id,
@@ -13,6 +15,13 @@ export const ConfigHandle = function ConfigHandle({
   customClassName = '',
   configWidgetHandlerForModalComponent = false,
 }) {
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
   return (
     <div
       className={`config-handle ${customClassName}`}
@@ -46,7 +55,7 @@ export const ConfigHandle = function ConfigHandle({
           />
           <span>{component.name}</span>
         </div>
-        {!isMultipleComponentsSelected && (
+        {!isMultipleComponentsSelected && !(isVersionReleased || isEditorFreezed) && (
           <div className="delete-part">
             <img
               style={{ cursor: 'pointer', marginLeft: '5px' }}

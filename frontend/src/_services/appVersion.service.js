@@ -7,6 +7,7 @@ export const appVersionService = {
   create,
   del,
   save,
+  promoteEnvironment,
 };
 
 function getAll(appId) {
@@ -19,10 +20,22 @@ function getOne(appId, versionId) {
   return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 
+function promoteEnvironment(appId, versionId, currentEnvironmentId) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ currentEnvironmentId }),
+  };
+  return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+}
+
 function create(appId, versionName, versionFromId) {
+  const currentEnvironmentObj = JSON.parse(localStorage.getItem('currentEnvironmentIds') || JSON.stringify({}));
   const body = {
     versionName,
     versionFromId,
+    environmentId: currentEnvironmentObj[appId],
   };
 
   const requestOptions = {

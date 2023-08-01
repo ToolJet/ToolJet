@@ -192,3 +192,37 @@ export const addFilter = (
   });
   cy.get(tableSelector.buttonCloseFilters).click();
 };
+
+export const addNewRow = () => {
+  cy.get(tableSelector.addNewRowTooltip).click();
+  cy.get(".table-add-new-row").should("be.visible");
+  cy.get(tableSelector.headerFilters).verifyVisibleElement(
+    "have.text",
+    "Add new rows"
+  );
+  cy.get(tableSelector.buttonCloseFilters).should("be.visible");
+  cy.get(tableSelector.addNewRowTooltip).should("be.visible");
+  cy.contains("Save").should("be.visible");
+  cy.contains("Discard").should("be.visible");
+  cy.get(
+    ".table-add-new-row > .table-responsive > .table > thead > .tr > :nth-child(1)"
+  ).should("be.visible");
+  cy.get(
+    ".table-add-new-row > > .table > tbody > .table-row > :nth-child(1) >>> input"
+  )
+    .click()
+    .clear()
+    .type("5");
+  cy.get(
+    ".table-add-new-row > > .table > tbody > .table-row > :nth-child(2) >>> input"
+  )
+    .click()
+    .clear()
+    .type("Nick");
+  cy.get(
+    ".table-add-new-row > > .table > tbody > .table-row > :nth-child(3) >>> input"
+  )
+    .click()
+    .clear()
+    .type("nick@example.com");
+};

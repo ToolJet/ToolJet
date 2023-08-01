@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, UseGuards, Post, Put, Delete, Param, Body, Query, Req } from '@nestjs/common';
 import { decamelizeKeys } from 'humps';
 import { JwtAuthGuard } from '../modules/auth/jwt-auth.guard';
 import { ForbiddenException } from '@nestjs/common';
@@ -7,6 +7,7 @@ import { AppEnvironmentService } from '@services/app_environments.service';
 import { AppsAbilityFactory } from 'src/modules/casl/abilities/apps-ability.factory';
 import { App } from 'src/entities/app.entity';
 import { CreateAppEnvironmentDto, UpdateAppEnvironmentDto } from '@dto/app_environment.dto';
+import { PublicAppEnvironmentGuard } from 'src/modules/app_environments/public_app_environment.guard';
 
 @Controller('app-environments')
 export class AppEnvironmentsController {
@@ -14,11 +15,36 @@ export class AppEnvironmentsController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async index(@User() user) {
+  async index(@User() user, @Query('app_id') appId: string) {
     const { organizationId } = user;
     // TODO: add fetchEnvironments privilege
-    const environments = await this.appEnvironmentServices.getAll(organizationId);
+    const environments = await this.appEnvironmentServices.getAll(organizationId, null, appId);
     return decamelizeKeys({ environments });
+  }
+
+  @UseGuards(PublicAppEnvironmentGuard)
+  @Get('default')
+  async getDefaultEnvironment(@User() user, @Req() req) {
+    let organizationId: string;
+    if (user) {
+      organizationId = user.organizationId;
+    } else {
+      organizationId = req.headers['tj-workspace-id'];
+    }
+    // TODO: add fetchEnvironments privilege
+    const environment = await this.appEnvironmentServices.get(organizationId);
+    return decamelizeKeys({ environment });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/versions')
+  async getVersionsByEnvironment(@User() user, @Param('id') environmentId: string, @Query('app_id') appId: string) {
+    const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(
+      user?.organizationId,
+      appId,
+      environmentId
+    );
+    return decamelizeKeys({ appVersions });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -35,7 +61,7 @@ export class AppEnvironmentsController {
     if (!ability.can('createEnvironments', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
-    const env = await this.appEnvironmentServices.create(organizationId, createAppEnvironmentDto.name);
+    const env = await this.appEnvironmentServices.create(organizationId, createAppEnvironmentDto.name, false, 1);
     return decamelizeKeys(env);
   }
 
@@ -71,5 +97,21 @@ export class AppEnvironmentsController {
     }
 
     return await this.appEnvironmentServices.delete(id, organizationId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('versions')
+  async getVersions(@User() user, @Query('app_id') appId: string) {
+    const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(user?.organizationId, appId);
+    return decamelizeKeys({ appVersions });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/:id')
+  async getEnvironmentById(@User() user, @Param('id') id) {
+    const { organizationId } = user;
+    // TODO: add fetchEnvironments privilege
+    const environment = await this.appEnvironmentServices.get(organizationId, id);
+    return decamelizeKeys({ environment });
   }
 }

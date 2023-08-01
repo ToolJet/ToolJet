@@ -3,17 +3,20 @@ import { DraggableBox } from './DraggableBox';
 import Fuse from 'fuse.js';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
-export const WidgetManager = function WidgetManager({
-  componentTypes,
-  zoomLevel,
-  currentLayout,
-  darkMode,
-  isVersionReleased,
-}) {
+export const WidgetManager = function WidgetManager({ componentTypes, zoomLevel, currentLayout, darkMode }) {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
   const [searchQuery, setSearchQuery] = useState('');
   const { t } = useTranslation();
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
 
   function handleSearchQueryChange(e) {
     const { value } = e.target;
@@ -132,7 +135,7 @@ export const WidgetManager = function WidgetManager({
   }
 
   return (
-    <div className={`components-container mx-3 ${isVersionReleased && 'disabled'}`}>
+    <div className={`components-container mx-3 ${(isVersionReleased || isEditorFreezed) && 'disabled'}`}>
       <div className="input-icon">
         <input
           type="text"

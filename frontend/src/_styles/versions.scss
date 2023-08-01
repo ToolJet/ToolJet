@@ -1,0 +1,210 @@
+.release-buttons {
+    .release-button {
+        padding: 6px 16px;
+        font-size: 14px;
+    }
+
+    .released-button {
+        background-color:  #F1F3F5;
+        color: #C1C8CD;
+    }
+}
+
+.env-option {
+    position: relative;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    .app-environment-name {
+        padding-left: 12px;
+        font-size: 14px;
+    }
+
+}
+
+
+.modal-dialog > .promote-confirm-dialogue-modal {
+    font-family: 'IBM Plex Sans';
+
+    .env-modal-footer {
+        border-top: 1px solid #e6e8e9;
+        height: 72px;
+        display: flex;
+        align-items: center;
+        padding-bottom: 0px;
+    }
+
+    .env-confirm-dialogue-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 28px;
+        font-family: 'IBM Plex Sans';
+        font-style: normal;
+        
+    
+        .arrow-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 12px;
+        }
+    
+        .change-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+    
+        .section {
+    
+            .label {
+                font-weight: 500;
+                font-size: 10px;
+                line-height: 20px;
+                display: flex;
+                align-items: center;
+                color: #687076;
+                padding-left: 4px;
+                padding-bottom: 8px;
+            }
+    
+            .env-name {
+                width: 132px;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-weight: 400;
+                font-size: 14px;
+                line-height: 20px;
+                display: flex;
+                align-items: center;
+                border: 1px solid #F1F3F5;
+
+            }
+        }
+    
+        .env-change-info {
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 20px;
+            display: flex;
+            align-items: center;
+            margin-top: 12px;
+        }
+    }
+}
+
+.app-environment-menu >.theme-dark {
+    background-color: #2b3547;
+}
+.env-container {
+    font-family: 'IBM Plex Sans';
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 0px;
+    gap: 4px;
+    position: relative;
+    width: 100%;
+    min-width: 176px;
+    z-index: 1;
+    color: #11181C;
+    border-right: 1px solid #E6E8EB;
+    padding-right: 12px;
+    height: 32px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+
+    &.selected {
+        box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
+        border-radius: 6px;
+        border: 1px solid #3E63DD;
+    }
+
+    .env-header {
+        height: 100%;
+        width: 100%;
+        padding: 8px;
+        cursor: pointer;
+        :hover {
+            opacity: 0.6;
+        }
+    }
+    
+    .env-popover {
+        position: absolute;
+        top: 128%;
+        left: 0;
+        width: 100%;
+        width: 176px;
+        box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
+        border-radius: 6px;
+        background-color: #ffffff;
+    }
+
+    .theme-dark & .env-popover {
+        background-color: #2b3547;
+        border-radius: 6px;
+    }
+
+    .env-popover > .selected-env {
+        height: 40px;
+        padding: 16px 14px;
+        font-style: normal;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 20px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #F1F3F5;
+    }
+
+    .env-popover > .popover-options {
+        padding: 8px 12px;
+    }
+
+    .env-arrow {
+        position: absolute;
+        top: 25%;
+        right: 12px;
+        transform: rotate(90deg);
+
+        &.env-arrow-roate {
+            transform: rotate(-90deg);
+        }
+    }
+}
+
+.release-confirm-dialogue-modal {
+    .modal-header {
+        color: var(--base-black);
+        background-color: var(--base);
+    }
+    .modal-content {
+        color: var(--base-black);
+        background-color: var(--base);
+    }
+    .modal-title {
+        color: var(--base-black);
+        background-color: var(--base);
+    }
+
+    .modal-body {
+        color: var(--base-black);
+        background-color: var(--base);
+    }
+    .env-confirm-dialogue-body .env-change-info {
+        color: var(--base-black);
+        background-color: var(--base);
+    }
+
+    .modal-footer {
+        padding-top: 1rem;
+        color: var(--base-black);
+        background-color: var(--base);
+    }
+    
+}

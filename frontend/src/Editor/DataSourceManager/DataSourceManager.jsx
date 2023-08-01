@@ -22,6 +22,8 @@ import { withTranslation, useTranslation } from 'react-i18next';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { returnDevelopmentEnv } from '@/_helpers/utils';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 class DataSourceManagerComponent extends React.Component {
   constructor(props) {
@@ -59,6 +61,7 @@ class DataSourceManagerComponent extends React.Component {
       scope: props?.scope,
       modalProps: props?.modalProps ?? {},
       showBackButton: props?.showBackButton ?? true,
+      defaultOptions: {},
     };
   }
 
@@ -124,6 +127,7 @@ class DataSourceManagerComponent extends React.Component {
   };
 
   onExit = () => {
+    !this.state.selectedDataSource?.id && this.props.environmentChanged(returnDevelopmentEnv(this.props.environments));
     this.setState({
       dataSourceMeta: {},
       selectedDataSource: null,
@@ -151,6 +155,13 @@ class DataSourceManagerComponent extends React.Component {
     });
   };
 
+  resetOptions = () => {
+    return this.setStateAsync({
+      connectionTestError: null,
+      options: this.state.defaultOptions,
+    });
+  };
+
   hideModal = (ds = null) => {
     this.onExit();
     this.props.hideModal(ds);
@@ -161,7 +172,7 @@ class DataSourceManagerComponent extends React.Component {
     const name = selectedDataSource.name;
     const kind = selectedDataSource.kind;
     const pluginId = selectedDataSourcePluginId;
-    const appVersionId = this.props.editingVersionId;
+    const appVersionId = useAppVersionStore?.getState()?.editingVersion?.id;
     const currentAppEnvironmentId = this.props.currentAppEnvironmentId ?? this.props.currentEnvironment?.id;
     const scope = this.state?.scope || selectedDataSource?.scope;
 
@@ -189,7 +200,7 @@ class DataSourceManagerComponent extends React.Component {
             environment_id: currentAppEnvironmentId,
           })
           .then(() => {
-            this.props.updateSelectedDatasource(selectedDataSource.name);
+            this.props.updateSelectedDatasource && this.props.updateSelectedDatasource(selectedDataSource.name);
             this.setState({ isSaving: false });
             this.hideModal();
             toast.success(
@@ -215,6 +226,7 @@ class DataSourceManagerComponent extends React.Component {
             app_id: appId,
             app_version_id: appVersionId,
             scope,
+            environment_id: currentAppEnvironmentId,
           })
           .then((data) => {
             this.setState({ isSaving: false });
@@ -289,8 +301,15 @@ class DataSourceManagerComponent extends React.Component {
         selectedDataSource={this.state.selectedDataSource}
         isEditMode={!isEmpty(this.state.selectedDataSource)}
         currentAppEnvironmentId={this.props.currentEnvironment?.id}
+        setDefaultOptions={this.setDefaultOptions}
       />
     );
+  };
+
+  setDefaultOptions = (defaults) => {
+    this.setState({
+      defaultOptions: defaults,
+    });
   };
 
   onConnectionTestFailed = (data) => {
@@ -635,13 +654,15 @@ class DataSourceManagerComponent extends React.Component {
   renderEnvironmentsTab = (selectedDataSource) => {
     return (
       selectedDataSource &&
-      selectedDataSource?.id &&
       this.props.environments?.length > 1 && (
         <nav className="nav nav-tabs mt-3">
           {this.props?.environments.map((env) => (
             <a
               key={env?.id}
-              onClick={() => this.props.environmentChanged(env, selectedDataSource?.id)}
+              onClick={() => {
+                !selectedDataSource?.id && this.resetOptions();
+                this.props.environmentChanged(env, selectedDataSource?.id);
+              }}
               className={cx('nav-item nav-link', { active: this.props.currentEnvironment?.name === env.name })}
             >
               {capitalize(env.name)}
@@ -677,59 +698,61 @@ class DataSourceManagerComponent extends React.Component {
           container={this.props.container}
           {...this.props.modalProps}
         >
-          <Modal.Header className={cx('justify-content-start', { 'd-block': selectedDataSource?.id })}>
-            {selectedDataSource && this.props.showBackButton && (
-              <div
-                className={`back-btn me-3 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
-                role="button"
-                onClick={() => this.setState({ selectedDataSource: false }, () => this.onExit())}
-              >
-                <img
-                  data-cy="button-back-ds-connection-modal"
-                  className="m-0"
-                  src="assets/images/icons/back.svg"
-                  width="30"
-                  height="30"
-                />
-              </div>
-            )}
-            <Modal.Title className="mt-3">
-              {selectedDataSource && (
-                <div className="row selected-ds">
-                  {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
-                  <div className="input-icon" style={{ width: '160px' }}>
-                    <input
-                      type="text"
-                      onChange={(e) => this.onNameChanged(e.target.value)}
-                      className="form-control-plaintext form-control-plaintext-sm"
-                      value={selectedDataSource.name}
-                      style={{ width: '160px' }}
-                      data-cy="data-source-name-input-filed"
-                      autoFocus
-                    />
-                    {!this.props.isEditing && (
-                      <span className="input-icon-addon">
-                        <img src="assets/images/icons/edit-source.svg" width="12" height="12" />
-                      </span>
-                    )}
-                  </div>
+          <Modal.Header className={'d-block'}>
+            <div className="d-flex">
+              {selectedDataSource && this.props.showBackButton && (
+                <div
+                  className={`back-btn me-3 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
+                  role="button"
+                  onClick={() => this.setState({ selectedDataSource: false }, () => this.onExit())}
+                >
+                  <img
+                    data-cy="button-back-ds-connection-modal"
+                    className="m-0"
+                    src="assets/images/icons/back.svg"
+                    width="30"
+                    height="30"
+                  />
                 </div>
               )}
-              {!selectedDataSource && (
-                <span className="" data-cy="title-add-new-datasource">
-                  {this.props.t('editor.queryManager.dataSourceManager.addNewDataSource', 'Add new datasource')}
+              <Modal.Title className="mt-3">
+                {selectedDataSource && (
+                  <div className="row selected-ds">
+                    {getSvgIcon(dataSourceMeta?.kind?.toLowerCase(), 35, 35, selectedDataSourceIcon)}
+                    <div className="input-icon" style={{ width: '160px' }}>
+                      <input
+                        type="text"
+                        onChange={(e) => this.onNameChanged(e.target.value)}
+                        className="form-control-plaintext form-control-plaintext-sm"
+                        value={selectedDataSource.name}
+                        style={{ width: '160px' }}
+                        data-cy="data-source-name-input-filed"
+                        autoFocus
+                      />
+                      {!this.props.isEditing && (
+                        <span className="input-icon-addon">
+                          <img src="assets/images/icons/edit-source.svg" width="12" height="12" />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {!selectedDataSource && (
+                  <span className="" data-cy="title-add-new-datasource">
+                    {this.props.t('editor.queryManager.dataSourceManager.addNewDataSource', 'Add new datasource')}
+                  </span>
+                )}
+              </Modal.Title>
+              {!this.props.isEditing && (
+                <span
+                  data-cy="button-close-ds-connection-modal"
+                  className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
+                  onClick={() => this.hideModal()}
+                >
+                  <img src="assets/images/icons/close.svg" width="12" height="12" />
                 </span>
               )}
-            </Modal.Title>
-            {!this.props.isEditing && (
-              <span
-                data-cy="button-close-ds-connection-modal"
-                className={`close-btn mx-4 mt-3 ${this.props.darkMode ? 'dark' : ''}`}
-                onClick={() => this.hideModal()}
-              >
-                <img src="assets/images/icons/close.svg" width="12" height="12" />
-              </span>
-            )}
+            </div>
             {this.renderEnvironmentsTab(selectedDataSource)}
           </Modal.Header>
           <Modal.Body>
@@ -819,12 +842,12 @@ class DataSourceManagerComponent extends React.Component {
               <div className="col-auto" data-cy="db-connection-save-button">
                 <ButtonSolid
                   className={`m-2 ${isSaving ? 'btn-loading' : ''}`}
-                  isLoading={isSaving || this.props.isVersionReleased}
-                  disabled={isSaving}
+                  isLoading={isSaving}
+                  disabled={isSaving || this.props.isVersionReleased}
                   variant="primary"
                   onClick={this.createDataSource}
                   leftIcon="floppydisk"
-                  fill={'#FDFDFE'}
+                  fill={this.props.darkMode && this.props.isVersionReleased ? '#4c5155' : '#FDFDFE'}
                 >
                   {this.props.t('globals.save', 'Save')}
                 </ButtonSolid>

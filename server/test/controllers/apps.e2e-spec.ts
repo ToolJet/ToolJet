@@ -14,6 +14,8 @@ import {
   generateAppDefaults,
   authenticateUser,
   logoutUser,
+  getAllEnvironments,
+  getAppEnvironment,
 } from '../test.helper';
 import { App } from 'src/entities/app.entity';
 import { AppVersion } from 'src/entities/app_version.entity';
@@ -27,6 +29,7 @@ import { Folder } from 'src/entities/folder.entity';
 import { FolderApp } from 'src/entities/folder_app.entity';
 import { AuditLog } from 'src/entities/audit_log.entity';
 import { Credential } from 'src/entities/credential.entity';
+import { defaultAppEnvironments } from 'src/helpers/utils.helper';
 
 describe('apps controller', () => {
   let app: INestApplication;
@@ -112,6 +115,8 @@ describe('apps controller', () => {
 
       const loggedUser = await authenticateUser(app);
 
+      await createAppEnvironments(app, adminUserData.organization.id);
+
       const response = await request(app.getHttpServer())
         .post(`/api/apps`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
@@ -140,6 +145,8 @@ describe('apps controller', () => {
         groups: ['all_users', 'developer'],
         userType: 'instance',
       });
+
+      await createAppEnvironments(app, adminUserData.organization.id);
 
       const loggedUser = await authenticateUser(
         app,
@@ -223,35 +230,55 @@ describe('apps controller', () => {
           user: anotherOrgAdminUserData.user,
         });
 
-        const nonPermissibleApp = await createApplication(app, {
-          name: 'Non Permissible App',
-          user: adminUserData.user,
-        });
+        const nonPermissibleApp = await createApplication(
+          app,
+          {
+            name: 'Non Permissible App',
+            user: adminUserData.user,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: nonPermissibleApp.id }, { read: false });
 
-        const publicApp = await createApplication(app, {
-          name: 'Public App',
-          user: adminUserData.user,
-          isPublic: true,
-        });
+        const publicApp = await createApplication(
+          app,
+          {
+            name: 'Public App',
+            user: adminUserData.user,
+            isPublic: true,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: publicApp.id }, { read: false });
-        const ownedApp = await createApplication(app, {
-          name: 'Owned App',
-          user: developerUserData.user,
-        });
-        const appNotInFolder = await createApplication(app, {
-          name: 'App not in folder',
-          user: adminUserData.user,
-        });
+        const ownedApp = await createApplication(
+          app,
+          {
+            name: 'Owned App',
+            user: developerUserData.user,
+          },
+          false
+        );
+        const appNotInFolder = await createApplication(
+          app,
+          {
+            name: 'App not in folder',
+            user: adminUserData.user,
+          },
+          false
+        );
         await getManager().update(
           AppGroupPermission,
           { app: appNotInFolder, groupPermissionId: allUserGroup },
           { read: true }
         );
-        const appInFolder = await createApplication(app, {
-          name: 'App in folder',
-          user: adminUserData.user,
-        });
+        const appInFolder = await createApplication(
+          app,
+          {
+            name: 'App in folder',
+            user: adminUserData.user,
+          },
+          false
+        );
         await getManager().update(
           AppGroupPermission,
           { app: appInFolder, groupPermissionId: allUserGroup },
@@ -409,53 +436,81 @@ describe('apps controller', () => {
           user: anotherOrgAdminUserData.user,
         });
 
-        const nonPermissibleApp = await createApplication(app, {
-          name: 'Non Permissible App',
-          user: adminUserData.user,
-        });
+        const nonPermissibleApp = await createApplication(
+          app,
+          {
+            name: 'Non Permissible App',
+            user: adminUserData.user,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: nonPermissibleApp.id }, { read: false });
 
-        const publicApp = await createApplication(app, {
-          name: 'Public App',
-          user: adminUserData.user,
-          isPublic: true,
-        });
+        const publicApp = await createApplication(
+          app,
+          {
+            name: 'Public App',
+            user: adminUserData.user,
+            isPublic: true,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: publicApp.id }, { read: false });
 
-        await createApplication(app, {
-          name: 'Owned App',
-          user: developerUserData.user,
-        });
-        const appNotInfolder = await createApplication(app, {
-          name: 'App not in folder',
-          user: adminUserData.user,
-        });
+        await createApplication(
+          app,
+          {
+            name: 'Owned App',
+            user: developerUserData.user,
+          },
+          false
+        );
+        const appNotInfolder = await createApplication(
+          app,
+          {
+            name: 'App not in folder',
+            user: adminUserData.user,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: appNotInfolder.id }, { read: true });
-        const appInFolder = await createApplication(app, {
-          name: 'App in folder',
-          user: adminUserData.user,
-        });
+        const appInFolder = await createApplication(
+          app,
+          {
+            name: 'App in folder',
+            user: adminUserData.user,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: appInFolder.id }, { read: true });
         await getManager().save(FolderApp, {
           app: appInFolder,
           folder: folder,
         });
 
-        const publicAppInFolder = await createApplication(app, {
-          name: 'Public App in Folder',
-          user: adminUserData.user,
-          isPublic: true,
-        });
+        const publicAppInFolder = await createApplication(
+          app,
+          {
+            name: 'Public App in Folder',
+            user: adminUserData.user,
+            isPublic: true,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: publicAppInFolder.id }, { read: false });
         await getManager().save(FolderApp, {
           app: publicAppInFolder,
           folder: folder,
         });
 
-        const nonPermissibleAppInFolder = await createApplication(app, {
-          name: 'Non permissible App in folder',
-          user: adminUserData.user,
-        });
+        const nonPermissibleAppInFolder = await createApplication(
+          app,
+          {
+            name: 'Non permissible App in folder',
+            user: adminUserData.user,
+          },
+          false
+        );
         await getManager().update(AppGroupPermission, { appId: nonPermissibleAppInFolder.id }, { read: false });
         await getManager().save(FolderApp, {
           app: nonPermissibleAppInFolder,
@@ -547,8 +602,6 @@ describe('apps controller', () => {
       });
 
       await createApplicationVersion(app, application);
-
-      await createAppEnvironments(app, adminUserData.user.organizationId);
 
       let response = await request(app.getHttpServer())
         .post(`/api/apps/${application.id}/clone`)
@@ -1194,6 +1247,53 @@ describe('apps controller', () => {
         expect(response.statusCode).toBe(200);
         expect(response.body.versions.length).toBe(1);
       });
+
+      it('should be able to fetch app versions only for specific environment', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+
+        let loggedUser = await authenticateUser(app);
+        adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const organization = adminUserData.organization;
+        const defaultUserData = await createUser(app, {
+          email: 'developer@tooljet.io',
+          groups: ['all_users'],
+          organization,
+        });
+
+        loggedUser = await authenticateUser(app, 'developer@tooljet.io');
+        defaultUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const application = await createApplication(app, {
+          name: 'name',
+          user: adminUserData.user,
+        });
+
+        const appEnvironments = await getAllEnvironments(app, organization.id);
+        const versionsEnvironmentMapping = [];
+        appEnvironments.map(async (env) => {
+          const version = await createApplicationVersion(app, application, { currentEnvironmentId: env.id });
+          versionsEnvironmentMapping.push({
+            [env.id]: [version.id],
+          });
+        });
+
+        for (const userData of [adminUserData, defaultUserData]) {
+          for (const item of versionsEnvironmentMapping) {
+            const envId = Object.keys(item)[0];
+            const response = await request(app.getHttpServer())
+              .get(`/api/apps/${application.id}/versions?environment_id=${envId}`)
+              .set('tj-workspace-id', userData.user.defaultOrganizationId)
+              .set('Cookie', userData['tokenCookie']);
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.versions.length).toBe(1);
+          }
+        }
+      });
     });
 
     describe('POST /api/apps/:id/versions', () => {
@@ -1261,6 +1361,8 @@ describe('apps controller', () => {
             delete: false,
           });
 
+          const developementEnv = await getAppEnvironment(null, 1);
+
           for (const [index, userData] of [adminUserData, developerUserData].entries()) {
             const response = await request(app.getHttpServer())
               .post(`/api/apps/${application.id}/versions`)
@@ -1269,6 +1371,7 @@ describe('apps controller', () => {
               .send({
                 versionName: `v_${index}`,
                 versionFromId: version.id,
+                environmentId: developementEnv.id,
               });
 
             expect(response.statusCode).toBe(201);
@@ -1300,6 +1403,8 @@ describe('apps controller', () => {
             adminUserData.user.defaultOrganizationId
           );
 
+          const developmentEnv = await getAppEnvironment(null, 1);
+
           const response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
             .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
@@ -1307,6 +1412,7 @@ describe('apps controller', () => {
             .send({
               versionName: `v_3`,
               versionFromId: version.id,
+              environmentId: developmentEnv.id,
             });
 
           expect(response.statusCode).toBe(201);
@@ -1328,6 +1434,8 @@ describe('apps controller', () => {
             definition: { foo: 'bar' },
           });
 
+          const developementEnv = await getAppEnvironment(null, 1);
+
           const response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
             .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
@@ -1335,6 +1443,7 @@ describe('apps controller', () => {
             .send({
               versionName: 'v2',
               versionFromId: v1.id,
+              environmentId: developementEnv.id,
             });
 
           expect(response.statusCode).toBe(201);
@@ -1434,9 +1543,15 @@ describe('apps controller', () => {
           const loggedUser = await authenticateUser(app);
           adminUserData['tokenCookie'] = loggedUser.tokenCookie;
 
-          const application = await createApplication(app, {
-            user: adminUserData.user,
-          });
+          const appEnvironments = await createAppEnvironments(app, adminUserData.user.organizationId);
+
+          const application = await createApplication(
+            app,
+            {
+              user: adminUserData.user,
+            },
+            false
+          );
 
           //create first version and default app environments
           const version = await createApplicationVersion(app, application);
@@ -1446,8 +1561,6 @@ describe('apps controller', () => {
             kind: 'postgres',
             appVersion: version,
           });
-
-          const appEnvironments = await createAppEnvironments(app, adminUserData.user.organizationId);
 
           await Promise.all(
             appEnvironments.map(async (env) => {
@@ -1483,6 +1596,7 @@ describe('apps controller', () => {
             .send({
               versionName: 'v2',
               versionFromId: version.id,
+              environmentId: appEnvironments.find((env) => env.priority === 1)?.id,
             });
 
           dataSources = await manager.find(DataSource);
@@ -1499,6 +1613,7 @@ describe('apps controller', () => {
             .send({
               versionName: 'v3',
               versionFromId: version2.body.id,
+              environmentId: appEnvironments.find((env) => env.priority === 1)?.id,
             });
 
           dataSources = await manager.find(DataSource);
@@ -1529,6 +1644,7 @@ describe('apps controller', () => {
             .send({
               versionName: 'v4',
               versionFromId: 'a77b051a-dd48-4633-a01f-089a845d5f88',
+              environmentId: appEnvironments.find((env) => env.priority === 1)?.id,
             });
 
           expect(version4.statusCode).toBe(500);
@@ -1564,6 +1680,8 @@ describe('apps controller', () => {
           expect(response.statusCode).toBe(400);
           expect(response.body.message).toBe('Version from should not be empty');
 
+          const developmentEnv = await getAppEnvironment(null, 1);
+
           response = await request(app.getHttpServer())
             .post(`/api/apps/${application.id}/versions`)
             .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
@@ -1571,6 +1689,7 @@ describe('apps controller', () => {
             .send({
               versionName: 'v1',
               versionFromId: initialVersion.id,
+              environmentId: developmentEnv.id,
             });
 
           expect(response.statusCode).toBe(201);
@@ -1582,6 +1701,7 @@ describe('apps controller', () => {
             .send({
               versionName: 'v2',
               versionFromId: response.body.id,
+              environmentId: developmentEnv.id,
             });
           const dataSources = await getManager().find(DataSource);
           const dataQueries = await getManager().find(DataQuery);
@@ -2073,6 +2193,45 @@ describe('apps controller', () => {
         expect(response.body.message).toBe('You cannot update a released version');
         await logoutUser(app, adminUserData['tokenCookie'], adminUserData.user.defaultOrganizationId);
       });
+
+      it('should be able to release the app if the version is promoted to production', async () => {
+        const adminUserData = await createUser(app, {
+          email: 'admin@tooljet.io',
+          groups: ['all_users', 'admin'],
+        });
+        const loggedUser = await authenticateUser(app);
+        adminUserData['tokenCookie'] = loggedUser.tokenCookie;
+
+        const application = await createApplication(app, {
+          user: adminUserData.user,
+        });
+        const version = await createApplicationVersion(app, application);
+
+        const environments = await getAllEnvironments(app, adminUserData.organization.id);
+
+        for (const appEnvironment of defaultAppEnvironments) {
+          const currentEnv = environments.find((env) => env.name === appEnvironment.name);
+          if (!appEnvironment.isDefault) {
+            const response = await request(app.getHttpServer())
+              .put(`/api/apps/${application.id}/versions/${version.id}`)
+              .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+              .set('Cookie', adminUserData['tokenCookie'])
+              .send({
+                currentEnvironmentId: currentEnv.id,
+              });
+
+            expect(response.statusCode).toBe(200);
+          } else {
+            const response = await request(app.getHttpServer())
+              .put(`/api/apps/${application.id}`)
+              .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
+              .set('Cookie', loggedUser.tokenCookie)
+              .send({ app: { currentVersionId: version.id } });
+
+            expect(response.statusCode).toBe(200);
+          }
+        }
+      });
     });
   });
 
@@ -2302,8 +2461,6 @@ describe('apps controller', () => {
 
       await createApplicationVersion(app, application);
 
-      await createAppEnvironments(app, adminUserData.user.organizationId);
-
       // setup app permissions for developer
       const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({
         where: {
@@ -2367,8 +2524,6 @@ describe('apps controller', () => {
       });
 
       await createApplicationVersion(app, application);
-
-      await createAppEnvironments(app, application.organizationId);
 
       // setup app permissions for developer
       const developerUserGroup = await getRepository(GroupPermission).findOneOrFail({

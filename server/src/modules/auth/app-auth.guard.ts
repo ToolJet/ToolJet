@@ -1,21 +1,28 @@
 import { ExecutionContext, Injectable, NotFoundException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { AppsService } from 'src/services/apps.service';
+import { App } from 'src/entities/app.entity';
+import { getManager } from 'typeorm';
 
 @Injectable()
 export class AppAuthGuard extends AuthGuard('jwt') {
-  constructor(private appsService: AppsService) {
+  constructor() {
     super();
   }
 
   async canActivate(context: ExecutionContext): Promise<any> {
     const request = context.switchToHttp().getRequest();
 
-    if (!request.params.slug) {
+    const slug = request.params.slug;
+    if (!slug) {
       throw new NotFoundException('App not found. Invalid app id');
     }
+
     // unauthenticated users should be able to to view public apps
-    const app = await this.appsService.findBySlug(request.params.slug);
+    const app = await getManager().findOne(App, {
+      where: {
+        slug,
+      },
+    });
     if (!app) throw new NotFoundException('App not found. Invalid app id');
 
     request.tj_app = app;

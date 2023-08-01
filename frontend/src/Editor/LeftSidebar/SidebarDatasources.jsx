@@ -14,12 +14,12 @@ import { Popover as PopoverBS, OverlayTrigger } from 'react-bootstrap';
 import TrashIcon from '@assets/images/icons/query-trash-icon.svg';
 import VerticalIcon from '@assets/images/icons/vertical-menu.svg';
 import { getPrivateRoute } from '@/_helpers/routes';
-
 import { useDataSources } from '@/_stores/dataSourcesStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const LeftSidebarDataSources = ({
   appId,
-  editingVersionId,
   darkMode,
   dataSourcesChanged,
   globalDataSourcesChanged,
@@ -27,8 +27,6 @@ export const LeftSidebarDataSources = ({
   toggleDataSourceManagerModal,
   showDataSourceManagerModal,
   currentAppEnvironmentId,
-  isVersionReleased,
-  setReleasedVersionPopupState,
   onDeleteofAllDataSources,
   setPinned,
   pinned,
@@ -37,10 +35,18 @@ export const LeftSidebarDataSources = ({
   const [selectedDataSource, setSelectedDataSource] = React.useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
   const [isDeletingDatasource, setDeletingDatasource] = React.useState(false);
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
   useEffect(() => {
     if (dataSources.length === 0) {
       onDeleteofAllDataSources();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSources.length]);
 
   const { admin } = authenticationService.currentSessionValue;
@@ -99,16 +105,7 @@ export const LeftSidebarDataSources = ({
     return DataSourceTypes.find((source) => source.kind === dataSource.kind);
   };
 
-  const RenderDataSource = ({
-    dataSource,
-    idx,
-    convertToGlobal,
-    showDeleteIcon = true,
-    enableEdit = true,
-    // eslint-disable-next-line no-unused-vars
-    setReleasedVersionPopupState,
-    isVersionReleased,
-  }) => {
+  const RenderDataSource = ({ dataSource, idx, convertToGlobal, showDeleteIcon = true, enableEdit = true }) => {
     const [isConversionVisible, setConversionVisible] = React.useState(false);
     const sourceMeta = getSourceMetaData(dataSource);
 
@@ -164,7 +161,7 @@ export const LeftSidebarDataSources = ({
             {dataSource.name}
           </span>
         </div>
-        {showDeleteIcon && !isVersionReleased && (
+        {showDeleteIcon && !(isVersionReleased || isEditorFreezed) && (
           <div className="col-auto">
             <button className="btn btn-sm p-1 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
               <div>
@@ -173,7 +170,7 @@ export const LeftSidebarDataSources = ({
             </button>
           </div>
         )}
-        {convertToGlobal && admin && !isVersionReleased && (
+        {convertToGlobal && admin && !(isVersionReleased || isEditorFreezed) && (
           <div className="col-auto">
             <OverlayTrigger
               rootClose={false}
@@ -209,8 +206,6 @@ export const LeftSidebarDataSources = ({
         RenderDataSource={RenderDataSource}
         dataSources={dataSources}
         toggleDataSourceManagerModal={toggleDataSourceManagerModal}
-        isVersionReleased={isVersionReleased}
-        setReleasedVersionPopupState={setReleasedVersionPopupState}
         setPinned={setPinned}
         pinned={pinned}
       />
@@ -222,12 +217,11 @@ export const LeftSidebarDataSources = ({
           setSelectedDataSource(null);
           toggleDataSourceManagerModal(false);
         }}
-        editingVersionId={editingVersionId}
         dataSourcesChanged={dataSourcesChanged}
         globalDataSourcesChanged={globalDataSourcesChanged}
         selectedDataSource={selectedDataSource}
         currentAppEnvironmentId={currentAppEnvironmentId}
-        isVersionReleased={isVersionReleased}
+        isVersionReleased={isVersionReleased || isEditorFreezed}
       />
     </>
   );
@@ -237,12 +231,18 @@ const LeftSidebarDataSourcesContainer = ({
   darkMode,
   RenderDataSource,
   dataSources = [],
-  isVersionReleased,
-  setReleasedVersionPopupState,
+
   setPinned,
   pinned,
 }) => {
   const { t } = useTranslation();
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
   return (
     <div>
       <HeaderSection darkMode={darkMode}>
@@ -277,8 +277,6 @@ const LeftSidebarDataSourcesContainer = ({
                       idx={idx}
                       convertToGlobal={true}
                       showDeleteIcon={true}
-                      isVersionReleased={isVersionReleased}
-                      setReleasedVersionPopupState={setReleasedVersionPopupState}
                     />
                   ))}
                 </div>
@@ -287,7 +285,7 @@ const LeftSidebarDataSourcesContainer = ({
           </div>
         </div>
       </div>
-      {!isVersionReleased && (
+      {!(isVersionReleased || isEditorFreezed) && (
         <div className="add-datasource-btn w-100 p-3">
           <Link to={getPrivateRoute('global_datasources')}>
             <div className="p-2 color-primary cursor-pointer">

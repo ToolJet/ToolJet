@@ -750,6 +750,7 @@ export class OrganizationsService {
     const invalidRows = [];
     const invalidFields = new Set();
     const invalidGroups = [];
+    let isUserInOtherGroupsAndAdmin = false;
     const emailPattern = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     const manager = getManager();
 
@@ -786,6 +787,11 @@ export class OrganizationsService {
 
           if (Array.isArray(receivedGroups)) {
             for (const group of receivedGroups) {
+              if (group === 'admin' && receivedGroups.includes('all_users') && receivedGroups.length > 2) {
+                isUserInOtherGroupsAndAdmin = true;
+                break;
+              }
+
               if (existingGroups.indexOf(group) === -1) {
                 invalidGroups.push(group);
               }
@@ -823,6 +829,12 @@ export class OrganizationsService {
               invalidRows.length
             }] row(s). No users were uploaded.`;
             throw new BadRequestException(errorMsg);
+          }
+
+          if (isUserInOtherGroupsAndAdmin) {
+            throw new BadRequestException(
+              'Conflicting Group Memberships: User cannot be in both the Admin group and other groups simultaneously.'
+            );
           }
 
           if (invalidGroups.length) {

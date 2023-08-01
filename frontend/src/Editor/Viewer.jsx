@@ -5,6 +5,7 @@ import {
   orgEnvironmentVariableService,
   organizationService,
   customStylesService,
+  appEnvironmentService,
 } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -36,9 +37,7 @@ import { Navigate } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 import { toast } from 'react-hot-toast';
 import { withRouter } from '@/_hoc/withRouter';
-
 import { setCookie } from '@/_helpers/cookie';
-
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 
 class ViewerComponent extends React.Component {
@@ -76,6 +75,10 @@ class ViewerComponent extends React.Component {
           environment_variables: {},
           page: {
             handle: pageHandle,
+          },
+          environment: {
+            id: null,
+            name: null,
           },
         },
         variables: {},
@@ -138,8 +141,9 @@ class ViewerComponent extends React.Component {
           ...this.state.currentState.queries[query.name],
         };
       } else {
+        const dataSourceTypeDetail = DataSourceTypes.find((source) => source.kind === query.kind);
         queryState[query.name] = {
-          ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
+          ...dataSourceTypeDetail.exposedVariables,
           ...this.state.currentState.queries[query.name],
         };
       }
@@ -147,6 +151,10 @@ class ViewerComponent extends React.Component {
 
     await this.fetchAndInjectCustomStyles(data.slug, data.is_public);
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
+
+    /* Get current environment details from server, for released apps the environment will be production only (Release preview) */
+    const environmentResult = await this.getEnvironmentDetails(data.is_public);
+    const { environment } = environmentResult;
 
     const pages = Object.entries(data.definition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
     const homePageId = data.definition.homePageId;
@@ -175,6 +183,13 @@ class ViewerComponent extends React.Component {
             currentUser: userVars, // currentUser is updated in setupViewer function as well
             theme: { name: this.props.darkMode ? 'dark' : 'light' },
             urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+            environment: {
+              id: environment.id,
+              name: environment.name,
+            },
+            mode: {
+              value: this.state.slug ? 'view' : 'preview',
+            },
           },
           variables: {},
           page: {
@@ -530,6 +545,11 @@ class ViewerComponent extends React.Component {
     return `_tooljet-page-${handle}`;
   };
 
+  getEnvironmentDetails = () => {
+    const queryParams = { slug: this.props.params.slug };
+    return appEnvironmentService.getEnvironment(this.state.environmentId, queryParams);
+  };
+
   render() {
     const {
       appDefinition,
@@ -564,6 +584,13 @@ class ViewerComponent extends React.Component {
         </div>
       );
     } else {
+      const startingPageHandle = this.props?.params?.pageHandle;
+      const homePageHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
+      if (!startingPageHandle && homePageHandle) {
+        return (
+          <Navigate to={`${homePageHandle}${this.props.params.pageHandle ? '' : window.location.search}`} replace />
+        );
+      }
       if (this.state.app?.is_maintenance_on) {
         return (
           <div className="maintenance_container">
@@ -646,9 +673,7 @@ class ViewerComponent extends React.Component {
                         className={`canvas-area ${this.formCustomPageSelectorClass()}`}
                         style={{
                           width: currentCanvasWidth,
-                          minHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                           maxWidth: canvasMaxWidth,
-                          maxHeight: +appDefinition.globalSettings?.canvasMaxHeight || 2400,
                           backgroundColor: this.computeCanvasBackgroundColor(),
                           margin: 0,
                           padding: 0,

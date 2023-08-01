@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { appVersionService } from '@/_services';
+import { appVersionService, appEnvironmentService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,7 @@ export const EditVersion = ({
   setShowEditAppVersion,
   showEditAppVersion,
   editingVersion,
+  currentEnvironment,
 }) => {
   const [isEditingVersion, setIsEditingVersion] = useState(false);
   const [versionName, setVersionName] = useState(editingVersion?.name || '');
@@ -31,8 +32,8 @@ export const EditVersion = ({
       .save(appId, editingVersionId, { name: versionName })
       .then(() => {
         toast.success('Version name updated');
-        appVersionService.getAll(appId).then((data) => {
-          const versions = data.versions;
+        appEnvironmentService.getVersionsByEnvironment(appId, currentEnvironment.id).then((data) => {
+          const versions = data.app_versions;
           setAppVersions(versions);
         });
         setIsEditingVersion(false);
