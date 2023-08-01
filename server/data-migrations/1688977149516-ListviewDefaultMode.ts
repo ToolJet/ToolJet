@@ -21,31 +21,37 @@ export class ListviewDefaultMode1688977149516 implements MigrationInterface {
 
         if (definition) {
           const pages = definition['pages'];
-          for (const pageId of Object.keys(pages)) {
-            const components = definition['pages'][pageId]['components'];
+          if (pages) {
+            for (const pageId of Object.keys(pages)) {
+              const components = definition['pages'][pageId]['components'];
 
-            for (const componentId of Object.keys(components)) {
-              const component = components[componentId];
+              if (components) {
+                for (const componentId of Object.keys(components)) {
+                  const component = components[componentId];
 
-              if (component?.component?.component === 'Listview') {
-                component['component']['definition']['properties']['mode'] = {
-                  value: 'list',
-                };
+                  if (component?.component?.component === 'Listview') {
+                    component['component']['definition']['properties']['mode'] = {
+                      value: 'list',
+                    };
 
-                components[componentId] = {
-                  ...component,
-                  component: {
-                    ...component.component,
-                    definition: {
-                      ...component.component.definition,
-                    },
-                  },
-                };
+                    components[componentId] = {
+                      ...component,
+                      component: {
+                        ...component.component,
+                        definition: {
+                          ...component.component.definition,
+                        },
+                      },
+                    };
+                  }
+                }
               }
+
+              definition['components'] = components;
+              version.definition = definition;
             }
-            definition['components'] = components;
-            version.definition = definition;
           }
+
           await entityManager.update(AppVersion, { id: version.id }, { definition });
         }
         migrationProgress.show();
