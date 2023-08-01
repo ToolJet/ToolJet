@@ -53,5 +53,5 @@ export class UpdateMysqlDatasourceForSocketConnection1690830899563 implements Mi
     await processDataInBatches(entityManager, getDataSourceOptionsToUpdate, processDataSourceOptionsBatch);
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> { }
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }
