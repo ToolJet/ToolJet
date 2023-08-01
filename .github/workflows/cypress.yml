@@ -28,7 +28,7 @@ jobs:
       - name: Run PosgtreSQL Database Docker Container
         run: |
           sudo docker network create tooljet
-          sudo docker run -d --name postgres --network tooljet -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
+          sudo docker run -d --name postgres --network tooljet -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13        
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -38,7 +38,7 @@ jobs:
       - name: checking the node version
         run: |
           node -v
-          npm -v
+          npm -v 
 
       - name: Install and build dependencies
         run: |
@@ -139,12 +139,12 @@ jobs:
       - name: Run PosgtreSQL Database Docker Container
         run: |
           sudo docker network create tooljet
-          sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
+          sudo docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13        
 
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.ref }} 
 
       - name: Install and build dependencies
         run: |
@@ -189,7 +189,7 @@ jobs:
         run: |
           sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
           -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
-          postgrest/postgrest:v10.1.1.20221215
+          postgrest/postgrest:v10.1.1.20221215    
 
       - name: Run plugins compilation in watch mode
         run: cd plugins && npm start &
@@ -235,6 +235,9 @@ jobs:
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
 
+  Cypress-Marketplace:
+    runs-on: ubuntu-22.04
+
     if: contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace')
 
     steps:
@@ -249,7 +252,7 @@ jobs:
       - name: Run PosgtreSQL Database Docker Container
         run: |
           sudo docker network create tooljet
-          sudo docker run -d --name postgres --network tooljet -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
+          sudo docker run -d --name postgres --network tooljet -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13        
 
       - name: Checkout
         uses: actions/checkout@v3

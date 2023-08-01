@@ -23,7 +23,7 @@ Read **[environment variables reference](https://docs.tooljet.com/docs/setup/env
 When entering one or more files and use --- to separate each definition
 :::
 
-Copy paste depolyment.yaml to the online editor 
+Copy paste deployment.yaml to the online editor 
 
 ```
 https://raw.githubusercontent.com/ToolJet/ToolJet/main/deploy/openshift/deployment.yaml
