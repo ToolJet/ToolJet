@@ -13,9 +13,13 @@ export class UpdateMysqlDatasourceForSocketConnection1690830899563 implements Mi
       })
     ).map((d) => d.id);
 
+    const datasourceOptionsCount = await entityManager.count(DataSourceOptions, {
+      where: { dataSourceId: In(dataSourceIds) },
+    });
+
     const migrationProgress = new MigrationProgress(
       'UpdateMysqlDatasourceForSocketConnection1690830899563',
-      dataSourceIds.length
+      datasourceOptionsCount
     );
 
     const getDataSourceOptionsToUpdate = async (
