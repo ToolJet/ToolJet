@@ -95,7 +95,19 @@ export default function generateColumnsData({
       sortType,
       columnVisibility: column?.columnVisibility ?? true,
       horizontalAlignment: column?.horizontalAlignment ?? 'left',
-      Cell: function ({ cell, isEditable, newRowsChangeSet = null }) {
+      Cell: function ({ cell, isEditable, newRowsChangeSet = null, horizontalAlignment }) {
+        const determineJustifyContentValue = (value) => {
+          switch (value) {
+            case 'left':
+              return 'start';
+            case 'right':
+              return 'end';
+            case 'center':
+              return 'center';
+            default:
+              break;
+          }
+        };
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
         const rowChangeSet = updatedChangeSet ? updatedChangeSet[cell.row.index] : null;
         let cellValue = rowChangeSet ? rowChangeSet[column.key || column.name] ?? cell.value : cell.value;
@@ -185,7 +197,9 @@ export default function generateColumnsData({
             }
             return (
               <div
-                className={`d-flex align-items-center h-100 w-100 justify-content-${cell.column.horizontalAlignment}`}
+                className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+                  horizontalAlignment
+                )}`}
                 style={cellStyles}
               >
                 {String(cellValue)}
@@ -256,8 +270,9 @@ export default function generateColumnsData({
             }
             return (
               <div
-                c
-                className={`d-flex align-items-center h-100 w-100 justify-content-${cell.column.horizontalAlignment}`}
+                className={`d-flex align-items-center h-100 w-100 justify-content-${determineJustifyContentValue(
+                  horizontalAlignment
+                )}`}
                 style={cellStyles}
               >
                 {cellValue}

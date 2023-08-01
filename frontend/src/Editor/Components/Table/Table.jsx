@@ -1095,7 +1095,7 @@ export function Table({
                                   ref={provided.innerRef}
                                   style={{
                                     ...getItemStyle(snapshot, provided.draggableProps.style),
-                                    textAlign: column.horizontalAlignment,
+                                    textAlign: resolveReferences(column?.horizontalAlignment, currentState),
                                   }}
                                 >
                                   {column.render('Header')}
@@ -1214,6 +1214,12 @@ export function Table({
                         cellValue,
                         rowData,
                       });
+                      const horizontalAlignment = resolveReferences(
+                        cell.column?.horizontalAlignment,
+                        currentState,
+                        '',
+                        { cellValue, rowData }
+                      );
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key
@@ -1253,7 +1259,12 @@ export function Table({
                             <GenerateEachCellValue
                               cellValue={cellValue}
                               globalFilter={state.globalFilter}
-                              cellRender={cell.render('Cell', { cell, actionButtonsArray, isEditable })}
+                              cellRender={cell.render('Cell', {
+                                cell,
+                                actionButtonsArray,
+                                isEditable,
+                                horizontalAlignment,
+                              })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
                               columnType={cell.column.columnType}
