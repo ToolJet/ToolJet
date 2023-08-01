@@ -312,6 +312,7 @@ const DynamicForm = ({
           add_token_to: options.add_token_to?.value,
           header_prefix: options.header_prefix?.value,
           access_token_url: options.access_token_url?.value,
+          access_token_custom_headers: options.access_token_custom_headers?.value,
           client_id: options.client_id?.value,
           client_secret: options.client_secret?.value,
           client_auth: options.client_auth?.value,
