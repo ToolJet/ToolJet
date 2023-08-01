@@ -35,7 +35,7 @@ Just like any other event on ToolJet, you can set multiple handlers for any of t
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 
-Check the **[Component Specific Action](/docs/next/actions/control-component)** available for Kanban.
+Check the **[Component Specific Action](/docs/2.10.0/actions/control-component)** available for Kanban.
 :::
 
 ### On Update
