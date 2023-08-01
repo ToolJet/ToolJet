@@ -122,7 +122,6 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
-
   Cypress-Platform:
     runs-on: ubuntu-22.04
 
@@ -233,6 +232,8 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
+  Cypress-Marketplace:
+    runs-on: ubuntu-22.04
 
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
@@ -285,7 +286,6 @@ jobs:
           echo "PGRST_HOST=localhost:3001" >> .env
           echo "ENABLE_MARKETPLACE_FEATURE=true" >> .env
 
-
       - name: Set up database
         run: |
           npm run --prefix server db:create
@@ -324,7 +324,6 @@ jobs:
           name: "cypress.env.json"
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: "./cypress-tests"
-
 
       - name: Marketplace
         uses: cypress-io/github-action@v5
