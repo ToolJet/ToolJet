@@ -91,31 +91,33 @@ export const RadioButton = function RadioButton({
       {config.UI_LIB === 'mui' && (
         <div
           data-disabled={disabledState}
-          className="row py-1"
+          className="row py-1 px-1"
           style={{ height: 'auto', display: visibility ? '' : 'none', boxShadow }}
           data-cy={dataCy}
         >
           <FormLabel style={{ color: textColor }}>{label}</FormLabel>
-          <div className="col px-1 py-0 mt-0">
-            {selectOptions.map((option, index) => (
-              // eslint-disable-next-line react/jsx-key
-              <RadioGroup
-                onChange={() => onSelect(option.value)}
-                value={checkedValue}
-                name={`${id}-${uuidv4()}`}
-                style={{
-                  marginTop: '1px',
-                  backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
-                }}
-              >
+          <div className="col py-0 mt-0">
+            <RadioGroup
+              value={checkedValue}
+              name={`${id}-${uuidv4()}`}
+              style={{
+                marginTop: '1px',
+              }}
+            >
+              {selectOptions.map((option, index) => (
                 <FormControlLabel
-                  style={{ color: textColor }}
+                  onChange={() => onSelect(option.value)}
+                  style={{
+                    color: textColor,
+                    backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
+                  }}
                   value={option.value}
                   control={<Radio />}
                   label={`${option.name}`}
+                  key={index}
                 />
-              </RadioGroup>
-            ))}
+              ))}
+            </RadioGroup>
           </div>
         </div>
       )}
