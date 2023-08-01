@@ -81,9 +81,11 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
   let componentData = components[componentName];
   componentData = componentData || {};
   componentData[option_name] = value;
-  useCurrentStateStore.getState().actions.setCurrentState({
-    components: { ...components, [componentName]: componentData },
-  });
+  if (!component?.parent) {
+    useCurrentStateStore.getState().actions.setCurrentState({
+      components: { ...components, [componentName]: componentData },
+    });
+  }
   return Promise.resolve();
 }
 
