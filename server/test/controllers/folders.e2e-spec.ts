@@ -178,21 +178,29 @@ describe('folders controller', () => {
       folder: folder,
     });
 
-    const appInFolder2 = await createApplication(nestApp, {
-      name: 'App in folder 2',
-      user: adminUserData.user,
-    });
+    const appInFolder2 = await createApplication(
+      nestApp,
+      {
+        name: 'App in folder 2',
+        user: adminUserData.user,
+      },
+      false
+    );
 
     await getManager().save(FolderApp, {
       app: appInFolder2,
       folder: folder2,
     });
 
-    await createApplication(nestApp, {
-      name: 'Public App',
-      user: adminUserData.user,
-      isPublic: true,
-    });
+    await createApplication(
+      nestApp,
+      {
+        name: 'Public App',
+        user: adminUserData.user,
+        isPublic: true,
+      },
+      false
+    );
 
     const anotherUserData = await createUser(nestApp, {
       email: 'admin@organization.com',

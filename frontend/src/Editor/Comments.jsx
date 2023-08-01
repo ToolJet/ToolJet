@@ -1,11 +1,11 @@
 import '@/_styles/editor/comments.scss';
+import { shallow } from 'zustand/shallow';
 import React from 'react';
 import { isEmpty } from 'lodash';
 import Comment from './Comment';
 import { commentsService } from '@/_services';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import useRouter from '@/_hooks/use-router';
-import { shallow } from 'zustand/shallow';
 
 const Comments = ({ newThread = {}, socket, canvasWidth, currentPageId }) => {
   const [threads, setThreads] = React.useState([]);
