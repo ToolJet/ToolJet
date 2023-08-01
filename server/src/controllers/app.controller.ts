@@ -65,7 +65,8 @@ export class AppController {
     let app: any;
     if (appId) {
       app = await this.userService.returnOrgIdOfAnApp(appId);
-      organizationId = app.organizationId;
+      //if the user has a session and the app is public, we don't need to authorize the app organization id
+      if (!app?.isPublic) organizationId = app.organizationId;
     } else if (workspaceSlug) {
       const organization = await this.organizationService.getOrganizationbySlug(workspaceSlug);
       if (!organization) {
@@ -74,7 +75,6 @@ export class AppController {
       organizationId = organization?.id;
     }
     if (organizationId) {
-      if (!app?.isPublic) organizationId = app.organizationId;
       if (organizationId && user.organizationIds?.includes(organizationId)) {
         user.organization_id = organizationId;
       }
