@@ -388,3 +388,20 @@ export const disableSSO = (ssoSelector, toggleSelector) => {
     }
   });
 }
+
+export const AddDataSourceToGroup = (groupName, dsName) => {
+  common.navigateToManageGroups();
+  cy.get(groupsSelector.groupLink(groupName)).click();
+  cy.get(eeGroupsSelector.datasourceLink).click();
+  cy.wait(500);
+  cy.get(
+    '[data-cy="datasource-select-search"] >> .rmsc > .dropdown-container > .dropdown-heading > .dropdown-heading-value > .gray'
+  ).click();
+  cy.contains(dsName).realClick();
+
+  cy.get(eeGroupsSelector.AddDsButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    "Datasources added to the group"
+  );
+}

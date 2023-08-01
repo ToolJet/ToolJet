@@ -237,17 +237,25 @@ export const verifyTooltip = (selector, message) => {
 export const pinInspector = () => {
   cy.get(commonWidgetSelector.sidebarinspector).click();
   cy.get(commonSelectors.inspectorPinIcon).click();
-  cy.intercept("GET", "/api/v2/data_sources").as("editor");
-  cy.reload();
-  cy.wait("@editor");
+  cy.wait(500)
+
   cy.get("body").then(($body) => {
     if (!$body.find(commonSelectors.inspectorPinIcon).length > 0) {
       cy.get(commonWidgetSelector.sidebarinspector).click();
       cy.get(commonSelectors.inspectorPinIcon).click();
-      cy.wait(500);
-      cy.intercept("GET", "/api/v2/data_sources").as("editor");
-      cy.reload();
-      cy.wait("@editor");
     }
   });
+  cy.reload();
+  cy.waitForAppLoad();
 };
+
+
+export const createGroup = (groupName) => {
+  cy.get(groupsSelector.createNewGroupButton).click();
+  cy.clearAndType(groupsSelector.groupNameInput, groupName);
+  cy.get(groupsSelector.createGroupButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    groupsText.groupCreatedToast
+  );
+}
