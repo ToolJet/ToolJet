@@ -1,7 +1,7 @@
 import { commonText, path } from "Texts/common";
 import { usersSelector } from "Selectors/manageUsers";
 import { profileSelector } from "Selectors/profile";
-import { commonSelectors } from "Selectors/common";
+import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
 import { groupsSelector } from "Selectors/manageGroups";
@@ -25,13 +25,22 @@ export const navigateToManageUsers = () => {
 export const navigateToManageGroups = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.manageGroupsOption).click();
+  navigateToAllUserGroup();
+
+};
+
+export const navigateToAllUserGroup = () => {
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("All users")).click();
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("All users")).click();
-  cy.wait(500);
+  cy.wait(1000);
   cy.get("body").then(($title) => {
-    if ($title.text().includes("Admin has edit access to all apps. These are not editable")) {
+    if (
+      $title
+        .text()
+        .includes("Admin has edit access to all apps. These are not editable")
+    ) {
       cy.get(groupsSelector.groupLink("Admin")).click();
       cy.get(groupsSelector.groupLink("All users")).click();
       cy.get(groupsSelector.groupLink("Admin")).click();
@@ -39,7 +48,7 @@ export const navigateToManageGroups = () => {
       cy.wait(2000);
     }
   });
-};
+}
 
 export const navigateToWorkspaceVariable = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
@@ -96,7 +105,16 @@ export const navigateToAppEditor = (appName) => {
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
     .click({ force: true });
-  //cy.wait("@appEditor");
+  if (Cypress.env("environment") === "Community") {
+    cy.intercept("GET", "/api/v2/data_sources").as("appDs");
+    cy.wait("@appDs", { timeout: 15000 });
+    cy.skipEditorPopover();
+  }
+  else {
+    cy.intercept("GET", "/api/app-environments/**").as("appDs");
+    cy.wait("@appDs", { timeout: 15000 });
+    cy.skipEditorPopover();
+  }
 };
 
 export const viewAppCardOptions = (appName) => {
@@ -160,6 +178,12 @@ export const cancelModal = (buttonText) => {
   cy.get(commonSelectors.modalComponent).should("not.exist");
 };
 
+export const navigateToAuditLogsPage = () => {
+  cy.get(profileSelector.profileDropdown).invoke("show");
+  cy.contains("Audit Logs").click();
+  cy.url().should("include", path.auditLogsPath, { timeout: 1000 });
+};
+
 export const manageUsersPagination = (email) => {
   cy.wait(200);
   cy.get("body").then(($email) => {
@@ -187,7 +211,7 @@ export const createWorkspace = (workspaceName) => {
 
 export const selectAppCardOption = (appName, appCardOption) => {
   viewAppCardOptions(appName);
-  cy.get(appCardOption).should("be.visible").realClick();
+  cy.get(appCardOption).should("be.visible").click({ force: true });
 };
 
 export const navigateToDatabase = () => {
@@ -205,4 +229,22 @@ export const verifyTooltip = (selector, message) => {
     .then(() => {
       cy.get(".tooltip-inner").last().should("have.text", message);
     });
+};
+
+export const pinInspector = () => {
+  cy.get(commonWidgetSelector.sidebarinspector).click();
+  cy.get(commonSelectors.inspectorPinIcon).click();
+  cy.intercept("GET", "/api/v2/data_sources").as("editor");
+  cy.reload();
+  cy.wait("@editor");
+  cy.get("body").then(($body) => {
+    if (!$body.find(commonSelectors.inspectorPinIcon).length > 0) {
+      cy.get(commonWidgetSelector.sidebarinspector).click();
+      cy.get(commonSelectors.inspectorPinIcon).click();
+      cy.wait(500);
+      cy.intercept("GET", "/api/v2/data_sources").as("editor");
+      cy.reload();
+      cy.wait("@editor");
+    }
+  });
 };

@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { SearchBox } from '@/_components/SearchBox';
+import React, { useState } from 'react';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Tooltip from 'react-bootstrap/Tooltip';
 import { getSvgIcon, checkExistingQueryName } from '@/_helpers/appUtils';
@@ -18,7 +16,6 @@ export const QueryCard = ({
   setCancelData,
   setDraftQuery,
   darkMode = false,
-  fetchDataQueries,
   editorRef,
 }) => {
   const selectedQuery = useSelectedQuery();

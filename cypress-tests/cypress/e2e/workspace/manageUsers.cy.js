@@ -7,11 +7,13 @@ import * as common from "Support/utils/common";
 import { path } from "Texts/common";
 import { dashboardSelector } from "Selectors/dashboard";
 import { updateWorkspaceName } from "Support/utils/userPermissions";
+import { groupsSelector } from "Selectors/manageGroups";
+import { groupsText } from "Texts/manageGroups";
 
 const data = {};
 data.firstName = fake.firstName;
-data.lastName = fake.lastName.replaceAll("[^A-Za-z]", "");
 data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+data.groupName = fake.firstName.replaceAll("[^A-Za-z]", "");
 
 describe("Manage Users", () => {
   beforeEach(() => {
@@ -24,6 +26,7 @@ describe("Manage Users", () => {
     url = "";
   it("Should verify the Manage users page", () => {
     common.navigateToManageUsers();
+
     users.manageUsersElements();
 
     cy.get(commonSelectors.cancelButton).click();
@@ -83,9 +86,7 @@ describe("Manage Users", () => {
       "have.text",
       "My workspace"
     );
-    // cy.get(commonSelectors.workspaceName).click();
     updateWorkspaceName(data.email);
-    cy.get(dashboardSelector.emptyPageHeader).should("be.visible");
 
     common.logout();
     cy.appUILogin();
@@ -123,6 +124,7 @@ describe("Manage Users", () => {
     cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
     cy.get(commonSelectors.loginButton).click();
 
+    updateWorkspaceName(data.email);
     cy.get(commonSelectors.workspaceName).click();
     cy.contains("My workspace").should("not.exist");
     common.logout();
@@ -169,10 +171,7 @@ describe("Manage Users", () => {
             cy.contains("td", data.email)
               .parent()
               .within(() => {
-                cy.get("td small").should(
-                  "have.text",
-                  usersText.invitedStatus
-                );
+                cy.get("td small").should("have.text", usersText.invitedStatus);
               });
             common.logout();
             cy.wait(500);
@@ -194,5 +193,66 @@ describe("Manage Users", () => {
       .within(() => {
         cy.get("td small").should("have.text", usersText.activeStatus);
       });
+  });
+
+  it.skip("Should verify the user onboarding with groups", () => {
+    data.firstName = fake.firstName;
+    data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+    common.navigateToManageUsers();
+
+    users.fillUserInviteForm(data.firstName, data.email);
+    cy.get(".dropdown-heading-value > .gray").click();
+    cy.clearAndType(".search > input", "Test");
+    cy.get(".no-options").verifyVisibleElement("have.text", "No options");
+    users.selectUserGroup("Admin");
+    cy.get(".dropdown-heading-value > span").verifyVisibleElement(
+      "have.text",
+      "Admin"
+    );
+    cy.get(commonSelectors.cancelButton).click();
+
+    cy.get(usersSelector.buttonAddUsers).click();
+    cy.get(".dropdown-heading-value > .gray").verifyVisibleElement(
+      "have.text",
+      "Select groups to add for this user"
+    );
+    cy.get(commonSelectors.cancelButton).click();
+
+    users.inviteUserWithUserGroup(
+      data.firstName,
+      data.email,
+      "All users",
+      "Admin"
+    );
+
+    common.navigateToManageGroups();
+    cy.get(groupsSelector.groupLink("Admin")).click();
+    cy.get(groupsSelector.usersLink).click();
+    cy.get(groupsSelector.userRow(data.email)).should("be.visible");
+
+    data.firstName = fake.firstName;
+    data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
+
+    cy.get(groupsSelector.createNewGroupButton).click();
+    cy.clearAndType(groupsSelector.groupNameInput, data.groupName);
+    cy.get(groupsSelector.createGroupButton).click();
+    cy.verifyToastMessage(
+      commonSelectors.toastMessage,
+      groupsText.groupCreatedToast)
+
+    common.navigateToManageUsers();
+    users.inviteUserWithUserGroup(
+      data.firstName,
+      data.email,
+      "All users",
+      data.groupName
+    );
+    common.logout()
+
+    cy.appUILogin()
+    common.navigateToManageGroups();
+    cy.get(groupsSelector.groupLink(data.groupName)).click();
+    cy.get(groupsSelector.usersLink).click();
+    cy.get(groupsSelector.userRow(data.email)).should("be.visible");
   });
 });

@@ -9,6 +9,11 @@ import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import { useEditorStore } from '@/_stores/editorStore';
+import { shallow } from 'zustand/shallow';
+
+const NO_OF_GRIDS = 43;
 
 const resizerClasses = {
   topRight: 'top-right',
@@ -72,7 +77,6 @@ export const DraggableBox = function DraggableBox({
   inCanvas,
   onEvent,
   onComponentClick,
-  currentState,
   onComponentOptionChanged,
   onComponentOptionsChanged,
   onResizeStop,
@@ -83,9 +87,7 @@ export const DraggableBox = function DraggableBox({
   containerProps,
   setSelectedComponent,
   removeComponent,
-  currentLayout,
   layouts,
-  _deviceWindowWidth,
   isSelectedComponent,
   draggingStatusChanged,
   darkMode,
@@ -98,12 +100,20 @@ export const DraggableBox = function DraggableBox({
   sideBarDebugger,
   isMultipleComponentsSelected,
   childComponents = null,
+  isVersionReleased,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
   const [mouseOver, setMouseOver] = useState(false);
+  const currentState = useCurrentState();
 
+  const { currentLayout } = useEditorStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
   useEffect(() => {
     setMouseOver(hoveredComponent === id);
   }, [hoveredComponent]);
@@ -125,7 +135,7 @@ export const DraggableBox = function DraggableBox({
         isDragging: monitor.isDragging(),
       }),
     }),
-    [id, title, component, index, zoomLevel, parent, layouts, currentLayout, canvasWidth]
+    [id, title, component, index, zoomLevel, parent, layouts, canvasWidth, currentLayout]
   );
 
   useEffect(() => {
@@ -175,8 +185,8 @@ export const DraggableBox = function DraggableBox({
   };
 
   const layoutData = inCanvas ? layouts[currentLayout] || defaultData : defaultData;
-  const gridWidth = canvasWidth / 43;
-  const width = (canvasWidth * layoutData.width) / 43;
+  const gridWidth = canvasWidth / NO_OF_GRIDS;
+  const width = (canvasWidth * layoutData.width) / NO_OF_GRIDS;
 
   const configWidgetHandlerForModalComponent =
     !isSelectedComponent &&
@@ -264,6 +274,7 @@ export const DraggableBox = function DraggableBox({
                     widgetHeight={layoutData.height}
                     isMultipleComponentsSelected={isMultipleComponentsSelected}
                     configWidgetHandlerForModalComponent={configWidgetHandlerForModalComponent}
+                    isVersionReleased={isVersionReleased}
                   />
                 )}
               <ErrorBoundary showFallback={mode === 'edit'}>
@@ -280,7 +291,6 @@ export const DraggableBox = function DraggableBox({
                   onComponentOptionChanged={onComponentOptionChanged}
                   onComponentOptionsChanged={onComponentOptionsChanged}
                   onComponentClick={onComponentClick}
-                  currentState={currentState}
                   containerProps={containerProps}
                   darkMode={darkMode}
                   removeComponent={removeComponent}
@@ -309,7 +319,6 @@ export const DraggableBox = function DraggableBox({
               onComponentOptionChanged={onComponentOptionChanged}
               onComponentOptionsChanged={onComponentOptionsChanged}
               onComponentClick={onComponentClick}
-              currentState={currentState}
               darkMode={darkMode}
               removeComponent={removeComponent}
               sideBarDebugger={sideBarDebugger}

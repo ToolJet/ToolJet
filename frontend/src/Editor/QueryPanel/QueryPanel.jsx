@@ -13,7 +13,6 @@ const QueryPanel = ({
   dataQueriesChanged,
   fetchDataQueries,
   darkMode,
-  currentState,
   apps,
   allComponents,
   appId,
@@ -52,6 +51,7 @@ const QueryPanel = ({
 
   useEffect(() => {
     handleQueryPaneExpanding(isExpanded);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExpanded]);
 
   useEffect(() => {
@@ -60,6 +60,7 @@ const QueryPanel = ({
 
   useEffect(() => {
     onQueryPaneDragging(isDragging);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging]);
 
   useEffect(() => {
@@ -69,6 +70,7 @@ const QueryPanel = ({
     } else {
       onQueryPaneDragging(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowSize.height, isExpanded, isWindowResizing]);
 
   const createDraftQuery = useCallback((queryDetails, source) => {
@@ -265,7 +267,6 @@ const QueryPanel = ({
                   mode={editingQuery ? 'edit' : 'create'}
                   dataQueriesChanged={updateDataQueries}
                   appId={appId}
-                  currentState={currentState}
                   darkMode={darkMode}
                   apps={apps}
                   allComponents={allComponents}

@@ -426,7 +426,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                       <div className="row">
                         <div className="manage-groups-app-dropdown" data-cy="select-search">
                           <Multiselect
-                            value={selectedAppIds}
                             onChange={this.setSelectedApps}
                             options={appSelectOptions}
                             overrideStrings={{
@@ -436,7 +435,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                               ),
                             }}
                             setState={this.setState}
-                            selectedApps={this.state.selectedAppIds}
+                            value={this.state.selectedAppIds}
                           />
                         </div>
 
@@ -714,7 +713,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                           </tr>
                         ) : (
                           usersInGroup.map((user) => (
-                            <div key={user.id} className="manage-group-users-row">
+                            <div
+                              key={user.id}
+                              className="manage-group-users-row"
+                              data-cy={`${String(user.email).toLowerCase().replace(/\s+/g, '-')}-user-row`}
+                            >
                               <p className="tj-text-sm d-flex align-items-center">
                                 <div className="name-avatar">
                                   {`${user?.first_name?.[0] ?? ''} ${user?.last_name?.[0] ?? ''}`}

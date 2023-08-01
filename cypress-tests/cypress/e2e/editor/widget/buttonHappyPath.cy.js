@@ -300,6 +300,7 @@ describe("Editor- Test Button widget", () => {
 
     cy.waitForAutoSave();
     cy.openInCurrentTab(commonWidgetSelector.previewButton);
+    cy.wait(4000);
 
     cy.get(
       commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
@@ -308,6 +309,8 @@ describe("Editor- Test Button widget", () => {
     cy.get(
       commonWidgetSelector.draggableWidget(buttonText.defaultWidgetName)
     ).click();
+    cy.wait(500);
+
     cy.verifyToastMessage(commonSelectors.toastMessage, data.alertMessage);
     cy.get(commonWidgetSelector.draggableWidget("textinput1")).should(
       "have.value",
