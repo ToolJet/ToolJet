@@ -11,8 +11,8 @@ Cypress.Commands.add(
     cy.clearAndType(commonSelectors.workEmailInputField, email);
     cy.clearAndType(commonSelectors.passwordInputField, password);
     cy.get(commonSelectors.signInButton).click();
-    cy.intercept('GET', 'api/library_apps').as('apps')
-    cy.wait('@apps')
+    cy.intercept("GET", "api/library_apps").as("apps");
+    cy.wait("@apps");
     cy.wait(2000);
     cy.get(commonSelectors.homePageLogo).should("be.visible");
   }
@@ -93,8 +93,8 @@ Cypress.Commands.add("appUILogin", () => {
   cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.signInButton).click();
-  cy.intercept('GET', 'api/library_apps').as('apps')
-  cy.wait('@apps')
+  cy.intercept("GET", "api/library_apps").as("apps");
+  cy.wait("@apps");
   cy.wait(3000);
   cy.get(commonSelectors.homePageLogo).should("be.visible");
 });

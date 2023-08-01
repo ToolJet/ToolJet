@@ -35,7 +35,7 @@ jobs:
       - name: Run PosgtreSQL Database Docker Container
         run: |
           sudo docker network create tooljet
-          sudo docker run -d --name postgres --network tooljet -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13        
+          sudo docker run -d --name postgres --network tooljet -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -105,6 +105,9 @@ jobs:
             sleep 5
           done'
 
+      - name: docker logs
+        run: sudo docker logs postgrest
+
       - name: Create Cypress environment file
         id: create-json
         uses: jsdaniell/create-json@1.1.2
@@ -131,6 +134,8 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
+  Cypress-Marketplace:
+    runs-on: ubuntu-22.04
 
   Cypress-Platform:
     runs-on: ubuntu-22.04

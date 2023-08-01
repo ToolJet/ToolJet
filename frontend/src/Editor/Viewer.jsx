@@ -30,6 +30,8 @@ import {
   stripTrailingSlash,
   getSubpath,
   excludeWorkspaceIdFromURL,
+  redirectToDashboard,
+  getWorkspaceId,
 } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _, { snakeCase } from 'lodash';
@@ -305,17 +307,23 @@ class ViewerComponent extends React.Component {
             this.switchOrganization(errorObj?.organizationId, appId, versionId);
             return;
           }
+          /* router dom Navigate is not working now. so hard reloading */
+          redirectToDashboard();
           return <Navigate replace to={'/'} />;
         } else if (statusCode === 401) {
-          window.location = `${getSubpath() ?? ''}/login?redirectTo=${this.props.location.pathname}`;
+          window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${
+            this.props.location.pathname
+          }`;
         } else if (statusCode === 404) {
           toast.error(errorDetails?.error ?? 'App not found', {
             position: 'top-center',
           });
         }
+        redirectToDashboard();
         return <Navigate replace to={'/'} />;
       }
     } catch (err) {
+      redirectToDashboard();
       return <Navigate replace to={'/'} />;
     }
   };

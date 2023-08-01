@@ -1,7 +1,7 @@
 name: Tooljet release docker images build
 
 on:
-  release: 
+  release:
     types: [published]
 
   workflow_dispatch:
@@ -11,8 +11,8 @@ on:
         options: ['tooljet-ee']
         required: true
       image:
-        description: 'Enter the latest image tag'
-        required: true    
+        description: "Enter the latest image tag"
+        required: true
 
 jobs:
 
