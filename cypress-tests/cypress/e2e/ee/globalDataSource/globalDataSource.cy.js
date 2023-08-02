@@ -26,8 +26,6 @@ import { AddDataSourceToGroup } from "Support/utils/eeCommon";
 const data = {};
 data.userName1 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.userEmail1 = fake.email.toLowerCase();
-data.userName2 = fake.firstName.toLowerCase().replaceAll("[^A-Za-z]", "");
-data.userEmail2 = fake.email.toLowerCase();
 data.ds1 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.ds2 = fake.lastName.toLowerCase().replaceAll("[^A-Za-z]", "");
 data.appName = `${fake.companyName}-App`;
@@ -45,9 +43,6 @@ describe("Global Datasource Manager", () => {
         cy.get(commonSelectors.editorPageLogo).click();
         cy.reloadAppForTheElement(data.appName);
         addNewUserMW(data.userName1, data.userEmail1);
-        logout();
-        cy.appUILogin();
-        addNewUserMW(data.userName2, data.userEmail2);
         logout();
     });
 
@@ -86,11 +81,11 @@ describe("Global Datasource Manager", () => {
         cy.intercept("POST", "/api/v2/data_sources").as("ds");
         fillConnectionForm(
             {
-                Host: Cypress.env("gds_pg_host"),
+                Host: Cypress.env("pg_host"),
                 Port: "5432",
-                "Database Name": Cypress.env("gds_pg_user"),
-                Username: Cypress.env("gds_pg_user"),
-                Password: Cypress.env("gds_pg_password"),
+                "Database Name": Cypress.env("pg_user"),
+                Username: Cypress.env("pg_user"),
+                Password: Cypress.env("pg_password"),
             },
             ".form-switch"
         );
@@ -120,7 +115,7 @@ describe("Global Datasource Manager", () => {
 
         addQuery(
             "table_preview",
-            `SELECT * FROM persons;`,
+            `SELECT * FROM Persons;`,
             `cypress-${data.ds1}-postgresql`
         );
 
@@ -140,7 +135,7 @@ describe("Global Datasource Manager", () => {
         cy.get('[data-cy="inspector-node-table_preview"] > .node-key').click();
         cy.get('[data-cy="inspector-node-data"] > .fs-9').verifyVisibleElement(
             "have.text",
-            "4 items "
+            "7 items "
         );
         cy.get(dataSourceSelector.buttonAddNewQueries).click();
 
@@ -210,7 +205,7 @@ describe("Global Datasource Manager", () => {
         cy.get('[data-cy="inspector-node-table_preview"] > .node-key').click();
         cy.get('[data-cy="inspector-node-data"] > .fs-9').verifyVisibleElement(
             "have.text",
-            "4 items "
+            "7 items "
         );
 
         addQuery(
@@ -259,7 +254,7 @@ describe("Global Datasource Manager", () => {
 
         addQuery(
             "table_preview",
-            `SELECT * FROM persons;`,
+            `SELECT * FROM Persons;`,
             `cypress-${data.ds1}-postgresql`
         );
 
@@ -279,8 +274,14 @@ describe("Global Datasource Manager", () => {
         cy.get('[data-cy="inspector-node-table_preview"] > .node-key').click();
         cy.get('[data-cy="inspector-node-data"] > .fs-9').verifyVisibleElement(
             "have.text",
-            "4 items "
+            "7 items "
         );
+
+        cy.get(commonSelectors.editorPageLogo).click();
+        logout();
+        cy.appUILogin()
+        deleteDatasource(`cypress-${data.ds1}-postgresql`);
+        deleteDatasource(`cypress-${data.ds2}-postgresql`);
     });
 
     // it("", () => {

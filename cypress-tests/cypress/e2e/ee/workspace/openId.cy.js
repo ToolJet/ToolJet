@@ -73,6 +73,7 @@ describe("Verify OIDC user onboarding", () => {
     );
 
     cy.appUILogin();
+    cy.wait(2000)
     SSO.enableSignUp();
 
     SSO.visitWorkspaceLoginPage();
@@ -86,6 +87,7 @@ describe("Verify OIDC user onboarding", () => {
     common.logout();
 
     cy.appUILogin();
+    cy.wait(2000)
     common.navigateToManageUsers();
     common.searchUser("superadmin@tooljet.com");
     cy.contains("td", "superadmin@tooljet.com")
@@ -102,13 +104,15 @@ describe("Verify OIDC user onboarding", () => {
     enableDefaultSSO();
     resetAllowPersonalWorkspace();
     common.navigateToManageUsers();
+    cy.wait(1000)
     cy.get("body").then(($el) => {
       if (!$el.text().includes("user@tooljet.com", { timeout: 2000 })) {
         inviteUser("user", "user@tooljet.com");
       }
+      else {
+        WorkspaceInvitationLink("user@tooljet.com");
+      }
     });
-
-    WorkspaceInvitationLink("user@tooljet.com");
     VerifyWorkspaceInvitePageElements();
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-button").click();
@@ -121,6 +125,7 @@ describe("Verify OIDC user onboarding", () => {
     common.logout();
 
     cy.appUILogin();
+    cy.wait(2000)
     trunOffAllowPersonalWorkspace();
 
     common.navigateToManageUsers();
@@ -134,6 +139,7 @@ describe("Verify OIDC user onboarding", () => {
     common.logout();
 
     cy.appUILogin();
+    cy.wait(2000)
     resetAllowPersonalWorkspace();
     SSO.disableSignUp();
 
@@ -142,11 +148,13 @@ describe("Verify OIDC user onboarding", () => {
     cy.get(ssoEeSelector.oidcSSOText).realClick();
     cy.get(".user-four-button").click();
 
-    cy.verifyToastMessage(
-      commonSelectors.toastMessage,
-      "Open ID login failed - User does not exist in the workspace"
-    );
+    cy.get(
+      commonSelectors.toastMessage).should("be.visible").and("have.text",
+        "Open ID login failed - User does not exist in the workspace"
+      );
+    cy.wait(500)
     cy.appUILogin();
+    cy.wait(2000)
     SSO.enableSignUp();
     WorkspaceInvitationLink("userthree@tooljet.com");
 
@@ -158,6 +166,7 @@ describe("Verify OIDC user onboarding", () => {
     common.logout();
 
     cy.appUILogin();
+    cy.wait(2000)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, "userfour@tooljet.com");
 
@@ -183,6 +192,7 @@ describe("Verify OIDC user onboarding", () => {
 
     common.logout();
     cy.appUILogin();
+    cy.wait(2000)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, "admin@tooljet.com");
 
@@ -221,6 +231,7 @@ describe("Verify OIDC user onboarding", () => {
     );
 
     cy.appUILogin();
+    cy.wait(2000)
     resetAllowPersonalWorkspace();
     common.logout();
 

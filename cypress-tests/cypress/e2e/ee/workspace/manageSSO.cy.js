@@ -141,6 +141,7 @@ describe("Manage SSO for multi workspace", () => {
     cy.notVisible(commonSelectors.loginButton);
 
     cy.appUILogin();
+    cy.wait(2000)
     SSO.disableDefaultSSO();
     cy.get(ssoSelector.google).click();
     cy.get(ssoSelector.googleEnableToggle).uncheck();
@@ -155,6 +156,7 @@ describe("Manage SSO for multi workspace", () => {
       ssoText.noLoginMethodWarning
     );
     cy.appUILogin();
+    cy.wait(2000)
     common.navigateToManageSSO();
     cy.get(ssoSelector.passwordEnableToggle).check();
     SSO.enableDefaultSSO();

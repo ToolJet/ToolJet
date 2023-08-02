@@ -3,7 +3,7 @@ id: licensing
 title: Licensing
 ---
 
-<div className='badge badge--primary heading-badge'>Available on: ToolJet Community v2.10.2 and above & Enterprise Edition 2.3.0 and above</div>
+<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
 ## Setting up for Licensing
 

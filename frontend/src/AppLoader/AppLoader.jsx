@@ -4,13 +4,12 @@ import { appService, organizationService, authenticationService } from '@/_servi
 import { Editor } from '../Editor/Editor';
 import { RealtimeEditor } from '@/Editor/RealtimeEditor';
 import config from 'config';
-import { safelyParseJSON, stripTrailingSlash } from '@/_helpers/utils';
+import { safelyParseJSON, stripTrailingSlash, redirectToDashboard, getSubpath, getWorkspaceId } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
-import useRouter from '@/_hooks/use-router';
 import { useParams } from 'react-router-dom';
+import _ from 'lodash';
 
 const AppLoaderComponent = (props) => {
-  const router = useRouter();
   const params = useParams();
   const appId = params.id;
 
@@ -49,14 +48,19 @@ const AppLoaderComponent = (props) => {
             switchOrganization(errorObj?.organizationId);
             return;
           }
-          return router.push('/');
+          redirectToDashboard();
+        } else if (statusCode === 401) {
+          window.location = `${getSubpath() ?? ''}/login${
+            !_.isEmpty(getWorkspaceId()) ? `/${getWorkspaceId()}` : ''
+          }?redirectTo=${this.props.location.pathname}`;
+          return;
         } else if (statusCode === 404 || statusCode === 422) {
           toast.error(error?.error ?? 'App not found');
         }
-        return router.push('/');
+        redirectToDashboard();
       }
     } catch (err) {
-      return router.push('/');
+      redirectToDashboard();
     }
   };
 
