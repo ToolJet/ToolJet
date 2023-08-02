@@ -3,9 +3,9 @@ set -e
 
 if [ -d "./server/dist" ]
 then
-  SETUP_CMD='npm run db:setup:prod'
+  SETUP_CMD='npm run db:setup:prod && npm run plugins:install && npm run plugins:uninstall'
 else
-  SETUP_CMD='npm run db:setup'
+  SETUP_CMD='npm run db:setup && npm run plugins:install && npm run plugins:uninstall'
 fi
 
 if [ -f "./.env" ]
