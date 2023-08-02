@@ -73,7 +73,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
 
   return (
     <div className="tab-content-wrapper tj-db-field-wrapper mt-2">
-      <div className="d-flex">
+      <div className="d-flex mb-2">
         <label className="form-label" data-cy="label-column-filter">
           Filter
         </label>
@@ -97,6 +97,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
             onClick={() => {
               addNewFilterConditionPair();
             }}
+            className={`cursor-pointer fit-content ${isEmpty(updateRowsOptions?.where_filters) ? '' : 'mt-2'}`}
           >
             <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -135,7 +136,7 @@ export const UpdateRows = React.memo(({ darkMode }) => {
               variant="ghostBlue"
               size="sm"
               onClick={addNewColumnOptionsPair}
-              className={`cursor-pointer pb-3 fit-content ${isEmpty(updateRowsOptions?.columns) ? '' : 'mt-2'}`}
+              className={`cursor-pointer fit-content ${isEmpty(updateRowsOptions?.columns) ? '' : 'mt-2'}`}
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -296,7 +297,7 @@ const RenderColumnOptions = ({
   return (
     <div className="mt-1 row-container">
       <div className="d-flex fields-container">
-        <div className="field col-4">
+        <div className="field col-4 me-3">
           <Select
             useMenuPortal={true}
             placeholder="Select column"
@@ -306,7 +307,7 @@ const RenderColumnOptions = ({
           />
         </div>
 
-        <div className="field col-4">
+        <div className="field col-6 mx-1">
           <CodeHinter
             initialValue={value ? (typeof value === 'string' ? value : JSON.stringify(value)) : value}
             className="codehinter-plugins"
