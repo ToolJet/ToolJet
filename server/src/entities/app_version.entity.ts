@@ -13,6 +13,8 @@ import {
 import { App } from './app.entity';
 import { DataQuery } from './data_query.entity';
 import { DataSource } from './data_source.entity';
+import { Page } from './page.entity';
+import { EventHandler } from './event_handler.entity';
 
 @Entity({ name: 'app_versions' })
 @Unique(['name', 'appId'])
@@ -25,6 +27,15 @@ export class AppVersion extends BaseEntity {
 
   @Column('simple-json', { name: 'definition' })
   definition;
+
+  @Column('simple-json', { name: 'global_settings' })
+  globalSettings;
+
+  @Column({ name: 'show_viewer_navigation' })
+  showViewerNavigation: boolean;
+
+  @Column({ name: 'home_page_id' })
+  homePageId: string;
 
   @Column({ name: 'app_id' })
   appId: string;
@@ -47,4 +58,12 @@ export class AppVersion extends BaseEntity {
 
   @OneToMany(() => DataQuery, (dataQuery) => dataQuery.appVersion)
   dataQueries: DataQuery[];
+
+  @OneToMany(() => Page, (page) => page.appVersion, { onDelete: 'CASCADE' })
+  pages: Page[];
+
+  @OneToMany(() => EventHandler, (eventHandler) => eventHandler.appVersion, {
+    onDelete: 'CASCADE',
+  })
+  eventHandlers: EventHandler[];
 }
