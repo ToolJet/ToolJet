@@ -31,10 +31,8 @@ data.workspaceName = `${fake.companyName}-workspace`;
 describe("dashboard", () => {
   beforeEach(() => {
     cy.appUILogin();
-    resetAllowPersonalWorkspace();
-    common.logout();
-    cy.appUILogin();
     cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
+    resetAllowPersonalWorkspace();
   });
   it("Verify elements of the instance settings page", () => {
     cy.get(commonEeSelectors.instanceSettingIcon).click();
@@ -65,7 +63,7 @@ describe("dashboard", () => {
     );
     cy.get(usersSelector.usersPageTitle).should(($el) => {
       expect($el.contents().last().text().trim()).to.eq(
-        usersText.usersPageTitle
+        "Manage All Users"
       );
     });
 
@@ -306,10 +304,12 @@ describe("dashboard", () => {
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
     cy.get(instanceSettingsSelector.archiveAllButton).click();
     cy.get(commonEeSelectors.modalCloseButton).click();
+    cy.wait(1000)
     cy.get(
       instanceSettingsSelector.userStatus(data.firstName)
     ).verifyVisibleElement("have.text", "archived");
     common.logout();
+    cy.visit('/')
 
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
     cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
@@ -320,7 +320,7 @@ describe("dashboard", () => {
     );
   });
 
-  it("Verify user sign up, archive and unarchive  functionality", () => {
+  it("Verify user sign up, archive and unarchive functionality", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase();
     data.workspaceName = `${fake.companyName}-workspace`;
@@ -370,6 +370,7 @@ describe("dashboard", () => {
     });
     common.logout();
 
+    cy.visit('/')
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
     cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
     cy.get(commonSelectors.signInButton).click();
@@ -426,6 +427,7 @@ describe("dashboard", () => {
       }
     });
     common.logout();
+    cy.visit('/')
     cy.get(commonSelectors.createAnAccountLink).should("not.exist");
 
     cy.appUILogin();

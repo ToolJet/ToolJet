@@ -3,22 +3,22 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { FilesService } from '../services/files.service';
 import { App } from 'src/entities/app.entity';
-import { Brackets, createQueryBuilder, EntityManager, getRepository, In, Repository } from 'typeorm';
+import { Brackets, createQueryBuilder, EntityManager, getManager, getRepository, In, Repository } from 'typeorm';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { BadRequestException } from '@nestjs/common';
-import { cleanObject, dbTransactionWrap, isSuperAdmin } from 'src/helpers/utils.helper';
+import { cleanObject, dbTransactionWrap, generatePayloadForLimits, isSuperAdmin } from 'src/helpers/utils.helper';
 import { CreateFileDto } from '@dto/create-file.dto';
 import got from 'got';
-import { USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
+import { LIMIT_TYPE, USER_STATUS, USER_TYPE, WORKSPACE_USER_STATUS } from 'src/helpers/user_lifecycle';
 import { Organization } from 'src/entities/organization.entity';
 import { ConfigService } from '@nestjs/config';
 import { OrganizationUser } from 'src/entities/organization_user.entity';
 import { UserDetails } from 'src/entities/user_details.entity';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { LicenseService } from './license.service';
-import { LICENSE_FIELD } from 'src/helpers/license.helper';
+import { LICENSE_FIELD, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 const freshDeskBaseUrl = 'https://tooljet-417912114917301615.myfreshworks.com/crm/sales/api/';
@@ -263,21 +263,33 @@ export class UsersService {
       } else {
         user = existingUser;
       }
-      await this.attachUserGroup(groups, organizationId, user.id, manager);
+      await this.attachUserGroup(groups, organizationId, user.id, source === 'ldap', manager);
     }, manager);
 
     return user;
   }
 
-  async attachUserGroup(groups, organizationId, userId, manager?: EntityManager) {
+  async attachUserGroup(
+    groups: string[],
+    organizationId: string,
+    userId: string,
+    isValidateExistingGroups = false,
+    manager?: EntityManager
+  ) {
     await dbTransactionWrap(async (manager: EntityManager) => {
+      const organizationGroups = await manager.find(GroupPermission, {
+        where: {
+          organizationId,
+        },
+      });
+
+      if (isValidateExistingGroups) {
+        const existedGroups = organizationGroups.map((organizationGroup) => organizationGroup.group);
+        groups = groups.filter((group) => existedGroups.includes(group));
+      }
+
       for (const group of groups) {
-        const orgGroupPermission = await manager.findOne(GroupPermission, {
-          where: {
-            organizationId: organizationId,
-            group: group,
-          },
-        });
+        const orgGroupPermission = organizationGroups.find((organizationGroup) => organizationGroup.group === group);
 
         if (!orgGroupPermission) {
           throw new BadRequestException(`${group} group does not exist for current organization`);
@@ -574,7 +586,7 @@ export class UsersService {
     return { organizationId: app?.organizationId, isPublic: app?.isPublic };
   }
 
-  async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
+  async addAvatar(userId: string, imageBuffer: Buffer, filename: string, manager?: EntityManager) {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const user = await manager.findOne(User, userId);
       const currentAvatarId = user.avatarId;
@@ -591,7 +603,7 @@ export class UsersService {
         await this.filesService.remove(currentAvatarId, manager);
       }
       return avatar;
-    });
+    }, manager);
   }
 
   canAnyGroupPerformAction(
@@ -772,18 +784,38 @@ export class UsersService {
     return { editor: userIdsWithEditPermissions?.length || 0, viewer };
   }
 
+  async fetchTotalSuperadminCount(manager: EntityManager): Promise<number> {
+    return await manager
+      .createQueryBuilder(User, 'users')
+      .where('users.userType = :userType', { userType: USER_TYPE.INSTANCE })
+      .andWhere('users.status != :archived', { archived: USER_STATUS.ARCHIVED })
+      .getCount();
+  }
+
   async validateLicense(manager: EntityManager): Promise<void> {
     let editor = -1,
-      viewer = -1;
-
+      viewer = -1,
+      superadmin = -1;
     const {
-      total: users,
-      editors: editorUsers,
-      viewers: viewerUsers,
-    } = await this.licenseService.getLicenseTerms(LICENSE_FIELD.USER);
+      allUsers: { total: users, editors: editorUsers, viewers: viewerUsers, superadmins: superadminUsers },
+      expired: isExpired,
+    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.USER, LICENSE_FIELD.IS_EXPIRED]);
+
+    if (isExpired) {
+      return;
+    }
+
+    if (superadminUsers !== 'UNLIMITED') {
+      if (superadmin === -1) {
+        superadmin = await this.fetchTotalSuperadminCount(manager);
+      }
+      if (superadmin > superadminUsers) {
+        throw new HttpException('You have reached your limit for number of super admins.', 451);
+      }
+    }
 
     if (users !== 'UNLIMITED' && (await this.getCount(true, manager)) > users) {
-      throw new HttpException('License violation - Maximum user limit reached', 451);
+      throw new HttpException('You have reached your limit for number of users.', 451);
     }
 
     if (editorUsers !== 'UNLIMITED' && viewerUsers !== 'UNLIMITED') {
@@ -794,7 +826,7 @@ export class UsersService {
         editor = await this.fetchTotalEditorCount(manager);
       }
       if (editor > editorUsers) {
-        throw new HttpException('License violation - Number of editors exceeded', 451);
+        throw new HttpException('You have reached your limit for number of builders.', 451);
       }
     }
 
@@ -802,8 +834,75 @@ export class UsersService {
       if (viewer === -1) {
         ({ viewer } = await this.fetchTotalViewerEditorCount(manager));
       }
-      if (viewer > viewerUsers) {
-        throw new HttpException('License violation - Number of viewers exceeded', 451);
+      const addedUsers = await this.getCount(true, manager);
+      const addableUsers = users - addedUsers;
+
+      if (viewer > viewerUsers && addableUsers < 0) {
+        throw new HttpException('You have reached your limit for number of end users.', 451);
+      }
+    }
+  }
+
+  async getUserLimitsByType(type: LIMIT_TYPE) {
+    const {
+      allUsers: { total: users, editors: editorUsers, viewers: viewerUsers, superadmins: superadminUsers },
+      status: licenseStatus,
+    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.USER, LICENSE_FIELD.STATUS]);
+
+    const manager = getManager();
+
+    switch (type) {
+      case LIMIT_TYPE.TOTAL: {
+        const currentUsersCount = await this.getCount(true, manager);
+        if (users === 'UNLIMITED') {
+          return;
+        } else {
+          return generatePayloadForLimits(currentUsersCount, users, licenseStatus);
+        }
+      }
+      case LIMIT_TYPE.EDITOR: {
+        const currentEditorsCount = await this.fetchTotalEditorCount(manager);
+        if (editorUsers === 'UNLIMITED') {
+          return;
+        } else {
+          return generatePayloadForLimits(currentEditorsCount, editorUsers, licenseStatus);
+        }
+      }
+      case LIMIT_TYPE.VIEWER: {
+        const { viewer: currentViewersCount } = await this.fetchTotalViewerEditorCount(manager);
+        if (viewerUsers === 'UNLIMITED') {
+          return;
+        } else {
+          return generatePayloadForLimits(currentViewersCount, viewerUsers, licenseStatus);
+        }
+      }
+      case LIMIT_TYPE.ALL: {
+        const currentUsersCount = await this.getCount(true, manager);
+        const currentEditorsCount = await this.fetchTotalEditorCount(manager);
+        const currentSuperadminsCount = await this.fetchTotalSuperadminCount(manager);
+        const { viewer: currentViewersCount } = await this.fetchTotalViewerEditorCount(manager);
+
+        return {
+          usersCount: generatePayloadForLimits(currentUsersCount, users, licenseStatus, LICENSE_LIMITS_LABEL.USERS),
+          editorsCount: generatePayloadForLimits(
+            currentEditorsCount,
+            editorUsers,
+            licenseStatus,
+            LICENSE_LIMITS_LABEL.EDIT_USERS
+          ),
+          viewersCount: generatePayloadForLimits(
+            currentViewersCount,
+            viewerUsers,
+            licenseStatus,
+            LICENSE_LIMITS_LABEL.END_USERS
+          ),
+          superadminsCount: generatePayloadForLimits(
+            currentSuperadminsCount,
+            superadminUsers,
+            licenseStatus,
+            LICENSE_LIMITS_LABEL.SUPERADMIN_USERS
+          ),
+        };
       }
     }
   }

@@ -272,8 +272,9 @@ describe('organizations controller', () => {
         let ssoConfigs = await ssoConfigsRepository.findOneOrFail({ where: { id: response.body.id } });
         expect(ssoConfigs.sso).toBe('git');
         expect(ssoConfigs.enabled).toBeTruthy();
-        expect(ssoConfigs.configs.clientId).toBe('client-id');
-        expect(ssoConfigs.configs['clientSecret']).not.toBe('client-secret');
+        const gitConfigs = ssoConfigs.configs as Record<string, any>;
+        expect(gitConfigs['clientId']).toBe('client-id');
+        expect(gitConfigs['clientSecret']).not.toBe('client-secret');
 
         const loggedSuperAdminUser = await authenticateUser(
           app,
@@ -291,8 +292,9 @@ describe('organizations controller', () => {
         ssoConfigs = await ssoConfigsRepository.findOneOrFail({ where: { id: response.body.id } });
         expect(ssoConfigs.sso).toBe('google');
         expect(ssoConfigs.enabled).toBeTruthy();
-        expect(ssoConfigs.configs.clientId).toBe('client-id');
-        expect(ssoConfigs.configs['clientSecret']).not.toBe('client-secret');
+        const googleConfigs = ssoConfigs.configs as Record<string, any>;
+        expect(googleConfigs['clientId']).toBe('client-id');
+        expect(googleConfigs['clientSecret']).not.toBe('client-secret');
       });
 
       it('should not change organization configs if changes are not done by admin', async () => {

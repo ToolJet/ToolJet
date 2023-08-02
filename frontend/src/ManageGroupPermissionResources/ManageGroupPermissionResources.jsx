@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { groupPermissionService, authenticationService } from '@/_services';
+import { groupPermissionService, userService, authenticationService } from '@/_services';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { withTranslation } from 'react-i18next';
@@ -11,7 +11,7 @@ import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 import Multiselect from '@/_ui/Multiselect/Multiselect';
 import { FilterPreview, MultiSelectUser } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import Select from '@/_ui/Select';
+import { LicenseBanner } from '@/LicenseBanner';
 import posthog from 'posthog-js';
 
 class ManageGroupPermissionResourcesComponent extends React.Component {
@@ -39,10 +39,12 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       removeDataSourceIds: [],
       currentTab: 'apps',
       selectedUsers: [],
+      editorLimits: {},
     };
   }
 
   componentDidMount() {
+    this.fetchEditorLimits();
     if (this.props.groupPermissionId) this.fetchGroupAndResources(this.props.groupPermissionId);
   }
 
@@ -51,6 +53,14 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       this.fetchGroupAndResources(this.props.groupPermissionId);
     }
   }
+
+  fetchEditorLimits = () => {
+    userService.getUserLimits('editor').then((data) => {
+      this.setState({
+        editorLimits: data,
+      });
+    });
+  };
 
   fetchGroupPermission = (groupPermissionId) => {
     groupPermissionService.getGroup(groupPermissionId).then((data) => {
@@ -149,6 +159,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
     groupPermissionService
       .update(groupPermissionId, params)
       .then(() => {
+        this.fetchEditorLimits();
         toast.success('Group permissions updated');
         this.fetchGroupPermission(groupPermissionId);
       })
@@ -179,9 +190,13 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
         toast.success('App permissions updated');
 
         this.fetchAppsInGroup(groupPermissionId);
+        this.fetchEditorLimits();
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(({ error, data }) => {
+        const { statusCode } = data;
+        if ([451].indexOf(statusCode) === -1) {
+          toast.error(error);
+        }
       });
   };
 
@@ -394,8 +409,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       .then(() => {
         toast.success('Users added to the group');
       })
-      .catch(({ error }) => {
-        toast.error(error);
+      .catch(() => {
         this.setState({
           isAddingUsers: false,
         });
@@ -456,6 +470,7 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       selectedAppIds,
       selectedDataSourceIds,
       selectedUsers,
+      editorLimits,
     } = this.state;
 
     const searchSelectClass = this.props.darkMode ? 'select-search-dark' : 'select-search';
@@ -588,7 +603,6 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
               <div className="manage-groups-body">
                 <div className="tab-content">
                   {/* Apps Tab */}
-
                   <div className={`tab-pane ${currentTab === 'apps' ? 'active show' : ''}`}>
                     {groupPermission?.group !== 'admin' && (
                       <div className="row">
@@ -881,7 +895,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                           </tr>
                         ) : (
                           usersInGroup.map((user) => (
-                            <div key={user.id} className="manage-group-users-row">
+                            <div
+                              key={user.id}
+                              className="manage-group-users-row"
+                              data-cy={`${String(user.email).toLowerCase().replace(/\s+/g, '-')}-user-row`}
+                            >
                               <p className="tj-text-sm d-flex align-items-center">
                                 <div className="name-avatar">
                                   {`${user?.first_name?.[0] ?? ''} ${user?.last_name?.[0] ?? ''}`}

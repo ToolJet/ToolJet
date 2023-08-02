@@ -41,7 +41,13 @@ export class AppsController {
     private auditLoggerService: AuditLoggerService
   ) {}
 
-  @UseGuards(JwtAuthGuard, LicenseExpiryGuard, AppCountGuard)
+  @UseGuards(JwtAuthGuard)
+  @Get('limits')
+  async getAppsLimit() {
+    return await this.appsService.getAppsLimit();
+  }
+
+  @UseGuards(JwtAuthGuard, AppCountGuard)
   @Post()
   async create(@User() user, @Body('icon') icon: string) {
     const ability = await this.appsAbilityFactory.appsActions(user);

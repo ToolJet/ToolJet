@@ -12,6 +12,7 @@ describe("App share functionality", () => {
   data.lastName = fake.lastName.replaceAll("[^A-Za-z]", "");
   data.email = fake.email.toLowerCase();
   const slug = data.appName.toLowerCase().replace(/\s+/g, "-");
+  const firstUserEmail = data.email
   beforeEach(() => {
     cy.appUILogin();
   });
@@ -93,19 +94,22 @@ describe("App share functionality", () => {
     );
   });
 
-  it.skip("Verify app private and public app visibility for the same instance user", () => {
+  it("Verify app private and public app visibility for the same instance user", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase();
 
     logout();
     userSignUp(data.firstName, data.email, "Test");
     cy.visit(`/applications/${slug}`);
+    cy.wait(1000);
 
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
     cy.clearAndType(commonSelectors.passwordInputField, "password");
     cy.get(commonSelectors.signInButton).click();
+    cy.wait(1000);
 
     cy.visit("/");
+    cy.wait(2000);
     logout();
     cy.appUILogin();
 

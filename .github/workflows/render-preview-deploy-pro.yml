@@ -280,7 +280,7 @@ jobs:
           sudo apt install postgresql-client -y
 
       - name: Wait after installing PostgreSQL
-        run: sleep 10          
+        run: sleep 25
 
       - name: Drop PostgreSQL PR database
         env:

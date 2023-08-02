@@ -6,5 +6,7 @@ export default interface UserResponse {
   lastName?: string;
   email: string;
   sso: string;
+  groups?: string[];
+  profilePhoto?: any;
   userinfoResponse?: UserinfoResponse;
 }

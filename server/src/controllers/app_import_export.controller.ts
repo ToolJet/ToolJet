@@ -9,7 +9,6 @@ import { User } from 'src/decorators/user.decorator';
 import { AuditLoggerService } from '@services/audit_logger.service';
 import { ActionTypes, ResourceTypes } from 'src/entities/audit_log.entity';
 import { AppCountGuard } from '@ee/licensing/guards/app.guard';
-import { LicenseExpiryGuard } from '@ee/licensing/guards/expiry.guard';
 
 @Controller('apps')
 export class AppsImportExportController {
@@ -20,7 +19,7 @@ export class AppsImportExportController {
     private auditLoggerService: AuditLoggerService
   ) {}
 
-  @UseGuards(JwtAuthGuard, LicenseExpiryGuard, AppCountGuard)
+  @UseGuards(JwtAuthGuard, AppCountGuard)
   @Post('/import')
   async import(@User() user, @Body() body) {
     const ability = await this.appsAbilityFactory.appsActions(user);

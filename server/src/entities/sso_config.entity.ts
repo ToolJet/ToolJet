@@ -23,6 +23,19 @@ type OpenId = {
   name: string;
   wellKnownUrl: string;
 };
+type LDAP = {
+  name: string;
+  host: string;
+  port: number;
+  ssl: boolean;
+  sslOptions: {
+    clientKey: string;
+    clientCert: string;
+    serverCert: string;
+  };
+  basedn: string;
+};
+
 @Entity({ name: 'sso_configs' })
 export class SSOConfigs {
   @PrimaryGeneratedColumn('uuid')
@@ -32,10 +45,10 @@ export class SSOConfigs {
   organizationId: string;
 
   @Column({ name: 'sso' })
-  sso: 'google' | 'git' | 'form' | 'openid';
+  sso: 'google' | 'git' | 'form' | 'openid' | 'ldap';
 
   @Column({ type: 'json' })
-  configs: Google | Git | OpenId;
+  configs: Google | Git | OpenId | LDAP;
 
   @Column({ name: 'enabled' })
   enabled: boolean;

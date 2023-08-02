@@ -316,7 +316,7 @@ export const Folders = function Folders({
         closeModal={closeModal}
         title={
           showUpdateForm
-            ? t('homePage.foldersSection.updateFolder', 'Update Folder')
+            ? t('homePage.foldersSection.editFolder', 'Edit Folder')
             : t('homePage.foldersSection.createFolder', 'Create folder')
         }
       >
@@ -347,7 +347,7 @@ export const Folders = function Folders({
               isLoading={isCreating || isUpdating}
             >
               {showUpdateForm
-                ? t('homePage.foldersSection.updateFolder', 'Update Folder')
+                ? t('homePage.foldersSection.editFolder', 'Edit Folder')
                 : t('homePage.foldersSection.createFolder', 'Create folder')}
             </ButtonSolid>
           </div>

@@ -1,11 +1,12 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { toast } from 'react-hot-toast';
 import { FileDropzone } from './FileDropzone';
 import posthog from 'posthog-js';
-import { authenticationService } from '@/_services';
+import { authenticationService, userService } from '@/_services';
+import { LicenseBanner } from '@/LicenseBanner';
 import Multiselect from '@/_ui/Multiselect/Multiselect';
 
 function InviteUsersForm({
@@ -22,9 +23,20 @@ function InviteUsersForm({
 }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(1);
+  const [userLimits, setUserLimits] = useState({});
   const [selectedGroups, setSelectedGroups] = useState([]);
 
   const hiddenFileInput = useRef(null);
+
+  useEffect(() => {
+    fetchUserLimits();
+  }, [activeTab]);
+
+  const fetchUserLimits = () => {
+    userService.getUserLimits('total').then((data) => {
+      setUserLimits(data);
+    });
+  };
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -106,8 +118,13 @@ function InviteUsersForm({
             </div>
           </div>
           {activeTab == 1 ? (
-            <div className="manage-users-drawer-content">
-              <div className="invite-user-by-email">
+            <div className={`manage-users-drawer-content`}>
+              <LicenseBanner classes="mb-3" limits={userLimits} type="users" size="small" />
+              <div
+                className={`invite-user-by-email ${
+                  userLimits?.percentage === 100 && !userLimits?.licenseStatus?.isExpired && 'disabled'
+                }`}
+              >
                 <form onSubmit={handleCreateUser} noValidate className="invite-email-body" id="inviteByEmail">
                   <label className="form-label" data-cy="label-full-name-input-field">
                     {t('header.organization.menus.manageUsers.fullName', 'Enter full name')}
@@ -148,8 +165,11 @@ function InviteUsersForm({
                       </span>
                     </div>
                   </div>
-                  <div className="form-group mb-3 manage-groups-invite-form manage-groups-app-dropdown">
-                    <label className="form-label" data-cy="label-email-input-field">
+                  <div
+                    className="form-group mb-3 manage-groups-invite-form manage-groups-app-dropdown"
+                    data-cy="user-group-select"
+                  >
+                    <label className="form-label" data-cy="label-group-input-field">
                       {t('header.organization.menus.manageUsers.selectGroup', 'Select Group')}
                     </label>
                     <Multiselect
@@ -166,6 +186,7 @@ function InviteUsersForm({
             </div>
           ) : (
             <div className="manage-users-drawer-content-bulk">
+              <LicenseBanner limits={userLimits} type="users" size="small" />
               <div className="manage-users-drawer-content-bulk-download-prompt">
                 <div className="user-csv-template-wrap">
                   <div>
@@ -217,7 +238,10 @@ function InviteUsersForm({
               form={activeTab == 1 ? 'inviteByEmail' : 'inviteBulkUsers'}
               type="submit"
               variant="primary"
-              disabled={uploadingUsers}
+              disabled={
+                uploadingUsers ||
+                (userLimits?.percentage === 100 && !userLimits?.licenseStatus?.isExpired && 'disabled')
+              }
               data-cy={activeTab == 1 ? 'button-invite-users' : 'button-upload-users'}
               leftIcon={activeTab == 1 ? 'sent' : 'fileupload'}
               width="20"

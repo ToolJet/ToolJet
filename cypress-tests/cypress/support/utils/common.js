@@ -15,6 +15,9 @@ export const navigateToProfile = () => {
 export const logout = () => {
   cy.get(commonSelectors.profileSettings).click();
   cy.get(commonSelectors.logoutLink).click();
+  cy.intercept('GET', '/api/metadata').as('publicConfig');
+  cy.wait('@publicConfig');
+  cy.wait(500);
 };
 
 export const navigateToManageUsers = () => {
@@ -25,11 +28,16 @@ export const navigateToManageUsers = () => {
 export const navigateToManageGroups = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.manageGroupsOption).click();
+  navigateToAllUserGroup();
+
+};
+
+export const navigateToAllUserGroup = () => {
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("All users")).click();
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("All users")).click();
-  cy.wait(500);
+  cy.wait(1000);
   cy.get("body").then(($title) => {
     if (
       $title
@@ -43,7 +51,7 @@ export const navigateToManageGroups = () => {
       cy.wait(2000);
     }
   });
-};
+}
 
 export const navigateToWorkspaceVariable = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
@@ -229,17 +237,25 @@ export const verifyTooltip = (selector, message) => {
 export const pinInspector = () => {
   cy.get(commonWidgetSelector.sidebarinspector).click();
   cy.get(commonSelectors.inspectorPinIcon).click();
-  cy.intercept("GET", "/api/v2/data_sources").as("editor");
-  cy.reload();
-  cy.wait("@editor");
+  cy.wait(500)
+
   cy.get("body").then(($body) => {
     if (!$body.find(commonSelectors.inspectorPinIcon).length > 0) {
       cy.get(commonWidgetSelector.sidebarinspector).click();
       cy.get(commonSelectors.inspectorPinIcon).click();
-      cy.wait(500);
-      cy.intercept("GET", "/api/v2/data_sources").as("editor");
-      cy.reload();
-      cy.wait("@editor");
     }
   });
+  cy.reload();
+  cy.waitForAppLoad();
 };
+
+
+export const createGroup = (groupName) => {
+  cy.get(groupsSelector.createNewGroupButton).click();
+  cy.clearAndType(groupsSelector.groupNameInput, groupName);
+  cy.get(groupsSelector.createGroupButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    groupsText.groupCreatedToast
+  );
+}

@@ -7,9 +7,13 @@ import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 // eslint-disable-next-line import/no-unresolved
 import EmptyIllustration from '@assets/images/no-results.svg';
+<<<<<<< HEAD
 import posthog from 'posthog-js';
 import { authenticationService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
+=======
+import { useCurrentState } from '@/_stores/currentStateStore';
+>>>>>>> tj-ee/develop
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 
@@ -31,7 +35,6 @@ const LeftSidebarPageSelector = ({
   showHideViewerNavigationControls,
   updateOnSortingPages,
   updateOnPageLoadEvents,
-  currentState,
   apps,
   pinned,
   setPinned,
@@ -39,6 +42,7 @@ const LeftSidebarPageSelector = ({
   const [allpages, setPages] = useState(pages);
   const router = useRouter();
   const [haveUserPinned, setHaveUserPinned] = useState(false);
+  const currentState = useCurrentState();
   const [newPageBeingCreated, setNewPageBeingCreated] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const { enableReleasedVersionPopupState, isVersionReleased, isEditorFreezed } = useAppVersionStore(
