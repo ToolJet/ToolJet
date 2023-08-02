@@ -440,7 +440,7 @@ const Portal = ({ children, ...restProps }) => {
 const DepericatedAlertForWorkspaceVariable = ({ text }) => {
   return (
     <Alert
-      svg="tj-info-warnning"
+      svg="tj-info-warning"
       cls="codehinter workspace-variables-alert-banner p-1 mb-0"
       data-cy={``}
       imgHeight={18}
