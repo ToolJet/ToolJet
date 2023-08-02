@@ -14,7 +14,7 @@ jobs:
   Cypress-App-Builder:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress-app-builder')
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-app-builder' }}
 
     steps:
       - name: Setup Node.js
@@ -45,7 +45,7 @@ jobs:
       - name: checking the node version
         run: |
           node -v
-          npm -v 
+          npm -v
 
       - name: Install and build dependencies
         run: |
@@ -116,7 +116,6 @@ jobs:
           json: ${{ secrets.CYPRESS_SECRETS }}
           dir: "./cypress-tests"
 
-
       - name: docker logs
         run: sudo docker logs postgrest
 
@@ -134,13 +133,11 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
-  Cypress-Marketplace:
-    runs-on: ubuntu-22.04
 
   Cypress-Platform:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress-platform')
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-platform' }}
 
     steps:
       - name: Setup Node.js
@@ -161,12 +158,12 @@ jobs:
       - name: Run PosgtreSQL Database Docker Container
         run: |
           sudo docker network create tooljet
-          sudo docker run -d --name postgres --network tooljet -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13       
+          sudo docker run -d --name postgres --network tooljet -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_PORT=5432 -d postgres:13
 
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.ref }} 
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Install and build dependencies
         run: |
@@ -201,7 +198,7 @@ jobs:
           echo "SSO_GIT_OAUTH2_CLIENT_ID=dummy" >> .env
           echo "SSO_GIT_OAUTH2_CLIENT_SECRET=dummy" >> .env
           echo "SSO_GIT_OAUTH2_HOST=dummy" >> .env
-          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env        
+          echo "SSO_GOOGLE_OAUTH2_CLIENT_ID=dummy" >> .env
 
       - name: Set up database
         run: |
@@ -216,7 +213,7 @@ jobs:
         run: |
           sudo docker run -d --name postgrest --network tooljet -p 3001:3000 \
           -e PGRST_DB_URI="postgres://postgres:postgres@postgres:5432/tooljet" -e PGRST_DB_ANON_ROLE="postgres" -e PGRST_JWT_SECRET="r9iMKoe5CRMgvJBBtp4HrqN7QiPpUToj" \
-          postgrest/postgrest:v10.1.1.20221215          
+          postgrest/postgrest:v10.1.1.20221215
 
       - name: Run plugins compilation in watch mode
         run: cd plugins && npm start &
@@ -259,19 +256,17 @@ jobs:
           name: screenshots
           path: cypress-tests/cypress/screenshots
 
-
   Cypress-Marketplace:
     runs-on: ubuntu-22.04
 
-    if: contains(github.event.pull_request.labels.*.name, 'run-cypress-marketplace')
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'run-cypress-marketplace' }}
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-                        
+
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
