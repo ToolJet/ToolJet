@@ -891,7 +891,7 @@ export function Table({
     <div
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       data-disabled={parsedDisabledState}
-      className="card jet-table"
+      className="card jet-table table-component"
       style={{
         width: `100%`,
         height: `${height}px`,
