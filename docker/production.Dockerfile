@@ -102,11 +102,13 @@ RUN useradd --create-home --home-dir /home/appuser appuser \
     && chmod u+x /app \
     && chmod -R g=u /app
 
-RUN mkdir -p /home/appuser/.npm/_cacache \
-    mkdir -p /home/appuser/.npm_cache_tmp \
-    mkdir -p /home/appuser/.npm/_logs \
+RUN mkdir -p /home/appuser/.npm/ \
     && chown -R appuser:0 /home/appuser/.npm \
-    && chmod g+s /home/appuser/.npm_cache_tmp
+    && chmod g+s /home/appuser/.npm
+
+RUN mkdir -p /tmp/npm-cache/ \
+    && chown -R appuser:0 /tmp/npm-cache \
+    && chmod g+s /tmp/npm-cache
 
 # Set npm cache directory
 RUN npm config set cache /tmp/npm-cache --global
