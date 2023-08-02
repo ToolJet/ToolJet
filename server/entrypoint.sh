@@ -3,7 +3,7 @@ set -e
 
 if [ -d "./server/dist" ]
 then
-  SETUP_CMD='npm run db:setup:prod && npm run plugins:install && npm run plugins:uninstall'
+  SETUP_CMD='npm run db:setup:prod && npm run plugins:install:prod && npm run plugins:uninstall:prod'
 else
   SETUP_CMD='npm run db:setup && npm run plugins:install && npm run plugins:uninstall'
 fi
