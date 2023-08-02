@@ -105,7 +105,7 @@ export default function generateColumnsData({
             case 'center':
               return 'center';
             default:
-              break;
+              return 'start';
           }
         };
         const updatedChangeSet = newRowsChangeSet === null ? changeSet : newRowsChangeSet;
