@@ -19,7 +19,7 @@ To protect the user's privacy, Geolocation API requests permission to locate the
 
     </div>
 
-- In the app editor, go to the query panel at the bottom and create a **[RunJS query](/docs/data-sources/custom-js)** by selecting **Run JavaScript Code** as the datasource
+- In the app editor, go to the query panel at the bottom and create a **[RunJS query](/docs/2.0.0/data-sources/run-js/#runjs-query-examples)** by selecting **Run JavaScript Code** as the datasource
 
     <div style={{textAlign: 'center'}}>
 
