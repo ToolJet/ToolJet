@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from '@/_ui/LeftSidebar';
 
 export const Pagination = function Pagination({
   onPageIndexChanged,
@@ -12,6 +13,7 @@ export const Pagination = function Pagination({
   setPageIndex,
   enablePrevButton,
   enableNextButton,
+  darkMode,
 }) {
   const [pageCount, setPageCount] = useState(autoPageCount);
 
@@ -47,50 +49,78 @@ export const Pagination = function Pagination({
   }
 
   return (
-    <div className="pagination justify-content-start">
+    <div className="pagination-container d-flex" data-cy="pagination-section">
       {!serverSide && (
-        <button
+        <Button.UnstyledButton
+          onClick={(event) => {
+            event.stopPropagation();
+            gotoPage(1);
+          }}
+          classNames={darkMode ? 'dark' : 'nothing'}
           data-cy={`pagination-button-to-first`}
-          className={`btn btn-sm btn-light mx-2 ${pageIndex === 1 ? 'cursor-not-allowed' : ''}`}
-          onClick={() => gotoPage(1)}
+          styles={{ height: '20px', width: '20px' }}
           disabled={pageIndex === 1}
         >
-          {'<<'}
-        </button>
+          <Button.Content iconSrc={'assets/images/icons/chevron-left.svg'} />
+        </Button.UnstyledButton>
       )}
-      <button
-        data-cy={`pagination-button-to-previous`}
-        className={`btn btn-sm btn-light ${pageIndex === 1 ? 'cursor-not-allowed' : ''}`}
-        onClick={() => goToPreviousPage()}
+      <Button.UnstyledButton
+        onClick={(event) => {
+          event.stopPropagation();
+          goToPreviousPage();
+        }}
+        classNames={darkMode ? 'dark' : 'nothing'}
+        styles={{ height: '20px', width: '20px' }}
         disabled={pageIndex === 1 || !enablePrevButton}
+        data-cy={`pagination-button-to-previous`}
       >
-        {'<'}
-      </button>{' '}
-      <small className="p-1 mx-2" data-cy={`page-index-details`}>
-        {serverSide && <strong>{pageIndex}</strong>}
+        <Button.Content iconSrc={'assets/images/icons/chevron-left.svg'} />
+      </Button.UnstyledButton>
+
+      <div className="d-flex" data-cy={`page-index-details`}>
+        {serverSide && <span>{pageIndex}</span>}
         {!serverSide && (
-          <strong>
-            {pageIndex} of {autoPageOptions.length || 1}
-          </strong>
+          <>
+            <input
+              type="text"
+              className="form-control mx-1"
+              value={pageIndex}
+              onChange={(event) => {
+                if (event.target.value <= pageCount) gotoPage(event.target.value);
+              }}
+            />
+            <span className="mx-1" data-cy={`total-page-number-${autoPageOptions.length || 1}`}>
+              / {pageCount || 1}
+            </span>
+          </>
         )}
-      </small>
-      <button
-        data-cy={`pagination-button-to-next`}
-        className={`btn btn-light btn-sm ${!autoCanNextPage && !serverSide ? 'cursor-not-allowed' : ''}`}
-        onClick={() => goToNextPage()}
+      </div>
+
+      <Button.UnstyledButton
+        onClick={(event) => {
+          event.stopPropagation();
+          goToNextPage();
+        }}
+        classNames={darkMode && 'dark'}
+        styles={{ height: '20px', width: '20px' }}
         disabled={(!autoCanNextPage && !serverSide) || !enableNextButton}
+        data-cy={`pagination-button-to-next`}
       >
-        {'>'}
-      </button>{' '}
+        <Button.Content iconSrc={'assets/images/icons/chevron-right.svg'} />
+      </Button.UnstyledButton>
       {!serverSide && (
-        <button
-          data-cy={`pagination-button-to-last`}
-          className={`btn btn-light btn-sm mx-2 ${!autoCanNextPage && !serverSide ? 'cursor-not-allowed' : ''}`}
-          onClick={() => gotoPage(pageCount)}
+        <Button.UnstyledButton
+          onClick={(event) => {
+            event.stopPropagation();
+            gotoPage(pageCount);
+          }}
+          classNames={darkMode && 'dark'}
+          styles={{ height: '20px', width: '20px' }}
           disabled={!autoCanNextPage && !serverSide}
+          data-cy={`pagination-button-to-last`}
         >
-          {'>>'}
-        </button>
+          <Button.Content iconSrc={'assets/images/icons/chevron-right.svg'} />
+        </Button.UnstyledButton>
       )}
     </div>
   );
