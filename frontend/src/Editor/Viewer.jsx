@@ -311,16 +311,17 @@ class ViewerComponent extends React.Component {
           redirectToDashboard();
           return <Navigate replace to={'/'} />;
         } else if (statusCode === 401) {
-          window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${
-            this.props.location.pathname
-          }`;
+          window.location = `${getSubpath() ?? ''}/login${
+            !_.isEmpty(getWorkspaceId()) ? `/${getWorkspaceId()}` : ''
+          }?redirectTo=${this.props.location.pathname}`;
         } else if (statusCode === 404) {
           toast.error(errorDetails?.error ?? 'App not found', {
             position: 'top-center',
           });
+        } else {
+          redirectToDashboard();
+          return <Navigate replace to={'/'} />;
         }
-        redirectToDashboard();
-        return <Navigate replace to={'/'} />;
       }
     } catch (err) {
       redirectToDashboard();
