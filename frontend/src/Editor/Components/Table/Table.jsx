@@ -1212,7 +1212,7 @@ export function Table({
                   </button>
                 </>
               ) : (
-                <span data-cy={`footer-number-of-records`}>
+                <span data-cy={`footer-number-of-records`} className="font-weight-500 text-black-000">
                   {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
                   {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
                 </span>

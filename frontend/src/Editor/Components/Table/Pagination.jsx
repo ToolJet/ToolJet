@@ -77,7 +77,7 @@ export const Pagination = function Pagination({
         <Button.Content iconSrc={'assets/images/icons/chevron-left.svg'} />
       </Button.UnstyledButton>
 
-      <div className="d-flex" data-cy={`page-index-details`}>
+      <div className="d-flex tj-text-xsm text-black-000 font-weight-500" data-cy={`page-index-details`}>
         {serverSide && <span>{pageIndex}</span>}
         {!serverSide && (
           <>
@@ -89,7 +89,7 @@ export const Pagination = function Pagination({
                 if (event.target.value <= pageCount) gotoPage(event.target.value);
               }}
             />
-            <span className="mx-1" data-cy={`total-page-number-${autoPageOptions.length || 1}`}>
+            <span className="mx-1 " data-cy={`total-page-number-${autoPageOptions.length || 1}`}>
               / {pageCount || 1}
             </span>
           </>
