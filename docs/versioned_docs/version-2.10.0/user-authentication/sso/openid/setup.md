@@ -3,7 +3,7 @@ id: setup
 title: Setup
 ---
 
-<div className='badge badge--primary heading-badge'>Available on: Enterprise Edition</div>
+<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
 # Configure OpenId Connect Single Sign-on
 

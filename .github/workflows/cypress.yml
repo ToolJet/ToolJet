@@ -105,6 +105,9 @@ jobs:
             sleep 5
           done'
 
+      - name: docker logs
+        run: sudo docker logs postgrest
+
       - name: Create Cypress environment file
         id: create-json
         uses: jsdaniell/create-json@1.1.2
@@ -129,6 +132,7 @@ jobs:
         with:
           name: screenshots
           path: cypress-tests/cypress/screenshots
+
 
   Cypress-Platform:
     runs-on: ubuntu-22.04

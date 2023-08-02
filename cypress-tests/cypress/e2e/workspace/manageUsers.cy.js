@@ -120,7 +120,7 @@ describe("Manage Users", () => {
       });
 
     common.logout();
-    cy.visit('/')
+    cy.visit('/');
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
     cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
     cy.get(commonSelectors.loginButton).click();

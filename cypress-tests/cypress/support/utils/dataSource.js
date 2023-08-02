@@ -47,7 +47,7 @@ export const deleteDatasource = (datasourceName) => {
     });
   cy.get('[data-cy="yes-button"]').click();
 
-  cy.wait(1000)
+  cy.wait(1000);
   cy.get("body").then(($body) => {
     if (
       $body.find(`[data-cy="${cyParamName(datasourceName)}-button"]`).length > 0

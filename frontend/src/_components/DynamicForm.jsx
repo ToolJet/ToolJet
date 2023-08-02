@@ -223,7 +223,7 @@ const DynamicForm = ({
         if (!isEditorActive) {
           isRenderedAsQueryEditor = false;
         } else {
-          isRenderedAsQueryEditor = currentState != null;
+          isRenderedAsQueryEditor = !isGDS && currentState != null;
         }
         return {
           getter: key,
