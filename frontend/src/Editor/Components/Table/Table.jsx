@@ -925,23 +925,6 @@ export function Table({
               />
             )}
             <div>
-              {showAddNewRowButton && (
-                <button
-                  className="btn btn-light btn-sm p-1 mx-1"
-                  onClick={(e) => {
-                    showAddNewRowPopup();
-                  }}
-                  data-tooltip-id="tooltip-for-add-new-row"
-                  data-tooltip-content="Add new row"
-                  disabled={tableDetails.addNewRowsDetails.addingNewRows}
-                >
-                  <img src="assets/images/icons/plus.svg" width="15" height="15" />
-                  {!tableDetails.addNewRowsDetails.addingNewRows &&
-                    !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
-                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                    )}
-                </button>
-              )}
               <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
               {showFilterButton && (
                 <>
@@ -958,74 +941,6 @@ export function Table({
                   </span>
                   <Tooltip id="tooltip-for-filter-data" className="tooltip" />
                 </>
-              )}
-              {showDownloadButton && (
-                <>
-                  <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
-                    <span
-                      className="btn btn-light btn-sm p-1"
-                      data-tooltip-id="tooltip-for-download"
-                      data-tooltip-content="Download"
-                    >
-                      <img src="assets/images/icons/download.svg" width="15" height="15" />
-                    </span>
-                  </OverlayTrigger>
-                  <Tooltip id="tooltip-for-download" className="tooltip" />
-                </>
-              )}
-              {!hideColumnSelectorButton && (
-                <OverlayTrigger
-                  trigger="click"
-                  rootClose={true}
-                  overlay={
-                    <Popover>
-                      <div
-                        data-cy={`dropdown-hide-column`}
-                        className={`dropdown-table-column-hide-common ${
-                          darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
-                        } `}
-                      >
-                        <div className="dropdown-item">
-                          <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
-                          <span className="hide-column-name" data-cy={`options-select-all-coloumn`}>
-                            Select All
-                          </span>
-                        </div>
-                        {allColumns.map(
-                          (column) =>
-                            typeof column.Header === 'string' && (
-                              <div key={column.id}>
-                                <div>
-                                  <label className="dropdown-item">
-                                    <input
-                                      type="checkbox"
-                                      data-cy={`checkbox-coloumn-${String(column.Header)
-                                        .toLowerCase()
-                                        .replace(/\s+/g, '-')}`}
-                                      {...column.getToggleHiddenProps()}
-                                    />
-                                    <span
-                                      className="hide-column-name"
-                                      data-cy={`options-coloumn-${String(column.Header)
-                                        .toLowerCase()
-                                        .replace(/\s+/g, '-')}`}
-                                    >
-                                      {` ${column.Header}`}
-                                    </span>
-                                  </label>
-                                </div>
-                              </div>
-                            )
-                        )}
-                      </div>
-                    </Popover>
-                  }
-                  placement={'bottom-end'}
-                >
-                  <span data-cy={`select-column-icon`} className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
-                    <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
-                  </span>
-                </OverlayTrigger>
               )}
             </div>
           </div>
@@ -1274,24 +1189,7 @@ export function Table({
       {(clientSidePagination || serverSidePagination || Object.keys(tableDetails.changeSet || {}).length > 0) && (
         <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
           <div className="table-footer row gx-0">
-            <div className="col">
-              {(clientSidePagination || serverSidePagination) && (
-                <Pagination
-                  lastActivePageIndex={pageIndex}
-                  serverSide={serverSidePagination}
-                  autoGotoPage={gotoPage}
-                  autoCanNextPage={canNextPage}
-                  autoPageCount={pageCount}
-                  autoPageOptions={pageOptions}
-                  onPageIndexChanged={onPageIndexChanged}
-                  pageIndex={paginationInternalPageIndex}
-                  setPageIndex={setPaginationInternalPageIndex}
-                  enableNextButton={enableNextButton}
-                  enablePrevButton={enablePrevButton}
-                />
-              )}
-            </div>
-            <div className="col d-flex justify-content-end">
+            <div className="col d-flex justify-content-start">
               {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
                 <>
                   <button
@@ -1318,6 +1216,111 @@ export function Table({
                   {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
                   {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
                 </span>
+              )}
+            </div>
+            <div className="col d-flex justify-content-center">
+              {(clientSidePagination || serverSidePagination) && (
+                <Pagination
+                  lastActivePageIndex={pageIndex}
+                  serverSide={serverSidePagination}
+                  autoGotoPage={gotoPage}
+                  autoCanNextPage={canNextPage}
+                  autoPageCount={pageCount}
+                  autoPageOptions={pageOptions}
+                  onPageIndexChanged={onPageIndexChanged}
+                  pageIndex={paginationInternalPageIndex}
+                  setPageIndex={setPaginationInternalPageIndex}
+                  enableNextButton={enableNextButton}
+                  enablePrevButton={enablePrevButton}
+                  darkMode={darkMode}
+                />
+              )}
+            </div>
+            <div className="col d-flex justify-content-end">
+              {showAddNewRowButton && (
+                <button
+                  className="btn btn-light btn-sm p-1 mx-1"
+                  onClick={(e) => {
+                    showAddNewRowPopup();
+                  }}
+                  data-tooltip-id="tooltip-for-add-new-row"
+                  data-tooltip-content="Add new row"
+                  disabled={tableDetails.addNewRowsDetails.addingNewRows}
+                >
+                  <img src="assets/images/icons/plus.svg" width="15" height="15" />
+                  {!tableDetails.addNewRowsDetails.addingNewRows &&
+                    !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
+                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                    )}
+                </button>
+              )}
+              {showDownloadButton && (
+                <>
+                  <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
+                    <span
+                      className="btn btn-light btn-sm p-1"
+                      data-tooltip-id="tooltip-for-download"
+                      data-tooltip-content="Download"
+                    >
+                      <img src="assets/images/icons/download.svg" width="15" height="15" />
+                    </span>
+                  </OverlayTrigger>
+                  <Tooltip id="tooltip-for-download" className="tooltip" />
+                </>
+              )}
+              {!hideColumnSelectorButton && (
+                <OverlayTrigger
+                  trigger="click"
+                  rootClose={true}
+                  overlay={
+                    <Popover>
+                      <div
+                        data-cy={`dropdown-hide-column`}
+                        className={`dropdown-table-column-hide-common ${
+                          darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
+                        } `}
+                      >
+                        <div className="dropdown-item">
+                          <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
+                          <span className="hide-column-name" data-cy={`options-select-all-coloumn`}>
+                            Select All
+                          </span>
+                        </div>
+                        {allColumns.map(
+                          (column) =>
+                            typeof column.Header === 'string' && (
+                              <div key={column.id}>
+                                <div>
+                                  <label className="dropdown-item">
+                                    <input
+                                      type="checkbox"
+                                      data-cy={`checkbox-coloumn-${String(column.Header)
+                                        .toLowerCase()
+                                        .replace(/\s+/g, '-')}`}
+                                      {...column.getToggleHiddenProps()}
+                                    />
+                                    <span
+                                      className="hide-column-name"
+                                      data-cy={`options-coloumn-${String(column.Header)
+                                        .toLowerCase()
+                                        .replace(/\s+/g, '-')}`}
+                                    >
+                                      {` ${column.Header}`}
+                                    </span>
+                                  </label>
+                                </div>
+                              </div>
+                            )
+                        )}
+                      </div>
+                    </Popover>
+                  }
+                  placement={'bottom-end'}
+                >
+                  <span data-cy={`select-column-icon`} className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
+                    <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
+                  </span>
+                </OverlayTrigger>
               )}
             </div>
           </div>
