@@ -50,7 +50,7 @@ export const Profile = function Header({ darkMode }) {
         >
           <SolidIcon name="user" width="20" />
 
-          <span>{t('header.profile', 'Profile')}</span>
+          <span>{t('header.profileSettings', 'Profile settings')}</span>
         </Link>
 
         <Link
