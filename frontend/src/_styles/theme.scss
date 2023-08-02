@@ -3298,9 +3298,9 @@ input:focus-visible {
     }
   }
 
-  .jet-table {
-    background-color: #1f2936 !important;
-  }
+  // .jet-table {
+  //   background-color: #1f2936 !important;
+  // }
 
   .jet-container {
     background-color: #1f2936;
@@ -10952,4 +10952,7 @@ tbody {
     background-color: #F1F3F5;
     color: #C1C8CD;
   }
+}
+.jet-table {
+  background-color: var(--base) !important;
 }
