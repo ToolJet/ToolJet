@@ -10801,7 +10801,7 @@ tbody {
 
   .tj-text-input {
     width: auto !important;
-    background: var(--slate7);
+    background: var(--slate3);
     color: var(--slate9);
     height: auto !important;
     margin-bottom: 5px;
@@ -11009,5 +11009,11 @@ tbody {
   .released-button {
     background-color: #F1F3F5;
     color: #C1C8CD;
+  }
+}
+
+.app-slug-container {
+  .label {
+    font-size: 9px !important;
   }
 }

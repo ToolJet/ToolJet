@@ -88,6 +88,9 @@ export default function EditorHeader({
                       darkMode={darkMode}
                       toggleAppMaintenance={toggleAppMaintenance}
                       is_maintenance_on={is_maintenance_on}
+                      appId={appId}
+                      appSlug={slug}
+                      handleSlugChange={handleSlugChange}
                     />
                     <EditAppName appId={app.id} appName={app.name} onNameChanged={onNameChanged} />
                   </div>

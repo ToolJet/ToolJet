@@ -915,79 +915,81 @@ export const validateName = (
     };
   }
 
-  //check for alphanumeric
-  if (!allowSpecialChars && newName.match(/^[a-z0-9 -]+$/) === null) {
-    if (/[A-Z]/.test(newName)) {
-      errorMsg = 'Only lowercase letters are accepted.';
-    } else {
-      errorMsg = `Special characters are not accepted.`;
+  if (newName) {
+    //check for alphanumeric
+    if (!allowSpecialChars && newName.match(/^[a-z0-9 -]+$/) === null) {
+      if (/[A-Z]/.test(newName)) {
+        errorMsg = 'Only lowercase letters are accepted.';
+      } else {
+        errorMsg = `Special characters are not accepted.`;
+      }
+      showError &&
+        toast.error(errorMsg, {
+          id: '2',
+        });
+      return {
+        status: false,
+        errorMsg,
+      };
     }
-    showError &&
-      toast.error(errorMsg, {
-        id: '2',
-      });
-    return {
-      status: false,
-      errorMsg,
-    };
-  }
 
-  if (!allowSpaces && /\s/g.test(newName)) {
-    errorMsg = 'Cannot contain spaces';
-    showError &&
-      toast.error(errorMsg, {
-        id: '3',
-      });
-    return {
-      status: false,
-      errorMsg,
-    };
-  }
+    if (!allowSpaces && /\s/g.test(newName)) {
+      errorMsg = 'Cannot contain spaces';
+      showError &&
+        toast.error(errorMsg, {
+          id: '3',
+        });
+      return {
+        status: false,
+        errorMsg,
+      };
+    }
 
-  if (newName.length > 50) {
-    errorMsg = `Maximum length has been reached.`;
-    showError &&
-      toast.error(errorMsg, {
-        id: '3',
-      });
-    return {
-      status: false,
-      errorMsg,
-    };
-  }
+    if (newName.length > 50) {
+      errorMsg = `Maximum length has been reached.`;
+      showError &&
+        toast.error(errorMsg, {
+          id: '3',
+        });
+      return {
+        status: false,
+        errorMsg,
+      };
+    }
 
-  const reservedPaths = [
-    'forgot-password',
-    'switch-workspace',
-    'reset-password',
-    'invitations',
-    'organization-invitations',
-    'sso',
-    'setup',
-    'confirm',
-    ':workspaceId',
-    'confirm-invite',
-    'oauth2',
-    'applications',
-    'integrations',
-    'login',
-    'signup',
-    'workspace-settings',
-    'settings',
-    'global-datasources',
-    'database',
-  ];
+    const reservedPaths = [
+      'forgot-password',
+      'switch-workspace',
+      'reset-password',
+      'invitations',
+      'organization-invitations',
+      'sso',
+      'setup',
+      'confirm',
+      ':workspaceId',
+      'confirm-invite',
+      'oauth2',
+      'applications',
+      'integrations',
+      'login',
+      'signup',
+      'workspace-settings',
+      'settings',
+      'global-datasources',
+      'database',
+    ];
 
-  if (checkReservedWords && reservedPaths.includes(newName)) {
-    errorMsg = `Reserved words are not allowed.`;
-    showError &&
-      toast.error(errorMsg, {
-        id: '3',
-      });
-    return {
-      status: false,
-      errorMsg,
-    };
+    if (checkReservedWords && reservedPaths.includes(newName)) {
+      errorMsg = `Reserved words are not allowed.`;
+      showError &&
+        toast.error(errorMsg, {
+          id: '3',
+        });
+      return {
+        status: false,
+        errorMsg,
+      };
+    }
   }
 
   return {
@@ -1029,3 +1031,5 @@ export const redirectToDashboard = (data) => {
   window.location = getSubpath() ? `${getSubpath()}/${id_slug}` : `/${id_slug}`;
 };
 export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
+
+export const getHostURL = () => `${window.public_config?.TOOLJET_HOST}${getSubpath() ?? ''}`;
