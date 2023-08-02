@@ -33,6 +33,11 @@ import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
 
+import { Component } from 'src/entities/component.entity';
+import { Page } from 'src/entities/page.entity';
+import { EventHandler } from 'src/entities/event_handler.entity';
+import { Layout } from 'src/entities/layout.entity';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -52,6 +57,10 @@ import { AppEnvironmentService } from '@services/app_environments.service';
       Credential,
       File,
       Plugin,
+      Component,
+      Page,
+      EventHandler,
+      Layout,
     ]),
     CaslModule,
   ],
