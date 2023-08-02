@@ -135,13 +135,41 @@ return [row for row in data if row['amount'] > 1000]
     };
   };
 
+  const labelPopoverContent = (
+    <Popover id="transformation-popover-container">
+      <p className="transformation-popover" data-cy={`transformation-popover`}>
+        {t(
+          'editor.queryManager.transformation.transformationToolTip',
+          'Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python'
+        )}
+        <br />
+        <a href="https://docs.tooljet.io/docs/tutorial/transformations" target="_blank" rel="noreferrer">
+          {t('globals.readDocumentation', 'Read documentation')}
+        </a>
+        .
+      </p>
+    </Popover>
+  );
+
   return (
     <div className="field  transformation-editor">
       <div className="align-items-center gap-2" style={{ display: 'flex', position: 'relative', height: '20px' }}>
         <div className="d-flex flex-fill">
-          <span className="color-slate9 font-weight-500 form-label" data-cy={'label-query-transformation'}>
-            {t('editor.queryManager.transformation.transformations', 'Transformations')}
-          </span>
+          <OverlayTrigger
+            trigger="click"
+            placement="top"
+            rootClose
+            overlay={labelPopoverContent}
+            container={document.getElementsByClassName('query-details')[0]}
+          >
+            <span
+              className="color-slate9 font-weight-500 form-label"
+              data-cy={'label-query-transformation'}
+              style={{ textDecoration: 'underline 2px dashed', textDecorationColor: 'var(--slate8)' }}
+            >
+              {t('editor.queryManager.transformation.transformations', 'Transformations')}
+            </span>
+          </OverlayTrigger>
           <div className="flex-grow-l">
             <div className=" d-flex">
               <div className="mb-0">
