@@ -209,6 +209,7 @@ describe("dashboard", () => {
     common.logout();
 
     cy.appUILogin();
+    cy.wait(2000)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(
@@ -252,6 +253,7 @@ describe("dashboard", () => {
 
     common.logout();
     cy.appUILogin();
+    cy.wait(2000)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
@@ -276,6 +278,7 @@ describe("dashboard", () => {
 
     common.logout();
     cy.appUILogin();
+    cy.wait(2000)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
@@ -299,6 +302,7 @@ describe("dashboard", () => {
     common.logout();
 
     cy.appUILogin();
+    cy.wait(2000)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
@@ -331,6 +335,7 @@ describe("dashboard", () => {
 
     common.logout();
     cy.appUILogin();
+    cy.wait(2000)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(
@@ -356,6 +361,7 @@ describe("dashboard", () => {
     common.logout();
 
     cy.appUILogin();
+    cy.wait(2000)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.get(instanceSettingsSelector.manageInstanceSettings).click();
     cy.get(instanceSettingsSelector.allowWorkspaceToggle).then(($el) => {
@@ -379,6 +385,7 @@ describe("dashboard", () => {
       "User is not assigned to any workspaces"
     );
     cy.appUILogin();
+    cy.wait(2000)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.viewButton(data.firstName)).click();
@@ -431,6 +438,7 @@ describe("dashboard", () => {
     cy.get(commonSelectors.createAnAccountLink).should("not.exist");
 
     cy.appUILogin();
+    cy.wait(2000)
     addNewUser(data.firstName, data.email);
     cy.get(commonSelectors.workspaceName).click();
     cy.contains(data.email).should("not.exist");
@@ -438,6 +446,7 @@ describe("dashboard", () => {
 
     common.logout();
     cy.appUILogin();
+    cy.wait(2000)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(
@@ -479,6 +488,7 @@ describe("dashboard", () => {
     common.logout();
 
     cy.appUILogin();
+    cy.wait(2000)
     cy.get(commonEeSelectors.instanceSettingIcon).click();
     cy.clearAndType(commonSelectors.inputUserSearch, data.email);
     cy.get(instanceSettingsSelector.editButton(data.firstName)).click();

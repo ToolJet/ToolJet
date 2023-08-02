@@ -355,7 +355,6 @@ export const WorkspaceInvitationLink = (email) => {
 
           url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
           common.logout();
-          cy.wait(1000);
           cy.visit(url);
         });
       });
