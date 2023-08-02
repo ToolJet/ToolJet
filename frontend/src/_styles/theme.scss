@@ -10953,6 +10953,8 @@ tbody {
     color: #C1C8CD;
   }
 }
-.jet-table {
-  background-color: var(--base) !important;
+.jet-table.table-component{
+  &.jet-table {
+    background-color: var(--base) !important;
+  }
 }
