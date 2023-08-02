@@ -498,7 +498,8 @@ export function Table({
         component.definition.properties?.columnDeletionHistory?.value ?? [],
         useDynamicColumn,
         dynamicColumn,
-        setProperty
+        setProperty,
+        component.definition.properties.autogenerateColumns?.generateNestedColumns ?? false
       );
 
       useDynamicColumn && setGeneratedColumn(generatedColumnFromData);

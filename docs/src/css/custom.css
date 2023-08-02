@@ -155,6 +155,11 @@ body {
   font-size: 0.8rem;
 }
 
+img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
 .menu__link--sublist:after {
   padding-top: 0.3rem;
   height: 0.6rem;
