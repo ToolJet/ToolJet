@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
-import { uniqueId } from 'lodash';
+import { isEmpty, uniqueId } from 'lodash';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
@@ -71,6 +71,7 @@ export const DeleteRows = React.memo(({ darkMode }) => {
             onClick={() => {
               addNewFilterConditionPair();
             }}
+            className={isEmpty(deleteRowsOptions?.where_filters || {}) ? '' : 'mt-2'}
           >
             <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path

@@ -3,7 +3,7 @@ import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
-import { uniqueId } from 'lodash';
+import { isEmpty, uniqueId } from 'lodash';
 import { isOperatorOptions } from './util';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
@@ -109,11 +109,11 @@ export const UpdateRows = React.memo(({ darkMode }) => {
         </div>
       </div>
 
-      <div className="fields-container">
+      <div className="fields-container d-flex">
         <label className="form-label" data-cy="label-column-filter">
           Columns
         </label>
-        <div className="field-container">
+        <div className="field-container flex-grow-1">
           {Object.entries(updateRowsOptions?.columns).map(([key, value]) => {
             return (
               <RenderColumnOptions
@@ -134,8 +134,8 @@ export const UpdateRows = React.memo(({ darkMode }) => {
             <ButtonSolid
               variant="ghostBlue"
               size="sm"
-              className="cursor-pointer pb-3 fit-content"
               onClick={addNewColumnOptionsPair}
+              className={`cursor-pointer pb-3 fit-content ${isEmpty(updateRowsOptions?.columns) ? '' : 'mt-2'}`}
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path

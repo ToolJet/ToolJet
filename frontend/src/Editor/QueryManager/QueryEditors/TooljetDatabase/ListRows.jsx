@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
-import { uniqueId } from 'lodash';
+import { isEmpty, uniqueId } from 'lodash';
 import Select from '@/_ui/Select';
 import { operators } from '@/TooljetDatabase/constants';
 import { isOperatorOptions } from './util';
@@ -105,6 +105,7 @@ export const ListRows = React.memo(({ darkMode }) => {
                 onClick={() => {
                   addNewFilterConditionPair();
                 }}
+                className={isEmpty(listRowsOptions?.where_filters || {}) ? '' : 'mt-2'}
               >
                 <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -139,6 +140,7 @@ export const ListRows = React.memo(({ darkMode }) => {
                 onClick={() => {
                   addNewSortConditionPair();
                 }}
+                className={isEmpty(listRowsOptions?.order_filters || {}) ? '' : 'mt-2'}
               >
                 <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path

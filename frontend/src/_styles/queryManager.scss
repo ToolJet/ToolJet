@@ -1152,7 +1152,7 @@ $border-radius: 4px;
 
       .code-hinter.codehinter-default-input {
         border-style: solid !important;
-        border-color: $color-light-slate-07 !important;
+        border-color: var(--slate7) !important;
         // border-radius: 0 6px 6px 0 !important;
         border-radius: 6px !important;
   
