@@ -33,35 +33,35 @@ appService
         },
       });
 
-    // if (window.public_config.APM_VENDOR !== 'sentry') {
-    const tooljetServerUrl = window.public_config.TOOLJET_SERVER_URL;
-    const tracingOrigins = ['localhost', /^\//];
-    const releaseVersion = window.public_config.RELEASE_VERSION
-      ? `tooljet-${window.public_config.RELEASE_VERSION}`
-      : 'tooljet';
+    if (window.public_config.APM_VENDOR === 'sentry') {
+      const tooljetServerUrl = window.public_config.TOOLJET_SERVER_URL;
+      const tracingOrigins = ['localhost', /^\//];
+      const releaseVersion = window.public_config.RELEASE_VERSION
+        ? `tooljet-${window.public_config.RELEASE_VERSION}`
+        : 'tooljet';
 
-    if (tooljetServerUrl) tracingOrigins.push(tooljetServerUrl);
+      if (tooljetServerUrl) tracingOrigins.push(tooljetServerUrl);
 
-    Sentry.init({
-      dsn: window.public_config.SENTRY_DNS,
-      debug: false,
-      release: releaseVersion,
-      name: 'react',
-      integrations: [
-        new Sentry.BrowserTracing({
-          routingInstrumentation: Sentry.reactRouterV6Instrumentation(
-            React.useEffect,
-            useLocation,
-            useNavigationType,
-            createRoutesFromChildren,
-            matchRoutes
-          ),
-        }),
-      ],
-      tracesSampleRate: 1.0,
-      tracePropagationTargets: tracingOrigins,
-    });
-    // }
+      Sentry.init({
+        dsn: window.public_config.SENTRY_DNS,
+        debug: false,
+        release: releaseVersion,
+        name: 'react',
+        integrations: [
+          new Sentry.BrowserTracing({
+            routingInstrumentation: Sentry.reactRouterV6Instrumentation(
+              React.useEffect,
+              useLocation,
+              useNavigationType,
+              createRoutesFromChildren,
+              matchRoutes
+            ),
+          }),
+        ],
+        tracesSampleRate: 0.5,
+        tracePropagationTargets: tracingOrigins,
+      });
+    }
   })
   .then(() => render(<AppWithProfiler />, document.getElementById('app')));
 // .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));

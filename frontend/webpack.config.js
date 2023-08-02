@@ -6,9 +6,9 @@ const TerserPlugin = require('terser-webpack-plugin');
 require('dotenv').config({ path: '../.env' });
 const hash = require('string-hash');
 const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
-// const fs = require('fs');
-// const versionFilePath = '../.version';
-// const version = fs.readFileSync(versionFilePath, 'utf-8').trim();
+const fs = require('fs');
+const versionPath = path.resolve(__dirname, '../.version');
+const version = fs.readFileSync(versionPath, 'utf-8').trim();
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 
@@ -57,8 +57,7 @@ module.exports = {
       '@assets': path.resolve(__dirname, 'assets/'),
     },
   },
-  // devtool: environment === 'development' ? 'eval-cheap-source-map' : false,
-  devtool: 'source-map', // Source map generation must be turned on
+  devtool: environment === 'development' ? 'eval-cheap-source-map' : 'hidden-source-map',
   module: {
     rules: [
       {
@@ -156,13 +155,15 @@ module.exports = {
       'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
       'process.env.SERVE_CLIENT': JSON.stringify(process.env.SERVE_CLIENT),
     }),
+    // Add Sentry plugin for error and performance monitoring
     sentryWebpackPlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
-      // release: {
-      //   name: version,
-      // },
+      release: {
+        // The version should be same as what its when we are sending error events
+        name: `tooljet-${version}`,
+      },
     }),
   ],
   devServer: {
