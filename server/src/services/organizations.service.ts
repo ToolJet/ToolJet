@@ -598,7 +598,7 @@ export class OrganizationsService {
             user.email,
             user.firstName,
             user.invitationToken,
-            `${organizationUser.invitationToken}`,
+            organizationUser.invitationToken,
             organizationUser.organizationId,
             currentOrganization.name,
             `${currentUser.firstName} ${currentUser.lastName ?? ''}`

@@ -76,7 +76,7 @@ export class EmailService {
     sender?: string
   ) {
     const subject = 'Welcome to ToolJet';
-    const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId, null);
+    const inviteUrl = generateInviteURL(invitationtoken, organizationInvitationToken, organizationId);
     const html = `
       <!DOCTYPE html>
       <html>
