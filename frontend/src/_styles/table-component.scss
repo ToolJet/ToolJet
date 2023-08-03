@@ -1,0 +1,77 @@
+@import "./typography.scss";
+@import "./designtheme.scss";
+
+
+.jet-table.table-component{
+    background-color: var(--base) !important; 
+    .card-footer,.card{
+      background-color:var(--base) !important;
+    }
+    .card{
+        border: 1px solid var(--slate3) !important;
+    }
+    
+}
+.text-black-000{
+    color: var(--text-black-000) !important;
+}
+.table-filters,
+.table-add-new-row {
+  position: absolute;
+  top: 2.85rem;
+  width: 80%;
+  max-width: 700px;
+  margin-right: 10%;
+  right: 0;
+  height: 300px;
+  z-index: 100;
+}
+
+
+/*
+    table footer
+*/
+// download pop-up in the table widget
+.table-widget-download-popup {
+    background-color: var(--base) !important;
+    color: var(--slate12) !important;
+    padding: 4px 0;
+    border-radius: 6px;
+    width: fit-content;
+    border: 1px solid var(--slate3) !important;
+    .popover-body{
+        color: inherit;
+    }
+    .cursor-pointer {
+      width: 130px;
+      &:hover {
+        font-weight: bolder;
+      }
+    }
+}
+// hidecolumn popover in table footer
+.dropdown-table-column-hide-common {
+    width: 100%;
+    color : var(--slate12) !important;
+    height: 100% !important;
+    .dropdown-item{
+      height: 36px;
+      width: 100%;
+      padding: 8px 24px;
+      border-radius: 6px;
+      input{
+        width: 16px;
+        height: 16px;
+      }
+    }
+    overflow-wrap: wrap;
+}
+.popover:has(.dropdown-table-column-hide-common){
+    border : 1px solid var(--slate3) !important;
+    background-color: var(--base) !important;
+    padding: 4px 0;
+    border-radius: 6px;
+}
+.hide-column-name {
+  padding-left: 4px !important;
+}

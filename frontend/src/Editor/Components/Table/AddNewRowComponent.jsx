@@ -59,7 +59,7 @@ export function AddNewRowComponent({
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = newRowData;
 
   return (
-    <div className="table-add-new-row card">
+    <div className={`table-add-new-row card ${darkMode && 'dark-theme'}`}>
       <div className="card-header row">
         <div className="col">
           <h4 data-cy={`header-filters`} className="font-weight-normal">
@@ -75,7 +75,7 @@ export function AddNewRowComponent({
       <div className="table-responsive jet-data-table">
         <table
           {...getTableProps()}
-          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'}`}
+          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'dark-theme'}`}
         >
           <thead>
             {headerGroups.map((headerGroup, index) => {

@@ -46,6 +46,8 @@ import GenerateEachCellValue from './GenerateEachCellValue';
 import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -860,8 +862,8 @@ export function Table({
       <Popover
         id="popover-basic"
         data-cy="popover-card"
-        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow table-widget-download-popup`}
-        placement="bottom"
+        className={`${darkMode && 'dark-theme'} shadow table-widget-download-popup`}
+        placement="top-end"
       >
         <Popover.Body>
           <div className="d-flex flex-column">
@@ -887,11 +889,58 @@ export function Table({
       </Popover>
     );
   }
+
+  function hideColumnsPopover() {
+    const heightOfTableComponent = document.querySelector('.card.jet-table.table-component')?.offsetHeight;
+    return (
+      <Popover
+        className={`${darkMode && 'dark-theme'}`}
+        style={{ maxHeight: `${heightOfTableComponent - 79}px`, overflowY: 'auto' }}
+      >
+        <div
+          data-cy={`dropdown-hide-column`}
+          className={`dropdown-table-column-hide-common ${
+            darkMode ? 'dropdown-table-column-hide-dark-themed dark-theme' : 'dropdown-table-column-hide'
+          } `}
+          placement="top-end"
+        >
+          <div className="dropdown-item">
+            <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
+            <span className="hide-column-name tj-text-xsm" data-cy={`options-select-all-coloumn`}>
+              Select All
+            </span>
+          </div>
+          {allColumns.map(
+            (column) =>
+              typeof column.Header === 'string' && (
+                <div key={column.id}>
+                  <div>
+                    <label className="dropdown-item">
+                      <input
+                        type="checkbox"
+                        data-cy={`checkbox-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
+                        {...column.getToggleHiddenProps()}
+                      />
+                      <span
+                        className="hide-column-name tj-text-xsm"
+                        data-cy={`options-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
+                      >
+                        {` ${column.Header}`}
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              )
+          )}
+        </div>
+      </Popover>
+    );
+  }
   return (
     <div
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       data-disabled={parsedDisabledState}
-      className="card jet-table table-component"
+      className={`card jet-table table-component ${darkMode && 'dark-theme'}`}
       style={{
         width: `100%`,
         height: `${height}px`,
@@ -906,7 +955,7 @@ export function Table({
       ref={tableRef}
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
-      {(displaySearchBox || showDownloadButton || showFilterButton || showAddNewRowButton) && (
+      {(displaySearchBox || showFilterButton) && (
         <div className={`card-body border-bottom py-3 ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'}`}>
           <div
             className={`d-flex align-items-center ms-auto text-muted ${
@@ -1186,9 +1235,17 @@ export function Table({
           </div>
         )}
       </div>
-      {(clientSidePagination || serverSidePagination || Object.keys(tableDetails.changeSet || {}).length > 0) && (
-        <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
-          <div className="table-footer row gx-0">
+      {(clientSidePagination ||
+        serverSidePagination ||
+        Object.keys(tableDetails.changeSet || {}).length > 0 ||
+        showAddNewRowButton ||
+        showDownloadButton) && (
+        <div
+          className={`card-footer d-flex align-items-center jet-table-footer justify-content-center ${
+            darkMode && 'dark-theme'
+          }`}
+        >
+          <div className={`table-footer row gx-0 d-flex align-items-center`}>
             <div className="col d-flex justify-content-start">
               {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
                 <>
@@ -1236,89 +1293,67 @@ export function Table({
                 />
               )}
             </div>
-            <div className="col d-flex justify-content-end">
+            <div className="col d-flex justify-content-end ">
               {showAddNewRowButton && (
-                <button
-                  className="btn btn-light btn-sm p-1 mx-1"
-                  onClick={(e) => {
-                    showAddNewRowPopup();
-                  }}
-                  data-tooltip-id="tooltip-for-add-new-row"
-                  data-tooltip-content="Add new row"
-                  disabled={tableDetails.addNewRowsDetails.addingNewRows}
-                >
-                  <img src="assets/images/icons/plus.svg" width="15" height="15" />
-                  {!tableDetails.addNewRowsDetails.addingNewRows &&
+                <div>
+                  {' '}
+                  <ButtonSolid
+                    variant="ghostBlack"
+                    className="tj-text-xsm"
+                    style={{ minWidth: '32px' }}
+                    leftIcon="plus"
+                    fill={darkMode ? '#ECEDEE' : '#11181C'}
+                    iconWidth="16"
+                    onClick={() => {
+                      showAddNewRowPopup();
+                    }}
+                    size="md"
+                    data-tooltip-id="tooltip-for-add-new-row"
+                    data-tooltip-content="Add new row"
+                    disabled={tableDetails.addNewRowsDetails.addingNewRows}
+                  ></ButtonSolid>
+                  {/* {!tableDetails.addNewRowsDetails.addingNewRows &&
                     !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
-                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                    )}
-                </button>
+                      <a className="badge bg-azure" style={{ width: '4px', height: '4px' }}></a>
+                    )} */}
+                </div>
               )}
               {showDownloadButton && (
-                <>
-                  <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
-                    <span
-                      className="btn btn-light btn-sm p-1"
-                      data-tooltip-id="tooltip-for-download"
-                      data-tooltip-content="Download"
-                    >
-                      <img src="assets/images/icons/download.svg" width="15" height="15" />
+                <div>
+                  <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'top-end'}>
+                    <span>
+                      {' '}
+                      <ButtonSolid
+                        variant="ghostBlack"
+                        className="tj-text-xsm"
+                        style={{
+                          minWidth: '32px',
+                        }}
+                        leftIcon="filedownload"
+                        fill={darkMode ? '#ECEDEE' : '#11181C'}
+                        iconWidth="16"
+                        size="md"
+                        data-tooltip-id="tooltip-for-download"
+                        data-tooltip-content="Download"
+                      ></ButtonSolid>
                     </span>
                   </OverlayTrigger>
-                  <Tooltip id="tooltip-for-download" className="tooltip" />
-                </>
+                </div>
               )}
               {!hideColumnSelectorButton && (
-                <OverlayTrigger
-                  trigger="click"
-                  rootClose={true}
-                  overlay={
-                    <Popover>
-                      <div
-                        data-cy={`dropdown-hide-column`}
-                        className={`dropdown-table-column-hide-common ${
-                          darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
-                        } `}
-                      >
-                        <div className="dropdown-item">
-                          <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
-                          <span className="hide-column-name" data-cy={`options-select-all-coloumn`}>
-                            Select All
-                          </span>
-                        </div>
-                        {allColumns.map(
-                          (column) =>
-                            typeof column.Header === 'string' && (
-                              <div key={column.id}>
-                                <div>
-                                  <label className="dropdown-item">
-                                    <input
-                                      type="checkbox"
-                                      data-cy={`checkbox-coloumn-${String(column.Header)
-                                        .toLowerCase()
-                                        .replace(/\s+/g, '-')}`}
-                                      {...column.getToggleHiddenProps()}
-                                    />
-                                    <span
-                                      className="hide-column-name"
-                                      data-cy={`options-coloumn-${String(column.Header)
-                                        .toLowerCase()
-                                        .replace(/\s+/g, '-')}`}
-                                    >
-                                      {` ${column.Header}`}
-                                    </span>
-                                  </label>
-                                </div>
-                              </div>
-                            )
-                        )}
-                      </div>
-                    </Popover>
-                  }
-                  placement={'bottom-end'}
-                >
-                  <span data-cy={`select-column-icon`} className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
-                    <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
+                <OverlayTrigger trigger="click" rootClose={true} overlay={hideColumnsPopover()} placement={'top-end'}>
+                  <span>
+                    {' '}
+                    <ButtonSolid
+                      variant="ghostBlack"
+                      className="tj-text-xsm"
+                      style={{ minWidth: '32px' }}
+                      leftIcon="eye1"
+                      fill={darkMode ? '#ECEDEE' : '#11181C'}
+                      iconWidth="16"
+                      size="md"
+                      data-cy={`select-column-icon`}
+                    ></ButtonSolid>
                   </span>
                 </OverlayTrigger>
               )}
