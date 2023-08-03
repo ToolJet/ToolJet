@@ -250,7 +250,7 @@ return [row for row in data if row['amount'] > 1000]
           </OverlayTrigger>
         </div>
 
-        <EducativeLebel />
+        {/* <EducativeLebel /> */}
       </div>
       <br></br>
       {enableTransformation && (
@@ -281,7 +281,7 @@ return [row for row in data if row['amount'] > 1000]
               />
             </div>
 
-            <div
+            {/* <div
               data-tooltip-id="tooltip-for-active-copilot"
               data-tooltip-content="Activate Copilot in the workspace settings"
             >
@@ -303,7 +303,7 @@ return [row for row in data if row['amount'] > 1000]
                 className="tooltip"
                 style={{ backgroundColor: '#e6eefe', color: '#222' }}
               />
-            )}
+            )} */}
           </div>
           <div className="border-top mx-3"></div>
           <CodeHinter
