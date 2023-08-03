@@ -909,57 +909,67 @@ export class UsersService {
 
   async createCRMUser(user): Promise<boolean> {
     if (process.env.NODE_ENV === 'test') return true;
-    await got(`${freshDeskBaseUrl}contacts`, {
-      method: 'post',
-      headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
-      json: {
-        contact: {
-          email: user.email,
-          first_name: user.firstName,
-          last_name: user.lastName,
-          custom_field: {
-            job_title: user.role,
+
+    try {
+      await got(`${freshDeskBaseUrl}contacts`, {
+        method: 'post',
+        headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
+        json: {
+          contact: {
+            email: user.email,
+            first_name: user.firstName,
+            last_name: user.lastName,
+            custom_field: {
+              job_title: user.role,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (error) {
+      console.error('error while connection to freshDeskBaseUrl : createCRMUser', error);
+    }
 
     return true;
   }
 
   async updateCRM(user: User): Promise<boolean> {
     if (process.env.NODE_ENV === 'test') return true;
-    const response = await got(`${freshDeskBaseUrl}lookup?q=${user.email}&f=email&entities=contact`, {
-      method: 'get',
-      headers: {
-        Authorization: `Token token=${process.env.FWAPIKey}`,
-        'Content-Type': 'application/json',
-      },
-    });
 
-    const contacts = JSON.parse(response.body)['contacts']['contacts'];
-    let contact = undefined;
+    try {
+      const response = await got(`${freshDeskBaseUrl}lookup?q=${user.email}&f=email&entities=contact`, {
+        method: 'get',
+        headers: {
+          Authorization: `Token token=${process.env.FWAPIKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (contacts) {
-      if (contacts.length > 0) {
-        contact = contacts[0];
+      const contacts = JSON.parse(response.body)['contacts']['contacts'];
+      let contact = undefined;
+
+      if (contacts) {
+        if (contacts.length > 0) {
+          contact = contacts[0];
+        }
       }
-    }
 
-    await got(`${freshDeskBaseUrl}contacts/${contact.id}`, {
-      method: 'put',
-      headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
-      json: {
-        contact: {
-          email: user.email,
-          first_name: user.firstName,
-          last_name: user.lastName,
-          custom_field: {
-            job_title: user.role,
+      await got(`${freshDeskBaseUrl}contacts/${contact.id}`, {
+        method: 'put',
+        headers: { Authorization: `Token token=${process.env.FWAPIKey}`, 'Content-Type': 'application/json' },
+        json: {
+          contact: {
+            email: user.email,
+            first_name: user.firstName,
+            last_name: user.lastName,
+            custom_field: {
+              job_title: user.role,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (error) {
+      console.error('error while connection to freshDeskBaseUrl : updateCRM', error);
+    }
 
     return true;
   }
