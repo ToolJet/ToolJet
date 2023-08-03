@@ -935,18 +935,29 @@ export const EventManager = ({
     );
   };
 
+  const renderAddHandlerBtn = () => {
+    return (
+      <div className={`mb-3 ${events.length === 0 ? '' : 'mt-2'}`}>
+        <ButtonSolid
+          variant="ghostBlue"
+          size="sm"
+          onClick={addHandler}
+          data-cy={events.length === 0 ? 'add-event-handler' : 'add-more-event-handler'}
+        >
+          <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+          &nbsp;&nbsp;
+          {t('editor.inspector.eventManager.addHandler', 'Add handler')}
+        </ButtonSolid>
+      </div>
+    );
+  };
+
   const componentName = componentMeta.name ? componentMeta.name : 'query';
 
   if (events.length === 0) {
     return (
       <>
-        <div className="text-left mb-3">
-          <ButtonSolid variant="ghostBlue" size="sm" onClick={addHandler} data-cy="add-event-handler">
-            <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-            &nbsp;&nbsp;
-            {t('editor.inspector.eventManager.addHandler', 'Add handler')}
-          </ButtonSolid>
-        </div>
+        {renderAddHandlerBtn()}
         {!hideEmptyEventsAlert ? (
           <div className="text-left">
             <small className="color-disabled" data-cy="no-event-handler-message">
@@ -967,13 +978,7 @@ export const EventManager = ({
   return (
     <>
       {renderHandlers(events)}
-      <div className="mb-3">
-        <ButtonSolid variant="ghostBlue" size="sm" onClick={addHandler} data-cy="add-more-event-handler">
-          <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
-          &nbsp;&nbsp;
-          {t('editor.inspector.eventManager.addHandler', 'Add handler')}
-        </ButtonSolid>
-      </div>
+      {renderAddHandlerBtn()}
     </>
   );
 };
