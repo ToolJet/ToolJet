@@ -1870,7 +1870,12 @@ $border-radius: 4px;
 }
 
 
-.query-manager-tooltip{
+.query-manager-tooltip {
   max-width: 800px;
+  overflow-wrap: break-word;
+}
+
+.query-manager-ds-select-tooltip {
+  max-width: 230px;
   overflow-wrap: break-word;
 }

@@ -11,6 +11,7 @@ import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { staticDataSources } from '../constants';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import Search from '@/_ui/Icon/solidIcons/Search';
+import { Tooltip } from 'react-tooltip';
 
 function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
   const dataSources = useDataSources();
@@ -45,7 +46,14 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
         ),
         options: sources.map((source) => ({
           label: (
-            <div className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate">{source.name}</div>
+            <div
+              className="py-2 px-2 rounded option-nested-datasource-selector small text-truncate"
+              data-tooltip-id="tooltip-for-add-query-dd-option"
+              data-tooltip-content={source.name}
+            >
+              {source.name}
+              <Tooltip id="tooltip-for-add-query-dd-option" className="tooltip query-manager-ds-select-tooltip" />
+            </div>
           ),
           value: source.id,
           isNested: true,
