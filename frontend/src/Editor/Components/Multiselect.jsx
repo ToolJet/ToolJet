@@ -195,7 +195,6 @@ export const Multiselect = function Multiselect({
           disabled={disabledState}
           disableCloseOnSelect
           renderOption={(props, option, state, ownerState) => {
-            console.log(props);
             if (option.label === 'Select All') {
               return (
                 <>
