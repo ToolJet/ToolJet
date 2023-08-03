@@ -84,7 +84,7 @@ export function AddNewRowComponent({
                   {headerGroup.headers.map((column, index) => {
                     return (
                       <th key={index} {...column.getHeaderProps()} className="th">
-                        <div>{column.render('Header')}</div>
+                        <div className="tj-text-xsm">{column.render('Header')}</div>
                       </th>
                     );
                   })}

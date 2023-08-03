@@ -28,6 +28,10 @@
 }
 .table-add-new-row{
     color: var(--slate12) !important;
+    .th{
+        background-color: var(--slate3) !important;
+        color: var(--slate12) !important;
+    }
 }
 
 /*
