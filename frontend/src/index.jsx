@@ -6,7 +6,7 @@ import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes }
 import { BrowserTracing } from '@sentry/tracing';
 import { appService } from '@/_services';
 import { App } from './App';
-import * as serviceWorkerRegistration from "./service_worker/register-sw";
+import * as serviceWorkerRegistration from "./ServiceWorker/register";
 // eslint-disable-next-line import/no-unresolved
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
