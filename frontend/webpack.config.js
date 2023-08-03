@@ -3,6 +3,7 @@ const webpack = require('webpack');
 const path = require('path');
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const { InjectManifest } = require("workbox-webpack-plugin");
 require('dotenv').config({ path: '../.env' });
 const hash = require('string-hash');
 
@@ -151,6 +152,10 @@ module.exports = {
       'process.env.ASSET_PATH': JSON.stringify(ASSET_PATH),
       'process.env.SERVE_CLIENT': JSON.stringify(process.env.SERVE_CLIENT),
     }),
+    new InjectManifest({
+        swSrc: "./src/ServiceWorker/index.jsx",
+        swDest: "./service-worker.js",
+      }),
   ],
   devServer: {
     historyApiFallback: { index: ASSET_PATH },
