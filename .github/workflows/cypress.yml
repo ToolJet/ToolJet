@@ -219,7 +219,7 @@ jobs:
         run: cd plugins && npm start &
 
       - name: Run the server
-        run: cd server && npm run start &
+        run: cd server && npm run start:dev &
 
       - name: Run the client
         run: cd frontend && npm start &
