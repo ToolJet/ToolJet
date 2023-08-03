@@ -62,7 +62,7 @@ export function AddNewRowComponent({
     <div className={`table-add-new-row card ${darkMode && 'dark-theme'}`}>
       <div className="card-header row">
         <div className="col">
-          <h4 data-cy={`header-filters`} className="font-weight-normal">
+          <h4 data-cy={`header-filters`} className="font-weight-500 tj-text-lg">
             Add new rows
           </h4>
         </div>
