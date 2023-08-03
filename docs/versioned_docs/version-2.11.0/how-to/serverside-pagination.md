@@ -1,9 +1,9 @@
 ---
 id: use-server-side-pagination
-title: Use server side pagination for large data
+title: Using server side pagination for efficient data handling in tables
 ---
 
-In this guide we will learn how to use server side pagination for large data. This will be helpful if you have a large data set and you want to load data in chunks. This will also help you to improve the performance of your application. This guide will be helpful if you are using datasources like MySQL, PostgreSQL, MSSQL, MongoDB, etc. in which you can use `limit` and `offset` to fetch data in chunks. We have also included an example to load data from Google Sheets in chunks.
+In this guide we will learn how to use server side pagination in table component. This will be helpful if you have a large data set and you want to load data in chunks. This will also help you to improve the performance of your application. This guide will be helpful if you are using datasources like MySQL, PostgreSQL, MSSQL, MongoDB, etc. in which you can use `limit` and `offset` to fetch data in chunks. We have also included an example to load data from Google Sheets in chunks.
 
 ## Loading data from PostgreSQL in chunks
 

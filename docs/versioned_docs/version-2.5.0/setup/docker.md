@@ -13,6 +13,9 @@ Follow the steps below to deploy ToolJet on a server using Docker Compose. ToolJ
 :::info
 If you rather want to try out ToolJet on your local machine with Docker, you can follow the steps [here](/docs/2.5.0/setup/try-tooljet).
 :::
+
+*If you have any questions feel free to join our [Slack Community](https://tooljet.com/slack) or send us an email at hello@tooljet.com.*
+
 ### Installing Docker and Docker Compose
 Install docker and docker-compose on the server.
    - Docs for [Docker Installation](https://docs.docker.com/engine/install/)
