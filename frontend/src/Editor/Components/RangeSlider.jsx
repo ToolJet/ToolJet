@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import config from 'config';
+import SliderMUI from '@mui/joy/Slider';
 
 export const RangeSlider = function RangeSlider({ height, properties, styles, setExposedVariable, fireEvent, dataCy }) {
   const { value, min, max, enableTwoHandle } = properties;
@@ -63,38 +65,95 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
   };
 
   return (
-    <div style={computedStyles} className="range-slider" data-cy={dataCy}>
-      {enableTwoHandle ? (
-        <Slider
-          range
-          min={min}
-          max={max}
-          defaultValue={toArray(rangeValue)}
-          onChange={onRangeChange}
-          onAfterChange={() => fireEvent('onChange')}
-          value={toArray(rangeValue)}
-          ref={sliderRef}
-          trackStyle={rangeStyles.trackStyle}
-          railStyle={rangeStyles.railStyle}
-          handleStyle={rangeStyles.handleStyle}
-        />
-      ) : (
-        <Slider
-          min={min}
-          max={max}
-          defaultValue={sliderValue}
-          value={sliderValue}
-          ref={sliderRef}
-          onChange={onSliderChange}
-          onAfterChange={() => fireEvent('onChange')}
-          trackStyle={{ backgroundColor: trackColor }}
-          railStyle={{ backgroundColor: lineColor }}
-          handleStyle={{
-            backgroundColor: handleColor,
-            borderColor: handleColor,
-          }}
-        />
+    <>
+      {config.UI_LIB === 'tooljet' && (
+        <div style={computedStyles} className="range-slider" data-cy={dataCy}>
+          {enableTwoHandle ? (
+            <Slider
+              range
+              min={min}
+              max={max}
+              defaultValue={toArray(rangeValue)}
+              onChange={onRangeChange}
+              onAfterChange={() => fireEvent('onChange')}
+              value={toArray(rangeValue)}
+              ref={sliderRef}
+              trackStyle={rangeStyles.trackStyle}
+              railStyle={rangeStyles.railStyle}
+              handleStyle={rangeStyles.handleStyle}
+            />
+          ) : (
+            <Slider
+              min={min}
+              max={max}
+              defaultValue={sliderValue}
+              value={sliderValue}
+              ref={sliderRef}
+              onChange={onSliderChange}
+              onAfterChange={() => fireEvent('onChange')}
+              trackStyle={{ backgroundColor: trackColor }}
+              railStyle={{ backgroundColor: lineColor }}
+              handleStyle={{
+                backgroundColor: handleColor,
+                borderColor: handleColor,
+              }}
+            />
+          )}
+        </div>
       )}
-    </div>
+      {config.UI_LIB === 'mui' && (
+        <div style={computedStyles} className="range-slider" data-cy={dataCy}>
+          {!enableTwoHandle ? (
+            <SliderMUI
+              min={min}
+              max={max}
+              ref={sliderRef}
+              value={sliderValue}
+              onChange={(event) => onSliderChange(event.target.value)}
+              sx={{
+                '& .MuiSlider-track': {
+                  backgroundColor: trackColor,
+                },
+                '& .MuiSlider-rail': {
+                  backgroundColor: lineColor,
+                },
+                '& .MuiSlider-thumb': {
+                  '--Slider-thumbColor': handleColor,
+                  backgroundColor: handleColor,
+                  borderColor: handleColor,
+                },
+              }}
+              orientation="horizontal"
+              valueLabelDisplay="auto"
+              variant="solid"
+            />
+          ) : (
+            <SliderMUI
+              min={min}
+              max={max}
+              ref={sliderRef}
+              onChange={(event) => onRangeChange(event.target.value)}
+              value={toArray(rangeValue)}
+              sx={{
+                '& .MuiSlider-track': {
+                  backgroundColor: trackColor,
+                },
+                '& .MuiSlider-rail': {
+                  backgroundColor: lineColor,
+                },
+                '& .MuiSlider-thumb': {
+                  '--Slider-thumbColor': handleColor,
+                  backgroundColor: handleColor,
+                  borderColor: handleColor,
+                },
+              }}
+              orientation="horizontal"
+              valueLabelDisplay="auto"
+              variant="solid"
+            />
+          )}
+        </div>
+      )}
+    </>
   );
 };
