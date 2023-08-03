@@ -6,30 +6,37 @@ import { ListItem } from '../LIstItem';
 import { ConfirmDialog } from '@/_components';
 import { globalDatasourceService } from '@/_services';
 import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg';
-import { OrganizationList } from '@/_components/OrganizationManager/List';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import { SearchBox } from '@/_components/SearchBox';
 
 export const List = ({ updateSelectedDatasource }) => {
-  const { dataSources, fetchDataSources, selectedDataSource, setSelectedDataSource, toggleDataSourceManagerModal } =
-    useContext(GlobalDataSourcesContext);
+  const {
+    dataSources,
+    fetchDataSources,
+    selectedDataSource,
+    setSelectedDataSource,
+    toggleDataSourceManagerModal,
+    isLoading,
+  } = useContext(GlobalDataSourcesContext);
 
-  const [loading, setLoading] = useState(true);
   const [isDeletingDatasource, setDeletingDatasource] = useState(false);
   const [isDeleteModalVisible, setDeleteModalVisibility] = React.useState(false);
+  const [filteredData, setFilteredData] = useState(dataSources);
+  const [showInput, setShowInput] = useState(false);
 
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
   useEffect(() => {
-    fetchDataSources(true)
-      .then(() => {
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-        toast.error('Failed to fetch datasources');
-        return;
-      });
+    fetchDataSources(false).catch(() => {
+      toast.error('Failed to fetch datasources');
+      return;
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setFilteredData([...dataSources]);
+  }, [dataSources]);
 
   const deleteDataSource = (selectedSource) => {
     toggleDataSourceManagerModal(false);
@@ -60,6 +67,17 @@ export const List = ({ updateSelectedDatasource }) => {
     setSelectedDataSource(null);
   };
 
+  const handleSearch = (e) => {
+    const value = e?.target?.value;
+    const filtered = dataSources.filter((item) => item?.name?.toLowerCase().includes(value?.toLowerCase()));
+    setFilteredData(filtered);
+  };
+
+  function handleClose() {
+    setShowInput(false);
+    setFilteredData(dataSources);
+  }
+
   const EmptyState = () => {
     return (
       <div
@@ -79,27 +97,56 @@ export const List = ({ updateSelectedDatasource }) => {
   return (
     <>
       <div className="list-group">
-        {loading && <Skeleton count={3} height={22} />}
-        {!loading && (
-          <div className="w-100 datasource-inner-sidebar-wrap" data-cy="datasource-Label">
-            {dataSources?.length ? (
-              dataSources?.map((source, idx) => {
-                return (
-                  <ListItem
-                    dataSource={source}
-                    key={idx}
-                    active={selectedDataSource?.id === source?.id}
-                    onDelete={deleteDataSource}
-                    updateSelectedDatasource={updateSelectedDatasource}
+        <div className="w-100 datasource-inner-sidebar-wrap" data-cy="datasource-Label">
+          {isLoading ? (
+            <Skeleton containerClassName="datasource-loader" count={3} height={30} />
+          ) : (
+            <>
+              <div className="d-flex justify-content-between datasources-search" style={{ marginBottom: '8px' }}>
+                {!showInput ? (
+                  <>
+                    <div className="datasources-info tj-text-xsm">
+                      Datasources Added{' '}
+                      {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
+                    </div>
+                    <div
+                      className="datasources-search-btn"
+                      onClick={() => {
+                        setShowInput(true);
+                      }}
+                    >
+                      <SolidIcon name="search" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
+                    </div>
+                  </>
+                ) : (
+                  <SearchBox
+                    width="248px"
+                    callBack={handleSearch}
+                    placeholder={'search for datasources'}
+                    customClass="tj-common-search-input"
+                    onClearCallback={handleClose}
+                    autoFocus={true}
                   />
-                );
-              })
-            ) : (
-              <EmptyState />
-            )}
-          </div>
-        )}
-        <OrganizationList />
+                )}
+              </div>
+              {!isLoading && filteredData?.length ? (
+                filteredData?.map((source, idx) => {
+                  return (
+                    <ListItem
+                      dataSource={source}
+                      key={idx}
+                      active={selectedDataSource?.id === source?.id}
+                      onDelete={deleteDataSource}
+                      updateSelectedDatasource={updateSelectedDatasource}
+                    />
+                  );
+                })
+              ) : (
+                <EmptyState />
+              )}
+            </>
+          )}
+        </div>
       </div>
       <ConfirmDialog
         show={isDeleteModalVisible}

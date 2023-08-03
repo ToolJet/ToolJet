@@ -88,6 +88,7 @@ class DataSourceManagerComponent extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
+    this.props.setGlobalDataSourceStatus({ saveAction: this.createDataSource });
     if (prevProps.selectedDataSource !== this.props.selectedDataSource) {
       let dataSourceMeta = this.getDataSourceMeta(this.props.selectedDataSource);
       this.setState({
@@ -708,12 +709,10 @@ class DataSourceManagerComponent extends React.Component {
     const createSelectedDataSource = (dataSource) => {
       this.selectDataSource(dataSource);
     };
-    const isSaveDisabled =
-      deepEqual(options, selectedDataSource?.options, ['encrypted']) && selectedDataSource?.name === datasourceName;
-
-    if (selectedDataSource) {
-      this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
-    }
+    const isSaveDisabled = selectedDataSource
+      ? deepEqual(options, selectedDataSource?.options, ['encrypted']) && selectedDataSource?.name === datasourceName
+      : true;
+    this.props.setGlobalDataSourceStatus({ isEditing: !isSaveDisabled });
     return (
       <div>
         <Modal

@@ -18,7 +18,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
   const admin = currentUserValue?.admin;
   const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
 
-  const { checkForUnsavedChanges, resetUnsavedChangesModal, handleDiscardChanges, unSavedModalVisible, nextRoute } =
+  const { checkForUnsavedChanges, handleDiscardChanges, handleSaveChanges, unSavedModalVisible, nextRoute } =
     useGlobalDatasourceUnsavedChanges();
 
   return (
@@ -189,9 +189,9 @@ function Layout({ children, switchDarkMode, darkMode }) {
         show={unSavedModalVisible}
         message={'Datasource has unsaved changes. Are you sure you want to discard them?'}
         onConfirm={() => handleDiscardChanges(nextRoute)}
-        onCancel={resetUnsavedChangesModal}
+        onCancel={handleSaveChanges}
         confirmButtonText={'Discard'}
-        cancelButtonText={'Continue editing'}
+        cancelButtonText={'Save changes'}
         confirmButtonType="dangerPrimary"
         cancelButtonType="tertiary"
         backdropClassName="datasource-selection-confirm-backdrop"

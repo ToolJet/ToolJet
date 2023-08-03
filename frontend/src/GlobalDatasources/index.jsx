@@ -19,14 +19,16 @@ export const GlobalDatasources = (props) => {
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [isEditing, setEditing] = useState(true);
+  const [isLoading, setLoading] = useState(false);
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
+  const [activeDatasourceList, setActiveDatasourceList] = useState('#databases');
   const navigate = useNavigate();
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
     if (dataSources?.length == 0) updateSidebarNAV('');
-    else selectedDataSource ? updateSidebarNAV(selectedDataSource.name) : updateSidebarNAV(dataSources?.[0].name);
+    else selectedDataSource ? updateSidebarNAV(selectedDataSource.name) : updateSidebarNAV('Databases');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource)]);
 
@@ -45,6 +47,7 @@ export const GlobalDatasources = (props) => {
 
   const fetchDataSources = async (resetSelection = false, dataSource = null) => {
     toggleDataSourceManagerModal(false);
+    setLoading(true);
     globalDatasourceService
       .getAll()
       .then((data) => {
@@ -61,9 +64,11 @@ export const GlobalDatasources = (props) => {
           setSelectedDataSource(orderedDataSources[0]);
           toggleDataSourceManagerModal(true);
         }
+        setLoading(false);
       })
       .catch(() => {
         setDataSources([]);
+        setLoading(false);
       });
   };
 
@@ -109,9 +114,21 @@ export const GlobalDatasources = (props) => {
       currentEnvironment,
       setCurrentEnvironment,
       setDataSources,
+      isLoading,
+      activeDatasourceList,
+      setActiveDatasourceList,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedDataSource, dataSources, showDataSourceManagerModal, isEditing, environments, currentEnvironment]
+    [
+      selectedDataSource,
+      dataSources,
+      showDataSourceManagerModal,
+      isEditing,
+      environments,
+      currentEnvironment,
+      isLoading,
+      activeDatasourceList,
+    ]
   );
 
   return (

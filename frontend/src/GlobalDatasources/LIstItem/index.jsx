@@ -7,8 +7,13 @@ import DeleteIcon from '../Icons/DeleteIcon.svg';
 import useGlobalDatasourceUnsavedChanges from '@/_hooks/useGlobalDatasourceUnsavedChanges';
 
 export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedDatasource }) => {
-  const { setSelectedDataSource, toggleDataSourceManagerModal, environments, setCurrentEnvironment } =
-    useContext(GlobalDataSourcesContext);
+  const {
+    setSelectedDataSource,
+    toggleDataSourceManagerModal,
+    environments,
+    setCurrentEnvironment,
+    setActiveDatasourceList,
+  } = useContext(GlobalDataSourcesContext);
   const { handleActions } = useGlobalDatasourceUnsavedChanges();
 
   const getSourceMetaData = (dataSource) => {
@@ -16,11 +21,11 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
       return dataSource.plugin?.manifestFile?.data.source;
     }
 
-    return DataSourceTypes.find((source) => source.kind === dataSource.kind);
+    return DataSourceTypes.find((source) => source?.kind === dataSource?.kind);
   };
 
   const sourceMeta = getSourceMetaData(dataSource);
-  const icon = getSvgIcon(sourceMeta.kind.toLowerCase(), 24, 24, dataSource?.plugin?.iconFile?.data);
+  const icon = getSvgIcon(sourceMeta?.kind?.toLowerCase(), 24, 24, dataSource?.plugin?.iconFile?.data);
 
   const focusModal = () => {
     const element = document.getElementsByClassName('form-control-plaintext form-control-plaintext-sm')[0];
@@ -28,6 +33,7 @@ export const ListItem = ({ dataSource, key, active, onDelete, updateSelectedData
   };
 
   const selectDataSource = () => {
+    setActiveDatasourceList('');
     setSelectedDataSource(dataSource);
     setCurrentEnvironment(environments[0]);
     toggleDataSourceManagerModal(true);

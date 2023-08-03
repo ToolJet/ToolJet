@@ -17,8 +17,9 @@ export function SearchBox({
   callBack,
   onClearCallback,
   autoFocus = false,
+  query,
 }) {
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState(query ?? '');
   const debouncedSearchTerm = useDebounce(searchText, debounceDelay);
   const [isFocused, setFocussed] = useState(false);
 
@@ -40,6 +41,12 @@ export function SearchBox({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm, onSubmit]);
+
+  useEffect(() => {
+    if (query === null || query === '') {
+      setSearchText('');
+    }
+  }, [query]);
 
   return (
     <div className={`search-box-wrapper ${customClass}`}>

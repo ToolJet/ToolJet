@@ -6,7 +6,7 @@ import { useGlobalDataSourcesStatus, useDataSourcesActions } from '@/_stores/dat
 const useGlobalDatasourceUnsavedChanges = () => {
   const globalDataSourcesStatus = useGlobalDataSourcesStatus();
   const { setGlobalDataSourceStatus } = useDataSourcesActions();
-  const { isEditing, isSaving, unSavedModalVisible, action } = globalDataSourcesStatus;
+  const { isEditing, isSaving, unSavedModalVisible, action, saveAction } = globalDataSourcesStatus;
   const [nextRoute, setNextRoute] = useState('');
   const router = useRouter();
 
@@ -52,6 +52,11 @@ const useGlobalDatasourceUnsavedChanges = () => {
     [action]
   );
 
+  const handleSaveChanges = () => {
+    setGlobalDataSourceStatus({ unSavedModalVisible: false });
+    typeof action === 'function' && saveAction();
+  };
+
   return {
     checkForUnsavedChanges,
     resetUnsavedChangesModal,
@@ -59,6 +64,7 @@ const useGlobalDatasourceUnsavedChanges = () => {
     unSavedModalVisible,
     nextRoute,
     handleActions,
+    handleSaveChanges,
   };
 };
 

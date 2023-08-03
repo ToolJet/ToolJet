@@ -10,6 +10,7 @@ const initialState = {
     isEditing: false,
     unSavedModalVisible: false,
     action: null,
+    saveAction: null,
   },
 };
 
