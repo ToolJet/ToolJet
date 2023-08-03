@@ -3,6 +3,12 @@ id: workspace-variables
 title: Workspace Variables
 ---
 
+:::caution
+Workspace variable feature is deprecated and will be removed in the future releases. In the current version, you can only delete existing variables; creating and updating variables through this deprecated feature is not possible.
+
+Please use [Workspace Constants](/docs/org-management/workspaces/workspace_constants) instead.
+:::
+
 Workspace Variables are the variables with some value(usually tokens/secret keys/API keys) that can be used in different apps across the same Workspace.
 
 :::note
