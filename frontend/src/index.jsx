@@ -6,6 +6,7 @@ import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes }
 import { BrowserTracing } from '@sentry/tracing';
 import { appService } from '@/_services';
 import { App } from './App';
+import * as serviceWorkerRegistration from "./service_worker/register-sw";
 // eslint-disable-next-line import/no-unresolved
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
@@ -63,4 +64,5 @@ appService
     }
   })
   .then(() => render(<AppWithProfiler />, document.getElementById('app')));
+  serviceWorkerRegistration.register();
 // .then(() => createRoot(document.getElementById('app')).render(<AppWithProfiler />));
