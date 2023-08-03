@@ -116,6 +116,8 @@ export const Pagination = ({
         <PaginationMUI
           count={properties.numberOfPages}
           defaultPage={currentPage}
+          page={currentPage}
+          onChange={(event, value) => setCurrentPage(value)}
           showFirstButton
           showLastButton
           disabled={disabledState}
