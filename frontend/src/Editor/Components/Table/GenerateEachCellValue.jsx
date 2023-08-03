@@ -88,8 +88,7 @@ export default function GenerateEachCellValue({
   }
   return (
     <div
-      onClick={(e) => {
-        e.stopPropagation();
+      onClick={() => {
         if (isEditable && columnTypeAllowToRenderMarkElement.includes(columnType)) {
           setHighlighterCells(false);
         }

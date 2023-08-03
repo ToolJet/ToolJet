@@ -402,7 +402,8 @@ export const SubContainer = ({
       enableReleasedVersionPopupState();
       return;
     }
-    const deltaWidth = Math.round(d.width / gridWidth) * gridWidth;
+
+    const deltaWidth = Math.round(d.width / gridWidth) * gridWidth; //rounding of width of element to nearest mulitple of gridWidth
     const deltaHeight = d.height;
 
     if (deltaWidth === 0 && deltaHeight === 0) {
@@ -428,7 +429,12 @@ export const SubContainer = ({
       left = (x * 100) / _containerCanvasWidth;
     }
 
-    width = width + (deltaWidth * NO_OF_GRIDS) / _containerCanvasWidth;
+    //round the width to nearest multiple of gridwidth before converting to %
+    const currentWidth = (_containerCanvasWidth * width) / NO_OF_GRIDS;
+    let newWidth = currentWidth + deltaWidth;
+    newWidth = Math.round(newWidth / gridWidth) * gridWidth;
+    width = (newWidth * NO_OF_GRIDS) / _containerCanvasWidth;
+
     height = height + deltaHeight;
 
     let newBoxes = {
