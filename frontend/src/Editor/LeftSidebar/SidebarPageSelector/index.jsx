@@ -7,13 +7,10 @@ import _ from 'lodash';
 import SortableList from '@/_components/SortableList';
 // eslint-disable-next-line import/no-unresolved
 import EmptyIllustration from '@assets/images/no-results.svg';
-<<<<<<< HEAD
 import posthog from 'posthog-js';
 import { authenticationService } from '@/_services';
 import useRouter from '@/_hooks/use-router';
-=======
 import { useCurrentState } from '@/_stores/currentStateStore';
->>>>>>> tj-ee/develop
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 
