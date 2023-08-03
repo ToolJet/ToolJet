@@ -1,6 +1,9 @@
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import { MultiSelect } from 'react-multi-select-component';
+import config from 'config';
+import { Autocomplete, Box, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material';
+import { Button } from 'react-bootstrap';
 
 const ItemRenderer = ({ checked, option, onClick, disabled }) => (
   <div className={`item-renderer ${disabled && 'disabled'}`}>
@@ -26,6 +29,25 @@ export const Multiselect = function Multiselect({
   const { label, value, values, display_values, showAllOption } = properties;
   const { borderRadius, visibility, disabledState, boxShadow } = styles;
   const [selected, setSelected] = useState([]);
+
+  const [checked, setChecked] = useState(false);
+  React.useEffect(() => {
+    if (selected.length === selectOptions.length) {
+      setChecked(true);
+    } else {
+      setChecked(false);
+    }
+  }, [selected]);
+
+  const onClickAll = () => {
+    if (selected.length !== 0 && selected.length !== selectOptions.length) {
+      setSelected([...selectOptions]);
+    } else if (selected.length === 0) {
+      setSelected([...selectOptions]);
+    } else {
+      setSelected([]);
+    }
+  };
 
   let selectOptions = [];
   try {
@@ -126,35 +148,110 @@ export const Multiselect = function Multiselect({
   );
 
   return (
-    <div
-      className="multiselect-widget row g-0"
-      data-cy={dataCy}
-      style={{ height, display: visibility ? '' : 'none' }}
-      onFocus={() => {
-        onComponentClick(this, id, component);
-      }}
-    >
-      <div className="col-auto my-auto d-flex align-items-center">
-        <label
-          style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }}
-          className={`form-label py-1 ${darkMode ? 'text-light' : 'text-secondary'}`}
-          data-cy={`multiselect-label-${component.name.toLowerCase()}`}
+    <>
+      {config.UI_LIB === 'tooljet' && (
+        <div
+          className="multiselect-widget row g-0"
+          data-cy={dataCy}
+          style={{ height, display: visibility ? '' : 'none' }}
+          onFocus={() => {
+            onComponentClick(this, id, component);
+          }}
         >
-          {label}
-        </label>
-      </div>
-      <div className="col px-0 h-100" style={{ borderRadius: parseInt(borderRadius), boxShadow }}>
-        <MultiSelect
-          hasSelectAll={showAllOption ?? false}
-          options={selectOptions}
+          <div className="col-auto my-auto d-flex align-items-center">
+            <label
+              style={{ marginRight: label ? '1rem' : '', marginBottom: 0 }}
+              className={`form-label py-1 ${darkMode ? 'text-light' : 'text-secondary'}`}
+              data-cy={`multiselect-label-${component.name.toLowerCase()}`}
+            >
+              {label}
+            </label>
+          </div>
+          <div className="col px-0 h-100" style={{ borderRadius: parseInt(borderRadius), boxShadow }}>
+            <MultiSelect
+              hasSelectAll={showAllOption ?? false}
+              options={selectOptions}
+              value={selected}
+              onChange={onChangeHandler}
+              labelledBy={'Select'}
+              disabled={disabledState}
+              className={`multiselect-box${darkMode ? ' dark dark-multiselectinput' : ''}`}
+              ItemRenderer={ItemRenderer}
+            />
+          </div>
+        </div>
+      )}
+
+      {config.UI_LIB === 'mui' && (
+        <Autocomplete
+          id={id}
+          multiple
+          fullWidth
+          size="small"
           value={selected}
-          onChange={onChangeHandler}
-          labelledBy={'Select'}
+          options={[{ label: 'Select All', value: 'Select All', isShow: showAllOption }, ...selectOptions]}
+          getOptionLabel={(option) => option.label}
+          isOptionEqualToValue={(option, value) => option.value === value.value}
           disabled={disabledState}
-          className={`multiselect-box${darkMode ? ' dark dark-multiselectinput' : ''}`}
-          ItemRenderer={ItemRenderer}
+          disableCloseOnSelect
+          renderOption={(props, option, state, ownerState) => {
+            console.log(props);
+            if (option.label === 'Select All') {
+              return (
+                <>
+                  {showAllOption ? (
+                    <Box
+                      {...props}
+                      onClick={onClickAll}
+                      sx={{
+                        borderRadius: '8px',
+                        margin: '5px',
+                        padding: '8px',
+                      }}
+                    >
+                      <FormControlLabel control={<Checkbox checked={checked} />} label={option.label} component="li" />
+                    </Box>
+                  ) : (
+                    <></>
+                  )}
+                </>
+              );
+            } else {
+              return (
+                <Box
+                  {...props}
+                  sx={{
+                    borderRadius: '8px',
+                    margin: '5px',
+                    padding: '8px',
+                  }}
+                >
+                  <FormControlLabel
+                    control={<Checkbox checked={props['aria-selected']} />}
+                    label={ownerState.getOptionLabel(option)}
+                    component="li"
+                  />
+                </Box>
+              );
+            }
+          }}
+          renderInput={(params) => <TextField {...params} label={label} sx={{ display: visibility ? '' : 'none' }} />}
+          onChange={(event, newValue) => {
+            setSelected(newValue);
+          }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              minHeight: '36px',
+              height,
+              borderRadius: `${styles.borderRadius}px`,
+              color: styles.textColor,
+              backgroundColor:
+                darkMode && ['#fff'].includes(styles.backgroundColor) ? '#232e3c' : styles.backgroundColor,
+              boxShadow: styles.boxShadow,
+            },
+          }}
         />
-      </div>
-    </div>
+      )}
+    </>
   );
 };
