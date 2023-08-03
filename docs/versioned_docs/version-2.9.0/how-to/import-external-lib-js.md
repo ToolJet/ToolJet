@@ -52,7 +52,7 @@ You can import any of the available libraries using their **CDN**. Find free CDN
     </div>
     
 :::tip
-Enable the **Run this query on application load?** option to make the libraries available throughout the application as soon as the app is laoded.
+Enable the **Run this query on application load?** option to make the libraries available throughout the application as soon as the app is loaded.
 :::
 
 ## Examples

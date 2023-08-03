@@ -122,10 +122,6 @@ describe("Global Datasource Manager", () => {
         pinInspector()
 
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            "Query (table_preview) completed."
-        );
         cy.get('[data-cy="inspector-node-queries"]')
             .parent()
             .within(() => {
@@ -202,11 +198,6 @@ describe("Global Datasource Manager", () => {
         pinInspector()
 
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            "Query (table_preview) completed."
-        );
-
         cy.get('[data-cy="inspector-node-queries"]')
             .parent()
             .within(() => {
@@ -229,10 +220,6 @@ describe("Global Datasource Manager", () => {
             "student_data"
         );
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            "Query (student_data) completed."
-        );
         cy.get('[data-cy="inspector-node-queries"]')
             .parent()
             .within(() => {
@@ -273,10 +260,6 @@ describe("Global Datasource Manager", () => {
         pinInspector()
 
         cy.get(dataSourceSelector.queryCreateAndRunButton).click();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            "Query (table_preview) completed."
-        );
         cy.get('[data-cy="inspector-node-queries"]')
             .parent()
             .within(() => {

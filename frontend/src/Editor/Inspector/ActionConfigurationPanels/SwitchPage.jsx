@@ -4,7 +4,7 @@ import defaultStyles from '@/_ui/Select/styles';
 import { CodeHinter } from '../../CodeBuilder/CodeHinter';
 import { useTranslation } from 'react-i18next';
 
-export function SwitchPage({ getPages, currentState, event, handlerChanged, eventIndex, darkMode }) {
+export function SwitchPage({ getPages, event, handlerChanged, eventIndex, darkMode }) {
   const queryParamChangeHandler = (index, key, value) => {
     event.queryParams[index][key] = value;
     handlerChanged(eventIndex, 'queryParams', event.queryParams);
@@ -69,7 +69,6 @@ export function SwitchPage({ getPages, currentState, event, handlerChanged, even
           <div key={index} className="row input-group mt-1">
             <div className="col">
               <CodeHinter
-                currentState={currentState}
                 initialValue={event.queryParams[index][0]}
                 onChange={(value) => queryParamChangeHandler(index, 0, value)}
                 mode="javascript"
@@ -80,7 +79,6 @@ export function SwitchPage({ getPages, currentState, event, handlerChanged, even
             </div>
             <div className="col">
               <CodeHinter
-                currentState={currentState}
                 initialValue={event.queryParams[index][1]}
                 onChange={(value) => queryParamChangeHandler(index, 1, value)}
                 mode="javascript"

@@ -15,6 +15,9 @@ export const navigateToProfile = () => {
 export const logout = () => {
   cy.get(commonSelectors.profileSettings).click();
   cy.get(commonSelectors.logoutLink).click();
+  cy.intercept('GET', '/api/metadata').as('publicConfig');
+  cy.wait('@publicConfig');
+  cy.wait(500);
 };
 
 export const navigateToManageUsers = () => {
@@ -25,11 +28,16 @@ export const navigateToManageUsers = () => {
 export const navigateToManageGroups = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.manageGroupsOption).click();
+  navigateToAllUserGroup();
+
+};
+
+export const navigateToAllUserGroup = () => {
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("All users")).click();
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("All users")).click();
-  cy.wait(500);
+  cy.wait(1000);
   cy.get("body").then(($title) => {
     if (
       $title
@@ -43,7 +51,7 @@ export const navigateToManageGroups = () => {
       cy.wait(2000);
     }
   });
-};
+}
 
 export const navigateToWorkspaceVariable = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
@@ -60,7 +68,7 @@ export const randomDateOrTime = (format = "DD/MM/YYYY") => {
   let startDate = new Date(2018, 0, 1);
   startDate = new Date(
     startDate.getTime() +
-      Math.random() * (endDate.getTime() - startDate.getTime())
+    Math.random() * (endDate.getTime() - startDate.getTime())
   );
   return moment(startDate).format(format);
 };
@@ -95,19 +103,21 @@ export const deleteDownloadsFolder = () => {
 };
 
 export const navigateToAppEditor = (appName) => {
-  cy.intercept("GET", "/api/v2/data_sources").as("appEditor");
   cy.get(commonSelectors.appCard(appName))
     .trigger("mousehover")
     .trigger("mouseenter")
     .find(commonSelectors.editButton)
     .click({ force: true });
-  cy.wait("@appEditor");
-  cy.wait(1000);
-  cy.get("body").then(($el) => {
-    if ($el.text().includes("Skip", { timeout: 10000 })) {
-      cy.get(commonSelectors.skipButton).click();
-    }
-  });
+  if (Cypress.env("environment") === "Community") {
+    cy.intercept("GET", "/api/v2/data_sources").as("appDs");
+    cy.wait("@appDs", { timeout: 15000 });
+    cy.skipEditorPopover();
+  }
+  else {
+    cy.intercept("GET", "/api/app-environments/**").as("appDs");
+    cy.wait("@appDs", { timeout: 15000 });
+    cy.skipEditorPopover();
+  }
 };
 
 export const viewAppCardOptions = (appName) => {
@@ -169,6 +179,12 @@ export const closeModal = (buttonText) => {
 export const cancelModal = (buttonText) => {
   cy.get(commonSelectors.buttonSelector(buttonText)).click();
   cy.get(commonSelectors.modalComponent).should("not.exist");
+};
+
+export const navigateToAuditLogsPage = () => {
+  cy.get(profileSelector.profileDropdown).invoke("show");
+  cy.contains("Audit Logs").click();
+  cy.url().should("include", path.auditLogsPath, { timeout: 1000 });
 };
 
 export const manageUsersPagination = (email) => {
