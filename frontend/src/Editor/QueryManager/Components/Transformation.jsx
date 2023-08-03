@@ -136,8 +136,11 @@ return [row for row in data if row['amount'] > 1000]
   };
 
   const labelPopoverContent = (
-    <Popover id="transformation-popover-container">
-      <p className="transformation-popover" data-cy={`transformation-popover`}>
+    <Popover
+      id="transformation-popover-container"
+      className={`${darkMode && 'popover-dark-themed theme-dark dark-theme tj-dark-mode'} p-0`}
+    >
+      <p className={`transformation-popover`} data-cy={`transformation-popover`}>
         {t(
           'editor.queryManager.transformation.transformationToolTip',
           'Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python'
