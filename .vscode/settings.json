@@ -10,6 +10,9 @@
     ],
     "eslint.format.enable": true,
     "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": false
+    },
     "json.schemas": [
         {
             "fileMatch": [
