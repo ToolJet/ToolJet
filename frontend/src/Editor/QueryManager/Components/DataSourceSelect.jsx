@@ -152,7 +152,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
           option: (style, { data: { isNested }, isFocused, isDisabled }) => ({
             ...style,
             cursor: 'pointer',
-            backgroundColor: 'transparent',
+            backgroundColor: isFocused && !isNested ? 'var(--slate4)' : 'transparent',
             ...(isNested
               ? { padding: '0 8px', marginLeft: '19px', borderLeft: '1px solid var(--slate5)', width: 'auto' }
               : {}),
@@ -161,6 +161,10 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
               backgroundColor: isNested ? 'transparent' : 'var(--slate4)',
               '.option-nested-datasource-selector': { backgroundColor: 'var(--slate4)' },
             },
+            ...(isFocused &&
+              isNested && {
+                '.option-nested-datasource-selector': { backgroundColor: 'var(--slate4)' },
+              }),
           }),
           container: (styles) => ({
             ...styles,
