@@ -2,8 +2,7 @@ import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import { MultiSelect } from 'react-multi-select-component';
 import config from 'config';
-import { Autocomplete, Box, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material';
-import { Button } from 'react-bootstrap';
+import { Autocomplete, Box, Checkbox, FormControlLabel, TextField } from '@mui/material';
 
 const ItemRenderer = ({ checked, option, onClick, disabled }) => (
   <div className={`item-renderer ${disabled && 'disabled'}`}>
