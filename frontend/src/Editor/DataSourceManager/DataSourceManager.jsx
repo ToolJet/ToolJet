@@ -218,7 +218,7 @@ class DataSourceManagerComponent extends React.Component {
             environment_id: currentEnvironment,
           })
           .then(() => {
-            this.props.updateSelectedDatasource(selectedDataSource.name);
+            this.props.updateSelectedDatasource && this.props.updateSelectedDatasource(selectedDataSource.name);
             this.setState({ isSaving: false });
             this.hideModal();
             toast.success(
@@ -251,7 +251,7 @@ class DataSourceManagerComponent extends React.Component {
           })
           .then((data) => {
             this.setState({ isSaving: false, addingDataSource: false });
-            this.props.updateSelectedDatasource(name);
+            this.props.updateSelectedDatasource && this.props.updateSelectedDatasource(name);
 
             this.hideModal();
             toast.success(
