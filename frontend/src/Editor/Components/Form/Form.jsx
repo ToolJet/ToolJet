@@ -131,9 +131,9 @@ export const Form = function Form(props) {
       // eslint-disable-next-line no-unused-vars
       Object.entries(formattedChildData).map(([key, { keyValue, ...rest }]) => [key, rest])
     );
-
-    setExposedVariable('data', formattedChildData);
-    setExposedVariable('children', formattedChildData);
+    const formattedChildDataClone = _.cloneDeep(formattedChildData);
+    setExposedVariable('children', formattedChildDataClone);
+    setExposedVariable('data', removeFunctionObjects(formattedChildData));
     setExposedVariable('isValid', childValidation);
     setValidation(childValidation);
 
@@ -205,6 +205,17 @@ export const Form = function Form(props) {
     childDataRef.current = { ...childDataRef.current, [componentId]: optionData };
     setChildrenData(childDataRef.current);
   };
+
+  function removeFunctionObjects(obj) {
+    for (const key in obj) {
+      if (typeof obj[key] === 'function') {
+        delete obj[key];
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+        removeFunctionObjects(obj[key]);
+      }
+    }
+    return obj;
+  }
 
   return (
     <form
