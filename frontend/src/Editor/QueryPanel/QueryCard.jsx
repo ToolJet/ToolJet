@@ -102,7 +102,14 @@ export const QueryCard = ({ dataQuery, darkMode = false, editorRef, appId }) => 
               overlay={<Tooltip id="button-tooltip">{dataQuery.name}</Tooltip>}
             >
               <div className="query-name" data-cy={`list-query-${dataQuery.name.toLowerCase()}`}>
-                <span className="text-truncate">{dataQuery.name}</span>{' '}
+                <span
+                  className="text-truncate"
+                  data-tooltip-id="query-card-name-tooltip"
+                  data-tooltip-content={dataQuery.name}
+                >
+                  {dataQuery.name}
+                </span>{' '}
+                <Tooltip id="query-card-name-tooltip" className="tooltip query-manager-tooltip" />
                 {!isQueryRunnable(dataQuery) && <small className="mx-2 text-secondary">Draft</small>}
               </div>
             </OverlayTrigger>

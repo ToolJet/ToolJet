@@ -6,11 +6,13 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { getWorkspaceId } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import { SearchBox as SearchBox2 } from '@/_components/SearchBox';
 import DataSourceIcon from './DataSourceIcon';
 import { isEmpty } from 'lodash';
 import { Col, Container, Row } from 'react-bootstrap';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
+import { Tooltip } from 'react-tooltip';
 
 function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalDataSources }) {
   const allUserDefinedSources = [...dataSources, ...globalDataSources];
@@ -101,9 +103,12 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
                     onClick={() => {
                       handleChangeDataSource(source);
                     }}
+                    data-tooltip-id="tooltip-for-query-panel-ds-picker-btn"
+                    data-tooltip-content={source.name}
                   >
                     <DataSourceIcon source={source} height={14} styles={{ minWidth: 14 }} />
                     <span className="text-truncate">{source.name}</span>
+                    <Tooltip id="tooltip-for-query-panel-ds-picker-btn" className="tooltip" />
                   </ButtonSolid>
                 </Col>
               ))}
@@ -131,21 +136,23 @@ const SearchBox = ({ onSearch, darkMode, searchTerm }) => {
   const { t } = useTranslation();
   return (
     <Row>
-      <Col className="mt-2 mb-2 position-relative">
-        <input
+      <Col className="mt-2 mb-2">
+        <SearchBox2
+          width="100%"
           type="text"
-          className={`form-control ${darkMode && 'dark-theme-placeholder'} ps-4`}
+          className={`form-control ${darkMode && 'dark-theme-placeholder'}`}
           placeholder={t('globals.search', 'Search') + '...'}
           value={searchTerm}
-          onChange={(e) => onSearch(e.target.value)}
+          callBack={(e) => onSearch(e.target.value)}
+          onClearCallback={() => onSearch('')}
           data-cy="widget-search-box"
         />
-        <span
+        {/* <span
           className="position-absolute"
           style={{ top: '50%', transform: 'translate(0%, -50%)', paddingLeft: '10px' }}
         >
           <Search style={{ width: '16px' }} />
-        </span>
+        </span> */}
       </Col>
     </Row>
   );

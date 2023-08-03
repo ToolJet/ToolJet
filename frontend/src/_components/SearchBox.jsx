@@ -20,6 +20,7 @@ export const SearchBox = forwardRef(
       onClearCallback,
       autoFocus = false,
       showClearButton,
+      initialValue = '',
     },
     ref
   ) => {
@@ -45,6 +46,10 @@ export const SearchBox = forwardRef(
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedSearchTerm, onSubmit]);
+
+    useEffect(() => {
+      initialValue !== undefined && setSearchText(initialValue);
+    }, [initialValue]);
 
     return (
       <div className={`search-box-wrapper ${customClass}`}>

@@ -1868,3 +1868,9 @@ $border-radius: 4px;
     color: var(--slate11);
   }
 }
+
+
+.query-manager-tooltip{
+  max-width: 800px;
+  overflow-wrap: break-word;
+}

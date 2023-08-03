@@ -95,7 +95,10 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
               <Minimize width="14" height="14" viewBox="0 0 18 20" stroke="var(--slate12)" />
             </button>
             <button
-              onClick={() => setShowSearchBox((showSearchBox) => !showSearchBox)}
+              onClick={() => {
+                showSearchBox && setSearchTermForFilters('');
+                setShowSearchBox((showSearchBox) => !showSearchBox);
+              }}
               className={cx('btn-query-panel-header mx-1', {
                 active: showSearchBox,
               })}
@@ -125,12 +128,24 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
                 ref={searchBoxRef}
                 dataCy={`query-manager`}
                 width="100%"
-                onSubmit={(val) => setSearchTermForFilters(val)}
+                initialValue={searchTermForFilters}
+                callBack={(val) => {
+                  setSearchTermForFilters(val.target.value);
+                }}
+                onClearCallback={() => setSearchTermForFilters('')}
                 placeholder={t('globals.search', 'Search')}
                 customClass="query-manager-search-box-wrapper flex-grow-1"
                 showClearButton
               />
-              <ButtonSolid size="sm" variant="ghostBlue" className="ms-1" onClick={() => setShowSearchBox(false)}>
+              <ButtonSolid
+                size="sm"
+                variant="ghostBlue"
+                className="ms-1"
+                onClick={() => {
+                  setSearchTermForFilters('');
+                  setShowSearchBox(false);
+                }}
+              >
                 Close
               </ButtonSolid>
             </div>
