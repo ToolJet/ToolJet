@@ -185,8 +185,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
           container: (styles) => ({
             ...styles,
             borderRadius: '6px',
-            border: '1px solid var(--slate-03, #F1F3F5)',
-            background: 'var(--slate-01, #FBFCFD)',
+            border: '1px solid var(--slate3)',
             boxShadow: '0px 2px 4px -2px rgba(16, 24, 40, 0.06), 0px 4px 8px -2px rgba(16, 24, 40, 0.10)',
           }),
           valueContainer: (styles) => ({
