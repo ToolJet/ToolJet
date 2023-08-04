@@ -101,20 +101,23 @@ export const Pagination = function Pagination({
         data-cy={`pagination-button-to-previous`}
       ></ButtonSolid>
 
-      <div className="d-flex tj-text-xsm text-black-000 font-weight-500" data-cy={`page-index-details`}>
+      <div className="d-flex align-items-center tj-text-xsm h-100 mx-1" data-cy={`page-index-details`}>
         {serverSide && <span>{pageIndex}</span>}
         {!serverSide && (
           <>
             <input
               type="text"
-              className="form-control mx-1"
+              className={`form-control h-100`}
               value={pageIndex}
               onChange={(event) => {
                 if (event.target.value <= pageCount) gotoPage(event.target.value);
               }}
             />
-            <span className="mx-1 " data-cy={`total-page-number-${autoPageOptions.length || 1}`}>
-              / {pageCount || 1}
+            <span
+              className="ms-1 font-weight-500 total-page-number"
+              data-cy={`total-page-number-${autoPageOptions.length || 1}`}
+            >
+              of {pageCount || 1}
             </span>
           </>
         )}
