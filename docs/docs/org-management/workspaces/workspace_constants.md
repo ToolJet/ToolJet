@@ -7,7 +7,7 @@ Workspace constants are predefined values(usually tokens/secret keys/API keys) t
 
 ## Server-Side Resolution
 
-Workspace constants are designed to be resolved on the server side. This means that when you make network calls, the payload sent will not include the actual values of the constants. Instead, the server will resolve the constants and use their actual values while processing the requests. This ensures that the constants remain secure and are not exposed to the client-side.
+Workspace constants are designed to be resolved on the server side only. This means that when you make network calls, the payload sent will not include the actual values of the constants. Instead, the server will resolve the constants and use their actual values while processing the requests. This ensures that the constants remain secure and are not exposed to the client-side.
 
 ## Access Control
 
