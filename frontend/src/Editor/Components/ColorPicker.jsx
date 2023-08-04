@@ -115,8 +115,15 @@ export const ColorPicker = function ({
     : { display: 'none' };
 
   return (
-    <div style={{ baseStyle, boxShadow }} className="form-control" data-cy={dataCy}>
-      <div className="d-flex h-100 justify-content-between align-items-center" onClick={() => setShowColorPicker(true)}>
+    <div
+      style={{ baseStyle, boxShadow }}
+      className="form-control"
+      data-cy={dataCy}
+    >
+      <div
+        className="d-flex h-100 justify-content-between align-items-center"
+        onClick={() => setShowColorPicker(true)}
+      >
         <span>{color}</span>
         {!(color === `Invalid Color`) && <div style={backgroundColorDivStyle}></div>}
       </div>
@@ -128,9 +135,15 @@ export const ColorPicker = function ({
             onMouseLeave={() => setShowColorPicker(false)}
             width={width}
           >
-            <SketchPicker color={color} onChangeComplete={handleColorChange} />
+            <SketchPicker
+              color={color}
+              onChangeComplete={handleColorChange}
+            />
           </div>
-          <div className="comment-overlay" onClick={() => setShowColorPicker(false)}></div>
+          <div
+            className="comment-overlay"
+            onClick={() => setShowColorPicker(false)}
+          ></div>
         </>
       )}
     </div>

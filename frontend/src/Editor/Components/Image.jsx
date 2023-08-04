@@ -26,7 +26,12 @@ export const Image = function Image({
   const [zoomReset, setZoomReset] = useState(false);
 
   function Placeholder() {
-    return <div className="skeleton-image" style={{ objectFit: 'contain', height }}></div>;
+    return (
+      <div
+        className="skeleton-image"
+        style={{ objectFit: 'contain', height }}
+      ></div>
+    );
   }
   useEffect(() => {
     if (parentId === null) {
@@ -85,7 +90,11 @@ export const Image = function Image({
       <>
         {loadingState === true ? (
           <center>
-            <div className="spinner-border " role="status" data-cy={dataCy}></div>
+            <div
+              className="spinner-border "
+              role="status"
+              data-cy={dataCy}
+            ></div>
           </center>
         ) : zoomButtons ? (
           <TransformWrapper>
@@ -96,14 +105,23 @@ export const Image = function Image({
                 {zoomButtons && (
                   <div className="zoom-button-wrapper">
                     {rotateButton && (
-                      <button className="btn zoom-buttons" onClick={rotateImage}>
+                      <button
+                        className="btn zoom-buttons"
+                        onClick={rotateImage}
+                      >
                         <span>↻</span>
                       </button>
                     )}
-                    <button className="btn zoom-buttons" onClick={() => zoomIn()}>
+                    <button
+                      className="btn zoom-buttons"
+                      onClick={() => zoomIn()}
+                    >
                       +
                     </button>
-                    <button className="btn zoom-buttons" onClick={() => zoomOut()}>
+                    <button
+                      className="btn zoom-buttons"
+                      onClick={() => zoomOut()}
+                    >
                       -
                     </button>
                   </div>
@@ -114,8 +132,14 @@ export const Image = function Image({
         ) : (
           <>
             {rotateButton && (
-              <div className="zoom-button-wrapper" style={{ zIndex: 1 }}>
-                <button className="btn zoom-buttons" onClick={rotateImage}>
+              <div
+                className="zoom-button-wrapper"
+                style={{ zIndex: 1 }}
+              >
+                <button
+                  className="btn zoom-buttons"
+                  onClick={rotateImage}
+                >
                   <span>↻</span>
                 </button>
               </div>

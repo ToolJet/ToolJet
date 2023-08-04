@@ -76,7 +76,10 @@ export const CardEventPopover = function ({
       id={`${kanbanCardWidgetId}-popover`}
     >
       {parentRef.current && showPopover && (
-        <div className="popover-body" style={{ padding: 'unset', width: '100%', height: 100, zIndex: 11 }}>
+        <div
+          className="popover-body"
+          style={{ padding: 'unset', width: '100%', height: 100, zIndex: 11 }}
+        >
           <div className="rows p-2 overflow-auto">
             <div
               className="row overflow-auto"
@@ -101,7 +104,12 @@ export const CardEventPopover = function ({
                   {card?.title ?? ''}
                   <img
                     src="assets/images/icons/editor/edit.svg"
-                    style={{ visibility: titleHovered ? 'visible' : 'hidden', height: 15, width: 15, paddingLeft: 1 }}
+                    style={{
+                      visibility: titleHovered ? 'visible' : 'hidden',
+                      height: 15,
+                      width: 15,
+                      paddingLeft: 1,
+                    }}
                     onClick={() => setTitleEditMode(true)}
                   />
                 </h3>
@@ -129,7 +137,10 @@ export const CardEventPopover = function ({
               ) : (
                 <p>
                   {['', undefined].includes(card.description) ? (
-                    <a style={{ color: 'grey' }} onClick={() => setDescriptionEditMode(true)}>
+                    <a
+                      style={{ color: 'grey' }}
+                      onClick={() => setDescriptionEditMode(true)}
+                    >
                       Add description
                     </a>
                   ) : (

@@ -123,7 +123,11 @@ const Star = ({
 
   if (tooltip) {
     return (
-      <OverlayTrigger placement="bottom" delay={{ show: 250, hide: 400 }} overlay={<Tooltip>{tooltip}</Tooltip>}>
+      <OverlayTrigger
+        placement="bottom"
+        delay={{ show: 250, hide: 400 }}
+        overlay={<Tooltip>{tooltip}</Tooltip>}
+      >
         {getAnimatedStar()}
       </OverlayTrigger>
     );

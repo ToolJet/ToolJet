@@ -66,7 +66,10 @@ export const Pagination = function Pagination({
       >
         {'<'}
       </button>{' '}
-      <small className="p-1 mx-2" data-cy={`page-index-details`}>
+      <small
+        className="p-1 mx-2"
+        data-cy={`page-index-details`}
+      >
         {serverSide && <strong>{pageIndex}</strong>}
         {!serverSide && (
           <strong>

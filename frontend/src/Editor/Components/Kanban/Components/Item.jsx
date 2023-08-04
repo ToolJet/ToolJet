@@ -77,7 +77,10 @@ export const Item = React.memo(
             )}
             {...props}
           >
-            <div className="subcontainer-container" onMouseDown={(e) => e.stopPropagation()}>
+            <div
+              className="subcontainer-container"
+              onMouseDown={(e) => e.stopPropagation()}
+            >
               <SubContainer
                 parentComponent={component}
                 containerCanvasWidth={Number(cardWidth) || 300}
@@ -90,7 +93,10 @@ export const Item = React.memo(
               />
             </div>
             <span className="handle-container">
-              <Handle {...handleProps} {...listeners} />
+              <Handle
+                {...handleProps}
+                {...listeners}
+              />
             </span>
           </div>
         </li>

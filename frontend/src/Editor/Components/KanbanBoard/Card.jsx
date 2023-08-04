@@ -77,7 +77,11 @@ export const Card = ({
           style={{ ...getItemStyle(dndState.isDragging, dndProps.draggableProps.style) }}
         >
           <div className="card-body d-flex">
-            <span ref={target} onClick={handleCardClick} className="text-muted flex-grow-1 cursor-pointer fw-bold">
+            <span
+              ref={target}
+              onClick={handleCardClick}
+              className="text-muted flex-grow-1 cursor-pointer fw-bold"
+            >
               {item.title}
             </span>
             {isHovered && !item.isEditing && (
@@ -86,11 +90,20 @@ export const Card = ({
                 type="btn btn-sm btn-danger"
                 onClick={() => removeCardHandler(keyIndex, index)}
               >
-                <img className="mx-1" src={`assets/images/icons/trash.svg`} width={12} height={12} />
+                <img
+                  className="mx-1"
+                  src={`assets/images/icons/trash.svg`}
+                  width={12}
+                  height={12}
+                />
               </span>
             )}
             {eventPopoverOptions.show && (
-              <ReactPortal parent={el} className="kanban-portal" componentName="kanban">
+              <ReactPortal
+                parent={el}
+                className="kanban-portal"
+                componentName="kanban"
+              >
                 <CardEventPopover
                   kanbanCardWidgetId={id}
                   show={eventPopoverOptions.show}
