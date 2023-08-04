@@ -20,10 +20,7 @@ clientsClaim();
 // This variable must be present somewhere in your service worker file,
 // even if you decide not to use precaching. See https://cra.link/PWA
 
-precacheAndRoute(self.__WB_MANIFEST.concat([
-    { url: '/vendor.js', revision: null },
-    { url: '/main.js', revision: null }
-]));
+precacheAndRoute(self.__WB_MANIFEST);
 
 // Set up App Shell-style routing, so that all navigation requests
 // are fulfilled with your index.html shell. Learn more at
@@ -49,6 +46,25 @@ registerRoute(
   },
   createHandlerBoundToURL("/index.html")
 );
+
+// Add a runtime caching strategy for JavaScript files
+registerRoute(
+    ({ url }) =>
+      url.origin === self.location.origin && url.pathname.endsWith(".js"),
+    new StaleWhileRevalidate({
+      cacheName: "javascript",
+      plugins: [
+        {
+          cacheDidUpdate: async ({ request, oldResponse, newResponse, event }) => {
+            if (newResponse) {
+              console.log(`JavaScript file ${request.url} has been cached.`);
+            }
+          },
+        },
+      ],
+    })
+  );
+
 
 // An example runtime caching route for requests that aren't handled by the
 // precache, in this case same-origin .png requests like those from in public/
