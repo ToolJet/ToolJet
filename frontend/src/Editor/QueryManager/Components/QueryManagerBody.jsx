@@ -39,7 +39,6 @@ export const QueryManagerBody = forwardRef(
       previewLoading,
       queryPreviewData,
       allComponents,
-      apps,
       appDefinition,
       createDraftQuery,
       setOptions,
@@ -309,7 +308,6 @@ export const QueryManagerBody = forwardRef(
               componentMeta={queryComponent.componentMeta}
               dataQueries={dataQueries}
               components={allComponents}
-              apps={apps}
               popoverPlacement="top"
               pages={
                 appDefinition?.pages ? Object.entries(appDefinition?.pages).map(([id, page]) => ({ ...page, id })) : []

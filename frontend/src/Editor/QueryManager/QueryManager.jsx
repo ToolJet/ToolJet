@@ -22,7 +22,6 @@ const QueryManager = ({
   dataQueriesChanged,
   appId,
   darkMode,
-  apps,
   allComponents,
   dataSourceModalHandler,
   appDefinition,
@@ -105,7 +104,6 @@ const QueryManager = ({
         previewLoading={previewLoading}
         queryPreviewData={queryPreviewData}
         allComponents={allComponents}
-        apps={apps}
         appDefinition={appDefinition}
         createDraftQuery={createDraftQuery}
         setOptions={setOptions}

@@ -29,7 +29,7 @@ export const useDataQueriesStore = create(
             // Runs query on loading application
             if (runQueriesOnAppLoad) runQueries(data.data_queries, editorRef);
             // Compute query state to be added in the current state
-            computeQueryState(data.data_queries, editorRef);
+            computeQueryState(data.data_queries);
             const { actions, selectedQuery } = useQueryPanelStore.getState();
             if (selectFirstQuery || selectedQuery?.id === 'draftQuery') {
               actions.setSelectedQuery(data.data_queries[0]?.id, data.data_queries[0]);
@@ -40,7 +40,7 @@ export const useDataQueriesStore = create(
           });
         },
         setDataQueries: (dataQueries) => set({ dataQueries }),
-        deleteDataQueries: (queryId, editorRef) => {
+        deleteDataQueries: (queryId) => {
           set({ isDeletingQueryInProcess: true });
           dataqueryService
             .del(queryId)
@@ -57,8 +57,7 @@ export const useDataQueriesStore = create(
               get().actions.fetchDataQueries(
                 useAppVersionStore.getState().editingVersion?.id,
                 selectedQuery?.id === queryId,
-                false,
-                editorRef
+                false
               );
             })
             .catch(({ error }) => {
@@ -122,12 +121,12 @@ export const useDataQueriesStore = create(
               });
             });
         },
-        renameQuery: (id, newName, editorRef) => {
+        renameQuery: (id, newName) => {
           dataqueryService
             .update(id, newName)
             .then(() => {
               toast.success('Query Name Updated');
-              get().actions.fetchDataQueries(useAppVersionStore.getState().editingVersion?.id, false, false, editorRef);
+              get().actions.fetchDataQueries(useAppVersionStore.getState().editingVersion?.id, false, false);
             })
             .catch(({ error }) => {
               toast.error(error);

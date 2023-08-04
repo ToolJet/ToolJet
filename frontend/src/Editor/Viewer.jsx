@@ -168,7 +168,7 @@ class ViewerComponent extends React.Component {
         homepage: this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle,
       },
       () => {
-        computeComponentState(this, data?.definition?.pages[currentPage.id]?.components).then(async () => {
+        computeComponentState(data?.definition?.pages[currentPage.id]?.components).then(async () => {
           this.setState({ initialComputationOfStateDone: true });
           console.log('Default component state computed and set');
           this.runQueries(data.data_queries);
@@ -407,15 +407,13 @@ class ViewerComponent extends React.Component {
           name: targetPage.name,
         },
         async () => {
-          computeComponentState(this, this.state.appDefinition?.pages[this.state.currentPageId].components).then(
-            async () => {
-              // eslint-disable-next-line no-unsafe-optional-chaining
-              const { events } = this.state.appDefinition?.pages[this.state.currentPageId];
-              for (const event of events ?? []) {
-                await this.handleEvent(event.eventId, event);
-              }
+          computeComponentState(this.state.appDefinition?.pages[this.state.currentPageId].components).then(async () => {
+            // eslint-disable-next-line no-unsafe-optional-chaining
+            const { events } = this.state.appDefinition?.pages[this.state.currentPageId];
+            for (const event of events ?? []) {
+              await this.handleEvent(event.eventId, event);
             }
-          );
+          });
         }
       );
     }

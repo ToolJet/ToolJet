@@ -54,8 +54,11 @@ export const Container = ({
     backgroundSize: `${gridWidth}px 10px`,
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const components = appDefinition.pages[currentPageId]?.components ?? {};
+  const components = useMemo(
+    () => appDefinition.pages[currentPageId]?.components ?? {},
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [appDefinition.pages[currentPageId]]
+  );
   const currentState = useCurrentState();
   const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -87,10 +90,12 @@ export const Container = ({
   useHotkeys('meta+shift+z, control+shift+z', () => handleRedo());
   useHotkeys(
     'meta+v, control+v',
-    () => {
+    async () => {
       if (isContainerFocused && !isVersionReleased) {
-        navigator.clipboard.readText().then((cliptext) => {
+        // Check if the clipboard API is available
+        if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
           try {
+            const cliptext = await navigator.clipboard.readText();
             addComponents(
               currentPageId,
               appDefinition,
@@ -101,7 +106,9 @@ export const Container = ({
           } catch (err) {
             console.log(err);
           }
-        });
+        } else {
+          console.log('Clipboard API is not available in this browser.');
+        }
       }
       enableReleasedVersionPopupState();
     },
