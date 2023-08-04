@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Select, { components } from 'react-select';
-import { groupBy } from 'lodash';
+import { groupBy, isEmpty } from 'lodash';
 import { useNavigate } from 'react-router-dom';
 import DataSourceIcon from './DataSourceIcon';
 import { authenticationService } from '@/_services';
@@ -12,11 +12,13 @@ import { staticDataSources } from '../constants';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
+import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataSourceManager/SourceComponents';
 
 function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
   const dataSources = useDataSources();
   const globalDataSources = useGlobalDataSources();
   const [userDefinedSources, setUserDefinedSources] = useState([...dataSources, ...globalDataSources]);
+  const [dataSourcesKinds, setDataSourcesKinds] = useState([]);
   const [userDefinedSourcesOpts, setUserDefinedSourcesOpts] = useState([]);
   const { createDataQuery } = useDataQueriesActions();
   const { setPreviewData } = useQueryPanelActions();
@@ -26,8 +28,21 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
     closePopup();
   };
 
+  console.log(dataSourcesKinds);
+
   useEffect(() => {
-    setUserDefinedSources([...dataSources, ...globalDataSources]);
+    const allDataSources = [...dataSources, ...globalDataSources];
+    setUserDefinedSources(allDataSources);
+    const dataSourceKindsList = [...DataBaseSources, ...ApiSources, ...CloudStorageSources];
+    allDataSources.forEach(({ plugin }) => {
+      //plugin names are fetched from list data source api call only
+      if (isEmpty(plugin)) {
+        return;
+      }
+      dataSourceKindsList.push({ name: plugin.name, kind: plugin.pluginId });
+    });
+    setDataSourcesKinds(dataSourceKindsList);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSources]);
 
@@ -41,7 +56,8 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
                 Global datasources
               </div>
             )}
-            <DataSourceIcon source={sources?.[0]} height={16} /> <span className="ms-1 small">{kind}</span>
+            <DataSourceIcon source={sources?.[0]} height={16} />
+            <span className="ms-1 small">{dataSourcesKinds.find((dsk) => dsk.kind === kind)?.name || kind}</span>
           </div>
         ),
         options: sources.map((source) => ({
