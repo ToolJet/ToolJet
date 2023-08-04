@@ -14,6 +14,7 @@ import config from 'config';
 import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import { useAppDataActions, useAppInfo, useCurrentUser } from '@/_stores/appDataStore';
 
 export default function EditorHeader({
   darkMode,
@@ -22,8 +23,6 @@ export default function EditorHeader({
   toggleAppMaintenance,
   app,
   appVersionPreviewLink,
-  slug,
-  appId,
   canUndo,
   canRedo,
   handleUndo,
@@ -32,13 +31,20 @@ export default function EditorHeader({
   saveError,
   onNameChanged,
   setAppDefinitionFromVersion,
-  handleSlugChange,
   onVersionRelease,
   saveEditingVersion,
   onVersionDelete,
-  currentUser,
 }) {
-  const { is_maintenance_on } = app;
+  const currentUser = useCurrentUser();
+
+  const { isMaintenanceOn, appName, appId, slug } = useAppInfo();
+
+  const { updateState } = useAppDataActions();
+
+  const handleSlugChange = (newSlug) => {
+    updateState({ slug: newSlug });
+  };
+
   const { isVersionReleased, editingVersion } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
@@ -87,9 +93,9 @@ export default function EditorHeader({
                       globalSettings={appDefinition.globalSettings}
                       darkMode={darkMode}
                       toggleAppMaintenance={toggleAppMaintenance}
-                      is_maintenance_on={is_maintenance_on}
+                      isMaintenanceOn={isMaintenanceOn}
                     />
-                    <EditAppName appId={app.id} appName={app.name} onNameChanged={onNameChanged} />
+                    <EditAppName appId={appId} appName={appName} onNameChanged={onNameChanged} />
                   </div>
 
                   <div className="col d-flex">
@@ -167,14 +173,12 @@ export default function EditorHeader({
                   </Link>
                 </div>
                 <div className="nav-item dropdown">
-                  {app.id && (
-                    <ReleaseVersionButton
-                      appId={app.id}
-                      appName={app.name}
-                      onVersionRelease={onVersionRelease}
-                      saveEditingVersion={saveEditingVersion}
-                    />
-                  )}
+                  <ReleaseVersionButton
+                    appId={appId}
+                    appName={appName}
+                    onVersionRelease={onVersionRelease}
+                    saveEditingVersion={saveEditingVersion}
+                  />
                 </div>
               </div>
             </div>

@@ -15,13 +15,13 @@ import { useTranslation } from 'react-i18next';
 
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
+import { useAppInfo } from '@/_stores/appDataStore';
 
 export const EventManager = ({
   component,
   componentMeta,
   components,
   eventsChanged,
-  apps,
   excludeEvents,
   popOverCallback,
   popoverPlacement,
@@ -29,6 +29,8 @@ export const EventManager = ({
   hideEmptyEventsAlert,
 }) => {
   const dataQueries = useDataQueries();
+  const { apps, appId } = useAppInfo();
+
   const [events, setEvents] = useState(() => component.component.definition.events || []);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
@@ -170,7 +172,7 @@ export const EventManager = ({
   function getAllApps() {
     let appsOptionsList = [];
     apps
-      .filter((item) => item.slug !== undefined)
+      .filter((item) => item.slug !== undefined && item.id !== appId)
       .forEach((item) => {
         appsOptionsList.push({
           name: item.name,

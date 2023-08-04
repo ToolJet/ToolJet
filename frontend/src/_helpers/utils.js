@@ -544,10 +544,11 @@ export const hightlightMentionedUserInComment = (comment) => {
 };
 
 export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
-  const currentPageId = _ref.state.currentPageId;
-  const currentComponents = _ref.state?.appDefinition?.pages[currentPageId]?.components
-    ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
+  const currentPageId = _ref.currentPageId;
+  const currentComponents = _ref.appDefinition?.pages[currentPageId]?.components
+    ? Object.entries(_ref.appDefinition.pages[currentPageId]?.components)
     : {};
+
   const runQuery = (queryName = '', parameters) => {
     const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
 

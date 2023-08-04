@@ -13,7 +13,6 @@ const QueryPanel = ({
   dataQueriesChanged,
   fetchDataQueries,
   darkMode,
-  apps,
   allComponents,
   appId,
   appDefinition,
@@ -268,7 +267,6 @@ const QueryPanel = ({
                   dataQueriesChanged={updateDataQueries}
                   appId={appId}
                   darkMode={darkMode}
-                  apps={apps}
                   allComponents={allComponents}
                   dataSourceModalHandler={dataSourceModalHandler}
                   appDefinition={appDefinition}

@@ -3,7 +3,8 @@ import React from 'react';
 import config from 'config';
 import { RoomProvider } from '@y-presence/react';
 import Spinner from '@/_ui/Spinner';
-import { Editor } from '@/Editor';
+import { Editor, EditorFunc } from '@/Editor';
+
 import useRouter from '@/_hooks/use-router';
 import { useParams } from 'react-router-dom';
 const Y = require('yjs');
@@ -70,7 +71,7 @@ export const RealtimeEditor = (props) => {
 
   return (
     <RoomProvider awareness={provider.awareness} initialPresence={initialPresence}>
-      <Editor provider={provider} ymap={ydoc.getMap('appDef')} {...props} />
+      <EditorFunc provider={provider} ymap={ydoc.getMap('appDef')} {...props} />
     </RoomProvider>
   );
 };

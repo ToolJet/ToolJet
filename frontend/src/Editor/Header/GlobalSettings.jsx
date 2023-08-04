@@ -19,11 +19,10 @@ export const GlobalSettings = ({
   globalSettingsChanged,
   darkMode,
   toggleAppMaintenance,
-  is_maintenance_on,
+  isMaintenanceOn,
 }) => {
   const { t } = useTranslation();
-  const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } =
-    globalSettings;
+  const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasBackgroundColor, backgroundFxQuery } = globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
   const currentState = useCurrentState();
   const [forceCodeBox, setForceCodeBox] = React.useState(true);
@@ -87,7 +86,7 @@ export const GlobalSettings = ({
                   data-cy={`toggle-maintenance-mode`}
                   className="form-check-input"
                   type="checkbox"
-                  checked={is_maintenance_on}
+                  checked={isMaintenanceOn}
                   onChange={() => setConfirmationShow(true)}
                 />
               </div>
@@ -237,7 +236,7 @@ export const GlobalSettings = ({
       <Confirm
         show={showConfirmation}
         message={
-          is_maintenance_on
+          isMaintenanceOn
             ? 'Users will now be able to launch the released version of this app, do you wish to continue?'
             : 'Users will not be able to launch the app until maintenance mode is turned off, do you wish to continue?'
         }

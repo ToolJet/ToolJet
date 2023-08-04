@@ -28,7 +28,6 @@ export const Inspector = ({
   selectedComponentId,
   componentDefinitionChanged,
   allComponents,
-  apps,
   darkMode,
   switchSidebarTab,
   removeComponent,
@@ -285,7 +284,6 @@ export const Inspector = ({
       currentState={currentState}
       darkMode={darkMode}
       eventsChanged={eventsChanged}
-      apps={apps}
       pages={pages}
       allComponents={allComponents}
     />

@@ -31,6 +31,7 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -58,7 +59,7 @@ export function setCurrentStateAsync(_ref, changes) {
   });
 }
 
-export function onComponentOptionsChanged(_ref, component, options) {
+export function onComponentOptionsChanged(component, options) {
   const componentName = component.name;
   const components = getCurrentState().components;
   let componentData = components[componentName];
@@ -74,7 +75,7 @@ export function onComponentOptionsChanged(_ref, component, options) {
   return Promise.resolve();
 }
 
-export function onComponentOptionChanged(_ref, component, option_name, value) {
+export function onComponentOptionChanged(component, option_name, value) {
   const componentName = component.name;
   const components = getCurrentState().components;
 
@@ -351,7 +352,7 @@ function showModal(_ref, modal, show) {
     return Promise.resolve();
   }
 
-  const modalMeta = _ref.state.appDefinition.pages[_ref.state.currentPageId].components[modalId];
+  const modalMeta = _ref.appDefinition.pages[_ref.state.currentPageId].components[modalId]; //! NeedToFix
 
   const _components = {
     ...getCurrentState().components,
@@ -366,7 +367,7 @@ function showModal(_ref, modal, show) {
   return Promise.resolve();
 }
 
-function logoutAction(_ref) {
+function logoutAction() {
   localStorage.clear();
   authenticationService.logout(true);
 
@@ -431,7 +432,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
         return runQuery(_ref, queryId, name, undefined, mode, resolvedParams);
       }
       case 'logout': {
-        return logoutAction(_ref);
+        return logoutAction();
       }
 
       case 'open-webpage': {
@@ -511,7 +512,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'set-table-page': {
-        setTablePageIndex(_ref, event.table, event.pageIndex);
+        setTablePageIndex(event.table, event.pageIndex);
         break;
       }
 
@@ -574,7 +575,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'switch-page': {
-        _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
+        _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables)); // arpit [switchPage]
         return Promise.resolve();
       }
     }
@@ -600,7 +601,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
     });
-    runQuery(_ref, queryId, queryName, true, mode, parameters);
+    runQuery(_ref, queryId, queryName, true, mode, parameters); //arpit [runQuery]
   }
 
   if (eventName === 'onCalendarEventSelect') {
@@ -737,9 +738,9 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   }
 
   if (eventName === 'onBulkUpdate') {
-    onComponentOptionChanged(_self, options.component, 'isSavingChanges', true);
+    onComponentOptionChanged(options.component, 'isSavingChanges', true);
     await executeActionsForEventId(_self, eventName, options.component, mode, customVariables);
-    onComponentOptionChanged(_self, options.component, 'isSavingChanges', false);
+    onComponentOptionChanged(options.component, 'isSavingChanges', false);
   }
 
   if (['onDataQuerySuccess', 'onDataQueryFailure'].includes(eventName)) {
@@ -1105,7 +1106,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
   });
 }
 
-export function setTablePageIndex(_ref, tableId, index) {
+export function setTablePageIndex(tableId, index) {
   if (_.isEmpty(tableId)) {
     console.log('No table is associated with this event.');
     return Promise.resolve();
@@ -1126,7 +1127,7 @@ export function renderTooltip({ props, text }) {
   );
 }
 
-export function computeComponentState(_ref, components = {}) {
+export function computeComponentState(components = {}) {
   let componentState = {};
   const currentComponents = getCurrentState().components;
   Object.keys(components).forEach((key) => {
@@ -1168,8 +1169,11 @@ export function computeComponentState(_ref, components = {}) {
     },
   });
 
-  return setStateAsync(_ref, {
-    defaultComponentStateComputed: true,
+  return new Promise((resolve) => {
+    useEditorStore.getState().actions.updateEditorState({
+      defaultComponentStateComputed: true,
+    });
+    resolve();
   });
 }
 
@@ -1186,13 +1190,13 @@ export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, s
 };
 
 export const debuggerActions = {
-  error: (_self, errors) => {
+  error: (errors) => {
     useCurrentStateStore.getState().actions.setErrors({
       ...errors,
     });
   },
 
-  flush: (_self) => {
+  flush: () => {
     useCurrentStateStore.getState().actions.setCurrentState({
       errors: {},
     });
@@ -1312,9 +1316,16 @@ const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefi
   updateAppDefinition(newAppDefinition);
 };
 
-export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isCut = false) => {
-  const { selectedComponents, appDefinition, currentPageId } = _ref.state;
+export const cloneComponents = (
+  selectedComponents,
+  appDefinition,
+  currentPageId,
+  updateAppDefinition,
+  isCloning = true,
+  isCut = false
+) => {
   if (selectedComponents.length < 1) return getSelectedText();
+
   const { components: allComponents } = appDefinition.pages[currentPageId];
   let newDefinition = _.cloneDeep(appDefinition);
   let newComponents = [],
@@ -1351,7 +1362,13 @@ export const cloneComponents = (_ref, updateAppDefinition, isCloning = true, isC
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
     toast.success('Component copied succesfully');
   }
-  _ref.setState({ currentSidebarTab: 2 });
+
+  return new Promise((resolve) => {
+    useEditorStore.getState().actions.updateEditorState({
+      currentSidebarTab: 2,
+    });
+    resolve();
+  });
 };
 
 const getChildComponents = (allComponents, component, parentComponent, addedComponentId) => {
@@ -1606,7 +1623,7 @@ export const runQueries = (queries, _ref) => {
   });
 };
 
-export const computeQueryState = (queries, _ref) => {
+export const computeQueryState = (queries) => {
   let queryState = {};
   queries.forEach((query) => {
     if (query.plugin?.plugin_id) {
