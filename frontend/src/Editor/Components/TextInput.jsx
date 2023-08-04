@@ -83,7 +83,10 @@ export const TextInput = function TextInput({
   return (
     <>
       {config.UI_LIB === 'tooljet' && (
-        <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`}>
+        <div
+          data-disabled={disable}
+          className={`text-input ${visibility || 'invisible'}`}
+        >
           <input
             ref={textInputRef}
             onKeyUp={(e) => {

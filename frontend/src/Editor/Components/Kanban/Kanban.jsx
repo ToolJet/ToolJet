@@ -23,7 +23,12 @@ export const Kanban = (props) => {
       ref={parentRef}
       data-disabled={disabledState}
     >
-      <KanbanBoard handle kanbanProps={props} parentRef={parentRef} widgetHeight={widgetHeight} />
+      <KanbanBoard
+        handle
+        kanbanProps={props}
+        parentRef={parentRef}
+        widgetHeight={widgetHeight}
+      />
     </div>
   );
 };

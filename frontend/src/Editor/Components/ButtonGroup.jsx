@@ -83,7 +83,11 @@ export const ButtonGroup = function Button({
   return (
     <>
       {config.UI_LIB === 'tooljet' && (
-        <div className="widget-buttongroup" style={{ height }} data-cy={dataCy}>
+        <div
+          className="widget-buttongroup"
+          style={{ height }}
+          data-cy={dataCy}
+        >
           {label && (
             <p
               style={{ display: computedStyles.display }}
@@ -117,7 +121,11 @@ export const ButtonGroup = function Button({
         </div>
       )}
       {config.UI_LIB === 'mui' && (
-        <div className="widget-buttongroup" style={{ height }} data-cy={dataCy}>
+        <div
+          className="widget-buttongroup"
+          style={{ height }}
+          data-cy={dataCy}
+        >
           {label && (
             <p
               style={{ display: computedStyles.display }}
@@ -126,7 +134,10 @@ export const ButtonGroup = function Button({
               {label}
             </p>
           )}
-          <MUIButtonGroup variant="outlined" aria-label="outlined primary button group">
+          <MUIButtonGroup
+            variant="outlined"
+            aria-label="outlined primary button group"
+          >
             {data?.map((item, index) => (
               <MUIButton
                 style={{

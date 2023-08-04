@@ -90,7 +90,10 @@ export const CalendarEventPopover = function ({
         id={`${calendarWidgetId}-popover`}
       >
         {parentRef.current && showPopover && (
-          <div className="popover-body" style={{ padding: 'unset', width: '100%', height: '100%', zIndex: 11 }}>
+          <div
+            className="popover-body"
+            style={{ padding: 'unset', width: '100%', height: '100%', zIndex: 11 }}
+          >
             <>
               <SubContainer
                 containerCanvasWidth={300}

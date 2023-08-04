@@ -153,9 +153,17 @@ export const Map = function Map({
           top: height * 0.5 - 50,
         }}
       >
-        <img className="mx-2" src="assets/images/icons/marker.svg" width="24" height="64" />
+        <img
+          className="mx-2"
+          src="assets/images/icons/marker.svg"
+          width="24"
+          height="64"
+        />
       </div>
-      <LoadScript googleMapsApiKey={window.public_config.GOOGLE_MAPS_API_KEY} libraries={['places']}>
+      <LoadScript
+        googleMapsApiKey={window.public_config.GOOGLE_MAPS_API_KEY}
+        libraries={['places']}
+      >
         <GoogleMap
           center={mapCenter}
           mapContainerStyle={containerStyle}
@@ -171,7 +179,10 @@ export const Map = function Map({
           onDragEnd={handleBoundsChange}
         >
           {canSearch && (
-            <Autocomplete onPlaceChanged={onPlaceChanged} onLoad={onAutocompleteLoad}>
+            <Autocomplete
+              onPlaceChanged={onPlaceChanged}
+              onLoad={onAutocompleteLoad}
+            >
               <input
                 type="text"
                 placeholder={t('globals.search', 'Search')}
@@ -182,7 +193,12 @@ export const Map = function Map({
           {Array.isArray(markers) && (
             <>
               {markers.map((marker, index) => (
-                <Marker key={index} position={marker} label={marker.label} onClick={() => handleMarkerClick(index)} />
+                <Marker
+                  key={index}
+                  position={marker}
+                  label={marker.label}
+                  onClick={() => handleMarkerClick(index)}
+                />
               ))}
             </>
           )}
