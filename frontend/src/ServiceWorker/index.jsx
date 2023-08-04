@@ -20,7 +20,7 @@ clientsClaim();
 // This variable must be present somewhere in your service worker file,
 // even if you decide not to use precaching. See https://cra.link/PWA
 
-workbox.precaching.precacheAndRoute(self.__WB_MANIFEST.concat([
+precacheAndRoute(self.__WB_MANIFEST.concat([
     { url: '/vendor.js', revision: null },
     { url: '/main.js', revision: null }
 ]));
