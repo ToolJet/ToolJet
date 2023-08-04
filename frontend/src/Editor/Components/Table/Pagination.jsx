@@ -101,8 +101,8 @@ export const Pagination = function Pagination({
         data-cy={`pagination-button-to-previous`}
       ></ButtonSolid>
 
-      <div className="d-flex align-items-center tj-text-xsm h-100 mx-1" data-cy={`page-index-details`}>
-        {serverSide && <span>{pageIndex}</span>}
+      <div className="d-flex align-items-center tj-text-xsm h-100 mx-1 page-info" data-cy={`page-index-details`}>
+        {serverSide && <span className="color-slate-11">{pageIndex}</span>}
         {!serverSide && (
           <>
             <input
