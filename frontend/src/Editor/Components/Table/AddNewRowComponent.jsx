@@ -62,12 +62,19 @@ export function AddNewRowComponent({
     <div className="table-add-new-row card">
       <div className="card-header row">
         <div className="col">
-          <h4 data-cy={`header-filters`} className="font-weight-normal">
+          <h4
+            data-cy={`header-filters`}
+            className="font-weight-normal"
+          >
             Add new rows
           </h4>
         </div>
         <div className="col-auto">
-          <button data-cy={`button-close-filters`} onClick={hideAddNewRowPopup} className="btn btn-light btn-sm">
+          <button
+            data-cy={`button-close-filters`}
+            onClick={hideAddNewRowPopup}
+            className="btn btn-light btn-sm"
+          >
             x
           </button>
         </div>
@@ -80,10 +87,18 @@ export function AddNewRowComponent({
           <thead>
             {headerGroups.map((headerGroup, index) => {
               return (
-                <tr className="tr" key={index} {...headerGroup.getHeaderGroupProps()}>
+                <tr
+                  className="tr"
+                  key={index}
+                  {...headerGroup.getHeaderGroupProps()}
+                >
                   {headerGroup.headers.map((column, index) => {
                     return (
-                      <th key={index} {...column.getHeaderProps()} className="th">
+                      <th
+                        key={index}
+                        {...column.getHeaderProps()}
+                        className="th"
+                      >
                         <div>{column.render('Header')}</div>
                       </th>
                     );
@@ -96,12 +111,20 @@ export function AddNewRowComponent({
             {rows.map((row, index) => {
               prepareRow(row);
               return (
-                <tr key={index} className="table-row" {...row.getRowProps()}>
+                <tr
+                  key={index}
+                  className="table-row"
+                  {...row.getRowProps()}
+                >
                   {row.cells.map((cell, index) => {
                     let cellProps = cell.getCellProps();
                     const isEditable = true;
                     return (
-                      <td key={index} {...cellProps} style={{ ...cellProps.style }}>
+                      <td
+                        key={index}
+                        {...cellProps}
+                        style={{ ...cellProps.style }}
+                      >
                         <div
                           className={`td-container ${cell.column.columnType === 'image' && 'jet-table-image-column'} ${
                             cell.column.columnType !== 'image' && 'w-100 h-100'
@@ -141,14 +164,21 @@ export function AddNewRowComponent({
         >
           +
         </button>
-        <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
+        <Tooltip
+          id="tooltip-for-add-new-row"
+          className="tooltip"
+        />
       </div>
       <div className="card-footer">
         <button
           className="btn btn-primary btn-sm mx-2"
           onClick={() => {
             onEvent('onNewRowsAdded', { component }).then(() => {
-              mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
+              mergeToAddNewRowsDetails({
+                newRowsDataUpdates: {},
+                newRowsChangeSet: {},
+                addingNewRows: false,
+              });
               setNewRowsState([]);
             });
           }}
@@ -158,7 +188,11 @@ export function AddNewRowComponent({
         <button
           onClick={() => {
             setExposedVariable('newRows', []).then(() => {
-              mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
+              mergeToAddNewRowsDetails({
+                newRowsDataUpdates: {},
+                newRowsChangeSet: {},
+                addingNewRows: false,
+              });
               setNewRowsState([]);
             });
           }}

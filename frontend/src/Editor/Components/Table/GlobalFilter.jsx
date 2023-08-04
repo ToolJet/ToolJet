@@ -19,7 +19,10 @@ export const GlobalFilter = ({
   }, 500);
 
   return (
-    <div className="ms-2 d-flex border px-2 mx-1 btn-light align-items-center" style={{ padding: '0.25rem 0' }}>
+    <div
+      className="ms-2 d-flex border px-2 mx-1 btn-light align-items-center"
+      style={{ padding: '0.25rem 0' }}
+    >
       <img
         src="assets/images/icons/search.svg"
         alt="search icon"

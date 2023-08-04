@@ -12,7 +12,10 @@ export const CircularProgressBar = function CircularProgressBar({ height, proper
   };
 
   return (
-    <div style={computedStyles} data-cy={dataCy}>
+    <div
+      style={computedStyles}
+      data-cy={dataCy}
+    >
       <CircularProgressbar
         value={progress}
         text={text}

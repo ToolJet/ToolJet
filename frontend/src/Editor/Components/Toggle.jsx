@@ -53,8 +53,15 @@ export const ToggleSwitch = ({ height, properties, styles, fireEvent, setExposed
   return (
     <>
       {config.UI_LIB === 'tooljet' && (
-        <div className="row py-1" style={{ height, display: visibility ? '' : 'none', boxShadow }} data-cy={dataCy}>
-          <span className="form-check-label form-check-label col-auto my-auto" style={{ color: textColor }}>
+        <div
+          className="row py-1"
+          style={{ height, display: visibility ? '' : 'none', boxShadow }}
+          data-cy={dataCy}
+        >
+          <span
+            className="form-check-label form-check-label col-auto my-auto"
+            style={{ color: textColor }}
+          >
             {label}
           </span>
           <div className="col px-1 py-0 mt-0">

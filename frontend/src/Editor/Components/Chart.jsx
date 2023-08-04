@@ -127,11 +127,21 @@ export const Chart = function Chart({ width, height, darkMode, properties, style
   );
 
   return (
-    <div data-disabled={disabledState} style={computedStyles} data-cy={dataCy}>
+    <div
+      data-disabled={disabledState}
+      style={computedStyles}
+      data-cy={dataCy}
+    >
       {loadingState === true ? (
-        <div style={{ width }} className="p-2 loader-main-container">
+        <div
+          style={{ width }}
+          className="p-2 loader-main-container"
+        >
           <center>
-            <div className="spinner-border mt-5" role="status"></div>
+            <div
+              className="spinner-border mt-5"
+              role="status"
+            ></div>
           </center>
         </div>
       ) : (

@@ -62,7 +62,14 @@ export const Calendar = function ({
         ? { writingMode: 'vertical-rl', textOrientation: 'mixed' }
         : {};
     const color = event.textColor ?? 'white';
-    const style = { backgroundColor, ...textStyle, padding: 3, paddingLeft: 5, paddingRight: 5, color };
+    const style = {
+      backgroundColor,
+      ...textStyle,
+      padding: 3,
+      paddingLeft: 5,
+      paddingRight: 5,
+      color,
+    };
 
     return { style };
   };

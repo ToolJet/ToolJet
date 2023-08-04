@@ -121,13 +121,19 @@ export const Datepicker = function Datepicker({
             timeInputLabel={<div className={`${darkMode && 'theme-dark'}`}>Time</div>}
           />
 
-          <div data-cy="date-picker-invalid-feedback" className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}>
+          <div
+            data-cy="date-picker-invalid-feedback"
+            className={`invalid-feedback ${isValid ? '' : 'd-flex'}`}
+          >
             {validationError}
           </div>
         </div>
       )}
       {config.UI_LIB === 'mui' && (
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+        <LocalizationProvider
+          dateAdapter={AdapterDayjs}
+          adapterLocale="es"
+        >
           <DateTimePicker
             label="Seleccione Fecha"
             format={selectedDateFormat}

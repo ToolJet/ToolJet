@@ -277,7 +277,10 @@ export function Table({
 
   function getExportFileBlob({ columns, fileType, fileName }) {
     let headers = columns.map((column) => {
-      return { exportValue: String(column.exportValue), key: column.key ? String(column.key) : column.key };
+      return {
+        exportValue: String(column.exportValue),
+        key: column.key ? String(column.key) : column.key,
+      };
     });
     let data = globalFilteredRows.map((row) => {
       return headers.reduce((accumulator, header) => {
@@ -479,7 +482,11 @@ export function Table({
         tableDetails.addNewRowsDetails.addingNewRows
       ) {
         setExposedVariable('newRows', []).then(() => {
-          mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
+          mergeToAddNewRowsDetails({
+            newRowsDataUpdates: {},
+            newRowsChangeSet: {},
+            addingNewRows: false,
+          });
         });
       }
     }
@@ -557,7 +564,10 @@ export function Table({
       manualSortBy: serverSideSort,
       stateReducer: (newState, action, prevState) => {
         const newStateWithPrevSelectedRows = showBulkSelector
-          ? { ...newState, selectedRowId: { ...prevState.selectedRowIds, ...newState.selectedRowIds } }
+          ? {
+              ...newState,
+              selectedRowId: { ...prevState.selectedRowIds, ...newState.selectedRowIds },
+            }
           : { ...newState.selectedRowId };
         if (action.type === 'toggleRowSelected') {
           prevState.selectedRowIds[action.id]
@@ -702,7 +712,11 @@ export function Table({
         setExposedVariables({
           newRows: [],
         }).then(() => {
-          mergeToAddNewRowsDetails({ newRowsChangeSet: {}, newRowsDataUpdates: {}, addingNewRows: false });
+          mergeToAddNewRowsDetails({
+            newRowsChangeSet: {},
+            newRowsDataUpdates: {},
+            addingNewRows: false,
+          });
         });
       }
     },
@@ -716,7 +730,10 @@ export function Table({
     if (showBulkSelector) {
       const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
       const selectedRowsId = selectedFlatRows.map((row) => row.id);
-      setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId }).then(() => {
+      setExposedVariables({
+        selectedRows: selectedRowsOriginalData,
+        selectedRowsId: selectedRowsId,
+      }).then(() => {
         const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
           accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
           return accumulator;
@@ -746,7 +763,12 @@ export function Table({
 
   useEffect(() => {
     if (mounted) {
-      setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null }).then(() => {
+      setExposedVariables({
+        selectedRows: [],
+        selectedRowsId: [],
+        selectedRow: {},
+        selectedRowId: null,
+      }).then(() => {
         mergeToTableDetails({ selectedRowsDetails: [], selectedRow: {}, selectedRowId: null });
         toggleAllRowsSelected(false);
       });
@@ -865,7 +887,11 @@ export function Table({
       >
         <Popover.Body>
           <div className="d-flex flex-column">
-            <span data-cy={`option-download-CSV`} className="cursor-pointer" onClick={() => exportData('csv', true)}>
+            <span
+              data-cy={`option-download-CSV`}
+              className="cursor-pointer"
+              onClick={() => exportData('csv', true)}
+            >
               Download as CSV
             </span>
             <span
@@ -935,14 +961,24 @@ export function Table({
                   data-tooltip-content="Add new row"
                   disabled={tableDetails.addNewRowsDetails.addingNewRows}
                 >
-                  <img src="assets/images/icons/plus.svg" width="15" height="15" />
+                  <img
+                    src="assets/images/icons/plus.svg"
+                    width="15"
+                    height="15"
+                  />
                   {!tableDetails.addNewRowsDetails.addingNewRows &&
                     !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
-                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                      <a
+                        className="badge bg-azure"
+                        style={{ width: '4px', height: '4px', marginTop: '5px' }}
+                      ></a>
                     )}
                 </button>
               )}
-              <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
+              <Tooltip
+                id="tooltip-for-add-new-row"
+                className="tooltip"
+              />
               {showFilterButton && (
                 <>
                   <span
@@ -951,26 +987,48 @@ export function Table({
                     data-tooltip-id="tooltip-for-filter-data"
                     data-tooltip-content="Filter data"
                   >
-                    <img src="assets/images/icons/filter.svg" width="15" height="15" />
+                    <img
+                      src="assets/images/icons/filter.svg"
+                      width="15"
+                      height="15"
+                    />
                     {tableDetails.filterDetails.filters.length > 0 && (
-                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
+                      <a
+                        className="badge bg-azure"
+                        style={{ width: '4px', height: '4px', marginTop: '5px' }}
+                      ></a>
                     )}
                   </span>
-                  <Tooltip id="tooltip-for-filter-data" className="tooltip" />
+                  <Tooltip
+                    id="tooltip-for-filter-data"
+                    className="tooltip"
+                  />
                 </>
               )}
               {showDownloadButton && (
                 <>
-                  <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
+                  <OverlayTrigger
+                    trigger="click"
+                    overlay={downlaodPopover()}
+                    rootClose={true}
+                    placement={'bottom-end'}
+                  >
                     <span
                       className="btn btn-light btn-sm p-1"
                       data-tooltip-id="tooltip-for-download"
                       data-tooltip-content="Download"
                     >
-                      <img src="assets/images/icons/download.svg" width="15" height="15" />
+                      <img
+                        src="assets/images/icons/download.svg"
+                        width="15"
+                        height="15"
+                      />
                     </span>
                   </OverlayTrigger>
-                  <Tooltip id="tooltip-for-download" className="tooltip" />
+                  <Tooltip
+                    id="tooltip-for-download"
+                    className="tooltip"
+                  />
                 </>
               )}
               {!hideColumnSelectorButton && (
@@ -987,7 +1045,10 @@ export function Table({
                       >
                         <div className="dropdown-item">
                           <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
-                          <span className="hide-column-name" data-cy={`options-select-all-coloumn`}>
+                          <span
+                            className="hide-column-name"
+                            data-cy={`options-select-all-coloumn`}
+                          >
                             Select All
                           </span>
                         </div>
@@ -1022,7 +1083,10 @@ export function Table({
                   }
                   placement={'bottom-end'}
                 >
-                  <span data-cy={`select-column-icon`} className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
+                  <span
+                    data-cy={`select-column-icon`}
+                    className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}
+                  >
                     <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
                   </span>
                 </OverlayTrigger>
@@ -1059,7 +1123,10 @@ export function Table({
                   }
                 }}
               >
-                <Droppable droppableId="droppable" direction="horizontal">
+                <Droppable
+                  droppableId="droppable"
+                  direction="horizontal"
+                >
                   {(droppableProvided, snapshot) => (
                     <tr
                       ref={droppableProvided.innerRef}
@@ -1093,7 +1160,9 @@ export function Table({
                                   {...provided.dragHandleProps}
                                   // {...extraProps}
                                   ref={provided.innerRef}
-                                  style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
+                                  style={{
+                                    ...getItemStyle(snapshot, provided.draggableProps.style),
+                                  }}
                                 >
                                   {column.render('Header')}
                                 </div>
@@ -1125,7 +1194,10 @@ export function Table({
           )}
 
           {!loadingState && (
-            <tbody {...getTableBodyProps()} style={{ color: computeFontColor() }}>
+            <tbody
+              {...getTableBodyProps()}
+              style={{ color: computeFontColor() }}
+            >
               {page.map((row, index) => {
                 prepareRow(row);
                 return (
@@ -1157,7 +1229,10 @@ export function Table({
                     }}
                     onMouseOver={(e) => {
                       if (hoverAdded) {
-                        const hoveredRowDetails = { hoveredRowId: row.id, hoveredRow: row.original };
+                        const hoveredRowDetails = {
+                          hoveredRowId: row.id,
+                          hoveredRow: row.original,
+                        };
                         setRowDetails(hoveredRowDetails);
                         hoverRef.current = rowDetails?.hoveredRowId;
                       }
@@ -1227,7 +1302,10 @@ export function Table({
                             [cellSize]: true,
                           })}
                           {...cellProps}
-                          style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
+                          style={{
+                            ...cellProps.style,
+                            backgroundColor: cellBackgroundColor ?? 'inherit',
+                          }}
                           onClick={(e) => {
                             setExposedVariable('selectedCell', {
                               columnName: cell.column.exportValue,
@@ -1244,7 +1322,11 @@ export function Table({
                             <GenerateEachCellValue
                               cellValue={cellValue}
                               globalFilter={state.globalFilter}
-                              cellRender={cell.render('Cell', { cell, actionButtonsArray, isEditable })}
+                              cellRender={cell.render('Cell', {
+                                cell,
+                                actionButtonsArray,
+                                isEditable,
+                              })}
                               rowChangeSet={rowChangeSet}
                               isEditable={isEditable}
                               columnType={cell.column.columnType}
@@ -1264,9 +1346,15 @@ export function Table({
           )}
         </table>
         {loadingState === true && (
-          <div style={{ width: '100%' }} className="p-2">
+          <div
+            style={{ width: '100%' }}
+            className="p-2"
+          >
             <center>
-              <div className="spinner-border mt-5" role="status"></div>
+              <div
+                className="spinner-border mt-5"
+                role="status"
+              ></div>
             </center>
           </div>
         )}

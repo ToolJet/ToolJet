@@ -97,7 +97,10 @@ export const TreeSelect = ({ height, properties, styles, setExposedVariable, fir
       }}
       data-cy={dataCy}
     >
-      <div className="card-title" style={{ marginBottom: '0.5rem' }}>
+      <div
+        className="card-title"
+        style={{ marginBottom: '0.5rem' }}
+      >
         {label}
       </div>
       <CheckboxTree

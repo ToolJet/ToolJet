@@ -16,12 +16,23 @@ export const Spinner = ({ styles, height, dataCy }) => {
   return (
     <>
       {config.UI_LIB === 'tooljet' && (
-        <div className="spinner-container" style={baseStyle} data-cy={dataCy}>
-          <div className={`spinner-border spinner-border-${size}`} role="status" style={{ color: colour }}></div>
+        <div
+          className="spinner-container"
+          style={baseStyle}
+          data-cy={dataCy}
+        >
+          <div
+            className={`spinner-border spinner-border-${size}`}
+            role="status"
+            style={{ color: colour }}
+          ></div>
         </div>
       )}
       {config.UI_LIB === 'mui' && (
-        <Box className="spinner-container" style={baseStyle}>
+        <Box
+          className="spinner-container"
+          style={baseStyle}
+        >
           <CircularProgress
             size={size}
             value={70}

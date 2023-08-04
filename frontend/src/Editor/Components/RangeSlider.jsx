@@ -67,7 +67,11 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
   return (
     <>
       {config.UI_LIB === 'tooljet' && (
-        <div style={computedStyles} className="range-slider" data-cy={dataCy}>
+        <div
+          style={computedStyles}
+          className="range-slider"
+          data-cy={dataCy}
+        >
           {enableTwoHandle ? (
             <Slider
               range
@@ -102,7 +106,11 @@ export const RangeSlider = function RangeSlider({ height, properties, styles, se
         </div>
       )}
       {config.UI_LIB === 'mui' && (
-        <div style={computedStyles} className="range-slider" data-cy={dataCy}>
+        <div
+          style={computedStyles}
+          className="range-slider"
+          data-cy={dataCy}
+        >
           {!enableTwoHandle ? (
             <SliderMUI
               min={min}
