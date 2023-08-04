@@ -23,7 +23,11 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy })
     };
 
     return (
-      <span className="badge mx-1 mb-1" style={tagComputedStyles} key={index}>
+      <span
+        className="badge mx-1 mb-1"
+        style={tagComputedStyles}
+        key={index}
+      >
         {item.title}
       </span>
     );
@@ -32,7 +36,10 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy })
   return (
     <>
       {config.UI_LIB === 'tooljet' && (
-        <div style={computedStyles} data-cy={dataCy}>
+        <div
+          style={computedStyles}
+          data-cy={dataCy}
+        >
           {data &&
             data.map((item, index) => {
               return renderTag(item, index);
@@ -40,7 +47,12 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy })
         </div>
       )}
       {config.UI_LIB === 'mui' && (
-        <Stack data-cy={dataCy} style={computedStyles} direction="row" spacing={1}>
+        <Stack
+          data-cy={dataCy}
+          style={computedStyles}
+          direction="row"
+          spacing={1}
+        >
           {data &&
             data.map((item, index) => {
               return (

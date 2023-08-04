@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import PaginationMUI from '@mui/material/Pagination';
+import config from 'config';
 
 export const Pagination = ({
   height,
@@ -64,52 +66,69 @@ export const Pagination = ({
   };
 
   return (
-    <div
-      data-disabled={disabledState}
-      className="d-flex align-items-center px-1"
-      data-cy={dataCy}
-      style={{ boxShadow }}
-    >
-      <ul
-        className="pagination m-0"
-        style={computedStyles}
-      >
-        <Pagination.Operator
-          operator="<<"
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          handleOnClick={gotoFirstPage}
-          darkMode={darkMode}
+    <>
+      {config.UI_LIB === 'tooljet' && (
+        <div
+          data-disabled={disabledState}
+          className="d-flex align-items-center px-1"
+          data-cy={dataCy}
+          style={{ boxShadow }}
+        >
+          <ul
+            className="pagination m-0"
+            style={computedStyles}
+          >
+            <Pagination.Operator
+              operator="<<"
+              currentPage={currentPage}
+              totalPages={properties.numberOfPages}
+              handleOnClick={gotoFirstPage}
+              darkMode={darkMode}
+            />
+            <Pagination.Operator
+              operator="<"
+              currentPage={currentPage}
+              totalPages={properties.numberOfPages}
+              handleOnClick={gotoPreviousPage}
+              darkMode={darkMode}
+            />
+            <Pagination.PageLinks
+              currentPage={currentPage}
+              totalPages={properties.numberOfPages}
+              callback={gotoPage}
+              darkMode={darkMode}
+            />
+            <Pagination.Operator
+              operator=">"
+              currentPage={currentPage}
+              totalPages={properties.numberOfPages}
+              handleOnClick={gotoNextPage}
+              darkMode={darkMode}
+            />
+            <Pagination.Operator
+              operator=">>"
+              currentPage={currentPage}
+              totalPages={properties.numberOfPages}
+              handleOnClick={gotoLastPage}
+              darkMode={darkMode}
+            />
+          </ul>
+        </div>
+      )}
+      {config.UI_LIB === 'mui' && (
+        <PaginationMUI
+          count={properties.numberOfPages}
+          defaultPage={currentPage}
+          page={currentPage}
+          onChange={(event, value) => setCurrentPage(value)}
+          showFirstButton
+          showLastButton
+          disabled={disabledState}
+          style={computedStyles}
+          sx={{ boxShadow: boxShadow }}
         />
-        <Pagination.Operator
-          operator="<"
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          handleOnClick={gotoPreviousPage}
-          darkMode={darkMode}
-        />
-        <Pagination.PageLinks
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          callback={gotoPage}
-          darkMode={darkMode}
-        />
-        <Pagination.Operator
-          operator=">"
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          handleOnClick={gotoNextPage}
-          darkMode={darkMode}
-        />
-        <Pagination.Operator
-          operator=">>"
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          handleOnClick={gotoLastPage}
-          darkMode={darkMode}
-        />
-      </ul>
-    </div>
+      )}
+    </>
   );
 };
 
