@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
-import _ from "lodash";
-import React, { useState, useEffect } from "react";
-import Select from "react-select";
-import config from "config";
-import { TextField, MenuItem , CircularProgress } from "@mui/material";
+import _ from 'lodash'
+import React, { useState, useEffect } from 'react'
+import Select from 'react-select'
+import config from 'config'
+import { TextField, MenuItem, CircularProgress } from '@mui/material'
 
 export const DropDown = function DropDown({
   height,
@@ -20,8 +20,7 @@ export const DropDown = function DropDown({
   registerAction,
   dataCy,
 }) {
-  let { label, value, advanced, schema, placeholder, display_values, values } =
-    properties;
+  let { label, value, advanced, schema, placeholder, display_values, values } = properties
   const {
     selectedTextColor,
     borderRadius,
@@ -29,26 +28,26 @@ export const DropDown = function DropDown({
     disabledState,
     justifyContent,
     boxShadow,
-  } = styles;
+  } = styles
   const [currentValue, setCurrentValue] = useState(() =>
     advanced ? findDefaultItem(schema) : value
-  );
-  const { value: exposedValue } = exposedVariables;
+  )
+  const { value: exposedValue } = exposedVariables
 
   function findDefaultItem(schema) {
-    const foundItem = schema?.find((item) => item?.default === true);
-    return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined;
+    const foundItem = schema?.find((item) => item?.default === true)
+    return !hasVisibleFalse(foundItem?.value) ? foundItem?.value : undefined
   }
 
   if (advanced) {
-    values = schema?.map((item) => item?.value);
-    display_values = schema?.map((item) => item?.label);
-    value = findDefaultItem(schema);
+    values = schema?.map((item) => item?.value)
+    display_values = schema?.map((item) => item?.label)
+    value = findDefaultItem(schema)
   } else if (!_.isArray(values)) {
-    values = [];
+    values = []
   }
 
-  let selectOptions = [];
+  let selectOptions = []
 
   try {
     selectOptions = advanced
@@ -62,127 +61,122 @@ export const DropDown = function DropDown({
         ]
       : [
           ...values.map((value, index) => {
-            return { label: display_values[index], value: value };
+            return { label: display_values[index], value: value }
           }),
-        ];
+        ]
   } catch (err) {
-    console.log(err);
+    console.log(err)
   }
 
   const setExposedItem = (value, index, onSelectFired = false) => {
-    setCurrentValue(value);
+    setCurrentValue(value)
     onSelectFired
-      ? setExposedVariable("value", value).then(fireEvent("onSelect"))
-      : setExposedVariable("value", value);
+      ? setExposedVariable('value', value).then(fireEvent('onSelect'))
+      : setExposedVariable('value', value)
     setExposedVariable(
-      "selectedOptionLabel",
+      'selectedOptionLabel',
       index === undefined ? undefined : display_values?.[index]
-    );
-  };
+    )
+  }
 
   function selectOption(value) {
-    let index = null;
-    index = values?.indexOf(value);
+    let index = null
+    index = values?.indexOf(value)
 
     if (values?.includes(value)) {
-      setExposedItem(value, index, true);
+      setExposedItem(value, index, true)
     } else {
-      setExposedItem(undefined, undefined, true);
+      setExposedItem(undefined, undefined, true)
     }
   }
 
   registerAction(
-    "selectOption",
+    'selectOption',
     async function (value) {
-      selectOption(value);
+      selectOption(value)
     },
     [JSON.stringify(values), setCurrentValue, JSON.stringify(display_values)]
-  );
+  )
 
-  const validationData = validate(value);
-  const { isValid, validationError } = validationData;
+  const validationData = validate(value)
+  const { isValid, validationError } = validationData
 
   useEffect(() => {
-    setExposedVariable("isValid", isValid);
+    setExposedVariable('isValid', isValid)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
+  }, [isValid])
 
   useEffect(() => {
-    let newValue = undefined;
-    let index = null;
+    let newValue = undefined
+    let index = null
     if (values?.includes(value)) {
-      newValue = value;
-      index = values?.indexOf(value);
+      newValue = value
+      index = values?.indexOf(value)
     }
-    setExposedItem(newValue, index);
+    setExposedItem(newValue, index)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, JSON.stringify(values)]);
+  }, [value, JSON.stringify(values)])
 
   useEffect(() => {
-    let index = null;
+    let index = null
     if (exposedValue !== currentValue) {
-      setExposedVariable("value", currentValue);
+      setExposedVariable('value', currentValue)
     }
-    index = values?.indexOf(currentValue);
-    setExposedVariable("selectedOptionLabel", display_values?.[index]);
+    index = values?.indexOf(currentValue)
+    setExposedVariable('selectedOptionLabel', display_values?.[index])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentValue, JSON.stringify(display_values), JSON.stringify(values)]);
+  }, [currentValue, JSON.stringify(display_values), JSON.stringify(values)])
 
   useEffect(() => {
-    let newValue = undefined;
-    let index = null;
+    let newValue = undefined
+    let index = null
 
-    if (values?.includes(currentValue)) newValue = currentValue;
-    else if (values?.includes(value)) newValue = value;
-    index = values?.indexOf(newValue);
-    setExposedItem(newValue, index);
+    if (values?.includes(currentValue)) newValue = currentValue
+    else if (values?.includes(value)) newValue = value
+    index = values?.indexOf(newValue)
+    setExposedItem(newValue, index)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(values)]);
+  }, [JSON.stringify(values)])
 
   useEffect(() => {
-    setExposedVariable("label", label);
+    setExposedVariable('label', label)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [label]);
+  }, [label])
 
   useEffect(() => {
     if (advanced) {
       setExposedVariable(
-        "optionLabels",
+        'optionLabels',
         schema?.filter((item) => item?.visible)?.map((item) => item.label)
-      );
+      )
       if (hasVisibleFalse(currentValue)) {
-        setCurrentValue(findDefaultItem(schema));
+        setCurrentValue(findDefaultItem(schema))
       }
-    } else setExposedVariable("optionLabels", display_values);
+    } else setExposedVariable('optionLabels', display_values)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    JSON.stringify(schema),
-    advanced,
-    JSON.stringify(display_values),
-    currentValue,
-  ]);
+  }, [JSON.stringify(schema), advanced, JSON.stringify(display_values), currentValue])
 
   function hasVisibleFalse(value) {
     for (let i = 0; i < schema?.length; i++) {
       if (schema[i].value === value && schema[i].visible === false) {
-        return true;
+        return true
       }
     }
-    return false;
+    return false
   }
 
   const onSearchTextChange = (searchText, actionProps) => {
-    if (actionProps.action === "input-change") {
-      setExposedVariable("searchText", searchText);
-      fireEvent("onSearchTextChanged");
+    if (actionProps.action === 'input-change') {
+      setExposedVariable('searchText', searchText)
+      fireEvent('onSearchTextChanged')
     }
-  };
+  }
 
   const customStyles = {
     control: (provided, state) => ({
       ...provided,
-      background: darkMode ? "rgb(31,40,55)" : "white",
+      background: darkMode ? 'rgb(31,40,55)' : 'white',
       minHeight: height,
       height: height,
       boxShadow: state.isFocused ? boxShadow : boxShadow,
@@ -192,28 +186,28 @@ export const DropDown = function DropDown({
     valueContainer: (provided, _state) => ({
       ...provided,
       height: height,
-      padding: "0 6px",
+      padding: '0 6px',
       justifyContent,
     }),
 
     singleValue: (provided, _state) => ({
       ...provided,
       color: disabledState
-        ? "grey"
+        ? 'grey'
         : selectedTextColor
         ? selectedTextColor
         : darkMode
-        ? "white"
-        : "black",
+        ? 'white'
+        : 'black',
     }),
 
     input: (provided, _state) => ({
       ...provided,
-      color: darkMode ? "white" : "black",
-      margin: "0px",
+      color: darkMode ? 'white' : 'black',
+      margin: '0px',
     }),
     indicatorSeparator: (_state) => ({
-      display: "none",
+      display: 'none',
     }),
     indicatorsContainer: (provided, _state) => ({
       ...provided,
@@ -222,90 +216,85 @@ export const DropDown = function DropDown({
     option: (provided, state) => {
       const styles = darkMode
         ? {
-            color: state.isDisabled ? "#88909698" : "white",
-            backgroundColor:
-              state.value === currentValue ? "#3650AF" : "rgb(31,40,55)",
-            ":hover": {
+            color: state.isDisabled ? '#88909698' : 'white',
+            backgroundColor: state.value === currentValue ? '#3650AF' : 'rgb(31,40,55)',
+            ':hover': {
               backgroundColor: state.isDisabled
-                ? "transparent"
+                ? 'transparent'
                 : state.value === currentValue
-                ? "#1F2E64"
-                : "#323C4B",
+                ? '#1F2E64'
+                : '#323C4B',
             },
-            maxWidth: "auto",
-            minWidth: "max-content",
+            maxWidth: 'auto',
+            minWidth: 'max-content',
           }
         : {
-            backgroundColor: state.value === currentValue ? "#7A95FB" : "white",
+            backgroundColor: state.value === currentValue ? '#7A95FB' : 'white',
             color: state.isDisabled
-              ? "#88909694"
+              ? '#88909694'
               : state.value === currentValue
-              ? "white"
-              : "black",
-            ":hover": {
+              ? 'white'
+              : 'black',
+            ':hover': {
               backgroundColor: state.isDisabled
-                ? "transparent"
+                ? 'transparent'
                 : state.value === currentValue
-                ? "#3650AF"
-                : "#d8dce9",
+                ? '#3650AF'
+                : '#d8dce9',
             },
-            maxWidth: "auto",
-            minWidth: "max-content",
-          };
+            maxWidth: 'auto',
+            minWidth: 'max-content',
+          }
       return {
         ...provided,
         justifyContent,
-        height: "auto",
-        display: "flex",
-        flexDirection: "rows",
-        alignItems: "center",
+        height: 'auto',
+        display: 'flex',
+        flexDirection: 'rows',
+        alignItems: 'center',
         ...styles,
-      };
+      }
     },
     menu: (provided, _state) => ({
       ...provided,
-      backgroundColor: darkMode ? "rgb(31,40,55)" : "white",
+      backgroundColor: darkMode ? 'rgb(31,40,55)' : 'white',
     }),
-  };
+  }
 
   return (
     <>
-      {config.UI_LIB === "tooljet" && (
+      {config.UI_LIB === 'tooljet' && (
         <>
           <div
-            className="dropdown-widget row g-0"
-            style={{ height, display: visibility ? "" : "none" }}
+            className='dropdown-widget row g-0'
+            style={{ height, display: visibility ? '' : 'none' }}
             onMouseDown={(event) => {
-              onComponentClick(id, component, event);
+              onComponentClick(id, component, event)
             }}
             data-cy={dataCy}
           >
-            <div className="col-auto my-auto">
+            <div className='col-auto my-auto'>
               <label
-                style={{ marginRight: label !== "" ? "1rem" : "0.001rem" }}
-                className="form-label py-0 my-0"
+                style={{ marginRight: label !== '' ? '1rem' : '0.001rem' }}
+                className='form-label py-0 my-0'
               >
                 {label}
               </label>
             </div>
-            <div className="col px-0 h-100">
+            <div className='col px-0 h-100'>
               <Select
                 isDisabled={disabledState}
                 value={
-                  selectOptions.filter(
-                    (option) => option.value === currentValue
-                  )[0] ?? null
+                  selectOptions.filter((option) => option.value === currentValue)[0] ??
+                  null
                 }
                 onChange={(selectedOption, actionProps) => {
-                  if (actionProps.action === "select-option") {
-                    setCurrentValue(selectedOption.value);
-                    setExposedVariable("value", selectedOption.value).then(() =>
-                      fireEvent("onSelect")
-                    );
-                    setExposedVariable(
-                      "selectedOptionLabel",
-                      selectedOption.label
-                    );
+                  if (actionProps.action === 'select-option') {
+                    setCurrentValue(selectedOption.value)
+                    setExposedVariable('value', selectedOption.value).then(() =>
+                      fireEvent('onSelect')
+                    )
+                    setExposedVariable('selectedOptionLabel', selectedOption.label)
                   }
                 }}
                 options={selectOptions}
@@ -320,17 +309,17 @@ export const DropDown = function DropDown({
           </div>
           <div
             className={`invalid-feedback ${
-              isValid ? "" : visibility ? "d-flex" : "none"
+              isValid ? '' : visibility ? 'd-flex' : 'none'
             }`}
           >
             {validationError}
           </div>
         </>
       )}
-      {config.UI_LIB === "mui" && (
+      {config.UI_LIB === 'mui' && (
         <div
-          className="dropdown-widget row g-0"
-          style={{ height, display: visibility ? "" : "none" }}
+          className='dropdown-widget row g-0'
+          style={{ height, display: visibility ? '' : 'none' }}
           data-cy={dataCy}
         >
           <TextField
@@ -339,29 +328,30 @@ export const DropDown = function DropDown({
             defaultValue={value}
             disabled={disabledState}
             placeholder={placeholder}
-            value={currentValue ? `${currentValue}` : ""}
+            value={currentValue ? `${currentValue}` : ''}
             onChange={(event) => {
-              const { value } = event.target;
-              setCurrentValue(value);
-              setExposedVariable("value", value).then(() =>
-                fireEvent("onSelect")
-              );
+              const { value } = event.target
+              setCurrentValue(value)
+              setExposedVariable('value', value).then(() => fireEvent('onSelect'))
               setExposedVariable(
-                "selectedOptionLabel",
+                'selectedOptionLabel',
                 selectOptions.find((option) => option.value === value)?.label
-              );
+              )
             }}
             style={customStyles.control({}, {})}
           >
             {properties.loadingState && (
               <CircularProgress
                 size={20}
-                sx={{ display: "flex", justifySelf: "center" }}
+                sx={{ display: 'flex', justifySelf: 'center' }}
               />
             )}
             {!properties.loadingState &&
               selectOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
+                <MenuItem
+                  key={option.value}
+                  value={option.value}
+                >
                   <span>{option.label}</span>
                 </MenuItem>
               ))}
@@ -369,5 +359,5 @@ export const DropDown = function DropDown({
         </div>
       )}
     </>
-  );
-};
+  )
+}
