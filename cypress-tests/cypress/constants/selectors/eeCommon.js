@@ -82,7 +82,7 @@ export const instanceSettingsSelector = {
   userStatusChangeButton: '[data-cy="user-state-change-button"]',
   superAdminToggle: '[data-cy="super-admin-form-check-input"]',
   superAdminToggleLabel: '[data-cy="super-admin-form-check-label"]',
-  allowWorkspaceToggle: '[data-cy="allow-workspace-form-check-input"]',
-  allowWorkspaceToggleLabel: '[data-cy="allow-workspace-form-check-label"]',
+  allowWorkspaceToggle: '[data-cy="form-check-input"]',
+  allowWorkspaceToggleLabel: '[data-cy="form-check-label"]',
   allowWorkspaceHelperText: '[data-cy="instance-settings-help-text"]',
 };

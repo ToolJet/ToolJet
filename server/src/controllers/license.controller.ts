@@ -4,6 +4,7 @@ import { SuperAdminGuard } from 'src/modules/auth/super-admin.guard';
 import { LicenseService } from '@services/license.service';
 import { LicenseUpdateDto } from '@dto/license.dto';
 import { decamelizeKeys } from 'humps';
+import { LICENSE_FIELD } from 'src/helpers/license.helper';
 
 @Controller('license')
 export class LicenseController {
@@ -14,6 +15,20 @@ export class LicenseController {
   async index() {
     const licenseSetting = await this.licenseService.getLicense();
     return decamelizeKeys(licenseSetting);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('access')
+  async accessLimits() {
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.FEATURES, LICENSE_FIELD.STATUS]);
+    return { ...licenseTerms[LICENSE_FIELD.FEATURES], licenseStatus: licenseTerms[LICENSE_FIELD.STATUS] };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('domains')
+  async domainsList() {
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.DOMAINS, LICENSE_FIELD.STATUS]);
+    return { domains: [...licenseTerms[LICENSE_FIELD.DOMAINS]], licenseStatus: licenseTerms[LICENSE_FIELD.STATUS] };
   }
 
   @UseGuards(JwtAuthGuard, SuperAdminGuard)

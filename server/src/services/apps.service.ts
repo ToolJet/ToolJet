@@ -13,9 +13,10 @@ import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
 import {
-  catchDbException,
   cleanObject,
   dbTransactionWrap,
+  generatePayloadForLimits,
+  catchDbException,
   defaultAppEnvironments,
   generateNextName,
 } from 'src/helpers/utils.helper';
@@ -27,6 +28,8 @@ import { DataSourceOptions } from 'src/entities/data_source_options.entity';
 import { AppEnvironmentService } from './app_environments.service';
 import { decode } from 'js-base64';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
+import { LicenseService } from './license.service';
+import { LICENSE_FIELD, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 
 @Injectable()
@@ -43,7 +46,8 @@ export class AppsService {
 
     private appImportExportService: AppImportExportService,
     private dataSourcesService: DataSourcesService,
-    private appEnvironmentService: AppEnvironmentService
+    private appEnvironmentService: AppEnvironmentService,
+    private licenseService: LicenseService
   ) {}
   async find(id: string): Promise<App> {
     return this.appsRepository.findOne({
@@ -653,5 +657,27 @@ export class AppsService {
         credential_id: options[key]['credential_id'],
       };
     });
+  }
+
+  async appsCount() {
+    return await this.appsRepository.count();
+  }
+
+  async getAppsLimit() {
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.APP_COUNT, LICENSE_FIELD.STATUS]);
+    const currentAppsCount = await this.appsCount();
+
+    if (licenseTerms[LICENSE_FIELD.APP_COUNT] === 'UNLIMITED') {
+      return;
+    } else {
+      return {
+        appsCount: generatePayloadForLimits(
+          currentAppsCount,
+          licenseTerms[LICENSE_FIELD.APP_COUNT],
+          licenseTerms[LICENSE_FIELD.STATUS],
+          LICENSE_LIMITS_LABEL.APPS
+        ),
+      };
+    }
   }
 }

@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  HttpException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -42,7 +41,6 @@ import { SessionService } from './session.service';
 import { RequestContext } from 'src/models/request-context.model';
 import * as requestIp from 'request-ip';
 import { LicenseService } from './license.service';
-import { LICENSE_FIELD } from 'src/helpers/license.helper';
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 
@@ -454,7 +452,10 @@ export class AuthService {
 
         isSSOVerify =
           source === URL_SSO_SOURCE &&
-          (user.source === SOURCE.GOOGLE || user.source === SOURCE.GIT || user.source === SOURCE.OPENID);
+          (user.source === SOURCE.GOOGLE ||
+            user.source === SOURCE.GIT ||
+            user.source === SOURCE.OPENID ||
+            user.source === SOURCE.LDAP);
 
         const lifecycleParams = getUserStatusAndSource(
           isSSOVerify ? lifecycleEvents.USER_SSO_ACTIVATE : lifecycleEvents.USER_REDEEM,
@@ -660,10 +661,6 @@ export class AuthService {
       organization.id,
     ]);
     let sessionId = loggedInUser?.sessionId;
-
-    if ((await this.licenseService.getLicenseTerms(LICENSE_FIELD.IS_EXPIRED)) && !isSuperAdmin(user)) {
-      throw new HttpException('You cannot login now. Please contact your administrator for support.', 451);
-    }
 
     // logged in user and new user are different -> creating session
     if (loggedInUser?.id !== user.id) {

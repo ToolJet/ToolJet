@@ -6,10 +6,11 @@ import { Organization } from 'src/entities/organization.entity';
 import { SSOConfigs } from 'src/entities/sso_config.entity';
 import { User } from 'src/entities/user.entity';
 import {
-  catchDbException,
   cleanObject,
   dbTransactionWrap,
   isPlural,
+  generatePayloadForLimits,
+  catchDbException,
   generateNextName,
   isSuperAdmin,
 } from 'src/helpers/utils.helper';
@@ -37,7 +38,7 @@ import { decamelize } from 'humps';
 import { Response } from 'express';
 import { AppEnvironmentService } from './app_environments.service';
 import { LicenseService } from './license.service';
-import { LICENSE_FIELD } from 'src/helpers/license.helper';
+import { LICENSE_FIELD, LICENSE_LIMITS_LABEL } from 'src/helpers/license.helper';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 
 const MAX_ROW_COUNT = 500;
@@ -119,6 +120,7 @@ export class OrganizationsService {
 
         await this.usersService.validateLicense(manager);
       }
+      await this.validateLicense(manager);
     }, manager);
 
     return organization;
@@ -126,6 +128,10 @@ export class OrganizationsService {
 
   async constructSSOConfigs() {
     const isPersonalWorkspaceAllowed = await this.instanceSettingsService.getSettings('ALLOW_PERSONAL_WORKSPACE');
+    const {
+      oidcEnabled,
+      status: { isExpired, isLicenseValid },
+    } = await this.licenseService.getLicenseTerms([LICENSE_FIELD.OIDC, LICENSE_FIELD.STATUS]);
     return {
       google: {
         enabled: !!this.configService.get<string>('SSO_GOOGLE_OAUTH2_CLIENT_ID'),
@@ -141,7 +147,12 @@ export class OrganizationsService {
         },
       },
       openid: {
-        enabled: !!this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
+        enabled: !!(
+          this.configService.get<string>('SSO_OPENID_CLIENT_ID') &&
+          oidcEnabled &&
+          isLicenseValid &&
+          !isExpired
+        ),
         configs: {
           client_id: this.configService.get<string>('SSO_OPENID_CLIENT_ID'),
           name: this.configService.get<string>('SSO_OPENID_NAME'),
@@ -427,6 +438,7 @@ export class OrganizationsService {
       }
       if (
         this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_ID') &&
+        this.configService.get<string>('SSO_GIT_OAUTH2_CLIENT_SECRET') &&
         !result.ssoConfigs?.some((config) => config.sso === 'git')
       ) {
         if (!result.ssoConfigs) {
@@ -448,6 +460,7 @@ export class OrganizationsService {
       }
       if (
         this.configService.get<string>('SSO_OPENID_CLIENT_ID') &&
+        this.configService.get<string>('SSO_OPENID_CLIENT_SECRET') &&
         !result.ssoConfigs?.some((config) => config.sso === 'openid')
       ) {
         if (!result.ssoConfigs) {
@@ -526,6 +539,19 @@ export class OrganizationsService {
             configs[key] = await this.encryptionService.encryptColumnValue('ssoConfigs', key, configs[key]);
           }
         }
+        if (key.toLowerCase().includes('sslCerts')) {
+          if (typeof configs[key] === 'object' && Object.keys(configs[key]).length) {
+            const sslCerts = {};
+            for (const k of Object.keys(configs[key])) {
+              try {
+                sslCerts[k] = await this.encryptionService.encryptColumnValue('ssoConfigs', k, configs[key][k]);
+              } catch (error) {
+                sslCerts[k] = configs[key][k];
+              }
+            }
+            configs[key] = sslCerts;
+          }
+        }
       })
     );
   }
@@ -537,6 +563,19 @@ export class OrganizationsService {
         if (key.toLowerCase().includes('secret')) {
           if (configs[key]) {
             configs[key] = await this.encryptionService.decryptColumnValue('ssoConfigs', key, configs[key]);
+          }
+        }
+        if (key.toLowerCase().includes('sslCerts')) {
+          if (typeof configs[key] === 'object' && Object.keys(configs[key]).length) {
+            const sslCerts = {};
+            for (const k of Object.keys(configs[key])) {
+              try {
+                sslCerts[k] = await this.encryptionService.decryptColumnValue('ssoConfigs', k, configs[key][k]);
+              } catch (error) {
+                sslCerts[k] = configs[key][k];
+              }
+            }
+            configs[key] = sslCerts;
           }
         }
       })
@@ -568,7 +607,7 @@ export class OrganizationsService {
   async updateOrganizationConfigs(organizationId: string, params: any) {
     const { type, configs, enabled } = params;
 
-    if (!(type && ['git', 'google', 'form', 'openid'].includes(type))) {
+    if (!(type && ['git', 'google', 'form', 'openid', 'ldap'].includes(type))) {
       throw new BadRequestException();
     }
 
@@ -676,7 +715,14 @@ export class OrganizationsService {
       if (defaultOrganization) {
         // Setting up default organization
         await this.organizationUserService.create(user, defaultOrganization, true, manager);
-        await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
+        await this.validateLicense(manager);
+        await this.usersService.attachUserGroup(
+          ['all_users', 'admin'],
+          defaultOrganization.id,
+          user.id,
+          false,
+          manager
+        );
       }
 
       const currentOrganization: Organization = await this.organizationsRepository.findOneOrFail({
@@ -869,11 +915,57 @@ export class OrganizationsService {
           res.status(201).send({ message: `${rowCount} user${isPlural(users)} are being added` });
         } catch (error) {
           const { status, response } = error;
-          res.status(status).send(response);
+          if (status === 451) {
+            res.status(status).send({ message: response, statusCode: status });
+            return;
+          }
+          res.status(status).send(JSON.stringify(response));
         }
       })
       .on('error', (error) => {
         throw error.message;
       });
+  }
+
+  async organizationsCount(manager?: EntityManager) {
+    return dbTransactionWrap(async (manager) => {
+      return await manager.createQueryBuilder(Organization, 'organizations').getCount();
+    }, manager);
+  }
+
+  async organizationsLimit() {
+    const licenseTerms = await this.licenseService.getLicenseTerms([LICENSE_FIELD.WORKSPACES, LICENSE_FIELD.STATUS]);
+    const currentOrganizationsCount = await this.organizationsCount();
+
+    if (licenseTerms[LICENSE_FIELD.WORKSPACES] === 'UNLIMITED') {
+      return;
+    } else {
+      return {
+        workspacesCount: generatePayloadForLimits(
+          currentOrganizationsCount,
+          licenseTerms[LICENSE_FIELD.WORKSPACES],
+          licenseTerms[LICENSE_FIELD.STATUS],
+          LICENSE_LIMITS_LABEL.WORKSPACES
+        ),
+      };
+    }
+  }
+
+  async validateLicense(manager: EntityManager): Promise<void> {
+    const licenseTerms = await this.licenseService.getLicenseTerms([
+      LICENSE_FIELD.WORKSPACES,
+      LICENSE_FIELD.IS_EXPIRED,
+    ]);
+
+    if (licenseTerms[LICENSE_FIELD.IS_EXPIRED]) {
+      return;
+    }
+
+    if (
+      licenseTerms[LICENSE_FIELD.WORKSPACES] !== 'UNLIMITED' &&
+      (await this.organizationsCount(manager)) > licenseTerms[LICENSE_FIELD.WORKSPACES]
+    ) {
+      throw new HttpException('You have reached your limit for number of workspaces.', 451);
+    }
   }
 }

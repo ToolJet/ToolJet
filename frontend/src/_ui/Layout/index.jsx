@@ -1,25 +1,19 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import useRouter from '@/_hooks/use-router';
 import { ToolTip } from '@/_components/ToolTip';
 import { Profile } from '@/_components/Profile';
 import { NotificationCenter } from '@/_components/NotificationCenter';
 import Logo from '@assets/images/rocket.svg';
 import Header from '../Header';
-import { authenticationService, auditLogsService } from '@/_services';
-import config from 'config';
+import { authenticationService, licenseService } from '@/_services';
 import SolidIcon from '../Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
+import { LicenseTooltip } from '@/LicenseTooltip';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
-  const navigate = useNavigate();
-
-  function handleAuditLogClick() {
-    auditLogsService.getLicenseTerms().then(() => navigate(getPrivateRoute('audit_logs')));
-    document.activeElement.blur();
-    return;
-  }
+  const [featureAccess, setFeatureAccess] = useState({});
 
   const canAnyGroupPerformAction = (action, permissions) => {
     if (!permissions) {
@@ -27,6 +21,12 @@ function Layout({ children, switchDarkMode, darkMode }) {
     }
 
     return permissions.some((p) => p[action]);
+  };
+
+  const fetchFeatureAccess = () => {
+    licenseService.getFeatureAccess().then((data) => {
+      setFeatureAccess({ ...data });
+    });
   };
 
   const canCreateDataSource = () => {
@@ -52,6 +52,10 @@ function Layout({ children, switchDarkMode, darkMode }) {
       canAnyGroupPerformAction('data_source_delete', currentUserValue.group_permissions) || currentUserValue.super_admin
     );
   };
+
+  useEffect(() => {
+    fetchFeatureAccess();
+  }, []);
 
   const currentUserValue = authenticationService.currentSessionValue;
   const admin = currentUserValue?.admin;
@@ -212,10 +216,19 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 )}
                 <li className="tj-leftsidebar-icon-items-bottom text-center">
                   {admin && (
-                    <ToolTip message="Audit Logs" placement="right">
+                    <LicenseTooltip
+                      limits={featureAccess}
+                      feature={'Audit Logs'}
+                      isAvailable={featureAccess?.auditLogs}
+                    >
                       <Link
-                        onClick={handleAuditLogClick}
-                        className={`tj-leftsidebar-icon-items  ${
+                        to={
+                          featureAccess?.auditLogs &&
+                          !featureAccess?.licenseStatus?.isExpired &&
+                          featureAccess?.licenseStatus?.isLicenseValid &&
+                          getPrivateRoute('audit_logs')
+                        }
+                        className={`tj-leftsidebar-icon-items ${
                           router.pathname === getPrivateRoute('audit_logs') && `current-seleted-route`
                         }`}
                         data-cy="icon-audit-logs"
@@ -231,7 +244,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
                           }
                         />
                       </Link>
-                    </ToolTip>
+                    </LicenseTooltip>
                   )}
                   <NotificationCenter darkMode={darkMode} />
                   <ToolTip message="Mode" placement="right">

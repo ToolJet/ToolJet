@@ -5,12 +5,14 @@ import { CookieOptions, Response } from 'express';
 import { OrganizationAuthGuard } from 'src/modules/auth/organization-auth.guard';
 import { User } from 'src/decorators/user.decorator';
 import { ConfigService } from '@nestjs/config';
+import { LdapService } from '@ee/services/oauth/ldap.service';
 
 @Controller('oauth')
 export class OauthController {
   constructor(
     private oauthService: OauthService,
     private oidcOAuthService: OidcOAuthService,
+    private ldapService: LdapService,
     private configService: ConfigService
   ) {}
 

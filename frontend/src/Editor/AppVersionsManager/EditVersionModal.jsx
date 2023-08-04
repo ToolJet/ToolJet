@@ -33,7 +33,7 @@ export const EditVersion = ({
       .then(() => {
         toast.success('Version name updated');
         appEnvironmentService.getVersionsByEnvironment(appId, currentEnvironment.id).then((data) => {
-          const versions = data.app_versions;
+          const versions = data.appVersions;
           setAppVersions(versions);
         });
         setIsEditingVersion(false);

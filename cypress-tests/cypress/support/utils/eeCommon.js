@@ -105,7 +105,7 @@ export const oidcSSOPageElements = () => {
 
 export const resetDsPermissions = () => {
   common.navigateToManageGroups();
-  cy.contains(groupsText.allUsers).click();
+  cy.wait(200)
   cy.get(groupsSelector.permissionsLink).click();
 
   cy.get(eeGroupsSelector.dsCreateCheck).then(($el) => {
@@ -119,6 +119,17 @@ export const resetDsPermissions = () => {
     }
   });
 };
+
+export const deleteAssignedDatasources = () => {
+  common.navigateToManageGroups()
+  cy.get('[data-cy="datasource-link"]').click()
+  cy.get("body").then(($body) => {
+    const removeAllButtons = $body.find('[data-cy="remove-button"]')
+    if (removeAllButtons.length > 0) {
+      cy.get('[data-cy="remove-button"]').click({ multiple: true })
+    }
+  });
+}
 
 export const userSignUp = (fullName, email, workspaceName) => {
   let invitationLink = "";
@@ -344,7 +355,6 @@ export const WorkspaceInvitationLink = (email) => {
 
           url = `/invitations/${invitationToken}/workspaces/${organizationToken}?oid=${workspaceId}`;
           common.logout();
-          cy.wait(500);
           cy.visit(url);
         });
       });
@@ -369,10 +379,28 @@ export const enableDefaultSSO = () => {
 };
 
 export const disableSSO = (ssoSelector, toggleSelector) => {
-  cy.get(ssoSelector).realClick()
+  cy.wait(1000)
+  cy.get(ssoSelector).click()
   cy.get(toggleSelector).then(($el) => {
     if ($el.is(":checked")) {
       cy.get(toggleSelector).uncheck();
     }
   });
+}
+
+export const AddDataSourceToGroup = (groupName, dsName) => {
+  common.navigateToManageGroups();
+  cy.get(groupsSelector.groupLink(groupName)).click();
+  cy.get(eeGroupsSelector.datasourceLink).click();
+  cy.wait(500);
+  cy.get(
+    '[data-cy="datasource-select-search"] >> .rmsc > .dropdown-container > .dropdown-heading > .dropdown-heading-value > .gray'
+  ).click();
+  cy.contains(dsName).realClick();
+
+  cy.get(eeGroupsSelector.AddDsButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    "Datasources added to the group"
+  );
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { CodeHinter } from '@/Editor/CodeBuilder/CodeHinter';
 
-export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged, currentState }) => {
+export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairValueChanged }) => {
   return (
     <div>
       {options.map((option, index) => {
@@ -10,7 +10,6 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
             <div className="d-flex justify-content-between gap-2 w-100">
               <div className="w-100">
                 <CodeHinter
-                  currentState={currentState}
                   initialValue={option[0]}
                   height="32px"
                   placeholder="key"
@@ -20,7 +19,6 @@ export default ({ options, addNewKeyValuePair, removeKeyValuePair, keyValuePairV
               </div>
               <div className="w-100">
                 <CodeHinter
-                  currentState={currentState}
                   initialValue={option[1]}
                   height="32px"
                   placeholder="value"

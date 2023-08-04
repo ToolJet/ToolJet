@@ -27,6 +27,7 @@ import { InstanceSettingsService } from '@services/instance_settings.service';
 import { Response } from 'express';
 import { LicenseService } from '@services/license.service';
 import { LICENSE_FIELD } from 'src/helpers/license.helper';
+import { LdapService } from './ldap.service';
 
 @Injectable()
 export class OauthService {
@@ -40,10 +41,11 @@ export class OauthService {
     private readonly oidcOAuthService: OidcOAuthService,
     private readonly instanceSettingsService: InstanceSettingsService,
     private readonly licenseService: LicenseService,
+    private readonly ldapService: LdapService,
     private configService: ConfigService
   ) {}
 
-  #isValidDomain(email: string, restrictedDomain: string): boolean {
+  #isValidDomain = (email: string, restrictedDomain: string): boolean => {
     if (!email) {
       return false;
     }
@@ -65,10 +67,10 @@ export class OauthService {
       return false;
     }
     return true;
-  }
+  };
 
   async #findOrCreateUser(
-    { firstName, lastName, email, sso }: UserResponse,
+    { firstName, lastName, email, sso, groups: ldapGroups, profilePhoto }: any,
     organization: DeepPartial<Organization>,
     manager?: EntityManager
   ): Promise<User> {
@@ -93,7 +95,7 @@ export class OauthService {
       defaultOrganization = await this.organizationService.create(organizationName, null, manager);
     }
 
-    const groups = ['all_users'];
+    const groups = ['all_users', ...(ldapGroups ? ldapGroups : [])];
     user = await this.usersService.create(
       { firstName, lastName, email, ...getUserStatusAndSource(lifecycleEvents.USER_SSO_VERIFY, sso) },
       organization.id,
@@ -103,13 +105,24 @@ export class OauthService {
       defaultOrganization?.id,
       manager
     );
+
+    /* Create avatar if profilePhoto available */
+    if (profilePhoto) {
+      try {
+        await this.usersService.addAvatar(user.id, profilePhoto, `${email}.jpeg`, manager);
+      } catch (error) {
+        /* Should not break the flow */
+        console.log('Profile picture upload failed', error);
+      }
+    }
+
     // Setting up invited organization, organization user status should be invited if user status is invited
     await this.organizationUsersService.create(user, organization, !!user.invitationToken, manager);
 
     if (defaultOrganization) {
       // Setting up default organization
       await this.organizationUsersService.create(user, defaultOrganization, true, manager);
-      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, manager);
+      await this.usersService.attachUserGroup(['all_users', 'admin'], defaultOrganization.id, user.id, false, manager);
     }
     return user;
   }
@@ -168,6 +181,7 @@ export class OauthService {
     let organization: DeepPartial<Organization>;
     const isInstanceSSOLogin = !!(!configId && ssoType && !organizationId);
     const isInstanceSSOOrganizationLogin = !!(!configId && ssoType && organizationId);
+    //Specific SSO configId from organization SSO Configs
     if (configId) {
       // SSO under an organization
       ssoConfigs = await this.organizationService.getConfigs(configId);
@@ -195,7 +209,7 @@ export class OauthService {
     }
     const { enableSignUp, domain } = organization;
     const { sso, configs } = ssoConfigs;
-    const { token } = ssoResponse;
+    const { token, username, password } = ssoResponse;
 
     let userResponse: UserResponse;
     switch (sso) {
@@ -216,6 +230,10 @@ export class OauthService {
           configId,
           codeVerifier: cookies['oidc_code_verifier'],
         });
+        break;
+
+      case 'ldap':
+        userResponse = await this.ldapService.signIn({ username, password }, configs);
         break;
 
       default:
@@ -418,6 +436,8 @@ export class OauthService {
 interface SSOResponse {
   token: string;
   state?: string;
+  username?: string;
+  password?: string;
   codeVerifier?: string;
   organizationId?: string;
 }
