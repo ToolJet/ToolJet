@@ -40,15 +40,9 @@
   --tblr-danger: #d63939;
   --tblr-light: #f4f6fa;
   --tblr-dark: #232e3c;
-  --tblr-font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont,
-    San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
-  --tblr-font-monospace: null, Menlo, Monaco, Consolas, Liberation Mono,
-    Courier New, monospace;
-  --tblr-gradient: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.15),
-    rgba(255, 255, 255, 0)
-  );
+  --tblr-font-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+  --tblr-font-monospace: null, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+  --tblr-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
 }
 
 .admonition {
@@ -58,12 +52,12 @@
   -webkit-tap-highlight-color: transparent;
   letter-spacing: 0;
   text-rendering: optimizeLegibility;
-  font-feature-settings: 'liga' 0;
+  font-feature-settings: "liga" 0;
   -webkit-font-smoothing: antialiased;
   --tblr-gutter-y: 0;
   --tblr-gutter-x: 2rem;
   word-wrap: break-word;
-  font-size: 0.875rem;
+  font-size: .875rem;
   line-height: 1.4285714;
   color: #232e3c;
   box-sizing: border-box;
@@ -72,9 +66,9 @@
   margin-bottom: 1rem;
   border-radius: 4px;
   background: #fff;
-  border: 1px solid rgba(101, 109, 119, 0.16);
-  box-shadow: rgba(35, 46, 60, 0.04) 0 2px 4px 0;
-  border-left: 0.25rem solid var(--tblr-alert-color);
+  border: 1px solid rgba(101, 109, 119, .16);
+  box-shadow: rgba(35, 46, 60, .04) 0 2px 4px 0;
+  border-left: .25rem solid var(--tblr-alert-color);
 }
 
 .admonition-heading {
@@ -211,13 +205,13 @@ strong {
 }
 
 .navbar-slack-logo::before {
-  background-image: url('https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg');
+  background-image: url("https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg");
   width: 20px;
   height: 20px;
 }
 
 [data-theme='dark'] .navbar-slack-logo::before {
-  background-image: url('https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg');
+  background-image: url("https://cdn.worldvectorlogo.com/logos/slack-new-logo.svg");
   width: 20px;
   height: 20px;
 }
@@ -263,11 +257,9 @@ strong {
   --docsearch-hit-background: var(--ifm-color-emphasis-100);
   /* Footer */
   --docsearch-footer-background: var(--ifm-background-surface-color);
-  --docsearch-key-gradient: linear-gradient(
-    -26.5deg,
-    var(--ifm-color-emphasis-200) 0%,
-    var(--ifm-color-emphasis-100) 100%
-  );
+  --docsearch-key-gradient: linear-gradient(-26.5deg,
+      var(--ifm-color-emphasis-200) 0%,
+      var(--ifm-color-emphasis-100) 100%);
 }
 
 .DocSearch-Button {
