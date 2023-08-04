@@ -70,7 +70,10 @@ export const Pagination = ({
       data-cy={dataCy}
       style={{ boxShadow }}
     >
-      <ul className="pagination m-0" style={computedStyles}>
+      <ul
+        className="pagination m-0"
+        style={computedStyles}
+      >
         <Pagination.Operator
           operator="<<"
           currentPage={currentPage}
@@ -134,7 +137,11 @@ function getOperator(operator) {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path
+            stroke="none"
+            d="M0 0h24v24H0z"
+            fill="none"
+          />
           <polyline points="11 7 6 12 11 17" />
           <polyline points="17 7 12 12 17 17" />
         </svg>
@@ -154,7 +161,11 @@ function getOperator(operator) {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path
+            stroke="none"
+            d="M0 0h24v24H0z"
+            fill="none"
+          />
           <polyline points="7 7 12 12 7 17" />
           <polyline points="13 7 18 12 13 17" />
         </svg>
@@ -174,7 +185,11 @@ function getOperator(operator) {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path
+            stroke="none"
+            d="M0 0h24v24H0z"
+            fill="none"
+          ></path>
           <polyline points="15 6 9 12 15 18"></polyline>
         </svg>
       );
@@ -193,7 +208,11 @@ function getOperator(operator) {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path
+            stroke="none"
+            d="M0 0h24v24H0z"
+            fill="none"
+          ></path>
           <polyline points="9 6 15 12 9 18"></polyline>
         </svg>
       );
@@ -214,7 +233,11 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
   return (
     <React.Fragment>
       <li className={`page-item ${getDisableCls(operator, currentPage, totalPages)}`}>
-        <a style={{ cursor: 'pointer' }} className={`page-link ${darkMode && 'text-light'}`} onClick={handleOnClick}>
+        <a
+          style={{ cursor: 'pointer' }}
+          className={`page-link ${darkMode && 'text-light'}`}
+          onClick={handleOnClick}
+        >
           {getOperator(operator)}
         </a>
       </li>

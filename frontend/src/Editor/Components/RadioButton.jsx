@@ -62,12 +62,18 @@ export const RadioButton = function RadioButton({
           style={{ height, display: visibility ? '' : 'none', boxShadow }}
           data-cy={dataCy}
         >
-          <span className="form-check-label col-auto py-0" style={{ color: textColor }}>
+          <span
+            className="form-check-label col-auto py-0"
+            style={{ color: textColor }}
+          >
             {label}
           </span>
           <div className="col px-1 py-0 mt-0">
             {selectOptions.map((option, index) => (
-              <label key={index} className="form-check form-check-inline">
+              <label
+                key={index}
+                className="form-check form-check-inline"
+              >
                 <input
                   style={{
                     marginTop: '1px',
@@ -80,7 +86,10 @@ export const RadioButton = function RadioButton({
                   name={`${id}-${uuidv4()}`}
                   onChange={() => onSelect(option.value)}
                 />
-                <span className="form-check-label" style={{ color: textColor }}>
+                <span
+                  className="form-check-label"
+                  style={{ color: textColor }}
+                >
                   {option.name}
                 </span>
               </label>

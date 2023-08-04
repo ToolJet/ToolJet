@@ -9,7 +9,11 @@ export const Modal = function Modal({ showModal, setShowModal, kanbanProps }) {
 
   const renderCloseButton = () => {
     return (
-      <span className="kanban-modal-close-icon cursor-pointer" size="sm" onClick={() => setShowModal(false)}>
+      <span
+        className="kanban-modal-close-icon cursor-pointer"
+        size="sm"
+        onClick={() => setShowModal(false)}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="icon icon-tabler icon-tabler-x"
@@ -22,9 +26,23 @@ export const Modal = function Modal({ showModal, setShowModal, kanbanProps }) {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
+          <path
+            stroke="none"
+            d="M0 0h24v24H0z"
+            fill="none"
+          ></path>
+          <line
+            x1="18"
+            y1="6"
+            x2="6"
+            y2="18"
+          ></line>
+          <line
+            x1="6"
+            y1="6"
+            x2="18"
+            y2="18"
+          ></line>
         </svg>
       </span>
     );
@@ -42,7 +60,11 @@ export const Modal = function Modal({ showModal, setShowModal, kanbanProps }) {
       id="modal-container"
       backdrop={'static'}
     >
-      <BootstrapModal.Body ref={parentRef} id={`${id}-modal`} style={{ width: '100%', height: '400px' }}>
+      <BootstrapModal.Body
+        ref={parentRef}
+        id={`${id}-modal`}
+        style={{ width: '100%', height: '400px' }}
+      >
         {renderCloseButton()}
         <SubContainer
           containerCanvasWidth={720}

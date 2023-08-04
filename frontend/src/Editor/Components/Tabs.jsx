@@ -34,7 +34,10 @@ export const Tabs = function Tabs({
   const renderOnlyActiveTab = component.definition.properties?.renderOnlyActiveTab?.value ?? false;
 
   // set index as id if id is not provided
-  parsedTabs = parsedTabs.map((parsedTab, index) => ({ ...parsedTab, id: parsedTab.id ? parsedTab.id : index }));
+  parsedTabs = parsedTabs.map((parsedTab, index) => ({
+    ...parsedTab,
+    id: parsedTab.id ? parsedTab.id : index,
+  }));
 
   // Highlight color - for active tab text and border
   const highlightColor = component.definition.styles?.highlightColor?.value ?? '#f44336';
@@ -134,7 +137,12 @@ export const Tabs = function Tabs({
     <div
       data-disabled={parsedDisabledState}
       className="jet-tabs card"
-      style={{ height, display: parsedWidgetVisibility ? 'flex' : 'none', backgroundColor: bgColor, boxShadow }}
+      style={{
+        height,
+        display: parsedWidgetVisibility ? 'flex' : 'none',
+        backgroundColor: bgColor,
+        boxShadow,
+      }}
       data-cy={dataCy}
     >
       <ul

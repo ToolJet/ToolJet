@@ -72,11 +72,20 @@ export const Statistics = function Statistics({ width, height, properties, style
   };
 
   return (
-    <div style={baseStyle} data-cy={dataCy}>
+    <div
+      style={baseStyle}
+      data-cy={dataCy}
+    >
       {loadingState === true ? (
-        <div style={{ width }} className="p-2">
+        <div
+          style={{ width }}
+          className="p-2"
+        >
           <center>
-            <div className="spinner-border" role="status"></div>
+            <div
+              className="spinner-border"
+              role="status"
+            ></div>
           </center>
         </div>
       ) : (

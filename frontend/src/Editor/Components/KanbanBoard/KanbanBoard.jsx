@@ -101,7 +101,10 @@ export const KanbanBoard = ({
 
   if (!state || state.length === 0) {
     return (
-      <div className="mx-auto w-50 p-5 bg-light no-components-box" style={{ marginTop: '15%' }}>
+      <div
+        className="mx-auto w-50 p-5 bg-light no-components-box"
+        style={{ marginTop: '15%' }}
+      >
         <center className="text-muted">Board is empty.</center>
       </div>
     );
@@ -109,7 +112,15 @@ export const KanbanBoard = ({
   const darkMode = localStorage.getItem('darkMode') === 'true';
   return (
     <BoardContext.Provider
-      value={{ id, currentState, enableAddCard, accentColor, containerProps, removeComponent, darkMode }}
+      value={{
+        id,
+        currentState,
+        enableAddCard,
+        accentColor,
+        containerProps,
+        removeComponent,
+        darkMode,
+      }}
     >
       <div
         id={id}

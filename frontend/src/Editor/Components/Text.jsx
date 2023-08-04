@@ -89,7 +89,12 @@ export const Text = function Text({
   return (
     <>
       {config.UI_LIB === 'tooljet' && (
-        <div data-disabled={disabledState} className="text-widget" style={computedStyles} data-cy={dataCy}>
+        <div
+          data-disabled={disabledState}
+          className="text-widget"
+          style={computedStyles}
+          data-cy={dataCy}
+        >
           {!loadingState && (
             <div
               style={{ width: '100%', fontSize: textSize }}
@@ -99,7 +104,10 @@ export const Text = function Text({
           {loadingState === true && (
             <div style={{ width: '100%' }}>
               <center>
-                <div className="spinner-border" role="status"></div>
+                <div
+                  className="spinner-border"
+                  role="status"
+                ></div>
               </center>
             </div>
           )}
@@ -111,7 +119,12 @@ export const Text = function Text({
             <Typography
               className="text-widget"
               style={computedStyles}
-              sx={{ width: '100%', fontSize: textSize, opacity: disabledState ? 0.5 : 1, wordBreak: 'break-word' }}
+              sx={{
+                width: '100%',
+                fontSize: textSize,
+                opacity: disabledState ? 0.5 : 1,
+                wordBreak: 'break-word',
+              }}
             >
               {DOMPurify.sanitize(text)}
             </Typography>

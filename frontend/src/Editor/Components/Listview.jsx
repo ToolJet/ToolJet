@@ -113,7 +113,11 @@ export const Listview = function Listview({
         {filteredData.map((listItem, index) => (
           <div
             className={`list-item ${mode == 'list' && 'w-100'}  ${showBorder && mode == 'list' ? 'border-bottom' : ''}`}
-            style={{ position: 'relative', height: `${rowHeight}px`, width: `${100 / positiveColumns}%` }}
+            style={{
+              position: 'relative',
+              height: `${rowHeight}px`,
+              width: `${100 / positiveColumns}%`,
+            }}
             key={index}
             data-cy={`${String(component.name).toLowerCase()}-row-${index}`}
             onClick={(event) => {
@@ -142,7 +146,10 @@ export const Listview = function Listview({
                   const existingDataAtIndex = prevData[index] ?? {};
                   const newDataAtIndex = {
                     ...prevData[index],
-                    [component.name]: { ...existingDataAtIndex[component.name], ...changedData[component.name] },
+                    [component.name]: {
+                      ...existingDataAtIndex[component.name],
+                      ...changedData[component.name],
+                    },
                   };
                   const newChildrenData = { ...prevData, [index]: newDataAtIndex };
                   return { ...prevData, ...newChildrenData };
