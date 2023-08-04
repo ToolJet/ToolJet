@@ -155,6 +155,8 @@ module.exports = {
     new InjectManifest({
         swSrc: "./src/ServiceWorker/index.jsx",
         swDest: "./service-worker.js",
+        exclude: [/\.(map)$/, /asset-manifest\.json$/],
+        include: [/\.html$/, /\.js$/, /\.css$/, /\.png$/, /\.jpg$/, /\.jpeg$/, /\.gif$/, /\.svg$/, /\.woff$/, /\.woff2$/, /\.ttf$/, /\.eot$/]
       }),
   ],
   devServer: {
