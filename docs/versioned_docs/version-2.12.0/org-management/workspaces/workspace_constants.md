@@ -3,7 +3,7 @@ id: workspace_constants
 title: Workspace Constants
 ---
 
-Workspace constants are predefined values(usually tokens/secret keys/API keys) that can be used across your application to maintain consistency and facilitate easy updates. They allow you to store important data or configurations that should remain unchanged during the application's runtime. This doc will guide you through the usage and management of workspace constants within your application. 
+Workspace constants are predefined values(usually tokens/secret keys/API keys) that can be used across your application to maintain consistency and facilitate easy updates. They allow you to store important data or configurations that should remain unchanged during the application's runtime. This doc will guide you through the usage and management of workspace constants within your workspaces. 
 
 ## Server-Side Resolution
 
