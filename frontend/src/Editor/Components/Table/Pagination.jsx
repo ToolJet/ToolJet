@@ -61,7 +61,7 @@ export const Pagination = function Pagination({
           styles={{ height: '20px', width: '20px' }}
           disabled={pageIndex === 1}
         >
-          <Button.Content iconSrc={'assets/images/icons/chevron-left.svg'} />
+          <Button.Content iconSrc={'assets/images/icons/cheveronleft.svg'} />
         </Button.UnstyledButton>
       )}
       <Button.UnstyledButton
@@ -119,7 +119,7 @@ export const Pagination = function Pagination({
           disabled={!autoCanNextPage && !serverSide}
           data-cy={`pagination-button-to-last`}
         >
-          <Button.Content iconSrc={'assets/images/icons/chevron-right.svg'} />
+          <Button.Content iconSrc={'assets/images/icons/cheveronright.svg'} />
         </Button.UnstyledButton>
       )}
     </div>
