@@ -1245,7 +1245,7 @@ export function Table({
             darkMode && 'dark-theme'
           }`}
         >
-          <div className={`table-footer row gx-0 d-flex align-items-center`}>
+          <div className={`table-footer row gx-0 d-flex align-items-center h-100`}>
             <div className="col d-flex justify-content-start">
               {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
                 <>
@@ -1275,7 +1275,7 @@ export function Table({
                 </span>
               )}
             </div>
-            <div className="col d-flex justify-content-center">
+            <div className="col d-flex justify-content-center h-100">
               {(clientSidePagination || serverSidePagination) && (
                 <Pagination
                   lastActivePageIndex={pageIndex}

@@ -63,7 +63,7 @@
     .dropdown-item{
       height: 36px;
       width: 100%;
-      padding: 8px 24px;
+      padding: 8px 12px;
       border-radius: 6px;
       input{
         width: 16px;
@@ -80,4 +80,14 @@
 }
 .hide-column-name {
   padding-left: 4px !important;
+}
+.jet-table.table-component{
+  .pagination-container{
+    input{
+      color :var(--slate12) !important;
+    }
+    .total-page-number{
+      color: var(--slate11) !important
+    }
+  }
 }
