@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/_ui/LeftSidebar';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export const Pagination = function Pagination({
   onPageIndexChanged,
@@ -49,33 +49,57 @@ export const Pagination = function Pagination({
   }
 
   return (
-    <div className="pagination-container d-flex" data-cy="pagination-section">
+    <div className="pagination-container d-flex h-100 align-items-center" data-cy="pagination-section">
       {!serverSide && (
-        <Button.UnstyledButton
+        <ButtonSolid
+          variant="ghostBlack"
+          className="tj-text-xsm"
+          style={{
+            minWidth: '28px',
+            width: '28px',
+            height: '28px',
+            padding: '7px',
+            borderRadius: '6px',
+            display: 'flex',
+            justifyContent: 'center',
+            cursor: pageIndex === 1 ? 'not-allowed' : 'pointer',
+          }}
+          leftIcon="cheveronleftdouble"
+          fill={darkMode ? '#ECEDEE' : '#11181C'}
+          iconWidth="14"
+          size="md"
+          disabled={pageIndex === 1}
           onClick={(event) => {
             event.stopPropagation();
             gotoPage(1);
           }}
-          classNames={darkMode ? 'dark' : 'nothing'}
           data-cy={`pagination-button-to-first`}
-          styles={{ height: '20px', width: '20px' }}
-          disabled={pageIndex === 1}
-        >
-          <Button.Content iconSrc={'assets/images/icons/cheveronleft.svg'} />
-        </Button.UnstyledButton>
+        ></ButtonSolid>
       )}
-      <Button.UnstyledButton
+      <ButtonSolid
+        variant="ghostBlack"
+        className="tj-text-xsm"
+        style={{
+          minWidth: '28px',
+          width: '28px',
+          height: '28px',
+          padding: '7px',
+          borderRadius: '6px',
+          display: 'flex',
+          justifyContent: 'center',
+          cursor: pageIndex === 1 || !enablePrevButton ? 'not-allowed' : 'pointer',
+        }}
+        leftIcon="cheveronleft"
+        fill={darkMode ? '#ECEDEE' : '#11181C'}
+        iconWidth="14"
+        size="md"
+        disabled={pageIndex === 1 || !enablePrevButton}
         onClick={(event) => {
           event.stopPropagation();
           goToPreviousPage();
         }}
-        classNames={darkMode ? 'dark' : 'nothing'}
-        styles={{ height: '20px', width: '20px' }}
-        disabled={pageIndex === 1 || !enablePrevButton}
         data-cy={`pagination-button-to-previous`}
-      >
-        <Button.Content iconSrc={'assets/images/icons/chevron-left.svg'} />
-      </Button.UnstyledButton>
+      ></ButtonSolid>
 
       <div className="d-flex tj-text-xsm text-black-000 font-weight-500" data-cy={`page-index-details`}>
         {serverSide && <span>{pageIndex}</span>}
@@ -96,31 +120,55 @@ export const Pagination = function Pagination({
         )}
       </div>
 
-      <Button.UnstyledButton
+      <ButtonSolid
+        variant="ghostBlack"
+        className="tj-text-xsm"
+        style={{
+          minWidth: '28px',
+          width: '28px',
+          height: '28px',
+          padding: '7px',
+          borderRadius: '6px',
+          display: 'flex',
+          justifyContent: 'center',
+          cursor: (!autoCanNextPage && !serverSide) || !enableNextButton ? 'not-allowed' : 'pointer',
+        }}
+        leftIcon="cheveronright"
+        fill={darkMode ? '#ECEDEE' : '#11181C'}
+        iconWidth="14"
+        size="md"
+        disabled={(!autoCanNextPage && !serverSide) || !enableNextButton}
         onClick={(event) => {
           event.stopPropagation();
           goToNextPage();
         }}
-        classNames={darkMode && 'dark'}
-        styles={{ height: '20px', width: '20px' }}
-        disabled={(!autoCanNextPage && !serverSide) || !enableNextButton}
         data-cy={`pagination-button-to-next`}
-      >
-        <Button.Content iconSrc={'assets/images/icons/chevron-right.svg'} />
-      </Button.UnstyledButton>
+      ></ButtonSolid>
       {!serverSide && (
-        <Button.UnstyledButton
+        <ButtonSolid
+          variant="ghostBlack"
+          className="tj-text-xsm"
+          style={{
+            minWidth: '28px',
+            width: '28px',
+            height: '28px',
+            padding: '7px',
+            borderRadius: '6px',
+            display: 'flex',
+            justifyContent: 'center',
+            cursor: !autoCanNextPage && !serverSide ? 'not-allowed' : 'pointer',
+          }}
+          leftIcon="cheveronrightdouble"
+          fill={darkMode ? '#ECEDEE' : '#11181C'}
+          iconWidth="14"
+          size="md"
           onClick={(event) => {
             event.stopPropagation();
             gotoPage(pageCount);
           }}
-          classNames={darkMode && 'dark'}
-          styles={{ height: '20px', width: '20px' }}
           disabled={!autoCanNextPage && !serverSide}
           data-cy={`pagination-button-to-last`}
-        >
-          <Button.Content iconSrc={'assets/images/icons/cheveronright.svg'} />
-        </Button.UnstyledButton>
+        ></ButtonSolid>
       )}
     </div>
   );
