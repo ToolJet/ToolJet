@@ -39,7 +39,11 @@ export const CodeEditor = ({ height, darkMode, properties, styles, exposedVariab
   }
 
   return (
-    <div data-disabled={disabledState} style={editorStyles} data-cy={dataCy}>
+    <div
+      data-disabled={disabledState}
+      style={editorStyles}
+      data-cy={dataCy}
+    >
       <div
         className={`code-hinter codehinter-default-input code-editor-widget`}
         style={{

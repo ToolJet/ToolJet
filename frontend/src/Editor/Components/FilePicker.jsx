@@ -307,15 +307,29 @@ export const FilePicker = ({
 
   return (
     <section>
-      <div className="container" {...getRootProps({ style, className: 'dropzone' })} data-cy={dataCy}>
+      <div
+        className="container"
+        {...getRootProps({ style, className: 'dropzone' })}
+        data-cy={dataCy}
+      >
         <input {...getInputProps()} />
-        <FilePicker.Signifiers signifier={accepted} feedback={null} cls="spinner-border text-azure p-0" />
+        <FilePicker.Signifiers
+          signifier={accepted}
+          feedback={null}
+          cls="spinner-border text-azure p-0"
+        />
 
         {showSelectedFiles && !accepted ? (
-          <FilePicker.AcceptedFiles width={width - 10} height={height}>
+          <FilePicker.AcceptedFiles
+            width={width - 10}
+            height={height}
+          >
             {selectedFiles.map((acceptedFile, index) => (
               <>
-                <div key={index} className="col-10">
+                <div
+                  key={index}
+                  className="col-10"
+                >
                   <FilePicker.Signifiers
                     signifier={selectedFiles.length > 0}
                     feedback={acceptedFile.name}
@@ -330,7 +344,12 @@ export const FilePicker = ({
                       clearSelectedFiles(index);
                     }}
                   >
-                    <img src="assets/images/icons/trash.svg" width="12" height="12" className="mx-1" />
+                    <img
+                      src="assets/images/icons/trash.svg"
+                      width="12"
+                      height="12"
+                      className="mx-1"
+                    />
                   </button>
                 </div>
               </>
@@ -355,7 +374,11 @@ export const FilePicker = ({
           cls="text-red mt-3"
         />
 
-        <FilePicker.Signifiers signifier={isDragReject} feedback={'Files will be rejected!'} cls="text-red mt-3" />
+        <FilePicker.Signifiers
+          signifier={isDragReject}
+          feedback={'Files will be rejected!'}
+          cls="text-red mt-3"
+        />
       </div>
     </section>
   );

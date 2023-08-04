@@ -50,7 +50,10 @@ export const PasswordInput = ({
             }}
             data-cy={dataCy}
           />
-          <div className="invalid-feedback" data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}>
+          <div
+            className="invalid-feedback"
+            data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
+          >
             {validationError}
           </div>
         </div>

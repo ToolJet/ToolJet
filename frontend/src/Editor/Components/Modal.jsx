@@ -175,7 +175,11 @@ export const Modal = function Modal({
   }, [closeOnClickingOutside, parentRef]);
 
   return (
-    <div className="container" data-disabled={disabledState} data-cy={dataCy}>
+    <div
+      className="container"
+      data-disabled={disabledState}
+      data-cy={dataCy}
+    >
       {useDefaultButton && (
         <button
           disabled={disabledState}
@@ -220,7 +224,12 @@ export const Modal = function Modal({
       >
         {!loadingState ? (
           <>
-            <SubContainer parent={id} {...containerProps} parentRef={parentRef} parentComponent={component} />
+            <SubContainer
+              parent={id}
+              {...containerProps}
+              parentRef={parentRef}
+              parentComponent={component}
+            />
             <SubCustomDragLayer
               snapToGrid={true}
               parentRef={parentRef}
@@ -231,7 +240,10 @@ export const Modal = function Modal({
         ) : (
           <div className="p-2">
             <center>
-              <div className="spinner-border mt-5" role="status"></div>
+              <div
+                className="spinner-border mt-5"
+                role="status"
+              ></div>
             </center>
           </div>
         )}
@@ -267,8 +279,14 @@ const Component = ({ children, ...restProps }) => {
         />
       )}
       {!hideTitleBar && (
-        <BootstrapModal.Header style={{ ...customStyles.modalHeader }} data-cy={`modal-header`}>
-          <BootstrapModal.Title id="contained-modal-title-vcenter" data-cy={`modal-title`}>
+        <BootstrapModal.Header
+          style={{ ...customStyles.modalHeader }}
+          data-cy={`modal-header`}
+        >
+          <BootstrapModal.Title
+            id="contained-modal-title-vcenter"
+            data-cy={`modal-title`}
+          >
             {title}
           </BootstrapModal.Title>
           {!hideCloseButton && (
@@ -294,15 +312,34 @@ const Component = ({ children, ...restProps }) => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
+                <path
+                  stroke="none"
+                  d="M0 0h24v24H0z"
+                  fill="none"
+                ></path>
+                <line
+                  x1="18"
+                  y1="6"
+                  x2="6"
+                  y2="18"
+                ></line>
+                <line
+                  x1="6"
+                  y1="6"
+                  x2="18"
+                  y2="18"
+                ></line>
               </svg>
             </span>
           )}
         </BootstrapModal.Header>
       )}
-      <BootstrapModal.Body style={{ ...customStyles.modalBody }} ref={parentRef} id={id} data-cy={`modal-body`}>
+      <BootstrapModal.Body
+        style={{ ...customStyles.modalBody }}
+        ref={parentRef}
+        id={id}
+        data-cy={`modal-body`}
+      >
         {children}
       </BootstrapModal.Body>
     </BootstrapModal>

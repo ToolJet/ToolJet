@@ -6,7 +6,13 @@ import { Autocomplete, Box, Checkbox, FormControlLabel, TextField } from '@mui/m
 
 const ItemRenderer = ({ checked, option, onClick, disabled }) => (
   <div className={`item-renderer ${disabled && 'disabled'}`}>
-    <input type="checkbox" onClick={onClick} checked={checked} tabIndex={-1} disabled={disabled} />
+    <input
+      type="checkbox"
+      onClick={onClick}
+      checked={checked}
+      tabIndex={-1}
+      disabled={disabled}
+    />
     <span>{option.label}</span>
   </div>
 );
@@ -36,6 +42,7 @@ export const Multiselect = function Multiselect({
     } else {
       setChecked(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
 
   const onClickAll = () => {
@@ -166,7 +173,10 @@ export const Multiselect = function Multiselect({
               {label}
             </label>
           </div>
-          <div className="col px-0 h-100" style={{ borderRadius: parseInt(borderRadius), boxShadow }}>
+          <div
+            className="col px-0 h-100"
+            style={{ borderRadius: parseInt(borderRadius), boxShadow }}
+          >
             <MultiSelect
               hasSelectAll={showAllOption ?? false}
               options={selectOptions}
@@ -207,7 +217,11 @@ export const Multiselect = function Multiselect({
                         padding: '8px',
                       }}
                     >
-                      <FormControlLabel control={<Checkbox checked={checked} />} label={option.label} component="li" />
+                      <FormControlLabel
+                        control={<Checkbox checked={checked} />}
+                        label={option.label}
+                        component="li"
+                      />
                     </Box>
                   ) : (
                     <></>
@@ -233,7 +247,13 @@ export const Multiselect = function Multiselect({
               );
             }
           }}
-          renderInput={(params) => <TextField {...params} label={label} sx={{ display: visibility ? '' : 'none' }} />}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label={label}
+              sx={{ display: visibility ? '' : 'none' }}
+            />
+          )}
           onChange={(event, newValue) => {
             setSelected(newValue);
           }}

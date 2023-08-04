@@ -56,7 +56,9 @@ export function Filter(props) {
   }
 
   function addFilter() {
-    mergeToFilterDetails({ filters: [...filters, { id: '', value: { condition: 'contains', value: '' } }] });
+    mergeToFilterDetails({
+      filters: [...filters, { id: '', value: { condition: 'contains', value: '' } }],
+    });
   }
 
   function removeFilter(index) {
@@ -113,12 +115,19 @@ export function Filter(props) {
     <div className="table-filters card">
       <div className="card-header row">
         <div className="col">
-          <h4 data-cy={`header-filters`} className="font-weight-normal">
+          <h4
+            data-cy={`header-filters`}
+            className="font-weight-normal"
+          >
             Filters
           </h4>
         </div>
         <div className="col-auto">
-          <button data-cy={`button-close-filters`} onClick={() => props.hideFilters()} className="btn btn-light btn-sm">
+          <button
+            data-cy={`button-close-filters`}
+            onClick={() => props.hideFilters()}
+            className="btn btn-light btn-sm"
+          >
             x
           </button>
         </div>
@@ -131,11 +140,20 @@ export function Filter(props) {
         className="card-body"
       >
         {props.filters.map((filter, index) => (
-          <div className="row mb-2" key={index}>
-            <div className="col p-2" style={{ maxWidth: '70px' }}>
+          <div
+            className="row mb-2"
+            key={index}
+          >
+            <div
+              className="col p-2"
+              style={{ maxWidth: '70px' }}
+            >
               <small data-cy={`label-filter-column`}>{index > 0 ? 'and' : 'column'}</small>
             </div>
-            <div data-cy={`select-coloumn-dropdown-${index ?? ''}`} className="col">
+            <div
+              data-cy={`select-coloumn-dropdown-${index ?? ''}`}
+              className="col"
+            >
               <Select
                 options={props.columns}
                 value={filter.id}
@@ -147,7 +165,11 @@ export function Filter(props) {
                 useCustomStyles={true}
               />
             </div>
-            <div data-cy={`select-operation-dropdown-${index ?? ''}`} className="col" style={{ maxWidth: '180px' }}>
+            <div
+              data-cy={`select-operation-dropdown-${index ?? ''}`}
+              className="col"
+              style={{ maxWidth: '180px' }}
+            >
               <Select
                 options={[
                   { name: 'contains', value: 'contains' },
@@ -207,10 +229,18 @@ export function Filter(props) {
         )}
       </div>
       <div className="card-footer">
-        <button data-cy={`button-add-filter`} onClick={addFilter} className="btn btn-light btn-sm">
+        <button
+          data-cy={`button-add-filter`}
+          onClick={addFilter}
+          className="btn btn-light btn-sm"
+        >
           + add filter
         </button>
-        <button data-cy={`button-clear-filters`} onClick={() => clearFilters()} className="btn btn-light btn-sm mx-2">
+        <button
+          data-cy={`button-clear-filters`}
+          onClick={() => clearFilters()}
+          className="btn btn-light btn-sm mx-2"
+        >
           clear filters
         </button>
       </div>

@@ -58,7 +58,10 @@ const Column = ({
   };
 
   return (
-    <Droppable key={keyIndex} droppableId={String(keyIndex)}>
+    <Droppable
+      key={keyIndex}
+      droppableId={String(keyIndex)}
+    >
       {(dndProps, dndState) => (
         <div
           className={`card text-dark mb-3 m-2 kanban-column ${darkMode ? 'bg-dark' : 'bg-light'}`}
@@ -96,7 +99,10 @@ const Column = ({
               )}
             </div>
           </div>
-          <div style={{ ...styles }} className="card-body">
+          <div
+            style={{ ...styles }}
+            className="card-body"
+          >
             {cards?.map((item, index) => (
               <Card
                 key={index}
@@ -114,7 +120,10 @@ const Column = ({
 
             {dndProps.placeholder}
             {enableAddCard && (
-              <button className="btn btn-primary w-100 add-card-btn" onClick={() => addNewItem(state, keyIndex)}>
+              <button
+                className="btn btn-primary w-100 add-card-btn"
+                onClick={() => addNewItem(state, keyIndex)}
+              >
                 Add card
               </button>
             )}

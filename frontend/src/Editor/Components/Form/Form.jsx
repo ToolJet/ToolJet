@@ -214,9 +214,15 @@ export const Form = function Form(props) {
       }} //Hack, should find a better solution - to prevent losing z index+1 when container element is clicked
     >
       {loadingState ? (
-        <div className="p-2" style={{ margin: '0px auto' }}>
+        <div
+          className="p-2"
+          style={{ margin: '0px auto' }}
+        >
           <center>
-            <div className="spinner-border mt-5" role="status"></div>
+            <div
+              className="spinner-border mt-5"
+              role="status"
+            ></div>
           </center>
         </div>
       ) : (

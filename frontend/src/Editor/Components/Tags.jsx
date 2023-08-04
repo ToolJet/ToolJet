@@ -20,14 +20,21 @@ export const Tags = function Tags({ width, height, properties, styles, dataCy })
     };
 
     return (
-      <span className="badge mx-1 mb-1" style={tagComputedStyles} key={index}>
+      <span
+        className="badge mx-1 mb-1"
+        style={tagComputedStyles}
+        key={index}
+      >
         {item.title}
       </span>
     );
   }
 
   return (
-    <div style={computedStyles} data-cy={dataCy}>
+    <div
+      style={computedStyles}
+      data-cy={dataCy}
+    >
       {data &&
         data.map((item, index) => {
           return renderTag(item, index);

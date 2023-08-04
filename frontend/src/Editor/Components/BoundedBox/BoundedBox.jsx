@@ -45,6 +45,7 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
         imageElement.removeEventListener('load', handleImageLoad);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -181,7 +182,11 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
   return (
     <div
       onMouseDown={(e) => e.stopPropagation()}
-      style={{ display: styles.visibility ? 'block' : 'none', height: height, boxShadow: styles.boxShadow }}
+      style={{
+        display: styles.visibility ? 'block' : 'none',
+        height: height,
+        boxShadow: styles.boxShadow,
+      }}
       className="bounded-box relative"
     >
       <Annotation
@@ -192,7 +197,11 @@ export const BoundedBox = ({ properties, fireEvent, darkMode, setExposedVariable
         value={annotationState}
         onChange={(annotation) => onChange(annotation)}
         renderSelector={({ annotation, active }) => (
-          <RenderSelector annotation={annotation} active={active} fireEvent={fireEvent} />
+          <RenderSelector
+            annotation={annotation}
+            active={active}
+            fireEvent={fireEvent}
+          />
         )}
         renderEditor={({ annotation }) => {
           return (

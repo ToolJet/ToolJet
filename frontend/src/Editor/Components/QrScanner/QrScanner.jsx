@@ -20,8 +20,19 @@ export const QrScanner = function QrScanner({ styles, fireEvent, setExposedVaria
   const { visibility, disabledState, boxShadow } = styles;
 
   return (
-    <div data-disabled={disabledState} style={{ display: visibility ? '' : 'none', boxShadow }} data-cy={dataCy}>
-      {errorOccured ? <ErrorModal /> : <QrReader onError={handleError} onScan={handleScan} />}
+    <div
+      data-disabled={disabledState}
+      style={{ display: visibility ? '' : 'none', boxShadow }}
+      data-cy={dataCy}
+    >
+      {errorOccured ? (
+        <ErrorModal />
+      ) : (
+        <QrReader
+          onError={handleError}
+          onScan={handleScan}
+        />
+      )}
     </div>
   );
 };
