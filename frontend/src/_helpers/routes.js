@@ -5,8 +5,8 @@ import { authenticationService } from '@/_services/authentication.service';
 export const getPrivateRoute = (page, params = {}) => {
   const routes = {
     dashboard: '/',
-    editor: '/apps/:id/:pageHandle?',
-    preview: '/applications/:id/versions/:versionId/:pageHandle?',
+    editor: '/apps/:slug/:pageHandle?',
+    preview: '/applications/:slug/versions/:versionId/:pageHandle?',
     launch: '/applications/:slug/:pageHandle?',
     workspace_settings: '/workspace-settings',
     settings: '/settings',

@@ -1,6 +1,7 @@
 import { create, zustandDevTools } from './utils';
 
 const initialState = {
+  appId: null,
   currentLayout: 'desktop',
   showComments: false,
   isEditorActive: false,
@@ -15,6 +16,7 @@ export const useEditorStore = create(
         toggleComments: () => set({ showComments: !get().showComments }),
         toggleCurrentLayout: (currentLayout) => set({ currentLayout }),
         setIsEditorActive: (isEditorActive) => set(() => ({ isEditorActive })),
+        setAppId: (appId) => set(() => ({ appId })),
       },
     }),
     { name: 'Editor Store' }

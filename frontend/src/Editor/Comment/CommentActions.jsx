@@ -5,10 +5,11 @@ import { useSpring, animated } from 'react-spring';
 import usePopover from '@/_hooks/use-popover';
 import OptionsIcon from './icons/options.svg';
 // import OptionsSelectedIcon from './icons/options-selected.svg';
-import useRouter from '@/_hooks/use-router';
 
 import { commentsService } from '@/_services';
 import { useTranslation } from 'react-i18next';
+import { useEditorStore } from '@/_stores/editorStore';
+import { shallow } from 'zustand/shallow';
 
 const CommentActions = ({
   socket,
@@ -21,8 +22,13 @@ const CommentActions = ({
 }) => {
   const [open, trigger, content, setOpen] = usePopover(false);
   const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 });
-  const router = useRouter();
   const { t } = useTranslation();
+  const { appId } = useEditorStore(
+    (state) => ({
+      appId: state?.appId,
+    }),
+    shallow
+  );
 
   const handleDelete = async () => {
     await commentsService.deleteComment(commentId);
@@ -31,7 +37,7 @@ const CommentActions = ({
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: { message: 'notifications', appId: router.query.id },
+        data: { message: 'notifications', appId },
       })
     );
   };

@@ -12,7 +12,18 @@ import useRouter from '@/_hooks/use-router';
 import DOMPurify from 'dompurify';
 import { capitalize } from 'lodash';
 
-const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, appVersionsId, canvasWidth }) => {
+const Comment = ({
+  socket,
+  x,
+  y,
+  threadId,
+  user = {},
+  isResolved,
+  fetchThreads,
+  appVersionsId,
+  canvasWidth,
+  appId,
+}) => {
   const [loading, setLoading] = React.useState(true);
   const [editComment, setEditComment] = React.useState('');
   const [editCommentId, setEditCommentId] = React.useState('');
@@ -82,13 +93,13 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: { message: threadId, appId: router.query.id },
+        data: { message: threadId, appId },
       })
     );
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: { message: 'notifications', appId: router.query.id },
+        data: { message: 'notifications', appId },
       })
     );
     fetchData();
@@ -100,7 +111,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: { message: 'notifications', appId: router.query.id },
+        data: { message: 'notifications', appId },
       })
     );
   };
@@ -168,6 +179,7 @@ const Comment = ({ socket, x, y, threadId, user = {}, isResolved, fetchThreads, 
             fetchThreads={fetchThreads}
             isThreadOwner={currentUser?.id === user.id}
             isResolved={isResolved}
+            appId={appId}
           />
           <CommentBody
             socket={socket}

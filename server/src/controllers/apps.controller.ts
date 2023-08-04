@@ -59,8 +59,8 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ValidAppInterceptor)
-  @Get(':id')
-  async show(@User() user, @AppDecorator() app: App, @Query('access_type') accessType: string) {
+  @Get('validate-private-app-access/:slug')
+  async appAccess(@User() user, @AppDecorator() app: App, @Query('access_type') accessType: string) {
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
     if (!ability.can('viewApp', app)) {
       throw new ForbiddenException(
@@ -71,6 +71,26 @@ export class AppsController {
     }
 
     if (accessType === 'edit' && !ability.can('editApp', app)) {
+      throw new ForbiddenException(
+        JSON.stringify({
+          organizationId: app.organizationId,
+        })
+      );
+    }
+
+    const { id, slug } = app;
+    return {
+      id,
+      slug,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Get(':id')
+  async show(@User() user, @AppDecorator() app: App) {
+    const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+    if (!ability.can('viewApp', app)) {
       throw new ForbiddenException(
         JSON.stringify({
           organizationId: app.organizationId,
@@ -102,6 +122,28 @@ export class AppsController {
       };
     }
     return response;
+  }
+
+  @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public
+  @Get('validate-released-app-access/:slug')
+  async releasedAppAccess(@User() user, @AppDecorator() app: App) {
+    if (user) {
+      const ability = await this.appsAbilityFactory.appsActions(user, app.id);
+
+      if (!ability.can('viewApp', app)) {
+        throw new ForbiddenException(
+          JSON.stringify({
+            organizationId: app.organizationId,
+          })
+        );
+      }
+    }
+
+    const { id, slug } = app;
+    return {
+      slug: slug,
+      id: id,
+    };
   }
 
   @UseGuards(AppAuthGuard) // This guard will allow access for unauthenticated user if the app is public

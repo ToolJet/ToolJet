@@ -65,10 +65,11 @@ export const Container = ({
     }),
     shallow
   );
-  const { showComments, currentLayout } = useEditorStore(
+  const { showComments, currentLayout, appId } = useEditorStore(
     (state) => ({
       showComments: state?.showComments,
       currentLayout: state?.currentLayout,
+      appId: state?.appId,
     }),
     shallow
   );
@@ -412,7 +413,7 @@ export const Container = ({
     ]);
 
     const { data } = await commentsService.createThread({
-      appId: router.query.id,
+      appId,
       x: x,
       y: e.nativeEvent.offsetY,
       appVersionsId,
@@ -428,7 +429,7 @@ export const Container = ({
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: { message: 'threads', appId: router.query.id },
+        data: { message: 'threads', appId },
       })
     );
 
@@ -457,7 +458,7 @@ export const Container = ({
       },
     ]);
     const { data } = await commentsService.createThread({
-      appId: router.query.id,
+      appId,
       x,
       y: y - 130,
       appVersionsId,
@@ -473,7 +474,7 @@ export const Container = ({
     socket.send(
       JSON.stringify({
         event: 'events',
-        data: { message: 'threads', appId: router.query.id },
+        data: { message: 'threads', appId },
       })
     );
 

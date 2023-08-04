@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, authenticationService, orgEnvironmentVariableService, organizationService } from '@/_services';
+import { appService, authenticationService, orgEnvironmentVariableService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -17,24 +17,18 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import {
-  resolveReferences,
-  safelyParseJSON,
-  stripTrailingSlash,
-  getSubpath,
-  excludeWorkspaceIdFromURL,
-} from '@/_helpers/utils';
+import { resolveReferences, getSubpath, excludeWorkspaceIdFromURL } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
-import { toast } from 'react-hot-toast';
 import { withRouter } from '@/_hoc/withRouter';
 import { useEditorStore } from '@/_stores/editorStore';
 import { setCookie } from '@/_helpers/cookie';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
+import { handleAppAccess } from '@/_helpers/handleAppAccess';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -43,14 +37,12 @@ class ViewerComponent extends React.Component {
     const deviceWindowWidth = window.screen.width - 5;
 
     const slug = this.props.params.slug;
-    const appId = this.props.params.id;
     const versionId = this.props.params.versionId;
 
     this.subscription = null;
 
     this.state = {
       slug,
-      appId,
       versionId,
       deviceWindowWidth,
       currentUser: null,
@@ -59,9 +51,6 @@ class ViewerComponent extends React.Component {
       appDefinition: { pages: {} },
       queryConfirmationList: [],
       isAppLoaded: false,
-      errorAppId: null,
-      errorVersionId: null,
-      errorDetails: null,
       pages: {},
       homepage: null,
     };
@@ -216,11 +205,8 @@ class ViewerComponent extends React.Component {
         this.setStateForContainer(data);
         this.setWindowTitle(data.name);
       })
-      .catch((error) => {
+      .catch(() => {
         this.setState({
-          errorDetails: error,
-          errorAppId: slug,
-          errorVersionId: null,
           isLoading: false,
         });
       });
@@ -233,87 +219,44 @@ class ViewerComponent extends React.Component {
         this.setStateForApp(data);
         this.setStateForContainer(data);
       })
-      .catch((error) => {
+      .catch(() => {
         this.setState({
-          errorDetails: error,
-          errorAppId: appId,
-          errorVersionId: versionId,
           isLoading: false,
         });
       });
   };
 
-  switchOrganization = (orgId, appId, versionId) => {
-    const path = `/applications/${appId}${versionId ? `/versions/${versionId}` : ''}`;
-    const sub_path = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : '';
-
-    organizationService.switchOrganization(orgId).then(
-      () => {
-        window.location.href = `${sub_path}${path}`;
-      },
-      () => {
-        return (window.location.href = `${sub_path}/login/${orgId}?redirectTo=${path}`);
-      }
-    );
-  };
-
-  handleError = (errorDetails, appId, versionId) => {
-    try {
-      if (errorDetails?.data) {
-        const statusCode = errorDetails.data?.statusCode;
-        if (statusCode === 403) {
-          const errorObj = safelyParseJSON(errorDetails.data?.message);
-          const currentSessionValue = authenticationService.currentSessionValue;
-          if (
-            errorObj?.organizationId &&
-            this.state.currentUser &&
-            currentSessionValue.current_organization_id !== errorObj?.organizationId
-          ) {
-            this.switchOrganization(errorObj?.organizationId, appId, versionId);
-            return;
-          }
-          return <Navigate replace to={'/'} />;
-        } else if (statusCode === 401) {
-          window.location = `${getSubpath() ?? ''}/login?redirectTo=${this.props.location.pathname}`;
-        } else if (statusCode === 404) {
-          toast.error(errorDetails?.error ?? 'App not found', {
-            position: 'top-center',
-          });
-        }
-        return <Navigate replace to={'/'} />;
-      }
-    } catch (err) {
-      return <Navigate replace to={'/'} />;
-    }
-  };
-
   setupViewer() {
     const slug = this.props.params.slug;
-    const appId = this.props.params.id;
     const versionId = this.props.params.versionId;
 
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
       if (currentSession?.load_app) {
         if (currentSession?.group_permissions) {
-          const currentUser = currentSession.current_user;
-          const userVars = {
-            email: currentUser.email,
-            firstName: currentUser.first_name,
-            lastName: currentUser.last_name,
-            groups: currentSession?.group_permissions?.map((group) => group.group),
-          };
-          this.props.setCurrentState({
-            globals: {
-              ...this.props.currentState.globals,
-              currentUser: userVars, // currentUser is updated in setStateForContainer function as well
-            },
-          });
-          this.setState({
-            currentUser,
+          handleAppAccess('viewer', slug, versionId).then((accessData) => {
+            const { is: appId } = accessData;
+            useEditorStore.getState().actions.setAppId(appId);
 
-            userVars,
+            const currentUser = currentSession.current_user;
+            const userVars = {
+              email: currentUser.email,
+              firstName: currentUser.first_name,
+              lastName: currentUser.last_name,
+              groups: currentSession?.group_permissions?.map((group) => group.group),
+            };
+            this.props.setCurrentState({
+              globals: {
+                ...this.props.currentState.globals,
+                currentUser: userVars, // currentUser is updated in setStateForContainer function as well
+              },
+            });
+            this.setState({
+              currentUser,
+
+              userVars,
+            });
+            slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
           });
-          slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
         } else if (currentSession?.authentication_failed && !slug) {
           const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
           const pathname = getSubpath() ? window.location.pathname.replace(getSubpath(), '') : window.location.pathname;
@@ -498,9 +441,6 @@ class ViewerComponent extends React.Component {
       defaultComponentStateComputed,
       dataQueries,
       queryConfirmationList,
-      errorAppId,
-      errorVersionId,
-      errorDetails,
       canvasWidth,
     } = this.state;
 
@@ -533,10 +473,6 @@ class ViewerComponent extends React.Component {
           </div>
         );
       } else {
-        if (errorDetails) {
-          this.handleError(errorDetails, errorAppId, errorVersionId);
-        }
-
         return (
           <div className="viewer wrapper">
             <Confirm

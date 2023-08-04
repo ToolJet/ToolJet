@@ -5,15 +5,20 @@ import { isEmpty } from 'lodash';
 import Comment from './Comment';
 import { commentsService } from '@/_services';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import useRouter from '@/_hooks/use-router';
+import { useEditorStore } from '@/_stores/editorStore';
 
 const Comments = ({ newThread = {}, socket, canvasWidth, currentPageId }) => {
   const [threads, setThreads] = React.useState([]);
-  const router = useRouter();
   const { appVersionsId } = useAppVersionStore((state) => ({ appVersionsId: state?.editingVersion?.id }), shallow);
+  const { appId } = useEditorStore(
+    (state) => ({
+      appId: state?.appId,
+    }),
+    shallow
+  );
 
   async function fetchData() {
-    const { data } = await commentsService.getThreads(router.query.id, appVersionsId);
+    const { data } = await commentsService.getThreads(appId, appVersionsId);
     setThreads(data);
   }
 
@@ -49,6 +54,7 @@ const Comments = ({ newThread = {}, socket, canvasWidth, currentPageId }) => {
           socket={socket}
           threadId={id}
           canvasWidth={canvasWidth}
+          appId={appId}
           {...thread}
         />
       );

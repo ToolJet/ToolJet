@@ -121,7 +121,7 @@ export default function AppCard({
               <ToolTip message="Open in app builder">
                 <Link
                   to={getPrivateRoute('editor', {
-                    id: app.id,
+                    slug: app.slug,
                   })}
                 >
                   <button type="button" className="tj-primary-btn edit-button tj-text-xsm" data-cy="edit-button">

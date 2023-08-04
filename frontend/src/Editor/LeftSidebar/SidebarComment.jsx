@@ -2,7 +2,6 @@ import React, { forwardRef } from 'react';
 import cx from 'classnames';
 import { LeftSidebarItem } from './SidebarItem';
 import { commentsService } from '@/_services';
-import useRouter from '@/_hooks/use-router';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
@@ -15,24 +14,24 @@ export const LeftSidebarComment = forwardRef(({ selectedSidebarItem, currentPage
     }),
     shallow
   );
-  const { toggleComments } = useEditorStore(
+  const { toggleComments, appId } = useEditorStore(
     (state) => ({
       toggleComments: state?.actions.toggleComments,
+      appId: state?.appId,
     }),
     shallow
   );
   const [isActive, toggleActive] = React.useState(false);
   const [notifications, setNotifications] = React.useState([]);
-  const router = useRouter();
 
   React.useEffect(() => {
-    if (appVersionsId) {
-      commentsService.getNotifications(router.query.id, false, appVersionsId, currentPageId).then(({ data }) => {
+    if (appVersionsId && appId) {
+      commentsService.getNotifications(appId, false, appVersionsId, currentPageId).then(({ data }) => {
         setNotifications(data);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appVersionsId, currentPageId]);
+  }, [appVersionsId, currentPageId, appId]);
   return (
     <LeftSidebarItem
       commentBadge={notifications?.length > 0}
