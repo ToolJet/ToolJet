@@ -18,6 +18,7 @@ const initialState = {
   pages: [],
   layouts: [],
   eventHandlers: [],
+  appDefinitionDiff: null,
 };
 
 export const useAppDataStore = create(
@@ -28,6 +29,7 @@ export const useAppDataStore = create(
         updateEditingVersion: (version) => set(() => ({ editingVersion: version })),
         updateApps: (apps) => set(() => ({ apps: apps })),
         updateState: (state) => set((prev) => ({ ...prev, ...state })),
+        updateAppDefinitionDiff: (appDefinitionDiff) => set(() => ({ appDefinitionDiff: appDefinitionDiff })),
       },
     }),
     { name: 'App Data Store' }
