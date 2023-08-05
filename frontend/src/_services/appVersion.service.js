@@ -48,6 +48,7 @@ function save(appId, versionId, values, isUserSwitchedVersion = false) {
   if (values.definition) body['definition'] = values.definition;
   if (values.name) body['name'] = values.name;
 
+  console.log('---arpit [app version service]', { values });
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),
