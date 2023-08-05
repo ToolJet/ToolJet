@@ -93,7 +93,7 @@ const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
   const mounted = useMounted();
 
-  const { updateState } = useAppDataActions();
+  const { updateState, updateAppDefinitionDiff } = useAppDataActions();
   const { updateEditorState, updateQueryConfirmationList } = useEditorActions();
   const {
     noOfVersionsSupported,
@@ -115,7 +115,7 @@ const EditorComponent = (props) => {
 
   const dataQueries = useDataQueries();
 
-  const { isMaintenanceOn, appId, app, currentUser, currentVersionId } = useAppInfo();
+  const { isMaintenanceOn, appId, app, currentUser, currentVersionId, appDefinitionDiff } = useAppInfo();
 
   const [currentVersionChanges, setCurrentVersionChanges] = useState({});
   const [currentPageId, setCurrentPageId] = useState(null);
@@ -722,16 +722,20 @@ const EditorComponent = (props) => {
     updatedAppDefinition.pages[currentPageId].components = currentPageComponents;
 
     const diffPatches = diff(appDefinition, updatedAppDefinition);
+    const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
 
-    console.log('--arpit | appDefinitionChanged func() | diffPatches', {
-      diffPatches,
-    });
+    // console.log('--arpit | appDefinitionChanged func() | diffPatches', {
+    //   diffPatches,
+    //   appDefinitionDiff,
+    //   shouldUpdate,
+    // });
 
-    if (!_.isEmpty(diffPatches)) {
+    if (shouldUpdate) {
       updateEditorState({
         isSaving: true,
         appDefinition: updatedAppDefinition,
       });
+      updateAppDefinitionDiff(diffPatches);
       computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
     }
 
@@ -890,7 +894,6 @@ const EditorComponent = (props) => {
       const diffPatches = diff(appDefinition, updatedAppDefinition);
 
       if (!isEmpty(diffPatches)) {
-        // handleAddPatch(diffPatches, diff(updatedAppDefinition, appDefinition));
         appDefinitionChanged(updatedAppDefinition, { skipAutoSave: true, componentDefinitionChanged: true });
       }
     }
