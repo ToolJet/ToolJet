@@ -1313,7 +1313,7 @@ const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefi
     );
     newAppDefinition.pages[pageId].components[newComponent.id] = newComponent;
   });
-  updateAppDefinition(newAppDefinition);
+  updateAppDefinition(newAppDefinition, { addComponents: true });
 };
 
 export const cloneComponents = (

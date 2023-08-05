@@ -57,8 +57,9 @@ export const Container = ({
   const components = useMemo(
     () => appDefinition.pages[currentPageId]?.components ?? {},
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [appDefinition.pages[currentPageId]]
+    [JSON.stringify(appDefinition)]
   );
+
   const currentState = useCurrentState();
   const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -180,7 +181,7 @@ export const Container = ({
       },
     };
 
-    appDefinitionChanged(newDefinition);
+    appDefinitionChanged(newDefinition, { containerChanges: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 

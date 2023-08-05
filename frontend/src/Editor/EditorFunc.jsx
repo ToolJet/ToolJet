@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { appService, authenticationService, appVersionService, orgEnvironmentVariableService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import _, { defaults, cloneDeep, isEqual, isEmpty, debounce, omit, update } from 'lodash';
+import _, { defaults, cloneDeep, isEqual, isEmpty, debounce, omit, update, difference } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -53,6 +53,8 @@ import { shallow } from 'zustand/shallow';
 import { useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppDataStore, useAppInfo } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
+// eslint-disable-next-line import/no-unresolved
+import { diff } from 'deep-object-diff';
 
 setAutoFreeze(false);
 enablePatches();
@@ -132,6 +134,8 @@ const EditorComponent = (props) => {
   const selectionDragRef = useRef(null);
   const selectionRef = useRef(null);
 
+  const prevAppDefinition = useRef(appDefinition);
+
   useLayoutEffect(() => {
     resetAllStores();
   }, []);
@@ -181,12 +185,12 @@ const EditorComponent = (props) => {
       subscription.unsubscribe();
       if (config.ENABLE_MULTIPLAYER_EDITING) props?.provider?.disconnect();
       useEditorStore.getState().actions.setIsEditorActive(false);
+      prevAppDefinition.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Ref to store the previous appDefinition for comparison
-  const prevAppDefinition = useRef(appDefinition);
 
   useEffect(() => {
     if (currentUser?.current_organization_id) {
@@ -198,9 +202,17 @@ const EditorComponent = (props) => {
   useEffect(() => {
     const didAppDefinitionChanged = !_.isEqual(appDefinition, prevAppDefinition.current);
 
-    console.log('---arpit-- appDefinitionChanged', { dataQueries, didAppDefinitionChanged, appDefinition });
+    console.log('---arpit-- appDefinitionChanged [useEffect]', { didAppDefinitionChanged, isSaving });
+
+    if (didAppDefinitionChanged) {
+      console.log('---arpit-- updating [prevAppDefinition] [useEffect]', {
+        prev: prevAppDefinition.current,
+        curr: appDefinition,
+      });
+      prevAppDefinition.current = appDefinition;
+    }
+
     if (mounted && didAppDefinitionChanged && currentPageId) {
-      console.log('---arpit-- appDefinitionChanged [mounted=true]', { appDefinition });
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
       computeComponentState(components);
@@ -209,7 +221,6 @@ const EditorComponent = (props) => {
         autoSave();
       }
     }
-    prevAppDefinition.current = appDefinition;
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
 
   const editorRef = {
@@ -298,7 +309,7 @@ const EditorComponent = (props) => {
   };
 
   const $componentDidMount = async () => {
-    console.log('---arpit-- componentDidMounted effect', { appDefinition, currentPageId });
+    // console.log('---arpit-- componentDidMounted effect', { appDefinition, currentPageId });
     window.addEventListener('message', handleMessage);
     // autoSave();
 
@@ -612,13 +623,16 @@ const EditorComponent = (props) => {
       await fetchDataSources(data.editing_version?.id);
       await fetchDataQueries(data.editing_version?.id, true, true);
 
-      // let dataDefinition = defaults(data.definition, defaultDefinition(props.darkMode));
       let dataDefinition = data.definition ?? defaults(data.definition, defaultDefinition(props.darkMode));
-      console.log('---arpit-- fetching app data', { startingPageHandle, data, dataDefinition });
 
       const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
-      const homePageId = startingPageId || dataDefinition.homePageId;
+      const homePageId = !startingPageHandle || startingPageId === 'null' ? dataDefinition.homePageId : startingPageId;
+
+      console.log('---arpit-- fetching app data', {
+        data,
+        dataDefinition,
+      });
 
       setCurrentPageId(homePageId);
 
@@ -647,11 +661,6 @@ const EditorComponent = (props) => {
         appDefinition: dataDefinition,
       });
 
-      appDefinitionChanged(dataDefinition, {
-        skipAutoSave: true,
-        skipYmapUpdate: true,
-      });
-
       for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
         await handleEvent(event.eventId, event);
       }
@@ -670,6 +679,7 @@ const EditorComponent = (props) => {
 
   // !--------
   const setAppDefinitionFromVersion = (version, shouldWeEditVersion = true) => {
+    console.log('---arpit [setAppFromVersion]--', version);
     if (version?.id !== props.editingVersion?.id) {
       appDefinitionChanged(defaults(version.definition, defaultDefinition(props.darkMode)), {
         skipAutoSave: true,
@@ -696,8 +706,11 @@ const EditorComponent = (props) => {
   };
 
   const appDefinitionChanged = (newDefinition, opts = {}) => {
-    console.log('--arpit | appDefinitionChanged func()');
-    if (_.isEqual(appDefinition, newDefinition)) return;
+    console.log('--arpit | appDefinitionChanged func() called', {
+      opts,
+    });
+
+    // if (_.isEqual(prevAppDefinition.current, newDefinition)) return;
     if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
       props.ymap?.set('appDef', {
         newDefinition,
@@ -711,11 +724,7 @@ const EditorComponent = (props) => {
       return new Promise((resolve) => {
         updateEditorState({
           isSaving: true,
-          appDefinition: newDefinition,
-          // appDefinitionLocalVersion: uuid(),
         });
-
-        // if (!opts.skipAutoSave) autoSave();
 
         resolve();
       });
@@ -723,28 +732,36 @@ const EditorComponent = (props) => {
 
     // Create a new copy of appDefinition with lodash's cloneDeep
     const updatedAppDefinition = _.cloneDeep(appDefinition);
+
+    if (_.isEmpty(updatedAppDefinition)) return;
+
     const currentPageComponents = newDefinition.pages[currentPageId]?.components;
 
-    if (!updatedAppDefinition.pages[currentPageId]) {
-      updatedAppDefinition.pages[currentPageId] = {}; // Create a new object for the page if it doesn't exist
-    }
+    updatedAppDefinition.pages[currentPageId].components = currentPageComponents;
 
-    updatedAppDefinition.pages[currentPageId].components = currentPageComponents || {};
+    const diffPatches = diff(appDefinition, updatedAppDefinition);
 
-    // Call handleAddPatch with the list of changes (if needed)
-    handleAddPatch();
-
-    // Update the editor state with the new appDefinition
-    updateEditorState({
-      isSaving: true,
-      appDefinition: updatedAppDefinition,
-      // appDefinitionLocalVersion: uuid(),
+    console.log('--arpit | appDefinitionChanged func() | diffPatches', {
+      // appDefinition,
+      // updatedAppDefinition,
+      diffPatches,
     });
+
+    if (!_.isEmpty(diffPatches)) {
+      updateEditorState({
+        isSaving: true,
+        appDefinition: updatedAppDefinition,
+      });
+      computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
+    } else {
+      toast.error('No changes in diff [appDefinitionChanged]');
+    }
 
     // if (!opts.skipAutoSave) autoSave();
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
+    console.log('---arpit [saving - editionversion]--');
     if (props.isVersionReleased && !isUserSwitchedVersion) {
       updateEditorState({
         isSaving: false,
@@ -875,7 +892,6 @@ const EditorComponent = (props) => {
   };
 
   const componentDefinitionChanged = (componentDefinition, props) => {
-    console.log('---arpit [componentDefinitionChanged]', { props, componentDefinition });
     if (props?.isVersionReleased) {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
       return;
@@ -889,24 +905,31 @@ const EditorComponent = (props) => {
       updatedAppDefinition.pages[currentPageId].components[componentDefinition.id].component =
         componentDefinition.component;
 
-      // Call handleAddPatch with the list of changes (if needed)
-      handleAddPatch();
-
-      // Update the editor state with the new appDefinition
+      // // Update the editor state with the new appDefinition
       updateEditorState({
         isSaving: true,
-        appDefinition: updatedAppDefinition,
-        // appDefinitionLocalVersion: uuid()
       });
 
-      // Other actions can be performed here if needed, like autoSave, ymap, etc.
-      computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
-      // autoSave();
-      props.ymap?.set('appDef', {
-        newDefinition: updatedAppDefinition,
-        editingVersionId: props.editingVersion?.id,
+      const diffPatches = diff(appDefinition, updatedAppDefinition);
+      console.log('---arpit [componentDefinitionChanged]', {
+        props,
+        diffPatches,
       });
+
+      if (!isEmpty(diffPatches)) {
+        // handleAddPatch(diffPatches, diff(updatedAppDefinition, appDefinition));
+        appDefinitionChanged(updatedAppDefinition, { skipAutoSave: true, componentDefinitionChanged: true });
+      }
     }
+
+    //   // Other actions can be performed here if needed, like autoSave, ymap, etc.
+    //   // computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
+    //   // autoSave();
+    //   // props.ymap?.set('appDef', {
+    //   //   newDefinition: updatedAppDefinition,
+    //   //   editingVersionId: props.editingVersion?.id,
+    //   // });
+    // }
   };
 
   const removeComponent = (component) => {
@@ -1168,10 +1191,6 @@ const EditorComponent = (props) => {
                       width: currentLayout === 'desktop' ? '100%' : '450px',
                       maxWidth:
                         +appDefinition.globalSettings.canvasMaxWidth + appDefinition.globalSettings.canvasMaxWidthType,
-                      /**
-                       * minWidth will be min(default canvas min width, user set max width). Done to avoid conflict between two
-                       * default canvas min width = calc(((screen width - width component editor side bar) - width of editor sidebar on left) - width of left sidebar popover)
-                       **/
 
                       backgroundColor: computeCanvasBackgroundColor(),
                       transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
@@ -1278,7 +1297,6 @@ const EditorComponent = (props) => {
                       key={selectedComponents[0].id}
                       switchSidebarTab={switchSidebarTab}
                       darkMode={props.darkMode}
-                      // appDefinitionLocalVersion={appDefinitionLocalVersion}
                       pages={getPagesWithIds()}
                     ></Inspector>
                   ) : (
