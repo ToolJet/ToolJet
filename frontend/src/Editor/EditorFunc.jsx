@@ -743,14 +743,19 @@ const EditorComponent = (props) => {
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
-    console.log('---arpit [saving - editionversion]--');
+    console.log('---arpit [saving - editionversion]--', { appDefinitionDiff });
     if (props.isVersionReleased && !isUserSwitchedVersion) {
       updateEditorState({
         isSaving: false,
       });
     } else if (!isEmpty(props?.editingVersion)) {
       appVersionService
-        .save(appId, props.editingVersion?.id, { definition: appDefinition }, isUserSwitchedVersion)
+        .save(
+          appId,
+          props.editingVersion?.id,
+          { definition: appDefinition, diff: appDefinitionDiff },
+          isUserSwitchedVersion
+        )
         .then(() => {
           const _editingVersion = {
             ...props.editingVersion,
