@@ -36,14 +36,13 @@ export const Inspector = ({
   const dataQueries = useDataQueries();
   const component = {
     id: selectedComponentId,
-    component: allComponents[selectedComponentId].component,
+    component: JSON.parse(JSON.stringify(allComponents[selectedComponentId].component)),
     layouts: allComponents[selectedComponentId].layouts,
     parent: allComponents[selectedComponentId].parent,
   };
   const currentState = useCurrentState();
   const [showWidgetDeleteConfirmation, setWidgetDeleteConfirmation] = useState(false);
-  // eslint-disable-next-line no-unused-vars
-  const [tabHeight, setTabHeight] = React.useState(0);
+
   const componentNameRef = useRef(null);
   const [newComponentName, setNewComponentName] = useState(component.component.name);
   const [inputRef, setInputFocus] = useFocus();
@@ -122,7 +121,8 @@ export const Inspector = ({
 
   function paramUpdated(param, attr, value, paramType) {
     console.log({ param, attr, value, paramType });
-    let newDefinition = _.cloneDeep(component.component.definition);
+    let newComponent = JSON.parse(JSON.stringify(component));
+    let newDefinition = _.cloneDeep(newComponent.component.definition);
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
     if (!paramObject) {
@@ -145,11 +145,7 @@ export const Inspector = ({
       allParams[param.name] = value;
     }
     newDefinition[paramType] = allParams;
-    let newComponent = _.merge(component, {
-      component: {
-        definition: newDefinition,
-      },
-    });
+    newComponent.component.definition = newDefinition;
     componentDefinitionChanged(newComponent, { componentPropertyUpdated: true });
   }
 
@@ -212,18 +208,12 @@ export const Inspector = ({
   }
 
   function eventsChanged(newEvents, isReordered = false) {
-    let newDefinition;
-    if (isReordered) {
-      newDefinition = JSON.parse(JSON.stringify(component.component));
-      newDefinition.definition.events = newEvents;
-    } else {
-      newDefinition = JSON.parse(JSON.stringify(component.component.definition));
-      newDefinition.events = newEvents;
-    }
+    let newComponent = JSON.parse(JSON.stringify(component));
+    let newDefinition = JSON.parse(JSON.stringify(newComponent.component.definition));
 
-    let newComponent = {
-      ...component,
-    };
+    newDefinition.events = newEvents;
+
+    newComponent.component.definition = newDefinition;
 
     componentDefinitionChanged(newComponent, { eventsChanged: true });
   }
