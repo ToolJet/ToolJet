@@ -202,13 +202,7 @@ const EditorComponent = (props) => {
   useEffect(() => {
     const didAppDefinitionChanged = !_.isEqual(appDefinition, prevAppDefinition.current);
 
-    console.log('---arpit-- appDefinitionChanged [useEffect]', { didAppDefinitionChanged, isSaving });
-
     if (didAppDefinitionChanged) {
-      console.log('---arpit-- updating [prevAppDefinition] [useEffect]', {
-        prev: prevAppDefinition.current,
-        curr: appDefinition,
-      });
       prevAppDefinition.current = appDefinition;
     }
 
@@ -309,9 +303,7 @@ const EditorComponent = (props) => {
   };
 
   const $componentDidMount = async () => {
-    // console.log('---arpit-- componentDidMounted effect', { appDefinition, currentPageId });
     window.addEventListener('message', handleMessage);
-    // autoSave();
 
     await fetchApps(0);
     await fetchApp(props.params.pageHandle);
@@ -629,11 +621,6 @@ const EditorComponent = (props) => {
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
       const homePageId = !startingPageHandle || startingPageId === 'null' ? dataDefinition.homePageId : startingPageId;
 
-      console.log('---arpit-- fetching app data', {
-        data,
-        dataDefinition,
-      });
-
       setCurrentPageId(homePageId);
 
       updateState({
@@ -706,11 +693,6 @@ const EditorComponent = (props) => {
   };
 
   const appDefinitionChanged = (newDefinition, opts = {}) => {
-    console.log('--arpit | appDefinitionChanged func() called', {
-      opts,
-    });
-
-    // if (_.isEqual(prevAppDefinition.current, newDefinition)) return;
     if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
       props.ymap?.set('appDef', {
         newDefinition,
@@ -742,8 +724,6 @@ const EditorComponent = (props) => {
     const diffPatches = diff(appDefinition, updatedAppDefinition);
 
     console.log('--arpit | appDefinitionChanged func() | diffPatches', {
-      // appDefinition,
-      // updatedAppDefinition,
       diffPatches,
     });
 
@@ -905,16 +885,11 @@ const EditorComponent = (props) => {
       updatedAppDefinition.pages[currentPageId].components[componentDefinition.id].component =
         componentDefinition.component;
 
-      // // Update the editor state with the new appDefinition
       updateEditorState({
         isSaving: true,
       });
 
       const diffPatches = diff(appDefinition, updatedAppDefinition);
-      console.log('---arpit [componentDefinitionChanged]', {
-        props,
-        diffPatches,
-      });
 
       if (!isEmpty(diffPatches)) {
         // handleAddPatch(diffPatches, diff(updatedAppDefinition, appDefinition));
@@ -922,13 +897,13 @@ const EditorComponent = (props) => {
       }
     }
 
-    //   // Other actions can be performed here if needed, like autoSave, ymap, etc.
-    //   // computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
-    //   // autoSave();
-    //   // props.ymap?.set('appDef', {
-    //   //   newDefinition: updatedAppDefinition,
-    //   //   editingVersionId: props.editingVersion?.id,
-    //   // });
+    // Other actions can be performed here if needed, like autoSave, ymap, etc.
+    // computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
+    // autoSave();
+    // props.ymap?.set('appDef', {
+    //   newDefinition: updatedAppDefinition,
+    //   editingVersionId: props.editingVersion?.id,
+    // });
     // }
   };
 
