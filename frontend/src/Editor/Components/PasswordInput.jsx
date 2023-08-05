@@ -24,7 +24,7 @@ export const PasswordInput = ({
     borderRadius: `${borderRadius}px`,
     color: darkMode && '#fff',
     borderColor: darkMode && '#DADCDE',
-    backgroundColor: darkMode && '#232e3c',
+    backgroundColor: darkMode && ['#ffffff'].includes(backgroundColor) ? '#232e3c' : backgroundColor,
     boxShadow: boxShadow,
   };
 
