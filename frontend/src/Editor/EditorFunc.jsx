@@ -733,8 +733,6 @@ const EditorComponent = (props) => {
         appDefinition: updatedAppDefinition,
       });
       computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
-    } else {
-      toast.error('No changes in diff [appDefinitionChanged]');
     }
 
     // if (!opts.skipAutoSave) autoSave();
