@@ -99,9 +99,9 @@ export const Inspector = ({
       return setInputFocus();
     }
     if (validateQueryName(newName)) {
-      let newComponent = { ...component };
+      let newComponent = JSON.parse(JSON.stringify(component));
       newComponent.component.name = newName;
-      componentDefinitionChanged(newComponent);
+      componentDefinitionChanged(newComponent, { componentNameUpdated: true });
     } else {
       toast.error(
         t(
@@ -150,7 +150,7 @@ export const Inspector = ({
         definition: newDefinition,
       },
     });
-    componentDefinitionChanged(newComponent);
+    componentDefinitionChanged(newComponent, { componentPropertyUpdated: true });
   }
 
   function layoutPropertyChanged(param, attr, value, paramType) {
@@ -158,9 +158,7 @@ export const Inspector = ({
 
     // User wants to show the widget on mobile devices
     if (param.name === 'showOnMobile' && value === true) {
-      let newComponent = {
-        ...component,
-      };
+      let newComponent = JSON.parse(JSON.stringify(component));
 
       const { width, height } = newComponent.layouts['desktop'];
 
@@ -174,7 +172,7 @@ export const Inspector = ({
         },
       };
 
-      componentDefinitionChanged(newComponent);
+      componentDefinitionChanged(newComponent, { layoutPropertyChanged: true });
 
       //  Child components should also have a mobile layout
       const childComponents = Object.keys(allComponents).filter((key) => allComponents[key].parent === component.id);
@@ -197,29 +195,29 @@ export const Inspector = ({
           },
         };
 
-        componentDefinitionChanged(newChild);
+        componentDefinitionChanged(newChild, { withChildLayout: true });
       });
     }
   }
 
   function eventUpdated(event, actionId) {
-    let newDefinition = { ...component.component.definition };
+    let newDefinition = JSON.parse(JSON.stringify(component.component.definition));
     newDefinition.events[event.name] = { actionId };
 
     let newComponent = {
       ...component,
     };
 
-    componentDefinitionChanged(newComponent);
+    componentDefinitionChanged(newComponent, { eventUpdated: true });
   }
 
   function eventsChanged(newEvents, isReordered = false) {
     let newDefinition;
     if (isReordered) {
-      newDefinition = { ...component.component };
+      newDefinition = JSON.parse(JSON.stringify(component.component));
       newDefinition.definition.events = newEvents;
     } else {
-      newDefinition = { ...component.component.definition };
+      newDefinition = JSON.parse(JSON.stringify(component.component.definition));
       newDefinition.events = newEvents;
     }
 
@@ -227,13 +225,13 @@ export const Inspector = ({
       ...component,
     };
 
-    componentDefinitionChanged(newComponent);
+    componentDefinitionChanged(newComponent, { eventsChanged: true });
   }
 
   function eventOptionUpdated(event, option, value) {
     console.log('eventOptionUpdated', event, option, value);
 
-    let newDefinition = { ...component.component.definition };
+    let newDefinition = JSON.parse(JSON.stringify(component.component.definition));
     let eventDefinition = newDefinition.events[event.name] || { options: {} };
 
     newDefinition.events[event.name] = { ...eventDefinition, options: { ...eventDefinition.options, [option]: value } };
@@ -242,7 +240,7 @@ export const Inspector = ({
       ...component,
     };
 
-    componentDefinitionChanged(newComponent);
+    componentDefinitionChanged(newComponent, { eventOptionUpdated: true });
   }
 
   const buildGeneralStyle = () => {

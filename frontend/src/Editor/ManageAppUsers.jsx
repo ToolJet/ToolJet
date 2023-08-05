@@ -43,7 +43,8 @@ class ManageAppUsersComponent extends React.Component {
       )
       .catch((error) => {
         this.setState({ isLoading: false });
-        toast.error(error);
+        const errorMessage = error?.message || 'Something went wrong';
+        toast.error(errorMessage);
       });
   };
 
