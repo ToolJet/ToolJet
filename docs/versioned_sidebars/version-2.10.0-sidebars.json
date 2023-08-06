@@ -29,6 +29,7 @@
         "setup/v2-migration-guide"
       ]
     },
+    "licensing",
     "tooljet-database",
     "tooljet-copilot",
     {
@@ -191,11 +192,13 @@
       "items": [
         "app-builder/overview",
         "app-builder/topbar",
+        "app-builder/share",
         "app-builder/canvas",
         "app-builder/left-sidebar",
         "app-builder/components-library",
         "app-builder/query-panel",
         "tutorial/pages",
+        "app-builder/customstyles",
         "tutorial/keyboard-shortcuts"
       ]
     },
@@ -319,6 +322,7 @@
         "how-to/use-form-component",
         "how-to/access-cellvalue-rowdata",
         "how-to/bulk-update-multiple-rows",
+        "how-to/use-server-side-pagination",
         "how-to/access-currentuser",
         "how-to/use-axios-in-runjs",
         "how-to/import-external-libraries-using-runpy",

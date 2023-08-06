@@ -45,8 +45,13 @@ export const CustomComponent = (props) => {
             setCustomProps({ ...customPropRef.current, ...e.data.updatedObj });
           } else if (e.data.message === 'RUN_QUERY') {
             const filteredQuery = dataQueryRef.current.filter((query) => query.name === e.data.queryName);
+            const parameters = e.data.parameters ? JSON.parse(e.data.parameters) : {};
             filteredQuery.length === 1 &&
-              fireEvent('onTrigger', { queryId: filteredQuery[0].id, queryName: filteredQuery[0].name });
+              fireEvent('onTrigger', {
+                queryId: filteredQuery[0].id,
+                queryName: filteredQuery[0].name,
+                parameters,
+              });
           } else {
             sendMessageToIframe(e.data);
           }

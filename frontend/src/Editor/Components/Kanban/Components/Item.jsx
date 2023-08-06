@@ -1,7 +1,6 @@
 import React, { useEffect, forwardRef } from 'react';
 import '@/_styles/widgets/kanban.scss';
 import cx from 'classnames';
-
 import { Handle } from './Handle';
 import { SubContainer } from '@/Editor/SubContainer';
 
