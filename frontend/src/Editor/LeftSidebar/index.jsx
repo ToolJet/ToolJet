@@ -28,7 +28,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
     dataSourcesChanged,
     globalDataSourcesChanged,
     dataQueriesChanged,
-
     appDefinition,
     setSelectedComponent,
     removeComponent,
@@ -145,7 +144,11 @@ export const LeftSidebar = forwardRef((props, ref) => {
         updateHomePage={updateHomePage}
         updatePageHandle={updatePageHandle}
         clonePage={clonePage}
-        pages={Object.entries(appDefinition.pages).map(([id, page]) => ({ id, ...page })) || []}
+        pages={
+          Object.entries(_.cloneDeep(appDefinition).pages)
+            .map(([id, page]) => ({ id, ...page }))
+            .sort((a, b) => a.index - b.index) || []
+        }
         homePageId={appDefinition.homePageId}
         showHideViewerNavigationControls={showHideViewerNavigationControls}
         updateOnSortingPages={updateOnSortingPages}
