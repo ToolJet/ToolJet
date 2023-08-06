@@ -1163,6 +1163,7 @@ export function computeComponentState(components = {}) {
       };
     }
   });
+
   useCurrentStateStore.getState().actions.setCurrentState({
     components: {
       ...componentState,

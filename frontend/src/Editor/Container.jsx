@@ -57,7 +57,7 @@ export const Container = ({
   const components = useMemo(
     () => appDefinition.pages[currentPageId]?.components ?? {},
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(appDefinition)]
+    [JSON.stringify(appDefinition), currentPageId]
   );
 
   const currentState = useCurrentState();

@@ -128,6 +128,9 @@ const EditorComponent = (props) => {
 
   const [isDragging, setIsDragging] = useState(false);
 
+  const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(null);
+  const [isDeletingPage, setIsDeletingPage] = useState(false);
+
   // refs
   const canvasContainerRef = useRef(null);
   const dataSourceModalRef = useRef(null);
@@ -712,23 +715,31 @@ const EditorComponent = (props) => {
       });
     }
 
-    // Create a new copy of appDefinition with lodash's cloneDeep
-    const updatedAppDefinition = _.cloneDeep(appDefinition);
+    let updatedAppDefinition;
+
+    updatedAppDefinition = _.cloneDeep(appDefinition);
 
     if (_.isEmpty(updatedAppDefinition)) return;
 
-    const currentPageComponents = newDefinition.pages[currentPageId]?.components;
+    if (opts?.containerChanges || opts?.componentDefinitionChanged) {
+      const currentPageComponents = newDefinition.pages[currentPageId]?.components;
 
-    updatedAppDefinition.pages[currentPageId].components = currentPageComponents;
+      updatedAppDefinition.pages[currentPageId].components = currentPageComponents;
+    }
+
+    if (opts?.pageDefinitionChanged) {
+      updatedAppDefinition.pages = newDefinition.pages;
+    }
 
     const diffPatches = diff(appDefinition, updatedAppDefinition);
     const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
 
-    // console.log('--arpit | appDefinitionChanged func() | diffPatches', {
-    //   diffPatches,
-    //   appDefinitionDiff,
-    //   shouldUpdate,
-    // });
+    console.log('--arpit | appDefinitionChanged func() | diffPatches', {
+      diffPatches,
+      appDefinitionDiff,
+      shouldUpdate,
+      opts,
+    });
 
     if (shouldUpdate) {
       updateEditorState({
@@ -738,8 +749,6 @@ const EditorComponent = (props) => {
       updateAppDefinitionDiff(diffPatches);
       computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
     }
-
-    // if (!opts.skipAutoSave) autoSave();
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
@@ -1033,6 +1042,149 @@ const EditorComponent = (props) => {
     }
   };
 
+  //Page actions
+  const renamePage = (pageId, newName) => {
+    if (Object.entries(appDefinition.pages).some(([pId, { name }]) => newName === name && pId !== pageId)) {
+      return toast.error('Page name already exists');
+    }
+    if (newName.trim().length === 0) {
+      toast.error('Page name cannot be empty');
+      return;
+    }
+
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
+    copyOfAppDefinition.pages[pageId].name = newName;
+
+    appDefinitionChanged(copyOfAppDefinition, { pageDefinitionChanged: true });
+  };
+
+  const addNewPage = ({ name, handle }) => {
+    // check for unique page handles
+    const pageExists = Object.values(appDefinition.pages).some((page) => page.name === name);
+
+    if (pageExists) {
+      toast.error('Page name already exists');
+      return;
+    }
+
+    const pageHandles = Object.values(appDefinition.pages).map((page) => page.handle);
+
+    let newHandle = handle;
+    // If handle already exists, finds a unique handle by incrementing a number until it is not found in the array of existing page handles.
+    for (let handleIndex = 1; pageHandles.includes(newHandle); handleIndex++) {
+      newHandle = `${handle}-${handleIndex}`;
+    }
+
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+    const newPageId = uuid();
+
+    copyOfAppDefinition.pages[newPageId] = {
+      name,
+      handle: newHandle,
+      components: {},
+    };
+
+    setCurrentPageId(newPageId);
+
+    appDefinitionChanged(copyOfAppDefinition, { pageDefinitionChanged: true, switchPage: true, pageId: newPageId });
+  };
+
+  const switchPage = (pageId, queryParams = []) => {
+    // document.getElementById('real-canvas').scrollIntoView();
+    if (currentPageId === pageId && currentState.page.handle === appDefinition?.pages[pageId]?.handle) {
+      return;
+    }
+    const { name, handle, events } = appDefinition.pages[pageId];
+
+    if (!name || !handle) return;
+
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+    const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
+
+    props?.navigate(`/${getWorkspaceId()}/apps/${appId}/${handle}?${queryParamsString}`);
+
+    const { globals: existingGlobals } = currentState;
+
+    const page = {
+      id: pageId,
+      name,
+      handle,
+      variables: copyOfAppDefinition.pages[pageId]?.variables ?? {},
+    };
+
+    const globals = {
+      ...existingGlobals,
+      urlparams: JSON.parse(JSON.stringify(queryString.parse(queryParamsString))),
+    };
+    useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
+
+    setCurrentPageId(pageId);
+    handleInspectorView();
+
+    // computeComponentState(copyOfAppDefinition.pages[pageId]?.components ?? {}).then(async () => {
+    //   for (const event of events ?? []) {
+    //     await handleEvent(event.eventId, event);
+    //   }
+    // });
+  };
+
+  const deletePageRequest = (pageId, isHomePage = false, pageName = '') => {
+    setShowPageDeletionConfirmation({
+      isOpen: true,
+      pageId,
+      isHomePage,
+      pageName,
+    });
+  };
+
+  const cancelDeletePageRequest = () => {
+    setShowPageDeletionConfirmation({
+      isOpen: false,
+      pageId: null,
+      isHomePage: false,
+      pageName: null,
+    });
+  };
+
+  const executeDeletepageRequest = () => {
+    const pageId = showPageDeletionConfirmation.pageId;
+    const isHomePage = showPageDeletionConfirmation.isHomePage;
+    if (Object.keys(appDefinition.pages).length === 1) {
+      toast.error('You cannot delete the only page in your app.');
+      return;
+    }
+
+    setIsDeletingPage({
+      isDeletingPage: true,
+    });
+
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
+    const toBeDeletedPage = copyOfAppDefinition.pages[pageId];
+
+    const newAppDefinition = {
+      ...copyOfAppDefinition,
+      pages: omit(copyOfAppDefinition.pages, pageId),
+    };
+
+    const newCurrentPageId = isHomePage ? Object.keys(copyOfAppDefinition.pages)[0] : copyOfAppDefinition.homePageId;
+
+    setCurrentPageId(newCurrentPageId);
+    updateEditorState({
+      isSaving: true,
+    });
+    setIsDeletingPage(false);
+
+    appDefinitionChanged(newAppDefinition, {
+      pageDefinitionChanged: true,
+    });
+
+    toast.success(`${toBeDeletedPage.name} page deleted.`);
+
+    switchPage(newCurrentPageId);
+  };
+
   // !-------
 
   const currentState = props?.currentState;
@@ -1055,6 +1207,15 @@ const EditorComponent = (props) => {
 
   return (
     <div className="editor wrapper">
+      <Confirm
+        show={showPageDeletionConfirmation?.isOpen ?? false}
+        title={'Delete Page'}
+        message={`Do you really want to delete ${showPageDeletionConfirmation?.pageName || 'this'} page?`}
+        confirmButtonLoading={isDeletingPage}
+        onConfirm={() => executeDeletepageRequest()}
+        onCancel={() => cancelDeletePageRequest()}
+        darkMode={props.darkMode}
+      />
       {props.isVersionReleased && <ReleasedVersionError />}
       <EditorContextWrapper>
         <EditorHeader
@@ -1103,10 +1264,10 @@ const EditorComponent = (props) => {
               ref={dataSourceModalRef}
               isSaving={isSaving}
               currentPageId={currentPageId}
-              // addNewPage={addNewPage}
-              // switchPage={switchPage}
-              // deletePage={deletePageRequest}
-              // renamePage={renamePage}
+              addNewPage={addNewPage}
+              switchPage={switchPage}
+              deletePage={deletePageRequest}
+              renamePage={renamePage}
               // clonePage={clonePage}
               // hidePage={hidePage}
               // unHidePage={unHidePage}
