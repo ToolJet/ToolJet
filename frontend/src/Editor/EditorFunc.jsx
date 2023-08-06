@@ -86,6 +86,7 @@ const defaultDefinition = (darkMode) => {
         components: {},
         handle: 'home',
         name: 'Home',
+        index: 0,
       },
     },
     globalSettings: {
@@ -1098,6 +1099,7 @@ const EditorComponent = (props) => {
       name,
       handle: newHandle,
       components: {},
+      index: Object.keys(copyOfAppDefinition.pages).length,
     };
 
     setCurrentPageId(newPageId);
@@ -1347,6 +1349,25 @@ const EditorComponent = (props) => {
     });
   };
 
+  const updateOnSortingPages = (newSortedPages) => {
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+    const pagesObj = newSortedPages.reduce((acc, page, index) => {
+      acc[page.id] = {
+        ...page,
+        index: index,
+      };
+      return acc;
+    }, {});
+
+    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+
+    newAppDefinition.pages = pagesObj;
+
+    appDefinitionChanged(newAppDefinition, {
+      pageDefinitionChanged: true,
+    });
+  };
+
   // !-------
 
   const currentState = props?.currentState;
@@ -1383,7 +1404,7 @@ const EditorComponent = (props) => {
         <EditorHeader
           darkMode={props.darkMode}
           globalSettingsChanged={globalSettingsChanged}
-          appDefinition={appDefinition}
+          appDefinition={_.cloneDeep(appDefinition)}
           toggleAppMaintenance={toggleAppMaintenance}
           editingVersion={editingVersion}
           app={app}
@@ -1437,7 +1458,7 @@ const EditorComponent = (props) => {
               updatePageHandle={updatePageHandle}
               // updateOnPageLoadEvents={updateOnPageLoadEvents}
               // showHideViewerNavigationControls={showHideViewerNavigation}
-              // updateOnSortingPages={updateOnSortingPages}
+              updateOnSortingPages={updateOnSortingPages}
               setEditorMarginLeft={handleEditorMarginLeftChange}
             />
             {!props.showComments && (
