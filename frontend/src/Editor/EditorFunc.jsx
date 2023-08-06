@@ -2,7 +2,18 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { appService, authenticationService, appVersionService, orgEnvironmentVariableService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import _, { defaults, cloneDeep, isEqual, isEmpty, debounce, omit, update, difference } from 'lodash';
+import _, {
+  defaults,
+  cloneDeep,
+  isEqual,
+  isEmpty,
+  debounce,
+  omit,
+  update,
+  difference,
+  isNull,
+  isUndefined,
+} from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -731,6 +742,10 @@ const EditorComponent = (props) => {
       updatedAppDefinition.pages = newDefinition.pages;
     }
 
+    if (opts?.homePageChanged) {
+      updatedAppDefinition.homePageId = newDefinition.homePageId;
+    }
+
     const diffPatches = diff(appDefinition, updatedAppDefinition);
     const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
 
@@ -1185,6 +1200,125 @@ const EditorComponent = (props) => {
     switchPage(newCurrentPageId);
   };
 
+  const hidePage = (pageId) => {
+    updateEditorState({
+      isSaving: true,
+    });
+
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
+    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+
+    newAppDefinition.pages[pageId].hidden = true;
+
+    appDefinitionChanged(newAppDefinition, {
+      pageDefinitionChanged: true,
+    });
+  };
+
+  const unHidePage = (pageId) => {
+    updateEditorState({
+      isSaving: true,
+    });
+
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
+    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+
+    newAppDefinition.pages[pageId].hidden = false;
+
+    appDefinitionChanged(newAppDefinition, {
+      pageDefinitionChanged: true,
+    });
+  };
+
+  const clonePage = (pageId) => {
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
+    updateEditorState({
+      isSaving: true,
+    });
+
+    const currentPage = copyOfAppDefinition.pages[pageId];
+    const newPageId = uuid();
+    let newPageName = `${currentPage.name} (copy)`;
+    let newPageHandle = `${currentPage.handle}-copy`;
+    let i = 1;
+    while (
+      !isNull(copyOfAppDefinition.pages[pageId]?.pages) &&
+      !isUndefined(copyOfAppDefinition.pages[pageId]?.pages) &&
+      Object.values(copyOfAppDefinition.pages[pageId]?.pages)?.some((page) => page.handle === newPageHandle)
+    ) {
+      newPageName = `${currentPage.name} (copy ${i})`;
+      newPageHandle = `${currentPage.handle}-copy-${i}`;
+      i++;
+    }
+
+    const newPageData = cloneDeep(currentPage);
+    const oldToNewIdMapping = {};
+    if (!isEmpty(currentPage?.components)) {
+      newPageData.components = Object.keys(newPageData.components).reduce((acc, key) => {
+        const newComponentId = uuid();
+        acc[newComponentId] = newPageData.components[key];
+        acc[newComponentId].id = newComponentId;
+        oldToNewIdMapping[key] = newComponentId;
+        return acc;
+      }, {});
+
+      Object.values(newPageData.components).map((comp) => {
+        if (comp.parent) {
+          let newParentId = oldToNewIdMapping[comp.parent];
+          if (newParentId) {
+            comp.parent = newParentId;
+          } else {
+            const oldParentId = Object.keys(oldToNewIdMapping).find(
+              (parentId) =>
+                comp.parent.startsWith(parentId) &&
+                ['Tabs', 'Calendar'].includes(currentPage?.components[parentId]?.component?.component)
+            );
+            const childTabId = comp.parent.split('-').at(-1);
+            comp.parent = `${oldToNewIdMapping[oldParentId]}-${childTabId}`;
+          }
+        }
+        return comp;
+      });
+    }
+
+    const newPage = {
+      ...newPageData,
+      name: newPageName,
+      handle: newPageHandle,
+    };
+
+    const newAppDefinition = {
+      ...copyOfAppDefinition,
+      pages: {
+        ...copyOfAppDefinition.pages,
+        [newPageId]: newPage,
+      },
+    };
+
+    appDefinitionChanged(newAppDefinition, {
+      pageDefinitionChanged: true,
+    });
+  };
+
+  const updateHomePage = (pageId) => {
+    updateEditorState({
+      isSaving: true,
+    });
+
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
+    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+
+    newAppDefinition.homePageId = pageId;
+
+    appDefinitionChanged(newAppDefinition, {
+      homePageChanged: true,
+    });
+  };
+
   // !-------
 
   const currentState = props?.currentState;
@@ -1268,10 +1402,10 @@ const EditorComponent = (props) => {
               switchPage={switchPage}
               deletePage={deletePageRequest}
               renamePage={renamePage}
-              // clonePage={clonePage}
-              // hidePage={hidePage}
-              // unHidePage={unHidePage}
-              // updateHomePage={updateHomePage}
+              clonePage={clonePage}
+              hidePage={hidePage}
+              unHidePage={unHidePage}
+              updateHomePage={updateHomePage}
               // updatePageHandle={updatePageHandle}
               // updateOnPageLoadEvents={updateOnPageLoadEvents}
               // showHideViewerNavigationControls={showHideViewerNavigation}
