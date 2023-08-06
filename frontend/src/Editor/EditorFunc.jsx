@@ -1319,6 +1319,34 @@ const EditorComponent = (props) => {
     });
   };
 
+  const updatePageHandle = (pageId, newHandle) => {
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
+    updateEditorState({
+      isSaving: true,
+    });
+
+    const pageExists = Object.values(copyOfAppDefinition.pages).some((page) => page.handle === newHandle);
+
+    if (pageExists) {
+      toast.error('Page with same handle already exists');
+      return;
+    }
+
+    if (newHandle.trim().length === 0) {
+      toast.error('Page handle cannot be empty');
+      return;
+    }
+
+    const newDefinition = _.cloneDeep(copyOfAppDefinition);
+
+    newDefinition.pages[pageId].handle = newHandle;
+
+    appDefinitionChanged(newDefinition, {
+      pageDefinitionChanged: true,
+    });
+  };
+
   // !-------
 
   const currentState = props?.currentState;
@@ -1406,7 +1434,7 @@ const EditorComponent = (props) => {
               hidePage={hidePage}
               unHidePage={unHidePage}
               updateHomePage={updateHomePage}
-              // updatePageHandle={updatePageHandle}
+              updatePageHandle={updatePageHandle}
               // updateOnPageLoadEvents={updateOnPageLoadEvents}
               // showHideViewerNavigationControls={showHideViewerNavigation}
               // updateOnSortingPages={updateOnSortingPages}
