@@ -602,21 +602,28 @@ const EditorComponent = (props) => {
   const handleEditorMarginLeftChange = (value) => setEditorMarginLeft(value);
 
   const globalSettingsChanged = (key, value) => {
-    if (value?.[1]?.a == undefined) appDefinition.globalSettings[key] = value;
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+
+    if (value?.[1]?.a == undefined) newAppDefinition.globalSettings[key] = value;
     else {
       const hexCode = `${value?.[0]}${decimalToHex(value?.[1]?.a)}`;
-      appDefinition.globalSettings[key] = hexCode;
+      newAppDefinition.globalSettings[key] = hexCode;
     }
 
     updateEditorState({
       isSaving: true,
-      appDefinition,
+      // appDefinition,
     });
 
-    props.ymap?.set('appDef', {
-      newDefinition: appDefinition,
-      editingVersionId: props.editingVersion?.id,
+    appDefinitionChanged(newAppDefinition, {
+      globalSettings: true,
     });
+
+    // props.ymap?.set('appDef', {
+    //   newDefinition: appDefinition,
+    //   editingVersionId: props.editingVersion?.id,
+    // });
     // autoSave();
   };
 
@@ -747,7 +754,7 @@ const EditorComponent = (props) => {
       updatedAppDefinition.homePageId = newDefinition.homePageId;
     }
 
-    if (opts?.generalAppDefinitionChanged) {
+    if (opts?.generalAppDefinitionChanged || opts?.globalSettings) {
       updatedAppDefinition = newDefinition;
     }
 
@@ -768,6 +775,10 @@ const EditorComponent = (props) => {
       });
       updateAppDefinitionDiff(diffPatches);
       computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
+      props.ymap?.set('appDef', {
+        newDefinition: updatedAppDefinition,
+        editingVersionId: props.editingVersion?.id,
+      });
     }
   };
 
