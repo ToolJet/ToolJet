@@ -140,6 +140,9 @@ class ViewerComponent extends React.Component {
         currentUser: userVars, // currentUser is updated in setupViewer function as well
         theme: { name: this.props.darkMode ? 'dark' : 'light' },
         urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+        mode: {
+          value: this.state.slug ? 'view' : 'preview',
+        },
       },
       variables: {},
       page: {
