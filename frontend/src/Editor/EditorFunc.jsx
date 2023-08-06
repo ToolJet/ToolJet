@@ -747,6 +747,10 @@ const EditorComponent = (props) => {
       updatedAppDefinition.homePageId = newDefinition.homePageId;
     }
 
+    if (opts?.generalAppDefinitionChanged) {
+      updatedAppDefinition = newDefinition;
+    }
+
     const diffPatches = diff(appDefinition, updatedAppDefinition);
     const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
 
@@ -1139,11 +1143,11 @@ const EditorComponent = (props) => {
     setCurrentPageId(pageId);
     handleInspectorView();
 
-    // computeComponentState(copyOfAppDefinition.pages[pageId]?.components ?? {}).then(async () => {
-    //   for (const event of events ?? []) {
-    //     await handleEvent(event.eventId, event);
-    //   }
-    // });
+    (async () => {
+      for (const event of events ?? []) {
+        await handleEvent(event.eventId, event);
+      }
+    })();
   };
 
   const deletePageRequest = (pageId, isHomePage = false, pageName = '') => {
@@ -1368,6 +1372,29 @@ const EditorComponent = (props) => {
     });
   };
 
+  const showHideViewerNavigation = () => {
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+
+    newAppDefinition.showViewerNavigation = !newAppDefinition.showViewerNavigation;
+
+    appDefinitionChanged(newAppDefinition, {
+      generalAppDefinitionChanged: true,
+    });
+  };
+
+  const updateOnPageLoadEvents = (pageId, events) => {
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
+
+    const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
+
+    newAppDefinition.pages[pageId].events = events;
+
+    appDefinitionChanged(newAppDefinition, {
+      pageDefinitionChanged: true,
+    });
+  };
+
   // !-------
 
   const currentState = props?.currentState;
@@ -1456,8 +1483,8 @@ const EditorComponent = (props) => {
               unHidePage={unHidePage}
               updateHomePage={updateHomePage}
               updatePageHandle={updatePageHandle}
-              // updateOnPageLoadEvents={updateOnPageLoadEvents}
-              // showHideViewerNavigationControls={showHideViewerNavigation}
+              updateOnPageLoadEvents={updateOnPageLoadEvents}
+              showHideViewerNavigationControls={showHideViewerNavigation}
               updateOnSortingPages={updateOnSortingPages}
               setEditorMarginLeft={handleEditorMarginLeftChange}
             />
