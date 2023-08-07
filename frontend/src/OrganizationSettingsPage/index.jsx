@@ -17,7 +17,7 @@ export function OrganizationSettings(props) {
   const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Workspace constants', 'Copilot'];
+  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Workspace constants'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'Users':
@@ -28,8 +28,6 @@ export function OrganizationSettings(props) {
         return 'manageSSO';
       case 'Workspace variables':
         return 'manageEnvVars';
-      case 'Copilot':
-        return 'manageCopilot';
       case 'Workspace constants':
         return 'manageOrgConstants';
       default:

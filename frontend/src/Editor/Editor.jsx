@@ -201,6 +201,10 @@ class EditorComponent extends React.Component {
       ...this.props.currentState.globals,
       theme: { name: this.props.darkMode ? 'dark' : 'light' },
       urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+      /* Constant value.it will only change for viewer */
+      mode: {
+        value: 'edit',
+      },
     };
     const page = {
       ...this.props.currentState.page,

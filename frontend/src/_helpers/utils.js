@@ -9,6 +9,7 @@ import { authenticationService } from '@/_services/authentication.service';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
+import { getCookie, eraseCookie } from '@/_helpers/cookie';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -985,6 +986,25 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
 };
 
 export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
+
+export function eraseRedirectUrl() {
+  const redirectPath = getCookie('redirectPath');
+  redirectPath && eraseCookie('redirectPath');
+  return redirectPath;
+}
+
+export const returnWorkspaceIdIfNeed = (path) => {
+  if (path) {
+    return !path.includes('applications') && !path.includes('integrations') ? `/${getWorkspaceId()}` : '';
+  }
+  return `/${getWorkspaceId()}`;
+};
+
+export const redirectToWorkspace = () => {
+  const path = eraseRedirectUrl();
+  const redirectPath = `${returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
+  window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+};
 
 export const redirectToDashboard = () => {
   const subpath = getSubpath();
