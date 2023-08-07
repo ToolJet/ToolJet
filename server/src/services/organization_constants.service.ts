@@ -25,7 +25,7 @@ export class OrganizationConstantsService {
         .where('organization_constants.organization_id = :organizationId', { organizationId });
       const result = await query.getMany();
 
-      const appEnvironments = await this.appEnvironmentService.getAll(organizationId, null);
+      const appEnvironments = await this.appEnvironmentService.getAll(organizationId, manager);
 
       const constantsWithValues = await Promise.all(
         result.map(async (constant) => {
@@ -157,21 +157,7 @@ export class OrganizationConstantsService {
   }
 
   async delete(constantId: string, organizationId: string, environmentId?: string): Promise<DeleteResult> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      const constantToDelete = await manager.findOne(OrganizationConstant, {
-        where: { id: constantId, organizationId },
-      });
-
-      if (!constantToDelete) {
-        throw new Error('Constant not found');
-      }
-
-      return await this.appEnvironmentService.deleteOrgEnvironmentConstant(
-        constantToDelete.id,
-        organizationId,
-        environmentId
-      );
-    });
+    return await this.appEnvironmentService.deleteOrgEnvironmentConstant(constantId, organizationId, environmentId);
   }
 
   private async encryptSecret(workspaceId: string, value: string) {
