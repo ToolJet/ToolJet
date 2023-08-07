@@ -16,6 +16,7 @@ import { GroupPermission } from 'src/entities/group_permission.entity';
 import { DataSourceGroupPermission } from 'src/entities/data_source_group_permission.entity';
 import { EncryptionService } from './encryption.service';
 import { OrgEnvironmentVariable } from '../entities/org_envirnoment_variable.entity';
+import { decode } from 'js-base64';
 
 @Injectable()
 export class DataSourcesService {
@@ -120,7 +121,16 @@ export class DataSourcesService {
   async findOneByEnvironment(dataSourceId: string, environmentId?: string): Promise<DataSource> {
     const dataSource = await this.dataSourcesRepository.findOneOrFail({
       where: { id: dataSourceId },
-      relations: ['plugin', 'apps', 'dataSourceOptions', 'appVersion', 'appVersion.app'],
+      relations: [
+        'apps',
+        'dataSourceOptions',
+        'appVersion',
+        'appVersion.app',
+        'plugin',
+        'plugin.iconFile',
+        'plugin.manifestFile',
+        'plugin.operationsFile',
+      ],
     });
 
     const dsOrganizationId = dataSource.organizationId || dataSource.appVersion.app.organizationId;
@@ -133,6 +143,14 @@ export class DataSourcesService {
       } else {
         throw new NotAcceptableException('Environment id should not be empty');
       }
+    }
+
+    if (dataSource.pluginId) {
+      dataSource.plugin.iconFile.data = dataSource.plugin.iconFile.data.toString('utf8');
+      dataSource.plugin.manifestFile.data = JSON.parse(decode(dataSource.plugin.manifestFile.data.toString('utf8')));
+      dataSource.plugin.operationsFile.data = JSON.parse(
+        decode(dataSource.plugin.operationsFile.data.toString('utf8'))
+      );
     }
 
     if (environmentId) {
