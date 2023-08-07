@@ -82,15 +82,19 @@ describe('apps controller', () => {
         });
         await createApplicationVersion(app, application);
 
+        const appName = 'My app';
         for (const userData of [viewerUserData, developerUserData]) {
           const response = await request(app.getHttpServer())
             .post(`/api/apps`)
             .set('tj-workspace-id', userData.user.defaultOrganizationId)
-            .set('Cookie', userData['tokenCookie']);
+            .set('Cookie', userData['tokenCookie'])
+            .send({
+              name: appName,
+            });
 
           expect(response.statusCode).toBe(403);
         }
-        const appName = 'My app';
+
         const response = await request(app.getHttpServer())
           .post(`/api/apps`)
           .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
