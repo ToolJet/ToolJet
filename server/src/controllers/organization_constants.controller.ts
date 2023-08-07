@@ -7,7 +7,6 @@ import {
   Param,
   Patch,
   Delete,
-  BadRequestException,
   ForbiddenException,
   Query,
 } from '@nestjs/common';
@@ -92,12 +91,9 @@ export class OrganizationConstantController {
     }
 
     const { organizationId } = user;
-    const result = await this.organizationConstantsService.delete(constantId, organizationId, environmentId);
 
-    if (result.affected == 1) {
-      return;
-    } else {
-      throw new BadRequestException();
-    }
+    await this.organizationConstantsService.delete(constantId, organizationId, environmentId);
+
+    return { statusCode: 204 };
   }
 }
