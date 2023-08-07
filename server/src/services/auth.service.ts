@@ -575,7 +575,7 @@ export class AuthService {
     if (loggedInUser?.id !== user.id) {
       const session: UserSessions = await this.sessionService.createSession(
         user.id,
-        `IP: ${request?.clientIp || requestIp.getClientIp(request) || 'unknown'} UA: ${
+        `IP: ${request?.clientIp || (request && requestIp.getClientIp(request)) || 'unknown'} UA: ${
           request?.headers['user-agent'] || 'unknown'
         }`,
         manager

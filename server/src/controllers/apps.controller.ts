@@ -38,7 +38,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@User() user, @Body('icon') icon: string) {
+  async create(@User() user, @Body('name') name: string, @Body('icon') icon: string) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 
     if (!ability.can('createApp', App)) {
@@ -46,7 +46,7 @@ export class AppsController {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsService.create(user, manager);
+      const app = await this.appsService.create(user, manager, name);
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.slug = app.id;

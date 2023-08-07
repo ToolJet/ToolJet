@@ -1,7 +1,7 @@
 import React from 'react';
 import cx from 'classnames';
 import { appService, folderService, authenticationService } from '@/_services';
-import { ConfirmDialog } from '@/_components';
+import { ConfirmDialog, CreateApp } from '@/_components';
 import Select from '@/_ui/Select';
 import { Folders } from './Folders';
 import { BlankPage } from './BlankPage';
@@ -61,6 +61,7 @@ class HomePageComponent extends React.Component {
       appOperations: {},
       showTemplateLibraryModal: false,
       app: {},
+      showCreateAppModal: false,
     };
   }
 
@@ -119,11 +120,11 @@ class HomePageComponent extends React.Component {
     this.fetchFolders();
   };
 
-  createApp = () => {
+  createApp = (appName) => {
     let _self = this;
     _self.setState({ creatingApp: true });
     appService
-      .createApp({ icon: sample(iconList) })
+      .createApp({ icon: sample(iconList), name: appName })
       .then((data) => {
         const workspaceId = getWorkspaceId();
         _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
@@ -431,6 +432,10 @@ class HomePageComponent extends React.Component {
     this.setState({ showTemplateLibraryModal: false });
   };
 
+  openCreateAppModal = () => {
+    this.setState({ showCreateAppModal: true });
+  };
+
   render() {
     const {
       apps,
@@ -450,10 +455,18 @@ class HomePageComponent extends React.Component {
       isExportingApp,
       appToBeDeleted,
       app,
+      showCreateAppModal,
     } = this.state;
     return (
       <Layout switchDarkMode={this.props.switchDarkMode} darkMode={this.props.darkMode}>
         <div className="wrapper home-page">
+          {showCreateAppModal && (
+            <CreateApp
+              closeModal={() => this.setState({ showCreateAppModal: false })}
+              createApp={this.createApp}
+              show={showCreateAppModal}
+            />
+          )}
           <ConfirmDialog
             show={showAppDeletionConfirmation}
             message={this.props.t(
@@ -588,7 +601,7 @@ class HomePageComponent extends React.Component {
                   <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
                     <Button
                       className={`create-new-app-button col-11 ${creatingApp ? 'btn-loading' : ''}`}
-                      onClick={this.createApp}
+                      onClick={this.openCreateAppModal}
                       data-cy="create-new-app-button"
                     >
                       {isImportingApp && <span className="spinner-border spinner-border-sm mx-2" role="status"></span>}

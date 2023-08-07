@@ -12,13 +12,7 @@ import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { AppImportExportService } from './app_import_export.service';
 import { DataSourcesService } from './data_sources.service';
 import { Credential } from 'src/entities/credential.entity';
-import {
-  catchDbException,
-  cleanObject,
-  dbTransactionWrap,
-  defaultAppEnvironments,
-  generateNextName,
-} from 'src/helpers/utils.helper';
+import { catchDbException, cleanObject, dbTransactionWrap, defaultAppEnvironments } from 'src/helpers/utils.helper';
 import { AppUpdateDto } from '@dto/app-update.dto';
 import { viewableAppsQuery } from 'src/helpers/queries';
 import { VersionEditDto } from '@dto/version-edit.dto';
@@ -103,9 +97,8 @@ export class AppsService {
     });
   }
 
-  async create(user: User, manager: EntityManager): Promise<App> {
+  async create(user: User, manager: EntityManager, name: string): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const name = await generateNextName('My app');
       const app = await manager.save(
         manager.create(App, {
           name,

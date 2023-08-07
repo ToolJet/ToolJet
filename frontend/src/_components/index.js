@@ -4,6 +4,7 @@ export * from './ConfirmDialog';
 export * from './DarkModeToggle';
 export * from './SearchBox';
 export * from './ToolTip';
+export * from './CreateApp';
 export * from './ImageWithSpinner';
 export * from './Menu';
 export * from './LoginLoader';
