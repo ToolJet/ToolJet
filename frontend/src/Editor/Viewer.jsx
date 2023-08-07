@@ -541,7 +541,7 @@ class ViewerComponent extends React.Component {
         //checking if page is disabled
         if (
           pageArray.find((page) => page.handle === this.props.params.pageHandle)?.disabled &&
-          this.state.currentPageId !== this.state.appDefinition?.homePageId && //Prevent page crashing when home page is hidden
+          this.state.currentPageId !== this.state.appDefinition?.homePageId && //Prevent page crashing when home page is disabled
           this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]
         ) {
           const homeHandle = this.state.appDefinition?.pages?.[this.state.appDefinition?.homePageId]?.handle;
