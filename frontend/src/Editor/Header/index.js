@@ -13,6 +13,7 @@ import config from 'config';
 // eslint-disable-next-line import/no-unresolved
 import { useUpdatePresence } from '@y-presence/react';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 
 export default function EditorHeader({
@@ -46,6 +47,7 @@ export default function EditorHeader({
     }),
     shallow
   );
+  const currentState = useCurrentState();
 
   const updatePresence = useUpdatePresence();
   useEffect(() => {
@@ -140,7 +142,13 @@ export default function EditorHeader({
               <div className="navbar-nav flex-row order-md-last release-buttons p-1">
                 <div className="nav-item me-1">
                   {app.id && (
-                    <ManageAppUsers app={app} slug={slug} darkMode={darkMode} handleSlugChange={handleSlugChange} />
+                    <ManageAppUsers
+                      app={app}
+                      slug={slug}
+                      darkMode={darkMode}
+                      handleSlugChange={handleSlugChange}
+                      pageHandle={currentState?.page?.handle}
+                    />
                   )}
                 </div>
                 <div className="nav-item me-1">

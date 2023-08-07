@@ -117,9 +117,9 @@
         "share": "Share",
         "shareModal": {
             "makeApplicationPublic": "Make application public?",
-            "shareableLink": "Get shareable link for this application",
+            "shareableLink": "Shareable app link",
             "copy": "copy",
-            "embeddableLink": "Get embeddable link for this application",
+            "embeddableLink": "Embedded app link",
             "manageUsers": "Users"
         },
         "appVersionManager": {

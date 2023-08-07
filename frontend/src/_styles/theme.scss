@@ -10783,6 +10783,7 @@ tbody {
 }
 
 .app-slug,
+.shareable-link-container,
 .workspace-folder-modal {
   .tj-app-input {
     padding-bottom: 0px !important;
@@ -11015,5 +11016,62 @@ tbody {
 .app-slug-container {
   .label {
     font-size: 9px !important;
+  }
+}
+
+.shareable-link-container {
+  .copy-container {
+    width: 0px;
+    margin-right: -12px;
+  }
+
+  .form-check-label {
+    font-size: 12px;
+    margin-left: 8px;
+    color: var(--base-slate-12, var(--slate-12, #11181C));
+  }
+
+  .label-success,
+  .label-updated,
+  .tj-input-error,
+  .label-info {
+    font-size: 10px;
+    padding-top: 10px;
+  }
+
+  .input-with-icon {
+    .form-control {
+      height: 100%;
+      border-radius: 0px !important;
+      padding-right: 40px;
+    }
+
+    .is-invalid:focus {
+      border-color: var(--tomato9) !important;
+    }
+
+    .icon-container {  
+      right: 12px;
+      top: calc(50% - 10px);  
+      
+      .spinner-border {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .input-group-text {
+    background: var(--slate3);
+    color: var(--slate9);
+  }
+}
+
+.manage-app-users-footer {
+  padding-bottom: 20px;
+  margin-top: 18px;
+  .default-secondary-button {
+    width: auto !important;
+    padding: 18px;
   }
 }

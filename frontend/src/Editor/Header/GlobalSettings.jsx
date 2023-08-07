@@ -12,6 +12,7 @@ import _ from 'lodash';
 import Popover from '@/_ui/Popover';
 import { appService } from '@/_services';
 import { useCurrentState } from '@/_stores/currentStateStore';
+import { replaceEditorURL } from '@/_helpers/routes';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -87,6 +88,7 @@ export const GlobalSettings = ({
           setSlugProgress(false);
           handleSlugChange(value);
           setSlugUpdatedState(true);
+          replaceEditorURL(value, currentState?.page?.handle);
         })
         .catch(({ error }) => {
           setSlug({

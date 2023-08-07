@@ -58,9 +58,10 @@ export class AppsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ValidAppInterceptor)
   @Get('validate-private-app-access/:slug')
-  async appAccess(@User() user, @AppDecorator() app: App, @Query('access_type') accessType: string) {
+  async appAccess(@User() user, @Param('slug') appSlug: string, @Query('access_type') accessType: string) {
+    const app: App = await this.appsService.findAppWithIdOrSlug(appSlug);
+
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
     if (!ability.can('viewApp', app)) {
       throw new ForbiddenException(

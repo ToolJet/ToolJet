@@ -1,13 +1,13 @@
-import { getWorkspaceIdOrSlugFromURL } from '@/_helpers/utils';
+import { getSubpath, getWorkspaceIdOrSlugFromURL } from '@/_helpers/utils';
 import { authenticationService } from '@/_services/authentication.service';
 
 //TODO: test dashboard menu items
 export const getPrivateRoute = (page, params = {}) => {
   const routes = {
     dashboard: '/',
-    editor: '/apps/:slug/:pageHandle?',
-    preview: '/applications/:slug/versions/:versionId/:pageHandle?',
-    launch: '/applications/:slug/:pageHandle?',
+    editor: '/apps/:slug/:pageHandle',
+    preview: '/applications/:slug/versions/:versionId/:pageHandle',
+    launch: '/applications/:slug/:pageHandle',
     workspace_settings: '/workspace-settings',
     settings: '/settings',
     database: '/database',
@@ -33,4 +33,12 @@ const appendWorkspaceId = (url) => {
     authenticationService.currentSessionValue?.current_organization_slug ||
     authenticationService.currentSessionValue?.current_organization_id;
   return `/${workspaceId}${url}`;
+};
+
+export const replaceEditorURL = (slug, pageHandle) => {
+  const subpath = getSubpath();
+  const path = subpath
+    ? `${subpath}${getPrivateRoute('editor', { slug, pageHandle })}`
+    : getPrivateRoute('editor', { slug, pageHandle });
+  window.history.replaceState(null, null, path);
 };

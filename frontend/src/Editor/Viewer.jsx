@@ -234,7 +234,7 @@ class ViewerComponent extends React.Component {
       if (currentSession?.load_app) {
         if (currentSession?.group_permissions) {
           handleAppAccess('viewer', slug, versionId).then((accessData) => {
-            const { is: appId } = accessData;
+            const { id: appId } = accessData;
             useEditorStore.getState().actions.setAppId(appId);
 
             const currentUser = currentSession.current_user;
@@ -252,10 +252,9 @@ class ViewerComponent extends React.Component {
             });
             this.setState({
               currentUser,
-
               userVars,
             });
-            slug ? this.loadApplicationBySlug(slug) : this.loadApplicationByVersion(appId, versionId);
+            versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
           });
         } else if (currentSession?.authentication_failed && !slug) {
           const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';

@@ -33,6 +33,7 @@ export const RealtimeEditor = (props) => {
   const [provider, setProvider] = React.useState();
 
   React.useEffect(() => {
+    /* TODO: when we convert the editor.jsx to fn component. please try to avoid this extra call */
     handleAppAccess('editor', slug).then((accessData) => {
       const { id: appId } = accessData;
       const domain = psl.parse(window.location.host).domain;

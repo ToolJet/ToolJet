@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotAcceptableException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { App } from 'src/entities/app.entity';
 import { EntityManager, MoreThan, Repository } from 'typeorm';
@@ -649,5 +649,21 @@ export class AppsService {
         credential_id: options[key]['credential_id'],
       };
     });
+  }
+
+  async findAppWithIdOrSlug(slug: string): Promise<App> {
+    let app: App;
+    try {
+      app = await this.find(slug);
+    } catch (error) {
+      /* means: UUID error. so the slug isn't not the id of the app */
+      if (error?.code === `22P02`) {
+        /* Search against slug */
+        app = await this.findBySlug(slug);
+      }
+    }
+
+    if (!app) throw new NotFoundException('App not found. Invalid app id');
+    return app;
   }
 }

@@ -1362,7 +1362,7 @@ class EditorComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.appId}/${handle}?${queryParamsString}`);
+    this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.slug}/${handle}?${queryParamsString}`);
 
     const { globals: existingGlobals } = this.props.currentState;
 
@@ -1470,7 +1470,7 @@ class EditorComponent extends React.Component {
     const currentState = this.props?.currentState;
     const editingVersion = this.props?.editingVersion;
     const appVersionPreviewLink = editingVersion
-      ? `/applications/${app.id}/versions/${editingVersion.id}/${currentState.page.handle}`
+      ? `/applications/${app.slug}/versions/${editingVersion.id}/${currentState.page.handle}`
       : '';
     return (
       <div className="editor wrapper">
