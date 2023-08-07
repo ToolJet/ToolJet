@@ -48,6 +48,7 @@ import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
+import SingleOptionOflist from '@/ToolJetUI/SingleOptionOfList';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -858,6 +859,11 @@ export function Table({
   }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data)]);
 
   function downlaodPopover() {
+    const options = [
+      { dataCy: 'option-download-CSV', text: 'Download as CSV', value: 'csv' },
+      { dataCy: 'option-download-execel', text: 'Download as Excel', value: 'xlsx' },
+      { dataCy: 'option-download-pdf', text: 'Download as PDF', value: 'pdf' },
+    ];
     return (
       <Popover
         id="popover-basic"
@@ -865,9 +871,9 @@ export function Table({
         className={`${darkMode && 'dark-theme'} shadow table-widget-download-popup`}
         placement="top-end"
       >
-        <Popover.Body>
-          <div className="d-flex flex-column">
-            <span data-cy={`option-download-CSV`} className="cursor-pointer" onClick={() => exportData('csv', true)}>
+        <Popover.Body className="p-0">
+          <div className="">
+            {/* <span data-cy={`option-download-CSV`} className="cursor-pointer" onClick={() => exportData('csv', true)}>
               Download as CSV
             </span>
             <span
@@ -883,7 +889,21 @@ export function Table({
               onClick={() => exportData('pdf', true)}
             >
               Download as PDF
-            </span>
+            </span> */}
+            {options.map((option) => {
+              return (
+                <SingleOptionOflist
+                  size="sm"
+                  darkMode={darkMode}
+                  className="table-download-option cursor-pointer"
+                  onClickFunction={() => exportData(option.value, true)}
+                  key={option.value}
+                  dataCy={option.dataCy}
+                >
+                  <SingleOptionOflist.optionForPopover size="sm" optionText={option.text} className="pointer" />
+                </SingleOptionOflist>
+              );
+            })}
           </div>
         </Popover.Body>
       </Popover>
@@ -910,6 +930,20 @@ export function Table({
               Select All
             </span>
           </div>
+          {/* <SingleOptionOflist
+            size="sm"
+            darkMode={darkMode}
+            className="cursor-pointer"
+            // onClickFunction={() => }
+            // dataCy={option.dataCy}
+          >
+            <SingleOptionOflist.optionForPopover
+              size="sm"
+              optionText="Select All"
+              className="pointer"
+              showCheckbox={true}
+            />
+          </SingleOptionOflist> */}
           {allColumns.map(
             (column) =>
               typeof column.Header === 'string' && (
@@ -930,6 +964,22 @@ export function Table({
                     </label>
                   </div>
                 </div>
+                // <SingleOptionOflist
+                //   size="sm"
+                //   darkMode={darkMode}
+                //   className="table-download-option cursor-pointer"
+                //   // onClickFunction={() => column.getToggleHiddenProps()}
+                //   key={column.id}
+                //   // dataCy={option.dataCy}
+                //   column={column}
+                // >
+                //   <SingleOptionOflist.optionForPopover
+                //     size="sm"
+                //     optionText={column.Header}
+                //     className="pointer"
+                //     showCheckbox={true}
+                //   />
+                // </SingleOptionOflist>
               )
           )}
         </div>
@@ -1246,27 +1296,40 @@ export function Table({
           }`}
         >
           <div className={`table-footer row gx-0 d-flex align-items-center h-100`}>
-            <div className="col d-flex justify-content-start">
+            <div className="col d-flex justify-content-start gap-2">
               {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
                 <>
-                  <button
-                    className={`btn btn-primary btn-sm mx-2 ${tableDetails.isSavingChanges ? 'btn-loading' : ''}`}
-                    onClick={() =>
+                  <ButtonSolid
+                    variant="secondary"
+                    className={`tj-text-xsm`}
+                    // style={{ minWidth: '32px' }}
+                    fill={darkMode ? '#3E63DD' : '#3E63DD'}
+                    onClick={() => {
                       onEvent('onBulkUpdate', { component }).then(() => {
                         handleChangesSaved();
-                      })
-                    }
+                      });
+                    }}
                     data-cy={`table-button-save-changes`}
+                    size="md"
+                    isLoading={tableDetails.isSavingChanges ? true : false}
+                    style={{ padding: '10px 20px' }}
                   >
-                    Save Changes
-                  </button>
-                  <button
-                    className="btn btn-light btn-sm"
-                    onClick={() => handleChangesDiscarded()}
+                    <span>Save changes</span>
+                  </ButtonSolid>
+                  <ButtonSolid
+                    variant="tertiary"
+                    className={`tj-text-xsm`}
+                    // style={{ minWidth: '32px' }}
+                    fill={darkMode ? '#697177' : '#889096'}
+                    onClick={() => {
+                      handleChangesDiscarded();
+                    }}
                     data-cy={`table-button-discard-changes`}
+                    size="md"
+                    style={{ padding: '10px 20px' }}
                   >
-                    Discard changes
-                  </button>
+                    <span>Discard changes</span>
+                  </ButtonSolid>
                 </>
               ) : (
                 <span data-cy={`footer-number-of-records`} className="font-weight-500 text-black-000">
