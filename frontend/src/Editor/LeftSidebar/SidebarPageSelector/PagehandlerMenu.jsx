@@ -2,7 +2,16 @@ import React from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import { Button } from '@/_ui/LeftSidebar';
 
-export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, setShowMenu, isHome, isHidden }) => {
+export const PagehandlerMenu = ({
+  page,
+  darkMode,
+  handlePageCallback,
+  showMenu,
+  setShowMenu,
+  isHome,
+  isHidden,
+  isDisabled,
+}) => {
   const closeMenu = () => {
     setShowMenu(false);
   };
@@ -20,7 +29,6 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ page, showMenu })]);
-
   return (
     <OverlayTrigger
       trigger={'click'}
@@ -82,7 +90,15 @@ export const PagehandlerMenu = ({ page, darkMode, handlePageCallback, showMenu, 
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
                 />
-
+                <Field
+                  id={isDisabled ? 'enable-page' : 'disable-page'}
+                  text={isDisabled ? 'Enable' : 'Disable'}
+                  customClass={'delete-btn'}
+                  iconSrc={'assets/images/icons/editor/left-sidebar/page-settings.svg'}
+                  closeMenu={closeMenu}
+                  callback={handlePageCallback}
+                  disabled={isHome}
+                />
                 <Field
                   id="delete-page"
                   text="Delete page"

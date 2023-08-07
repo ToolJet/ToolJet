@@ -28,11 +28,12 @@ export const PageHandler = ({
   components,
   pinPagesPopover,
   haveUserPinned,
+  disableEnablePage,
 }) => {
   const isHomePage = page.id === homePageId;
   const isSelected = page.id === currentPageId;
   const isHidden = page?.hidden ?? false;
-
+  const isDisabled = page?.disabled ?? false;
   const [isEditingPageName, setIsEditingPageName] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
@@ -44,6 +45,7 @@ export const PageHandler = ({
     }),
     shallow
   );
+
   const handleClose = () => {
     setShowEditModal(false);
     setShowPagehandlerMenu(true);
@@ -91,6 +93,12 @@ export const PageHandler = ({
       case 'unhide-page':
         unHidePage(page.id);
         break;
+      case 'disable-page':
+        disableEnablePage({ pageId: page.id, isDisabled: true });
+        break;
+      case 'enable-page':
+        disableEnablePage({ pageId: page.id });
+        break;
 
       default:
         break;
@@ -137,14 +145,23 @@ export const PageHandler = ({
                 data-cy={'home-page-icon'}
               />
             )}
-            <SortableList.DragHandle show={isHovered} />
+            <SortableList.DragHandle show={isHovered && !isDisabled} />
           </div>
-          <div
-            className="col text-truncate font-weight-400 page-name"
-            data-cy={`pages-name-${String(page.name).toLowerCase()}`}
-          >
-            {page.name}
-          </div>
+          {!isDisabled ? (
+            <div
+              className="col text-truncate font-weight-400 page-name"
+              data-cy={`pages-name-${String(page.name).toLowerCase()}`}
+            >
+              {page.name}
+            </div>
+          ) : (
+            <div
+              className="col text-truncate font-weight-400 page-name color-slate09"
+              data-cy={`pages-name-${String(page.name).toLowerCase()}`}
+            >
+              {`${page.name} (disabled)`}
+            </div>
+          )}
           <div className="col-auto page-icons">
             {isHidden && (
               <img
@@ -168,6 +185,7 @@ export const PageHandler = ({
                 setShowMenu={setShowPagehandlerMenu}
                 isHome={isHomePage}
                 isHidden={isHidden}
+                isDisabled={isDisabled}
               />
             )}
             <EditModal
