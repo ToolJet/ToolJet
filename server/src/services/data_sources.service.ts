@@ -318,7 +318,6 @@ export class DataSourcesService {
       }
       if (constantMatcher.test(currentOption)) {
         const resolved = await this.resolveConstants(currentOption, organization_id, environment_id);
-        console.log('-----parsedOptions----- [arpit]', { resolved });
         parsedOptions[key]['value'] = resolved;
       }
     }
