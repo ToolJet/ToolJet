@@ -13,7 +13,7 @@ Cypress.Commands.add(
     cy.get(commonSelectors.signInButton).click();
     cy.intercept("GET", "api/library_apps").as("apps");
     cy.wait("@apps");
-    cy.wait(2000);
+    cy.wait(4000);
     cy.get(commonSelectors.homePageLogo).should("be.visible");
   }
 );
