@@ -21,6 +21,7 @@ import { FoldersService } from '@services/folders.service';
 import { App } from 'src/entities/app.entity';
 import { User } from 'src/decorators/user.decorator';
 import { AppUpdateDto } from '@dto/app-update.dto';
+import { AppCreateDto } from '@dto/app-create.dto';
 import { VersionCreateDto } from '@dto/version-create.dto';
 import { VersionEditDto } from '@dto/version-edit.dto';
 import { dbTransactionWrap } from 'src/helpers/utils.helper';
@@ -38,17 +39,20 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@User() user, @Body('name') name: string, @Body('icon') icon: string) {
+  async create(@User() user, @Body() appCreateDto: AppCreateDto) {
     const ability = await this.appsAbilityFactory.appsActions(user);
+    const name = appCreateDto.name;
+    const icon = appCreateDto.icon;
 
     if (!ability.can('createApp', App)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsService.create(user, manager, name);
+      const app = await this.appsService.create(name, user, manager);
 
       const appUpdateDto = new AppUpdateDto();
+      appUpdateDto.name = name;
       appUpdateDto.slug = app.id;
       appUpdateDto.icon = icon;
       await this.appsService.update(app.id, appUpdateDto, manager);

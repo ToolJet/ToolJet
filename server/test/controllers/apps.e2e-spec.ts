@@ -90,11 +90,14 @@ describe('apps controller', () => {
 
           expect(response.statusCode).toBe(403);
         }
-
+        const appName = 'My app';
         const response = await request(app.getHttpServer())
           .post(`/api/apps`)
           .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
-          .set('Cookie', adminUserData['tokenCookie']);
+          .set('Cookie', adminUserData['tokenCookie'])
+          .send({
+            name: appName,
+          });
 
         expect(response.statusCode).toBe(201);
         expect(response.body.name).toContain('My app');
@@ -115,10 +118,14 @@ describe('apps controller', () => {
 
       await createAppEnvironments(app, adminUserData.organization.id);
 
+      const appName = 'My app';
       const response = await request(app.getHttpServer())
         .post(`/api/apps`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
-        .set('Cookie', loggedUser.tokenCookie);
+        .set('Cookie', loggedUser.tokenCookie)
+        .send({
+          name: appName,
+        });
 
       expect(response.statusCode).toBe(201);
       expect(response.body.name).toContain('My app');

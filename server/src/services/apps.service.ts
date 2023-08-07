@@ -97,7 +97,7 @@ export class AppsService {
     });
   }
 
-  async create(user: User, manager: EntityManager, name: string): Promise<App> {
+  async create(name: string, user: User, manager: EntityManager): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       const app = await manager.save(
         manager.create(App, {
