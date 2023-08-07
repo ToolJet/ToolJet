@@ -28,6 +28,8 @@ export class TooljetDbService {
         return await this.dropColumn(organizationId, params);
       case 'rename_table':
         return await this.renameTable(organizationId, params);
+      case 'join_tables':
+        return await this.joinTable(organizationId, params);
       default:
         throw new BadRequestException('Action not defined');
     }
@@ -215,5 +217,15 @@ export class TooljetDbService {
     const result = await this.tooljetDbManager.query(query);
     await this.tooljetDbManager.query("NOTIFY pgrst, 'reload schema'");
     return result;
+  }
+
+  private async joinTable(organizationId: string, params) {
+    return await this.tooljetDbManager.query(
+      `select *
+        from "d705adfd-d0ae-496a-afdc-8915eb85ecfe" cd
+        left join "b2395659-3c0c-4980-904a-9cf2ec6ab84f" ct
+        on customer_type_id = ct.id
+      `
+    );
   }
 }

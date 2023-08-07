@@ -96,4 +96,16 @@ export class TooljetDbController {
     const result = await this.tooljetDbService.perform(organizationId, 'drop_column', params);
     return decamelizeKeys({ result });
   }
+
+  @Get('/:organizationId/getDetailsOnJoin')
+  @UseGuards(TooljetDbGuard)
+  @CheckPolicies((ability: TooljetDbAbility) => ability.can(Action.JoinTables, 'all'))
+  async getDetailsOnJoin(@Body() joinQueryJsonDto: any, @Param('organizationId') organizationId) {
+    const params = {
+      joinQueryJson: joinQueryJsonDto,
+    };
+
+    const result = await this.tooljetDbService.perform(organizationId, 'join_tables', params);
+    return decamelizeKeys({ result });
+  }
 }
