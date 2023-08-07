@@ -108,6 +108,11 @@ export const resetDsPermissions = () => {
   cy.wait(200)
   cy.get(groupsSelector.permissionsLink).click();
 
+  cy.get(groupsSelector.appsCreateCheck).then(($el) => {
+    if ($el.is(":checked")) {
+      cy.get(groupsSelector.appsCreateCheck).uncheck();
+    }
+  });
   cy.get(eeGroupsSelector.dsCreateCheck).then(($el) => {
     if ($el.is(":checked")) {
       cy.get(eeGroupsSelector.dsCreateCheck).uncheck();

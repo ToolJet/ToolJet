@@ -188,7 +188,6 @@ describe("Global Datasource Manager", () => {
         cy.login(data.userEmail1, "password");
 
         navigateToAppEditor(data.appName);
-
         cy.get('[data-cy="list-query-table_preview"]').verifyVisibleElement(
             "have.text",
             "table_preview"
@@ -232,11 +231,7 @@ describe("Global Datasource Manager", () => {
         cy.get(dataSourceSelector.buttonAddNewQueries).click();
         cy.get(
             ".query-datasource-card-container > .col-auto > .query-manager-btn-name"
-        ).click();
-        cy.verifyToastMessage(
-            commonSelectors.toastMessage,
-            "You don't have access to GDS, contact your workspace admin to add datasources"
-        );
+        ).should("not.exist")
     });
     it("Should verify the query creation and scope changing functionality.", () => {
         navigateToManageGroups();
