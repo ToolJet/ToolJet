@@ -8,9 +8,11 @@ import _ from 'lodash';
 export function CreateApp({ closeModal, createApp, show }) {
   const [appName, setappName] = useState('');
   const [errorText, setErrorText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCreateApp = async () => {
     if (!errorText) {
+      setIsLoading(true);
       const appExists = await checkIfAppExists(appName);
       if (appExists) {
         setErrorText('App name already exists');
@@ -18,6 +20,7 @@ export function CreateApp({ closeModal, createApp, show }) {
         createApp(appName);
         closeModal();
       }
+      setIsLoading(false);
     }
   };
 
@@ -56,7 +59,21 @@ export function CreateApp({ closeModal, createApp, show }) {
   };
 
   return (
-    <Modal show={show} closeModal={closeModal} title={'Create new app'}>
+    <Modal
+      show={show}
+      closeModal={closeModal}
+      title={'Create new app'}
+      footerContent={
+        <>
+          <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button" className="modal-footer-divider">
+            Cancel
+          </ButtonSolid>
+          <ButtonSolid onClick={handleCreateApp} data-cy="+ Create App" disabled={isLoading || errorText || !appName}>
+            {isLoading ? 'Creating...' : '+ Create App'}
+          </ButtonSolid>
+        </>
+      }
+    >
       <div className="row workspace-folder-modal mb-3">
         <div className="col modal-main tj-app-input">
           <label className="tj-input-label">{'App Name'}</label>
@@ -82,16 +99,6 @@ export function CreateApp({ closeModal, createApp, show }) {
               App name must be unique and max 50 characters
             </small>
           )}
-        </div>
-      </div>
-      <div className="row">
-        <div className="col d-flex modal-footer-btn">
-          <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button">
-            Cancel
-          </ButtonSolid>
-          <ButtonSolid onClick={handleCreateApp} data-cy="+ Create App" disabled={errorText || !appName}>
-            + Create App
-          </ButtonSolid>
         </div>
       </div>
     </Modal>
