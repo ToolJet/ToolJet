@@ -55,7 +55,7 @@ function computeWidth(currentLayoutOptions) {
 
 function getStyles(isDragging, isSelectedComponent) {
   return {
-    position: 'absolute',
+    // position: 'absolute',
     zIndex: isSelectedComponent ? 2 : 1,
     // IE fallback: hide the real node using CSS when dragging
     // because IE will ignore our custom "empty image" drag preview.
@@ -101,6 +101,7 @@ export const DraggableBox = function DraggableBox({
   isMultipleComponentsSelected,
   childComponents = null,
   isVersionReleased,
+  height,
 }) {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
@@ -220,7 +221,7 @@ export const DraggableBox = function DraggableBox({
           onMouseLeave={() => onComponentHover?.(false)}
           style={getStyles(isDragging, isSelectedComponent)}
         >
-          <Rnd
+          {/* <Rnd
             style={{ ...style }}
             resizeGrid={[gridWidth, 10]}
             dragGrid={[gridWidth, 10]}
@@ -259,7 +260,7 @@ export const DraggableBox = function DraggableBox({
             }}
             bounds={parent !== undefined ? `#canvas-${parent}` : '.real-canvas'}
             widgetId={id}
-          >
+          > */}
             <div ref={preview} role="DraggableBox" style={isResizing ? { opacity: 0.5 } : { opacity: 1 }}>
               {mode === 'edit' &&
                 !readOnly &&
@@ -283,6 +284,7 @@ export const DraggableBox = function DraggableBox({
                   id={id}
                   width={width}
                   height={layoutData.height - 4}
+                  height={height}
                   mode={mode}
                   changeCanDrag={changeCanDrag}
                   inCanvas={inCanvas}
@@ -304,7 +306,7 @@ export const DraggableBox = function DraggableBox({
                 />
               </ErrorBoundary>
             </div>
-          </Rnd>
+          {/* </Rnd> */}
         </div>
       ) : (
         <div ref={drag} role="DraggableBox" className="draggable-box" style={{ height: '100%' }}>

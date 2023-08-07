@@ -1499,14 +1499,14 @@ export const addNewWidgetToTheEditor = (
 
   const offsetFromTopOfWindow = canvasBoundingRect.top;
   const offsetFromLeftOfWindow = canvasBoundingRect.left;
-  const currentOffset = eventMonitorObject.getSourceClientOffset();
-  const initialClientOffset = eventMonitorObject.getInitialClientOffset();
-  const delta = eventMonitorObject.getDifferenceFromInitialOffset();
+  const currentOffset = eventMonitorObject ? eventMonitorObject.getSourceClientOffset() : { x: 0 };
+  const initialClientOffset = eventMonitorObject ? eventMonitorObject?.getInitialClientOffset() : { y: 0 };
+  const delta = eventMonitorObject?.getDifferenceFromInitialOffset();
   const subContainerWidth = canvasBoundingRect.width;
 
   left = Math.round(currentOffset?.x + currentOffset?.x * (1 - zoomLevel) - offsetFromLeftOfWindow);
   top = Math.round(
-    initialClientOffset?.y - 10 + delta.y + initialClientOffset?.y * (1 - zoomLevel) - offsetFromTopOfWindow
+    initialClientOffset?.y - 10 + delta?.y + initialClientOffset?.y * (1 - zoomLevel) - offsetFromTopOfWindow
   );
 
   if (shouldSnapToGrid) {

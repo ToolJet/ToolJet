@@ -48,7 +48,7 @@ export const ConfigHandle = function ConfigHandle({
           <span>{component.name}</span>
         </div>
         {!isMultipleComponentsSelected && !isVersionReleased && (
-          <div className="delete-part">
+          <div className="delete-part" onClick={() => removeComponent({ id })}>
             <img
               style={{ cursor: 'pointer', marginLeft: '5px' }}
               src="assets/images/icons/trash-light.svg"
@@ -56,7 +56,7 @@ export const ConfigHandle = function ConfigHandle({
               role="button"
               height="12"
               draggable="false"
-              onClick={() => removeComponent({ id })}
+              // onClick={() => removeComponent({ id })}
               data-cy={`${component.name.toLowerCase()}-delete-button`}
               className="delete-icon"
             />
