@@ -129,7 +129,6 @@ const EditorComponent = (props) => {
 
   const { isMaintenanceOn, appId, app, currentUser, currentVersionId, appDefinitionDiff } = useAppInfo();
 
-  const [currentVersionChanges, setCurrentVersionChanges] = useState({});
   const [currentPageId, setCurrentPageId] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isQueryPaneDragging, setIsQueryPaneDragging] = useState(false);
@@ -142,6 +141,9 @@ const EditorComponent = (props) => {
 
   const [showPageDeletionConfirmation, setShowPageDeletionConfirmation] = useState(null);
   const [isDeletingPage, setIsDeletingPage] = useState(false);
+
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
 
   // refs
   const canvasContainerRef = useRef(null);
@@ -280,7 +282,7 @@ const EditorComponent = (props) => {
     const currentVersion = {
       [currentPageId]: -1,
     };
-    setCurrentVersionChanges({});
+
     updateEditorState({
       canUndo: false,
       canRedo: false,
@@ -714,7 +716,14 @@ const EditorComponent = (props) => {
     }
   };
 
-  const appDefinitionChanged = (newDefinition, opts = {}) => {
+  const diffToPatches = (diffObj) => {
+    return Object.keys(diffObj).reduce((patches, path) => {
+      const value = diffObj[path];
+      return [...patches, { path: path.split('.'), value, op: 'replace' }];
+    }, []);
+  };
+
+  const appDefinitionChanged = async (newDefinition, opts = {}) => {
     if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
       props.ymap?.set('appDef', {
         newDefinition,
@@ -735,45 +744,51 @@ const EditorComponent = (props) => {
     }
 
     let updatedAppDefinition;
+    const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
-    updatedAppDefinition = _.cloneDeep(appDefinition);
-
-    if (_.isEmpty(updatedAppDefinition)) return;
-
-    if (opts?.containerChanges || opts?.componentDefinitionChanged) {
-      const currentPageComponents = newDefinition.pages[currentPageId]?.components;
-
-      updatedAppDefinition.pages[currentPageId].components = currentPageComponents;
-    }
-
-    if (opts?.pageDefinitionChanged) {
-      updatedAppDefinition.pages = newDefinition.pages;
-    }
-
-    if (opts?.homePageChanged) {
-      updatedAppDefinition.homePageId = newDefinition.homePageId;
-    }
-
-    if (opts?.generalAppDefinitionChanged || opts?.globalSettings) {
-      updatedAppDefinition = newDefinition;
-    }
-
-    const diffPatches = diff(appDefinition, updatedAppDefinition);
-    const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
-
-    console.log('--arpit | appDefinitionChanged func() | diffPatches', {
-      diffPatches,
-      appDefinitionDiff,
-      shouldUpdate,
+    console.log('--arpit | appDefinitionChanged func()', {
       opts,
+      newDefinition,
     });
 
+    updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
+      if (_.isEmpty(draft)) return;
+
+      if (opts?.containerChanges || opts?.componentDefinitionChanged) {
+        const currentPageComponents = newDefinition.pages[currentPageId]?.components;
+
+        draft.pages[currentPageId].components = currentPageComponents;
+      }
+
+      if (opts?.pageDefinitionChanged) {
+        draft.pages = newDefinition.pages;
+      }
+
+      if (opts?.homePageChanged) {
+        draft.homePageId = newDefinition.homePageId;
+      }
+
+      if (opts?.generalAppDefinitionChanged || opts?.globalSettings) {
+        Object.assign(draft, newDefinition);
+      }
+    });
+
+    const diffPatches = diff(appDefinition, updatedAppDefinition);
+    const inversePatches = diff(updatedAppDefinition, appDefinition);
+    const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
+
     if (shouldUpdate) {
+      // const redoPatch = diffToPatches(diffPatches);
+      const undoPatches = diffToPatches(inversePatches);
+
+      setUndoStack((prev) => [...prev, undoPatches]);
+
+      updateAppDefinitionDiff(diffPatches);
       updateEditorState({
         isSaving: true,
         appDefinition: updatedAppDefinition,
       });
-      updateAppDefinitionDiff(diffPatches);
+
       computeComponentState(updatedAppDefinition.pages[currentPageId]?.components);
       props.ymap?.set('appDef', {
         newDefinition: updatedAppDefinition,
@@ -825,64 +840,48 @@ const EditorComponent = (props) => {
   const realtimeSave = debounce(appDefinitionChanged, 500);
   const autoSave = debounce(saveEditingVersion, 3000);
 
-  const handleAddPatch = (patches, inversePatches) => {
-    if (isEmpty(patches) && isEmpty(inversePatches)) return;
-    if (isEqual(patches, inversePatches)) return;
+  function handlePaths(prevPatch, path = [], appJSON) {
+    const paths = [...path];
 
-    const currentPage = currentPageId;
-    const _currentVersion = currentVersion[currentPage] ?? -1;
+    for (let key in prevPatch) {
+      const type = typeof prevPatch[key];
 
-    let _currentVersionChanges = {};
-
-    _currentVersionChanges[currentPage] = currentVersionChanges[currentPage] ?? {};
-
-    _currentVersionChanges[currentPage][_currentVersion] = {
-      redo: patches,
-      undo: inversePatches,
-    };
-
-    setCurrentVersionChanges(_currentVersionChanges);
-
-    const _canUndo = _currentVersionChanges[currentPage].hasOwnProperty(_currentVersion);
-    const _canRedo = _currentVersionChanges[currentPage].hasOwnProperty(_currentVersion + 1);
-
-    _currentVersion[currentPage] = currentVersion + 1;
-
-    delete _currentVersionChanges[currentPage][_currentVersion + 1];
-    delete _currentVersionChanges[currentPage][_currentVersion - noOfVersionsSupported];
-
-    setCurrentVersionChanges(_currentVersionChanges);
-
-    updateEditorState({
-      canUndo: _canUndo,
-      canRedo: _canRedo,
-      currentVersion: _currentVersion,
+      if (type === 'object') {
+        handlePaths(prevPatch[key], [...paths, key], appJSON);
+      } else {
+        const currentpath = [...paths, key].join('.');
+        _.update(appJSON, currentpath, () => prevPatch[key]);
+      }
+    }
+  }
+  function removeUndefined(obj) {
+    Object.keys(obj).forEach((key) => {
+      if (obj[key] && typeof obj[key] === 'object') removeUndefined(obj[key]);
+      else if (obj[key] === undefined) delete obj[key];
     });
-  };
+
+    return obj;
+  }
 
   const handleUndo = () => {
     if (canUndo) {
-      let _currentVersion = currentVersion[currentPageId];
+      const patchesToUndo = undoStack[undoStack.length - 1];
 
-      const _appDefinition = applyPatches(appDefinition, currentVersionChanges[currentPageId][currentVersion - 1].undo);
+      const updatedAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
-      const _canUndo = currentVersionChanges[currentPageId].hasOwnProperty(currentVersion - 1);
-      const _canRedo = true;
-      _currentVersion[currentPageId] = _currentVersion - 1;
+      handlePaths(patchesToUndo[0]?.value, [...patchesToUndo[0].path], updatedAppDefinition);
 
-      if (!_appDefinition) return;
+      removeUndefined(updatedAppDefinition);
+
+      const _diffPatches = diff(updatedAppDefinition, appDefinition);
+
+      setUndoStack((prev) => prev.slice(0, prev.length - 1));
+      setRedoStack((prev) => [...prev, diffToPatches(_diffPatches)]);
 
       updateEditorState({
-        appDefinition: _appDefinition,
-        canUndo: _canUndo,
-        canRedo: _canRedo,
-        currentVersion: _currentVersion,
+        appDefinition: updatedAppDefinition,
+        currentSidebarTab: 2,
         isSaving: true,
-      });
-
-      props.ymap?.set('appDef', {
-        newDefinition: appDefinition,
-        editingVersionId: props.editingVersion?.id,
       });
 
       // autoSave();
@@ -891,32 +890,32 @@ const EditorComponent = (props) => {
 
   const handleRedo = () => {
     if (canRedo) {
-      let _currentVersion = currentVersion[currentPageId];
+      const patchesToRedo = redoStack[redoStack.length - 1];
 
-      const _appDefinition = applyPatches(appDefinition, currentVersionChanges[currentPageId][currentVersion].redo);
+      const updatedAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
-      const _canUndo = true;
-      const _canRedo = currentVersionChanges[currentPageId].hasOwnProperty(currentVersion + 1);
-      _currentVersion[currentPageId] = currentVersion + 1;
+      handlePaths(patchesToRedo[0]?.value, [...patchesToRedo[0].path], updatedAppDefinition);
 
-      if (!_appDefinition) return;
+      const _diffPatches = diff(updatedAppDefinition, appDefinition);
+
+      setRedoStack((prev) => prev.slice(0, prev.length - 1));
+      setUndoStack((prev) => [...prev, diffToPatches(_diffPatches)]);
 
       updateEditorState({
-        appDefinition: _appDefinition,
-        canUndo: _canUndo,
-        canRedo: _canRedo,
-        currentVersion: _currentVersion,
+        appDefinition: updatedAppDefinition,
         isSaving: true,
-      });
-
-      props.ymap?.set('appDef', {
-        newDefinition: appDefinition,
-        editingVersionId: props.editingVersion?.id,
       });
 
       // autoSave();
     }
   };
+
+  useEffect(() => {
+    updateEditorState({
+      canUndo: undoStack.length > 0,
+      canRedo: redoStack.length > 0,
+    });
+  }, [JSON.stringify(undoStack), JSON.stringify(redoStack)]);
 
   const componentDefinitionChanged = (componentDefinition, props) => {
     if (props?.isVersionReleased) {
