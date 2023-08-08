@@ -930,20 +930,6 @@ export function Table({
               Select All
             </span>
           </div>
-          {/* <SingleOptionOflist
-            size="sm"
-            darkMode={darkMode}
-            className="cursor-pointer"
-            // onClickFunction={() => }
-            // dataCy={option.dataCy}
-          >
-            <SingleOptionOflist.optionForPopover
-              size="sm"
-              optionText="Select All"
-              className="pointer"
-              showCheckbox={true}
-            />
-          </SingleOptionOflist> */}
           {allColumns.map(
             (column) =>
               typeof column.Header === 'string' && (
@@ -964,22 +950,6 @@ export function Table({
                     </label>
                   </div>
                 </div>
-                // <SingleOptionOflist
-                //   size="sm"
-                //   darkMode={darkMode}
-                //   className="table-download-option cursor-pointer"
-                //   // onClickFunction={() => column.getToggleHiddenProps()}
-                //   key={column.id}
-                //   // dataCy={option.dataCy}
-                //   column={column}
-                // >
-                //   <SingleOptionOflist.optionForPopover
-                //     size="sm"
-                //     optionText={column.Header}
-                //     className="pointer"
-                //     showCheckbox={true}
-                //   />
-                // </SingleOptionOflist>
               )
           )}
         </div>
