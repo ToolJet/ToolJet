@@ -6,7 +6,7 @@ export class AppCreateDto {
   @MaxLength(50, { message: 'Maximum length has been reached.' })
   name: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   icon?: string;
 }
