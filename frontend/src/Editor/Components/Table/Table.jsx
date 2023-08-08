@@ -924,7 +924,7 @@ export function Table({
           } `}
           placement="top-end"
         >
-          <div className="dropdown-item">
+          <div className="dropdown-item cursor-pointer">
             <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
             <span className="hide-column-name tj-text-xsm" data-cy={`options-select-all-coloumn`}>
               Select All
@@ -935,7 +935,7 @@ export function Table({
               typeof column.Header === 'string' && (
                 <div key={column.id}>
                   <div>
-                    <label className="dropdown-item d-flex">
+                    <label className="dropdown-item d-flex cursor-pointer">
                       <input
                         type="checkbox"
                         data-cy={`checkbox-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
@@ -1266,13 +1266,12 @@ export function Table({
           }`}
         >
           <div className={`table-footer row gx-0 d-flex align-items-center h-100`}>
-            <div className="col d-flex justify-content-start gap-2">
+            <div className="col d-flex justify-content-start custom-gap-4">
               {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
                 <>
                   <ButtonSolid
                     variant="secondary"
                     className={`tj-text-xsm`}
-                    // style={{ minWidth: '32px' }}
                     fill={darkMode ? '#3E63DD' : '#3E63DD'}
                     onClick={() => {
                       onEvent('onBulkUpdate', { component }).then(() => {
@@ -1289,7 +1288,6 @@ export function Table({
                   <ButtonSolid
                     variant="tertiary"
                     className={`tj-text-xsm`}
-                    // style={{ minWidth: '32px' }}
                     fill={darkMode ? '#697177' : '#889096'}
                     onClick={() => {
                       handleChangesDiscarded();

@@ -49,8 +49,34 @@ export const Pagination = function Pagination({
   }
 
   return (
-    <div className="pagination-container d-flex h-100 align-items-center" data-cy="pagination-section">
-      {!serverSide && (
+    <div className="pagination-container d-flex h-100 align-items-center custom-gap-4" data-cy="pagination-section">
+      <div className="d-flex">
+        {!serverSide && (
+          <ButtonSolid
+            variant="ghostBlack"
+            className="tj-text-xsm"
+            style={{
+              minWidth: '28px',
+              width: '28px',
+              height: '28px',
+              padding: '7px',
+              borderRadius: '6px',
+              display: 'flex',
+              justifyContent: 'center',
+              cursor: pageIndex === 1 ? 'not-allowed' : 'pointer',
+            }}
+            leftIcon="cheveronleftdouble"
+            fill={darkMode ? '#ECEDEE' : '#11181C'}
+            iconWidth="14"
+            size="md"
+            disabled={pageIndex === 1}
+            onClick={(event) => {
+              event.stopPropagation();
+              gotoPage(1);
+            }}
+            data-cy={`pagination-button-to-first`}
+          ></ButtonSolid>
+        )}
         <ButtonSolid
           variant="ghostBlack"
           className="tj-text-xsm"
@@ -62,46 +88,25 @@ export const Pagination = function Pagination({
             borderRadius: '6px',
             display: 'flex',
             justifyContent: 'center',
-            cursor: pageIndex === 1 ? 'not-allowed' : 'pointer',
+            cursor: pageIndex === 1 || !enablePrevButton ? 'not-allowed' : 'pointer',
           }}
-          leftIcon="cheveronleftdouble"
+          leftIcon="cheveronleft"
           fill={darkMode ? '#ECEDEE' : '#11181C'}
           iconWidth="14"
           size="md"
-          disabled={pageIndex === 1}
+          disabled={pageIndex === 1 || !enablePrevButton}
           onClick={(event) => {
             event.stopPropagation();
-            gotoPage(1);
+            goToPreviousPage();
           }}
-          data-cy={`pagination-button-to-first`}
+          data-cy={`pagination-button-to-previous`}
         ></ButtonSolid>
-      )}
-      <ButtonSolid
-        variant="ghostBlack"
-        className="tj-text-xsm"
-        style={{
-          minWidth: '28px',
-          width: '28px',
-          height: '28px',
-          padding: '7px',
-          borderRadius: '6px',
-          display: 'flex',
-          justifyContent: 'center',
-          cursor: pageIndex === 1 || !enablePrevButton ? 'not-allowed' : 'pointer',
-        }}
-        leftIcon="cheveronleft"
-        fill={darkMode ? '#ECEDEE' : '#11181C'}
-        iconWidth="14"
-        size="md"
-        disabled={pageIndex === 1 || !enablePrevButton}
-        onClick={(event) => {
-          event.stopPropagation();
-          goToPreviousPage();
-        }}
-        data-cy={`pagination-button-to-previous`}
-      ></ButtonSolid>
+      </div>
 
-      <div className="d-flex align-items-center tj-text-xsm h-100 mx-1 page-info" data-cy={`page-index-details`}>
+      <div
+        className="d-flex align-items-center tj-text-xsm h-100 page-info custom-gap-4"
+        data-cy={`page-index-details`}
+      >
         {serverSide && <span className="color-slate-11">{pageIndex}</span>}
         {!serverSide && (
           <>
@@ -114,7 +119,7 @@ export const Pagination = function Pagination({
               }}
             />
             <span
-              className="ms-1 font-weight-500 total-page-number"
+              className="font-weight-500 total-page-number"
               data-cy={`total-page-number-${autoPageOptions.length || 1}`}
             >
               of {pageCount || 1}
@@ -122,32 +127,7 @@ export const Pagination = function Pagination({
           </>
         )}
       </div>
-
-      <ButtonSolid
-        variant="ghostBlack"
-        className="tj-text-xsm"
-        style={{
-          minWidth: '28px',
-          width: '28px',
-          height: '28px',
-          padding: '7px',
-          borderRadius: '6px',
-          display: 'flex',
-          justifyContent: 'center',
-          cursor: (!autoCanNextPage && !serverSide) || !enableNextButton ? 'not-allowed' : 'pointer',
-        }}
-        leftIcon="cheveronright"
-        fill={darkMode ? '#ECEDEE' : '#11181C'}
-        iconWidth="14"
-        size="md"
-        disabled={(!autoCanNextPage && !serverSide) || !enableNextButton}
-        onClick={(event) => {
-          event.stopPropagation();
-          goToNextPage();
-        }}
-        data-cy={`pagination-button-to-next`}
-      ></ButtonSolid>
-      {!serverSide && (
+      <div className="d-flex">
         <ButtonSolid
           variant="ghostBlack"
           className="tj-text-xsm"
@@ -159,20 +139,46 @@ export const Pagination = function Pagination({
             borderRadius: '6px',
             display: 'flex',
             justifyContent: 'center',
-            cursor: !autoCanNextPage && !serverSide ? 'not-allowed' : 'pointer',
+            cursor: (!autoCanNextPage && !serverSide) || !enableNextButton ? 'not-allowed' : 'pointer',
           }}
-          leftIcon="cheveronrightdouble"
+          leftIcon="cheveronright"
           fill={darkMode ? '#ECEDEE' : '#11181C'}
           iconWidth="14"
           size="md"
+          disabled={(!autoCanNextPage && !serverSide) || !enableNextButton}
           onClick={(event) => {
             event.stopPropagation();
-            gotoPage(pageCount);
+            goToNextPage();
           }}
-          disabled={!autoCanNextPage && !serverSide}
-          data-cy={`pagination-button-to-last`}
+          data-cy={`pagination-button-to-next`}
         ></ButtonSolid>
-      )}
+        {!serverSide && (
+          <ButtonSolid
+            variant="ghostBlack"
+            className="tj-text-xsm"
+            style={{
+              minWidth: '28px',
+              width: '28px',
+              height: '28px',
+              padding: '7px',
+              borderRadius: '6px',
+              display: 'flex',
+              justifyContent: 'center',
+              cursor: !autoCanNextPage && !serverSide ? 'not-allowed' : 'pointer',
+            }}
+            leftIcon="cheveronrightdouble"
+            fill={darkMode ? '#ECEDEE' : '#11181C'}
+            iconWidth="14"
+            size="md"
+            onClick={(event) => {
+              event.stopPropagation();
+              gotoPage(pageCount);
+            }}
+            disabled={!autoCanNextPage && !serverSide}
+            data-cy={`pagination-button-to-last`}
+          ></ButtonSolid>
+        )}
+      </div>
     </div>
   );
 };

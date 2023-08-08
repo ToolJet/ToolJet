@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTable, useBlockLayout } from 'react-table';
 import _ from 'lodash';
 import { Tooltip } from 'react-tooltip';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export function AddNewRowComponent({
   hideAddNewRowPopup,
@@ -143,29 +144,37 @@ export function AddNewRowComponent({
         </button>
         <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
       </div>
-      <div className="card-footer">
-        <button
-          className="btn btn-primary btn-sm mx-2"
+      <div className="card-footer d-flex custom-gap-4">
+        <ButtonSolid
+          variant="secondary"
+          className={`tj-text-xsm`}
+          fill={darkMode ? '#3E63DD' : '#3E63DD'}
           onClick={() => {
             onEvent('onNewRowsAdded', { component }).then(() => {
               mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
               setNewRowsState([]);
             });
           }}
+          size="sm"
+          style={{ padding: '10px 20px' }}
         >
-          Save
-        </button>
-        <button
+          <span>Save</span>
+        </ButtonSolid>
+        <ButtonSolid
+          variant="tertiary"
+          className={`tj-text-xsm`}
+          fill={darkMode ? '#697177' : '#889096'}
           onClick={() => {
             setExposedVariable('newRows', []).then(() => {
               mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
               setNewRowsState([]);
             });
           }}
-          className="btn btn-light btn-sm"
+          size="sm"
+          style={{ padding: '10px 20px' }}
         >
-          Discard
-        </button>
+          <span>Discard</span>
+        </ButtonSolid>
       </div>
     </div>
   );

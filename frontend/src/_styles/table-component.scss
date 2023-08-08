@@ -105,7 +105,7 @@
         border: 1px solid var(--slate8, #C1C8CD) !important;
         background: var(--slate1, #FBFCFD) !important;
       }
-      &:focus{
+      &:focus-visible{
         border: 1px solid var(--slate7, #D7DBDF) !important;
         background: var(--base, #FFF) !important;
         /* Focus rings/Gray/light */

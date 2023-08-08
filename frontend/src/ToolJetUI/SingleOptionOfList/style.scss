@@ -11,7 +11,7 @@
     &:hover{
         background-color:  var(--slate3, #F1F3F5) !important;
     }
-    &:focus{
+    &:focus-visible{
         background: var(--slate1, #FBFCFD) !important;
         box-shadow: 0px 0px 0px 4px var(--slate6) !important;
     }
