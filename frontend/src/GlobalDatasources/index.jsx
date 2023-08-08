@@ -27,8 +27,13 @@ export const GlobalDatasources = (props) => {
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
   useEffect(() => {
-    if (dataSources?.length == 0) updateSidebarNAV('');
-    else selectedDataSource ? updateSidebarNAV(selectedDataSource.name) : updateSidebarNAV('Databases');
+    if (dataSources?.length == 0) updateSidebarNAV('Databases');
+  }, []);
+
+  useEffect(() => {
+    selectedDataSource
+      ? updateSidebarNAV(selectedDataSource.name)
+      : !activeDatasourceList && updateSidebarNAV('Databases');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(dataSources), JSON.stringify(selectedDataSource)]);
 
@@ -63,6 +68,9 @@ export const GlobalDatasources = (props) => {
         if (orderedDataSources.length && resetSelection) {
           setSelectedDataSource(orderedDataSources[0]);
           toggleDataSourceManagerModal(true);
+        }
+        if (!orderedDataSources.length) {
+          setActiveDatasourceList('#databases');
         }
         setLoading(false);
       })

@@ -174,6 +174,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
 
   const segregateDataSources = () => {
     const datasources = datasourcesGroups();
+    const searchPlaceholder = datasources.filter((ds) => ds.key === activeDatasourceList)[0];
 
     return (
       <div className="datasource-list-container">
@@ -183,7 +184,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
               dataCy={`home-page`}
               className="border-0 homepage-search"
               darkMode={darkMode}
-              placeholder={'Search datasources'}
+              placeholder={`Search ${searchPlaceholder?.type || 'datasources'}`}
               query={queryString}
               width={'100%'}
               callBack={handleSearch}

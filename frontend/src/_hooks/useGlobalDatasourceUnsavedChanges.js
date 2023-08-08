@@ -54,7 +54,7 @@ const useGlobalDatasourceUnsavedChanges = () => {
 
   const handleSaveChanges = () => {
     setGlobalDataSourceStatus({ unSavedModalVisible: false });
-    typeof action === 'function' && saveAction();
+    typeof saveAction === 'function' && saveAction();
   };
 
   return {

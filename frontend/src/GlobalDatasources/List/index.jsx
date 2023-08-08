@@ -17,6 +17,9 @@ export const List = ({ updateSelectedDatasource }) => {
     setSelectedDataSource,
     toggleDataSourceManagerModal,
     isLoading,
+    environments,
+    setCurrentEnvironment,
+    setActiveDatasourceList,
   } = useContext(GlobalDataSourcesContext);
 
   const [isDeletingDatasource, setDeletingDatasource] = useState(false);
@@ -39,8 +42,11 @@ export const List = ({ updateSelectedDatasource }) => {
   }, [dataSources]);
 
   const deleteDataSource = (selectedSource) => {
-    toggleDataSourceManagerModal(false);
+    setActiveDatasourceList('');
     setSelectedDataSource(selectedSource);
+    setCurrentEnvironment(environments[0]);
+    toggleDataSourceManagerModal(true);
+    updateSelectedDatasource(selectedSource?.name);
     setDeleteModalVisibility(true);
   };
 
@@ -64,7 +70,6 @@ export const List = ({ updateSelectedDatasource }) => {
 
   const cancelDeleteDataSource = () => {
     setDeleteModalVisibility(false);
-    setSelectedDataSource(null);
   };
 
   const handleSearch = (e) => {
@@ -155,6 +160,7 @@ export const List = ({ updateSelectedDatasource }) => {
         onConfirm={() => executeDataSourceDeletion()}
         onCancel={() => cancelDeleteDataSource()}
         darkMode={darkMode}
+        backdropClassName="delete-modal"
       />
     </>
   );
