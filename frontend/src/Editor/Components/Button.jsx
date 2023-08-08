@@ -152,7 +152,12 @@ export const Button = function Button(props) {
           data-cy={dataCy}
           type="default"
           loading={loading}
-          loadingIndicator={<CircularProgress style={{ color: loaderColor }} size={16} />}
+          loadingIndicator={
+            <CircularProgress
+              style={{ color: loaderColor }}
+              size={16}
+            />
+          }
         >
           {label}
         </LoadingButton>

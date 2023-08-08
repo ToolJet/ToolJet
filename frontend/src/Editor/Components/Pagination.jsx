@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import PaginationMUI from '@mui/material/Pagination';
+import config from 'config';
 
 export const Pagination = ({
   height,
@@ -64,49 +66,69 @@ export const Pagination = ({
   };
 
   return (
-    <div
-      data-disabled={disabledState}
-      className="d-flex align-items-center px-1"
-      data-cy={dataCy}
-      style={{ boxShadow }}
-    >
-      <ul className="pagination m-0" style={computedStyles}>
-        <Pagination.Operator
-          operator="<<"
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          handleOnClick={gotoFirstPage}
-          darkMode={darkMode}
+    <>
+      {config.UI_LIB === 'tooljet' && (
+        <div
+          data-disabled={disabledState}
+          className="d-flex align-items-center px-1"
+          data-cy={dataCy}
+          style={{ boxShadow }}
+        >
+          <ul
+            className="pagination m-0"
+            style={computedStyles}
+          >
+            <Pagination.Operator
+              operator="<<"
+              currentPage={currentPage}
+              totalPages={properties.numberOfPages}
+              handleOnClick={gotoFirstPage}
+              darkMode={darkMode}
+            />
+            <Pagination.Operator
+              operator="<"
+              currentPage={currentPage}
+              totalPages={properties.numberOfPages}
+              handleOnClick={gotoPreviousPage}
+              darkMode={darkMode}
+            />
+            <Pagination.PageLinks
+              currentPage={currentPage}
+              totalPages={properties.numberOfPages}
+              callback={gotoPage}
+              darkMode={darkMode}
+            />
+            <Pagination.Operator
+              operator=">"
+              currentPage={currentPage}
+              totalPages={properties.numberOfPages}
+              handleOnClick={gotoNextPage}
+              darkMode={darkMode}
+            />
+            <Pagination.Operator
+              operator=">>"
+              currentPage={currentPage}
+              totalPages={properties.numberOfPages}
+              handleOnClick={gotoLastPage}
+              darkMode={darkMode}
+            />
+          </ul>
+        </div>
+      )}
+      {config.UI_LIB === 'mui' && (
+        <PaginationMUI
+          count={properties.numberOfPages}
+          defaultPage={currentPage}
+          page={currentPage}
+          onChange={(event, value) => setCurrentPage(value)}
+          showFirstButton
+          showLastButton
+          disabled={disabledState}
+          style={computedStyles}
+          sx={{ boxShadow: boxShadow }}
         />
-        <Pagination.Operator
-          operator="<"
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          handleOnClick={gotoPreviousPage}
-          darkMode={darkMode}
-        />
-        <Pagination.PageLinks
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          callback={gotoPage}
-          darkMode={darkMode}
-        />
-        <Pagination.Operator
-          operator=">"
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          handleOnClick={gotoNextPage}
-          darkMode={darkMode}
-        />
-        <Pagination.Operator
-          operator=">>"
-          currentPage={currentPage}
-          totalPages={properties.numberOfPages}
-          handleOnClick={gotoLastPage}
-          darkMode={darkMode}
-        />
-      </ul>
-    </div>
+      )}
+    </>
   );
 };
 
@@ -134,7 +156,11 @@ function getOperator(operator) {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path
+            stroke="none"
+            d="M0 0h24v24H0z"
+            fill="none"
+          />
           <polyline points="11 7 6 12 11 17" />
           <polyline points="17 7 12 12 17 17" />
         </svg>
@@ -154,7 +180,11 @@ function getOperator(operator) {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path
+            stroke="none"
+            d="M0 0h24v24H0z"
+            fill="none"
+          />
           <polyline points="7 7 12 12 7 17" />
           <polyline points="13 7 18 12 13 17" />
         </svg>
@@ -174,7 +204,11 @@ function getOperator(operator) {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path
+            stroke="none"
+            d="M0 0h24v24H0z"
+            fill="none"
+          ></path>
           <polyline points="15 6 9 12 15 18"></polyline>
         </svg>
       );
@@ -193,7 +227,11 @@ function getOperator(operator) {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+          <path
+            stroke="none"
+            d="M0 0h24v24H0z"
+            fill="none"
+          ></path>
           <polyline points="9 6 15 12 9 18"></polyline>
         </svg>
       );
@@ -214,7 +252,11 @@ const Operator = ({ operator, currentPage, totalPages, handleOnClick, darkMode }
   return (
     <React.Fragment>
       <li className={`page-item ${getDisableCls(operator, currentPage, totalPages)}`}>
-        <a style={{ cursor: 'pointer' }} className={`page-link ${darkMode && 'text-light'}`} onClick={handleOnClick}>
+        <a
+          style={{ cursor: 'pointer' }}
+          className={`page-link ${darkMode && 'text-light'}`}
+          onClick={handleOnClick}
+        >
           {getOperator(operator)}
         </a>
       </li>

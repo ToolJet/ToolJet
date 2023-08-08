@@ -39,7 +39,10 @@ export const Container = ({ children, id, disabled, ...props }) => {
     >
       {label ? (
         <div className={cx('header', darkMode && 'dark')}>
-          <span style={colAccentColor} className="container-name">
+          <span
+            style={colAccentColor}
+            className="container-name"
+          >
             {label}
           </span>
         </div>

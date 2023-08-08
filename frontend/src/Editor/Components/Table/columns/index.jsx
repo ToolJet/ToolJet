@@ -115,7 +115,10 @@ export default function generateColumnsData({
           case 'string':
           case undefined:
           case 'default': {
-            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
+            const textColor = resolveReferences(column.textColor, currentState, '', {
+              cellValue,
+              rowData,
+            });
 
             const cellStyles = {
               color: textColor ?? '',
@@ -183,13 +186,19 @@ export default function generateColumnsData({
               );
             }
             return (
-              <div className="d-flex align-items-center h-100" style={cellStyles}>
+              <div
+                className="d-flex align-items-center h-100"
+                style={cellStyles}
+              >
                 {String(cellValue)}
               </div>
             );
           }
           case 'number': {
-            const textColor = resolveReferences(column.textColor, currentState, '', { cellValue, rowData });
+            const textColor = resolveReferences(column.textColor, currentState, '', {
+              cellValue,
+              rowData,
+            });
 
             const cellStyles = {
               color: textColor ?? '',
@@ -251,7 +260,10 @@ export default function generateColumnsData({
               );
             }
             return (
-              <div className="d-flex align-items-center h-100" style={cellStyles}>
+              <div
+                className="d-flex align-items-center h-100"
+                style={cellStyles}
+              >
                 {cellValue}
               </div>
             );
@@ -450,7 +462,10 @@ export default function generateColumnsData({
             const linkTarget = resolveReferences(column?.linkTarget ?? '_blank', currentState);
             return (
               <div className="h-100 d-flex align-items-center">
-                <Link cellValue={cellValue} linkTarget={linkTarget} />
+                <Link
+                  cellValue={cellValue}
+                  linkTarget={linkTarget}
+                />
               </div>
             );
           }

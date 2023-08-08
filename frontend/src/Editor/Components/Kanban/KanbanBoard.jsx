@@ -156,7 +156,10 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
         [columnId]: [...items[columnId], cardDetails.id],
       }));
 
-      setExposedVariables({ lastAddedCard: { ...cardDetails }, updatedCardData: getData(cardDataAsObj) }).then(() => {
+      setExposedVariables({
+        lastAddedCard: { ...cardDetails },
+        updatedCardData: getData(cardDataAsObj),
+      }).then(() => {
         fireEvent('onCardAdded');
         // fireEvent('onUpdate');
       });
@@ -176,7 +179,10 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
         ...items,
         [columnId]: items[columnId].filter((id) => id !== cardId),
       }));
-      setExposedVariables({ lastRemovedCard: { ...deletedCard }, updatedCardData: getData(cardDataAsObj) }).then(() => {
+      setExposedVariables({
+        lastRemovedCard: { ...deletedCard },
+        updatedCardData: getData(cardDataAsObj),
+      }).then(() => {
         fireEvent('onCardRemoved');
         // fireEvent('onUpdate');
       });
@@ -366,7 +372,10 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
                 kanbanProps={kanbanProps}
               >
                 {items[columnId] && (
-                  <SortableContext items={items[columnId]} strategy={verticalListSortingStrategy}>
+                  <SortableContext
+                    items={items[columnId]}
+                    strategy={verticalListSortingStrategy}
+                  >
                     {items[columnId].map((value, index) => {
                       return (
                         <SortableItem
@@ -407,7 +416,11 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
         )}
         {showDeleteButton ? <Trash id={TRASH_ID} /> : null}
       </DndContext>
-      <Modal showModal={showModal} kanbanProps={kanbanProps} setShowModal={setShowModal} />
+      <Modal
+        showModal={showModal}
+        kanbanProps={kanbanProps}
+        setShowModal={setShowModal}
+      />
     </>
   );
 

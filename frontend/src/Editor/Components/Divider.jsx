@@ -16,9 +16,18 @@ export const Divider = function Divider({ styles, dataCy }) {
         ></div>
       )}
       {config.UI_LIB === 'mui' && (
-        <div className="Divider MUI" style={{ display: 'flex', height: '40px', alignItems: 'center' }}>
+        <div
+          className="Divider MUI"
+          style={{ display: 'flex', height: '40px', alignItems: 'center' }}
+        >
           <MUIDivider
-            style={{ display: visibility ? '' : 'none', backgroundColor: color, opacity: 1, boxShadow, width: '100%' }}
+            style={{
+              display: visibility ? '' : 'none',
+              backgroundColor: color,
+              opacity: 1,
+              boxShadow,
+              width: '100%',
+            }}
           />
         </div>
       )}

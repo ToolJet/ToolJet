@@ -122,8 +122,14 @@ export const PDF = React.memo(({ styles, properties, width, height, component, d
   };
 
   return (
-    <div style={{ display: visibility ? 'flex' : 'none', width: width - 3, height, boxShadow }} data-cy={dataCy}>
-      <div className="d-flex position-relative h-100 flex-column" style={{ margin: '0 auto', overflow: 'hidden' }}>
+    <div
+      style={{ display: visibility ? 'flex' : 'none', width: width - 3, height, boxShadow }}
+      data-cy={dataCy}
+    >
+      <div
+        className="d-flex position-relative h-100 flex-column"
+        style={{ margin: '0 auto', overflow: 'hidden' }}
+      >
         <div
           className="scrollable h-100 col position-relative"
           id="pdf-wrapper"
