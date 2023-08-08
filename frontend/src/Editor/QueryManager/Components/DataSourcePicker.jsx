@@ -70,6 +70,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
                   handleChangeDataSource(source);
                 }}
                 className="text-truncate"
+                data-cy={`${source.kind.toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
               >
                 <DataSourceIcon source={source} height={14} /> {source.shortName}
               </ButtonSolid>
@@ -90,7 +91,12 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
         ) : (
           <Container className="p-0">
             {allUserDefinedSources.length > 4 && (
-              <SearchBox onSearch={setSearchTerm} darkMode={darkMode} searchTerm={searchTerm} />
+              <SearchBox
+                onSearch={setSearchTerm}
+                darkMode={darkMode}
+                searchTerm={searchTerm}
+                dataCy={`gds-querymanager`}
+              />
             )}
             <Row className="mt-2">
               {filteredUserDefinedDataSources.map((source) => (
@@ -105,6 +111,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
                     }}
                     data-tooltip-id="tooltip-for-query-panel-ds-picker-btn"
                     data-tooltip-content={source.name}
+                    data-cy={`${String(source.name).toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
                   >
                     <DataSourceIcon source={source} height={14} styles={{ minWidth: 14 }} />
                     <span className="text-truncate">{source.name}</span>
@@ -132,7 +139,7 @@ const EmptyDataSourceBanner = () => (
   </div>
 );
 
-const SearchBox = ({ onSearch, darkMode, searchTerm }) => {
+const SearchBox = ({ onSearch, darkMode, searchTerm, dataCy }) => {
   const { t } = useTranslation();
   return (
     <Row>
@@ -145,7 +152,7 @@ const SearchBox = ({ onSearch, darkMode, searchTerm }) => {
           value={searchTerm}
           callBack={(e) => onSearch(e.target.value)}
           onClearCallback={() => onSearch('')}
-          data-cy="widget-search-box"
+          dataCy={dataCy}
         />
         {/* <span
           className="position-absolute"
