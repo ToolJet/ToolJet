@@ -169,7 +169,7 @@ const Table = ({ openCreateRowDrawer, openCreateColumnDrawer }) => {
 
       let query = `?${primaryKey.accessor}=in.(${deletionKeys.toString()})`;
 
-      const { error } = await tooljetDatabaseService.deleteRow(organizationId, selectedTable.id, query);
+      const { error } = await tooljetDatabaseService.deleteRows(organizationId, selectedTable.id, query);
 
       if (error) {
         toast.error(error?.message ?? `Error deleting rows from table "${selectedTable.table_name}"`);
