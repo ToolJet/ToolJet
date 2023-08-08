@@ -861,7 +861,7 @@
       "description": "Can be used to show slider with a range"
     },
     "Timeline": {
-      "displayName": "Timeline",
+      "displayName": "Timeline (ok)",
       "description": "Visual representation of a sequence of events"
     },
     "SvgImage": {
@@ -881,8 +881,12 @@
       "description": "Add your custom react component"
     },
     "ButtonGroup": {
-      "displayName": "Button Group",
+      "displayName": "Button Group (ok)",
       "description": "ButtonGroup"
+    },
+    "Link": {
+      "displayName": "Link (ok)",
+      "description": "Add link to the text"
     },
     "PDF": {
       "displayName": "PDF",
