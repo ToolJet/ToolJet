@@ -1326,28 +1326,22 @@ export function Table({
             </div>
             <div className="col d-flex justify-content-end ">
               {showAddNewRowButton && (
-                <div>
-                  {' '}
-                  <ButtonSolid
-                    variant="ghostBlack"
-                    className="tj-text-xsm"
-                    style={{ minWidth: '32px' }}
-                    leftIcon="plus"
-                    fill={darkMode ? '#ECEDEE' : '#11181C'}
-                    iconWidth="16"
-                    onClick={() => {
+                <ButtonSolid
+                  variant="ghostBlack"
+                  className={`tj-text-xsm ${tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed'}`}
+                  style={{ minWidth: '32px' }}
+                  leftIcon="plus"
+                  fill={darkMode ? '#ECEDEE' : '#11181C'}
+                  iconWidth="16"
+                  onClick={() => {
+                    if (!tableDetails.addNewRowsDetails.addingNewRows) {
                       showAddNewRowPopup();
-                    }}
-                    size="md"
-                    data-tooltip-id="tooltip-for-add-new-row"
-                    data-tooltip-content="Add new row"
-                    disabled={tableDetails.addNewRowsDetails.addingNewRows}
-                  ></ButtonSolid>
-                  {/* {!tableDetails.addNewRowsDetails.addingNewRows &&
-                    !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
-                      <a className="badge bg-azure" style={{ width: '4px', height: '4px' }}></a>
-                    )} */}
-                </div>
+                    }
+                  }}
+                  size="md"
+                  data-tooltip-id="tooltip-for-add-new-row"
+                  data-tooltip-content="Add new row"
+                ></ButtonSolid>
               )}
               {showDownloadButton && (
                 <div>
