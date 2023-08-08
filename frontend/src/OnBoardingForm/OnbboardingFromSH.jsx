@@ -66,7 +66,7 @@ function OnbboardingFromSH({ darkMode }) {
             .then(() => {
               setIsLoading(false);
               setCompleted(false);
-              window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+              window.location = redirectPath;
             })
             .catch(() => {
               if (user?.super_admin) {

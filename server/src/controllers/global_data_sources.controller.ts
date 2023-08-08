@@ -161,6 +161,6 @@ export class GlobalDataSourcesController {
   async getDataSourceByEnvironment(@User() user, @Param('id') dataSourceId, @Param('environment_id') environmentId) {
     const dataSource = await this.dataSourcesService.findOneByEnvironment(dataSourceId, environmentId);
     delete dataSource['dataSourceOptions'];
-    return decamelizeKeys(dataSource);
+    return dataSource;
   }
 }
