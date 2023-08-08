@@ -2,8 +2,8 @@ import { IsString, IsOptional, IsNotEmpty, MaxLength } from 'class-validator';
 
 export class AppCreateDto {
   @IsNotEmpty()
-  @MaxLength(50, { message: 'Maximum length has been reached.' })
   @IsString()
+  @MaxLength(50, { message: 'Maximum length has been reached.' })
   name: string;
 
   @IsString()
