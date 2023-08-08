@@ -184,7 +184,7 @@ const DynamicForm = ({
           type,
           placeholder: options?.[key]?.encrypted ? '**************' : description,
           className: `form-control${handleToggle(controller)}`,
-          value: options?.[key]?.value,
+          value: options?.[key]?.value || '',
           ...(type === 'textarea' && { rows: rows }),
           ...(helpText && { helpText }),
           onChange: (e) => optionchanged(key, e.target.value),

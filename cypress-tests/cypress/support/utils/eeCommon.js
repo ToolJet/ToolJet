@@ -105,9 +105,14 @@ export const oidcSSOPageElements = () => {
 
 export const resetDsPermissions = () => {
   common.navigateToManageGroups();
-  cy.wait(200)
+  cy.wait(200);
   cy.get(groupsSelector.permissionsLink).click();
 
+  cy.get(groupsSelector.appsCreateCheck).then(($el) => {
+    if ($el.is(":checked")) {
+      cy.get(groupsSelector.appsCreateCheck).uncheck();
+    }
+  });
   cy.get(eeGroupsSelector.dsCreateCheck).then(($el) => {
     if ($el.is(":checked")) {
       cy.get(eeGroupsSelector.dsCreateCheck).uncheck();
@@ -121,15 +126,15 @@ export const resetDsPermissions = () => {
 };
 
 export const deleteAssignedDatasources = () => {
-  common.navigateToManageGroups()
-  cy.get('[data-cy="datasource-link"]').click()
+  common.navigateToManageGroups();
+  cy.get('[data-cy="datasource-link"]').click();
   cy.get("body").then(($body) => {
-    const removeAllButtons = $body.find('[data-cy="remove-button"]')
+    const removeAllButtons = $body.find('[data-cy="remove-button"]');
     if (removeAllButtons.length > 0) {
-      cy.get('[data-cy="remove-button"]').click({ multiple: true })
+      cy.get('[data-cy="remove-button"]').click({ multiple: true });
     }
   });
-}
+};
 
 export const userSignUp = (fullName, email, workspaceName) => {
   let invitationLink = "";
@@ -379,14 +384,14 @@ export const enableDefaultSSO = () => {
 };
 
 export const disableSSO = (ssoSelector, toggleSelector) => {
-  cy.wait(1000)
-  cy.get(ssoSelector).click()
+  cy.wait(1000);
+  cy.get(ssoSelector).click();
   cy.get(toggleSelector).then(($el) => {
     if ($el.is(":checked")) {
       cy.get(toggleSelector).uncheck();
     }
   });
-}
+};
 
 export const AddDataSourceToGroup = (groupName, dsName) => {
   common.navigateToManageGroups();
@@ -403,4 +408,4 @@ export const AddDataSourceToGroup = (groupName, dsName) => {
     commonSelectors.toastMessage,
     "Datasources added to the group"
   );
-}
+};

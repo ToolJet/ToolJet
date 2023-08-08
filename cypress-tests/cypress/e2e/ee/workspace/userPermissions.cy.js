@@ -39,6 +39,7 @@ describe("User permissions", () => {
     cy.get(groupsSelector.permissionsLink).click();
     cy.wait(1000)
     cy.get(eeGroupsSelector.dsCreateCheck).check();
+    cy.get(groupsSelector.appsCreateCheck).check();
     common.logout();
 
     cy.login(data.email, usersText.password);
@@ -60,6 +61,15 @@ describe("User permissions", () => {
       commonSelectors.toastMessage,
       "You do not have permissions to perform this action"
     );
+
+    cy.get(commonSelectors.dashboardIcon).click();
+    cy.createApp();
+    cy.renameApp(data.appName);
+    cy.dragAndDropWidget("Table", 250, 250);
+    cy.get(
+      ".query-datasource-card-container > .col-auto > .query-manager-btn-name"
+    ).click();
+    cy.get('[data-cy="add-new-data-source-button"]').should("be.visible")
 
     adminLogin();
     cy.get(groupsSelector.permissionsLink).click();

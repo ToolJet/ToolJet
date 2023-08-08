@@ -29,12 +29,14 @@ export const LeftSidebarInspector = ({
 }) => {
   const dataSources = useGlobalDataSources();
   const dataQueries = useDataQueries();
-  const { isVersionReleased } = useAppVersionStore(
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
     (state) => ({
       isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
     }),
     shallow
   );
+
   const componentDefinitions = JSON.parse(JSON.stringify(appDefinition))['components'];
   const selectedComponent = React.useMemo(() => {
     return {
@@ -132,13 +134,6 @@ export const LeftSidebarInspector = ({
     return toast.success('Copied to the clipboard', { position: 'top-center' });
   };
 
-  const actions = [
-    { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
-  ];
-  if (!isVersionReleased) {
-    actions.push({ name: 'Delete Component', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' });
-  }
-
   const callbackActions = [
     {
       for: 'queries',
@@ -159,7 +154,7 @@ export const LeftSidebarInspector = ({
       for: 'components',
       actions: [
         { name: 'Select Widget', dispatchAction: handleSelectComponentOnEditor, icon: false, onSelect: true },
-        ...(!isVersionReleased
+        ...(!isVersionReleased && !isEditorFreezed
           ? [{ name: 'Delete Component', dispatchAction: handleRemoveComponent, icon: true, iconName: 'trash' }]
           : []),
       ],

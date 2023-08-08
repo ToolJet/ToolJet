@@ -171,7 +171,6 @@ export const LeftSidebar = forwardRef((props, ref) => {
         popoverContentHeight={popoverContentHeight}
         setPinned={handlePin}
         pinned={pinned}
-        isVersionReleased={isVersionReleased || isEditorFreezed}
       />
     ),
     database: (
