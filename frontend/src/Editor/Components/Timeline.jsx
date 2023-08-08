@@ -65,13 +65,15 @@ export const Timeline = function Timeline({ height, darkMode, properties, styles
             <TimelineMUI>
               {(isArray(data) ? data : []).map((item, index) => (
                 <TimelineItem key={index}>
-                  {!hideDate && (
+                  {!hideDate ? (
                     <TimelineOppositeContent
                       className={`list-timeline-time ${darkModeStyle}`}
                       style={{ flex: 'none' }}
                     >
                       {item.date}
                     </TimelineOppositeContent>
+                  ) : (
+                    <TimelineOppositeContent style={{ flex: 'none' }}></TimelineOppositeContent>
                   )}
                   <TimelineSeparator>
                     <TimelineDot style={{ backgroundColor: item.iconBackgroundColor }} />
