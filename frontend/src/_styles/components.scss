@@ -96,7 +96,6 @@ $btn-dark-color: #FFFFFF;
 
 .leftsidebar-panel-header {
   height: 100%;
-  background-color: var(--base);
 
   .panel-header-container {
     display: flex;
@@ -104,7 +103,7 @@ $btn-dark-color: #FFFFFF;
     justify-content: space-between;
     padding: 12px 16px;
     height: 52px;
-    border-bottom: 1px solid #E6E8EB;
+    border-bottom: 1px solid var(--slate7);
 
     .add-new-page {
       margin-left: 4px;
@@ -118,14 +117,7 @@ $btn-dark-color: #FFFFFF;
   }
 }
 
-.leftsidebar-panel-header.dark {
-  background-color: #1F2936 !important;
 
-  .panel-header-container,
-  .panel-search-container {
-    border-color: #697177;
-  }
-}
 
 .page-selector-panel-body {
   height: 100%;
@@ -168,8 +160,6 @@ $btn-dark-color: #FFFFFF;
 }
 
 .page-selector-panel-body.dark {
-  background: #1F2936 !important;
-
   .page-handler {
     .card {
       background: none !important

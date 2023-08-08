@@ -5,12 +5,12 @@ const Header = ({ children, darkMode }) => {
   return <div className={`${darkMode && 'dark'} leftsidebar-panel-header overflow-hidden`}>{children}</div>;
 };
 
-const PanelHeader = ({ children, settings, title }) => {
+const PanelHeader = ({ children, settings, title, darkMode }) => {
   return (
-    <div className="panel-header-container row">
+    <div className={`panel-header-container row ${darkMode && 'dark-theme'}`}>
       {settings && <div className="cursor-pointer col-auto d-flex px-1">{settings}</div>}
       <div className={`col ${settings && 'px-0'}`}>
-        <p className="text-muted m-0 fw-500" data-cy={`label-${String(title).toLowerCase()}`}>
+        <p className="sidebar-panel-header m-0 fw-500" data-cy={`label-${String(title).toLowerCase()}`}>
           {title}
         </p>
       </div>
