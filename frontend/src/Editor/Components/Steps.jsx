@@ -74,8 +74,16 @@ export const Steps = function Button({ properties, styles, fireEvent, setExposed
               }}
             >
               {steps.map((item, index) => (
-                <Tooltip arrow key={item.id} title={item.tooltip} placement="top">
-                  <Step key={item.id} completed={index < activeStep}>
+                <Tooltip
+                  arrow
+                  key={item.id}
+                  title={item.tooltip}
+                  placement="top"
+                >
+                  <Step
+                    key={item.id}
+                    completed={index < activeStep}
+                  >
                     <StepButton
                       onClick={() => handleStepClick(index)}
                       disabled={!stepsSelectable}
