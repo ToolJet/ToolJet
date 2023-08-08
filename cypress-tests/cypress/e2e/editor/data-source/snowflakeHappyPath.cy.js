@@ -118,7 +118,7 @@ describe("Data sources", () => {
     );
   });
 
-  it.skip("Should verify the functionality of PostgreSQL connection form.", () => {
+  it.skip("Should verify the functionality of Snowflake connection form.", () => {
     selectDataSource("Snowflake");
 
     cy.clearAndType(
