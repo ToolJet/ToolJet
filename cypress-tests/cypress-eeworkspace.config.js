@@ -84,7 +84,7 @@ module.exports = defineConfig({
             "cypress/e2e/authentication/*.cy.js",
         ],
         numTestsKeptInMemory: 1,
-        redirectionLimit: 7,
+        redirectionLimit: 15,
         experimentalRunAllSpecs: true,
         experimentalMemoryManagement: true,
         video: false,

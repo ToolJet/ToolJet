@@ -30,11 +30,16 @@ export class LdapService {
 
         //Get more user details such as profile pic and groups
         const searchOptions: SearchOptions = {
-          filter: `(&(cn=${username}))`,
+          /* 
+          Note:
+            1.Later we should add custom obj classes which specific for custom ldap schema (user should be able to add the schema while setting up the ldap settings)
+            2.Currently we added default user obj classes and parent classes
+          */
+          filter: `(|(objectClass=user)(objectClass=inetOrgPerson)(objectClass=organizationalPerson)(objectClass=person))` /* objectClass `user` - specifically for microsoft active directory */,
           scope: 'sub',
           attributes: ['*', 'memberOf'],
         };
-        this.search(basedn, searchOptions, client, async (searchResult: any) => {
+        this.search(bindDn, searchOptions, client, async (searchResult: any) => {
           if (Object.keys(searchResult).length) {
             const { mail, memberOf: groups, displayName, givenName, cn, uid } = searchResult;
             const fullName = displayName ?? givenName ?? cn;
@@ -63,7 +68,7 @@ export class LdapService {
             await this.unbindLdapClient(client);
             resolve(ssoResponse);
           } else {
-            throw new UnauthorizedException('Ldap user is existed. Cannot fetch user details.');
+            throw new UnauthorizedException('User does not exist. Please contact admin.');
           }
         });
       });
