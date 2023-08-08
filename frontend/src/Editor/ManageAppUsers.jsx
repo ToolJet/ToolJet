@@ -239,7 +239,7 @@ class ManageAppUsersComponent extends React.Component {
                       data-cy="make-public-app-toggle"
                     />
                     <span className="form-check-label" data-cy="make-public-app-label">
-                      {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public?')}
+                      {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
                     </span>
                   </div>
                 </div>

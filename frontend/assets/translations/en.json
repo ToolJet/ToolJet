@@ -116,7 +116,7 @@
         "preview": "Preview",
         "share": "Share",
         "shareModal": {
-            "makeApplicationPublic": "Make application public?",
+            "makeApplicationPublic": "Make application public",
             "shareableLink": "Shareable app link",
             "copy": "copy",
             "embeddableLink": "Embedded app link",
