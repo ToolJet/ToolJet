@@ -3,7 +3,7 @@ id: query-panel
 title: Query Panel
 ---
 
-The Query Panel, located at the bottom of the app-builder, allows you to create queries for interacting with connected **Default** and **Global** datasources. It provides the capability to perform API requests, query **[databases](/docs/data-sources/overview)**, and apply **[transformations](/docs/tutorial/transformations)** or data manipulation using **[JavaScript](/docs/data-sources/run-js)** and **[Python](/docs/data-sources/run-py)**.
+The Query Panel, located at the bottom of the app-builder, allows you to create and manage queries for interacting with connected **Default** and **Global** datasources. It provides the capability to perform API requests, query **[databases](/docs/data-sources/overview)**, and apply **[transformations](/docs/tutorial/transformations)** or data manipulation using **[JavaScript](/docs/data-sources/run-js)** and **[Python](/docs/data-sources/run-py)**.
 
 The Query Panel consists of two sections:
 - The **[Query Manager](#query-manager)** on the right side, which displays a list of all the created queries.
@@ -194,7 +194,7 @@ Enabling this option will execute the query every time the app is loaded.
 
 Enabling this option show a confirmation modal to confirm `Yes` or `No` if you want to fire that query.
 
-#### Run this query on application load?
+#### Show notification on success?
 
 Enabling this option show a success toast notification when the query is successfully triggered.
 
