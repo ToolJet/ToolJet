@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import TextareaAutosize from '@mui/base/TextareaAutosize';
+import { TextareaAutosize } from '@mui/base/TextareaAutosize';
 import config from 'config';
-import { Typography } from '@mui/material';
 
 export const TextArea = function TextArea({ height, properties, styles, setExposedVariable, registerAction, dataCy }) {
   const [value, setValue] = useState(properties.value);
