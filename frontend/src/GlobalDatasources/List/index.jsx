@@ -20,6 +20,7 @@ export const List = ({ updateSelectedDatasource }) => {
     environments,
     setCurrentEnvironment,
     setActiveDatasourceList,
+    setLoading,
   } = useContext(GlobalDataSourcesContext);
 
   const [isDeletingDatasource, setDeletingDatasource] = useState(false);
@@ -53,6 +54,7 @@ export const List = ({ updateSelectedDatasource }) => {
   const executeDataSourceDeletion = () => {
     setDeleteModalVisibility(false);
     setDeletingDatasource(true);
+    setLoading(true);
     globalDatasourceService
       .deleteDataSource(selectedDataSource.id)
       .then(() => {
@@ -64,6 +66,7 @@ export const List = ({ updateSelectedDatasource }) => {
       .catch(({ error }) => {
         setDeletingDatasource(false);
         setSelectedDataSource(null);
+        setLoading(false);
         toast.error(error);
       });
   };

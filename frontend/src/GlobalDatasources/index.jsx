@@ -66,8 +66,7 @@ export const GlobalDatasources = (props) => {
           toggleDataSourceManagerModal(true);
         }
         if (orderedDataSources.length && resetSelection) {
-          setSelectedDataSource(orderedDataSources[0]);
-          toggleDataSourceManagerModal(true);
+          setActiveDatasourceList('#databases');
         }
         if (!orderedDataSources.length) {
           setActiveDatasourceList('#databases');
@@ -125,6 +124,7 @@ export const GlobalDatasources = (props) => {
       isLoading,
       activeDatasourceList,
       setActiveDatasourceList,
+      setLoading,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [

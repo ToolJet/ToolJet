@@ -10,7 +10,7 @@ import { DataBaseSources, ApiSources, CloudStorageSources } from '@/Editor/DataS
 import { pluginsService, globalDatasourceService } from '@/_services';
 import { Card } from '@/_ui/Card';
 import { SegregatedList } from '../SegregatedList';
-import { SearchBox, ConfirmDialog } from '@/_components';
+import { SearchBox } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import SolidIcon from '@/_ui/Icon/SolidIcons';
 import { BreadCrumbContext } from '@/App';
@@ -20,7 +20,6 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   const [plugins, setPlugins] = useState([]);
   const [filteredDataSources, setFilteredDataSources] = useState([]);
   const [queryString, setQueryString] = useState('');
-  const [dataSourceConfirmModalProps, setDataSourceConfirmModalProps] = useState({ isOpen: false, dataSource: null });
   const [addingDataSource, setAddingDataSource] = useState(false);
   const { t } = useTranslation();
   const [modalProps, setModalProps] = useState({
@@ -44,6 +43,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     setCurrentEnvironment,
     activeDatasourceList,
     setActiveDatasourceList,
+    isLoading,
   } = useContext(GlobalDataSourcesContext);
 
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
@@ -109,13 +109,6 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
     setFilteredDataSources([...arr]);
   };
 
-  const resetDataSourceConfirmModal = () => {
-    setDataSourceConfirmModalProps({
-      isOpen: false,
-      dataSource: null,
-    });
-  };
-
   const createDataSource = (dataSource) => {
     const { id } = dataSource;
     const selectedDataSource = dataSource.manifestFile?.data?.source ?? dataSource;
@@ -148,18 +141,16 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
         })
         .then((data) => {
           setActiveDatasourceList('');
-          setAddingDataSource(false);
           toast.success(t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'), {
             position: 'top-center',
           });
 
           dataSourcesChanged(false, data);
-          resetDataSourceConfirmModal();
+          setAddingDataSource(false);
         })
         .catch(({ error }) => {
           setAddingDataSource(false);
           error && toast.error(error, { position: 'top-center' });
-          resetDataSourceConfirmModal();
         });
     } else {
       toast.error(
@@ -225,14 +216,13 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
   };
 
   const renderCardGroup = (source) => {
-    const openDataSourceConfirmModal = (dataSource) =>
-      setDataSourceConfirmModalProps({
-        isOpen: true,
-        dataSource: dataSource,
-      });
-
     const addDataSourceBtn = (item) => (
-      <ButtonSolid variant="secondary" onClick={() => openDataSourceConfirmModal(item)}>
+      <ButtonSolid
+        disabled={addingDataSource}
+        isLoading={addingDataSource}
+        variant="secondary"
+        onClick={() => createDataSource(item)}
+      >
         <SolidIcon name="plus" fill={darkMode ? '#3E63DD' : '#3E63DD'} width={18} viewBox="0 0 25 25" />
         <span className="ml-2">Add</span>
       </ButtonSolid>
@@ -381,19 +371,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
             updateSelectedDatasource={updateSelectedDatasource}
           />
         )}
-        {!selectedDataSource && segregateDataSources()}
-        <ConfirmDialog
-          title={'Add datasource'}
-          show={dataSourceConfirmModalProps.isOpen}
-          message={`Do you want to add ${dataSourceConfirmModalProps?.dataSource?.name}?`}
-          onConfirm={() => createDataSource(dataSourceConfirmModalProps.dataSource)}
-          onCancel={resetDataSourceConfirmModal}
-          confirmButtonText={'Add datasource'}
-          confirmButtonType="primary"
-          cancelButtonType="tertiary"
-          backdropClassName="datasource-selection-confirm-backdrop"
-          confirmButtonLoading={addingDataSource}
-        />
+        {!selectedDataSource && activeDatasourceList && !isLoading && segregateDataSources()}
       </div>
     </div>
   );
