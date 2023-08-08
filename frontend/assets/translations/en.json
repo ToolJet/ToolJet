@@ -729,7 +729,7 @@
       "description": "Display charts"
     },
     "Modal": {
-      "displayName": "Modal",
+      "displayName": "Modal (ok)",
       "description": "Modal triggered by events"
     },
     "TextInput": {
@@ -773,7 +773,7 @@
       "description": "Display markdown or HTML"
     },
     "Image": {
-      "displayName": "Image",
+      "displayName": "Image (ok)",
       "description": "Display an Image"
     },
     "Container": {
@@ -785,7 +785,7 @@
       "description": "Select one value from options"
     },
     "Multiselect": {
-      "displayName": "Multiselect",
+      "displayName": "Multiselect (ok)",
       "description": "Select multiple values from options"
     },
     "RichTextEditor": {
@@ -805,7 +805,7 @@
       "description": "Star rating"
     },
     "Divider": {
-      "displayName": "Divider",
+      "displayName": "Divider (ok)",
       "description": "Separator between components"
     },
     "FilePicker": {
@@ -837,19 +837,19 @@
       "description": "Wrapper for multiple components"
     },
     "Tags": {
-      "displayName": "Tags",
+      "displayName": "Tags (ok)",
       "description": "Content can be shown as tags"
     },
     "Pagination": {
-      "displayName": "Pagination",
+      "displayName": "Pagination (ok)",
       "description": "Pagination "
     },
     "CircularProgressbar": {
-      "displayName": "Circular Progressbar",
+      "displayName": "Circular Progressbar (ok)",
       "description": "Show the progress using circular progressbar"
     },
     "Spinner": {
-      "displayName": "Spinner",
+      "displayName": "Spinner (ok)",
       "description": "Spinner can be used to display loading status"
     },
     "Statistics": {
@@ -857,7 +857,7 @@
       "description": "Statistics can be used to display different statistical information"
     },
     "RangeSlider": {
-      "displayName": "Range Slider",
+      "displayName": "Range Slider (ok)",
       "description": "Can be used to show slider with a range"
     },
     "Timeline": {
@@ -873,7 +873,7 @@
       "description": "HTML Viewer"
     },
     "VerticalDivider": {
-      "displayName": "Vertical Divider",
+      "displayName": "Vertical Divider (ok)",
       "description": "Vertical Separator between components"
     },
     "CustomComponent": {
@@ -889,7 +889,7 @@
       "description": "Embed PDF file"
     },
     "Steps": {
-      "displayName": "Steps",
+      "displayName": "Steps (ok)",
       "description": "Steps"
     },
     "KanbanBoard": {
