@@ -2,10 +2,10 @@ export const dataSourceText = {
     labelDataSources: "Datasources",
     labelAddDataSource: "+ add data source",
 
-    allDataSources: "All Datasources (42)",
+    allDataSources: "All Datasources (43)",
     allDatabase: "Databases (19)",
     allApis: "APIs (20)",
-    allCloudStorage: "Cloud Storage (3)",
+    allCloudStorage: "Cloud Storage (4)",
 
     postgreSQL: "PostgreSQL",
     labelHost: "Host",
