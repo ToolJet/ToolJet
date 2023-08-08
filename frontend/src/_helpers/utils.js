@@ -1027,7 +1027,10 @@ export function isUUID(string) {
 }
 
 export const redirectToDashboard = (data) => {
-  const id_slug = data?.current_organization_slug || data?.current_organization_id;
+  const { current_organization_slug, current_organization_id } = authenticationService.currentSessionValue;
+  const id_slug = data
+    ? data?.current_organization_slug || data?.current_organization_id
+    : current_organization_slug || current_organization_id;
   window.location = getSubpath() ? `${getSubpath()}/${id_slug}` : `/${id_slug}`;
 };
 export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];

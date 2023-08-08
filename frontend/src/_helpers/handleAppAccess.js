@@ -1,24 +1,26 @@
 import { organizationService, authenticationService, appsService } from '@/_services';
 import { safelyParseJSON, stripTrailingSlash, redirectToDashboard, getSubpath, getWorkspaceId } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
+import _ from 'lodash';
+import queryString from 'query-string';
 
-export const handleAppAccess = (componentType, slug, versionId) => {
-  if (componentType === 'editor' || versionId) {
+export const handleAppAccess = (componentType, slug, versionName) => {
+  if (componentType === 'editor' || versionName) {
     /* Editor or app preview */
-    return appsService.validatePrivateApp(slug, versionId ? 'view' : 'edit').catch((error) => {
-      handleError(componentType, error, slug, versionId);
+    return appsService.validatePrivateApp(slug, versionName ? 'view' : 'edit', versionName).catch((error) => {
+      handleError(componentType, error, slug, versionName);
     });
   } else {
     /* Released app link [launch/sharable link] */
     return appsService.validateReleasedApp(slug).catch((error) => {
-      handleError(componentType, error, slug, versionId);
+      handleError(componentType, error, slug);
     });
   }
 };
 
-const switchOrganization = (componentType, slug, orgId, versionId) => {
-  const path = versionId ? `/applications/${slug}${versionId ? `/versions/${versionId}` : ''}` : `/apps/${slug}`;
-
+const switchOrganization = (componentType, slug, orgId, versionName) => {
+  const query = queryString.stringify({ version: versionName });
+  const path = !_.isEmpty(query) ? `/applications/${slug}${query ? `?${query}` : ''}` : `/apps/${slug}`;
   const sub_path = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : '';
   organizationService.switchOrganization(orgId).then(
     () => {
@@ -30,7 +32,7 @@ const switchOrganization = (componentType, slug, orgId, versionId) => {
   );
 };
 
-const handleError = (componentType, error, slug, versionId) => {
+const handleError = (componentType, error, slug, versionName) => {
   try {
     if (error?.data) {
       const statusCode = error.data?.statusCode;
@@ -42,7 +44,7 @@ const handleError = (componentType, error, slug, versionId) => {
           currentSessionValue.current_user &&
           currentSessionValue.current_organization_id !== errorObj?.organizationId
         ) {
-          switchOrganization(componentType, slug, errorObj?.organizationId, versionId);
+          switchOrganization(componentType, slug, errorObj?.organizationId, versionName);
           return;
         }
         redirectToDashboard();

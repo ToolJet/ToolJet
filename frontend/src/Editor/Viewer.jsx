@@ -29,6 +29,7 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { handleAppAccess } from '@/_helpers/handleAppAccess';
+import { getQueryParams } from '@/_helpers/routes';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -37,13 +38,10 @@ class ViewerComponent extends React.Component {
     const deviceWindowWidth = window.screen.width - 5;
 
     const slug = this.props.params.slug;
-    const versionId = this.props.params.versionId;
-
     this.subscription = null;
 
     this.state = {
       slug,
-      versionId,
       deviceWindowWidth,
       currentUser: null,
       isLoading: true,
@@ -228,13 +226,13 @@ class ViewerComponent extends React.Component {
 
   setupViewer() {
     const slug = this.props.params.slug;
-    const versionId = this.props.params.versionId;
+    const versionName = getQueryParams('version');
 
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
       if (currentSession?.load_app) {
         if (currentSession?.group_permissions) {
-          handleAppAccess('viewer', slug, versionId).then((accessData) => {
-            const { id: appId } = accessData;
+          handleAppAccess('viewer', slug, versionName).then((accessData) => {
+            const { id: appId, versionId } = accessData;
             useEditorStore.getState().actions.setAppId(appId);
 
             const currentUser = currentSession.current_user;
@@ -253,6 +251,7 @@ class ViewerComponent extends React.Component {
             this.setState({
               currentUser,
               userVars,
+              versionId,
             });
             versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
           });

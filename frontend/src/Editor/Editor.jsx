@@ -2,7 +2,7 @@ import React from 'react';
 import { appService, authenticationService, appVersionService, orgEnvironmentVariableService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
+import _, { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
 import { Container } from './Container';
 import { EditorKeyHooks } from './EditorKeyHooks';
 import { CustomDragLayer } from './CustomDragLayer';
@@ -1469,8 +1469,9 @@ class EditorComponent extends React.Component {
     } = this.state;
     const currentState = this.props?.currentState;
     const editingVersion = this.props?.editingVersion;
+    const previewQuery = queryString.stringify({ version: editingVersion?.name });
     const appVersionPreviewLink = editingVersion
-      ? `/applications/${app.slug}/versions/${editingVersion.id}/${currentState.page.handle}`
+      ? `/applications/${app.slug}/${currentState.page.handle}${!_.isEmpty(previewQuery) ? `?${previewQuery}` : ''}`
       : '';
     return (
       <div className="editor wrapper">

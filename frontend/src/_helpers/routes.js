@@ -42,3 +42,16 @@ export const replaceEditorURL = (slug, pageHandle) => {
     : getPrivateRoute('editor', { slug, pageHandle });
   window.history.replaceState(null, null, path);
 };
+
+export function getQueryParams(query) {
+  const search = window.location.search.substring(1); // Remove the '?' at the beginning
+  const paramsArray = search.split('&');
+  const queryParams = {};
+
+  for (const param of paramsArray) {
+    const [key, value] = param.split('=');
+    queryParams[key] = decodeURIComponent(value);
+  }
+
+  return query ? queryParams[query] : queryParams;
+}

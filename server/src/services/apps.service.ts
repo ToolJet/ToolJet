@@ -92,6 +92,12 @@ export class AppsService {
     ).app;
   }
 
+  async findVersionFromName(name: string, appId: string): Promise<AppVersion> {
+    return await this.appVersionsRepository.findOne({
+      where: { name, appId },
+    });
+  }
+
   async findDataQueriesForVersion(appVersionId: string): Promise<DataQuery[]> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
       return manager

@@ -11,6 +11,7 @@ import {
   Body,
   BadRequestException,
   UseInterceptors,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../src/modules/auth/jwt-auth.guard';
 import { AppsService } from '../services/apps.service';
@@ -59,7 +60,12 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard)
   @Get('validate-private-app-access/:slug')
-  async appAccess(@User() user, @Param('slug') appSlug: string, @Query('access_type') accessType: string) {
+  async appAccess(
+    @User() user,
+    @Param('slug') appSlug: string,
+    @Query('access_type') accessType: string,
+    @Query('version_name') versionName: string
+  ) {
     const app: App = await this.appsService.findAppWithIdOrSlug(appSlug);
 
     const ability = await this.appsAbilityFactory.appsActions(user, app.id);
@@ -80,10 +86,19 @@ export class AppsController {
     }
 
     const { id, slug } = app;
-    return {
+    const response = {
       id,
       slug,
     };
+    /* If the request comes from preview which needs version id */
+    if (versionName) {
+      const version = await this.appsService.findVersionFromName(versionName, id);
+      if (!version) {
+        throw new NotFoundException("Couldn't found app version. Please check the version name");
+      }
+      response['versionId'] = version.id;
+    }
+    return response;
   }
 
   @UseGuards(JwtAuthGuard)
