@@ -5,47 +5,42 @@ import {
   getWorkspaceIdOrSlugFromURL,
   stripTrailingSlash,
   pathnameWithoutSubpath,
-  isUUID,
 } from '@/_helpers/utils';
 
 export const authorizeWorkspace = () => {
   if (!isThisExistedRoute()) {
     const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
-    if (isUUID(workspaceIdOrSlug)) {
-      authorizeUserAndHandleErrors(null, workspaceIdOrSlug);
-    } else {
-      /* If the workspace slug is there instead of id we can get the id from it */
-      const isApplicationsPath = window.location.pathname.includes('/applications/');
-      const appId = isApplicationsPath ? pathnameWithoutSubpath(window.location.pathname).split('/')[2] : null;
-      authenticationService
-        .validateSession(appId, workspaceIdOrSlug)
-        .then(({ current_organization_id }) => {
-          //get organizations list
-          if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
-            authorizeUserAndHandleErrors(workspaceIdOrSlug, current_organization_id);
-          } else {
-            updateCurrentSession({
-              current_organization_id,
-            });
-          }
-        })
-        .catch((error) => {
-          if ((error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404) {
-            const subpath = getSubpath();
-            window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
-          }
-          if (!isThisWorkspaceLoginPage(true) && !isApplicationsPath) {
-            updateCurrentSession({
-              authentication_status: false,
-            });
-          } else if (isApplicationsPath) {
-            updateCurrentSession({
-              authentication_failed: true,
-              load_app: true,
-            });
-          }
-        });
-    }
+
+    const isApplicationsPath = window.location.pathname.includes('/applications/');
+    const appId = isApplicationsPath ? pathnameWithoutSubpath(window.location.pathname).split('/')[2] : null;
+    authenticationService
+      .validateSession(appId, workspaceIdOrSlug)
+      .then(({ current_organization_id }) => {
+        //get organizations list
+        if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
+          authorizeUserAndHandleErrors(workspaceIdOrSlug, current_organization_id);
+        } else {
+          updateCurrentSession({
+            current_organization_id,
+          });
+        }
+      })
+      .catch((error) => {
+        if ((error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404) {
+          const subpath = getSubpath();
+          window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
+        }
+        if (!isThisWorkspaceLoginPage(true) && !isApplicationsPath) {
+          updateCurrentSession({
+            authentication_status: false,
+          });
+        } else if (isApplicationsPath) {
+          updateCurrentSession({
+            authentication_failed: true,
+            load_app: true,
+          });
+        }
+      });
   }
 };
 
@@ -90,14 +85,13 @@ export const authorizeUserAndHandleErrors = (workspace_slug, workspace_id) => {
   const subpath = getSubpath();
   //initial session details
   updateCurrentSession({
-    ...(workspace_slug && { current_organization_slug: workspace_slug }),
     ...(workspace_id && { current_organization_id: workspace_id }),
   });
 
   authenticationService
     .authorize()
     .then((data) => {
-      const { current_organization_id } = data;
+      const { current_organization_id, current_organization_slug } = data;
       fetchOrganizations(current_organization_id, ({ organizations }) => {
         const current_organization_name = organizations?.find((org) => org.id === current_organization_id)?.name;
         /* add the user details like permission and user previlliage details to the subject */
@@ -110,31 +104,38 @@ export const authorizeUserAndHandleErrors = (workspace_slug, workspace_id) => {
 
         // if user is trying to load the workspace login page, then redirect to the dashboard
         if (isThisWorkspaceLoginPage())
-          return (window.location = appendWorkspaceId(workspace_slug || current_organization_id, '/:workspaceId'));
+          return (window.location = appendWorkspaceId(
+            current_organization_slug || current_organization_id,
+            '/:workspaceId'
+          ));
       });
     })
     .catch((error) => {
       // if the auth token didn't contain workspace-id, try switch workspace fn
       if (error && error?.data?.statusCode === 401) {
         const unauthorized_organization_id = workspace_id;
-        //get current session workspace id
+
+        //get current session's workspace id
         authenticationService
           .validateSession()
           .then(({ current_organization_id }) => {
-            // change invalid or not authorized org id to previous one
+            /* change current organization id to valid one [current logged in organization] */
             updateCurrentSession({
               current_organization_id,
             });
 
+            /* CASE-1: If the user didn't login to the perticular workspace yet. first try to switch workspace */
             organizationService
               .switchOrganization(unauthorized_organization_id)
               .then((data) => {
+                const { current_organization_slug } = data;
                 updateCurrentSession(data);
                 if (isThisWorkspaceLoginPage())
-                  return (window.location = appendWorkspaceId(workspace_slug, '/:workspaceId'));
-                authorizeUserAndHandleErrors(workspace_slug);
+                  return (window.location = appendWorkspaceId(current_organization_slug, '/:workspaceId'));
+                authorizeUserAndHandleErrors(current_organization_slug);
               })
               .catch(() => {
+                /* if CASE-1 failed. then redirect to the workspace login page */
                 fetchOrganizations(current_organization_id, ({ current_organization_name }) => {
                   updateCurrentSession({
                     current_organization_name,

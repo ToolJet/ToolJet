@@ -1021,11 +1021,6 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
   }
 };
 
-export function isUUID(string) {
-  var regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-  return regex.test(string);
-}
-
 export const redirectToDashboard = (data) => {
   const { current_organization_slug, current_organization_id } = authenticationService.currentSessionValue;
   const id_slug = data

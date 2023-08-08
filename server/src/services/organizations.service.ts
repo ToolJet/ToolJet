@@ -26,7 +26,6 @@ import { decamelize } from 'humps';
 import { Response } from 'express';
 import { AppEnvironmentService } from './app_environments.service';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
-import { isUUID } from 'class-validator';
 import { OrganizationUpdateDto } from '@dto/organization.dto';
 
 const MAX_ROW_COUNT = 500;
@@ -144,8 +143,14 @@ export class OrganizationsService {
     return await this.organizationsRepository.findOne({ where: { id }, relations: ['ssoConfigs'] });
   }
 
-  async getOrganizationbySlug(slug: string): Promise<Organization> {
-    return await this.organizationsRepository.findOne({ where: { slug } });
+  async fetchOrganizationId(slug: string): Promise<string> {
+    let organization: Organization;
+    try {
+      organization = await this.organizationsRepository.findOneOrFail({ where: { slug }, select: ['id'] });
+    } catch (error) {
+      organization = await this.organizationsRepository.findOne(slug, { select: ['id'] });
+    }
+    return organization?.id;
   }
 
   async getSingleOrganization(): Promise<Organization> {
@@ -351,20 +356,32 @@ export class OrganizationsService {
     isHideSensitiveData?: boolean,
     addInstanceLevelSSO?: boolean
   ): Promise<DeepPartial<Organization>> {
-    const isSlug = !isUUID(organizationId);
-    const result: DeepPartial<Organization> = await createQueryBuilder(Organization, 'organization')
-      .leftJoinAndSelect(
-        'organization.ssoConfigs',
-        'organisation_sso',
-        'organisation_sso.enabled IN (:...statusList)',
-        {
-          statusList: statusList || [true, false], // Return enabled and disabled sso if status list not passed
-        }
-      )
-      .andWhere(`${isSlug ? 'organization.slug = :slug' : 'organization.id = :organizationId'}`, {
-        ...(isSlug ? { slug: organizationId } : { organizationId }),
-      })
-      .getOne();
+    let result: DeepPartial<Organization>;
+    try {
+      result = await createQueryBuilder(Organization, 'organization')
+        .leftJoinAndSelect(
+          'organization.ssoConfigs',
+          'organisation_sso',
+          'organisation_sso.enabled IN (:...statusList)',
+          {
+            statusList: statusList || [true, false], // Return enabled and disabled sso if status list not passed
+          }
+        )
+        .andWhere('organization.slug = :slug', { slug: organizationId })
+        .getOneOrFail();
+    } catch (error) {
+      result = await createQueryBuilder(Organization, 'organization')
+        .leftJoinAndSelect(
+          'organization.ssoConfigs',
+          'organisation_sso',
+          'organisation_sso.enabled IN (:...statusList)',
+          {
+            statusList: statusList || [true, false], // Return enabled and disabled sso if status list not passed
+          }
+        )
+        .andWhere('organization.id = :id', { id: organizationId })
+        .getOne();
+    }
 
     if (!result) return;
 

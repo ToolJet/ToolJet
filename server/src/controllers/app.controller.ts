@@ -68,16 +68,14 @@ export class AppController {
       //if the user has a session and the app is public, we don't need to authorize the app organization id
       if (!app?.isPublic) organizationId = app.organizationId;
     } else if (workspaceSlug) {
-      const organization = await this.organizationService.getOrganizationbySlug(workspaceSlug);
-      if (!organization) {
-        throw new NotFoundException('Wrong workspace slug');
+      const id = await this.organizationService.fetchOrganizationId(workspaceSlug);
+      if (!id) {
+        throw new NotFoundException("Coudn't found workspace. workspace id or slug is incorrect!.");
       }
-      organizationId = organization?.id;
+      organizationId = id;
     }
-    if (organizationId) {
-      if (organizationId && user.organizationIds?.includes(organizationId)) {
-        user.organization_id = organizationId;
-      }
+    if (organizationId && user.organizationIds?.includes(organizationId)) {
+      user.organization_id = organizationId;
     }
     return this.authService.generateSessionPayload(user, organizationId);
   }

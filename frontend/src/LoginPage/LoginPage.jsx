@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import { Link, Navigate } from 'react-router-dom';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
-import { getSubpath, getWorkspaceId, isUUID, validateEmail } from '../_helpers/utils';
+import { getSubpath, getWorkspaceId, validateEmail } from '../_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -40,8 +40,7 @@ class LoginPageComponent extends React.Component {
   };
 
   componentDidMount() {
-    const isSlug = !isUUID(this.organizationId);
-    if (isSlug) this.organizationSlug = this.organizationId;
+    this.organizationSlug = this.organizationId;
     // Page is loaded inside an iframe
     const appInsideIframe = window !== window.top;
 
@@ -97,7 +96,7 @@ class LoginPageComponent extends React.Component {
       }
     });
 
-    authenticationService.getOrganizationConfigs(this.organizationSlug || this.organizationId).then(
+    authenticationService.getOrganizationConfigs(this.organizationSlug).then(
       (configs) => {
         this.organizationId = configs.id;
         if (this.organizationId) {
