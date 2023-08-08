@@ -2,7 +2,7 @@
 import React from 'react';
 import './style.scss';
 import SolidIcon from '@/_ui/Icon/solidIcons/index';
-//warning not fully customizable yet
+//warning not fully customizable/robust yet, do noe use anywhere apart from table, till we make it more robust
 const SingleOptionOflist = ({
   children,
   size = '',

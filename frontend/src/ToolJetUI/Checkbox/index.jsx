@@ -1,5 +1,5 @@
 import React from 'react';
-// not ready yet
+// not robust/ready yet
 const Checkbox = ({ type = 'checkbox', size = 'sm', text = '', supportingText = '' }) => {
   const baseHeight = size === 'sm' ? 16 : 20;
   const baseWidth = size === 'sm' ? 16 : 20;
