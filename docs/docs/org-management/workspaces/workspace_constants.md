@@ -5,6 +5,10 @@ title: Workspace Constants
 
 Workspace constants are predefined values(usually tokens/secret keys/API keys) that can be used across your application to maintain consistency and facilitate easy updates. They allow you to store important data or configurations that should remain unchanged during the application's runtime. This doc will guide you through the usage and management of workspace constants within your workspaces. 
 
+## Environment-Specific Configurations
+
+Users can define environment-specific configurations by setting different values for constants across environments. It is useful for managing sensitive information such as API keys, database credentials, or external service endpoints. For Community edition only production environment is available and for Cloud/EE we will have multi environments (development, staging, production).
+
 ## Server-Side Resolution
 
 Workspace constants are designed to be resolved on the server side only. This means that when you make network calls, the payload sent will not include the actual values of the constants. Instead, the server will resolve the constants and use their actual values while processing the requests. This ensures that the constants remain secure and are not exposed to the client-side.
