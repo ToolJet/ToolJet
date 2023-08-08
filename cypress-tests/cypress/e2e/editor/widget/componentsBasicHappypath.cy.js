@@ -37,7 +37,6 @@ describe("Basic components", () => {
     cy.appUILogin();
     cy.createApp();
     cy.modifyCanvasSize(900, 900);
-    cy.get('[data-tooltip-id="tooltip-for-hide-query-editor"]').click();
     cy.renameApp(data.appName);
     cy.intercept("GET", "/api/comments/*").as("loadComments");
   });
