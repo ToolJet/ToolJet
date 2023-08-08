@@ -66,10 +66,12 @@
     color : var(--slate12) !important;
     height: 100% !important;
     .dropdown-item{
+      display: flex;
       height: 36px;
       width: 100%;
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 6px;
+      gap: 6px;
       input{
         width: 16px;
         height: 16px;
@@ -92,9 +94,7 @@
     padding: 4px;
     border-radius: 6px;
 }
-.hide-column-name {
-  padding-left: 4px !important;
-}
+
 .jet-table.table-component{
   .pagination-container{
     input{

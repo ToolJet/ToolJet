@@ -949,7 +949,7 @@ export function Table({
               typeof column.Header === 'string' && (
                 <div key={column.id}>
                   <div>
-                    <label className="dropdown-item">
+                    <label className="dropdown-item d-flex">
                       <input
                         type="checkbox"
                         data-cy={`checkbox-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
