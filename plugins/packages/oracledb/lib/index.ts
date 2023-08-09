@@ -95,7 +95,7 @@ export default class OracledbQueryService implements QueryService {
       oracledb.oracleClientVersion;
     } catch (err) {
       console.log('Oracle client is not initailized');
-      this.initOracleClient(sourceOptions.client_path_type, sourceOptions.path, sourceOptions.instant_client_version);
+      // this.initOracleClient(sourceOptions.client_path_type, sourceOptions.path, sourceOptions.instant_client_version);
     }
 
     const config: Knex.Config = {
