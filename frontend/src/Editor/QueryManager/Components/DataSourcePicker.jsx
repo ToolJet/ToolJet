@@ -58,7 +58,9 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
         </a>
       </p>
       <div>
-        <label className="form-label">Default</label>
+        <label className="form-label" data-cy={`landing-page-label-default`}>
+          Default
+        </label>
         <div className="query-datasource-card-container d-flex justify-content-between mb-3 mt-2">
           {staticDataSources.map((source) => {
             return (
@@ -70,6 +72,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
                   handleChangeDataSource(source);
                 }}
                 className="text-truncate"
+                data-cy={`${source.kind.toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
               >
                 <DataSourceIcon source={source} height={14} /> {source.shortName}
               </ButtonSolid>
@@ -77,10 +80,15 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
           })}
         </div>
         <div className="d-flex d-flex justify-content-between">
-          <label className="form-label py-1" style={{ width: 'auto' }}>
+          <label className="form-label py-1" style={{ width: 'auto' }} data-cy={`label-avilable-ds`}>
             {`Available Datasources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
           </label>
-          <ButtonSolid size="sm" variant="ghostBlue" onClick={handleAddClick}>
+          <ButtonSolid
+            size="sm"
+            variant="ghostBlue"
+            onClick={handleAddClick}
+            data-cy={`landing-page-add-new-ds-button`}
+          >
             <Plus style={{ height: '16px' }} fill="var(--indigo9)" />
             Add new
           </ButtonSolid>
@@ -90,7 +98,12 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
         ) : (
           <Container className="p-0">
             {allUserDefinedSources.length > 4 && (
-              <SearchBox onSearch={setSearchTerm} darkMode={darkMode} searchTerm={searchTerm} />
+              <SearchBox
+                onSearch={setSearchTerm}
+                darkMode={darkMode}
+                searchTerm={searchTerm}
+                dataCy={`gds-querymanager`}
+              />
             )}
             <Row className="mt-2">
               {filteredUserDefinedDataSources.map((source) => (
@@ -105,6 +118,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
                     }}
                     data-tooltip-id="tooltip-for-query-panel-ds-picker-btn"
                     data-tooltip-content={source.name}
+                    data-cy={`${String(source.name).toLowerCase().replace(/\s+/g, '-')}-add-query-card`}
                   >
                     <DataSourceIcon source={source} height={14} styles={{ minWidth: 14 }} />
                     <span className="text-truncate">{source.name}</span>
@@ -132,7 +146,7 @@ const EmptyDataSourceBanner = () => (
   </div>
 );
 
-const SearchBox = ({ onSearch, darkMode, searchTerm }) => {
+const SearchBox = ({ onSearch, darkMode, searchTerm, dataCy }) => {
   const { t } = useTranslation();
   return (
     <Row>
@@ -145,7 +159,7 @@ const SearchBox = ({ onSearch, darkMode, searchTerm }) => {
           value={searchTerm}
           callBack={(e) => onSearch(e.target.value)}
           onClearCallback={() => onSearch('')}
-          data-cy="widget-search-box"
+          dataCy={dataCy}
         />
         {/* <span
           className="position-absolute"

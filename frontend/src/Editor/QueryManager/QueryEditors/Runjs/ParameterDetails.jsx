@@ -81,6 +81,7 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
             onClick={() => setShowModal((show) => !show)}
             className="ms-2"
             id="runjs-param-add-btn"
+            data-cy={`runjs-add-param-button`}
           >
             <span className="m-0">
               <PlusRectangle fill={'#3E63DD'} width={15} />
@@ -112,10 +113,13 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom, className, s
         ...(!onRemove && { borderRadius: '15px' }),
       }}
     >
-      <span className="text-truncate">{name}</span>
+      <span data-cy={`query-param-${String(name).toLowerCase()}`} className="text-truncate">
+        {name}
+      </span>
     </Button>
     {onRemove && (
       <Button
+        data-cy={`query-param-${String(name).toLowerCase()}-remove-button`}
         onClick={onRemove}
         size="sm"
         className={cx('bg-transparent color-slate12', { 'p-0 pe-1': size === 'sm' })}

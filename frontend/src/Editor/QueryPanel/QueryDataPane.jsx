@@ -104,6 +104,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
               })}
               data-tooltip-id="tooltip-for-query-panel-header-btn"
               data-tooltip-content="Open quick search"
+              data-cy="query-search-button"
             >
               <Search width="14" height="14" fill="var(--slate12)" />
             </button>
@@ -145,6 +146,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
                   setSearchTermForFilters('');
                   setShowSearchBox(false);
                 }}
+                data-cy={`query-search-close-button`}
               >
                 Close
               </ButtonSolid>
@@ -242,6 +244,7 @@ const AddDataSourceButton = ({ darkMode, disabled }) => {
             setShowMenu((show) => !show);
           }}
           className="px-1 pe-3 ps-2 gap-0"
+          data-cy={`show-ds-popover-button`}
         >
           <Plus style={{ height: '16px' }} />
           Add
