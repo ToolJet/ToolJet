@@ -22,10 +22,3 @@ export const resetAllStores = () => {
     resetter();
   }
 };
-
-export const appendStoreNameToActions = (actionName, storeName) => {
-  if (isString(actionName) && isString(storeName) && actionName && storeName) {
-    return `${actionName}/${storeName}`;
-  }
-  return '';
-};
