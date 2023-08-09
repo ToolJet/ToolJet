@@ -122,7 +122,6 @@ export const Inspector = ({
   };
 
   function paramUpdated(param, attr, value, paramType) {
-    console.log({ param, attr, value, paramType });
     let newDefinition = _.cloneDeep(component.component.definition);
     let allParams = newDefinition[paramType] || {};
     const paramObject = allParams[param.name];
@@ -232,8 +231,6 @@ export const Inspector = ({
   }
 
   function eventOptionUpdated(event, option, value) {
-    console.log('eventOptionUpdated', event, option, value);
-
     let newDefinition = { ...component.component.definition };
     let eventDefinition = newDefinition.events[event.name] || { options: {} };
 

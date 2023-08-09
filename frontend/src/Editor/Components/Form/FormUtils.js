@@ -61,7 +61,6 @@ export function generateUIComponents(JSONSchema, advanced) {
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['disabledState']['value'] =
                 value?.styles?.disabled;
             if (value?.styles?.visibility) {
-              console.log('value--', value?.styles?.visibility, typeof value?.styles?.visibility);
               uiComponentsDraft[index * 2 + 1]['definition']['styles']['visibility']['value'] = validBooleanChecker(
                 value?.styles?.visibility
               );

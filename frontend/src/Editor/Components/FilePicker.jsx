@@ -396,7 +396,6 @@ const processCSV = (str, delimiter = ',') => {
     const data = XLSX.utils.sheet_to_json(ws, { delimiter, defval: '' });
     return data;
   } catch (error) {
-    console.log(error);
     handleErrors(error);
   }
 };
@@ -410,7 +409,6 @@ const processXls = (str) => {
     const data = XLSX.utils.sheet_to_json(ws);
     return data;
   } catch (error) {
-    console.log(error);
     handleErrors(error);
   }
 };

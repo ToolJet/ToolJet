@@ -38,7 +38,6 @@ export function CodeBuilder({ initialValue, onChange, components }) {
 
     // Check if the user is trying to enter code or string
     if (value.startsWith('{{') && value.endsWith('}}')) isCode = true;
-    console.log('[CB]', 'isCode', isCode);
 
     if (isCode && value !== initialValue) {
       setShowDropdown(true);
@@ -96,7 +95,6 @@ export function CodeBuilder({ initialValue, onChange, components }) {
         return { item: item };
       });
     } else {
-      console.log(currentWord);
       filteredVariables = fuse.search(currentWord);
     }
     return filteredVariables.map((variable) => renderVariable(type, key, variable.item.name));

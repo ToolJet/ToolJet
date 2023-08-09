@@ -28,7 +28,7 @@ export const Map = function Map({
   try {
     defaultMarkers = defaultMarkerValue;
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
   const addNewMarkersProp = component.definition.properties.addNewMarkers;
@@ -47,7 +47,7 @@ export const Map = function Map({
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
   const [gmap, setGmap] = useState(null);

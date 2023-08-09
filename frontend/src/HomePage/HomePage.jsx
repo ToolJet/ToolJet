@@ -150,7 +150,6 @@ class HomePageComponent extends React.Component {
       .catch(({ _error }) => {
         toast.error('Could not clone the app.');
         this.setState({ isCloningApp: false });
-        console.log(_error);
       });
   };
 
@@ -292,7 +291,6 @@ class HomePageComponent extends React.Component {
       })
       .catch(({ error }) => {
         toast.error('Could not delete the app.');
-        console.log(error);
       })
       .finally(() => {
         this.cancelDeleteAppDialog();

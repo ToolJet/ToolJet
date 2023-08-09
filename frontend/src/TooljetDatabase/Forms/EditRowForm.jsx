@@ -147,7 +147,6 @@ const RenderElement = ({ columnName, dataType, isPrimaryKey, defaultValue, value
 
   useEffect(() => {
     if (isMounted && inputValue !== undefined && inputValue !== null) {
-      console.log('shouldUpdate', { columnName, inputValue, value });
       callback(columnName, inputValue);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

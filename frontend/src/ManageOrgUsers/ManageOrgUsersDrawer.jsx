@@ -46,7 +46,6 @@ const ManageOrgUsersDrawer = ({
         setGroups(orgGroups);
       })
       .catch((error) => {
-        console.log('error', error);
         setGroups([]);
       });
   };

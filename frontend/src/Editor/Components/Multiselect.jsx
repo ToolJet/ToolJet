@@ -35,7 +35,7 @@ export const Multiselect = function Multiselect({
       }),
     ];
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
   useEffect(() => {

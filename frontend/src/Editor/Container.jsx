@@ -240,7 +240,6 @@ export const Container = ({
 
         const canvasBoundingRect = document.getElementsByClassName('real-canvas')[0].getBoundingClientRect();
         const componentMeta = componentTypes.find((component) => component.component === item.component.component);
-        console.log('adding new component');
 
         const newComponent = addNewWidgetToTheEditor(
           componentMeta,

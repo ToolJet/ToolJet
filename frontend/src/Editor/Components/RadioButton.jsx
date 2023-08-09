@@ -27,7 +27,7 @@ export const RadioButton = function RadioButton({
       }),
     ];
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
   function onSelect(selection) {

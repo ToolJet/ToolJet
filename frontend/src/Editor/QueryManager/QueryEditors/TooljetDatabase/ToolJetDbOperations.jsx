@@ -116,7 +116,6 @@ const ToolJetDbOperations = ({ optionchanged, options, darkMode }) => {
       setTables(data.result.map((table) => table.table_name) || []);
 
       if (selectedTable) {
-        console.log('fetchTableInformation');
         fetchTableInformation(selectedTable);
       }
     }

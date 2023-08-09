@@ -13,8 +13,7 @@ import { getCurrentState } from '@/_stores/currentStateStore';
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
   prop = prop.split('.');
-  console.log('prop', prop);
-  console.log('obj', obj);
+
   for (var i = 0; i < prop.length; i++) {
     if (prop[i].endsWith(']')) {
       const actual_prop = prop[i].split('[')[0];
@@ -85,7 +84,6 @@ function resolveCode(code, state, customObjects = {}, withError = false, reserve
       );
     } catch (err) {
       error = err;
-      console.log('eval_error', err);
     }
   }
 
@@ -302,7 +300,7 @@ export function resolveWidgetFieldValue(prop, state, _default = [], customResolv
   try {
     return resolveReferences(widgetFieldValue, state, _default, customResolveObjects);
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
   return widgetFieldValue;
@@ -480,7 +478,6 @@ export async function executeMultilineJS(
       data: await evalFn(...fnArgs),
     };
   } catch (err) {
-    console.log('JS execution failed: ', err);
     error = err.stack.split('\n')[0];
     result = { status: 'failed', data: { message: error, description: error } };
   }
@@ -752,7 +749,6 @@ export const loadPyodide = async () => {
     const pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.2/full/' });
     return pyodide;
   } catch (error) {
-    console.log('loadPyodide error', error);
     throw 'Could not load Pyodide to execute Python';
   }
 };

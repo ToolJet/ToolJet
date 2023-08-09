@@ -210,7 +210,7 @@ export default function generateColumnsData({
               });
 
               const { isValid, validationError } = validationData;
-              console.log('validationData', column.minValue, column.maxValue, validationData);
+
               const cellStyles = {
                 color: textColor ?? '',
               };

@@ -117,7 +117,7 @@ async function executeRunPycode(_ref, code, query, isPreview, mode) {
   }
 
   function log(line) {
-    console.log({ line });
+    console.log({ line }); // used by pyodide
   }
 
   const evaluatePythonCode = async (pyodide) => {
@@ -255,7 +255,10 @@ export async function runPythonTransformation(currentState, rawData, transformat
   try {
     return await exceutePycode(data, transformation, currentState, query, mode);
   } catch (error) {
-    console.log(error);
+    return {
+      status: 'failed',
+      message: error,
+    };
   }
 }
 
@@ -340,14 +343,13 @@ export async function copyToClipboard(text) {
     await navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard!');
   } catch (err) {
-    console.log('Failed to copy!', err);
+    throw new Error('Failed to copy!');
   }
 }
 
 function showModal(_ref, modal, show) {
   const modalId = modal?.id ?? modal;
   if (_.isEmpty(modalId)) {
-    console.log('No modal is associated with this event.');
     return Promise.resolve();
   }
 
@@ -651,7 +653,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         }
       }
     } else {
-      console.log('No action is associated with this event');
+      toast.error('No action is associated with this event');
     }
   }
 
@@ -676,7 +678,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         }
       }
     } else {
-      console.log('No action is associated with this event');
+      toast.error('No action is associated with this event');
     }
   }
 
@@ -757,7 +759,6 @@ export function getQueryVariables(options, state) {
 
       if (options.includes('{{') && options.includes('%%')) {
         const vars = resolveReferences(options, state);
-        console.log('queryVariables', { options, vars });
         queryVariables[options] = vars;
       } else {
         const dynamicVariables = getDynamicVariables(options) || [];
@@ -1107,7 +1108,6 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
 
 export function setTablePageIndex(_ref, tableId, index) {
   if (_.isEmpty(tableId)) {
-    console.log('No table is associated with this event.');
     return Promise.resolve();
   }
 
@@ -1144,7 +1144,7 @@ export function computeComponentState(_ref, components = {}) {
         isListView = parentComponent.component.component === 'Listview';
         isForm = parentComponent.component.component === 'Form';
       } catch {
-        console.log('error');
+        throw new Error('Invalid parent component');
       }
 
       if (!isListView && !isForm) {
@@ -1412,7 +1412,6 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
 };
 
 export const addComponents = (pageId, appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
-  console.log({ pageId, newComponentObj });
   const finalComponents = [];
   let parentComponent = undefined;
   const { isCloning, isCut, newComponents: pastedComponent = [] } = newComponentObj;

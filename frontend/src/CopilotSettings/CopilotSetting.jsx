@@ -28,8 +28,7 @@ export const CopilotSetting = () => {
             setCopilotApiKey(apikey);
             toast.success('Copilot API key saved successfully');
           })
-          .catch((err) => {
-            console.log(err);
+          .catch(() => {
             return toast.error('Something went wrong');
           })
           .finally(() => {
@@ -45,8 +44,7 @@ export const CopilotSetting = () => {
             setCopilotApiKey(apikey);
             toast.success('Copilot API key saved successfully');
           })
-          .catch((err) => {
-            console.log(err);
+          .catch(() => {
             return toast.error('Something went wrong');
           })
           .finally(() => setIsLoading(false));
@@ -79,7 +77,7 @@ export const CopilotSetting = () => {
 
   const updateCopilotEnabled = (id, value, variableName) => {
     return orgEnvironmentVariableService.update(id, variableName, `${value}`).catch((err) => {
-      console.log(err);
+      throw new Error(err);
     });
   };
 

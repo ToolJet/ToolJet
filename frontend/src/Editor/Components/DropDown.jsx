@@ -52,7 +52,7 @@ export const DropDown = function DropDown({
           }),
         ];
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
   const setExposedItem = (value, index, onSelectFired = false) => {

@@ -47,8 +47,6 @@ function getItemStyles(delta, item, initialOffset, currentOffset, parentRef, par
 
   [x, y] = snapToGrid(canvasWidth, x, y);
 
-  console.log(`translate(${x}px, ${y}px)`);
-
   const transform = `translate(${x}px, ${y}px)`;
   return {
     transform,

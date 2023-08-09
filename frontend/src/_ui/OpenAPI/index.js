@@ -61,7 +61,6 @@ const OpenApi = ({
         .catch((err) => {
           setValidationError(err?.message ?? 'Enter valid definition');
           setLoadingSpec(false);
-          console.log(err);
         });
     }
   };

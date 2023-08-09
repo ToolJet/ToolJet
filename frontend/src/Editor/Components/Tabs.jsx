@@ -59,7 +59,7 @@ export const Tabs = function Tabs({
   try {
     parsedWidgetVisibility = resolveReferences(parsedWidgetVisibility, currentState, []);
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 
   const parentRef = useRef(null);

@@ -4,7 +4,6 @@ import ErrorModal from './ErrorModal';
 
 export const QrScanner = function QrScanner({ styles, fireEvent, setExposedVariable, dataCy }) {
   const handleError = async (errorMessage) => {
-    console.log(errorMessage);
     await setErrorOccured(true);
   };
 
