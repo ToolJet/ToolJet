@@ -1565,7 +1565,7 @@ export function snapToGrid(canvasWidth, x, y) {
   const snappedY = Math.round(y / 10) * 10;
   return [snappedX, snappedY];
 }
-export const removeSelectedComponent = (pageId, newDefinition, selectedComponents) => {
+export const removeSelectedComponent = (pageId, newDefinition, selectedComponents, updateAppDefinition) => {
   selectedComponents.forEach((component) => {
     let childComponents = [];
 
@@ -1585,6 +1585,8 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
 
     delete newDefinition.pages[pageId].components[component.id];
   });
+
+  updateAppDefinition(newDefinition, { componentDefinitionChanged: true });
 };
 
 const getSelectedText = () => {
