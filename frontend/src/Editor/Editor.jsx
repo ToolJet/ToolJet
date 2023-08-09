@@ -1603,12 +1603,12 @@ class EditorComponent extends React.Component {
                         transform: 'translateZ(0)', //Hack to make modal position respect canvas container, else it positions w.r.t window.
                       }}
                     >
-                      {/* {config.ENABLE_MULTIPLAYER_EDITING && (
+                      {config.ENABLE_MULTIPLAYER_EDITING && (
                         <RealtimeCursors
                           editingVersionId={editingVersion?.id}
                           editingPageId={this.state.currentPageId}
                         />
-                      )} */}
+                      )}
                       {isLoading && (
                         <div className="apploader">
                           <div className="col col-* editor-center-wrapper">
@@ -1759,6 +1759,8 @@ const withStore = (Component) => (props) => {
     (state) => ({ isVersionReleased: state.isVersionReleased, editingVersion: state.editingVersion }),
     shallow
   );
+  const currentState = useCurrentState();
+
   return (
     <Component
       {...props}
@@ -1770,6 +1772,7 @@ const withStore = (Component) => (props) => {
       setSelectionInProgress={setSelectionInProgress}
       selectedComponents={selectedComponents}
       setSelectedComponents={setSelectedComponents}
+      currentState={currentState}
     />
   );
 };
