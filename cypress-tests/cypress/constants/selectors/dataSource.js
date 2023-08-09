@@ -3,10 +3,11 @@ export const dataSourceSelector = {
     labelDataSources: "[data-cy='label-datasources']",
     addDatasourceLink: "[data-cy='add-datasource-link']",
 
-    allDatasourceLabelAndCount: '[data-rr-ui-event-key="#alldatasources"]',
-    databaseLabelAndCount: '[data-rr-ui-event-key="#databases"]',
-    apiLabelAndCount: '[data-rr-ui-event-key="#apis"]',
-    cloudStorageLabelAndCount: '[data-rr-ui-event-key="#cloudstorage"]',
+    allDatasourceLabelAndCount: '[data-cy="datasource-list-header"]',
+    databaseLabelAndCount: '[data-cy="databases-datasource-button"]',
+    apiLabelAndCount: '[data-cy="apis-datasource-button"]',
+    cloudStorageLabelAndCount: '[data-cy="cloudstorage-datasource-button"]',
+    pluginsLabelAndCount: '[data-cy="plugins-datasource-button"]',
     dataSourceSearchInputField: '[data-cy="datasource-search-input"]',
 
     postgresDataSource: "[data-cy='data-source-postgresql']",
@@ -23,7 +24,7 @@ export const dataSourceSelector = {
     linkReadDocumentation: '[data-cy="link-read-documentation"]',
     buttonTestConnection: '[data-cy="test-connection-button"]',
     connectionFailedText: '[data-cy="test-connection-failed-text"]',
-    buttonSave: '[data-cy="db-connection-save-button"]',
+    buttonSave: '[data-cy="db-connection-save-button"] > .tj-base-btn',
     dangerAlertNotSupportSSL: '.go3958317564',
 
     passwordTextField: '[data-cy="password-text-field"]',
@@ -85,4 +86,8 @@ export const dataSourceSelector = {
     recordsInputField: '[data-cy="records-input-field"]',
 
     eventQuerySelectionField: '[data-cy="query-selection-field"]',
+    addedDsSearchIcon: '[data-cy="added-ds-search-icon"]',
+    AddedDsSearchBar: '[data-cy="added-ds-search-bar"]',
+    dsNameInputField: '[data-cy="data-source-name-input-filed"]',
+    unSavedModalTitle: '[data-cy="unsaved-changes-title"]',
 };

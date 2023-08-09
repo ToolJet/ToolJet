@@ -2,10 +2,11 @@ export const dataSourceText = {
     labelDataSources: "Datasources",
     labelAddDataSource: "+ add data source",
 
-    allDataSources: "All Datasources (42)",
-    allDatabase: "Databases (19)",
+    allDataSources: "All datasources (40)",
+    allDatabase: "Databases (17)",
     allApis: "APIs (20)",
     allCloudStorage: "Cloud Storage (3)",
+    pluginsLabelAndCount: "Plugins (0)",
 
     postgreSQL: "PostgreSQL",
     labelHost: "Host",
@@ -68,4 +69,6 @@ export const dataSourceText = {
 
     tabAdvanced: "Advanced",
     labelNoEventhandler: "This query doesn't have any event handlers",
+    toastDSSaved: "Datasource Saved",
+    unSavedModalTitle: "Unsaved Changes"
 };

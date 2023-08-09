@@ -2,7 +2,7 @@ export const postgreSqlText = {
   labelDataSources: "Datasources",
   labelAddDataSource: "+ add data source",
 
-  allDataSources: "All Datasources (42)",
+  allDataSources: "All datasources (42)",
   allDatabase: "Databases (19)",
   allApis: "APIs (20)",
   allCloudStorage: "Cloud Storage (3)",
@@ -68,4 +68,6 @@ export const postgreSqlText = {
 
   tabAdvanced: "Advanced",
   labelNoEventhandler: "This query doesn't have any event handlers",
+  toastDSSaved: "Datasource Saved",
+
 };

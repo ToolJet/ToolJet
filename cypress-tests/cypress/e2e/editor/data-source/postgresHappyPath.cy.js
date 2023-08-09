@@ -7,7 +7,7 @@ import {
   addQuery,
   fillDataSourceTextField,
   fillConnectionForm,
-  selectDataSource,
+  selectAndAddDataSource,
   openQueryEditor,
   selectQueryMode,
   addGuiQuery,
@@ -117,7 +117,7 @@ describe("Data sources", () => {
   });
 
   it("Should verify the functionality of PostgreSQL connection form.", () => {
-    selectDataSource(postgreSqlText.postgreSQL);
+    selectAndAddDataSource(postgreSqlText.postgreSQL);
 
     cy.clearAndType(
       '[data-cy="data-source-name-input-filed"]',
@@ -170,7 +170,7 @@ describe("Data sources", () => {
   });
 
   it.skip("Should verify elements of the Query section.", () => {
-    selectDataSource(postgreSqlText.postgreSQL);
+    selectAndAddDataSource(postgreSqlText.postgreSQL);
     fillConnectionForm(
       {
         Host: Cypress.env("pg_host"),
@@ -361,7 +361,7 @@ describe("Data sources", () => {
   });
 
   it.skip("Should verify CRUD operations on SQL Query.", () => {
-    selectDataSource(postgreSqlText.postgreSQL);
+    selectAndAddDataSource(postgreSqlText.postgreSQL);
 
     cy.clearAndType(
       postgreSqlSelector.dataSourceNameInputField,
@@ -448,7 +448,7 @@ describe("Data sources", () => {
   });
 
   it.skip("Should verify bulk update", () => {
-    selectDataSource(postgreSqlText.postgreSQL);
+    selectAndAddDataSource(postgreSqlText.postgreSQL);
     fillConnectionForm({
       Host: Cypress.env("pg_host"),
       Port: "5432",
