@@ -265,25 +265,24 @@ class TableComponent extends React.Component {
             />
           </div>
           <div className="field mb-2">
-            <ProgramaticallyHandleProperties
-              label="Horizontal alignment"
-              currentState={this.state.currentState}
-              index={index}
-              darkMode={this.props.darkMode}
-              callbackFunction={this.onColumnItemChange}
-              property="horizontalAlignment"
-              props={column}
-              component={this.props.component}
-              paramMeta={{
-                type: 'select',
-                displayName: 'HorizontalAlignment',
-                options: [
-                  { name: 'Left', value: 'left' },
-                  { name: 'Right', value: 'right' },
-                  { name: 'Center', value: 'center' },
-                ],
+            <label className="form-label">
+              {this.props.t('widget.Table.horizontalAlignment', 'Horizontal Alignment')}
+            </label>
+            <SelectSearch
+              className={'select-search'}
+              options={[
+                { name: 'Left', value: 'left' },
+                { name: 'Center', value: 'center' },
+                { name: 'Right', value: 'right' },
+              ]}
+              value={column?.horizontalAlignment ?? 'left'}
+              search={true}
+              closeOnSelect={true}
+              onChange={(value) => {
+                this.onColumnItemChange(index, 'horizontalAlignment', value);
               }}
-              paramType="properties"
+              fuzzySearch
+              placeholder={this.props.t('globals.select', 'Select') + '...'}
             />
           </div>
 

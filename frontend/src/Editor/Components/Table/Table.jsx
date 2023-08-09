@@ -1095,7 +1095,7 @@ export function Table({
                                   ref={provided.innerRef}
                                   style={{
                                     ...getItemStyle(snapshot, provided.draggableProps.style),
-                                    textAlign: resolveReferences(column?.horizontalAlignment, currentState),
+                                    textAlign: column?.horizontalAlignment,
                                   }}
                                 >
                                   {column.render('Header')}
@@ -1171,7 +1171,7 @@ export function Table({
                   >
                     {row.cells.map((cell, index) => {
                       let cellProps = cell.getCellProps();
-                      cellProps.style.textAlign = cell.column.horizontalAlignment;
+                      cellProps.style.textAlign = cell.column?.horizontalAlignment;
                       if (tableDetails.changeSet) {
                         if (tableDetails.changeSet[cell.row.index]) {
                           const currentColumn = columnData.find((column) => column.id === cell.column.id);
@@ -1214,12 +1214,7 @@ export function Table({
                         cellValue,
                         rowData,
                       });
-                      const horizontalAlignment = resolveReferences(
-                        cell.column?.horizontalAlignment,
-                        currentState,
-                        '',
-                        { cellValue, rowData }
-                      );
+                      const horizontalAlignment = cell.column?.horizontalAlignment;
                       return (
                         // Does not require key as its already being passed by react-table via cellProps
                         // eslint-disable-next-line react/jsx-key

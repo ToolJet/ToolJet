@@ -18,7 +18,7 @@ export const Code = ({
 }) => {
   const currentState = useCurrentState();
   const getDefinitionForNewProps = (param) => {
-    if (['showAddNewRowButton', 'allowSelection', 'horizontalAlignment', 'defaultSelectedRow'].includes(param)) {
+    if (['showAddNewRowButton', 'allowSelection', 'defaultSelectedRow'].includes(param)) {
       if (param === 'allowSelection') {
         const highlightSelectedRow = component?.component?.definition?.properties?.highlightSelectedRow?.value ?? false;
         const showBulkSelector = component?.component?.definition?.properties?.showBulkSelector?.value ?? false;
@@ -26,9 +26,6 @@ export const Code = ({
           resolveReferences(highlightSelectedRow, currentState) || resolveReferences(showBulkSelector, currentState);
 
         return '{{' + `${allowSelection}` + '}}';
-      } else if (param === 'horizontalAlignment') {
-        const horizontalAlignment = component?.component?.definition?.properties?.horizontalAlignment?.value ?? 'left';
-        return `{{${horizontalAlignment}}}`;
       } else if (param === 'defaultSelectedRow') {
         return `{{{id:1}}}`;
       } else {

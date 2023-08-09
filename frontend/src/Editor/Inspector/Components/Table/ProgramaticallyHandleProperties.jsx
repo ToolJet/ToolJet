@@ -18,14 +18,10 @@ export const ProgramaticallyHandleProperties = ({
     switch (property) {
       case 'isEditable':
         return props.isEditable;
-
       case 'disableActionButton':
         return props.disableActionButton;
-
       case 'columnVisibility':
         return props.columnVisibility;
-      case 'horizontalAlignment':
-        return props.horizontalAlignment;
       case 'linkTarget':
         return props.linkTarget;
       default:
@@ -36,9 +32,6 @@ export const ProgramaticallyHandleProperties = ({
   const getInitialValue = (property, definitionObj) => {
     if (property === 'columnVisibility') {
       return definitionObj?.value ?? `{{true}}`;
-    }
-    if (property === 'horizontalAlignment') {
-      return definitionObj?.value ?? 'left';
     }
     if (property === 'linkTarget') {
       return definitionObj?.value ?? '_blank';
