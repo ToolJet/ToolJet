@@ -9,6 +9,7 @@ import { UsersService } from '@services/users.service';
 import { ConfigService } from '@nestjs/config';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { App } from 'src/entities/app.entity';
+import { DataSource } from 'src/entities/data_source.entity';
 
 @Injectable()
 export class MetadataService {
@@ -88,6 +89,7 @@ export class MetadataService {
     );
     const totalAppCount = await manager.count(App);
     const totalInternalTableCount = await manager.count(InternalTable);
+    const totalDatasourcesByKindCount = await this.fetchDatasourcesByKindCount(manager);
 
     try {
       return await got('https://hub.tooljet.io/telemetry', {
@@ -100,6 +102,7 @@ export class MetadataService {
           total_apps: totalAppCount,
           tooljet_db_table_count: totalInternalTableCount,
           tooljet_version: globalThis.TOOLJET_VERSION,
+          data_sources_count: totalDatasourcesByKindCount,
           deployment_platform: this.configService.get<string>('DEPLOYMENT_PLATFORM'),
         },
       });
@@ -133,5 +136,19 @@ export class MetadataService {
       console.error('Error while connecting to URL https://hub.tooljet.io/updates', error);
     }
     return { latestVersion: latestVersion || installedVersion };
+  }
+
+  async fetchDatasourcesByKindCount(manager: EntityManager) {
+    const dsGroupedByKind = await manager
+      .createQueryBuilder(DataSource, 'data_sources')
+      .select('kind')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('kind')
+      .getRawMany();
+
+    return dsGroupedByKind.reduce((acc, { kind, count }) => {
+      acc[kind] = count;
+      return acc;
+    }, {});
   }
 }

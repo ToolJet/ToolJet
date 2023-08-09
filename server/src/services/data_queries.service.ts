@@ -53,7 +53,7 @@ export class DataQueriesService {
         .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
         .where('data_source.appVersionId = :appVersionId', { appVersionId })
         .where('data_query.app_version_id = :appVersionId', { appVersionId })
-        .orderBy('data_query.createdAt', 'DESC')
+        .orderBy('data_query.updatedAt', 'DESC')
         .getMany();
     });
   }
@@ -231,6 +231,7 @@ export class DataQueriesService {
         } else if (
           dataSource.kind === 'restapi' ||
           dataSource.kind === 'openapi' ||
+          dataSource.kind === 'graphql' ||
           dataSource.kind === 'googlesheets' ||
           dataSource.kind === 'slack' ||
           dataSource.kind === 'zendesk'
