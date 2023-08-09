@@ -56,6 +56,7 @@ const sidebars = {
             'data-sources/amazonses',
             'data-sources/appwrite',
             'data-sources/athena',
+            'data-sources/azureblob',
             'data-sources/baserow',
             'data-sources/bigquery',
             'data-sources/firestore',
