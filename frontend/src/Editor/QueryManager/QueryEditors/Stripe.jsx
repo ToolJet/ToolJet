@@ -186,11 +186,11 @@ class StripeComponent extends React.Component {
 
         {options && !loadingSpec && (
           <div>
-            <div className="row g-2">
-              <div className="col-12">
+            <div className="d-flex g-2">
+              <div className="col-12 form-label">
                 <label className="form-label">{this.props.t('globals.operation', 'Operation')}</label>
               </div>
-              <div className="col stripe-operation-options" style={{ width: '90px', marginTop: 0 }}>
+              <div className="col stripe-operation-options flex-grow-1" style={{ width: '90px', marginTop: 0 }}>
                 <Select
                   options={this.computeOperationSelectionOptions(specJson)}
                   value={currentValue}
@@ -325,13 +325,13 @@ class StripeComponent extends React.Component {
 
                 {requestBody.schema.properties && (
                   <div
-                    className={`request-body-fields ${
+                    className={`request-body-fields d-flex ${
                       Object.keys(requestBody.schema.properties).length === 0 && 'd-none'
                     } `}
                   >
-                    <h5 className="text-heading">{this.props.t('globals.requestBody', 'REQUEST BODY')}</h5>
+                    <h5 className="text-heading form-label">{this.props.t('globals.requestBody', 'REQUEST BODY')}</h5>
                     <div
-                      className={`${
+                      className={`flex-grow-1 ${
                         Object.keys(requestBody.schema.properties).length >= 1 && 'input-group-parent-container'
                       }`}
                     >
