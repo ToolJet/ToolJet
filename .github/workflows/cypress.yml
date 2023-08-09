@@ -42,11 +42,6 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: checking the node version
-        run: |
-          node -v
-          npm -v
-
       - name: Install and build dependencies
         run: |
           npm cache clean --force
