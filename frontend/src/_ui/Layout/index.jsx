@@ -18,8 +18,14 @@ function Layout({ children, switchDarkMode, darkMode }) {
   const admin = currentUserValue?.admin;
   const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
 
-  const { checkForUnsavedChanges, handleDiscardChanges, handleSaveChanges, unSavedModalVisible, nextRoute } =
-    useGlobalDatasourceUnsavedChanges();
+  const {
+    checkForUnsavedChanges,
+    handleDiscardChanges,
+    handleSaveChanges,
+    handleContinueEditing,
+    unSavedModalVisible,
+    nextRoute,
+  } = useGlobalDatasourceUnsavedChanges();
 
   return (
     <div className="row m-auto">
@@ -195,6 +201,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
         confirmButtonType="dangerPrimary"
         cancelButtonType="tertiary"
         backdropClassName="datasource-selection-confirm-backdrop"
+        onCloseIconClick={handleContinueEditing}
       />
     </div>
   );

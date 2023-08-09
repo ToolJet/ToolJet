@@ -57,6 +57,10 @@ const useGlobalDatasourceUnsavedChanges = () => {
     typeof saveAction === 'function' && saveAction();
   };
 
+  const handleContinueEditing = () => {
+    setGlobalDataSourceStatus({ unSavedModalVisible: false, action: null });
+  };
+
   return {
     checkForUnsavedChanges,
     resetUnsavedChangesModal,
@@ -65,6 +69,7 @@ const useGlobalDatasourceUnsavedChanges = () => {
     nextRoute,
     handleActions,
     handleSaveChanges,
+    handleContinueEditing,
   };
 };
 

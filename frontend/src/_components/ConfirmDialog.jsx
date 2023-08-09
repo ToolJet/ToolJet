@@ -16,6 +16,7 @@ export function ConfirmDialog({
   cancelButtonType = 'secondary',
   cancelButtonText = 'Cancel',
   backdropClassName,
+  onCloseIconClick,
 }) {
   darkMode = darkMode ?? (localStorage.getItem('darkMode') === 'true' || false);
   const [showModal, setShow] = useState(show);
@@ -39,7 +40,7 @@ export function ConfirmDialog({
   return (
     <Modal
       show={showModal}
-      onHide={handleClose}
+      onHide={onCloseIconClick ?? handleClose}
       size="sm"
       animation={false}
       centered={true}
@@ -51,7 +52,7 @@ export function ConfirmDialog({
         <Modal.Header>
           <Modal.Title>{title}</Modal.Title>
           <svg
-            onClick={handleClose}
+            onClick={onCloseIconClick ?? handleClose}
             className="cursor-pointer"
             width="33"
             height="33"

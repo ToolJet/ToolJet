@@ -104,7 +104,7 @@ export const List = ({ updateSelectedDatasource }) => {
 
   return (
     <>
-      <div className="list-group">
+      <div style={{ overflow: 'hidden' }}>
         <div className="w-100 datasource-inner-sidebar-wrap" data-cy="datasource-Label">
           {isLoading ? (
             <Skeleton containerClassName="datasource-loader" count={3} height={30} />
@@ -130,7 +130,7 @@ export const List = ({ updateSelectedDatasource }) => {
                   <SearchBox
                     width="248px"
                     callBack={handleSearch}
-                    placeholder={'search for datasources'}
+                    placeholder={'Search for Datasources'}
                     customClass="tj-common-search-input"
                     onClearCallback={handleClose}
                     autoFocus={true}
@@ -138,17 +138,19 @@ export const List = ({ updateSelectedDatasource }) => {
                 )}
               </div>
               {!isLoading && filteredData?.length ? (
-                filteredData?.map((source, idx) => {
-                  return (
-                    <ListItem
-                      dataSource={source}
-                      key={idx}
-                      active={selectedDataSource?.id === source?.id}
-                      onDelete={deleteDataSource}
-                      updateSelectedDatasource={updateSelectedDatasource}
-                    />
-                  );
-                })
+                <div className="list-group">
+                  {filteredData?.map((source, idx) => {
+                    return (
+                      <ListItem
+                        dataSource={source}
+                        key={idx}
+                        active={selectedDataSource?.id === source?.id}
+                        onDelete={deleteDataSource}
+                        updateSelectedDatasource={updateSelectedDatasource}
+                      />
+                    );
+                  })}
+                </div>
               ) : (
                 <EmptyState />
               )}

@@ -19,6 +19,7 @@
 
     .list-group {
         overflow-y: auto;
+        height: calc(100% - 40px);
     }
 
     .datasources-list {
@@ -127,9 +128,13 @@
 }
 
 .datasource-inner-sidebar-wrap {
+    height: 100%;
     .datasources-search {
         width: 240px;
         margin: 0 auto;
+        margin-bottom: 8px;
+        position: sticky;
+        top: 0;
 
         .datasources-search-btn {
             width: 28px;
@@ -171,6 +176,7 @@
 
             .liner {
                 margin-top: 5px;
+                width: 100% !important;
             }
 
             input {
