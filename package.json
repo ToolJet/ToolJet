@@ -48,6 +48,10 @@
     "db:setup:prod": "npm --prefix server run db:setup:prod",
     "db:reset": "npm --prefix server run db:reset",
     "db:drop": "npm --prefix server run db:drop",
+    "plugins:install": "npm --prefix server run plugins:install",
+    "plugins:install:prod": "npm --prefix server run plugins:install:prod",
+    "plugins:uninstall": "npm --prefix server run plugins:uninstall",
+    "plugins:uninstall:prod": "npm --prefix server run plugins:uninstall:prod",
     "deploy": "cp -a frontend/build/. public/",
     "heroku-postbuild": "./heroku-postbuild.sh",
     "prepare": "husky install"
