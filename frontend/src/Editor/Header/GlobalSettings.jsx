@@ -6,7 +6,7 @@ import { HeaderSection } from '@/_ui/LeftSidebar';
 import { LeftSidebarItem } from '../LeftSidebar/SidebarItem';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
-import { getHostURL, resolveReferences, validateName, handleHttpErrorMessages } from '@/_helpers/utils';
+import { getHostURL, resolveReferences, validateName, handleHttpErrorMessages, getWorkspaceId } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import Popover from '@/_ui/Popover';
@@ -66,15 +66,7 @@ export const GlobalSettings = ({
       error: null,
     });
 
-    const error = validateName(
-      value,
-      `App ${field}`,
-      false,
-      !(field === 'slug'),
-      !(field === 'slug'),
-      field === 'slug',
-      true
-    );
+    const error = validateName(value, `App ${field}`, false, !(field === 'slug'), !(field === 'slug'));
 
     if (!_.isEmpty(value) && value !== oldSlug && _.isEmpty(error.errorMsg)) {
       setSlugProgress(true);
@@ -162,7 +154,7 @@ export const GlobalSettings = ({
                 <label>App link</label>
                 <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`}>
                   {!slugProgress ? (
-                    `${getHostURL()}/applications/${slug?.value || oldSlug || ''}`
+                    `${getHostURL()}/${getWorkspaceId()}/apps/${slug?.value || oldSlug || ''}`
                   ) : (
                     <div className="d-flex gap-2">
                       <div class="spinner-border text-secondary workspace-spinner" role="status">

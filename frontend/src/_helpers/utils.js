@@ -957,6 +957,7 @@ export const validateName = (
       };
     }
 
+    /* Add more reserved paths here, which doesn't have /:workspace-id prefix */
     const reservedPaths = [
       'forgot-password',
       'switch-workspace',
@@ -973,10 +974,6 @@ export const validateName = (
       'integrations',
       'login',
       'signup',
-      'workspace-settings',
-      'settings',
-      'global-datasources',
-      'database',
     ];
 
     if (checkReservedWords && reservedPaths.includes(newName)) {

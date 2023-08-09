@@ -73,7 +73,7 @@ const isThisWorkspaceLoginPage = (justLoginPage = false) => {
   const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
   const pathname = location.pathname.replace(subpath, '');
   const pathnames = pathname.split('/').filter((path) => path !== '');
-  return (justLoginPage && pathnames.includes('login')) || (pathnames.length === 2 && pathnames.includes('login'));
+  return (justLoginPage && pathnames[0] === 'login') || (pathnames.length === 2 && pathnames[0] === 'login');
 };
 
 const updateCurrentSession = (newSession) => {
