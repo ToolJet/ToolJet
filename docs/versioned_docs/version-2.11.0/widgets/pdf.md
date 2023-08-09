@@ -8,7 +8,7 @@ title: PDF
 PDF widget can be used to embed the PDF file either by URL or as a Base64 encoded.
 
 :::info
-Checkout **[this](/docs/how-to/loading-image-pdf-from-db.md)** guide to learn how to display images/PDFs using base64 string
+Checkout **[this](/docs/how-to/loading-image-pdf-from-db)** guide to learn how to display images/PDFs using base64 string
 :::
 
 ## Properties
