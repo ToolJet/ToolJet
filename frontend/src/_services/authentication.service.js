@@ -7,7 +7,7 @@ import {
   handleResponseWithoutValidation,
   authHeader,
 } from '@/_helpers';
-import { excludeWorkspaceIdFromURL } from '@/_helpers/utils';
+import { excludeWorkspaceIdFromURL, getWorkspaceId } from '@/_helpers/utils';
 import config from 'config';
 import queryString from 'query-string';
 
@@ -243,7 +243,8 @@ function logout(avoidRedirection = false) {
   return fetch(`${config.apiUrl}/logout`, requestOptions)
     .then(handleResponseWithoutValidation)
     .then(() => {
-      const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
+      const loginPath =
+        (window.public_config?.SUB_PATH || '/') + 'login' + `${getWorkspaceId() ? `/${getWorkspaceId()}` : ''}`;
       if (avoidRedirection) {
         window.location.href = loginPath;
       } else {

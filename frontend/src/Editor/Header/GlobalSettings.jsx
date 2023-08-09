@@ -13,6 +13,8 @@ import Popover from '@/_ui/Popover';
 import { appService } from '@/_services';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { replaceEditorURL } from '@/_helpers/routes';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -36,6 +38,12 @@ export const GlobalSettings = ({
   const [slug, setSlug] = useState({ value: null, error: '' });
   const [slugProgress, setSlugProgress] = useState(false);
   const [isSlugUpdated, setSlugUpdatedState] = useState(false);
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
 
   const coverStyles = {
     position: 'fixed',
@@ -105,7 +113,7 @@ export const GlobalSettings = ({
   }, 500);
 
   const popoverContent = (
-    <div id="global-settings-popover" className={cx({ 'theme-dark': darkMode })}>
+    <div id="global-settings-popover" className={cx({ 'theme-dark': darkMode, disabled: isVersionReleased })}>
       <div bsPrefix="global-settings-popover">
         <HeaderSection darkMode={darkMode}>
           <HeaderSection.PanelHeader title="Global settings" />
