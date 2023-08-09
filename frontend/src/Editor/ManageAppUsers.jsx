@@ -151,12 +151,11 @@ class ManageAppUsersComponent extends React.Component {
           this.setState({
             newSlug: {
               value,
-              error: error?.error,
+              error,
             },
             isSlugVerificationInProgress: false,
             isSlugUpdated: false,
           });
-          handleHttpErrorMessages(error, 'workspace');
         });
     } else {
       this.setState({

@@ -245,7 +245,10 @@ export class AppsService {
       }
       return await catchDbException(async () => {
         return await manager.update(App, appId, updatableParams);
-      }, [{ dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' }]);
+      }, [
+        { dbConstraint: DataBaseConstraints.APP_NAME_UNIQUE, message: 'This app name is already taken.' },
+        { dbConstraint: DataBaseConstraints.APP_SLUG_UNIQUE, message: 'This app slug is already taken.' },
+      ]);
     }, manager);
   }
 

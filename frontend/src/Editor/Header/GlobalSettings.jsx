@@ -6,7 +6,7 @@ import { HeaderSection } from '@/_ui/LeftSidebar';
 import { LeftSidebarItem } from '../LeftSidebar/SidebarItem';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
-import { getHostURL, resolveReferences, validateName, handleHttpErrorMessages, getWorkspaceId } from '@/_helpers/utils';
+import { getHostURL, resolveReferences, validateName, getWorkspaceId } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import Popover from '@/_ui/Popover';
@@ -85,9 +85,8 @@ export const GlobalSettings = ({
         .catch(({ error }) => {
           setSlug({
             value,
-            error: error?.error,
+            error,
           });
-          handleHttpErrorMessages(error, 'workspace');
           setSlugProgress(false);
           setSlugUpdatedState(false);
         });
