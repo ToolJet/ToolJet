@@ -276,6 +276,7 @@ actions.unsetPageVariable('pageVar')`
     cy.waitForAutoSave();
     query("run");
 
+    openEditorSidebar("button1");
     selectEvent("On Click", "Run query", 1);
     cy.get('[data-cy="query-selection-field"]').type("runpy1{enter}");
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();

@@ -259,7 +259,7 @@ describe("RunJS", () => {
       "actions.showAlert('success', 'alert from runjs');"
     );
     query("run");
-
+    openEditorSidebar("button1");
     selectEvent("On Click", "Run query", 1);
     cy.get('[data-cy="query-selection-field"]').type("runjs1{enter}");
     cy.get(commonWidgetSelector.draggableWidget("button1")).click();
