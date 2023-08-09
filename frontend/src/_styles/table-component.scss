@@ -3,12 +3,19 @@
 
 
 .jet-table.table-component{
+    padding: 8px;
+    &.jet-table {
+        background-color: var(--base) !important;
+    }
     background-color: var(--base) !important; 
     .card-footer,.card{
       background-color:var(--base) !important;
     }
     .card{
         border: 1px solid var(--slate3) !important;
+    }
+    .card-footer{
+        padding: 0.75rem;
     }
     
 }
