@@ -575,7 +575,7 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
       }
 
       case 'switch-page': {
-        _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables)); // arpit [switchPage]
+        _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
         return Promise.resolve();
       }
     }
@@ -601,7 +601,7 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
         },
       },
     });
-    runQuery(_ref, queryId, queryName, true, mode, parameters); //arpit [runQuery]
+    runQuery(_ref, queryId, queryName, true, mode, parameters);
   }
 
   if (eventName === 'onCalendarEventSelect') {
@@ -1314,7 +1314,8 @@ const updateNewComponents = (pageId, appDefinition, newComponents, updateAppDefi
     );
     newAppDefinition.pages[pageId].components[newComponent.id] = newComponent;
   });
-  updateAppDefinition(newAppDefinition, { addComponents: true });
+
+  updateAppDefinition(newAppDefinition, { componentDefinitionChanged: true });
 };
 
 export const cloneComponents = (
@@ -1352,13 +1353,13 @@ export const cloneComponents = (
       isCut,
     };
   }
+
   if (isCloning) {
     addComponents(currentPageId, appDefinition, updateAppDefinition, undefined, newComponentObj);
     toast.success('Component cloned succesfully');
   } else if (isCut) {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
-    removeSelectedComponent(currentPageId, newDefinition, selectedComponents);
-    updateAppDefinition(newDefinition);
+    removeSelectedComponent(currentPageId, newDefinition, selectedComponents, updateAppDefinition);
   } else {
     navigator.clipboard.writeText(JSON.stringify(newComponentObj));
     toast.success('Component copied succesfully');
@@ -1430,7 +1431,6 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
 };
 
 export const addComponents = (pageId, appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
-  console.log({ pageId, newComponentObj });
   const finalComponents = [];
   let parentComponent = undefined;
   const { isCloning, isCut, newComponents: pastedComponent = [] } = newComponentObj;
