@@ -104,7 +104,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
             style={{ height: '315px', overflowY: 'auto' }}
           >
             <div className="color-slate9 px-3 pb-2 w-100">
-              <small>Filter By</small>
+              <small data-cy="label-filter-by">Filter By</small>
             </div>
             <div className={`tj-list-btn mx-1 ${selectedDataSources.length ? 'd-flex' : ''}`}>
               <MenuButton
@@ -128,7 +128,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
             </div>
             <div class="border-bottom mt-1"></div>
             <div className="color-slate9 px-3 pb-2 pt-1 w-100">
-              <small>Sort By</small>
+              <small data-cy="label-sort-by">Sort By</small>
             </div>
             <MenuButton
               id="name"
@@ -207,6 +207,7 @@ const FilterandSortPopup = ({ darkMode, selectedDataSources, onFilterDatasources
           style={{ ...(showMenu && { background: 'var(--slate5)' }) }}
           data-tooltip-id="tooltip-for-open-filter"
           data-tooltip-content="Show sort/filter"
+          data-cy={`query-filter-button`}
         >
           <Filter width="13" height="13" fill="var(--slate12)" />
           {selectedDataSources.length > 0 && <div className="notification-dot"></div>}

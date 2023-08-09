@@ -146,6 +146,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
                   setSearchTermForFilters('');
                   setShowSearchBox(false);
                 }}
+                data-cy={`query-search-close-button`}
               >
                 Close
               </ButtonSolid>

@@ -58,7 +58,9 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
         </a>
       </p>
       <div>
-        <label className="form-label">Default</label>
+        <label className="form-label" data-cy={`landing-page-label-default`}>
+          Default
+        </label>
         <div className="query-datasource-card-container d-flex justify-content-between mb-3 mt-2">
           {staticDataSources.map((source) => {
             return (
@@ -78,10 +80,15 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
           })}
         </div>
         <div className="d-flex d-flex justify-content-between">
-          <label className="form-label py-1" style={{ width: 'auto' }}>
+          <label className="form-label py-1" style={{ width: 'auto' }} data-cy={`label-avilable-ds`}>
             {`Available Datasources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
           </label>
-          <ButtonSolid size="sm" variant="ghostBlue" onClick={handleAddClick}>
+          <ButtonSolid
+            size="sm"
+            variant="ghostBlue"
+            onClick={handleAddClick}
+            data-cy={`landing-page-add-new-ds-button`}
+          >
             <Plus style={{ height: '16px' }} fill="var(--indigo9)" />
             Add new
           </ButtonSolid>
