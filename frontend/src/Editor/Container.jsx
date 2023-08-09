@@ -15,9 +15,12 @@ import Spinner from '@/_ui/Spinner';
 import { useHotkeys } from 'react-hotkeys-hook';
 const produce = require('immer').default;
 import { addComponents, addNewWidgetToTheEditor } from '@/_helpers/appUtils';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
+
+const NO_OF_GRIDS = 43;
 
 export const Container = ({
   canvasWidth,
@@ -27,7 +30,6 @@ export const Container = ({
   onEvent,
   appDefinition,
   appDefinitionChanged,
-  currentState,
   onComponentOptionChanged,
   onComponentOptionsChanged,
   appLoading,
@@ -42,14 +44,16 @@ export const Container = ({
   sideBarDebugger,
   currentPageId,
 }) => {
+  const gridWidth = canvasWidth / NO_OF_GRIDS;
   const styles = {
     width: currentLayout === 'mobile' ? deviceWindowWidth : '100%',
     maxWidth: `${canvasWidth}px`,
-    backgroundSize: `${canvasWidth / 43}px 10px`,
+    backgroundSize: `${gridWidth}px 10px`,
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const components = appDefinition.pages[currentPageId]?.components ?? {};
+  const currentState = useCurrentState();
   const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
     (state) => ({
       appVersionsId: state?.editingVersion?.id,
@@ -317,10 +321,16 @@ export const Container = ({
         enableReleasedVersionPopupState();
         return;
       }
-      const deltaWidth = d.width;
+
+      const deltaWidth = Math.round(d.width / gridWidth) * gridWidth; //rounding of width of element to nearest mulitple of gridWidth
       const deltaHeight = d.height;
 
+      if (deltaWidth === 0 && deltaHeight === 0) {
+        return;
+      }
+
       let { x, y } = position;
+      x = Math.round(x / gridWidth) * gridWidth;
 
       const defaultData = {
         top: 100,
@@ -334,7 +344,12 @@ export const Container = ({
       const boundingRect = document.getElementsByClassName('canvas-area')[0].getBoundingClientRect();
       const canvasWidth = boundingRect?.width;
 
-      width = Math.round(width + (deltaWidth * 43) / canvasWidth); // convert the width delta to percentage
+      //round the width to nearest multiple of gridwidth before converting to %
+      const currentWidth = (canvasWidth * width) / NO_OF_GRIDS;
+      let newWidth = currentWidth + deltaWidth;
+      newWidth = Math.round(newWidth / gridWidth) * gridWidth;
+      width = (newWidth * NO_OF_GRIDS) / canvasWidth;
+
       height = height + deltaHeight;
 
       top = y;
@@ -360,7 +375,7 @@ export const Container = ({
       setBoxes(newBoxes);
       updateCanvasHeight(newBoxes);
     },
-    [setBoxes, currentLayout, boxes, enableReleasedVersionPopupState, isVersionReleased, updateCanvasHeight]
+    [setBoxes, currentLayout, boxes, enableReleasedVersionPopupState, isVersionReleased, updateCanvasHeight, gridWidth]
   );
 
   const paramUpdated = useCallback(
@@ -611,7 +626,6 @@ export const Container = ({
               onComponentOptionChanged={onComponentOptionChanged}
               onComponentOptionsChanged={onComponentOptionsChanged}
               key={key}
-              currentState={currentState}
               onResizeStop={onResizeStop}
               onDragStop={onDragStop}
               paramUpdated={paramUpdated}

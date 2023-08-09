@@ -9,8 +9,11 @@ import { ConfigHandle } from './ConfigHandle';
 import { Rnd } from 'react-rnd';
 import { resolveWidgetFieldValue } from '@/_helpers/utils';
 import ErrorBoundary from './ErrorBoundary';
+import { useCurrentState } from '@/_stores/currentStateStore';
 import { useEditorStore } from '@/_stores/editorStore';
 import { shallow } from 'zustand/shallow';
+
+const NO_OF_GRIDS = 43;
 
 const resizerClasses = {
   topRight: 'top-right',
@@ -75,7 +78,6 @@ export const DraggableBox = React.memo(
     inCanvas,
     onEvent,
     onComponentClick,
-    currentState,
     onComponentOptionChanged,
     onComponentOptionsChanged,
     onResizeStop,
@@ -118,6 +120,7 @@ export const DraggableBox = React.memo(
       }),
       shallow
     );
+    const currentState = useCurrentState();
 
     const [{ isDragging }, drag, preview] = useDrag(
       () => ({

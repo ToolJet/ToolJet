@@ -17,7 +17,6 @@ import { shallow } from 'zustand/shallow';
 
 export default function EditorHeader({
   darkMode,
-  currentState,
   globalSettingsChanged,
   appDefinition,
   toggleAppMaintenance,
@@ -84,7 +83,6 @@ export default function EditorHeader({
                 <div className="row p-2">
                   <div className="col global-settings-app-wrapper">
                     <GlobalSettings
-                      currentState={currentState}
                       globalSettingsChanged={globalSettingsChanged}
                       globalSettings={appDefinition.globalSettings}
                       darkMode={darkMode}

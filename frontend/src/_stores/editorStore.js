@@ -9,6 +9,7 @@ const ACTIONS = {
   TOGGLE_CURRENT_LAYOUT: 'TOGGLE_CURRENT_LAYOUT',
   SET_SELECTION_IN_PROGRESS: 'SET_SELECTION_IN_PROGRESS',
   SET_SELECTED_COMPONENTS: 'SET_SELECTED_COMPONENTS',
+  SET_IS_EDITOR_ACTIVE: 'SET_IS_EDITOR_ACTIVE',
 };
 
 const initialState = {
@@ -17,6 +18,7 @@ const initialState = {
   hoveredComponent: '',
   selectionInProgress: false,
   selectedComponents: [],
+  isEditorActive: false,
 };
 
 export const useEditorStore = create(
@@ -38,6 +40,7 @@ export const useEditorStore = create(
             type: ACTIONS.TOGGLE_CURRENT_LAYOUT,
             currentLayout,
           }),
+        setIsEditorActive: (isEditorActive) => set(() => ({ isEditorActive })),
         setHoveredComponent: (hoveredComponent) =>
           set({ hoveredComponent }, false, {
             type: ACTIONS.SET_HOVERED_COMPONENT,
