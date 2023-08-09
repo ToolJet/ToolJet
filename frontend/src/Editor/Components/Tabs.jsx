@@ -2,6 +2,10 @@ import React, { useRef, useState, useEffect } from 'react';
 import { SubCustomDragLayer } from '../SubCustomDragLayer';
 import { SubContainer } from '../SubContainer';
 import { resolveReferences, resolveWidgetFieldValue, isExpectedDataType } from '@/_helpers/utils';
+import config from 'config';
+import Tab from '@mui/material/Tab';
+import MUITabs from '@mui/material/Tabs';
+import Box from '@mui/material/Box';
 
 export const Tabs = function Tabs({
   id,
@@ -67,6 +71,7 @@ export const Tabs = function Tabs({
 
   const parentRef = useRef(null);
   const [currentTab, setCurrentTab] = useState(parsedDefaultTab);
+  const [currentTabIndex, setCurrentTabIndex] = useState(parsedTabs.findIndex((tab) => tab.id === parsedDefaultTab));
   const [bgColor, setBgColor] = useState('#fff');
 
   useEffect(() => {
@@ -83,6 +88,10 @@ export const Tabs = function Tabs({
     setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : darkMode ? '#324156' : '#fff');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState, currentTab]);
+
+  // useEffect(() => {
+  //   setCurrentTab(parsedTabs[currentTabIndex]);
+  // }, [currentTabIndex, parsedTabs]);
 
   function computeTabVisibility(componentId, id) {
     let tabVisibility = 'hidden';
@@ -134,77 +143,158 @@ export const Tabs = function Tabs({
   );
 
   return (
-    <div
-      data-disabled={parsedDisabledState}
-      className="jet-tabs card"
-      style={{
-        height,
-        display: parsedWidgetVisibility ? 'flex' : 'none',
-        backgroundColor: bgColor,
-        boxShadow,
-      }}
-      data-cy={dataCy}
-    >
-      <ul
-        className="nav nav-tabs"
-        data-bs-toggle="tabs"
-        style={{
-          zIndex: 1,
-          display: parsedHideTabs && 'none',
-          backgroundColor: darkMode ? '#324156' : '#fff',
-          margin: '-1px',
-        }}
-      >
-        {parsedTabs.map((tab) => (
-          <li
-            className="nav-item"
-            style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && '33.3%' }}
-            onClick={() => {
-              !tab?.disabled && setCurrentTab(tab.id);
-              !tab?.disabled && setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
+    <React.Fragment>
+      {config.UI_LIB === 'tooljet' && (
+        <div
+          data-disabled={parsedDisabledState}
+          className="jet-tabs card"
+          style={{
+            height,
+            display: parsedWidgetVisibility ? 'flex' : 'none',
+            backgroundColor: bgColor,
+            boxShadow,
+          }}
+          data-cy={dataCy}
+        >
+          <ul
+            className="nav nav-tabs"
+            data-bs-toggle="tabs"
+            style={{
+              zIndex: 1,
+              display: parsedHideTabs && 'none',
+              backgroundColor: darkMode ? '#324156' : '#fff',
+              margin: '-1px',
             }}
-            key={tab.id}
           >
-            <a
-              className={`nav-link ${currentTab == tab.id ? 'active' : ''}`}
-              style={{
-                color: currentTab == tab.id && parsedHighlightColor,
-                borderBottom: currentTab == tab.id && `1px solid ${parsedHighlightColor}`,
-                overflowWrap: 'anywhere',
-              }}
-              ref={(el) => {
-                if (el && currentTab == tab.id) {
-                  el.style.setProperty('color', parsedHighlightColor, 'important');
+            {parsedTabs.map((tab) => (
+              <li
+                className="nav-item"
+                style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && '33.3%' }}
+                onClick={() => {
+                  !tab?.disabled && setCurrentTab(tab.id);
+                  !tab?.disabled && setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
+                }}
+                key={tab.id}
+              >
+                <a
+                  className={`nav-link ${currentTab == tab.id ? 'active' : ''}`}
+                  style={{
+                    color: currentTab == tab.id && parsedHighlightColor,
+                    borderBottom: currentTab == tab.id && `1px solid ${parsedHighlightColor}`,
+                    overflowWrap: 'anywhere',
+                  }}
+                  ref={(el) => {
+                    if (el && currentTab == tab.id) {
+                      el.style.setProperty('color', parsedHighlightColor, 'important');
+                    }
+                  }}
+                >
+                  {tab.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+          {parsedTabs.map((tab) => (
+            <div
+              className="tab-content"
+              ref={(newCurrent) => {
+                if (currentTab === tab.id) {
+                  parentRef.current = newCurrent;
                 }
               }}
+              id={`${id}-${tab.id}`}
+              key={tab.id}
             >
-              {tab.title}
-            </a>
-          </li>
-        ))}
-      </ul>
-      {parsedTabs.map((tab) => (
-        <div
-          className="tab-content"
-          ref={(newCurrent) => {
-            if (currentTab === tab.id) {
-              parentRef.current = newCurrent;
-            }
-          }}
-          id={`${id}-${tab.id}`}
-          key={tab.id}
-        >
-          {parsedRenderOnlyActiveTab ? tab.id === currentTab && renderTabContent(id, tab) : renderTabContent(id, tab)}
-          {tab.id === currentTab && (
-            <SubCustomDragLayer
-              parent={`${id}-${tab.id}`}
-              parentRef={parentRef}
-              currentLayout={containerProps.currentLayout}
-              containerCanvasWidth={width}
-            />
-          )}
+              {parsedRenderOnlyActiveTab
+                ? tab.id === currentTab && renderTabContent(id, tab)
+                : renderTabContent(id, tab)}
+              {tab.id === currentTab && (
+                <SubCustomDragLayer
+                  parent={`${id}-${tab.id}`}
+                  parentRef={parentRef}
+                  currentLayout={containerProps.currentLayout}
+                  containerCanvasWidth={width}
+                />
+              )}
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+      )}
+      {config.UI_LIB === 'mui' && (
+        <Box
+          className="jet-tabs card"
+          data-disabled={parsedDisabledState}
+          style={{
+            height,
+            display: parsedWidgetVisibility ? 'flex' : 'none',
+            backgroundColor: bgColor,
+            boxShadow,
+          }}
+          sx={{ width: '100%', typography: 'body1' }}
+          data-cy={dataCy}
+        >
+          <Box
+            sx={{ width: '100%', typography: 'body1', borderBottom: 1, borderColor: 'divider' }}
+            style={{
+              zIndex: 1,
+              display: parsedHideTabs && 'none',
+              backgroundColor: darkMode ? '#324156' : '#fff',
+              margin: '-1px',
+            }}
+          >
+            <MUITabs
+              sx={{ width: '100%', typography: 'body1', borderBottom: 1, borderColor: 'divider' }}
+              selectionFollowsFocus
+              onChange={(event, value) => {
+                const tab = parsedTabs[value];
+                !tab?.disabled && setCurrentTab(tab.id);
+                !tab?.disabled && setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
+              }}
+              value={parsedTabs.findIndex((tab) => tab.id === currentTab)}
+            >
+              {parsedTabs.map((tab) => (
+                <Tab
+                  style={{
+                    color: currentTab == tab.id && parsedHighlightColor,
+                    overflowWrap: 'anywhere',
+                  }}
+                  ref={(el) => {
+                    if (el && currentTab == tab.id) {
+                      el.style.setProperty('color', parsedHighlightColor, 'important');
+                    }
+                  }}
+                  key={tab.id}
+                  label={tab.title}
+                />
+              ))}
+            </MUITabs>
+          </Box>
+          {parsedTabs.map((tab) => (
+            <div
+              role="tabpanel"
+              ref={(newCurrent) => {
+                if (currentTab === tab.id) {
+                  parentRef.current = newCurrent;
+                }
+              }}
+              id={`${id}-${tab.id}`}
+              key={tab.id}
+            >
+              {parsedRenderOnlyActiveTab
+                ? tab.id === currentTab && renderTabContent(id, tab)
+                : renderTabContent(id, tab)}
+              {tab.id === currentTab && (
+                <SubCustomDragLayer
+                  parent={`${id}-${tab.id}`}
+                  parentRef={parentRef}
+                  currentLayout={containerProps.currentLayout}
+                  containerCanvasWidth={width}
+                />
+              )}
+            </div>
+          ))}
+        </Box>
+      )}
+    </React.Fragment>
   );
 };
