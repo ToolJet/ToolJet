@@ -89,10 +89,6 @@ export const Tabs = function Tabs({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState, currentTab]);
 
-  // useEffect(() => {
-  //   setCurrentTab(parsedTabs[currentTabIndex]);
-  // }, [currentTabIndex, parsedTabs]);
-
   function computeTabVisibility(componentId, id) {
     let tabVisibility = 'hidden';
     if (id !== currentTab) {
