@@ -231,6 +231,7 @@ export class DataQueriesService {
         } else if (
           dataSource.kind === 'restapi' ||
           dataSource.kind === 'openapi' ||
+          dataSource.kind === 'graphql' ||
           dataSource.kind === 'googlesheets' ||
           dataSource.kind === 'slack' ||
           dataSource.kind === 'zendesk'
