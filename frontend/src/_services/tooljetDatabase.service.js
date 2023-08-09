@@ -4,7 +4,6 @@ const tooljetAdapter = new HttpClient();
 
 function findOne(headers, tableId, query = '') {
   tooljetAdapter.headers = { ...tooljetAdapter.headers, ...headers };
-  console.log(tooljetAdapter.headers);
   return tooljetAdapter.get(`/tooljet_db/proxy/${tableId}?${query}`, headers);
 }
 

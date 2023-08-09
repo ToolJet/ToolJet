@@ -180,6 +180,8 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
 
   const handleTableNameSelect = (tableId) => {
     setSelectedTableId(tableId);
+    const { table_name: tableName } = tables.find((t) => t.table_id === tableId);
+    tableName && setSelectedTableName(tableName);
 
     optionchanged('organization_id', organizationId);
     optionchanged('table_id', tableId);
