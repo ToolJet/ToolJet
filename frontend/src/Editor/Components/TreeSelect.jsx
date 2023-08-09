@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import CheckboxTree from 'react-checkbox-tree';
 // eslint-disable-next-line import/no-unresolved
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 import { isExpectedDataType } from '@/_helpers/utils.js';
+import config from 'config';
+import { TreeItem, TreeView } from '@mui/lab';
+import { Checkbox } from '@mui/material';
 
 export const TreeSelect = ({ height, properties, styles, setExposedVariable, fireEvent, darkMode, dataCy }) => {
   const { label } = properties;
@@ -84,36 +87,102 @@ export const TreeSelect = ({ height, properties, styles, setExposedVariable, fir
     setExpanded(expanded);
   };
 
+  const handleToggle = (event, nodeIds) => {
+    setExpanded(nodeIds);
+  };
+
+  const handleSelect = (event, nodeIds) => {
+    setChecked(nodeIds);
+  };
+  console.log('expanded', expanded);
+  console.log('checked', checked);
+
+  const TreeMenu = useCallback((menu) => {
+    return menu.map((m) => {
+      if (m.children?.length) {
+        return (
+          <TreeItem
+            key={m.value.toString()}
+            nodeId={m.value.toString()}
+            label={
+              <div>
+                <Checkbox checked={checked} />
+                {m.value}
+              </div>
+            }
+          >
+            {TreeMenu(m.children)}
+          </TreeItem>
+        );
+      } else
+        return (
+          <TreeItem
+            key={m.value.toString()}
+            nodeId={m.value.toString()}
+            label={
+              <div>
+                <Checkbox checked={checked} />
+                {m.value}
+              </div>
+            }
+          />
+        );
+    });
+  }, []);
+
+  console.log(data);
   return (
-    <div
-      className="custom-checkbox-tree"
-      data-disabled={disabledState}
-      style={{
-        maxHeight: height,
-        display: visibility ? '' : 'none',
-        color: textColor,
-        accentColor: checkboxColor,
-        boxShadow,
-      }}
-      data-cy={dataCy}
-    >
-      <div
-        className="card-title"
-        style={{ marginBottom: '0.5rem' }}
-      >
-        {label}
-      </div>
-      <CheckboxTree
-        nodes={data}
-        checked={checked}
-        expanded={expanded}
-        showNodeIcon={false}
-        onCheck={onCheck}
-        onExpand={onExpand}
-        nativeCheckboxes
-        checkModel="all"
-        disabled={disabledState}
-      />
-    </div>
+    <>
+      {config.UI_LIB === 'tooljet' && (
+        <div
+          className="custom-checkbox-tree"
+          data-disabled={disabledState}
+          style={{
+            maxHeight: height,
+            display: visibility ? '' : 'none',
+            color: textColor,
+            accentColor: checkboxColor,
+            boxShadow,
+          }}
+          data-cy={dataCy}
+        >
+          <div
+            className="card-title"
+            style={{ marginBottom: '0.5rem' }}
+          >
+            {label}
+          </div>
+          <CheckboxTree
+            nodes={data}
+            checked={checked}
+            expanded={expanded}
+            showNodeIcon={false}
+            onCheck={onCheck}
+            onExpand={onExpand}
+            nativeCheckboxes
+            checkModel="all"
+            disabled={disabledState}
+          />
+        </div>
+      )}
+      {config.UI_LIB === 'mui' && (
+        <>
+          {data && expanded && checked && (
+            <TreeView
+              aria-label="controlled"
+              defaultCollapseIcon={<span> - </span>}
+              defaultExpandIcon={<span> + </span>}
+              expanded={expanded}
+              selected={checked}
+              onNodeToggle={handleToggle}
+              onNodeSelect={handleSelect}
+              multiSelect
+            >
+              {TreeMenu(data)}
+            </TreeView>
+          )}
+        </>
+      )}
+    </>
   );
 };
