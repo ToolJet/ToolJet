@@ -31,7 +31,7 @@ export class DataSourcesService {
   ) {}
 
   async all(query: object, user: User, scope: DataSourceScopes = DataSourceScopes.LOCAL): Promise<DataSource[]> {
-    const { app_version_id: appVersionId, environment_id: environmentId }: any = query;
+    const { app_version_id: appVersionId, environment_id: environmentId, includeStaticSources }: any = query;
     let selectedEnvironmentId = environmentId;
     const { organizationId, id } = user;
     const isAdmin = await this.usersService.hasGroup(user, 'admin', organizationId);
@@ -50,8 +50,7 @@ export class DataSourcesService {
         .leftJoinAndSelect('plugin.iconFile', 'iconFile')
         .leftJoinAndSelect('plugin.manifestFile', 'manifestFile')
         .leftJoinAndSelect('plugin.operationsFile', 'operationsFile')
-        .where('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId })
-        .andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC });
+        .where('data_source_options.environmentId = :selectedEnvironmentId', { selectedEnvironmentId });
 
       if ((!isSuperAdmin(user) || !isAdmin) && scope === DataSourceScopes.GLOBAL) {
         if (!canPerformCreateOrDelete) {
@@ -84,6 +83,10 @@ export class DataSourcesService {
         query
           .andWhere('data_source.appVersionId = :appVersionId', { appVersionId })
           .andWhere('data_source.scope = :scope', { scope: DataSourceScopes.LOCAL });
+      }
+
+      if (includeStaticSources === 'false') {
+        query.andWhere('data_source.type != :staticType', { staticType: DataSourceTypes.STATIC });
       }
 
       const result = await query.getMany();

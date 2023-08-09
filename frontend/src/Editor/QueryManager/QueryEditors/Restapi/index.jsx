@@ -133,7 +133,7 @@ class Restapi extends React.Component {
     const currentValue = { label: options.method?.toUpperCase(), value: options.method };
 
     return (
-      <div className={`d-flex`}>
+      <div className={`${this.props?.queryName !== 'workflowNode' && 'd-flex'}`}>
         <div className="form-label">Request</div>
         <div className="flex-grow-1">
           <div className="rest-api-methods-select-element-container">

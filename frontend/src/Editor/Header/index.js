@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AppLogo from '@/_components/AppLogo';
-import { get } from 'lodash';
 import { GlobalSettings } from './GlobalSettings';
 import EditAppName from './EditAppName';
 import HeaderActions from './HeaderActions';

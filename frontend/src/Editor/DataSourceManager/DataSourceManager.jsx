@@ -993,12 +993,12 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
       element = document.querySelector('.input-icon .form-control');
     }
 
-    if (searchText) {
+    if (searchText && element) {
       element.style.paddingLeft = '0.5rem';
     }
 
     return () => {
-      element.style.paddingLeft = '2.5rem';
+      element && (element.style.paddingLeft = '2.5rem');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);

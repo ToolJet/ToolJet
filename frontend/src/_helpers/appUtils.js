@@ -8,9 +8,10 @@ import {
   computeComponentName,
   generateAppActions,
   loadPyodide,
+  executeWorkflow,
   isQueryRunnable,
 } from '@/_helpers/utils';
-import { dataqueryService, datasourceService } from '@/_services';
+import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -32,6 +33,7 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import SolidIcon from '../_ui/Icon/SolidIcons';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -829,6 +831,13 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
       );
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit');
+    } else if (query.kind === 'workflows') {
+      queryExecutionPromise = executeWorkflow(
+        _ref,
+        query.options.workflowId,
+        query.options.blocking,
+        query.options?.params
+      );
     } else {
       queryExecutionPromise = dataqueryService.preview(
         query,
@@ -969,6 +978,13 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
         query.options,
         currentSessionValue?.current_organization_id,
         getCurrentState()
+      );
+    } else if (query.kind === 'workflows') {
+      queryExecutionPromise = executeWorkflow(
+        _self,
+        query.options.workflowId,
+        query.options.blocking,
+        query.options?.params
       );
     } else {
       queryExecutionPromise = dataqueryService.run(
@@ -1202,6 +1218,7 @@ export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, s
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   if (key === 'tooljetdb') return <RunTooljetDbIcon />;
   if (key === 'runpy') return <RunPyIcon />;
+  if (key === 'workflows') return <SolidIcon name="workflows" fill="#3D63DC" />;
   const Icon = allSvgs[key];
 
   if (!Icon) return <></>;

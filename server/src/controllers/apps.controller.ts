@@ -49,7 +49,7 @@ export class AppsController {
 
   @UseGuards(JwtAuthGuard, AppCountGuard)
   @Post()
-  async create(@User() user, @Body('icon') icon: string) {
+  async create(@User() user, @Body('icon') icon: string, @Body('type') type: string) {
     const ability = await this.appsAbilityFactory.appsActions(user);
 
     if (!ability.can('createApp', App)) {
@@ -57,7 +57,7 @@ export class AppsController {
     }
 
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await this.appsService.create(user, manager);
+      const app = await this.appsService.create(user, manager, type);
 
       const appUpdateDto = new AppUpdateDto();
       appUpdateDto.slug = app.id;
@@ -167,6 +167,7 @@ export class AppsController {
       is_maintenance_on: app.isMaintenanceOn,
       name: app.name,
       slug: app.slug,
+      id: app.id,
     };
   }
 
@@ -250,19 +251,20 @@ export class AppsController {
     const page = query.page;
     const folderId = query.folder;
     const searchKey = query.searchKey || '';
+    const type = query.type ?? 'front-end';
 
     let apps = [];
     let totalFolderCount = 0;
 
-    if (folderId) {
+    if (folderId && folderId !== '') {
       const folder = await this.foldersService.findOne(folderId);
-      apps = await this.foldersService.getAppsFor(user, folder, page, searchKey);
+      apps = await this.foldersService.getAppsFor(user, folder, page, searchKey, type);
       totalFolderCount = await this.foldersService.userAppCount(user, folder, searchKey);
     } else {
-      apps = await this.appsService.all(user, page, searchKey);
+      apps = await this.appsService.all(user, page, searchKey, type);
     }
 
-    const totalCount = await this.appsService.count(user, searchKey);
+    const totalCount = await this.appsService.count(user, searchKey, type, 'controller');
 
     const totalPageCount = folderId ? totalFolderCount : totalCount;
 
@@ -279,6 +281,20 @@ export class AppsController {
     };
 
     return decamelizeKeys(response);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/workflows')
+  async fetchWorkflows(@User() user, @Param('id') id) {
+    const ability = await this.appsAbilityFactory.appsActions(user);
+
+    if (!ability.can('updateVersions', App)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    const result = await this.appsService.getWorkflows();
+
+    return decamelizeKeys({ workflows: result });
   }
 
   // deprecated

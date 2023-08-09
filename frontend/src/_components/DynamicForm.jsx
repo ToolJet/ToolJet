@@ -35,6 +35,7 @@ const DynamicForm = ({
   computeSelectStyles = false,
   currentAppEnvironmentId,
   setDefaultOptions,
+  disableMenuPortal = false,
   onBlur,
   layout = 'vertical',
 }) => {
@@ -53,7 +54,7 @@ const DynamicForm = ({
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
-      setDefaultOptions(schema?.defaults);
+      typeof setDefaultOptions === 'function' && setDefaultOptions(schema?.defaults);
       optionsChanged(schema?.defaults ?? {});
     }
 
@@ -208,7 +209,7 @@ const DynamicForm = ({
           value: options?.[key]?.value || options?.[key],
           onChange: (value) => optionchanged(key, value),
           width: width || '100%',
-          useMenuPortal: queryName ? true : false,
+          useMenuPortal: disableMenuPortal ? false : queryName ? true : false,
           styles: computeSelectStyles ? computeSelectStyles('100%') : {},
           useCustomStyles: computeSelectStyles ? true : false,
         };

@@ -28,6 +28,7 @@ export class AppConfigService {
       'TOOLJET_HOST',
       'SUB_PATH',
       'ENABLE_MARKETPLACE_FEATURE',
+      'ENABLE_WORKFLOWS_FEATURE',
       'WHITE_LABEL_LOGO',
       'WHITE_LABEL_TEXT',
       'WHITE_LABEL_FAVICON',

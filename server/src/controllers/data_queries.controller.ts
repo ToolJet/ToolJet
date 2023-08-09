@@ -94,12 +94,18 @@ export class DataQueriesController {
     let dataSource: DataSource;
     let app: App;
 
-    if (!dataSourceId && !(kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy')) {
+    if (
+      !dataSourceId &&
+      !(kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy' || kind === 'workflows')
+    ) {
       throw new BadRequestException();
     }
 
     return dbTransactionWrap(async (manager: EntityManager) => {
-      if (!dataSourceId && (kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy')) {
+      if (
+        !dataSourceId &&
+        (kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy' || kind === 'workflows')
+      ) {
         dataSource = await this.dataSourcesService.findDefaultDataSource(
           kind,
           appVersionId,
@@ -156,7 +162,7 @@ export class DataQueriesController {
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(@User() user, @Param('id') dataQueryId, @Body() updateDataQueryDto: UpdateDataQueryDto) {
-    const { name, options } = updateDataQueryDto;
+    const { name, options, data_source_id } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
     const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.app.id);
@@ -180,7 +186,7 @@ export class DataQueriesController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.dataQueriesService.update(dataQueryId, name, options);
+    const result = await this.dataQueriesService.update(dataQueryId, name, options, data_source_id);
     const decamelizedQuery = decamelizeKeys({ ...dataQuery, ...result });
     decamelizedQuery['options'] = result.options;
     return decamelizedQuery;
@@ -223,7 +229,7 @@ export class DataQueriesController {
     @Param('environmentId') environmentId,
     @Body() updateDataQueryDto: UpdateDataQueryDto
   ) {
-    const { options, resolvedOptions } = updateDataQueryDto;
+    const { options, resolvedOptions, data_source_id } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
 
@@ -235,7 +241,7 @@ export class DataQueriesController {
       }
 
       if (ability.can('updateQuery', dataQuery.app) && !isEmpty(options)) {
-        await this.dataQueriesService.update(dataQueryId, dataQuery.name, options);
+        await this.dataQueriesService.update(dataQueryId, dataQuery.name, options, data_source_id);
         dataQuery['options'] = options;
       }
     }

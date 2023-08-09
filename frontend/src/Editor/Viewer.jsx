@@ -35,7 +35,7 @@ import {
   getWorkspaceId,
 } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
-import _, { snakeCase } from 'lodash';
+import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
 import Spinner from '@/_ui/Spinner';
 import { toast } from 'react-hot-toast';
@@ -249,6 +249,7 @@ class ViewerComponent extends React.Component {
       .getAppBySlug(slug)
       .then((data) => {
         this.setStateForApp(data);
+        this.setState({ appId: data.id });
         this.setStateForContainer(data);
         this.setWindowTitle(data.name);
       })

@@ -455,10 +455,21 @@ class AppComponent extends React.Component {
                 path="/:workspaceId"
                 element={
                   <PrivateRoute>
-                    <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />
                   </PrivateRoute>
                 }
               />
+              {window.public_config?.ENABLE_WORKFLOWS_FEATURE === 'true' && (
+                <Route
+                  exact
+                  path="/:workspaceId/workflows"
+                  element={
+                    <AdminRoute>
+                      <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'workflow'} />
+                    </AdminRoute>
+                  }
+                />
+              )}
               <Route
                 path="*"
                 render={() => {

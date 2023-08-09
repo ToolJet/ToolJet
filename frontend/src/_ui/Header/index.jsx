@@ -25,6 +25,8 @@ function Header() {
         return 'Instance settings';
       case 'audit-logs':
         return 'Audit logs';
+      case 'workflows':
+        return 'Workflows';
       default:
         return 'Applications';
     }

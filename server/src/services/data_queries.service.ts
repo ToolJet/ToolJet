@@ -81,12 +81,13 @@ export class DataQueriesService {
     return await this.dataQueriesRepository.delete(dataQueryId);
   }
 
-  async update(dataQueryId: string, name: string, options: object): Promise<DataQuery> {
-    const dataQuery = this.dataQueriesRepository.save({
+  async update(dataQueryId: string, name: string, options: object, dataSourceId: string): Promise<DataQuery> {
+    const dataQuery = await this.dataQueriesRepository.save({
       id: dataQueryId,
       name,
       options,
       updatedAt: new Date(),
+      dataSourceId,
     });
 
     return dataQuery;

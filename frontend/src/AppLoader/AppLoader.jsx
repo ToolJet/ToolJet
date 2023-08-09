@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { withTranslation } from 'react-i18next';
 import { appService, organizationService, authenticationService } from '@/_services';
 import { Editor } from '../Editor/Editor';
@@ -7,6 +7,7 @@ import config from 'config';
 import { safelyParseJSON, stripTrailingSlash, redirectToDashboard, getSubpath, getWorkspaceId } from '@/_helpers/utils';
 import { toast } from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
+import WorkflowEditor from '../WorkflowEditor';
 import _ from 'lodash';
 
 const AppLoaderComponent = (props) => {
@@ -16,10 +17,10 @@ const AppLoaderComponent = (props) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => loadAppDetails(), []);
 
+  const [app, setApp] = useState(undefined);
+
   const loadAppDetails = () => {
-    appService.getApp(appId, 'edit').catch((error) => {
-      handleError(error);
-    });
+    appService.getApp(appId, 'edit').then(setApp).catch(handleError);
   };
 
   const switchOrganization = (orgId) => {
@@ -64,7 +65,9 @@ const AppLoaderComponent = (props) => {
     }
   };
 
-  return config.ENABLE_MULTIPLAYER_EDITING ? <RealtimeEditor {...props} /> : <Editor {...props} />;
+  if (app?.type === 'front-end')
+    return config.ENABLE_MULTIPLAYER_EDITING ? <RealtimeEditor {...props} /> : <Editor {...props} />;
+  else if (app?.type === 'workflow') return <WorkflowEditor {...props} />;
 };
 
 export const AppLoader = withTranslation()(AppLoaderComponent);

@@ -3,6 +3,7 @@ export const staticDataSources = [
   { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code', shortName: 'JavaScript' },
   { kind: 'runpy', id: 'runpy', name: 'Run Python code', shortName: 'Python' },
   { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database', shortName: 'ToolJet DB' },
+  { kind: 'workflows', id: 'null', name: 'Run Workflow', shortName: 'Workflows' },
 ];
 
 export const tabs = ['JSON', 'Raw'];
@@ -83,6 +84,7 @@ export const schemaUnavailableOptions = {
     parameters: [],
   },
   runpy: {},
+  workflows: {},
 };
 
 export const defaultSources = {
@@ -90,4 +92,5 @@ export const defaultSources = {
   runjs: { kind: 'runjs', id: 'runjs', name: 'Run JavaScript code' },
   tooljetdb: { kind: 'tooljetdb', id: 'null', name: 'Tooljet Database' },
   runpy: { kind: 'runpy', id: 'runpy', name: 'Run Python code' },
+  workflows: { kind: 'workflows', id: 'null', name: 'Run Workflow' },
 };

@@ -107,16 +107,19 @@ export class AppsService {
     });
   }
 
-  async create(user: User, manager: EntityManager): Promise<App> {
+  async create(user: User, manager: EntityManager, type: string): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const name = await generateNextName('My app');
+      const generateNameFor = type === 'workflow' ? 'My workflow' : 'My app';
+      const name = await generateNextName(generateNameFor);
       const app = await manager.save(
         manager.create(App, {
-          name,
+          type,
+          name: name,
           createdAt: new Date(),
           updatedAt: new Date(),
           organizationId: user.organizationId,
           userId: user.id,
+          isMaintenanceOn: type === 'workflow' ? true : false,
         })
       );
 
@@ -181,8 +184,8 @@ export class AppsService {
     return clonedApp;
   }
 
-  async count(user: User, searchKey): Promise<number> {
-    return await viewableAppsQuery(user, searchKey).getCount();
+  async count(user: User, searchKey, type: string, from?: string): Promise<number> {
+    return await viewableAppsQuery(user, searchKey, [], type).getCount();
   }
 
   getAppVersionsCount = async (appId: string) => {
@@ -191,8 +194,8 @@ export class AppsService {
     });
   };
 
-  async all(user: User, page: number, searchKey: string): Promise<App[]> {
-    const viewableAppsQb = viewableAppsQuery(user, searchKey);
+  async all(user: User, page: number, searchKey: string, type: string): Promise<App[]> {
+    const viewableAppsQb = viewableAppsQuery(user, searchKey, undefined, type);
 
     if (page) {
       return await viewableAppsQb
@@ -202,6 +205,16 @@ export class AppsService {
     }
 
     return await viewableAppsQb.getMany();
+  }
+
+  async getWorkflows() {
+    const workflowApps = await this.appsRepository.find({
+      where: { type: 'workflow' },
+    });
+
+    const result = workflowApps.map((workflowApp) => ({ id: workflowApp.id, name: workflowApp.name }));
+
+    return result;
   }
 
   async update(appId: string, appUpdateDto: AppUpdateDto, manager?: EntityManager) {
@@ -256,6 +269,11 @@ export class AppsService {
       await manager.delete(App, { id: appId });
     });
     return;
+  }
+
+  async isAppPublic(appId: string): Promise<boolean> {
+    const app = await this.appsRepository.findOne(appId);
+    return app.isPublic;
   }
 
   async fetchUsers(appId: string): Promise<AppUser[]> {
@@ -349,7 +367,7 @@ export class AppsService {
         })
       );
 
-      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom, organizationId);
+      await this.createNewDataSourcesAndQueriesForVersion(manager, appVersion, versionFrom, organizationId, app.type);
       return appVersion;
     }, manager);
   }
@@ -371,7 +389,8 @@ export class AppsService {
     manager: EntityManager,
     appVersion: AppVersion,
     versionFrom: AppVersion,
-    organizationId: string
+    organizationId: string,
+    appType: string
   ) {
     const oldDataQueryToNewMapping = {};
 
@@ -384,7 +403,7 @@ export class AppsService {
 
     if (!versionFrom) {
       //create default data sources
-      for (const defaultSource of ['restapi', 'runjs', 'tooljetdb']) {
+      for (const defaultSource of ['restapi', 'runjs', 'tooljetdb', 'workflows']) {
         const dataSource = await this.dataSourcesService.createDefaultDataSource(
           defaultSource,
           appVersion.id,
@@ -484,6 +503,13 @@ export class AppsService {
     }
   }
 
+  async createNewQueriesForWorkflowVersion(
+    manager: EntityManager,
+    appVersion: AppVersion,
+    versionFrom: AppVersion,
+    organizationId: string
+  ) {}
+
   private async createEnvironments(appEnvironments: any[], manager: EntityManager, organizationId: string) {
     for (const appEnvironment of appEnvironments) {
       await this.appEnvironmentService.create(
@@ -569,6 +595,20 @@ export class AppsService {
       }
     }
     return definition;
+  }
+
+  replaceQueryMappingsInWorkflowDefinition(definition, dataQueryMapping) {
+    const newQueries = definition.queries.map((query) => ({
+      ...query,
+      id: dataQueryMapping[query.id],
+    }));
+
+    const newDefinition = {
+      ...definition,
+      queries: newQueries,
+    };
+
+    return newDefinition;
   }
 
   async setNewCredentialValueFromOldValue(newOptions: any, oldOptions: any, manager: EntityManager) {

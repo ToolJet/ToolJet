@@ -33,10 +33,11 @@ function create(app_id, app_version_id, name, kind, options, data_source_id, plu
   return fetch(`${config.apiUrl}/data_queries`, requestOptions).then(handleResponse);
 }
 
-function update(id, name, options) {
+function update(id, name, options, dataSourceId) {
   const body = {
     options,
     name,
+    data_source_id: dataSourceId,
   };
 
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };

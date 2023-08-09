@@ -24,6 +24,7 @@ export default function AppCard({
   appActionModal,
   canUpdateApp,
   currentFolder,
+  appType,
 }) {
   const canUpdate = canUpdateApp(app);
   const [hoverRef, isHovered] = useHover();
@@ -63,6 +64,49 @@ export default function AppCard({
     console.error('App icon not found', app.icon);
   }
 
+  const LaunchButton = (
+    <div>
+      <ToolTip
+        message={
+          app?.current_version_id === null
+            ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
+            : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
+        }
+      >
+        <button
+          type="button"
+          className={cx(
+            ` launch-button tj-text-xsm ${
+              app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
+            }`
+          )}
+          onClick={() => {
+            if (app?.current_version_id) {
+              window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
+            } else {
+              navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
+            }
+          }}
+          data-cy="launch-button"
+        >
+          <SolidIcon
+            name="rightarrrow"
+            width="14"
+            fill={
+              app?.current_version_id === null || app?.is_maintenance_on ? '#4C5155' : darkMode ? '#FDFDFE' : '#11181C'
+            }
+          />
+
+          {app?.is_maintenance_on
+            ? t('homePage.appCard.maintenance', 'Maintenance')
+            : t('homePage.appCard.launch', 'Launch')}
+        </button>
+      </ToolTip>
+    </div>
+  );
+
+  const editButtonStyle = appType === 'workflow' ? { width: '100%' } : {};
+
   return (
     <div className="card homepage-app-card animation-fade">
       <div key={app.id} ref={hoverRef} data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-card`}>
@@ -89,6 +133,7 @@ export default function AppCard({
                   isMenuOpen={isMenuOpen}
                   darkMode={darkMode}
                   currentFolder={currentFolder}
+                  appType={appType}
                 />
               )}
             </div>
@@ -117,14 +162,19 @@ export default function AppCard({
         </div>
         <div className="appcard-buttons-wrap">
           {canUpdate && (
-            <div>
-              <ToolTip message="Open in app builder">
+            <div style={editButtonStyle}>
+              <ToolTip message={`Open in ${appType !== 'workflow' ? 'app builder' : 'workflow editor'}`}>
                 <Link
                   to={getPrivateRoute('editor', {
                     id: app.id,
                   })}
                 >
-                  <button type="button" className="tj-primary-btn edit-button tj-text-xsm" data-cy="edit-button">
+                  <button
+                    type="button"
+                    className="tj-primary-btn edit-button tj-text-xsm"
+                    data-cy="edit-button"
+                    style={editButtonStyle}
+                  >
                     <SolidIcon name="editrectangle" width="14" fill={darkMode ? '#11181C' : '#FDFDFE'} />
                     &nbsp;{t('globals.edit', 'Edit')}
                   </button>
@@ -132,48 +182,7 @@ export default function AppCard({
               </ToolTip>
             </div>
           )}
-          <div>
-            <ToolTip
-              message={
-                app?.current_version_id === null
-                  ? t('homePage.appCard.noDeployedVersion', 'App does not have a deployed version')
-                  : t('homePage.appCard.openInAppViewer', 'Open in app viewer')
-              }
-            >
-              <button
-                type="button"
-                className={cx(
-                  ` launch-button tj-text-xsm ${
-                    app?.current_version_id === null || app?.is_maintenance_on ? 'tj-disabled-btn ' : 'tj-tertiary-btn'
-                  }`
-                )}
-                onClick={() => {
-                  if (app?.current_version_id) {
-                    window.open(urlJoin(window.public_config?.TOOLJET_HOST, `/applications/${app.slug}`));
-                  } else {
-                    navigate(app?.current_version_id ? `/applications/${app.slug}` : '');
-                  }
-                }}
-                data-cy="launch-button"
-              >
-                <SolidIcon
-                  name="rightarrrow"
-                  width="14"
-                  fill={
-                    app?.current_version_id === null || app?.is_maintenance_on
-                      ? '#4C5155'
-                      : darkMode
-                      ? '#FDFDFE'
-                      : '#11181C'
-                  }
-                />
-
-                {app?.is_maintenance_on
-                  ? t('homePage.appCard.maintenance', 'Maintenance')
-                  : t('homePage.appCard.launch', 'Launch')}
-              </button>
-            </ToolTip>
-          </div>
+          {appType !== 'workflow' && LaunchButton}
         </div>
       </div>
     </div>

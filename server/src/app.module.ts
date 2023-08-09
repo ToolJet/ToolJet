@@ -32,6 +32,7 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
 import { CommentModule } from './modules/comments/comment.module';
 import { CommentUsersModule } from './modules/comment_users/comment_users.module';
 import { join } from 'path';
+import { BullModule } from '@nestjs/bull';
 import { LibraryAppModule } from './modules/library_app/library_app.module';
 import { ThreadModule } from './modules/thread/thread.module';
 import { EventsModule } from './events/events.module';
@@ -43,12 +44,19 @@ import { PluginsModule } from './modules/plugins/plugins.module';
 import { CopilotModule } from './modules/copilot/copilot.module';
 import { AppEnvironmentsModule } from './modules/app_environments/app_environments.module';
 import { RequestContextModule } from './modules/request_context/request-context.module';
+import { WorkerModule } from './modules/worker.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LicenseModule } from './modules/license/license.module';
 import { CustomStylesModule } from './modules/custom_styles/custom_styles.module';
 
 const imports = [
   ScheduleModule.forRoot(),
+  BullModule.forRoot({
+    redis: {
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT) || 6379,
+    },
+  }),
   ConfigModule.forRoot({
     isGlobal: true,
     envFilePath: [`../.env.${process.env.NODE_ENV}`, '../.env'],
@@ -105,6 +113,7 @@ const imports = [
   LicenseModule,
   CopilotModule,
   CustomStylesModule,
+  WorkerModule,
 ];
 
 if (process.env.SERVE_CLIENT !== 'false' && process.env.NODE_ENV === 'production') {

@@ -7,7 +7,7 @@ import { previewQuery, executeAction } from '@/_helpers/appUtils';
 import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
-
+import { workflowExecutionsService } from '@/_services';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
 import { staticDataSources } from '@/Editor/QueryManager/constants';
@@ -1026,6 +1026,13 @@ export const defaultAppEnvironments = [
   { name: 'staging', isDefault: false, priority: 2 },
   { name: 'production', isDefault: true, priority: 3 },
 ];
+
+export const executeWorkflow = async (self, workflowId, _blocking = false, params = {}) => {
+  const appId = self?.state?.appId;
+  const resolvedParams = resolveReferences(params, self.state.currentState, {}, {});
+  const executionResponse = await workflowExecutionsService.execute(workflowId, resolvedParams, appId);
+  return { data: executionResponse.result };
+};
 
 /** Check if the query is connected to a DS. */
 export const isQueryRunnable = (query) => {
