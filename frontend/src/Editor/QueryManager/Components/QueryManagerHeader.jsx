@@ -131,7 +131,11 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
     if (selectedQuery === null || showCreateQuery) return;
     return (
       <>
-        <PreviewButton onClick={previewButtonOnClick} buttonLoadingState={buttonLoadingState} />
+        <PreviewButton
+          onClick={previewButtonOnClick}
+          buttonLoadingState={buttonLoadingState}
+          disabled={isVersionReleased || isEditorFreezed}
+        />
         {renderRunButton()}
       </>
     );
@@ -147,15 +151,16 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
   );
 });
 
-const PreviewButton = ({ buttonLoadingState, onClick }) => {
+const PreviewButton = ({ buttonLoadingState, onClick, disabled }) => {
   const previewLoading = usePreviewLoading();
   const { t } = useTranslation();
 
   return (
     <button
       onClick={onClick}
-      className={`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading)}`}
+      className={cx(`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading)}`, { disabled })}
       data-cy={'query-preview-button'}
+      disabled={disabled}
     >
       <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
         <Eye1 width={14} fill="var(--slate9)" />
@@ -234,10 +239,10 @@ const NameInput = ({ onInput, value, darkMode }) => {
           <Button
             size="sm"
             onClick={() => setIsFocussed(true)}
-            className={
-              ('bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500',
-              { disabled: isEditorFreezed })
-            }
+            className={cx(
+              'bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500',
+              { disabled: isVersionReleased || isEditorFreezed }
+            )}
           >
             <span className="text-truncate">{name} </span>
             <span

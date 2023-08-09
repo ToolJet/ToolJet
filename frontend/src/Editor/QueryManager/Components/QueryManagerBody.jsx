@@ -183,7 +183,11 @@ export const QueryManagerBody = ({
   const renderEventManager = () => {
     const queryComponent = mockDataQueryAsComponent(options?.events || []);
     return (
-      <div className="d-flex">
+      <div
+        className={cx('d-flex', {
+          'disabled ': isVersionReleased || isEditorFreezed,
+        })}
+      >
         <div className={`form-label`}>{t('editor.queryManager.eventsHandler', 'Events')}</div>
         <div className="query-manager-events pb-4 flex-grow-1">
           <EventManager

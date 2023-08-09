@@ -454,7 +454,7 @@ class EditorComponent extends React.Component {
       useAppVersionStore.getState().actions.onEditorFreeze(freezeEditor);
 
       shouldWeEditVersion && this.saveEditingVersion(true);
-      this.fetchDataSources(this.props.editingVersion?.id);
+      this.fetchDataSources(this.props.editingVersion?.id, this.state.currentAppEnvironmentId);
       this.fetchDataQueries(this.props.editingVersion?.id, true);
       this.initComponentVersioning();
     }

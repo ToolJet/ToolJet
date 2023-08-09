@@ -17,6 +17,8 @@ import useShowPopover from '@/_hooks/useShowPopover';
 import DataSourceSelect from '../QueryManager/Components/DataSourceSelect';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
 import FolderEmpty from '@/_ui/Icon/solidIcons/FolderEmpty';
+import { shallow } from 'zustand/shallow';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
 
 export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, toggleQueryEditor }) => {
   const { t } = useTranslation();
@@ -204,15 +206,25 @@ const EmptyDataSource = () => (
   </div>
 );
 
-const AddDataSourceButton = ({ darkMode, disabled }) => {
+const AddDataSourceButton = ({ darkMode, disabled: passedDisabled }) => {
   const [showMenu, setShowMenu] = useShowPopover(false, '#query-add-ds-popover', '#query-add-ds-popover-btn');
   const selectRef = useRef();
+
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
 
   useEffect(() => {
     if (showMenu) {
       selectRef.current.focus();
     }
   }, [showMenu]);
+
+  const disabled = passedDisabled || isVersionReleased || isEditorFreezed;
 
   return (
     <OverlayTrigger
