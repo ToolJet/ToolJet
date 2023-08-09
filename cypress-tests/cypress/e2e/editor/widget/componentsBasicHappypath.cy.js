@@ -29,6 +29,7 @@ import {
   commonWidgetText,
   codeMirrorInputLabel,
 } from "Texts/common";
+import { resizeQueryPanel } from "Support/utils/dataSource";
 
 describe("Basic components", () => {
   const data = {};
@@ -616,7 +617,9 @@ describe("Basic components", () => {
   });
 
   it("Should verify Tabs", () => {
-    cy.dragAndDropWidget("Tabs", 50, 50);
+    cy.viewport(1200, 1300);
+    resizeQueryPanel("0");
+    cy.dragAndDropWidget("Tabs", 100, 100);
     verifyComponent("tabs1");
     deleteComponentAndVerify("image1");
 
