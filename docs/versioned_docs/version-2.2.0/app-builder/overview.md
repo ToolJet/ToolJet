@@ -7,7 +7,7 @@ title: Overview
 
 ToolJet's App Builder allows you to build applications. ToolJet's app builder has the following major components:
 
-- **[Topbar](/docs/app-builder/toolbar)**: configure app settings
+- **[Topbar](/docs/2.2.0/app-builder/topbar)**: configure app settings
 - **[Canvas](/docs/app-builder/canvas)**: Arrange the components to build the interface of app
 - **[Left-sidebar](/docs/app-builder/left-sidebar)**: Add **[pages](/docs/tutorial/pages)**, **[datasources](/docs/data-sources/overview)**, **[inspect](/docs/how-to/use-inspector)** the components, queries or variables, and **[debug](#debugger)** the errors.
 - **[Components library](/docs/app-builder/components-library)**(right sidebar): Drag any component or modify the property or styling
