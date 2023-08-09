@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getManager, Repository } from 'typeorm';
+import { EntityManager, getManager, Repository } from 'typeorm';
 import { Metadata } from 'src/entities/metadata.entity';
 import { gt } from 'semver';
 import got from 'got';
@@ -137,7 +137,6 @@ export class MetadataService {
     }
     return { latestVersion: latestVersion || installedVersion };
   }
-
   async fetchDatasourcesByKindCount(manager: EntityManager) {
     const dsGroupedByKind = await manager
       .createQueryBuilder(DataSource, 'data_sources')
