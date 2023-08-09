@@ -16,7 +16,7 @@ export class addedInstructionTextPropInFilePickerWidget1653472569828 implements 
           const component = components[componentId];
           if (component.component.component === 'FilePicker') {
             component.component.definition.properties.instructionText = {
-              value: 'Drag and Drop some files here, or click to select files',
+              value: 'Drag and Drop files here, or click to select files',
             };
             components[componentId] = {
               ...component,
