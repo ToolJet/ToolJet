@@ -8,6 +8,7 @@ import {
   computeComponentName,
   generateAppActions,
   loadPyodide,
+  isQueryRunnable,
 } from '@/_helpers/utils';
 import { dataqueryService } from '@/_services';
 import _ from 'lodash';
@@ -585,7 +586,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
 
   const { customVariables } = options;
-
   if (eventName === 'onPageLoad') {
     await executeActionsForEventId(_ref, 'onPageLoad', { definition: { events: [options] } }, mode, customVariables);
   }
@@ -879,7 +879,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
           case 'Created':
           case 'Accepted':
           case 'No Content': {
-            toast(`Query completed.`, {
+            toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
               icon: '🚀',
             });
             break;
@@ -958,7 +958,7 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
         getCurrentState()
       );
     } else {
-      queryExecutionPromise = dataqueryService.run(queryId, options);
+      queryExecutionPromise = dataqueryService.run(queryId, options, query?.options);
     }
 
     queryExecutionPromise
@@ -1600,7 +1600,7 @@ export const checkExistingQueryName = (newName) =>
 
 export const runQueries = (queries, _ref) => {
   queries.forEach((query) => {
-    if (query.options.runOnPageLoad) {
+    if (query.options.runOnPageLoad && isQueryRunnable(query)) {
       runQuery(_ref, query.id, query.name);
     }
   });
@@ -1611,14 +1611,14 @@ export const computeQueryState = (queries, _ref) => {
   queries.forEach((query) => {
     if (query.plugin?.plugin_id) {
       queryState[query.name] = {
-        ...query.plugin.manifest_file.data.source.exposedVariables,
+        ...query.plugin.manifest_file.data?.source?.exposedVariables,
         kind: query.plugin.manifest_file.data.source.kind,
         ...getCurrentState().queries[query.name],
       };
     } else {
       queryState[query.name] = {
-        ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-        kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
+        ...DataSourceTypes.find((source) => source.kind === query.kind)?.exposedVariables,
+        kind: DataSourceTypes.find((source) => source.kind === query.kind)?.kind,
         ...getCurrentState()?.queries[query.name],
       };
     }
