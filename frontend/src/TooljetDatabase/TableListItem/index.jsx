@@ -15,8 +15,8 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
   const [isEditTableDrawerOpen, setIsEditTableDrawerOpen] = useState(false);
   const darkMode = localStorage.getItem('darkMode') === 'true';
 
-  function updateSelectedTable(tablename) {
-    setSelectedTable(tablename);
+  function updateSelectedTable(tableObj) {
+    setSelectedTable(tableObj);
   }
 
   const handleDeleteTable = async () => {
@@ -70,15 +70,7 @@ export const ListItem = ({ active, onClick, text = '', onDeleteCallback }) => {
           selectedColumns={formColumns}
           selectedTable={selectedTable}
           updateSelectedTable={updateSelectedTable}
-          onEdit={() => {
-            tooljetDatabaseService.findAll(organizationId).then(({ data = [] }) => {
-              if (Array.isArray(data?.result) && data.result.length > 0) {
-                setTables(data.result || []);
-                setSelectedTable(data?.result[0]);
-              }
-            });
-            setIsEditTableDrawerOpen(false);
-          }}
+          onEdit={() => setIsEditTableDrawerOpen(false)}
           onClose={() => setIsEditTableDrawerOpen(false)}
         />
       </Drawer>

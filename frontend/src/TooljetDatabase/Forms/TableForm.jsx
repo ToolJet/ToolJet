@@ -81,7 +81,7 @@ const TableForm = ({
 
     toast.success(`${tableName} edited successfully`);
     updateSidebarNAV(tableName);
-    updateSelectedTable(tableName);
+    updateSelectedTable({ ...selectedTable, table_name: tableName });
 
     onEdit && onEdit();
   };

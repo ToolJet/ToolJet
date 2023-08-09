@@ -43,6 +43,12 @@ const List = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const renamedTableList = tables.map((table) => (table.id === selectedTable.id ? selectedTable : table));
+    setTables(renamedTableList);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTable]);
+
   let filteredTables = [...tables];
 
   if (!isEmpty(searchParam)) {
