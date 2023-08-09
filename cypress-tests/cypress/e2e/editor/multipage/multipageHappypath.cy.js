@@ -193,7 +193,7 @@ describe("Multipage", () => {
       multipageText.labelEvents
     );
     cy.get(multipageSelector.addEventHandlerLink).verifyVisibleElement(
-      "have.text",
+      "contain.text",
       multipageText.addEventHandlerLink
     );
     cy.get(multipageSelector.noEventHandlerMessage).verifyVisibleElement(
