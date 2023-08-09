@@ -1,6 +1,6 @@
 import React from 'react';
 import { ToolTip } from '@/_components';
-import { appService } from '@/_services';
+import { appsService } from '@/_services';
 import { handleHttpErrorMessages, validateName } from '../../_helpers/utils';
 
 function EditAppName({ appId, appName, onNameChanged }) {
@@ -21,7 +21,7 @@ function EditAppName({ appId, appName, onNameChanged }) {
       setName(newName);
       return;
     }
-    await appService
+    await appsService
       .saveApp(appId, { name: newName })
       .then(() => {
         onNameChanged(newName);

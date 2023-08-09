@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, authenticationService, orgEnvironmentVariableService } from '@/_services';
+import { appsService, authenticationService, orgEnvironmentVariableService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -196,7 +196,7 @@ class ViewerComponent extends React.Component {
   };
 
   loadApplicationBySlug = (slug) => {
-    appService
+    appsService
       .getAppBySlug(slug)
       .then((data) => {
         this.setStateForApp(data);
@@ -211,7 +211,7 @@ class ViewerComponent extends React.Component {
   };
 
   loadApplicationByVersion = (appId, versionId) => {
-    appService
+    appsService
       .getAppByVersion(appId, versionId)
       .then((data) => {
         this.setStateForApp(data);

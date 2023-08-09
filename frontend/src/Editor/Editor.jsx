@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, authenticationService, appVersionService, orgEnvironmentVariableService } from '@/_services';
+import { appsService, authenticationService, appVersionService, orgEnvironmentVariableService } from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import _, { defaults, cloneDeep, isEqual, isEmpty, debounce, omit } from 'lodash';
@@ -304,7 +304,7 @@ class EditorComponent extends React.Component {
     const newState = !this.state.app.is_maintenance_on;
 
     // eslint-disable-next-line no-unused-vars
-    appService.setMaintenance(this.state.app.id, newState).then((data) => {
+    appsService.setMaintenance(this.state.app.id, newState).then((data) => {
       this.setState({
         app: {
           ...this.state.app,
@@ -321,7 +321,7 @@ class EditorComponent extends React.Component {
   };
 
   fetchApps = (page) => {
-    appService.getAll(page).then((data) =>
+    appsService.getAll(page).then((data) =>
       this.setState({
         apps: data.apps,
       })
@@ -389,7 +389,7 @@ class EditorComponent extends React.Component {
         isLoading: true,
       },
       () => {
-        appService.getApp(appId).then(callBack);
+        appsService.getApp(appId).then(callBack);
       }
     );
   };

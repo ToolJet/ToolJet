@@ -1,5 +1,5 @@
 import React from 'react';
-import { appService, authenticationService } from '@/_services';
+import { appService, appsService, authenticationService } from '@/_services';
 import Modal from 'react-bootstrap/Modal';
 import { toast } from 'react-hot-toast';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -8,7 +8,7 @@ import _, { debounce } from 'lodash';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getPrivateRoute, replaceEditorURL } from '@/_helpers/routes';
-import { getHostURL, validateName, handleHttpErrorMessages } from '@/_helpers/utils';
+import { getHostURL, validateName } from '@/_helpers/utils';
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -36,7 +36,7 @@ class ManageAppUsersComponent extends React.Component {
   }
 
   fetchAppUsers = () => {
-    appService
+    appsService
       .getAppUsers(this.props.app.id)
       .then((data) =>
         this.setState({
@@ -89,7 +89,7 @@ class ManageAppUsersComponent extends React.Component {
     });
 
     // eslint-disable-next-line no-unused-vars
-    appService
+    appsService
       .setVisibility(this.state.app.id, newState)
       .then(() => {
         this.setState({
@@ -133,7 +133,7 @@ class ManageAppUsersComponent extends React.Component {
       this.setState({
         isSlugVerificationInProgress: true,
       });
-      appService
+      appsService
         .setSlug(this.state.app.id, value)
         .then(() => {
           this.setState({

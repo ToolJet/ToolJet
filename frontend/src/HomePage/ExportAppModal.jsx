@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { default as BootstrapModal } from 'react-bootstrap/Modal';
 import moment from 'moment';
-import { appService } from '../_services/app.service';
+import { appsService } from '@/_services';
 import { toast } from 'react-hot-toast';
 
 export default function ExportAppModal({ title, show, closeModal, customClassName, app, darkMode }) {
@@ -12,7 +12,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
   useEffect(() => {
     async function fetchAppVersions() {
       try {
-        const fetchVersions = await appService.getVersions(app.id);
+        const fetchVersions = await appsService.getVersions(app.id);
         const { versions } = await fetchVersions;
         getVersions(versions);
       } catch (error) {
@@ -27,7 +27,7 @@ export default function ExportAppModal({ title, show, closeModal, customClassNam
   }, []);
 
   const exportApp = (appId, versionId = undefined) => {
-    appService
+    appsService
       .exportApp(appId, versionId)
       .then((data) => {
         const appName = app.name.replace(/\s+/g, '-').toLowerCase();

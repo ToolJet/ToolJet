@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { appService, folderService, authenticationService } from '@/_services';
+import { appsService, folderService, authenticationService } from '@/_services';
 import { ConfirmDialog } from '@/_components';
 import Select from '@/_ui/Select';
 import { Folders } from './Folders';
@@ -78,7 +78,7 @@ class HomePageComponent extends React.Component {
       appSearchKey,
     });
 
-    appService.getAll(page, folder, appSearchKey).then((data) =>
+    appsService.getAll(page, folder, appSearchKey).then((data) =>
       this.setState({
         apps: data.apps,
         meta: { ...this.state.meta, ...data.meta },
@@ -124,7 +124,7 @@ class HomePageComponent extends React.Component {
   createApp = () => {
     let _self = this;
     _self.setState({ creatingApp: true });
-    appService
+    appsService
       .createApp({ icon: sample(iconList) })
       .then((data) => {
         const workspaceId = getWorkspaceId();
@@ -142,7 +142,7 @@ class HomePageComponent extends React.Component {
 
   cloneApp = (app) => {
     this.setState({ isCloningApp: true });
-    appService
+    appsService
       .cloneApp(app.id)
       .then((data) => {
         toast.success('App cloned successfully.');
@@ -168,7 +168,7 @@ class HomePageComponent extends React.Component {
       this.setState({ isImportingApp: true });
       try {
         const requestBody = JSON.parse(fileContent);
-        appService
+        appsService
           .importApp(requestBody)
           .then((data) => {
             toast.success('App imported successfully.');
@@ -277,7 +277,7 @@ class HomePageComponent extends React.Component {
 
   executeAppDeletion = () => {
     this.setState({ isDeletingApp: true });
-    appService
+    appsService
       .deleteApp(this.state.appToBeDeleted.id)
       // eslint-disable-next-line no-unused-vars
       .then((data) => {
@@ -407,7 +407,7 @@ class HomePageComponent extends React.Component {
     }
     this.setState({ appOperations: { ...appOperations, isAdding: true } });
 
-    appService
+    appsService
       .changeIcon(appOperations.selectedIcon, appOperations.selectedApp.id)
       .then(() => {
         toast.success('Icon updated.');

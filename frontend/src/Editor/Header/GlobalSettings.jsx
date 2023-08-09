@@ -10,7 +10,7 @@ import { getHostURL, resolveReferences, validateName, getWorkspaceId } from '@/_
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import Popover from '@/_ui/Popover';
-import { appService } from '@/_services';
+import { appsService } from '@/_services';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { replaceEditorURL } from '@/_helpers/routes';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
@@ -78,7 +78,7 @@ export const GlobalSettings = ({
 
     if (!_.isEmpty(value) && value !== oldSlug && _.isEmpty(error.errorMsg)) {
       setSlugProgress(true);
-      appService
+      appsService
         .setSlug(appId, value)
         .then(() => {
           setSlug({
