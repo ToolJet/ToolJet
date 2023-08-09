@@ -168,7 +168,7 @@ const QueryPanel = ({
             size="sm"
             className="gap-0 p-2 me-2"
             data-tooltip-id="tooltip-for-query-panel-footer-btn"
-            data-tooltip-content="Show query editor"
+            data-tooltip-content="Show query panel"
           >
             <Maximize stroke="var(--slate9)" style={{ height: '14px', width: '14px' }} viewBox={null} />
           </ButtonSolid>

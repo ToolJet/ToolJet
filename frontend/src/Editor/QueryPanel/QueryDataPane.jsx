@@ -90,7 +90,7 @@ export const QueryDataPane = ({ darkMode, fetchDataQueries, editorRef, appId, to
               onClick={toggleQueryEditor}
               className="btn-query-panel-header"
               data-tooltip-id="tooltip-for-query-panel-header-btn"
-              data-tooltip-content="Hide query editor"
+              data-tooltip-content="Hide query panel"
             >
               <Minimize width="14" height="14" viewBox="0 0 18 20" stroke="var(--slate12)" />
             </button>
