@@ -18,6 +18,7 @@ export const TextInput = function TextInput({
   const [value, setValue] = useState(properties.value);
   const [visibility, setVisibility] = useState(styles.visibility);
   const { isValid, validationError } = validate(value);
+  const [showValidationError, setShowValidationError] = useState(false);
 
   const computedStyles = {
     height,
@@ -96,6 +97,7 @@ export const TextInput = function TextInput({
           fireEvent('onChange');
         }}
         onBlur={(e) => {
+          setShowValidationError(true);
           e.stopPropagation();
           fireEvent('onBlur');
         }}
@@ -117,7 +119,7 @@ export const TextInput = function TextInput({
         data-cy={`${String(component.name).toLowerCase()}-invalid-feedback`}
         style={{ color: styles.errTextColor }}
       >
-        {validationError}
+        {showValidationError && validationError}
       </div>
     </div>
   );
