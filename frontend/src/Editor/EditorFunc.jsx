@@ -768,7 +768,7 @@ const EditorComponent = (props) => {
         draft.homePageId = newDefinition.homePageId;
       }
 
-      if (opts?.generalAppDefinitionChanged || opts?.globalSettings) {
+      if (opts?.generalAppDefinitionChanged || opts?.globalSettings || isEmpty(opts)) {
         Object.assign(draft, newDefinition);
       }
     });
@@ -952,20 +952,20 @@ const EditorComponent = (props) => {
     // }
   };
 
-  const removeComponent = (component) => {
+  const removeComponent = (componentId) => {
     if (!props.isVersionReleased) {
       let newDefinition = cloneDeep(appDefinition);
       // Delete child components when parent is deleted
 
       let childComponents = [];
 
-      if (newDefinition.pages[currentPageId].components?.[component.id].component.component === 'Tabs') {
+      if (newDefinition.pages[currentPageId].components?.[componentId].component.component === 'Tabs') {
         childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter((key) =>
-          newDefinition.pages[currentPageId].components[key].parent?.startsWith(component.id)
+          newDefinition.pages[currentPageId].components[key].parent?.startsWith(componentId)
         );
       } else {
         childComponents = Object.keys(newDefinition.pages[currentPageId].components).filter(
-          (key) => newDefinition.pages[currentPageId].components[key].parent === component.id
+          (key) => newDefinition.pages[currentPageId].components[key].parent === componentId
         );
       }
 
@@ -973,7 +973,7 @@ const EditorComponent = (props) => {
         delete newDefinition.pages[currentPageId].components[componentId];
       });
 
-      delete newDefinition.pages[currentPageId].components[component.id];
+      delete newDefinition.pages[currentPageId].components[componentId];
       const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
       if (platform.toLowerCase().indexOf('mac') > -1) {
         toast('Component deleted! (⌘ + Z to undo)', {
@@ -985,7 +985,7 @@ const EditorComponent = (props) => {
         });
       }
       appDefinitionChanged(newDefinition, {
-        skipAutoSave: props.isVersionReleased,
+        componentDefinitionChanged: true,
       });
       handleInspectorView();
     } else {
@@ -1049,10 +1049,10 @@ const EditorComponent = (props) => {
   };
 
   const removeComponents = () => {
-    if (!props.isVersionReleased && selectedComponents?.length > 1) {
+    if (!props.isVersionReleased && selectedComponents?.length >= 1) {
       let newDefinition = cloneDeep(appDefinition);
 
-      removeSelectedComponent(currentPageId, newDefinition, selectedComponents);
+      removeSelectedComponent(currentPageId, newDefinition, selectedComponents, appDefinitionChanged);
       const platform = navigator?.userAgentData?.platform || navigator?.platform || 'unknown';
       if (platform.toLowerCase().indexOf('mac') > -1) {
         toast('Selected components deleted! (⌘ + Z to undo)', {
@@ -1063,9 +1063,7 @@ const EditorComponent = (props) => {
           icon: '🗑️',
         });
       }
-      appDefinitionChanged(newDefinition, {
-        skipAutoSave: props.isVersionReleased,
-      });
+      // appDefinitionChanged(newDefinition);
       handleInspectorView();
     } else if (props.isVersionReleased) {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
