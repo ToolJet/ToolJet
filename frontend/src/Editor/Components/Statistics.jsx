@@ -1,7 +1,8 @@
 import React from 'react';
 import config from 'config';
 import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import Typography from '@mui/material/Typography';
 import { Box } from '@mui/system';
 export const Statistics = function Statistics({ width, height, properties, styles, darkMode, dataCy }) {
@@ -113,12 +114,12 @@ export const Statistics = function Statistics({ width, height, properties, style
                 <div>
                   <div className="d-flex flex-row justify-content-center align-items-baseline">
                     {secondarySignDisplay !== 'negative' ? (
-                      <img
+                      <TrendingUpIcon
                         src="assets/images/icons/widgets/upstatistics.svg"
                         style={{ ...marginStyle, marginRight: '6.5px' }}
                       />
                     ) : (
-                      <img
+                      <TrendingDownIcon
                         src="assets/images/icons/widgets/downstatistics.svg"
                         style={{ ...marginStyle, marginRight: '6.5px' }}
                       />
