@@ -22,7 +22,6 @@ RUN npm --prefix plugins prune --production
 COPY ./frontend/package.json ./frontend/package-lock.json ./frontend/
 RUN npm --prefix frontend install
 COPY ./frontend/ ./frontend/
-COPY .version .version
 RUN npm --prefix frontend run build --production
 RUN npm --prefix frontend prune --production
 
