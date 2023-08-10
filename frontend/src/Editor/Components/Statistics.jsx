@@ -61,7 +61,7 @@ export const Statistics = function Statistics({ width, height, properties, style
     justifyContent: 'center',
     alignItems: ' center',
     padding: '5px 8px',
-    margin: '14px 20px 0px 0px ',
+    ...(config.UI_LIB === 'tooljet' ? { margin: '14px 20px 0px 0px ' } : { margin: '0' }),
     minWidth: '61px',
     wordBreak: 'break-all',
     minHeight: '24px',
@@ -114,12 +114,12 @@ export const Statistics = function Statistics({ width, height, properties, style
                 <div>
                   <div className="d-flex flex-row justify-content-center align-items-baseline">
                     {secondarySignDisplay !== 'negative' ? (
-                      <TrendingUpIcon
+                      <img
                         src="assets/images/icons/widgets/upstatistics.svg"
                         style={{ ...marginStyle, marginRight: '6.5px' }}
                       />
                     ) : (
-                      <TrendingDownIcon
+                      <img
                         src="assets/images/icons/widgets/downstatistics.svg"
                         style={{ ...marginStyle, marginRight: '6.5px' }}
                       />
@@ -177,19 +177,19 @@ export const Statistics = function Statistics({ width, height, properties, style
                 ''
               ) : (
                 <Box>
-                  <Box style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline' }}>
+                  <Box style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     {secondarySignDisplay !== 'negative' ? (
-                      <img
-                        src="assets/images/icons/widgets/upstatistics.svg"
-                        style={{ ...marginStyle, marginRight: '6.5px' }}
+                      <TrendingUpIcon
+                        color="success"
+                        style={{ ...marginStyle }}
                       />
                     ) : (
-                      <img
-                        src="assets/images/icons/widgets/downstatistics.svg"
-                        style={{ ...marginStyle, marginRight: '6.5px' }}
+                      <TrendingDownIcon
+                        color="error"
+                        style={{ ...marginStyle }}
                       />
                     )}
-                    <Typography style={{ ...secondaryContainerStyle }}>{secondaryValue}</Typography>
+                    <Typography style={{ ...secondaryContainerStyle, marging: '0px' }}>{secondaryValue}</Typography>
                   </Box>
                   <Typography
                     style={{
