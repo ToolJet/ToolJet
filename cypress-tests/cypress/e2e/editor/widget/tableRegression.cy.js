@@ -368,7 +368,7 @@ describe("Table", () => {
     verifyAndEnterColumnOptionInput("Text color", "red");
     verifyAndEnterColumnOptionInput(
       "Cell Background Color",
-      "{backspace}{backspace}{backspace}{backspace}{backspace}yellow"
+      "{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}yellow"
     );
     cy.get(
       '[data-cy="input-and-label-cell-background-color"] > .form-label'
@@ -483,14 +483,14 @@ describe("Table", () => {
     cy.get('[data-cy="make-editable-toggle-button"]').click();
     cy.forceClickOnCanvas();
 
-    cy.get(`${tableSelector.column(0)}:eq(0) .badge`)
+    cy.get(`${tableSelector.column(1)}:eq(0) .badge`)
       .eq(0)
       .should("have.text", "Onex")
       .next()
       .should("have.text", "Twox")
       .next()
       .should("have.text", "Threex");
-    cy.get(`${tableSelector.column(0)}:eq(0) .badge`)
+    cy.get(`${tableSelector.column(1)}:eq(0) .badge`)
       .first()
       .click({ force: true })
       .trigger("mouseover")
@@ -617,9 +617,7 @@ describe("Table", () => {
     cy.get('[data-cy*="-cell-0"]')
       .eq(0)
       .should("have.css", "background-color", "rgb(0, 0, 0)");
-    cy.get(
-      '[data-cy*="-cell-0"]  > .td-container > :nth-child(1) > .d-flex >div'
-    )
+    cy.get('[data-cy*="-cell-0"] > .td-container > .w-100 > .d-flex')
       .eq(0)
       .should("have.css", "color", "rgb(255, 255, 255)");
     verifyInvalidFeedback(1, 1, "Minimum 5 characters is needed");

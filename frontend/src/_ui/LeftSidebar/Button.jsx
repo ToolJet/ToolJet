@@ -39,7 +39,7 @@ const Button = ({
 };
 
 const Content = ({ title = null, iconSrc = null, direction = 'left', dataCy }) => {
-  const icon = !iconSrc ? (
+  const Icon = !iconSrc ? (
     ''
   ) : (
     <img
@@ -52,7 +52,7 @@ const Content = ({ title = null, iconSrc = null, direction = 'left', dataCy }) =
         .replace(/\s+/g, '-')}-option-icon`}
     />
   );
-  const btnTitle = !title ? (
+  const BtnTitle = !title ? (
     ''
   ) : typeof title === 'function' ? (
     title()
@@ -66,7 +66,19 @@ const Content = ({ title = null, iconSrc = null, direction = 'left', dataCy }) =
       {title}
     </span>
   );
-  const content = direction === 'left' ? [icon, btnTitle] : [btnTitle, icon];
+
+  const content =
+    direction === 'left' ? (
+      <>
+        {Icon}
+        {BtnTitle}
+      </>
+    ) : (
+      <>
+        {BtnTitle}
+        {Icon}
+      </>
+    );
 
   return content;
 };

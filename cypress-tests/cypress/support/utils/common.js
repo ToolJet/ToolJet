@@ -5,6 +5,7 @@ import { commonSelectors, commonWidgetSelector } from "Selectors/common";
 import moment from "moment";
 import { dashboardSelector } from "Selectors/dashboard";
 import { groupsSelector } from "Selectors/manageGroups";
+import { groupsText } from "Texts/manageGroups";
 
 export const navigateToProfile = () => {
   cy.get(commonSelectors.profileSettings).click();
@@ -15,6 +16,9 @@ export const navigateToProfile = () => {
 export const logout = () => {
   cy.get(commonSelectors.profileSettings).click();
   cy.get(commonSelectors.logoutLink).click();
+  cy.intercept("GET", "/api/metadata").as("publicConfig");
+  cy.wait("@publicConfig");
+  cy.wait(500);
 };
 
 export const navigateToManageUsers = () => {
@@ -25,11 +29,16 @@ export const navigateToManageUsers = () => {
 export const navigateToManageGroups = () => {
   cy.get(commonSelectors.workspaceSettingsIcon).click();
   cy.get(commonSelectors.manageGroupsOption).click();
+  navigateToAllUserGroup();
+
+};
+
+export const navigateToAllUserGroup = () => {
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("All users")).click();
   cy.get(groupsSelector.groupLink("Admin")).click();
   cy.get(groupsSelector.groupLink("All users")).click();
-  cy.wait(500);
+  cy.wait(1000);
   cy.get("body").then(($title) => {
     if (
       $title
@@ -95,7 +104,6 @@ export const deleteDownloadsFolder = () => {
 };
 
 export const navigateToAppEditor = (appName) => {
-  cy.reloadAppForTheElement(appName);
   cy.get(commonSelectors.appCard(appName))
     .trigger("mousehover")
     .trigger("mouseenter")
@@ -105,8 +113,7 @@ export const navigateToAppEditor = (appName) => {
     cy.intercept("GET", "/api/v2/data_sources").as("appDs");
     cy.wait("@appDs", { timeout: 15000 });
     cy.skipEditorPopover();
-  }
-  else {
+  } else {
     cy.intercept("GET", "/api/app-environments/**").as("appDs");
     cy.wait("@appDs", { timeout: 15000 });
     cy.skipEditorPopover();
@@ -174,6 +181,12 @@ export const cancelModal = (buttonText) => {
   cy.get(commonSelectors.modalComponent).should("not.exist");
 };
 
+export const navigateToAuditLogsPage = () => {
+  cy.get(profileSelector.profileDropdown).invoke("show");
+  cy.contains("Audit Logs").click();
+  cy.url().should("include", path.auditLogsPath, { timeout: 1000 });
+};
+
 export const manageUsersPagination = (email) => {
   cy.wait(200);
   cy.get("body").then(($email) => {
@@ -224,17 +237,24 @@ export const verifyTooltip = (selector, message) => {
 export const pinInspector = () => {
   cy.get(commonWidgetSelector.sidebarinspector).click();
   cy.get(commonSelectors.inspectorPinIcon).click();
-  cy.intercept("GET", "/api/v2/data_sources").as("editor");
-  cy.reload();
-  cy.wait("@editor");
+  cy.wait(500);
+
   cy.get("body").then(($body) => {
     if (!$body.find(commonSelectors.inspectorPinIcon).length > 0) {
       cy.get(commonWidgetSelector.sidebarinspector).click();
       cy.get(commonSelectors.inspectorPinIcon).click();
-      cy.wait(500);
-      cy.intercept("GET", "/api/v2/data_sources").as("editor");
-      cy.reload();
-      cy.wait("@editor");
     }
   });
+  cy.reload();
+  cy.waitForAppLoad();
+};
+
+export const createGroup = (groupName) => {
+  cy.get(groupsSelector.createNewGroupButton).click();
+  cy.clearAndType(groupsSelector.groupNameInput, groupName);
+  cy.get(groupsSelector.createGroupButton).click();
+  cy.verifyToastMessage(
+    commonSelectors.toastMessage,
+    groupsText.groupCreatedToast
+  );
 };

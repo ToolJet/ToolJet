@@ -13,8 +13,10 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
   useEffect(() => {
     const handleClickOutside = (event) => {
       const isClickedOnAddButton = !!event.target.closest('#runjs-param-add-btn');
-      if (isClickedOnAddButton) {
-        return; //modal closing on this even will be taken care by onClick attached to trigger button
+      if (isClickedOnAddButton && !isEdit) {
+        //if the user is in edit mode add button should close other popups open.
+        //modal closing on this even will be taken care by onClick attached to trigger button
+        return;
       }
       if (
         showModal &&
@@ -48,11 +50,12 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
       trigger={'click'}
       placement={'bottom-end'}
       rootClose={true}
+      container={document.getElementsByClassName('query-details ')[0]}
       show={showModal}
       overlay={
         <Popover
           id="parameter-form-popover"
-          className={`query-manager-sort-filter-popup ${darkMode && 'popover-dark-themed dark-theme theme-dark'}`}
+          className={`query-manager-sort-filter-popup p-0 ${darkMode && 'popover-dark-themed dark-theme theme-dark'}`}
           style={{ width: '268px' }}
         >
           <ParameterForm
@@ -78,6 +81,7 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
             onClick={() => setShowModal((show) => !show)}
             className="ms-2"
             id="runjs-param-add-btn"
+            data-cy={`runjs-add-param-button`}
           >
             <span className="m-0">
               <PlusRectangle fill={'#3E63DD'} width={15} />
@@ -90,11 +94,15 @@ const ParameterDetails = ({ darkMode, onSubmit, isEdit, name, defaultValue, onRe
   );
 };
 
-export const PillButton = ({ name, onClick, onRemove, marginBottom }) => (
-  <ButtonGroup aria-label="Parameter" className={cx('ms-2', { 'mb-2': marginBottom })}>
+export const PillButton = ({ name, onClick, onRemove, marginBottom, className, size }) => (
+  <ButtonGroup
+    aria-label="Parameter"
+    className={cx('ms-2 bg-slate3', { 'mb-2': marginBottom, ...(className && { [className]: true }) })}
+    style={{ borderRadius: '15px' }}
+  >
     <Button
       size="sm"
-      className="bg-slate3 color-slate12 runjs-parameter-badge"
+      className={cx('bg-transparent color-slate12 runjs-parameter-badge', { 'py-0 px-2': size === 'sm' })}
       onClick={onClick}
       style={{
         borderTopLeftRadius: '15px',
@@ -105,13 +113,16 @@ export const PillButton = ({ name, onClick, onRemove, marginBottom }) => (
         ...(!onRemove && { borderRadius: '15px' }),
       }}
     >
-      <span className="text-truncate">{name}</span>
+      <span data-cy={`query-param-${String(name).toLowerCase()}`} className="text-truncate">
+        {name}
+      </span>
     </Button>
     {onRemove && (
       <Button
+        data-cy={`query-param-${String(name).toLowerCase()}-remove-button`}
         onClick={onRemove}
         size="sm"
-        className="bg-slate3 color-slate12"
+        className={cx('bg-transparent color-slate12', { 'p-0 pe-1': size === 'sm' })}
         style={{
           borderTopRightRadius: '15px',
           borderBottomRightRadius: '15px',

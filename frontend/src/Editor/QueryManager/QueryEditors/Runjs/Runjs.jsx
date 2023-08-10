@@ -19,43 +19,38 @@ const Runjs = (props) => {
   }, [currentState?.components, options?.parameters]);
 
   const handleAddParameter = (newParameter) => {
-    setOptions((prevOptions) => {
-      // duplicate check
-      if (prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
-        return { ...prevOptions };
-      }
-      return {
+    const prevOptions = { ...options };
+    //check if paramname already used
+    if (!prevOptions?.parameters?.some((param) => param.name === newParameter.name)) {
+      props.optionsChanged({
         ...prevOptions,
         parameters: [...prevOptions.parameters, newParameter],
-      };
-    });
+      });
+    }
   };
 
   useEffect(() => {
-    props.optionsChanged(options);
-  }, [options]);
+    setOptions(props.options);
+  }, [props.options]);
 
   const handleParameterChange = (index, updatedParameter) => {
-    setOptions((prevOptions) => {
-      // duplicate check
-      if (prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
-        return { ...prevOptions };
-      }
+    const prevOptions = { ...options };
+    //check if paramname already used
+    if (!prevOptions?.parameters?.some((param, idx) => param.name === updatedParameter.name && index !== idx)) {
       const updatedParameters = [...prevOptions.parameters];
       updatedParameters[index] = updatedParameter;
-      return { ...prevOptions, parameters: updatedParameters };
-    });
+      props.optionsChanged({ ...prevOptions, parameters: updatedParameters });
+    }
   };
 
   const handleParameterRemove = (index) => {
-    setOptions((prevOptions) => {
-      const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
-      return { ...prevOptions, parameters: updatedParameters };
-    });
+    const prevOptions = { ...options };
+    const updatedParameters = prevOptions.parameters.filter((param, i) => index !== i);
+    props.optionsChanged({ ...prevOptions, parameters: updatedParameters });
   };
 
   return (
-    <Card className="runjs-editor">
+    <Card className="runjs-editor mb-3">
       {(options.hasParamSupport || props.mode === 'create') && (
         <ParameterList
           parameters={options.parameters}
@@ -75,7 +70,10 @@ const Runjs = (props) => {
         height={400}
         className="query-hinter"
         ignoreBraces={true}
-        onChange={(value) => setOptions({ ...options, code: value })}
+        onChange={(value) => {
+          const newOptions = { ...options, code: value };
+          props.optionsChanged(newOptions);
+        }}
         isMultiLineJs={false}
         enablePreview={false}
         componentName="Runjs"

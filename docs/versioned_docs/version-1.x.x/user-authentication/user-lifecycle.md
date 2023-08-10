@@ -73,7 +73,7 @@ title: User Lifecycle
 ## Multi-Workspace
 
 :::info
-Check Multi-workspace docs [here](/docs/tutorial/multiworkspace).
+Check Multi-workspace docs [here](/docs/1.x.x/tutorial/multiworkspace/).
 :::
 
 ### User onboarding
