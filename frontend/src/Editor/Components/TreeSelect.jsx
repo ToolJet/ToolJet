@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 // eslint-disable-next-line import/no-unresolved
 import CheckboxTree from 'react-checkbox-tree';
 // eslint-disable-next-line import/no-unresolved
 import 'react-checkbox-tree/lib/react-checkbox-tree.css';
 import { isExpectedDataType } from '@/_helpers/utils.js';
+import config from 'config';
+import { TreeItem, TreeView } from '@mui/lab';
+import { Checkbox, FormControlLabel } from '@mui/material';
 
 export const TreeSelect = ({ height, properties, styles, setExposedVariable, fireEvent, darkMode, dataCy }) => {
   const { label } = properties;
@@ -84,36 +87,202 @@ export const TreeSelect = ({ height, properties, styles, setExposedVariable, fir
     setExpanded(expanded);
   };
 
+  const handleToggle = (event, nodeIds) => {
+    setExpanded(nodeIds);
+  };
+
+  const TreeMenu = useCallback(
+    (menu, parentValue = null) => {
+      return menu.map((m) => {
+        const value = m.value.toString();
+        const isChecked = checked.includes(value);
+
+        if (m.children?.length) {
+          const allChildrenChecked = areAllChildrenChecked(m.children);
+          const indeterminate = someChildrenChecked(m.children) && !allChildrenChecked;
+
+          return (
+            <TreeItem
+              key={value}
+              nodeId={value}
+              label={
+                <>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={isChecked && allChildrenChecked}
+                        indeterminate={indeterminate}
+                        onChange={(event) => handleParentCheckChange(event, value, m.children)}
+                        sx={{
+                          color: checkboxColor,
+                          '&.Mui-checked': {
+                            color: checkboxColor,
+                          },
+                        }}
+                      />
+                    }
+                  />
+                  {value}
+                </>
+              }
+            >
+              {TreeMenu(m.children, value)}
+            </TreeItem>
+          );
+        } else {
+          return (
+            <TreeItem
+              key={value}
+              nodeId={value}
+              label={
+                <>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={isChecked}
+                        onChange={(event) => handleCheckChange(event, value, parentValue)}
+                        sx={{
+                          color: checkboxColor,
+                          '&.Mui-checked': {
+                            color: checkboxColor,
+                          },
+                        }}
+                      />
+                    }
+                  />
+                  {value}
+                </>
+              }
+            />
+          );
+        }
+      });
+    },
+    [checked, data, checkboxColor]
+  );
+
+  const areAllChildrenChecked = (children) => {
+    return children.every((child) => checked.includes(child.value.toString()));
+  };
+
+  const someChildrenChecked = (children) => {
+    return children.some((child) => checked.includes(child.value.toString()));
+  };
+
+  const handleParentCheckChange = (event, parentValue, children) => {
+    const isChecked = event.target.checked;
+
+    let updatedChecked = checked.filter((value) => value !== parentValue);
+
+    if (isChecked) {
+      updatedChecked = Array.from(new Set([...updatedChecked, parentValue, ...getDescendantValues(children)]));
+    } else {
+      const descendantValues = getDescendantValues(children);
+      updatedChecked = updatedChecked.filter((value) => !descendantValues.includes(value));
+    }
+
+    setChecked(updatedChecked);
+  };
+
+  const getDescendantValues = (children) => {
+    let descendantValues = [];
+
+    children.forEach((child) => {
+      descendantValues.push(child.value.toString());
+      if (child.children) {
+        descendantValues = [...descendantValues, ...getDescendantValues(child.children)];
+      }
+    });
+
+    return descendantValues;
+  };
+
+  const handleCheckChange = (event, value, parentValue) => {
+    const isChecked = event.target.checked;
+    const updatedChecked = isChecked
+      ? Array.from(new Set([...checked, value]))
+      : checked.filter((val) => val !== value);
+
+    if (parentValue) {
+      const parentIndex = updatedChecked.indexOf(parentValue);
+      if (isChecked && parentIndex === -1) {
+        updatedChecked.push(parentValue);
+      } else if (!isChecked && parentIndex !== -1 && !updatedChecked.some((val) => val !== parentValue)) {
+        updatedChecked.splice(parentIndex, 1);
+      }
+    }
+
+    setChecked(updatedChecked);
+  };
+
   return (
-    <div
-      className="custom-checkbox-tree"
-      data-disabled={disabledState}
-      style={{
-        maxHeight: height,
-        display: visibility ? '' : 'none',
-        color: textColor,
-        accentColor: checkboxColor,
-        boxShadow,
-      }}
-      data-cy={dataCy}
-    >
-      <div
-        className="card-title"
-        style={{ marginBottom: '0.5rem' }}
-      >
-        {label}
-      </div>
-      <CheckboxTree
-        nodes={data}
-        checked={checked}
-        expanded={expanded}
-        showNodeIcon={false}
-        onCheck={onCheck}
-        onExpand={onExpand}
-        nativeCheckboxes
-        checkModel="all"
-        disabled={disabledState}
-      />
-    </div>
+    <>
+      {config.UI_LIB === 'tooljet' && (
+        <div
+          className="custom-checkbox-tree"
+          data-disabled={disabledState}
+          style={{
+            maxHeight: height,
+            display: visibility ? '' : 'none',
+            color: textColor,
+            accentColor: checkboxColor,
+            boxShadow,
+          }}
+          data-cy={dataCy}
+        >
+          <div
+            className="card-title"
+            style={{ marginBottom: '0.5rem' }}
+          >
+            {label}
+          </div>
+          <CheckboxTree
+            nodes={data}
+            checked={checked}
+            expanded={expanded}
+            showNodeIcon={false}
+            onCheck={onCheck}
+            onExpand={onExpand}
+            nativeCheckboxes
+            checkModel="all"
+            disabled={disabledState}
+          />
+        </div>
+      )}
+      {config.UI_LIB === 'mui' && (
+        <>
+          <div
+            className="custom-checkbox-tree"
+            data-disabled={disabledState}
+            style={{
+              maxHeight: height,
+              display: visibility ? '' : 'none',
+              color: textColor,
+              boxShadow,
+            }}
+            data-cy={dataCy}
+          >
+            <div
+              className="card-title"
+              style={{ marginBottom: '0.5rem' }}
+            >
+              {label}
+            </div>
+            {data && expanded && checked && (
+              <TreeView
+                aria-label="controlled"
+                defaultCollapseIcon={<span> - </span>}
+                defaultExpandIcon={<span> + </span>}
+                expanded={expanded}
+                onNodeToggle={handleToggle}
+                multiSelect
+              >
+                {TreeMenu(data)}
+              </TreeView>
+            )}
+          </div>
+        </>
+      )}
+    </>
   );
 };
