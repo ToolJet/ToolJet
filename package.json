@@ -50,6 +50,7 @@
     "db:drop": "npm --prefix server run db:drop",
     "deploy": "cp -a frontend/build/. public/",
     "heroku-postbuild": "./heroku-postbuild.sh",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "update-version": "node update-version.js"
   }
 }
