@@ -102,10 +102,7 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
       >
         <button
           onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name)}
-          className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(
-            isLoading,
-            isVersionReleased || isEditorFreezed
-          )}`}
+          className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(isLoading)}`}
           data-cy="query-run-button"
           disabled={isInDraft}
           {...(isInDraft && {
@@ -151,16 +148,15 @@ export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, 
   );
 });
 
-const PreviewButton = ({ buttonLoadingState, onClick, disabled }) => {
+const PreviewButton = ({ buttonLoadingState, onClick }) => {
   const previewLoading = usePreviewLoading();
   const { t } = useTranslation();
 
   return (
     <button
       onClick={onClick}
-      className={cx(`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading)}`, { disabled })}
+      className={cx(`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading)}`)}
       data-cy={'query-preview-button'}
-      disabled={disabled}
     >
       <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
         <Eye1 width={14} fill="var(--slate9)" />
