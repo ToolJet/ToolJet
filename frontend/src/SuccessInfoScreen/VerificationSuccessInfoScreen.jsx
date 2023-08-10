@@ -14,7 +14,8 @@ import EyeHide from '../../assets/images/onboardingassets/Icons/EyeHide';
 import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { useTranslation } from 'react-i18next';
-import { buildURLWithQuery, redirectToDashboard } from '@/_helpers/utils';
+import { buildURLWithQuery } from '@/_helpers/utils';
+import { redirectToDashboard } from '@/_helpers/routes';
 
 export const VerificationSuccessInfoScreen = function VerificationSuccessInfoScreen() {
   const [showOnboarding, setShowOnboarding] = useState(false);

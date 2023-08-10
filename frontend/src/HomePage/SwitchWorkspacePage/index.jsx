@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { getAvatar, appendWorkspaceId } from '../../_helpers/utils';
+import { getAvatar } from '@/_helpers/utils';
+import { appendWorkspaceId } from '@/_helpers/routes';
 import cx from 'classnames';
 import { organizationService } from '@/_services';
 

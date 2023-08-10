@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import { Link, Navigate } from 'react-router-dom';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
-import { getSubpath, getWorkspaceId, validateEmail } from '../_helpers/utils';
+import { getWorkspaceId, validateEmail } from '@/_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -16,6 +16,7 @@ import Spinner from '@/_ui/Spinner';
 import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
 import { withRouter } from '@/_hoc/withRouter';
 import queryString from 'query-string';
+import { pathnameToArray, getSubpath } from '@/_helpers/routes';
 class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -128,7 +129,7 @@ class LoginPageComponent extends React.Component {
               this.props.history.push('/switch-workspace');
             })
             .catch(() => {
-              window.location = '/login';
+              if (pathnameToArray()[0] !== 'login') window.location = '/login';
             });
         }
 

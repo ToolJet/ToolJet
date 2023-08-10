@@ -6,13 +6,13 @@ import { HeaderSection } from '@/_ui/LeftSidebar';
 import { LeftSidebarItem } from '../LeftSidebar/SidebarItem';
 import FxButton from '../CodeBuilder/Elements/FxButton';
 import { CodeHinter } from '../CodeBuilder/CodeHinter';
-import { getHostURL, resolveReferences, validateName, getWorkspaceId } from '@/_helpers/utils';
+import { resolveReferences, validateName, getWorkspaceId } from '@/_helpers/utils';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import Popover from '@/_ui/Popover';
 import { appsService } from '@/_services';
 import { useCurrentState } from '@/_stores/currentStateStore';
-import { replaceEditorURL } from '@/_helpers/routes';
+import { replaceEditorURL, getHostURL } from '@/_helpers/routes';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
 

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { authenticationService } from '@/_services';
-import { excludeWorkspaceIdFromURL, appendWorkspaceId } from '../_helpers/utils';
+import { appendWorkspaceId, excludeWorkspaceIdFromURL } from '@/_helpers/routes';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 
 export const PrivateRoute = ({ children }) => {

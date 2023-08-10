@@ -1,18 +1,12 @@
 import { organizationService, authenticationService } from '@/_services';
-import {
-  appendWorkspaceId,
-  getSubpath,
-  getWorkspaceIdOrSlugFromURL,
-  stripTrailingSlash,
-  pathnameWithoutSubpath,
-} from '@/_helpers/utils';
+import { pathnameToArray, getSubpath, appendWorkspaceId, getWorkspaceIdOrSlugFromURL, getPathname } from './routes';
 
 export const authorizeWorkspace = () => {
   if (!isThisExistedRoute()) {
     const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
 
     const isApplicationsPath = window.location.pathname.includes('/applications/');
-    const appId = isApplicationsPath ? pathnameWithoutSubpath(window.location.pathname).split('/')[2] : null;
+    const appId = isApplicationsPath ? getPathname().split('/')[2] : null;
     authenticationService
       .validateSession(appId, workspaceIdOrSlug)
       .then(({ current_organization_id }) => {
@@ -57,7 +51,7 @@ const isThisExistedRoute = () => {
 
   const subpath = getSubpath();
   const subpathArray = subpath ? subpath.split('/').filter((path) => path != '') : [];
-  const pathnames = window.location.pathname.split('/')?.filter((path) => path != '');
+  const pathnames = pathnameToArray();
   const checkPath = () => existedPaths.find((path) => pathnames[subpath ? subpathArray.length : 0] === path);
   return pathnames?.length > 0 ? (checkPath() ? true : false) : false;
 };
@@ -70,7 +64,7 @@ const fetchOrganizations = (current_organization_id, callback) => {
 };
 
 const isThisWorkspaceLoginPage = (justLoginPage = false) => {
-  const subpath = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
+  const subpath = getSubpath();
   const pathname = location.pathname.replace(subpath, '');
   const pathnames = pathname.split('/').filter((path) => path !== '');
   return (justLoginPage && pathnames[0] === 'login') || (pathnames.length === 2 && pathnames[0] === 'login');

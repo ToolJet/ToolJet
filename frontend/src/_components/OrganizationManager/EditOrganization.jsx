@@ -4,7 +4,8 @@ import AlertDialog from '@/_ui/AlertDialog';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { validateName, handleHttpErrorMessages, appendWorkspaceId } from '@/_helpers/utils';
+import { validateName, handleHttpErrorMessages } from '@/_helpers/utils';
+import { appendWorkspaceId } from '@/_helpers/routes';
 import _ from 'lodash';
 
 export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) => {

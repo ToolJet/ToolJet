@@ -11,6 +11,7 @@ import { commentsService, organizationService, authenticationService } from '@/_
 import useRouter from '@/_hooks/use-router';
 import DOMPurify from 'dompurify';
 import { capitalize } from 'lodash';
+import { getPathname } from '@/_helpers/routes';
 
 const Comment = ({
   socket,
@@ -71,7 +72,7 @@ const Comment = ({
     } else {
       // resetting the query param
       // react router updates the url with the set basename resulting invalid url unless replaced
-      router.history(window.location.pathname.replace(window.public_config?.SUB_PATH, '/'));
+      router.history(getPathname());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);

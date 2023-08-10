@@ -7,8 +7,8 @@ import Skeleton from 'react-loading-skeleton';
 import _, { debounce } from 'lodash';
 import { withTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { getPrivateRoute, replaceEditorURL } from '@/_helpers/routes';
-import { getHostURL, validateName } from '@/_helpers/utils';
+import { getPrivateRoute, replaceEditorURL, getHostURL } from '@/_helpers/routes';
+import { validateName } from '@/_helpers/utils';
 class ManageAppUsersComponent extends React.Component {
   constructor(props) {
     super(props);

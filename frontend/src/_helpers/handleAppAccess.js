@@ -1,5 +1,6 @@
 import { organizationService, authenticationService, appsService } from '@/_services';
-import { safelyParseJSON, stripTrailingSlash, redirectToDashboard, getSubpath, getWorkspaceId } from '@/_helpers/utils';
+import { safelyParseJSON, getWorkspaceId } from '@/_helpers/utils';
+import { redirectToDashboard, getSubpath } from '@/_helpers/routes';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import queryString from 'query-string';
@@ -21,7 +22,7 @@ export const handleAppAccess = (componentType, slug, versionName) => {
 const switchOrganization = (componentType, slug, orgId, versionName) => {
   const query = queryString.stringify({ version: versionName });
   const path = !_.isEmpty(query) ? `/applications/${slug}${query ? `?${query}` : ''}` : `/apps/${slug}`;
-  const sub_path = window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : '';
+  const sub_path = getSubpath() ?? '';
   organizationService.switchOrganization(orgId).then(
     () => {
       window.location.href = componentType === 'editor' ? `${sub_path}/${orgId}${path}` : `${sub_path}${path}`;

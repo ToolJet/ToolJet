@@ -7,9 +7,10 @@ import {
   handleResponseWithoutValidation,
   authHeader,
 } from '@/_helpers';
-import { excludeWorkspaceIdFromURL, getWorkspaceId } from '@/_helpers/utils';
+import { getWorkspaceId } from '@/_helpers/utils';
 import config from 'config';
 import queryString from 'query-string';
+import { getPathname, excludeWorkspaceIdFromURL } from '@/_helpers/routes';
 
 const currentSessionSubject = new BehaviorSubject({
   current_organization_id: null,
@@ -248,9 +249,7 @@ function logout(avoidRedirection = false) {
       if (avoidRedirection) {
         window.location.href = loginPath;
       } else {
-        const pathname = window.public_config?.SUB_PATH
-          ? window.location.pathname.replace(window.public_config?.SUB_PATH, '')
-          : window.location.pathname;
+        const pathname = getPathname();
         window.location.href =
           loginPath +
           `?redirectTo=${

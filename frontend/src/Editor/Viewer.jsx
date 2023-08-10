@@ -17,7 +17,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences, getSubpath, excludeWorkspaceIdFromURL } from '@/_helpers/utils';
+import { resolveReferences } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
@@ -29,7 +29,7 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { handleAppAccess } from '@/_helpers/handleAppAccess';
-import { getQueryParams } from '@/_helpers/routes';
+import { getPathname, getQueryParams, excludeWorkspaceIdFromURL } from '@/_helpers/routes';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -257,7 +257,7 @@ class ViewerComponent extends React.Component {
           });
         } else if (currentSession?.authentication_failed && !slug) {
           const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
-          const pathname = getSubpath() ? window.location.pathname.replace(getSubpath(), '') : window.location.pathname;
+          const pathname = getPathname();
           window.location.href = loginPath + `?redirectTo=${excludeWorkspaceIdFromURL(pathname)}`;
         } else {
           slug && this.loadApplicationBySlug(slug);

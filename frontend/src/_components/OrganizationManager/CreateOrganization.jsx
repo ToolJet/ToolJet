@@ -3,7 +3,8 @@ import { organizationService } from '@/_services';
 import AlertDialog from '@/_ui/AlertDialog';
 import { useTranslation } from 'react-i18next';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { appendWorkspaceId, validateName, handleHttpErrorMessages } from '@/_helpers/utils';
+import { validateName, handleHttpErrorMessages } from '@/_helpers/utils';
+import { appendWorkspaceId } from '@/_helpers/routes';
 import _ from 'lodash';
 
 export const CreateOrganization = ({ showCreateOrg, setShowCreateOrg }) => {
