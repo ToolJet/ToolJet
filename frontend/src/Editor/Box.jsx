@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useContext, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useContext } from 'react';
 import { Button } from './Components/Button';
 import { Image } from './Components/Image';
 import { Text } from './Components/Text';
@@ -200,7 +200,11 @@ export const Box = function Box({
 
   const { variablesExposedForPreview, exposeToCodeHinter } = useContext(EditorContext) || {};
 
-  const componentActions = useRef(new Set());
+  useEffect(() => {
+    onComponentOptionChanged && onComponentOptionChanged(component, 'id', id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); /*computeComponentState was not getting the id on initial render therefore exposed variables were not set.
+  computeComponentState was being executed before addNewWidgetToTheEditor was completed.*/
 
   useEffect(() => {
     const currentPage = currentState?.page;

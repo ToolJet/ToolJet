@@ -81,11 +81,18 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
   let componentData = components[componentName];
   componentData = componentData || {};
   componentData[option_name] = value;
-  if (!component?.parent) {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: { ...components, [componentName]: componentData },
-    });
+  if (!component.parent) {
+    if (option_name !== 'id') {
+      useCurrentStateStore.getState().actions.setCurrentState({
+        components: { ...components, [componentName]: componentData },
+      });
+    } else if (!componentData?.id) {
+      useCurrentStateStore.getState().actions.setCurrentState({
+        components: { ...components, [componentName]: componentData },
+      });
+    }
   }
+
   return Promise.resolve();
 }
 
@@ -1164,6 +1171,7 @@ export function computeComponentState(_ref, components = {}) {
       };
     }
   });
+
   useCurrentStateStore.getState().actions.setCurrentState({
     components: {
       ...componentState,
