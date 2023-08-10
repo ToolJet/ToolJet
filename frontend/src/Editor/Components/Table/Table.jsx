@@ -588,11 +588,13 @@ export function Table({
         hooks.visibleColumns.push((columns) => [
           {
             id: 'selection',
-            Header: ({ getToggleAllPageRowsSelectedProps }) => (
-              <div className="d-flex flex-column align-items-center">
-                {showBulkSelector && <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />}
-              </div>
-            ),
+            Header: ({ getToggleAllPageRowsSelectedProps }) => {
+              return (
+                <div className="d-flex flex-column align-items-center">
+                  {showBulkSelector && <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />}
+                </div>
+              );
+            },
             Cell: ({ row }) => {
               return (
                 <div className="d-flex flex-column align-items-center">
@@ -1068,49 +1070,71 @@ export function Table({
                       tabIndex="0"
                       className="tr"
                     >
-                      {headerGroup.headers.map((column, index) => (
-                        <Draggable
-                          key={column.id}
-                          draggableId={column.id}
-                          index={index}
-                          isDragDisabled={!column.accessor}
-                        >
-                          {(provided, snapshot) => {
-                            return (
-                              <th
-                                key={index}
-                                {...column.getHeaderProps()}
-                                className={
-                                  column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'
-                                }
-                              >
-                                <div
-                                  data-cy={`column-header-${String(column.exportValue)
-                                    .toLowerCase()
-                                    .replace(/\s+/g, '-')}`}
-                                  {...column.getSortByToggleProps()}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  // {...extraProps}
-                                  ref={provided.innerRef}
-                                  style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
+                      {headerGroup.headers.map((column, index) => {
+                        return (
+                          <Draggable
+                            key={column.id}
+                            draggableId={column.id}
+                            index={index}
+                            isDragDisabled={!column.accessor}
+                          >
+                            {(provided, snapshot) => {
+                              let headerProps = { ...column.getHeaderProps() };
+                              if (column.columnType === 'selector') {
+                                headerProps = {
+                                  ...headerProps,
+                                  style: {
+                                    ...headerProps.style,
+                                    width: 40,
+                                    height: '100%',
+                                    padding: 0,
+                                    display: 'flex',
+                                    'align-items': 'center',
+                                    'justify-content': 'center',
+                                  },
+                                };
+                              }
+                              return (
+                                <th
+                                  key={index}
+                                  {...headerProps}
+                                  className={
+                                    column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'
+                                  }
                                 >
-                                  {column.render('Header')}
-                                </div>
-                                <div
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                  }}
-                                  draggable="true"
-                                  {...column.getResizerProps()}
-                                  className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
-                                />
-                              </th>
-                            );
-                          }}
-                        </Draggable>
-                      ))}
+                                  <div
+                                    data-cy={`column-header-${String(column.exportValue)
+                                      .toLowerCase()
+                                      .replace(/\s+/g, '-')}`}
+                                    {...column.getSortByToggleProps()}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    // {...extraProps}
+                                    ref={provided.innerRef}
+                                    style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
+                                    className={`${
+                                      column.id === 'selection' && column.columnType === 'selector' && 'selector-column'
+                                    }`}
+                                  >
+                                    {column.render('Header')}
+                                  </div>
+                                  <div
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                    }}
+                                    draggable="true"
+                                    {...column.getResizerProps()}
+                                    className={`${
+                                      column.id === 'selection' && column.columnType === 'selector' ? '' : 'resizer'
+                                    }  ${column.isResizing ? 'isResizing' : ''}`}
+                                  />
+                                </th>
+                              );
+                            }}
+                          </Draggable>
+                        );
+                      })}
                     </tr>
                   )}
                 </Droppable>
@@ -1180,6 +1204,10 @@ export function Table({
                           }
                         }
                       }
+                      if (cell.column.columnType === 'selector') {
+                        cellProps.style.width = 40;
+                        cellProps.style.padding = 0;
+                      }
                       const wrapAction = textWrapActions(cell.column.id);
                       const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
                       const cellValue = rowChangeSet ? rowChangeSet[cell.column.name] || cell.value : cell.value;
@@ -1225,6 +1253,7 @@ export function Table({
                             'has-datepicker': cell.column.columnType === 'datepicker',
                             'align-items-center flex-column': cell.column.columnType === 'selector',
                             [cellSize]: true,
+                            'selector-column': cell.column.columnType === 'selector' && cell.column.id === 'selection',
                           })}
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
