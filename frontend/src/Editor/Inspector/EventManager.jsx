@@ -13,12 +13,17 @@ import Select from '@/_ui/Select';
 import defaultStyles from '@/_ui/Select/styles';
 import { useTranslation } from 'react-i18next';
 
-import { useDataQueries } from '@/_stores/dataQueriesStore';
+import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import AddRectangle from '@/_ui/Icon/bulkIcons/AddRectangle';
+import { Tooltip } from 'react-tooltip';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
+import { isQueryRunnable } from '@/_helpers/utils';
+import { shallow } from 'zustand/shallow';
 
 export const EventManager = ({
   component,
   componentMeta,
-  currentState,
   components,
   eventsChanged,
   apps,
@@ -27,8 +32,15 @@ export const EventManager = ({
   popoverPlacement,
   pages,
   hideEmptyEventsAlert,
+  callerQueryId,
 }) => {
-  const dataQueries = useDataQueries();
+  const dataQueries = useDataQueriesStore(({ dataQueries = [] }) => {
+    if (callerQueryId) {
+      //filter the same query getting attached to itself
+      return dataQueries.filter((query) => query.id != callerQueryId);
+    }
+    return dataQueries;
+  }, shallow);
   const [events, setEvents] = useState(() => component.component.definition.events || []);
   const [focusedEventIndex, setFocusedEventIndex] = useState(null);
   const { t } = useTranslation();
@@ -287,7 +299,6 @@ export const EventManager = ({
             <div className="col-9" data-cy="alert-message-type">
               <CodeHinter
                 theme={darkMode ? 'monokai' : 'default'}
-                currentState={currentState}
                 initialValue={event.runOnlyIf}
                 onChange={(value) => handlerChanged(index, 'runOnlyIf', value)}
                 usePortalEditor={false}
@@ -295,7 +306,7 @@ export const EventManager = ({
             </div>
           </div>
 
-          {actionLookup[event.actionId].options?.length > 0 && (
+          {actionLookup[event.actionId]?.options?.length > 0 && (
             <div className="hr-text" data-cy="action-option">
               {t('editor.inspector.eventManager.actionOptions', 'Action options')}
             </div>
@@ -310,7 +321,6 @@ export const EventManager = ({
                   <div className="col-9" data-cy="alert-message-input-field">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
-                      currentState={currentState}
                       initialValue={event.message}
                       onChange={(value) => handlerChanged(index, 'message', value)}
                       usePortalEditor={false}
@@ -343,7 +353,6 @@ export const EventManager = ({
                 <label className="form-label mt-1">{t('editor.inspector.eventManager.url', 'URL')}</label>
                 <CodeHinter
                   theme={darkMode ? 'monokai' : 'default'}
-                  currentState={currentState}
                   initialValue={event.url}
                   onChange={(value) => handlerChanged(index, 'url', value)}
                   usePortalEditor={false}
@@ -357,7 +366,6 @@ export const EventManager = ({
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getAllApps={getAllApps}
-                currentState={currentState}
                 darkMode={darkMode}
               />
             )}
@@ -409,7 +417,6 @@ export const EventManager = ({
                 <label className="form-label mt-1">{t('editor.inspector.eventManager.text', 'Text')}</label>
                 <CodeHinter
                   theme={darkMode ? 'monokai' : 'default'}
-                  currentState={currentState}
                   initialValue={event.contentToCopy}
                   onChange={(value) => handlerChanged(index, 'contentToCopy', value)}
                   usePortalEditor={false}
@@ -418,28 +425,39 @@ export const EventManager = ({
             )}
 
             {event.actionId === 'run-query' && (
-              <div className="row">
-                <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
-                <div className="col-9" data-cy="query-selection-field">
-                  <Select
-                    className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
-                    options={dataQueries.map((query) => {
-                      return { name: query.name, value: query.id };
-                    })}
-                    value={event.queryId}
-                    search={true}
-                    onChange={(value) => {
-                      const query = dataQueries.find((dataquery) => dataquery.id === value);
-                      handlerChanged(index, 'queryId', query.id);
-                      handlerChanged(index, 'queryName', query.name);
-                    }}
-                    placeholder={t('globals.select', 'Select') + '...'}
-                    styles={styles}
-                    useMenuPortal={false}
-                    useCustomStyles={true}
-                  />
+              <>
+                <div className="row">
+                  <div className="col-3 p-2">{t('editor.inspector.eventManager.query', 'Query')}</div>
+                  <div className="col-9" data-cy="query-selection-field">
+                    <Select
+                      className={`${darkMode ? 'select-search-dark' : 'select-search'} w-100`}
+                      options={dataQueries
+                        .filter((qry) => isQueryRunnable(qry))
+                        .map((qry) => ({ name: qry.name, value: qry.id }))}
+                      value={event.queryId}
+                      search={true}
+                      onChange={(value) => {
+                        const query = dataQueries.find((dataquery) => dataquery.id === value);
+                        const parameters = (query?.options?.parameters ?? []).reduce(
+                          (paramObj, param) => ({
+                            ...paramObj,
+                            [param.name]: param.defaultValue,
+                          }),
+                          {}
+                        );
+                        handlerChanged(index, 'queryId', query.id);
+                        handlerChanged(index, 'queryName', query.name);
+                        handlerChanged(index, 'parameters', parameters);
+                      }}
+                      placeholder={t('globals.select', 'Select') + '...'}
+                      styles={styles}
+                      useMenuPortal={false}
+                      useCustomStyles={true}
+                    />
+                  </div>
                 </div>
-              </div>
+                <RunjsParameters event={event} darkMode={darkMode} index={index} handlerChanged={handlerChanged} />
+              </>
             )}
 
             {event.actionId === 'set-localstorage-value' && (
@@ -449,7 +467,6 @@ export const EventManager = ({
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
-                      currentState={currentState}
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
@@ -462,7 +479,6 @@ export const EventManager = ({
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
-                      currentState={currentState}
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
                       enablePreview={true}
@@ -482,6 +498,7 @@ export const EventManager = ({
                       options={[
                         { name: 'CSV', value: 'csv' },
                         { name: 'Text', value: 'plaintext' },
+                        { name: 'PDF', value: 'pdf' },
                       ]}
                       value={event.fileType ?? 'csv'}
                       search={true}
@@ -500,7 +517,6 @@ export const EventManager = ({
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
-                      currentState={currentState}
                       initialValue={event.fileName}
                       onChange={(value) => handlerChanged(index, 'fileName', value)}
                       enablePreview={true}
@@ -512,7 +528,6 @@ export const EventManager = ({
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
-                      currentState={currentState}
                       initialValue={event.data}
                       onChange={(value) => handlerChanged(index, 'data', value)}
                       enablePreview={true}
@@ -546,7 +561,6 @@ export const EventManager = ({
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
-                      currentState={currentState}
                       initialValue={event.pageIndex ?? '{{1}}'}
                       onChange={(value) => handlerChanged(index, 'pageIndex', value)}
                       enablePreview={true}
@@ -563,7 +577,6 @@ export const EventManager = ({
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
-                      currentState={currentState}
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
@@ -576,7 +589,6 @@ export const EventManager = ({
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
-                      currentState={currentState}
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
                       enablePreview={true}
@@ -593,7 +605,6 @@ export const EventManager = ({
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
-                      currentState={currentState}
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
@@ -609,7 +620,6 @@ export const EventManager = ({
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
-                      currentState={currentState}
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
@@ -622,7 +632,6 @@ export const EventManager = ({
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
-                      currentState={currentState}
                       initialValue={event.value}
                       onChange={(value) => handlerChanged(index, 'value', value)}
                       enablePreview={true}
@@ -639,7 +648,6 @@ export const EventManager = ({
                   <div className="col-9">
                     <CodeHinter
                       theme={darkMode ? 'monokai' : 'default'}
-                      currentState={currentState}
                       initialValue={event.key}
                       onChange={(value) => handlerChanged(index, 'key', value)}
                       enablePreview={true}
@@ -655,7 +663,6 @@ export const EventManager = ({
                 handlerChanged={handlerChanged}
                 eventIndex={index}
                 getPages={getPageOptions}
-                currentState={currentState}
                 darkMode={darkMode}
               />
             )}
@@ -739,7 +746,6 @@ export const EventManager = ({
                         >
                           <CodeHinter
                             theme={darkMode ? 'monokai' : 'default'}
-                            currentState={currentState}
                             mode="javascript"
                             initialValue={valueForComponentSpecificActionHandle(event, param)}
                             onChange={(value) => {
@@ -761,7 +767,6 @@ export const EventManager = ({
               <div className="col-9" data-cy="debounce-input-field">
                 <CodeHinter
                   theme={darkMode ? 'monokai' : 'default'}
-                  currentState={currentState}
                   initialValue={event.debounce}
                   onChange={(value) => handlerChanged(index, 'debounce', value)}
                   usePortalEditor={false}
@@ -835,7 +840,7 @@ export const EventManager = ({
                             {...provided.dragHandleProps}
                             className="mb-1"
                           >
-                            <div className="card column-sort-row">
+                            <div className="card column-sort-row border-0 bg-slate2">
                               <div className={rowClassName} data-cy="event-handler-card">
                                 <div className="row p-2" role="button">
                                   <div className="col-auto" style={{ cursor: 'grab' }}>
@@ -881,7 +886,7 @@ export const EventManager = ({
                                   <div className="col text-truncate" data-cy="event-handler">
                                     {componentMeta.events[event.eventId]['displayName']}
                                   </div>
-                                  <div className="col text-truncate" data-cy="event-name">
+                                  <div className="col text-truncate color-slate11" data-cy="event-name">
                                     <small className="event-action font-weight-light text-truncate">
                                       {actionMeta.name}
                                     </small>
@@ -894,6 +899,8 @@ export const EventManager = ({
                                         removeHandler(index);
                                       }}
                                       data-cy="delete-button"
+                                      data-tooltip-id="event-delete-btn-icon"
+                                      data-tooltip-content="Delete"
                                     >
                                       <svg
                                         width="10"
@@ -904,10 +911,11 @@ export const EventManager = ({
                                       >
                                         <path
                                           d="M0 13.8333C0 14.75 0.75 15.5 1.66667 15.5H8.33333C9.25 15.5 10 14.75 10 13.8333V3.83333H0V13.8333ZM1.66667 5.5H8.33333V13.8333H1.66667V5.5ZM7.91667 1.33333L7.08333 0.5H2.91667L2.08333 1.33333H0V3H10V1.33333H7.91667Z"
-                                          fill="#8092AC"
+                                          fill="var(--slate8)"
                                         />
                                       </svg>
                                     </span>
+                                    <Tooltip id="event-delete-btn-icon" className="tooltip" />
                                   </div>
                                 </div>
                               </div>
@@ -927,20 +935,29 @@ export const EventManager = ({
     );
   };
 
+  const renderAddHandlerBtn = () => {
+    return (
+      <div className={`mb-3 ${events.length === 0 ? '' : 'mt-2'}`}>
+        <ButtonSolid
+          variant="ghostBlue"
+          size="sm"
+          onClick={addHandler}
+          data-cy={events.length === 0 ? 'add-event-handler' : 'add-more-event-handler'}
+        >
+          <AddRectangle width="15" fill="#3E63DD" opacity="1" secondaryFill="#ffffff" />
+          &nbsp;&nbsp;
+          {t('editor.inspector.eventManager.addHandler', 'Add handler')}
+        </ButtonSolid>
+      </div>
+    );
+  };
+
   const componentName = componentMeta.name ? componentMeta.name : 'query';
 
   if (events.length === 0) {
     return (
       <>
-        <div className="text-left mb-3">
-          <button
-            className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
-            onClick={addHandler}
-            data-cy="add-event-handler"
-          >
-            {t('editor.inspector.eventManager.addEventHandler', '+ Add event handler')}
-          </button>
-        </div>
+        {renderAddHandlerBtn()}
         {!hideEmptyEventsAlert ? (
           <div className="text-left">
             <small className="color-disabled" data-cy="no-event-handler-message">
@@ -960,16 +977,8 @@ export const EventManager = ({
 
   return (
     <>
-      <div className="text-right mb-3">
-        <button
-          className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
-          onClick={addHandler}
-          data-cy="add-more-event-handler"
-        >
-          {t('editor.inspector.eventManager.addHandler', '+ Add handler')}
-        </button>
-      </div>
       {renderHandlers(events)}
+      {renderAddHandlerBtn()}
     </>
   );
 };

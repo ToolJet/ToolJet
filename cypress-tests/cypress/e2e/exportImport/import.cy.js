@@ -20,7 +20,7 @@ describe("App Import Functionality", () => {
   let appData;
   var data = {};
   data.appName = `${fake.companyName}-App`;
-  data.appReName = `${fake.companyName}-App`;
+  data.appReName = `${fake.companyName}-${fake.companyName}-App`;
   let currentVersion = "";
   let otherVersions = "";
   const toolJetImage = "cypress/fixtures/Image/tooljet.png";
@@ -55,17 +55,18 @@ describe("App Import Functionality", () => {
     });
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
-      importText.couldNotImportAppToastMessage
+      importText.couldNotImportAppToastMessage,
+      false
     );
 
     cy.get(importSelectors.importOptionInput).selectFile(appFile, {
       force: true,
     });
-    cy.get(".driver-close-btn").click();
     cy.verifyToastMessage(
       commonSelectors.toastMessage,
       importText.appImportedToastMessage
     );
+    cy.get(".driver-close-btn").click();
     cy.get(commonSelectors.appNameInput).verifyVisibleElement(
       "contain.value",
       appData.name

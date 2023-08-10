@@ -33,6 +33,7 @@ describe("User permissions", () => {
   });
   beforeEach(() => {
     cy.appUILogin();
+    cy.visitTheWorkspace('My workspace')
   });
 
   it("Should verify the create new app permission", () => {
@@ -87,6 +88,7 @@ describe("User permissions", () => {
       .within(() => {
         cy.get("td input").eq(1).check();
       });
+    cy.verifyToastMessage(commonSelectors.toastMessage, "App permissions updated")
 
     common.logout();
     cy.login(data.email, usersText.password);
