@@ -266,6 +266,11 @@ img {
   border-radius: 5px !important;
 }
 
+.DocSearch-Search-Icon {
+  height: 13px;
+  width: 13px;
+}
+
 @media screen and (min-width: 768px) {
   .DocSearch-Button-Container {
     min-width: 200px;
