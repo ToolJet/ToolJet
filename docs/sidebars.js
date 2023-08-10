@@ -267,12 +267,13 @@ const sidebars = {
           ],
         },
         {
-          'type': 'category',
-          'label': 'Workspaces',
-          'items': [
-            'tutorial/workspace_overview',
-            'tutorial/workspace-variables',
-          ],
+          "type": "category",
+          "label": "Workspaces",
+          "items": [
+            "org-management/workspaces/workspace_overview",
+            "org-management/workspaces/workspace-variables",
+            "org-management/workspaces/workspace_constants"
+          ]
         },
         'org-management/permissions',
         'tutorial/manage-users-groups',
