@@ -17,7 +17,7 @@ ToolJet ships with its built-in database called **[ToolJet DB](/docs/tooljet-dat
 
 Once the data sources are connected, ToolJet can run **queries** on these data sources to fetch and update data. The data fetched from data sources can be **visualised and modified** using the UI widgets such as tables, charts, forms, etc. You can also use **[Javascript](/docs/data-sources/run-js)** or **[Python](/docs/data-sources/run-py)** queries for writing business logic or interacting with the user interface of the application.
 
-<img src="/img/v2-beta/getting_started/intro.png" alt="Getting started Demo app" />
+<img src="/img/v2-beta/getting_started/intro.webp" alt="Getting started Demo app" width="100%" height="100%" loading="eager" />
 
 <!-- Why ToolJet section is commented out.
 
@@ -36,7 +36,7 @@ When you're building an internal tool, there are a lot of tools and frameworks a
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/v2-beta/getting_started/howtjworks.png" alt="How ToolJet works flow" />
+<img className="screenshot-full" src="/img/v2-beta/getting_started/howtjworks.webp" width="100%" height="100%" alt="How ToolJet works flow" />
 
 </div>
 
@@ -83,21 +83,21 @@ Before getting into the quickstart, Sign up and create your account on **[ToolJe
 1. Navigate to **ToolJet DB Editor** from the left sidebar on the dashboard
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/111c.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/tooljetdbeditor.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
 
     </div>
 
 2. Click on **Create New Table** button, enter **Table name** and **Add columns** from the drawer that slides from the right. Click on **Create** to add the table.
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/prodtable.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/createnewtable.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
 
     </div>
 
 3. Once the table is created, click on the **Add new row** button to add the data to the table and click **Create**.
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/newrow1.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/addnewrow.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
 
     </div>
 
@@ -111,7 +111,7 @@ Learn more about the **[ToolJet Database here](/docs/tooljet-database)**
 
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/newapp1.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/createnewapplication.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
 
     </div>
 
@@ -122,7 +122,7 @@ Learn more about the **[ToolJet Database here](/docs/tooljet-database)**
 2. When you click on create new app the **App-builder** will open up. You can rename your application from `untitled` to **Support Tool** from the top left of app-builder.
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/appbuilder2.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/appbuilder.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
 
     </div>
 
@@ -138,7 +138,7 @@ Learn more about the **[ToolJet Database here](/docs/tooljet-database)**
     
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/ui.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/buildingui.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
 
     </div>
 
@@ -151,7 +151,7 @@ ToolJet application's User interface is constructed using Components like Tables
 1. We can add a new datasource from the **[Global datasources](/docs/data-sources/overview)** page from the dashboard but since we are using **ToolJet Database** we don't need to add any external datasource. Go to the **Query Panel and select ToolJet Database**
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/tjdb2.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/tooljetdb.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
 
     </div>
 
@@ -164,14 +164,14 @@ ToolJet application's User interface is constructed using Components like Tables
 3. Click on **Create** to create the query and then click **Run** to trigger the query and get response. You can also check the query response by clicking **Preview** button without firing the query.
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/listrowsq.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/createquery.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
 
     </div>
 
 4. Go to the **Table properties** by clicking on the component handle and bind the data returned by the query in the **Table data** property. When building apps in ToolJet anything inside `{{}}` is JavaScript and we javascript dot notation to get the data from query and populate the table using **{{queries.tooljetdb1.data}}**. The table will be auto-populated once the table data is entered.
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/tabledata.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/tabledata.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
 
     </div>
 
@@ -183,7 +183,7 @@ ToolJet application's User interface is constructed using Components like Tables
 
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/query2.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/selecttablecustomers.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
 
     </div>
 
@@ -194,7 +194,7 @@ ToolJet application's User interface is constructed using Components like Tables
 6. Now, let's bind this query to the **Add Product** button. Click on the button handle to open its properties, **Add an handler** -> **Select Event (On Click)** -> **Select Action (Run Query)** -> **Select Query (tooljetdb2)**. 
     <div style={{textAlign: 'center'}}>
 
-    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/event.png" alt="Getting started: Quickstart" />
+    <img className="screenshot-full" src="/img/v2-beta/getting_started/quickstart/compressed/addproductbutton.webp" width="100%" height="100%" alt="Getting started: Quickstart" />
 
     </div>
 
@@ -206,7 +206,7 @@ ToolJet application's User interface is constructed using Components like Tables
 ### Preview, Release and Share app
 
 1. Click on the **Preview** on the top-right of app builder to immediately check the currently opened version of the app in production. 
-2. Click on the  **Release** button to publish the currently opneded version of the app and push the changes to production.
+2. Click on the  **Release** button to publish the currently opened version of the app and push the changes to production.
 3. **Share** option allows you to share the **released version** of the application with other users or you can also make the app **public** and anyone with the URL will be able to use the app.
 
 :::tip
@@ -239,7 +239,7 @@ To contribute to ToolJet code, plugins, and documentation, refer to our **[Contr
 [![GitHub license](https://img.shields.io/github/license/ToolJet/ToolJet)](https://github.com/ToolJet/ToolJet)
 
 <a href="https://github.com/tooljet/tooljet/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=tooljet/tooljet&max=360&columns=20" />
+  <img src="https://contrib.rocks/image?repo=tooljet/tooljet&max=360&columns=20" width="100%" height="100%" alt="contributors" />
 </a>
 
 ## Help and Support

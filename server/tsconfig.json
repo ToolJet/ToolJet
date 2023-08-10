@@ -12,6 +12,7 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
+    "resolveJsonModule": true,
     "paths": {
       "@ee/*": ["ee/*"],
       "@services/*": ["src/services/*"],
