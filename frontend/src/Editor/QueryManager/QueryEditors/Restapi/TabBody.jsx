@@ -1,5 +1,4 @@
 import React from 'react';
-import GroupHeader from './GroupHeader';
 import TabContent from './TabContent';
 
 export default ({
@@ -12,11 +11,9 @@ export default ({
   onJsonBodyChange,
   componentName,
   bodyToggle,
-  setBodyToggle,
 }) => {
   return (
     <>
-      <GroupHeader paramType={'body'} descText={'Raw JSON'} bodyToggle={bodyToggle} setBodyToggle={setBodyToggle} />
       <TabContent
         options={options}
         theme={theme}
