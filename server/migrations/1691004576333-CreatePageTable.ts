@@ -18,18 +18,13 @@ export class CreatePageTable1691004576333 implements MigrationInterface {
             isNullable: false,
           },
           {
+            name: 'page_handle',
+            type: 'varchar',
+            isNullable: false,
+          },
+          {
             name: 'app_version_id',
             type: 'uuid',
-            isNullable: false,
-          },
-          {
-            name: 'update_id',
-            type: 'varchar',
-            isNullable: false,
-          },
-          {
-            name: 'last_hashed_diff',
-            type: 'varchar',
             isNullable: false,
           },
         ],

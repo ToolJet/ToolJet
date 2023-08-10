@@ -58,7 +58,7 @@ import { useDataQueries, useDataQueriesStore } from '@/_stores/dataQueriesStore'
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateStore';
-import { resetAllStores } from '@/_stores/utils';
+import { computeAppDiff, resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import { shallow } from 'zustand/shallow';
 import { useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
@@ -105,7 +105,7 @@ const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
   const mounted = useMounted();
 
-  const { updateState, updateAppDefinitionDiff } = useAppDataActions();
+  const { updateState, updateAppDefinitionDiff, updateAppVersion } = useAppDataActions();
   const { updateEditorState, updateQueryConfirmationList } = useEditorActions();
   const {
     noOfVersionsSupported,
@@ -127,7 +127,8 @@ const EditorComponent = (props) => {
 
   const dataQueries = useDataQueries();
 
-  const { isMaintenanceOn, appId, app, currentUser, currentVersionId, appDefinitionDiff } = useAppInfo();
+  const { isMaintenanceOn, appId, app, currentUser, currentVersionId, appDefinitionDiff, appDiffOptions } =
+    useAppInfo();
 
   const [currentPageId, setCurrentPageId] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -213,6 +214,7 @@ const EditorComponent = (props) => {
     if (currentUser?.current_organization_id) {
       fetchGlobalDataSources();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(currentUser?.current_organization_id)]);
 
   // Handle appDefinition updates
@@ -630,6 +632,7 @@ const EditorComponent = (props) => {
   };
 
   //!--------
+
   const fetchApp = async (startingPageHandle) => {
     const _appId = props?.params?.id;
 
@@ -638,7 +641,7 @@ const EditorComponent = (props) => {
       useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
       await fetchDataSources(data.editing_version?.id);
       await fetchDataQueries(data.editing_version?.id, true, true);
-
+      console.log('---piku [fetching app]---]', { data, defaultDef: defaultDefinition(props.darkMode) });
       let dataDefinition = data.definition ?? defaults(data.definition, defaultDefinition(props.darkMode));
 
       const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
@@ -774,6 +777,7 @@ const EditorComponent = (props) => {
     });
 
     const diffPatches = diff(appDefinition, updatedAppDefinition);
+
     const inversePatches = diff(updatedAppDefinition, appDefinition);
     const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
 
@@ -784,6 +788,9 @@ const EditorComponent = (props) => {
       setUndoStack((prev) => [...prev, undoPatches]);
 
       updateAppDefinitionDiff(diffPatches);
+      updateState({
+        appDiffOptions: opts,
+      });
       updateEditorState({
         isSaving: true,
         appDefinition: updatedAppDefinition,
@@ -804,13 +811,11 @@ const EditorComponent = (props) => {
         isSaving: false,
       });
     } else if (!isEmpty(props?.editingVersion)) {
-      appVersionService
-        .save(
-          appId,
-          props.editingVersion?.id,
-          { definition: appDefinition, diff: appDefinitionDiff },
-          isUserSwitchedVersion
-        )
+      const componentDiff = computeAppDiff(appDefinitionDiff, currentPageId, appDiffOptions);
+
+      // console.log('---piku [componentDiff]--', componentDiff);
+
+      updateAppVersion(appId, props.editingVersion?.id, appDefinition, componentDiff, isUserSwitchedVersion)
         .then(() => {
           const _editingVersion = {
             ...props.editingVersion,
@@ -918,6 +923,7 @@ const EditorComponent = (props) => {
   }, [JSON.stringify(undoStack), JSON.stringify(redoStack)]);
 
   const componentDefinitionChanged = (componentDefinition, props) => {
+    console.log('---arpit checking:::: ', { props });
     if (props?.isVersionReleased) {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
       return;

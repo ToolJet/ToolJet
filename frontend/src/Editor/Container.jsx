@@ -84,6 +84,7 @@ export const Container = ({
   const [newThread, addNewThread] = useState({});
   const [isContainerFocused, setContainerFocus] = useState(false);
   const [canvasHeight, setCanvasHeight] = useState(null);
+
   const router = useRouter();
   const canvasRef = useRef(null);
   const focusedParentIdRef = useRef(undefined);
@@ -181,7 +182,20 @@ export const Container = ({
       },
     };
 
-    appDefinitionChanged(newDefinition, { containerChanges: true });
+    //need to check if a new component is added or deleted
+
+    const oldComponents = appDefinition.pages[currentPageId]?.components ?? {};
+    const newComponents = boxes;
+
+    const componendAdded = Object.keys(newComponents).length > Object.keys(oldComponents).length;
+
+    const opts = { containerChanges: true };
+
+    if (componendAdded) {
+      opts.componentAdded = true;
+    }
+
+    appDefinitionChanged(newDefinition, opts);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 

@@ -28,6 +28,7 @@ import { AppEnvironmentService } from './app_environments.service';
 import { decode } from 'js-base64';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
+import { Page } from 'src/entities/page.entity';
 
 @Injectable()
 export class AppsService {
@@ -117,7 +118,29 @@ export class AppsService {
       );
 
       //create default app version
-      await this.createVersion(user, app, 'v1', null, null, manager);
+      const appVersion = await this.createVersion(user, app, 'v1', null, null, manager);
+
+      const defaultHomePage = await manager.save(
+        manager.create(Page, {
+          name: 'Home',
+          pageHandle: 'home',
+          appVersionId: appVersion.id,
+        })
+      );
+
+      // Set default values for app version
+      appVersion.showViewerNavigation = true;
+      appVersion.homePageId = defaultHomePage.id;
+      appVersion.globalSettings = {
+        hideHeader: false,
+        appInMaintenance: false,
+        canvasMaxWidth: 1292,
+        canvasMaxWidthType: 'px',
+        canvasMaxHeight: 2400,
+        canvasBackgroundColor: '#edeff5',
+        backgroundFxQuery: '',
+      };
+      await manager.save(appVersion);
 
       await manager.save(
         manager.create(AppUser, {
@@ -360,6 +383,15 @@ export class AppsService {
         id: version.id,
         appId: app.id,
       });
+    });
+  }
+
+  async findPagesForVersion(appVersionId: string): Promise<Page[]> {
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      return manager
+        .createQueryBuilder(Page, 'pages')
+        .where('pages.appVersionId = :appVersionId', { appVersionId }) // Replace 'AppVersionId' with the actual column name
+        .getMany();
     });
   }
 

@@ -38,6 +38,8 @@ import { Page } from 'src/entities/page.entity';
 import { EventHandler } from 'src/entities/event_handler.entity';
 import { Layout } from 'src/entities/layout.entity';
 
+import { ComponentsService } from '@services/components.service';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -77,6 +79,7 @@ import { Layout } from 'src/entities/layout.entity';
     PluginsService,
     PluginsHelper,
     AppEnvironmentService,
+    ComponentsService,
   ],
   controllers: [AppsController, AppUsersController, AppsImportExportController],
 })

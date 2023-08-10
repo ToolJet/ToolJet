@@ -1,4 +1,4 @@
-import { shallow } from 'zustand/shallow';
+import { appVersionService } from '@/_services';
 import { create, zustandDevTools } from './utils';
 
 const initialState = {
@@ -19,6 +19,7 @@ const initialState = {
   layouts: [],
   eventHandlers: [],
   appDefinitionDiff: null,
+  appDiffOptions: {},
 };
 
 export const useAppDataStore = create(
@@ -30,6 +31,14 @@ export const useAppDataStore = create(
         updateApps: (apps) => set(() => ({ apps: apps })),
         updateState: (state) => set((prev) => ({ ...prev, ...state })),
         updateAppDefinitionDiff: (appDefinitionDiff) => set(() => ({ appDefinitionDiff: appDefinitionDiff })),
+        updateAppVersion: async (appId, versionId, appDefinition, appDefinitionDiff, isUserSwitchedVersion = false) => {
+          return await appVersionService.save(
+            appId,
+            versionId,
+            { definition: appDefinition, diff: appDefinitionDiff },
+            isUserSwitchedVersion
+          );
+        },
       },
     }),
     { name: 'App Data Store' }
