@@ -80,46 +80,6 @@ Example:
 {{[{ id: 1, name: 'Sarah', email: 'sarah@example.com'}]}}
 ```
 
-The table also supports the loading of one level of **nested data**. Here is an example of the data structure:
-
-```js
-[
-   {
-      "id":1,
-      "student":{
-         "name":"Anakin Skywalker",
-         "saber":"blue"
-      },
-      "teacher":{
-         "name":"Obi wan Kenobi",
-         "saber":"blue"
-      }
-   },
-   {
-      "id":2,
-      "student":{
-         "name":"Kevin",
-         "saber":"blue"
-      },
-      "teacher":{
-         "name":"Joe",
-         "saber":"blue"
-      }
-   },
-   {
-      "id":3,
-      "student":{
-         "name":"Alex",
-         "saber":"blue"
-      },
-      "teacher":{
-         "name":"Noah",
-         "saber":"blue"
-      }
-   }
-]
-```
-
 When you provide the expected table data as an array of objects, the table component will **automatically generate all the required columns**.
 
 ## Columns

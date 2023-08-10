@@ -23,6 +23,9 @@ import {
   stripTrailingSlash,
   getSubpath,
   excludeWorkspaceIdFromURL,
+  isQueryRunnable,
+  redirectToDashboard,
+  getWorkspaceId,
 } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
@@ -182,7 +185,7 @@ class ViewerComponent extends React.Component {
 
   runQueries = (data_queries) => {
     data_queries.forEach((query) => {
-      if (query.options.runOnPageLoad) {
+      if (query.options.runOnPageLoad && isQueryRunnable(query)) {
         runQuery(this, query.id, query.name, undefined, 'view');
       }
     });
@@ -272,17 +275,23 @@ class ViewerComponent extends React.Component {
             this.switchOrganization(errorObj?.organizationId, appId, versionId);
             return;
           }
+          /* router dom Navigate is not working now. so hard reloading */
+          redirectToDashboard();
           return <Navigate replace to={'/'} />;
         } else if (statusCode === 401) {
-          window.location = `${getSubpath() ?? ''}/login?redirectTo=${this.props.location.pathname}`;
+          window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${
+            this.props.location.pathname
+          }`;
         } else if (statusCode === 404) {
           toast.error(errorDetails?.error ?? 'App not found', {
             position: 'top-center',
           });
         }
+        redirectToDashboard();
         return <Navigate replace to={'/'} />;
       }
     } catch (err) {
+      redirectToDashboard();
       return <Navigate replace to={'/'} />;
     }
   };
@@ -546,6 +555,7 @@ class ViewerComponent extends React.Component {
               onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
               onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0], false, 'view')}
               queryConfirmationData={queryConfirmationList[0]}
+              darkMode={this.props.darkMode}
               key={queryConfirmationList[0]?.queryName}
             />
             <DndProvider backend={HTML5Backend}>

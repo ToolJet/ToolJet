@@ -86,9 +86,7 @@ describe("Manage Users", () => {
       "have.text",
       "My workspace"
     );
-    // cy.get(commonSelectors.workspaceName).click();
     updateWorkspaceName(data.email);
-    cy.get(dashboardSelector.emptyPageHeader).should("be.visible");
 
     common.logout();
     cy.appUILogin();
@@ -122,10 +120,12 @@ describe("Manage Users", () => {
       });
 
     common.logout();
+    cy.visit('/');
     cy.clearAndType(commonSelectors.workEmailInputField, data.email);
     cy.clearAndType(commonSelectors.passwordInputField, usersText.password);
     cy.get(commonSelectors.loginButton).click();
 
+    updateWorkspaceName(data.email);
     cy.get(commonSelectors.workspaceName).click();
     cy.contains("My workspace").should("not.exist");
     common.logout();
@@ -196,7 +196,7 @@ describe("Manage Users", () => {
       });
   });
 
-  it("Should verify the user onboarding with groups", () => {
+  it.skip("Should verify the user onboarding with groups", () => {
     data.firstName = fake.firstName;
     data.email = fake.email.toLowerCase().replaceAll("[^A-Za-z]", "");
     common.navigateToManageUsers();

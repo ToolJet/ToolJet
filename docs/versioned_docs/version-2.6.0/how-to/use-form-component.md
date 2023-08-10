@@ -66,7 +66,7 @@ In this how-to guide, we will be building a simple application that will leverag
 
     </div>
 
-- Let's create a query that will get the data from the form and add a record in the sheet. Create a new google sheeet query and from the operation choose **Append data to a spreadsheet**
+- Let's create a query that will get the data from the form and add a record in the sheet. Create a new google sheet query and from the operation choose **Append data to a spreadsheet**
     ```js
     [ 
         {

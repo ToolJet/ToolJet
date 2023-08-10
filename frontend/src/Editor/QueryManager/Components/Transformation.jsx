@@ -16,6 +16,7 @@ import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { Button } from '@/_ui/LeftSidebar';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { authenticationService } from '@/_services';
+import Information from '@/_ui/Icon/solidIcons/Information';
 import { useCurrentState } from '@/_stores/currentStateStore';
 
 export const Transformation = ({ changeOption, options, darkMode, queryId }) => {
@@ -76,10 +77,6 @@ return [row for row in data if row['amount'] > 1000]
   useEffect(() => {
     const selectedQueryId = localStorage.getItem('selectedQuery') ?? null;
 
-    if (queryId === 'draftQuery') {
-      setState(defaultValue);
-      return;
-    }
     if (selectedQueryId !== queryId) {
       const nonLangdefaultCode = getNonActiveTransformations(options?.transformationLanguage ?? 'javascript');
       const finalState = _.merge(
@@ -138,9 +135,12 @@ return [row for row in data if row['amount'] > 1000]
     };
   };
 
-  const popover = (
-    <Popover id="transformation-popover-container">
-      <p className="transformation-popover" data-cy={`transformation-popover`}>
+  const labelPopoverContent = (
+    <Popover
+      id="transformation-popover-container"
+      className={`${darkMode && 'popover-dark-themed theme-dark dark-theme tj-dark-mode'} p-0`}
+    >
+      <p className={`transformation-popover`} data-cy={`transformation-popover`}>
         {t(
           'editor.queryManager.transformation.transformationToolTip',
           'Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python'
@@ -154,9 +154,136 @@ return [row for row in data if row['amount'] > 1000]
     </Popover>
   );
 
-  const popoverForRecommendation = (
-    <Popover id="transformation-popover-container">
-      <div className="transformation-popover card text-center">
+  return (
+    <div className="field  transformation-editor">
+      <div className="align-items-center gap-2" style={{ display: 'flex', position: 'relative', height: '20px' }}>
+        <div className="d-flex flex-fill">
+          <OverlayTrigger
+            trigger="click"
+            placement="top"
+            rootClose
+            overlay={labelPopoverContent}
+            container={document.getElementsByClassName('query-details')[0]}
+          >
+            <span
+              className="color-slate9 font-weight-500 form-label"
+              data-cy={'label-query-transformation'}
+              style={{ textDecoration: 'underline 2px dashed', textDecorationColor: 'var(--slate8)' }}
+            >
+              {t('editor.queryManager.transformation.transformations', 'Transformations')}
+            </span>
+          </OverlayTrigger>
+          <div className="flex-grow-l">
+            <div className=" d-flex">
+              <div className="mb-0">
+                <span className="d-flex">
+                  <CustomToggleSwitch
+                    isChecked={enableTransformation}
+                    toggleSwitchFunction={toggleEnableTransformation}
+                    action="enableTransformation"
+                    darkMode={darkMode}
+                    dataCy={'transformation'}
+                  />
+                  <span className="ps-1">Enable</span>
+                </span>
+              </div>
+              <EducativeLabel darkMode={darkMode} />
+            </div>
+            <div></div>
+          </div>
+        </div>
+      </div>
+      <br></br>
+      <div className="d-flex">
+        <div className="form-label"></div>
+        <div className="col flex-grow-1">
+          {enableTransformation && (
+            <div
+              className="rounded-3"
+              style={{ marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
+            >
+              <div className="py-3 px-3 d-flex justify-content-between">
+                <div className="d-flex">
+                  <div className="d-flex align-items-center border transformation-language-select-wrapper">
+                    <span className="px-2">Language</span>
+                  </div>
+                  <Select
+                    options={[
+                      { name: 'JavaScript', value: 'javascript' },
+                      { name: 'Python', value: 'python' },
+                    ]}
+                    value={lang}
+                    search={true}
+                    onChange={(value) => {
+                      setLang(value);
+                      changeOption('transformationLanguage', value);
+                      changeOption('transformation', state[value]);
+                    }}
+                    placeholder={t('globals.select', 'Select') + '...'}
+                    styles={computeSelectStyles(darkMode, 140)}
+                    useCustomStyles={true}
+                  />
+                </div>
+
+                <div
+                  data-tooltip-id="tooltip-for-active-copilot"
+                  data-tooltip-content="Activate Copilot in the workspace settings"
+                >
+                  <Button
+                    onClick={handleCallToGPT}
+                    darkMode={darkMode}
+                    size="sm"
+                    classNames={`${fetchingRecommendation ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`}
+                    styles={{
+                      width: '100%',
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      borderColor: darkMode && 'transparent',
+                    }}
+                    disabled={!isCopilotEnabled}
+                  >
+                    <Button.Content title={'Generate code'} />
+                  </Button>
+                </div>
+
+                {!isCopilotEnabled && (
+                  <ReactTooltip
+                    id="tooltip-for-active-copilot"
+                    className="tooltip"
+                    style={{ backgroundColor: '#e6eefe', color: '#222' }}
+                  />
+                )}
+              </div>
+              <div className="border-top mx-3"></div>
+              <CodeHinter
+                initialValue={state[lang]}
+                mode={lang}
+                theme={darkMode ? 'monokai' : 'base16-light'}
+                lineNumbers={true}
+                height={'300px'}
+                className="query-hinter"
+                ignoreBraces={true}
+                onChange={(value) => changeOption('transformation', value)}
+                componentName={`transformation`}
+                cyLabel={'transformation-input'}
+                callgpt={handleCallToGPT}
+                isCopilotEnabled={isCopilotEnabled}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const EducativeLabel = ({ darkMode }) => {
+  const popoverContent = (
+    <Popover
+      id={`transformation-popover-container`}
+      className={`${darkMode && 'popover-dark-themed theme-dark dark-theme'} p-0`}
+    >
+      <div className={`transformation-popover card text-center ${darkMode && 'tj-dark-mode'}`}>
         <img src="/assets/images/icons/copilot.svg" alt="AI copilot" height={64} width={64} />
         <div className="d-flex flex-column card-body">
           <h4 className="mb-2">ToolJet x OpenAI</h4>
@@ -179,149 +306,30 @@ return [row for row in data if row['amount'] > 1000]
     </Popover>
   );
 
-  const EducativeLebel = () => {
-    const title = () => {
-      return (
-        <>
-          Powered by <strong style={{ fontWeight: 700, color: '#3E63DD' }}>AI copilot</strong>
-        </>
-      );
-    };
+  const title = () => {
     return (
-      <div className="d-flex">
-        <Button.UnstyledButton styles={{ height: '28px' }} darkMode={darkMode} classNames="mx-1">
-          <Button.Content title={title} iconSrc={'assets/images/icons/flash.svg'} direction="left" />
-        </Button.UnstyledButton>
-        <OverlayTrigger trigger="click" placement="left" overlay={popoverForRecommendation} rootClose>
-          <svg
-            width="16.7"
-            height="16.7"
-            viewBox="0 0 20 21"
-            fill="#3E63DD"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{ cursor: 'pointer' }}
-            data-cy={`transformation-info-icon`}
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M10 2.5C5.58172 2.5 2 6.08172 2 10.5C2 14.9183 5.58172 18.5 10 18.5C14.4183 18.5 18 14.9183 18 10.5C18 6.08172 14.4183 2.5 10 2.5ZM0 10.5C0 4.97715 4.47715 0.5 10 0.5C15.5228 0.5 20 4.97715 20 10.5C20 16.0228 15.5228 20.5 10 20.5C4.47715 20.5 0 16.0228 0 10.5ZM9 6.5C9 5.94772 9.44771 5.5 10 5.5H10.01C10.5623 5.5 11.01 5.94772 11.01 6.5C11.01 7.05228 10.5623 7.5 10.01 7.5H10C9.44771 7.5 9 7.05228 9 6.5ZM8 10.5C8 9.94771 8.44772 9.5 9 9.5H10C10.5523 9.5 11 9.94771 11 10.5V13.5C11.5523 13.5 12 13.9477 12 14.5C12 15.0523 11.5523 15.5 11 15.5H10C9.44771 15.5 9 15.0523 9 14.5V11.5C8.44772 11.5 8 11.0523 8 10.5Z"
-              fill="#3E63DD"
-            />
-          </svg>
-        </OverlayTrigger>
-      </div>
+      <>
+        Powered by <strong style={{ fontWeight: 700, color: '#3E63DD' }}>AI copilot</strong>
+      </>
     );
   };
 
   return (
-    <div className="field  transformation-editor">
-      <div className="align-items-center gap-2" style={{ display: 'flex', position: 'relative', height: '20px' }}>
-        <div className="d-flex flex-fill">
-          <div className="mb-0">
-            <CustomToggleSwitch
-              isChecked={enableTransformation}
-              toggleSwitchFunction={toggleEnableTransformation}
-              action="enableTransformation"
-              darkMode={darkMode}
-              dataCy={'transformation'}
-            />
-          </div>
-          <span className="mx-1 font-weight-400 tranformation-label" data-cy={'label-query-transformation'}>
-            {t('editor.queryManager.transformation.transformations', 'Transformations')}
-          </span>
-          <OverlayTrigger trigger="click" placement="top" overlay={popover} rootClose>
-            <svg
-              width="16.7"
-              height="16.7"
-              viewBox="0 0 20 21"
-              fill="#3E63DD"
-              xmlns="http://www.w3.org/2000/svg"
-              style={{ cursor: 'pointer' }}
-              data-cy={`transformation-info-icon`}
-            >
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M10 2.5C5.58172 2.5 2 6.08172 2 10.5C2 14.9183 5.58172 18.5 10 18.5C14.4183 18.5 18 14.9183 18 10.5C18 6.08172 14.4183 2.5 10 2.5ZM0 10.5C0 4.97715 4.47715 0.5 10 0.5C15.5228 0.5 20 4.97715 20 10.5C20 16.0228 15.5228 20.5 10 20.5C4.47715 20.5 0 16.0228 0 10.5ZM9 6.5C9 5.94772 9.44771 5.5 10 5.5H10.01C10.5623 5.5 11.01 5.94772 11.01 6.5C11.01 7.05228 10.5623 7.5 10.01 7.5H10C9.44771 7.5 9 7.05228 9 6.5ZM8 10.5C8 9.94771 8.44772 9.5 9 9.5H10C10.5523 9.5 11 9.94771 11 10.5V13.5C11.5523 13.5 12 13.9477 12 14.5C12 15.0523 11.5523 15.5 11 15.5H10C9.44771 15.5 9 15.0523 9 14.5V11.5C8.44772 11.5 8 11.0523 8 10.5Z"
-                fill="#3E63DD"
-              />
-            </svg>
-          </OverlayTrigger>
-        </div>
-
-        <EducativeLebel />
-      </div>
-      <br></br>
-      {enableTransformation && (
-        <div
-          className="rounded-3"
-          style={{ marginLeft: '3rem', marginBottom: '20px', background: `${darkMode ? '#272822' : '#F8F9FA'}` }}
-        >
-          <div className="py-3 px-3 d-flex justify-content-between">
-            <div className="d-flex">
-              <div className="d-flex align-items-center border transformation-language-select-wrapper">
-                <span className="px-2">Language</span>
-              </div>
-              <Select
-                options={[
-                  { name: 'JavaScript', value: 'javascript' },
-                  { name: 'Python', value: 'python' },
-                ]}
-                value={lang}
-                search={true}
-                onChange={(value) => {
-                  setLang(value);
-                  changeOption('transformationLanguage', value);
-                  changeOption('transformation', state[value]);
-                }}
-                placeholder={t('globals.select', 'Select') + '...'}
-                styles={computeSelectStyles(darkMode, 140)}
-                useCustomStyles={true}
-              />
-            </div>
-
-            <div
-              data-tooltip-id="tooltip-for-active-copilot"
-              data-tooltip-content="Activate Copilot in the workspace settings"
-            >
-              <Button
-                onClick={handleCallToGPT}
-                darkMode={darkMode}
-                size="sm"
-                classNames={`${fetchingRecommendation ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`}
-                styles={{ width: '100%', fontSize: '12px', fontWeight: 500, borderColor: darkMode && 'transparent' }}
-                disabled={!isCopilotEnabled}
-              >
-                <Button.Content title={'Generate code'} />
-              </Button>
-            </div>
-
-            {!isCopilotEnabled && (
-              <ReactTooltip
-                id="tooltip-for-active-copilot"
-                className="tooltip"
-                style={{ backgroundColor: '#e6eefe', color: '#222' }}
-              />
-            )}
-          </div>
-          <div className="border-top mx-3"></div>
-          <CodeHinter
-            initialValue={state[lang]}
-            mode={lang}
-            theme={darkMode ? 'monokai' : 'base16-light'}
-            lineNumbers={true}
-            height={'300px'}
-            className="query-hinter"
-            ignoreBraces={true}
-            onChange={(value) => changeOption('transformation', value)}
-            componentName={`transformation`}
-            cyLabel={'transformation-input'}
-            callgpt={handleCallToGPT}
-            isCopilotEnabled={isCopilotEnabled}
-          />
-        </div>
-      )}
+    <div className="d-flex">
+      <Button.UnstyledButton styles={{ height: '28px' }} darkMode={darkMode} classNames="mx-1">
+        <Button.Content title={title} iconSrc={'assets/images/icons/flash.svg'} direction="left" />
+      </Button.UnstyledButton>
+      <OverlayTrigger
+        overlay={popoverContent}
+        rootClose
+        trigger="click"
+        placement="right"
+        container={document.getElementsByClassName('query-details')[0]}
+      >
+        <span style={{ cursor: 'pointer' }} data-cy={`transformation-info-icon`} className="lh-1">
+          <Information width={18} fill={'var(--indigo9)'} />
+        </span>
+      </OverlayTrigger>
     </div>
   );
 };

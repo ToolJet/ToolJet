@@ -15,7 +15,7 @@ export const multipageText = {
   optionEventHandler: "Event Handlers",
   eventModalTitle: "Page Events",
   labelEvents: "Events",
-  addEventHandlerLink: "+ Add event handler",
+  addEventHandlerLink: "Add handler",
   noEventHandlerInfo: "This page doesn't have any event handlers",
 
   optionDeletePage: "Delete Page",
