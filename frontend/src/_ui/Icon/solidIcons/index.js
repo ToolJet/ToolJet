@@ -116,6 +116,7 @@ import Mail from './Mail.jsx';
 import Logs from './Logs.jsx';
 import Marketplace from './Marketplace.jsx';
 import PlusRectangle from './PlusRectangle.jsx';
+import Editable from './Editable.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -351,6 +352,8 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
+    case 'editable':
+      return <Editable {...props} />;
     default:
       return <Apps {...props} />;
   }

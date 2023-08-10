@@ -1,3 +1,5 @@
+@import "./designtheme.scss";
+
 .jet-table.table-component{
     padding: 8px;
     &.jet-table {
@@ -144,30 +146,30 @@
     white-space: normal;
   }
 
-  th:after {
-    content: " ";
-    position: relative;
-    height: 0;
-    width: 0;
-  }
+  // th:after {
+  //   content: " ";
+  //   position: relative;
+  //   height: 0;
+  //   width: 0;
+  // }
 
-  .sort-desc:after {
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid #767676;
-    border-bottom: 5px solid transparent;
-    left: 0px;
-    top: 7px;
-  }
+  // .sort-desc:after {
+  //   border-left: 5px solid transparent;
+  //   border-right: 5px solid transparent;
+  //   border-top: 5px solid #767676;
+  //   border-bottom: 5px solid transparent;
+  //   left: 0px;
+  //   top: 7px;
+  // }
 
-  .sort-asc:after {
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 0px solid transparent;
-    border-bottom: 5px solid #767676;
-    left: 0px;
-    top: 7px;
-  }
+  // .sort-asc:after {
+  //   border-left: 5px solid transparent;
+  //   border-right: 5px solid transparent;
+  //   border-top: 0px solid transparent;
+  //   border-bottom: 5px solid #767676;
+  //   left: 0px;
+  //   top: 7px;
+  // }
 }
 
 .jet-data-table::-webkit-scrollbar {
@@ -302,9 +304,58 @@
 
   tr {
     flex-grow: 1;
-
     th:last-child {
       flex: 1 1 auto !important;
+    }
+  }
+}
+
+.table-filters,
+.table-add-new-row {
+  position: absolute;
+  top: 2.85rem;
+  width: 80%;
+  max-width: 700px;
+  margin-right: 10%;
+  right: 0;
+  height: 300px;
+  z-index: 100;
+}
+.jet-table {
+  .global-search-field {
+    background: transparent;
+  }
+}
+
+.jet-table-image-column {
+  margin: 0 auto;
+}
+.jet-table{
+  .tr{
+    .th{
+      background: var(--slate3, #F1F3F5) !important;
+      border-bottom: 1px solid var(--slate5, #E6E8EB) !important;
+      border-top: 0 !important;
+      padding: 6px 12px;
+      align-items: center;
+      color: var(--slate12) !important;
+      font-weight: 400 !important;
+      font-size: 12px !important;
+      width: 100%;
+      &:hover{
+        background: var(--slate4, #ECEEF0) !important;
+      }
+      &:focus-within,&:focus-within{
+        outline: 0;
+        background: var(--slate4, #ECEEF0) !important;
+        box-shadow: 0px 0px 0px 4px #DFE3E6 !important;
+        z-index: 999;
+        margin: 4px;
+      }
+      
+      .header-text{
+        outline: 0;
+      }
     }
   }
 }

@@ -46,6 +46,7 @@ import GenerateEachCellValue from './GenerateEachCellValue';
 import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -909,7 +910,7 @@ export function Table({
     >
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
       {(displaySearchBox || showDownloadButton || showFilterButton || showAddNewRowButton) && (
-        <div className={`card-body border-bottom py-3 ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'}`}>
+        <div className={`card-body py-3 ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'}`}>
           <div
             className={`d-flex align-items-center ms-auto text-muted ${
               displaySearchBox ? 'justify-content-between' : 'justify-content-end'
@@ -1067,7 +1068,6 @@ export function Table({
                       ref={droppableProvided.innerRef}
                       key={index}
                       {...headerGroup.getHeaderGroupProps()}
-                      tabIndex="0"
                       className="tr"
                     >
                       {headerGroup.headers.map((column, index) => {
@@ -1086,7 +1086,7 @@ export function Table({
                                   style: {
                                     ...headerProps.style,
                                     width: 40,
-                                    height: '100%',
+                                    // height: '100%',
                                     padding: 0,
                                     display: 'flex',
                                     'align-items': 'center',
@@ -1098,25 +1098,66 @@ export function Table({
                                 <th
                                   key={index}
                                   {...headerProps}
-                                  className={
-                                    column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'
-                                  }
+                                  className={`th tj-text-xsm font-weight-400 ${
+                                    column.isSorted && (column.isSortedDesc ? '' : '')
+                                  }`}
                                 >
                                   <div
-                                    data-cy={`column-header-${String(column.exportValue)
-                                      .toLowerCase()
-                                      .replace(/\s+/g, '-')}`}
-                                    {...column.getSortByToggleProps()}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    // {...extraProps}
-                                    ref={provided.innerRef}
-                                    style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
                                     className={`${
-                                      column.id === 'selection' && column.columnType === 'selector' && 'selector-column'
+                                      column.columnType !== 'selector' &&
+                                      'd-flex justify-content-between custom-gap-12 w-100'
                                     }`}
+                                    {...column.getSortByToggleProps()}
                                   >
-                                    {column.render('Header')}
+                                    <div className={`${column.columnType !== 'selector' && 'd-flex custom-gap-4'}`}>
+                                      <div>
+                                        {column.columnType !== 'selector' && column.isEditable && (
+                                          <SolidIcon
+                                            name="editable"
+                                            width="16px"
+                                            height="16px"
+                                            fill={darkMode ? '#4C5155' : '#C1C8CD'}
+                                            vievBox="0 0 16 16"
+                                          />
+                                        )}
+                                      </div>
+                                      <div
+                                        data-cy={`column-header-${String(column.exportValue)
+                                          .toLowerCase()
+                                          .replace(/\s+/g, '-')}`}
+                                        {...provided.draggableProps}
+                                        {...provided.dragHandleProps}
+                                        // {...extraProps}
+                                        ref={provided.innerRef}
+                                        style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
+                                        className={`header-text ${
+                                          column.id === 'selection' &&
+                                          column.columnType === 'selector' &&
+                                          'selector-column'
+                                        }`}
+                                      >
+                                        {column.render('Header')}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      {column.columnType !== 'selector' &&
+                                        column.isSorted &&
+                                        (column.isSortedDesc ? (
+                                          <SolidIcon
+                                            name="arrowdown"
+                                            width="16"
+                                            height="16"
+                                            fill={darkMode ? '#ECEDEE' : '#11181C'}
+                                          />
+                                        ) : (
+                                          <SolidIcon
+                                            name="arrowup"
+                                            width="16"
+                                            height="16"
+                                            fill={darkMode ? '#ECEDEE' : '#11181C'}
+                                          />
+                                        ))}
+                                    </div>
                                   </div>
                                   <div
                                     onClick={(e) => {
