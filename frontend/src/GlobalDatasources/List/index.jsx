@@ -9,8 +9,14 @@ import EmptyFoldersIllustration from '@assets/images/icons/no-queries-added.svg'
 import { OrganizationList } from '@/_components/OrganizationManager/List';
 
 export const List = ({ updateSelectedDatasource }) => {
-  const { dataSources, fetchDataSources, environments, selectedDataSource, setSelectedDataSource } =
-    useContext(GlobalDataSourcesContext);
+  const {
+    dataSources,
+    environments,
+    fetchDataSources,
+    selectedDataSource,
+    toggleDataSourceManagerModal,
+    setSelectedDataSource,
+  } = useContext(GlobalDataSourcesContext);
 
   const [loading, setLoading] = useState(true);
   const [isDeletingDatasource, setDeletingDatasource] = useState(false);
@@ -39,11 +45,13 @@ export const List = ({ updateSelectedDatasource }) => {
   };
 
   const executeDataSourceDeletion = () => {
+    toggleDataSourceManagerModal(false);
     setDeleteModalVisibility(false);
     setDeletingDatasource(true);
     globalDatasourceService
       .deleteDataSource(selectedDataSource.id)
       .then(() => {
+        setDeleteModalVisibility(false);
         toast.success('Data Source Deleted');
         setDeletingDatasource(false);
         setSelectedDataSource(null);

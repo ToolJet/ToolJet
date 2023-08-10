@@ -198,7 +198,7 @@ class DataSourceManagerComponent extends React.Component {
           .then(() => {
             this.props.updateSelectedDatasource && this.props.updateSelectedDatasource(selectedDataSource.name);
             this.setState({ isSaving: false });
-            this.hideModal();
+            this.hideModal(selectedDataSource);
             toast.success(
               this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceSaved', 'Datasource Saved'),
               { position: 'top-center' }
@@ -228,7 +228,7 @@ class DataSourceManagerComponent extends React.Component {
             this.setState({ isSaving: false });
             this.props.updateSelectedDatasource(name);
 
-            this.hideModal();
+            this.hideModal(selectedDataSource);
             toast.success(
               this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
               { position: 'top-center' }
