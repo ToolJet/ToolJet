@@ -1,0 +1,13 @@
+.nav-tabs {
+    border-bottom: 0px !important;
+  }
+
+  .nav-item .nav-link {
+    color: var(--slate11) !important;
+  }
+
+  .nav-tabs .nav-link.active {
+    border-radius: 0 !important;
+    border-width: 2px !important;
+    color: var(--indigo9) !important;
+  }
