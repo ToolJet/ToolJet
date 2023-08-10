@@ -10,6 +10,7 @@
     "@emoji-mart/react": "^1.1.1",
     "@radix-ui/colors": "^0.1.8",
     "@radix-ui/react-popover": "^1.0.3",
+    "@radix-ui/react-toggle-group": "^1.0.4",
     "@react-google-maps/api": "^2.18.1",
     "@sentry/react": "^7.37.2",
     "@sentry/tracing": "^7.37.2",

@@ -274,8 +274,10 @@ button {
 }
 
 .accordion-button {
-  font-weight: 400 !important;
+  font-size: 14px;
+  font-weight: 500 !important;
   box-shadow: none !important;
+  color: var(--slate-12);
 }
 
 .accordion-button:not(.collapsed) {

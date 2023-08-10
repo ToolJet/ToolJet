@@ -966,7 +966,7 @@ class TableComponent extends React.Component {
     let items = [];
 
     items.push({
-      title: 'Properties',
+      title: 'Data',
       children: renderElement(
         component,
         componentMeta,
@@ -1134,11 +1134,6 @@ class TableComponent extends React.Component {
     });
 
     items.push({
-      title: 'Options',
-      children: renderOptions,
-    });
-
-    items.push({
       title: 'Events',
       isOpen: true,
       children: (
@@ -1156,7 +1151,12 @@ class TableComponent extends React.Component {
     });
 
     items.push({
-      title: 'Layout',
+      title: 'Options',
+      children: renderOptions,
+    });
+
+    items.push({
+      title: 'Devices',
       isOpen: true,
       children: (
         <>

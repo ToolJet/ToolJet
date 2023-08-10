@@ -23,6 +23,8 @@ import { useCurrentState } from '@/_stores/currentStateStore';
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import Tabs from '@/ToolJetUI/Tabs/Tabs';
+import { Tab } from 'react-bootstrap';
 
 export const Inspector = ({
   selectedComponentId,
@@ -362,51 +364,22 @@ export const Inspector = ({
             </div>
           </div>
         </div>
-        <div style={{ padding: '16px 8px', borderRadius: 6 }}>
-          <div
-            className="d-flex p-1"
-            style={{ background: darkMode ? '#2F3C4C' : '#ECEEF0' }}
-            role="tablist"
-            aria-orientation="horizontal"
+        <div style={{}}>
+          <Tabs
+            defaultActiveKey={'properties'}
+            id="inspector"
+            // className={cx('mb-3 sidebar-debugger', {
+            //   'theme-dark dark-theme': darkMode,
+            // })}
+            // justify
           >
-            <button
-              className={cx('btn w-50 inspector-nav-item', {
-                'bg-white': selectedTab === 'properties' && !darkMode,
-                'bg-black': selectedTab === 'properties' && darkMode,
-                'color-white': darkMode,
-                'opacity-100': selectedTab === 'properties',
-              })}
-              role="tab"
-              type="button"
-              aria-selected="true"
-              tabIndex="0"
-              onClick={() => setSelectedTab('properties')}
-              data-cy={`sidebar-option-properties`}
-            >
-              {t('widget.common.properties', 'Properties')}
-            </button>
-            <button
-              className={cx('btn w-50 inspector-nav-item', {
-                'bg-white': selectedTab === 'styles',
-                'bg-black': selectedTab === 'styles' && darkMode,
-                'color-white': darkMode,
-                'opacity-100': selectedTab === 'styles',
-              })}
-              role="tab"
-              type="button"
-              aria-selected="false"
-              tabIndex="-1"
-              onClick={() => setSelectedTab('styles')}
-              data-cy={`sidebar-option-styles`}
-            >
-              {t('widget.common.styles', 'Styles')}
-            </button>
-          </div>
-        </div>
-        <hr className="m-0" />
-        <div className={`${isVersionReleased && 'disabled'}`}>
-          {selectedTab === 'properties' && propertiesTab}
-          {selectedTab === 'styles' && stylesTab}
+            <Tab eventKey="properties" title="Properties">
+              {propertiesTab}
+            </Tab>
+            <Tab eventKey="styles" title="Styles">
+              {stylesTab}
+            </Tab>
+          </Tabs>
         </div>
       </div>
 
