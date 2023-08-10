@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class UpdateAppVersionEntity1691006886775 implements MigrationInterface {
+export class UpdateAppVersionEntity1691006886222 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add the new columns to the app_versions table
     await queryRunner.addColumn(

@@ -44,11 +44,12 @@ function del(appId, versionId) {
 }
 
 function save(appId, versionId, values, isUserSwitchedVersion = false) {
+  console.log('---piku [version saved]', { values });
   const body = { is_user_switched_version: isUserSwitchedVersion };
   if (values.definition) body['definition'] = values.definition;
   if (values.name) body['name'] = values.name;
+  if (values.diff) body['app_diff'] = values.diff;
 
-  console.log('---arpit [app version service]', { values });
   const requestOptions = {
     method: 'PUT',
     headers: authHeader(),

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { Page } from './page.entity';
 import { Layout } from './layout.entity';
 
@@ -11,7 +11,7 @@ export class Component {
   name: string;
 
   @Column({ name: 'page_id' })
-  PageId: string;
+  pageId: string;
 
   @Column('simple-json')
   properties: any;
@@ -23,6 +23,7 @@ export class Component {
   validations: any;
 
   @ManyToOne(() => Page, (page) => page.components)
+  @JoinColumn({ name: 'page_id' })
   page: Page;
 
   @OneToMany(() => Layout, (layout) => layout.component)

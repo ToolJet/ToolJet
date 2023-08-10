@@ -28,11 +28,14 @@ import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
 
+import { ComponentsService } from '@services/components.service';
+
 @Controller('apps')
 export class AppsController {
   constructor(
     private appsService: AppsService,
     private foldersService: FoldersService,
+    private componentsService: ComponentsService,
     private appsAbilityFactory: AppsAbilityFactory
   ) {}
 
@@ -79,10 +82,15 @@ export class AppsController {
     }
 
     const response = decamelizeKeys(app);
+
     const seralizedQueries = [];
     const dataQueriesForVersion = app.editingVersion
       ? await this.appsService.findDataQueriesForVersion(app.editingVersion.id)
       : [];
+
+    const pagesForVersion = app.editingVersion ? await this.appsService.findPagesForVersion(app.editingVersion.id) : [];
+
+    console.log('------arpit [pagesforVersion]', { pagesForVersion });
 
     // serialize queries
     for (const query of dataQueriesForVersion) {
@@ -93,6 +101,7 @@ export class AppsController {
 
     response['data_queries'] = seralizedQueries;
     response['definition'] = app.editingVersion?.definition;
+    response['pages'] = decamelizeKeys(pagesForVersion);
 
     //! if editing version exists, camelize the definition
     if (app.editingVersion && app.editingVersion.definition) {
@@ -310,6 +319,13 @@ export class AppsController {
     if (!ability.can('updateVersions', app)) {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
+
+    const updateType = versionEditDto.app_diff?.type;
+    console.log('----arpit apps controller => ', { updateType });
+
+    // if(updateType=== 'components') {
+    //   await this.componentsService.createOrUpdate(versionEditDto.app_diff.components, versionId)
+    // }
 
     await this.appsService.updateVersion(version, versionEditDto, app.organizationId);
     return;

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { AppVersion } from './app_version.entity';
 import { Component } from './component.entity';
 
@@ -10,16 +10,14 @@ export class Page {
   @Column()
   name: string;
 
-  @Column()
-  AppVersionId: string;
+  @Column({ name: 'page_handle' })
+  pageHandle: string;
 
-  @Column()
-  updateId: string;
-
-  @Column()
-  lastHashedDiff: string;
+  @Column({ name: 'app_version_id' })
+  appVersionId: string;
 
   @ManyToOne(() => AppVersion, (appVersion) => appVersion.pages)
+  @JoinColumn({ name: 'app_version_id' })
   appVersion: AppVersion;
 
   @OneToMany(() => Component, (component) => component.page)
