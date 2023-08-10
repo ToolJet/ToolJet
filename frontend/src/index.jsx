@@ -3,7 +3,6 @@ import { render } from 'react-dom';
 // import { createRoot } from 'react-dom/client';
 import * as Sentry from '@sentry/react';
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
-// import { BrowserTracing } from '@sentry/tracing';
 import { appService } from '@/_services';
 import { App } from './App';
 // eslint-disable-next-line import/no-unresolved
@@ -44,7 +43,7 @@ appService
 
       Sentry.init({
         dsn: window.public_config.SENTRY_DNS,
-        debug: false,
+        debug: !!window.public_config.SENTRY_DEBUG,
         release: releaseVersion,
         name: 'react',
         integrations: [
