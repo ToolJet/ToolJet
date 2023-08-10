@@ -77,7 +77,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
   useEffect(() => {
     if (shouldUpdateData.current) {
       shouldUpdateData.current = false;
-      setExposedVariable('updatedCardData', getData(cardDataAsObj)).then(() => {
+      setExposedVariable('updatedCardData', getData(cardDataAsObj))?.then(() => {
         // fireEvent('onUpdate');
       });
     }
