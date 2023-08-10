@@ -7,7 +7,7 @@ require('dotenv').config({ path: '../.env' });
 const hash = require('string-hash');
 const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
 const fs = require('fs');
-const versionPath = path.resolve(__dirname, '../.version');
+const versionPath = path.resolve(__dirname, '.version');
 const version = fs.readFileSync(versionPath, 'utf-8').trim();
 
 const environment = process.env.NODE_ENV === 'production' ? 'production' : 'development';
