@@ -81,7 +81,22 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
   let componentData = components[componentName];
   componentData = componentData || {};
   componentData[option_name] = value;
-  if (!component.parent) {
+  let isListView = false,
+    isForm = false;
+  Object.keys(_ref.state.appDefinition.pages[_ref.state.currentPageId]?.components).forEach((item) => {
+    if (component.parent == item) {
+      try {
+        isListView =
+          _ref.state.appDefinition.pages[_ref.state.currentPageId]?.components[item]?.component?.component ===
+          'Listview';
+        isForm =
+          _ref.state.appDefinition.pages[_ref.state.currentPageId]?.components[item]?.component?.component === 'Form';
+      } catch {
+        console.log('error');
+      }
+    }
+  });
+  if (!isListView && !isForm) {
     if (option_name !== 'id') {
       useCurrentStateStore.getState().actions.setCurrentState({
         components: { ...components, [componentName]: componentData },
@@ -1422,7 +1437,6 @@ const updateComponentLayout = (components, parentId, isCut = false) => {
 };
 
 export const addComponents = (pageId, appDefinition, appDefinitionChanged, parentId = undefined, newComponentObj) => {
-  console.log({ pageId, newComponentObj });
   const finalComponents = [];
   let parentComponent = undefined;
   const { isCloning, isCut, newComponents: pastedComponent = [] } = newComponentObj;
