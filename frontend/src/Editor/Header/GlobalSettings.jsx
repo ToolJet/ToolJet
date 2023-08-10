@@ -10,6 +10,9 @@ import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
 import Popover from '@/_ui/Popover';
 import ExportAppModal from '../../HomePage/ExportAppModal';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import { useAppVersionStore } from '@/_stores/appVersionStore';
+import { shallow } from 'zustand/shallow';
 
 export const GlobalSettings = ({
   globalSettings,
@@ -17,18 +20,25 @@ export const GlobalSettings = ({
   darkMode,
   toggleAppMaintenance,
   is_maintenance_on,
-  currentState,
   app,
 }) => {
   const { t } = useTranslation();
   const { hideHeader, canvasMaxWidth, canvasMaxWidthType, canvasMaxHeight, canvasBackgroundColor, backgroundFxQuery } =
     globalSettings;
   const [showPicker, setShowPicker] = React.useState(false);
+  const currentState = useCurrentState();
   const [forceCodeBox, setForceCodeBox] = React.useState(true);
   const [realState, setRealState] = React.useState(currentState);
   const [showConfirmation, setConfirmationShow] = React.useState(false);
   const [show, setShow] = React.useState('');
-  const [isExportingApp, setIsExportingApp] = React.useState('');
+  const [isExportingApp, setIsExportingApp] = React.useState(false);
+  const { isVersionReleased } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+    }),
+    shallow
+  );
+
   const coverStyles = {
     position: 'fixed',
     top: '0px',
@@ -49,7 +59,7 @@ export const GlobalSettings = ({
   }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
 
   const popoverContent = (
-    <div id="global-settings-popover" className={cx({ 'theme-dark': darkMode })}>
+    <div id="global-settings-popover" className={cx({ 'theme-dark': darkMode, disabled: isVersionReleased })}>
       <div bsPrefix="global-settings-popover">
         <div>
           <div>

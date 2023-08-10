@@ -65,7 +65,7 @@ export const LeftSidebarDataSources = ({
         setSelectedDataSource(null);
         dataSourcesChanged();
         globalDataSourcesChanged();
-        dataQueriesChanged();
+        dataQueriesChanged({ isReloadSelf: true });
       })
       .catch(({ error }) => {
         setDeletingDatasource(false);
@@ -224,14 +224,7 @@ export const LeftSidebarDataSources = ({
   );
 };
 
-const LeftSidebarDataSourcesContainer = ({
-  darkMode,
-  RenderDataSource,
-  dataSources = [],
-
-  setPinned,
-  pinned,
-}) => {
+const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSources = [], setPinned, pinned }) => {
   const { t } = useTranslation();
   const { isVersionReleased } = useAppVersionStore(
     (state) => ({

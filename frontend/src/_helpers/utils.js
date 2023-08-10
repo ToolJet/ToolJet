@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-escape */
 import moment from 'moment';
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
@@ -8,6 +8,8 @@ import { toast } from 'react-hot-toast';
 import { authenticationService } from '@/_services/authentication.service';
 
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
+import { getCurrentState } from '@/_stores/currentStateStore';
+import { staticDataSources } from '@/Editor/QueryManager/constants';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -124,7 +126,7 @@ export function resolveString(str, state, customObjects, reservedKeyword, withEr
       const code = serverMatch.replace(/%%/g, '');
 
       if (code.includes('server.') && !/^server\.[A-Za-z0-9]+$/.test(code)) {
-        resolvedStr = resolvedStr.replace(serverMatch, '');
+        resolvedStr = resolvedStr.replace(serverMatch, 'HiddenEnvironmentVariable');
       } else {
         const resolvedCode = resolveCode(code, state, customObjects, withError, reservedKeyword, false);
         if (forPreviewBox) {
@@ -198,8 +200,6 @@ export function resolveReferences(
 
     case 'object': {
       if (Array.isArray(object)) {
-        console.log(`[Resolver] Resolving as array ${typeof object}`);
-
         const new_array = [];
 
         object.forEach((element, index) => {
@@ -210,7 +210,6 @@ export function resolveReferences(
         if (withError) return [new_array, error];
         return new_array;
       } else if (!_.isEmpty(object)) {
-        console.log(`[Resolver] Resolving as object ${typeof object}, state: ${state}`);
         Object.keys(object).forEach((key) => {
           const resolved_object = resolveReferences(object[key], state);
           object[key] = resolved_object;
@@ -387,23 +386,66 @@ export function validateEmail(email) {
 }
 
 // eslint-disable-next-line no-unused-vars
-export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = '') {
-  const { currentState } = _ref.state;
+export async function executeMultilineJS(
+  _ref,
+  code,
+  queryId,
+  isPreview,
+  mode = '',
+  parameters = {},
+  hasParamSupport = false
+) {
+  const currentState = getCurrentState();
   let result = {},
     error = null;
 
+  //if user passes anything other than object, params are reset to empty
+  if (typeof parameters !== 'object' || parameters === null) {
+    parameters = {};
+  }
+
   const actions = generateAppActions(_ref, queryId, mode, isPreview);
 
+  const queryDetails = useDataQueriesStore.getState().dataQueries.find((q) => q.id === queryId);
+  hasParamSupport = !hasParamSupport ? queryDetails?.options?.hasParamSupport : hasParamSupport;
+
+  const defaultParams =
+    queryDetails?.options?.parameters?.reduce(
+      (paramObj, param) => ({
+        ...paramObj,
+        [param.name]: resolveReferences(param.defaultValue, {}, undefined), //default values will not be resolved with currentState
+      }),
+      {}
+    ) || {};
+
+  let formattedParams = {};
+  if (queryDetails) {
+    Object.keys(defaultParams).map((key) => {
+      /** The value of param is replaced with defaultValue if its passed undefined */
+      formattedParams[key] = parameters[key] === undefined ? defaultParams[key] : parameters[key];
+    });
+  } else {
+    //this will handle the preview case where you cannot find the queryDetails in state.
+    formattedParams = { ...parameters };
+  }
   for (const key of Object.keys(currentState.queries)) {
     currentState.queries[key] = {
       ...currentState.queries[key],
-      run: () => actions.runQuery(key),
+      run: (params) => {
+        if (typeof params !== 'object' || params === null) {
+          params = {};
+        }
+        const processedParams = {};
+        const query = useDataQueriesStore.getState().dataQueries.find((q) => q.name === key);
+        query.options.parameters?.forEach((arg) => (processedParams[arg.name] = params[arg.name]));
+        return actions.runQuery(key, processedParams);
+      },
     };
   }
 
   try {
     const AsyncFunction = new Function(`return Object.getPrototypeOf(async function(){}).constructor`)();
-    var evalFn = new AsyncFunction(
+    const fnParams = [
       'moment',
       '_',
       'components',
@@ -415,23 +457,28 @@ export async function executeMultilineJS(_ref, code, queryId, isPreview, mode = 
       'actions',
       'client',
       'server',
-      code
-    );
+      ...(hasParamSupport ? ['parameters'] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+      code,
+    ];
+    var evalFn = new AsyncFunction(...fnParams);
+
+    const fnArgs = [
+      moment,
+      _,
+      currentState.components,
+      currentState.queries,
+      currentState.globals,
+      currentState.page,
+      axios,
+      currentState.variables,
+      actions,
+      currentState?.client,
+      currentState?.server,
+      ...(hasParamSupport ? [formattedParams] : []), //Add `parameters` in the function signature only if `hasParamSupport` is enabled. Prevents conflicts with user-defined identifiers of the same name
+    ];
     result = {
       status: 'ok',
-      data: await evalFn(
-        moment,
-        _,
-        currentState.components,
-        currentState.queries,
-        currentState.globals,
-        currentState.page,
-        axios,
-        currentState.variables,
-        actions,
-        currentState?.client,
-        currentState?.server
-      ),
+      data: await evalFn(...fnArgs),
     };
   } catch (err) {
     console.log('JS execution failed: ', err);
@@ -502,24 +549,40 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
   const currentComponents = _ref.state?.appDefinition?.pages[currentPageId]?.components
     ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
     : {};
-  const runQuery = (queryName = '') => {
-    const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
+  const runQuery = (queryName = '', parameters) => {
+    const query = useDataQueriesStore.getState().dataQueries.find((query) => {
+      const isFound = query.name === queryName;
+      if (isPreview) {
+        return isFound;
+      } else {
+        return isFound && isQueryRunnable(query);
+      }
+    });
 
+    const processedParams = {};
     if (_.isEmpty(query) || queryId === query?.id) {
       const errorMsg = queryId === query?.id ? 'Cannot run query from itself' : 'Query not found';
       toast.error(errorMsg);
       return;
     }
 
+    if (!_.isEmpty(query?.options?.parameters)) {
+      query.options.parameters?.forEach(
+        (param) => parameters && (processedParams[param.name] = parameters?.[param.name])
+      );
+    }
+
     if (isPreview) {
-      return previewQuery(_ref, query, true);
+      return previewQuery(_ref, query, true, processedParams);
     }
 
     const event = {
       actionId: 'run-query',
       queryId: query.id,
       queryName: query.name,
+      parameters: processedParams,
     };
+
     return executeAction(_ref, event, mode, {});
   };
 
@@ -907,3 +970,17 @@ export const handleHttpErrorMessages = ({ statusCode, error }, feature_name) => 
 };
 
 export const defaultAppEnvironments = [{ name: 'production', isDefault: true, priority: 3 }];
+
+/** Check if the query is connected to a DS. */
+export const isQueryRunnable = (query) => {
+  if (staticDataSources.find((source) => query.kind === source.kind)) {
+    return true;
+  }
+  //TODO: both view api and creat/update apis return dataSourceId in two format 1) camelCase 2) snakeCase. Need to unify it.
+  return !!(query?.data_source_id || query?.dataSourceId || !isEmpty(query?.plugins));
+};
+
+export const redirectToDashboard = () => {
+  const subpath = getSubpath();
+  window.location = `${subpath ? `${subpath}` : ''}/${getWorkspaceId()}`;
+};

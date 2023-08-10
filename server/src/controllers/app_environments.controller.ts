@@ -32,6 +32,6 @@ export class AppEnvironmentsController {
   @Get('versions')
   async getVersions(@User() user, @Query('app_id') appId: string) {
     const appVersions = await this.appEnvironmentServices.getVersionsByEnvironment(user?.organizationId, appId);
-    return decamelizeKeys({ appVersions });
+    return { appVersions };
   }
 }

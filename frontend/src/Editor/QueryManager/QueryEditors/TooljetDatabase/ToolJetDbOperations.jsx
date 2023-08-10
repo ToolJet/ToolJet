@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import cx from 'classnames';
 import { tooljetDatabaseService, authenticationService } from '@/_services';
 import { TooljetDatabaseContext } from '@/TooljetDatabase/index';
 import { ListRows } from './ListRows';
@@ -9,12 +10,13 @@ import { toast } from 'react-hot-toast';
 import Select from '@/_ui/Select';
 import { queryManagerSelectComponentStyle } from '@/_ui/Select/styles';
 import { useMounted } from '@/_hooks/use-mount';
+import { useCurrentState } from '@/_stores/currentStateStore';
 
-const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode }) => {
+const ToolJetDbOperations = ({ optionchanged, options, darkMode, isHorizontalLayout }) => {
   const computeSelectStyles = (darkMode, width) => {
     return queryManagerSelectComponentStyle(darkMode, width);
   };
-
+  const currentState = useCurrentState();
   const { current_organization_id: organizationId } = authenticationService.currentSessionValue;
   const mounted = useMounted();
   const [operation, setOperation] = useState(options['operation'] || '');
@@ -205,40 +207,46 @@ const ToolJetDbOperations = ({ currentState, optionchanged, options, darkMode })
   return (
     <TooljetDatabaseContext.Provider value={value}>
       {/* table name dropdown */}
-      <div className="row">
-        <div className="col-4">
-          <label className="form-label">Table name</label>
-
-          <Select
-            options={generateListForDropdown(tables)}
-            value={selectedTableId}
-            onChange={(value) => handleTableNameSelect(value)}
-            width="100%"
-            // useMenuPortal={false}
-            useCustomStyles={true}
-            styles={computeSelectStyles(darkMode, '100%')}
-          />
+      <div className={cx({ row: !isHorizontalLayout })}>
+        <div className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}>
+          <label className={cx('form-label')}>Table name</label>
+          <div className={cx({ 'flex-grow-1': isHorizontalLayout })}>
+            <Select
+              options={generateListForDropdown(tables)}
+              value={selectedTableId}
+              onChange={(value) => handleTableNameSelect(value)}
+              width="100%"
+              // useMenuPortal={false}
+              useCustomStyles={true}
+              styles={computeSelectStyles(darkMode, '100%')}
+            />
+          </div>
         </div>
       </div>
 
       {/* operation selection dropdown */}
-      <div className="row">
-        <div className="my-2 col-4">
-          <label className="form-label">Operations</label>
-          <Select
-            options={[
-              { name: 'List rows', value: 'list_rows' },
-              { name: 'Create row', value: 'create_row' },
-              { name: 'Update rows', value: 'update_rows' },
-              { name: 'Delete rows', value: 'delete_rows' },
-            ]}
-            value={operation}
-            onChange={(value) => setOperation(value)}
-            width="100%"
-            // useMenuPortal={false}
-            useCustomStyles={true}
-            styles={computeSelectStyles(darkMode, '100%')}
-          />
+      <div className={cx('my-3 py-1', { row: !isHorizontalLayout })}>
+        <div
+          /* className="my-2 col-4"  */
+          className={cx({ 'col-4': !isHorizontalLayout, 'd-flex': isHorizontalLayout })}
+        >
+          <label className={cx('form-label')}>Operations</label>
+          <div className={cx({ 'flex-grow-1': isHorizontalLayout })}>
+            <Select
+              options={[
+                { name: 'List rows', value: 'list_rows' },
+                { name: 'Create row', value: 'create_row' },
+                { name: 'Update rows', value: 'update_rows' },
+                { name: 'Delete rows', value: 'delete_rows' },
+              ]}
+              value={operation}
+              onChange={(value) => setOperation(value)}
+              width="100%"
+              // useMenuPortal={false}
+              useCustomStyles={true}
+              styles={computeSelectStyles(darkMode, '100%')}
+            />
+          </div>
         </div>
       </div>
 
