@@ -45,13 +45,15 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
     navigate(`/${workspaceId}/global-datasources`);
   };
 
+  const workflowsEnabled = window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
+
   return (
     <>
       <h4 className="w-100 text-center" data-cy={'label-select-datasource'} style={{ fontWeight: 500 }}>
-        Connect to a datasource
+        Connect to a data source
       </h4>
       <p className="mb-3" style={{ textAlign: 'center' }}>
-        Select a datasource to start creating a new query. To know more about queries in ToolJet, you can read our
+        Select a data source to start creating a new query. To know more about queries in ToolJet, you can read our
         &nbsp;
         <a target="_blank" href="https://docs.tooljet.com/docs/app-builder/query-panel" rel="noreferrer">
           documentation
@@ -63,6 +65,8 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
         </label>
         <div className="query-datasource-card-container d-flex justify-content-between mb-3 mt-2">
           {staticDataSources.map((source) => {
+            if (!workflowsEnabled && source.kind === 'workflows') return null;
+
             return (
               <ButtonSolid
                 key={`${source.id}-${source.kind}`}
@@ -81,7 +85,7 @@ function DataSourcePicker({ dataSources, staticDataSources, darkMode, globalData
         </div>
         <div className="d-flex d-flex justify-content-between">
           <label className="form-label py-1" style={{ width: 'auto' }} data-cy={`label-avilable-ds`}>
-            {`Available Datasources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
+            {`Available data sources ${!isEmpty(allUserDefinedSources) ? '(' + allUserDefinedSources.length + ')' : 0}`}
           </label>
           <ButtonSolid
             size="sm"
@@ -139,10 +143,7 @@ const EmptyDataSourceBanner = () => (
     <div className="me-2">
       <Information fill="var(--slate9)" />
     </div>
-    <div>
-      No global datasources have been added yet. <br />
-      Add new datasources to connect to your app! 🚀
-    </div>
+    <div>No global data sources have been added yet.</div>
   </div>
 );
 

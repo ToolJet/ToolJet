@@ -8,7 +8,7 @@ import { getWorkspaceId } from '@/_helpers/utils';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { useDataSources, useGlobalDataSources } from '@/_stores/dataSourcesStore';
 import { useDataQueriesActions } from '@/_stores/dataQueriesStore';
-import { staticDataSources } from '../constants';
+import { staticDataSources as staticDatasources } from '../constants';
 import { useQueryPanelActions } from '@/_stores/queryPanelStore';
 import Search from '@/_ui/Icon/solidIcons/Search';
 import { Tooltip } from 'react-tooltip';
@@ -27,6 +27,11 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
     setPreviewData(null);
     closePopup();
   };
+
+  const workflowsEnabled = window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
+  const staticDataSources = workflowsEnabled
+    ? staticDatasources
+    : staticDatasources.filter((ds) => ds?.kind !== 'workflows');
 
   console.log(dataSourcesKinds);
 
@@ -77,6 +82,7 @@ function DataSourceSelect({ darkMode, isDisabled, selectRef, closePopup }) {
         })),
       }))
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userDefinedSources]);
 
   const DataSourceOptions = [
@@ -245,7 +251,7 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
       {admin && (
         <div className="p-2 mt-2 border-slate3-top">
           <ButtonSolid variant="secondary" size="md" className="w-100" onClick={handleAddClick}>
-            + Add new datasource
+            + Add new data source
           </ButtonSolid>
         </div>
       )}

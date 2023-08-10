@@ -14,7 +14,12 @@ export class AppConfigService {
     );
 
     const instanceConfigs = await this.instanceSettingsService.getSettings(this.fetchDefaultInstanceConfig());
-    return { ...instanceConfigs, ...Object.fromEntries(mapEntries) };
+    const publicConfigVars = { ...instanceConfigs, ...Object.fromEntries(mapEntries) };
+
+    if (publicConfigVars?.ENABLE_WORKFLOWS_FEATURE === undefined) {
+      publicConfigVars.ENABLE_WORKFLOWS_FEATURE = 'false';
+    }
+    return publicConfigVars;
   }
 
   fetchDefaultConfig() {
