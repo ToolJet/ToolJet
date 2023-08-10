@@ -22,13 +22,12 @@
 
   .table-row:hover,
   .table-row:focus {
-    background: rgba(lightBlue, 0.25);
+    background: var(--slate4, #ECEEF0) !important;   
   }
 
   .table-row.selected {
-    --tblr-table-accent-bg: rgba(lightBlue, 0.25);
-    background: rgba(lightBlue, 0.25);
-    font-weight: 500;
+    --tblr-table-accent-bg: var(--indigo3, #F0F4FF) !important;
+    background: var(--indigo3, #F0F4FF) !important;
   }
 
   td {
