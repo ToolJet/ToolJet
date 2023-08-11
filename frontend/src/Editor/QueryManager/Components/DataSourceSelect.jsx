@@ -245,7 +245,7 @@ const MenuList = ({ children, getStyles, innerRef, ...props }) => {
       {admin && (
         <div className="p-2 mt-2 border-slate3-top">
           <ButtonSolid variant="secondary" size="md" className="w-100" onClick={handleAddClick}>
-            + Add new datasource
+            + Add new data source
           </ButtonSolid>
         </div>
       )}
