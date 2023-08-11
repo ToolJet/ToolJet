@@ -92,7 +92,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
             <div className="icon-container">
               <DataSourceFolder />
             </div>
-            <div className="heading tj-text-lg mt-2">Datasource 101</div>
+            <div className="heading tj-text-lg mt-2">Datasources</div>
             <div className="sub-heading text-secondary tj-text-md mt-2">
               Connect your app with REST API, PGSQL, MongoDB, Stripe and 40+ other datasources
             </div>
