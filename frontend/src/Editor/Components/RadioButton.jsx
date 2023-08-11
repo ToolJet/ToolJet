@@ -100,34 +100,52 @@ export const RadioButton = function RadioButton({
       {config.UI_LIB === 'mui' && (
         <div
           data-disabled={disabledState}
-          className="row py-1 px-1"
-          style={{ height: 'auto', display: visibility ? '' : 'none', boxShadow }}
+          style={{
+            height: 'auto',
+            display: visibility ? 'flex' : 'none',
+            boxShadow,
+            alignItems: 'center',
+          }}
           data-cy={dataCy}
         >
-          <FormLabel style={{ color: textColor }}>{label}</FormLabel>
-          <div className="col py-0 mt-0">
-            <RadioGroup
-              value={checkedValue}
-              name={`${id}-${uuidv4()}`}
+          <FormLabel style={{ color: textColor, marginRight: '10px' }}>{label}</FormLabel>
+          <RadioGroup
+            value={checkedValue}
+            name={`${id}-${uuidv4()}`}
+            style={{
+              marginTop: '1px',
+            }}
+          >
+            <div
               style={{
-                marginTop: '1px',
+                display: 'flex',
+                flexWrap: 'wrap',
               }}
             >
               {selectOptions.map((option, index) => (
                 <FormControlLabel
+                  key={index}
                   onChange={() => onSelect(option.value)}
                   style={{
                     color: textColor,
-                    backgroundColor: checkedValue === option.value ? `${activeColor}` : 'white',
+                    flexBasis: 'auto',
+                    padding: '8px',
                   }}
                   value={option.value}
-                  control={<Radio />}
+                  control={
+                    <Radio
+                      sx={{
+                        '&.Mui-checked': {
+                          color: checkedValue === option.value ? `${activeColor}` : 'white',
+                        },
+                      }}
+                    />
+                  }
                   label={`${option.name}`}
-                  key={index}
                 />
               ))}
-            </RadioGroup>
-          </div>
+            </div>
+          </RadioGroup>
         </div>
       )}
     </>
