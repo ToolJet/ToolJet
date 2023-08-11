@@ -220,6 +220,9 @@ export class TooljetDbService {
   }
 
   private async joinTable(organizationId: string, params) {
+    const { joinQueryJson } = params;
+    this.buildJoinQuery(organizationId, joinQueryJson);
+
     return await this.tooljetDbManager.query(
       `select *
         from "d705adfd-d0ae-496a-afdc-8915eb85ecfe" cd
@@ -227,5 +230,103 @@ export class TooljetDbService {
         on customer_type_id = ct.id
       `
     );
+  }
+
+  private async buildJoinQuery(organizationId: string, queryJson) {
+    // Pending: Table to Id mapping
+    // Pending: Select Statement - Nested params
+
+    let finalQuery = ``;
+    finalQuery += `SELECT ${await this.constructSelectStatement(queryJson.fields)}`;
+    finalQuery += `\nFROM ${await this.constructFromStatement(queryJson)}`;
+    if (queryJson?.joins?.length) finalQuery += `\n${await this.constructJoinStatements(queryJson.joins)}`;
+    if (queryJson?.conditions) finalQuery += `\nWHERE ${await this.constructWhereStatement(queryJson.conditions)}`;
+    if (queryJson?.group_by?.length)
+      finalQuery += `\nGROUP BY ${await this.constructGroupByStatement(queryJson.group_by)}`;
+    if (queryJson?.having) finalQuery += `\nHAVING ${await this.constructWhereStatement(queryJson.having)}`;
+    if (queryJson?.order_by?.length)
+      finalQuery += `\nORDER BY ${await this.constructOrderByStatement(queryJson.order_by)}`;
+    if (queryJson.limit) finalQuery += `\nLIMIT ${queryJson.limit}`;
+
+    console.log('finalQuery ---------------------------\n', finalQuery);
+    return finalQuery;
+  }
+
+  private constructSelectStatement(selectStatementInputList) {
+    if (selectStatementInputList.length) {
+      const selectQueryFields = selectStatementInputList
+        .map((field) => {
+          let fieldExpression = ``;
+          if (field.function) fieldExpression += `${field.function}(`;
+          fieldExpression += `${field.table ? field.table + '.' : ''}${field.name}`;
+          if (field.function) fieldExpression += `)`;
+          if (field.alias) fieldExpression += ` AS ${field.alias}`;
+          return fieldExpression;
+        })
+        .join(', ');
+      return selectQueryFields;
+    }
+
+    throw new BadRequestException('Select statement in the query is empty');
+  }
+
+  private constructFromStatement(queryJson) {
+    const { from } = queryJson;
+    if (from.name) {
+      return `${from.name} ${from.alias ? from.alias : ''}`;
+    }
+
+    throw new BadRequestException('Base table is not selected in the query');
+  }
+
+  private constructJoinStatements(joinsInputList) {
+    const joinStatementOutput = joinsInputList
+      .map((joinCondition) => {
+        const { table, joinType, conditions } = joinCondition;
+        return `${joinType} JOIN ${table} ${
+          joinCondition.alias ? joinCondition.alias : ''
+        } ON ${this.constructWhereStatement(conditions)}`;
+      })
+      .join('\n');
+    return joinStatementOutput;
+  }
+
+  private constructWhereStatement(whereStatementConditions) {
+    const { operator, conditionsList } = whereStatementConditions;
+    const whereConditionOutput = conditionsList
+      .map((condition) => {
+        // @description: Recursive call to build - Sub-condition
+        if (condition.conditions) return `(${this.constructWhereStatement(condition.conditions)})`;
+        // @description: Building a Condition for 'WHERE & HAVING statements' - LHS, operator and RHS
+        // @description: In LHS & RHS it is not mandatory to provide table name, but column name is mandatory
+        const { operator, leftField, rightField } = condition;
+        const leftSideInput =
+          leftField.type === 'Value'
+            ? this.addQuotesIfString(leftField.value)
+            : `${leftField.table ? leftField.table + '.' : ''}${leftField.columnName}`;
+
+        const rightSideInput =
+          rightField.type === 'Value'
+            ? this.addQuotesIfString(rightField.value)
+            : `${rightField.table ? rightField.table + '.' : ''}${rightField.columnName}`;
+
+        return `${leftSideInput} ${operator} ${rightSideInput}`;
+      })
+      .join(` ${operator} `);
+    return whereConditionOutput;
+  }
+
+  private constructGroupByStatement(groupByInputList) {
+    return groupByInputList.map((groupByInput) => `${groupByInput.table}.${groupByInput.columnName}`).join(', ');
+  }
+
+  private constructOrderByStatement(orderByInputList) {
+    // @description: For "ORDER BY" statement table field is optional. But column_name & order_by direction is mandatory
+    return orderByInputList
+      .map((orderByInput) => {
+        const { columnName, direction } = orderByInput;
+        return `${orderByInput.table ? orderByInput.table + '.' : ''}${columnName} ${direction}`;
+      })
+      .join(`, `);
   }
 }
