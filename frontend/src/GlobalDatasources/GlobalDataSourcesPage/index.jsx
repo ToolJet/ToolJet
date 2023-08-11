@@ -141,6 +141,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
         })
         .then((data) => {
           setActiveDatasourceList('');
+          setAddingDataSource(false);
           toast.success(t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'), {
             position: 'top-center',
           });

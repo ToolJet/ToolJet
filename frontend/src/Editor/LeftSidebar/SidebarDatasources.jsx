@@ -219,6 +219,7 @@ export const LeftSidebarDataSources = ({
         globalDataSourcesChanged={globalDataSourcesChanged}
         selectedDataSource={selectedDataSource}
         isVersionReleased={isVersionReleased}
+        showSaveBtn={true}
       />
     </>
   );
@@ -276,7 +277,7 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
       </div>
       {!isVersionReleased && (
         <div className="add-datasource-btn w-100 p-3">
-          <Link to={getPrivateRoute('global_datasources')}>
+          <Link to={getPrivateRoute('data_sources')}>
             <div className="p-2 color-primary cursor-pointer">
               {t(`leftSidebar.Sources.addDataSource`, '+ add data source')}
             </div>
