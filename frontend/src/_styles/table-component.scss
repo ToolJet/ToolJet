@@ -358,3 +358,7 @@
     }
   }
 }
+.table-striped > tbody > tr:nth-of-type(even){
+  background-color: var(--slate2) !important;
+  --tblr-table-accent-bg : var(--slate2) !important;
+}
