@@ -148,15 +148,46 @@ $primary-light: unquote("rgb(#{$primary-rgb-darker})");
 .color-light-gray-c3c3c3{
   color: #c3c3c3;
 }
+.color-light-indigo-09 {
+  color: $color-light-indigo-09;
+}
 
 .bg-color-primary {
   background-color: $primary !important;
 }
 
-.bg-slate3{
+.color-slate9 {
+  color: var(--slate9) !important;
+}
+
+.color-indigo9 {
+  color: var(--indigo9) !important;
+}
+
+.color-slate11 {
+  color: var(--slate11) !important;
+}
+
+.color-slate12 {
+  color: var(--slate12) !important;
+}
+
+.bg-slate2 {
+  background-color: var(--slate2) !important;
+}
+
+.border-slate3 {
+  border-top: 1px solid var(--slate3) !important;
+}
+
+.border-slate3-top {
+  border-top: 1px solid var(--slate3) !important;
+}
+
+.bg-slate3 {
   background-color: var(--slate3) !important;
 }
 
-.color-slate12{
-  color: var(--slate12) !important;
+.bg-slate6 {
+  background-color: var(--slate6) !important;
 }

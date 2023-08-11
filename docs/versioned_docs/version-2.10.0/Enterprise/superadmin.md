@@ -3,7 +3,7 @@ id: superadmin
 title: Super Admin
 ---
 
-<div className='badge badge--primary heading-badge'>Available on: Enterprise Edition</div>
+<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 
 A Super Admin is the user who has full access to all the Workspaces, Users, and Groups of an instance. An instance can have more than one Super Admin. A Super Admin has full control over other users' workspaces and can create users, groups, and other super admins.
 
@@ -17,7 +17,7 @@ The user details entered while setting up ToolJet will have Super Admin privileg
 | Manage Groups in their workspace (Create Group/Add or Delete Users from groups/ Modify Group Permissions) | ✅ | ✅ |
 | Manage SSO in their workspace | ✅ | ✅ |
 | Manage Workspace Variables in their workspace | ✅ | ✅ |
-| [Manage Global datasources for the user group in their workspace](/docs/data-sources/overview#permissions) | ✅ | ✅ |
+| [Manage Global datasources for the user group in their workspace](/docs/2.10.0/data-sources/overview#permissions) | ✅ | ✅ |
 | [Access any user's personal workspace (create, edit or delete apps)](#access-any-workspace) | ❌ | ✅ |
 | [Archive Admin or any user of any workspace](#archiveunarchive-users) | ❌ | ✅ |
 | [Access any user's ToolJet database (create, edit or delete database)](#access-tooljet-db-in-any-workspace) | ❌ | ✅ |

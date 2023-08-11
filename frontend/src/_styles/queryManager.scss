@@ -44,10 +44,10 @@ $border-radius: 4px;
   scrollbar-width: none;
 }
 
-.query-pane::-webkit-scrollbar {
-  width: 0;
-  background: transparent;
-}
+// .query-pane::-webkit-scrollbar {
+//   width: 0;
+//   background: transparent;
+// }
 
 .query-pane {
   z-index: 1;
@@ -99,9 +99,8 @@ $border-radius: 4px;
       display: none;
       align-items: center;
       gap: 8px;
-      margin-right: 9.33px;
       margin-left: 2px;
-      width: 44px;
+      width: 66px;
       height: 20px;
     }
 
@@ -122,15 +121,6 @@ $border-radius: 4px;
 
     .query-icon {
       margin: auto 8px auto 12px;
-      width: 21.33px;
-      height: 21.33px;
-      padding: 1.33px;
-
-      svg {
-        width: 20px !important;
-        height: 20px !important;
-
-      }
     }
 
     .delete-query,
@@ -301,7 +291,7 @@ $border-radius: 4px;
         gap: 12px;
 
         .queries-search {
-          width: 172px !important;
+          // width: 172px !important;
           height: 28px !important;
 
           .query-manager-search-box-wrapper {
@@ -337,7 +327,7 @@ $border-radius: 4px;
                 font-size: 12px;
                 font-weight: 400;
                 line-height: 20px;
-                border: 0;
+                border: 1px solid var(--slate-07, #D7DBDF);
                 color: $color-light-slate-12;
                 padding-left: 12px !important;
 
@@ -416,16 +406,9 @@ $border-radius: 4px;
         }
       }
 
-      .query-list::-webkit-scrollbar {
-        width: 0;
-        background: transparent;
-      }
-
       .query-list {
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        align-items: center;
         padding: 8px;
         gap: 2px;
         width: 100%;
@@ -510,11 +493,15 @@ $border-radius: 4px;
         }
 
         .delete-field-option {
-          max-height: 32px;
+          height: 34px;
           flex: 0 0 28px;
           background: #ffffff;
-          max-width: 28px !important;
-          width: 28px;
+          width: 34px;
+        }
+
+        .delete-field-option-dark {
+          background-color: #272822 !important;
+          border-color: #272822 !important;
         }
 
         .code-hinter.codehinter-default-input {
@@ -638,7 +625,7 @@ $border-radius: 4px;
   width: 100%;
   display: flex;
   flex-direction: row;
-  gap: 4px;
+  // gap: 4px;
 
   .list-group-item {
     border: none !important;
@@ -646,10 +633,11 @@ $border-radius: 4px;
     font-weight: 500;
     font-size: 12px;
     padding: 0 !important;
-    height: 28px;
+    height: 32px;
     color: $color-light-slate-11;
     display: flex;
     align-items: center;
+    border-bottom: 1px solid #dee2e6 !important;
 
     span {
       padding: 6px 8px;
@@ -660,7 +648,6 @@ $border-radius: 4px;
   .list-group-item:hover {
     color: $color-light-slate-12  !important;
     background-color: $color-light-slate-03  !important;
-    border-radius: 6px;
   }
 
   .list-group-item+.list-group-item.active {
@@ -707,7 +694,7 @@ $border-radius: 4px;
 }
 
 .query-preview-list-group {
-  width: 100%;
+  // width: 100%;
   display: flex;
   flex-direction: row;
   gap: 4px;
@@ -718,14 +705,15 @@ $border-radius: 4px;
     font-weight: 500;
     font-size: 12px;
     padding: 0 !important;
-    height: 28px;
+    height: 24px;
     color: $color-light-slate-11;
     border-radius: 6px;
     display: flex;
     align-items: center;
 
     span {
-      padding: 6px 8px;
+      // padding: 6px 8px;
+      padding: 2px 0px;
     }
 
     &:hover {
@@ -746,11 +734,15 @@ $border-radius: 4px;
 
   .list-group-item.active {
     background-color: transparent !important;
-    color: $color-light-indigo-09  !important;
+    // color: $color-light-indigo-09 !important;
     z-index: inherit !important;
-    border-bottom: 2px solid $color-light-indigo-09  !important;
+    // border-bottom: 2px solid $color-light-indigo-09 !important;
     border-radius: 0;
     transition-delay: 5ms;
+
+    span {
+      background: #ffffff;
+    }
   }
 
   .list-group-item.active:hover {
@@ -1106,20 +1098,24 @@ $border-radius: 4px;
 
     .preview-default-container {
       user-select: text;
-      background-color: #F8F9FA;
+      background-color: #FBFCFD;
       border: 0 0 6px 6px;
       height: 52px,
     }
 
     .tab-pane.active {
       div {
-        background-color: #F8F9FA !important;
+        background-color: #FBFCFD !important;
         border-radius: 0 0 6px 6px !important;
       }
 
       ul {
         background-color: transparent !important;
       }
+    }
+
+    .preview-section-header {
+      background-color: var(--slate2);
     }
   }
 
@@ -1129,18 +1125,35 @@ $border-radius: 4px;
 
   .query-details {
     .form-label {
-      color: $color-light-slate-12  !important;
+      color: var(--slate9) !important;
       font-size: 12px;
-      font-weight: 400;
+      font-weight: 500;
       line-height: 20px;
+      margin-bottom: 0 !important;
+      width: 100px;
+      display: flex;
+      padding: 0;
+      margin-right: 12px;
+    }
+
+    .preview-data-container {
+      min-height: 65px;
     }
   }
 
   .rest-methods-url {
+
+    .url-input-group {
+      .code-hinter.codehinter-default-input {
+        border-radius: 0 6px 6px 0 !important;
+      }
+    }
+
     .code-hinter.codehinter-default-input {
       border-style: solid !important;
-      border-color: $color-light-slate-07  !important;
-      border-radius: 0 6px 6px 0 !important;
+      border-color: var(--slate7) !important;
+      // border-radius: 0 6px 6px 0 !important;
+      border-radius: 6px !important;
 
       &:focus-within {
         box-shadow: 0px 0px 0px 2px #C6D4F9 !important;
@@ -1241,7 +1254,7 @@ $border-radius: 4px;
 
       .inspector-add-button {
         background-color: transparent;
-        font-weight: 400 !important;
+        font-weight: bold;
         font-size: 12px !important;
         color: $color-light-indigo-09  !important;
 
@@ -1287,6 +1300,16 @@ $border-radius: 4px;
     .CodeMirror-scroll,
     .CodeMirror-gutters {
       background-color: $color-light-slate-02;
+    }
+
+    .CodeMirror-sizer {
+      margin-left: 29px !important;
+    }
+  }
+
+  .runpy-editor {
+    .CodeMirror-sizer {
+      margin-left: 29px !important;
     }
   }
 
@@ -1443,7 +1466,6 @@ $border-radius: 4px;
 
   .query-details {
     .form-label {
-      color: #f4f6fa !important;
       font-size: 12px;
       font-weight: 400;
       line-height: 20px;
@@ -1593,7 +1615,6 @@ $border-radius: 4px;
   .rest-methods-url {
     .code-hinter.codehinter-default-input {
       border: solid inherit !important;
-      border-radius: 0 6px 6px 0 !important;
 
       .CodeMirror.cm-s-monokai.CodeMirror-wrap {
         background-color: transparent !important;
@@ -1845,4 +1866,15 @@ $border-radius: 4px;
     background-color: var(--slate7);
     color: var(--slate11);
   }
+}
+
+
+.query-manager-tooltip {
+  max-width: 800px;
+  overflow-wrap: break-word;
+}
+
+.query-manager-ds-select-tooltip {
+  max-width: 230px;
+  overflow-wrap: break-word;
 }

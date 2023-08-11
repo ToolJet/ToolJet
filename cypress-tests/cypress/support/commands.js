@@ -11,7 +11,9 @@ Cypress.Commands.add(
     cy.clearAndType(commonSelectors.workEmailInputField, email);
     cy.clearAndType(commonSelectors.passwordInputField, password);
     cy.get(commonSelectors.signInButton).click();
-    cy.wait(2000);
+    cy.intercept("GET", "api/library_apps").as("apps");
+    cy.wait("@apps");
+    cy.wait(4000);
     cy.get(commonSelectors.homePageLogo).should("be.visible");
   }
 );
@@ -91,7 +93,9 @@ Cypress.Commands.add("appUILogin", () => {
   cy.clearAndType(commonSelectors.workEmailInputField, "dev@tooljet.io");
   cy.clearAndType(commonSelectors.passwordInputField, "password");
   cy.get(commonSelectors.signInButton).click();
-  cy.wait(2000);
+  cy.intercept("GET", "api/library_apps").as("apps");
+  cy.wait("@apps");
+  cy.wait(3000);
   cy.get(commonSelectors.homePageLogo).should("be.visible");
 });
 
@@ -107,9 +111,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).type(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
     if (!Array.isArray(value)) {
       cy.wrap(subject).type(value, {
@@ -184,9 +188,9 @@ Cypress.Commands.add(
       .invoke("text")
       .then((text) => {
         cy.wrap(subject).type(createBackspaceText(text)),
-          {
-            delay: 0,
-          };
+        {
+          delay: 0,
+        };
       });
   }
 );
