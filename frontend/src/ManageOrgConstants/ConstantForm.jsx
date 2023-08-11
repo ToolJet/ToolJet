@@ -133,7 +133,7 @@ const ConstantForm = ({
   return (
     <div className="variable-form-wrap">
       <div className="card-header">
-        <h3 className="card-title">
+        <h3 className="card-title" data-cy="constant-form-title">
           {!selectedConstant ? 'Add new constant' : 'Update constant'} in {currentEnvironment?.name}{' '}
         </h3>
       </div>
@@ -149,7 +149,9 @@ const ConstantForm = ({
                 onMouseEnter={() => setIsOpen(true)}
                 onMouseLeave={() => setIsOpen(false)}
               >
-                <label className="form-label">Name</label>
+                <label className="form-label" data-cy="name-label">
+                  Name
+                </label>
                 <input
                   type="text"
                   className={`tj-input-element ${error['name'] ? 'tj-input-error-state' : ''}`}
@@ -161,13 +163,18 @@ const ConstantForm = ({
                   data-tooltip-id="tooltip-for-org-input-disabled"
                   data-tooltip-content={'Cannot edit constant name'}
                   data-tooltip-offset={5}
+                  data-cy="name-input-field"
                 />
                 <Tooltip id="tooltip-for-org-input-disabled" isOpen={!!selectedConstant && isOpen} place={'bottom'} />
-                <span className="text-danger">{error['name']}</span>
+                <span className="text-danger" data-cy="name-error-text">
+                  {error['name']}
+                </span>
               </div>
             </div>
             <div className="col tj-app-input">
-              <label className="form-label">Value</label>
+              <label className="form-label" data-cy="value-label">
+                Value
+              </label>
               <textarea
                 ref={inputRef}
                 type="text"
@@ -186,9 +193,12 @@ const ConstantForm = ({
                   resize: 'none',
                   overflow: 'hidden',
                 }}
+                data-cy="value-input-field"
               />
 
-              <span className="text-danger">{error['value']}</span>
+              <span className="text-danger" data-cy="value-error-text">
+                {error['value']}
+              </span>
             </div>
           </div>
         </form>

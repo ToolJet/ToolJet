@@ -313,7 +313,9 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
         <div className="container-xl">
           <div>
             <div className="page-header workspace-constant-header">
-              <div className="tj-text-sm font-weight-500">{constants.length} constants</div>
+              <div className="tj-text-sm font-weight-500" data-cy="constants-count-title">
+                {constants.length} constants
+              </div>
               <div className="mt-3">
                 <Alert svg="tj-info">
                   <div
@@ -324,7 +326,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                       width: '100%',
                     }}
                   >
-                    <div class="text-muted">
+                    <div class="text-muted" data-cy="workspace-constant-helper-text">
                       To resolve a Workspace constant use{' '}
                       <strong style={{ fontWeight: 500, color: '#3E63DD' }}>{'{{constants.access_token}}'}</strong>
                     </div>
@@ -367,7 +369,9 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                   {constants.length > 0 ? (
                     <div className="w-100 workspace-constant-card-body">
                       <div className="align-items-center d-flex p-3 justify-content-between">
-                        <div className="tj-text-sm font-weight-500">{capitalize(activeTabEnvironment?.name)}</div>
+                        <div className="tj-text-sm font-weight-500" data-cy="env-name">
+                          {capitalize(activeTabEnvironment?.name)}
+                        </div>
                         <div className="workspace-setting-buttons-wrap">
                           {canCreateVariable() && (
                             <ButtonSolid
