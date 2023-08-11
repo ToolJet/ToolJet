@@ -44,6 +44,7 @@ export const LeftSidebarInspector = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appDefinition['selectedComponent']]);
   const currentState = useCurrentState();
+
   const queries = {};
 
   if (!_.isEmpty(dataQueries)) {

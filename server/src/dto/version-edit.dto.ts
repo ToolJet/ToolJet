@@ -22,5 +22,9 @@ export class VersionEditDto {
   is_user_switched_version: boolean;
 
   @IsOptional()
-  app_diff: any;
+  diff: any;
+
+  @IsOptional()
+  @IsString()
+  pageId: string;
 }

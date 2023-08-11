@@ -66,6 +66,7 @@ import { useAppDataActions, useAppDataStore, useAppInfo } from '@/_stores/appDat
 import { useMounted } from '@/_hooks/use-mount';
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
+import { camelizeKeys } from 'humps';
 
 setAutoFreeze(false);
 enablePatches();
@@ -226,6 +227,7 @@ const EditorComponent = (props) => {
     }
 
     if (mounted && didAppDefinitionChanged && currentPageId) {
+      console.log('----mohaaan: useEffecr', { appDefinition });
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
       computeComponentState(components);
@@ -345,13 +347,9 @@ const EditorComponent = (props) => {
       theme: { name: props?.darkMode ? 'dark' : 'light' },
       urlparams: JSON.parse(JSON.stringify(queryString.parse(props.location.search))),
     };
-    const page = {
-      ...props?.currentState?.page,
-      handle: props?.pageHandle,
-      variables: {},
-    };
+
     updateState({ appId: props?.params?.id });
-    useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
+    useCurrentStateStore.getState().actions.setCurrentState({ globals });
   };
 
   const fetchDataQueries = async (id, selectFirstQuery = false, runQueriesOnAppLoad = false) => {
@@ -632,6 +630,29 @@ const EditorComponent = (props) => {
   };
 
   //!--------
+  const buildAppDefinition = (data) => {
+    const editingVersion = _.omit(camelizeKeys(data.editing_version), ['definition', 'updatedAt', 'createdAt', 'name']);
+
+    editingVersion['currentVersionId'] = editingVersion.id;
+    _.unset(editingVersion, 'id');
+
+    const pages = data.pages.reduce((acc, page) => {
+      acc[page.id] = page;
+
+      return acc;
+    }, {});
+
+    const appJSON = {
+      globalSettings: editingVersion.globalSettings,
+      homePageId: editingVersion.homePageId,
+      showHideViewerNavigation: editingVersion.showHideViewerNavigation ?? true,
+      pages: pages,
+    };
+
+    return appJSON;
+  };
+
+  //****** */
 
   const fetchApp = async (startingPageHandle) => {
     const _appId = props?.params?.id;
@@ -641,12 +662,30 @@ const EditorComponent = (props) => {
       useAppVersionStore.getState().actions.updateReleasedVersionId(data.current_version_id);
       await fetchDataSources(data.editing_version?.id);
       await fetchDataQueries(data.editing_version?.id, true, true);
-      console.log('---piku [fetching app]---]', { data, defaultDef: defaultDefinition(props.darkMode) });
-      let dataDefinition = data.definition ?? defaults(data.definition, defaultDefinition(props.darkMode));
+      const appDefData = buildAppDefinition(data);
 
-      const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
+      // let dataDefinition = data.definition ?? defaults(data.definition, defaultDefinition(props.darkMode));
+
+      // const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
+      // const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
+      // const homePageId = !startingPageHandle || startingPageId === 'null' ? dataDefinition.homePageId : startingPageId;
+
+      // !------
+      const appJson = appDefData;
+      const pages = data.pages;
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
-      const homePageId = !startingPageHandle || startingPageId === 'null' ? dataDefinition.homePageId : startingPageId;
+      const homePageId = !startingPageId || startingPageId === 'null' ? appJson.homePageId : startingPageId;
+
+      const currentComponents = appJson.pages[homePageId]?.components ?? {};
+      console.log('---piku [fetching app] [pages] ==> ', { currentComponents });
+      const currentpageData = {
+        handle: appJson.pages[homePageId]?.handle,
+        name: appJson.pages[homePageId]?.name,
+        id: homePageId,
+        variables: {},
+      };
+
+      // !------
 
       setCurrentPageId(homePageId);
 
@@ -662,20 +701,15 @@ const EditorComponent = (props) => {
       });
 
       useCurrentStateStore.getState().actions.setCurrentState({
-        page: {
-          handle: dataDefinition.pages[homePageId]?.handle,
-          name: dataDefinition.pages[homePageId]?.name,
-          id: homePageId,
-          variables: {},
-        },
+        page: currentpageData,
       });
 
       updateEditorState({
         isLoading: false,
-        appDefinition: dataDefinition,
+        appDefinition: appJson,
       });
 
-      for (const event of dataDefinition.pages[homePageId]?.events ?? []) {
+      for (const event of appJson.pages[homePageId]?.events ?? []) {
         await handleEvent(event.eventId, event);
       }
       getCanvasWidth();
@@ -813,9 +847,7 @@ const EditorComponent = (props) => {
     } else if (!isEmpty(props?.editingVersion)) {
       const componentDiff = computeAppDiff(appDefinitionDiff, currentPageId, appDiffOptions);
 
-      // console.log('---piku [componentDiff]--', componentDiff);
-
-      updateAppVersion(appId, props.editingVersion?.id, appDefinition, componentDiff, isUserSwitchedVersion)
+      updateAppVersion(appId, props.editingVersion?.id, currentPageId, componentDiff, isUserSwitchedVersion)
         .then(() => {
           const _editingVersion = {
             ...props.editingVersion,

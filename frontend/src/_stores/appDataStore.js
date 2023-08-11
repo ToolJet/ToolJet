@@ -31,11 +31,15 @@ export const useAppDataStore = create(
         updateApps: (apps) => set(() => ({ apps: apps })),
         updateState: (state) => set((prev) => ({ ...prev, ...state })),
         updateAppDefinitionDiff: (appDefinitionDiff) => set(() => ({ appDefinitionDiff: appDefinitionDiff })),
-        updateAppVersion: async (appId, versionId, appDefinition, appDefinitionDiff, isUserSwitchedVersion = false) => {
-          return await appVersionService.save(
+        updateAppVersion: async (appId, versionId, pageId, appDefinitionDiff, isUserSwitchedVersion = false) => {
+          // console.log('-piku :: from store', { appDefinitionDiff });
+          return await appVersionService.autoSaveApp(
             appId,
             versionId,
-            { definition: appDefinition, diff: appDefinitionDiff },
+            appDefinitionDiff.updateDiff,
+            appDefinitionDiff.type,
+            pageId,
+            appDefinitionDiff.operation,
             isUserSwitchedVersion
           );
         },

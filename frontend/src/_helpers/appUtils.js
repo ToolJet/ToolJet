@@ -1133,7 +1133,7 @@ export function computeComponentState(components = {}) {
   Object.keys(components).forEach((key) => {
     const component = components[key];
     const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
-
+    console.log('------tj: computeComponentState', { component, currentComponents });
     const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
     const existingValues = currentComponents[existingComponentName];
 
