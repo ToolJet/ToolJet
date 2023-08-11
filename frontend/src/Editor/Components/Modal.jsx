@@ -273,6 +273,7 @@ export const Modal = function Modal({
             <Button
               variant="contained"
               disabled={disabledState}
+              size="small"
               onClick={(event) => {
                 event.stopPropagation();
                 setShowModal(true);
