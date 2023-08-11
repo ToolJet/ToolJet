@@ -99,32 +99,38 @@ export class AppsService {
 
   async create(name: string, user: User, manager: EntityManager): Promise<App> {
     return await dbTransactionWrap(async (manager: EntityManager) => {
-      const app = await manager.save(
-        manager.create(App, {
-          name,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          organizationId: user.organizationId,
-          userId: user.id,
-        })
+      return await catchDbException(
+        async () => {
+          const app = await manager.save(
+            manager.create(App, {
+              name,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              organizationId: user.organizationId,
+              userId: user.id,
+            })
+          );
+
+          //create default app version
+          await this.createVersion(user, app, 'v1', null, null, manager);
+
+          await manager.save(
+            manager.create(AppUser, {
+              userId: user.id,
+              appId: app.id,
+              role: 'admin',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            })
+          );
+
+          await this.createAppGroupPermissionsForAdmin(app, manager);
+          return app;
+        },
+        DataBaseConstraints.APP_NAME_UNIQUE,
+        'This app name is already taken.'
       );
-
-      //create default app version
-      await this.createVersion(user, app, 'v1', null, null, manager);
-
-      await manager.save(
-        manager.create(AppUser, {
-          userId: user.id,
-          appId: app.id,
-          role: 'admin',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
-      );
-
-      await this.createAppGroupPermissionsForAdmin(app, manager);
-      return app;
-    }, manager);
+    });
   }
 
   async createAppGroupPermissionsForAdmin(app: App, manager: EntityManager): Promise<void> {

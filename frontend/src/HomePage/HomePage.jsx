@@ -120,19 +120,24 @@ class HomePageComponent extends React.Component {
     this.fetchFolders();
   };
 
-  createApp = (appName) => {
+  createApp = async (appName) => {
     let _self = this;
     _self.setState({ creatingApp: true });
-    appService
-      .createApp({ icon: sample(iconList), name: appName })
-      .then((data) => {
-        const workspaceId = getWorkspaceId();
-        _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
-      })
-      .catch(({ error }) => {
-        toast.error(error);
+    try {
+      const data = await appService.createApp({ icon: sample(iconList), name: appName });
+
+      const workspaceId = getWorkspaceId();
+      _self.props.navigate(`/${workspaceId}/apps/${data.id}`);
+      toast.success('App created successfully!');
+      return true;
+    } catch (errorResponse) {
+      if (errorResponse.statusCode === 409) {
         _self.setState({ creatingApp: false });
-      });
+        return false;
+      } else {
+        throw errorResponse;
+      }
+    }
   };
 
   deleteApp = (app) => {

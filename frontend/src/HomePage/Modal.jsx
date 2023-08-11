@@ -34,7 +34,7 @@ export default function Modal({ title, show, closeModal, customClassName, childr
         ></button>
       </BootstrapModal.Header>
       <BootstrapModal.Body>{children}</BootstrapModal.Body>
-      {modalFooter}
+      {modalFooter ? modalFooter : <></>}
     </BootstrapModal>
   );
 }

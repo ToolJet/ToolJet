@@ -4,6 +4,7 @@ import Modal from '../HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 import { appService } from '@/_services';
 import _ from 'lodash';
+import { validateAppName } from '@/_helpers/utils';
 
 export function CreateApp({ closeModal, createApp, show }) {
   const [appName, setappName] = useState('');
@@ -13,26 +14,19 @@ export function CreateApp({ closeModal, createApp, show }) {
   const handleCreateApp = async () => {
     if (!errorText) {
       setIsLoading(true);
-      const appExists = await checkIfAppExists(appName);
-      if (appExists) {
-        setErrorText('App name already exists');
-      } else {
-        createApp(appName);
-        closeModal();
+      try {
+        const success = await createApp(appName);
+        if (success === false) {
+          setErrorText('App name already exists');
+        } else {
+          setErrorText('');
+          closeModal();
+        }
+      } catch (error) {
+        toast.error(error);
       }
-      setIsLoading(false);
     }
-  };
-
-  const checkIfAppExists = async (appName) => {
-    try {
-      const response = await appService.getAll(1, null, appName);
-      const apps = response.apps;
-      return apps.some((app) => app.name === appName);
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
+    setIsLoading(false);
   };
 
   const handleInputChange = (e) => {
@@ -42,21 +36,21 @@ export function CreateApp({ closeModal, createApp, show }) {
     setappName(newAppName);
   };
 
-  const validateAppName = (name, nameType, showError = false, allowSpecialChars = true) => {
-    const newName = name.trim();
-    let errorMsg = '';
-    if (newName.length > 50) {
-      errorMsg = `Maximum length has been reached`;
-      showError &&
-        toast.error(errorMsg, {
-          id: '1',
-        });
-    }
-    return {
-      status: errorMsg.length > 0,
-      errorMsg,
-    };
-  };
+  //   const validateAppName = (name, nameType, showError = false, allowSpecialChars = true) => {
+  //     const newName = name.trim();
+  //     let errorMsg = '';
+  //     if (newName.length > 50) {
+  //       errorMsg = `Maximum length has been reached`;
+  //       showError &&
+  //         toast.error(errorMsg, {
+  //           id: '1',
+  //         });
+  //     }
+  //     return {
+  //       status: errorMsg.length > 0,
+  //       errorMsg,
+  //     };
+  //   };
 
   return (
     <Modal
