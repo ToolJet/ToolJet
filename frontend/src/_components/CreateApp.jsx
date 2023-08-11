@@ -36,22 +36,6 @@ export function CreateApp({ closeModal, createApp, show }) {
     setappName(newAppName);
   };
 
-  //   const validateAppName = (name, nameType, showError = false, allowSpecialChars = true) => {
-  //     const newName = name.trim();
-  //     let errorMsg = '';
-  //     if (newName.length > 50) {
-  //       errorMsg = `Maximum length has been reached`;
-  //       showError &&
-  //         toast.error(errorMsg, {
-  //           id: '1',
-  //         });
-  //     }
-  //     return {
-  //       status: errorMsg.length > 0,
-  //       errorMsg,
-  //     };
-  //   };
-
   return (
     <Modal
       show={show}
