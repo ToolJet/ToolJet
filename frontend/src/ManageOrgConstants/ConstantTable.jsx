@@ -95,7 +95,7 @@ const ConstantTable = ({
                             fill="#3b5ccc"
                             iconWidth="12"
                             onClick={() => onEditBtnClicked(constant)}
-                            data-cy="button-user-status-change"
+                            data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-edit-button`}
                           >
                             Edit
                           </ButtonSolid>
@@ -108,7 +108,7 @@ const ConstantTable = ({
                             fill="#E54D2E"
                             iconWidth="12"
                             onClick={() => onDeleteBtnClicked(constant)}
-                            data-cy="button-user-status-change"
+                            data-cy={`${constant.name.toLowerCase().replace(/\s+/g, '-')}-delete-button`}
                           >
                             Delete
                           </ButtonSolid>
