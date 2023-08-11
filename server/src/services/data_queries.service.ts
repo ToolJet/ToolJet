@@ -49,7 +49,7 @@ export class DataQueriesService {
         .leftJoinAndSelect('plugins.manifestFile', 'manifestFile')
         .where('data_source.appVersionId = :appVersionId', { appVersionId })
         .where('data_query.app_version_id = :appVersionId', { appVersionId })
-        .orderBy('data_query.createdAt', 'DESC')
+        .orderBy('data_query.updatedAt', 'DESC')
         .getMany();
     });
   }
@@ -223,7 +223,7 @@ export class DataQueriesService {
               app: { id: app?.id, isPublic: app?.isPublic },
             }
           );
-        } else if (dataSource.kind === 'restapi' || dataSource.kind === 'openapi') {
+        } else if (dataSource.kind === 'restapi' || dataSource.kind === 'openapi' || dataSource.kind === 'graphql') {
           return {
             status: 'needs_oauth',
             data: {
