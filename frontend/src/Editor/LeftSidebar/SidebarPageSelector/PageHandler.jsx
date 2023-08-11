@@ -8,6 +8,9 @@ import SortableList from '@/_components/SortableList';
 import { toast } from 'react-hot-toast';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import EyeDisable from '@/_ui/Icon/solidIcons/EyeDisable';
+import FileRemove from '@/_ui/Icon/solidIcons/FIleRemove';
+import Home from '@/_ui/Icon/solidIcons/Home';
 
 export const PageHandler = ({
   darkMode,
@@ -34,6 +37,7 @@ export const PageHandler = ({
   const isSelected = page.id === currentPageId;
   const isHidden = page?.hidden ?? false;
   const isDisabled = page?.disabled ?? false;
+  const isIconApplied = isHomePage || isHidden || isDisabled;
   const [isEditingPageName, setIsEditingPageName] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPagehandlerMenu, setShowPagehandlerMenu] = useState(false);
@@ -134,45 +138,37 @@ export const PageHandler = ({
       <div className="card-body">
         <div className="row" role="button">
           <div className="col-auto">
-            {!isHovered && isHomePage && (
-              <img
-                className="animation-fade"
-                data-toggle="tooltip"
-                title="home page"
-                src="assets/images/icons/home.svg"
-                height={14}
-                width={14}
-                data-cy={'home-page-icon'}
-              />
+            {!isHovered && isHomePage && <Home width={16} height={16} />}
+            {/* When the page is hidden as well as disabled, disabled icon takes precedence */}
+            {!isHovered && (isDisabled || (isDisabled && isHidden)) && (
+              <FileRemove width={16} height={16} viewBox={'0 0 16 16'} />
             )}
-            <SortableList.DragHandle show={isHovered && !isDisabled} />
+            {!isHovered && isHidden && !isDisabled && <EyeDisable width={16} height={16} />}
+            {/* When hovered on disabled page, show disabled icon instead of hovered icon */}
+            {isHovered && isDisabled && <FileRemove width={16} height={16} viewBox={'0 0 16 16'} />}
+            {isHovered && !isDisabled && (
+              <div style={{ paddingRight: '4px' }}>
+                <SortableList.DragHandle show />
+              </div>
+            )}
           </div>
-          {!isDisabled ? (
-            <div
-              className="col text-truncate font-weight-400 page-name"
-              data-cy={`pages-name-${String(page.name).toLowerCase()}`}
-            >
-              {page.name}
-            </div>
-          ) : (
-            <div
-              className="col text-truncate font-weight-400 page-name color-slate09"
-              data-cy={`pages-name-${String(page.name).toLowerCase()}`}
-            >
-              {`${page.name} (disabled)`}
-            </div>
-          )}
-          <div className="col-auto page-icons">
-            {isHidden && (
-              <img
-                data-toggle="tooltip"
-                title="hidden"
-                className="mx-2"
-                src="assets/images/icons/eye-off.svg"
-                height={14}
-                width={14}
-                data-cy={'hide-page-icon'}
-              />
+          <div
+            className="col text-truncate font-weight-400 page-name tj-text-xsm  color-slate12"
+            data-cy={`pages-name-${String(page.name).toLowerCase()}`}
+            style={isHomePage || isHidden || isHovered || isDisabled ? { paddingLeft: '0px' } : { paddingLeft: '16px' }}
+          >
+            {`${page.name}`}
+            {isIconApplied && (
+              <span
+                style={{
+                  marginLeft: '8px',
+                }}
+                className="color-slate09"
+              >
+                {isHomePage && 'Home'}
+                {(isDisabled || (isDisabled && isHidden)) && 'Disabled'}
+                {isHidden && !isDisabled && 'Hidden'}
+              </span>
             )}
           </div>
           <div className="col-auto">

@@ -49,30 +49,26 @@ export const PagehandlerMenu = ({
                   closeMenu={closeMenu}
                   callback={handlePageCallback}
                 />
-                {/* <Field
-                  id="duplicate-page"
-                  text="Duplicate"
-                  iconSrc={'assets/images/icons/duplicate.svg'}
-                  closeMenu={closeMenu}
-                  callback={handlePageCallback}
-                /> */}
-                <Field
-                  id="mark-as-home-page"
-                  text="Mark home"
-                  iconSrc={'assets/images/icons/home.svg'}
-                  closeMenu={closeMenu}
-                  callback={handlePageCallback}
-                  disabled={isHidden}
-                />
+                {isDisabled || isHidden ? null : (
+                  <Field
+                    id="mark-as-home-page"
+                    text="Mark home"
+                    iconSrc={'assets/images/icons/home.svg'}
+                    closeMenu={closeMenu}
+                    callback={handlePageCallback}
+                  />
+                )}
 
-                <Field
-                  id={isHidden ? 'unhide-page' : 'hide-page'}
-                  text={isHidden ? 'Unhide page' : 'Hide page'}
-                  iconSrc={`assets/images/icons/${isHidden ? 'eye' : 'eye-off'}.svg`}
-                  closeMenu={closeMenu}
-                  callback={handlePageCallback}
-                  disabled={isHome && !isHidden}
-                />
+                {!isDisabled && (
+                  <Field
+                    id={isHidden ? 'unhide-page' : 'hide-page'}
+                    text={isHidden ? 'Show page on app menu' : 'Hide page on app menu'}
+                    iconSrc={`assets/images/icons/${isHidden ? 'eye' : 'eye-off'}.svg`}
+                    closeMenu={closeMenu}
+                    callback={handlePageCallback}
+                    disabled={isHome}
+                  />
+                )}
 
                 <Field
                   id="clone-page"
