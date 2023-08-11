@@ -1,18 +1,29 @@
 import { organizationService, authenticationService } from '@/_services';
-import { pathnameToArray, getSubpath, appendWorkspaceId, getWorkspaceIdOrSlugFromURL, getPathname } from './routes';
+import { pathnameToArray, getSubpath, getWorkspaceIdOrSlugFromURL, getPathname, getRedirectURL } from './routes';
+
+/* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
+  What is this function?
+    - This function is used to authorize the workspace that the user is currently trying to open (for multi-workspace functionality across multiple tabs).
+
+  Cases / Steps
+    CASE-1. Process the workspace slug. get workspace-id and basic session details. If the page is app viewer then we will get the workspace from the app-id
+    CASE-2. Proceed with authorizing the workspace only if the page isn't `switch-workspace`
+    CASE-3. If the user doesn't have valid session then PrivateRoute component will take care the rest [redirect to the login-page]
+    CASE-4. If the page is app viewer and there is no valid session. consider the app is public 
+*/
 
 export const authorizeWorkspace = () => {
   if (!isThisExistedRoute()) {
     const workspaceIdOrSlug = getWorkspaceIdOrSlugFromURL();
-
-    const isApplicationsPath = window.location.pathname.includes('/applications/');
+    const isApplicationsPath = getPathname().includes('/applications/');
     const appId = isApplicationsPath ? getPathname().split('/')[2] : null;
+    /* CASE-1 */
     authenticationService
       .validateSession(appId, workspaceIdOrSlug)
       .then(({ current_organization_id }) => {
-        //get organizations list
         if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
-          authorizeUserAndHandleErrors(workspaceIdOrSlug, current_organization_id);
+          /*CASE-2*/
+          authorizeUserAndHandleErrors(current_organization_id);
         } else {
           updateCurrentSession({
             current_organization_id,
@@ -25,10 +36,12 @@ export const authorizeWorkspace = () => {
           window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
         }
         if (!isThisWorkspaceLoginPage(true) && !isApplicationsPath) {
+          /* CASE-3 */
           updateCurrentSession({
             authentication_status: false,
           });
         } else if (isApplicationsPath) {
+          /* CASE-4 */
           updateCurrentSession({
             authentication_failed: true,
             load_app: true,
@@ -56,10 +69,17 @@ const isThisExistedRoute = () => {
   return pathnames?.length > 0 ? (checkPath() ? true : false) : false;
 };
 
-const fetchOrganizations = (current_organization_id, callback) => {
+const fetchOrganizations = (current_organization_id, unauthorized_organization_id, callback) => {
   organizationService.getOrganizations().then((response) => {
-    const current_organization_name = response.organizations?.find((org) => org.id === current_organization_id)?.name;
-    callback({ organizations: response.organizations, current_organization_name });
+    const current_organization = response.organizations?.find((org) => org.id === current_organization_id);
+    const unauthorized_organization = unauthorized_organization_id
+      ? response.organizations?.find((org) => org.id === unauthorized_organization_id)
+      : null;
+    callback({
+      organizations: response.organizations,
+      current_organization,
+      unauthorized_organization,
+    });
   });
 };
 
@@ -75,7 +95,14 @@ const updateCurrentSession = (newSession) => {
   authenticationService.updateCurrentSession({ ...currentSession, ...newSession });
 };
 
-export const authorizeUserAndHandleErrors = (workspace_slug, workspace_id) => {
+/*  
+  Cases / Steps
+    CASE-1: If the user is authorized, they will be directed to the loading page. (Check: If the token is authorized for the specific workspace ID.)
+    CASE-2: If not, the function checks if the user is authenticated for a different workspace. If so, it attempts to switch workspaces.
+    CASE-3: If CASE-2 fails (indicating the need to log in to the workspace or having an invalid session), the user is directed to the workspace login page.
+    CASE-4: During the execution of CASE-2, if the user has a valid session but encounters errors such as an incorrect workspace ID or non-existent workspace, they will be directed to the switch-workspace page.
+*/
+export const authorizeUserAndHandleErrors = (workspace_id) => {
   const subpath = getSubpath();
   //initial session details
   updateCurrentSession({
@@ -85,9 +112,10 @@ export const authorizeUserAndHandleErrors = (workspace_slug, workspace_id) => {
   authenticationService
     .authorize()
     .then((data) => {
-      const { current_organization_id, current_organization_slug } = data;
-      fetchOrganizations(current_organization_id, ({ organizations }) => {
-        const current_organization_name = organizations?.find((org) => org.id === current_organization_id)?.name;
+      /* CASE-1 */
+      const { current_organization_id } = data;
+      fetchOrganizations(current_organization_id, null, ({ organizations, current_organization }) => {
+        const { name: current_organization_name } = current_organization;
         /* add the user details like permission and user previlliage details to the subject */
         updateCurrentSession({
           ...data,
@@ -95,21 +123,15 @@ export const authorizeUserAndHandleErrors = (workspace_slug, workspace_id) => {
           organizations,
           load_app: true,
         });
-
-        // if user is trying to load the workspace login page, then redirect to the dashboard
-        if (isThisWorkspaceLoginPage())
-          return (window.location = appendWorkspaceId(
-            current_organization_slug || current_organization_id,
-            '/:workspaceId'
-          ));
       });
     })
     .catch((error) => {
-      // if the auth token didn't contain workspace-id, try switch workspace fn
       if (error && error?.data?.statusCode === 401) {
-        const unauthorized_organization_id = workspace_id;
+        /* CASE-2 */
+        /* if the auth token didn't contain workspace-id, try switch workspace fn */
 
-        //get current session's workspace id
+        const unauthorized_organization_id = workspace_id;
+        /* get current session's workspace id */
         authenticationService
           .validateSession()
           .then(({ current_organization_id }) => {
@@ -118,33 +140,40 @@ export const authorizeUserAndHandleErrors = (workspace_slug, workspace_id) => {
               current_organization_id,
             });
 
-            /* CASE-1: If the user didn't login to the perticular workspace yet. first try to switch workspace */
             organizationService
               .switchOrganization(unauthorized_organization_id)
-              .then((data) => {
-                const { current_organization_slug } = data;
-                updateCurrentSession(data);
-                if (isThisWorkspaceLoginPage())
-                  return (window.location = appendWorkspaceId(current_organization_slug, '/:workspaceId'));
-                authorizeUserAndHandleErrors(current_organization_slug);
+              .then(() => {
+                authorizeUserAndHandleErrors(unauthorized_organization_id);
               })
               .catch(() => {
-                /* if CASE-1 failed. then redirect to the workspace login page */
-                fetchOrganizations(current_organization_id, ({ current_organization_name }) => {
-                  updateCurrentSession({
-                    current_organization_name,
-                    load_app: true,
-                  });
+                /* CASE-3 */
+                fetchOrganizations(
+                  current_organization_id,
+                  unauthorized_organization_id,
+                  ({ current_organization, unauthorized_organization }) => {
+                    const { name: current_organization_name, slug: current_organization_slug } = current_organization;
+                    const { slug: unauthorized_organization_slug } = unauthorized_organization;
+                    updateCurrentSession({
+                      current_organization_name,
+                      current_organization_slug,
+                      load_app: true,
+                    });
 
-                  if (!isThisWorkspaceLoginPage())
-                    return (window.location = `${subpath ?? ''}/login/${workspace_slug}`);
-                });
+                    if (!isThisWorkspaceLoginPage())
+                      return (window.location = `${
+                        subpath ?? ''
+                      }/login/${unauthorized_organization_slug}?redirectTo=${getPathname(null, true)}`);
+                  }
+                );
               });
           })
+          /* CASE-3 */
           .catch(() => authenticationService.logout());
       } else if ((error && error?.data?.statusCode == 422) || error?.data?.statusCode == 404) {
+        /* CASE-4 */
         window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
       } else {
+        /* Any other errors leave the user on current page [Let the page or private-route component take care] */
         if (!isThisWorkspaceLoginPage() && !isThisWorkspaceLoginPage(true))
           updateCurrentSession({
             authentication_status: false,

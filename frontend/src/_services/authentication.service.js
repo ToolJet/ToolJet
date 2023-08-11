@@ -241,29 +241,20 @@ function logout(avoidRedirection = false) {
     credentials: 'include',
   };
 
+  const redirectToLoginPage = () => {
+    const loginPath =
+      (window.public_config?.SUB_PATH || '/') + 'login' + `${getWorkspaceId() ? `/${getWorkspaceId()}` : ''}`;
+    if (avoidRedirection) {
+      window.location.href = loginPath;
+    } else {
+      const pathname = getPathname(null, !getPathname().includes('integrations'));
+      window.location.href = loginPath + `?redirectTo=${`${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`}`;
+    }
+  };
+
   return fetch(`${config.apiUrl}/logout`, requestOptions)
     .then(handleResponseWithoutValidation)
-    .then(() => {
-      const loginPath =
-        (window.public_config?.SUB_PATH || '/') + 'login' + `${getWorkspaceId() ? `/${getWorkspaceId()}` : ''}`;
-      if (avoidRedirection) {
-        window.location.href = loginPath;
-      } else {
-        const pathname = getPathname();
-        window.location.href =
-          loginPath +
-          `?redirectTo=${
-            !pathname.includes('integrations')
-              ? excludeWorkspaceIdFromURL(pathname)
-              : `${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`
-          }`;
-      }
-    })
-    .catch(() => {
-      authenticationService.updateCurrentSession({
-        authentication_status: false,
-      });
-    });
+    .finally(() => redirectToLoginPage());
 }
 
 function signInViaOAuth(configId, ssoType, ssoResponse) {

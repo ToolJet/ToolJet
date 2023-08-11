@@ -229,7 +229,7 @@ class ViewerComponent extends React.Component {
     const versionName = getQueryParams('version');
 
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
-      if (currentSession?.load_app) {
+      if (currentSession?.load_app && slug) {
         if (currentSession?.group_permissions) {
           handleAppAccess('viewer', slug, versionName).then((accessData) => {
             const { id: appId, versionId } = accessData;
@@ -255,12 +255,8 @@ class ViewerComponent extends React.Component {
             });
             versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
           });
-        } else if (currentSession?.authentication_failed && !slug) {
-          const loginPath = (window.public_config?.SUB_PATH || '/') + 'login';
-          const pathname = getPathname();
-          window.location.href = loginPath + `?redirectTo=${excludeWorkspaceIdFromURL(pathname)}`;
-        } else {
-          slug && this.loadApplicationBySlug(slug);
+        } else if (currentSession?.authentication_failed) {
+          this.loadApplicationBySlug(slug);
         }
       }
       this.setState({ isLoading: false });

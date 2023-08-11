@@ -1,6 +1,6 @@
 import { organizationService, authenticationService, appsService } from '@/_services';
 import { safelyParseJSON, getWorkspaceId } from '@/_helpers/utils';
-import { redirectToDashboard, getSubpath } from '@/_helpers/routes';
+import { redirectToDashboard, getSubpath, getPathname } from '@/_helpers/routes';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import queryString from 'query-string';
@@ -50,7 +50,7 @@ const handleError = (componentType, error, slug, versionName) => {
         }
         redirectToDashboard();
       } else if (statusCode === 401) {
-        window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${window.location.pathname}`;
+        window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${getPathname(null, true)}`;
         return;
       } else if (statusCode === 404 || statusCode === 422) {
         toast.error(error?.error ?? 'App not found');

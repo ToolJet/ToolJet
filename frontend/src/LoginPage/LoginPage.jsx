@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import { Link, Navigate } from 'react-router-dom';
 import GoogleSSOLoginButton from '@ee/components/LoginPage/GoogleSSOLoginButton';
 import GitSSOLoginButton from '@ee/components/LoginPage/GitSSOLoginButton';
-import { getWorkspaceId, validateEmail } from '@/_helpers/utils';
+import { validateEmail } from '@/_helpers/utils';
 import { ShowLoading } from '@/_components';
 import { withTranslation } from 'react-i18next';
 import OnboardingNavbar from '@/_components/OnboardingNavbar';
@@ -15,8 +15,7 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
 import { withRouter } from '@/_hoc/withRouter';
-import queryString from 'query-string';
-import { pathnameToArray, getSubpath } from '@/_helpers/routes';
+import { pathnameToArray, getSubpath, getRedirectURL, redirectToDashboard } from '@/_helpers/routes';
 class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -32,13 +31,6 @@ class LoginPageComponent extends React.Component {
     this.organizationId = props.params.organizationId;
   }
   darkMode = localStorage.getItem('darkMode') === 'true';
-
-  returnWorkspaceIdIfNeed = (path) => {
-    if (path) {
-      return !path.includes('applications') && !path.includes('integrations') ? `/${getWorkspaceId()}` : '';
-    }
-    return `/${getWorkspaceId()}`;
-  };
 
   componentDidMount() {
     this.organizationSlug = this.organizationId;
@@ -77,21 +69,12 @@ class LoginPageComponent extends React.Component {
           // set redirect path for sso/form login
           let redirectPath = '';
           if (this.state.formLogin) {
-            const params = queryString.parse(this.props.location.search);
-            const { from } = params.redirectTo
-              ? { from: { pathname: params.redirectTo } }
-              : { from: { pathname: '/' } };
-            if (from.pathname !== '/confirm')
-              // appending workspace-id to avoid 401 error. App.jsx will take the workspace id from URL
-              from.pathname = `${this.returnWorkspaceIdIfNeed(from.pathname)}${
-                from.pathname !== '/' ? from.pathname : ''
-              }`;
-            redirectPath = from.pathname === '/confirm' ? '/' : from.pathname;
+            const path = getRedirectURL();
+            redirectPath = path === '/confirm' ? '/' : path;
           } else {
             const path = this.eraseRedirectUrl();
-            redirectPath = `${this.returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
+            redirectPath = getRedirectURL(path);
           }
-
           window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
         }
       }
@@ -436,15 +419,7 @@ class LoginPageComponent extends React.Component {
                               .replace(/\s+/g, '-')}`}
                           >
                             back to&nbsp;{' '}
-                            <Link
-                              onClick={() =>
-                                (window.location = `${getSubpath() ? getSubpath() : ''}/${
-                                  authenticationService.currentSessionValue?.current_organization_id
-                                }`)
-                              }
-                            >
-                              {this.state.current_organization_name}
-                            </Link>
+                            <Link onClick={() => redirectToDashboard()}>{this.state.current_organization_name}</Link>
                           </div>
                         )}
                       </div>

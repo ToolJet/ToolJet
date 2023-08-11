@@ -1,6 +1,7 @@
 /* You can add all paths and routes related utils here */
-import { stripTrailingSlash } from '@/_helpers/utils';
+import { stripTrailingSlash, getWorkspaceId } from '@/_helpers/utils';
 import { authenticationService } from '@/_services/authentication.service';
+import queryString from 'query-string';
 
 export const getPrivateRoute = (page, params = {}) => {
   const routes = {
@@ -54,8 +55,10 @@ export function getQueryParams(query) {
 
 export const pathnameToArray = () => window.location.pathname.split('/').filter((path) => path != '');
 
-export const getPathname = () =>
-  getSubpath() ? window.location.pathname.replace(getSubpath(), '') : window.location.pathname;
+export const getPathname = (path, excludeSlug = false) => {
+  const pathname = excludeSlug ? excludeWorkspaceIdFromURL(window.location.pathname) : window.location.pathname;
+  return getSubpath() ? (path || pathname).replace(getSubpath(), '') : path || pathname;
+};
 
 export const getHostURL = () => `${window.public_config?.TOOLJET_HOST}${getSubpath() ?? ''}`;
 
@@ -126,3 +129,25 @@ export const excludeWorkspaceIdFromURL = (pathname) => {
 
 export const getSubpath = () =>
   window?.public_config?.SUB_PATH ? stripTrailingSlash(window?.public_config?.SUB_PATH) : null;
+
+const returnWorkspaceIdIfNeed = (path) => {
+  if (path) {
+    return !path.includes('applications') && !path.includes('integrations') ? `/${getWorkspaceId()}` : '';
+  }
+  return `/${getWorkspaceId()}`;
+};
+
+export const getRedirectURL = (path) => {
+  let redirectLoc = '/';
+  if (path) {
+    redirectLoc = `${returnWorkspaceIdIfNeed(path)}${path !== '/' ? path : ''}`;
+  } else {
+    const params = queryString.parse(window.location.search);
+    const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
+    if (from.pathname !== '/confirm')
+      from.pathname = `${returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
+    redirectLoc = from.pathname;
+  }
+
+  return redirectLoc;
+};

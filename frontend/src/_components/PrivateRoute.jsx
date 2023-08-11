@@ -3,6 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { authenticationService } from '@/_services';
 import { appendWorkspaceId, excludeWorkspaceIdFromURL } from '@/_helpers/routes';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
+import { getWorkspaceId } from '@/_helpers/utils';
 
 export const PrivateRoute = ({ children }) => {
   const [session, setSession] = React.useState(authenticationService.currentSessionValue);
@@ -38,7 +39,7 @@ export const PrivateRoute = ({ children }) => {
       return (
         <Navigate
           to={{
-            pathname: '/login',
+            pathname: `/login${getWorkspaceId() ? `/${getWorkspaceId()}` : ''}`,
             search: `?redirectTo=${excludeWorkspaceIdFromURL(location.pathname)}`,
             state: { from: location },
           }}
@@ -93,7 +94,7 @@ export const AdminRoute = ({ children }) => {
       return (
         <Navigate
           to={{
-            pathname: '/login',
+            pathname: `/login${getWorkspaceId() ? `/${getWorkspaceId()}` : ''}`,
             search: `?redirectTo=${location.pathname}`,
             state: { from: location },
           }}
