@@ -148,6 +148,8 @@ export const Datepicker = function Datepicker({
               display: visibility ? '' : 'none',
               '& .MuiOutlinedInput-root': {
                 height,
+                minWidth: '176px',
+                minHeight: '36px',
                 borderRadius: `${borderRadius}px`,
                 boxShadow: boxShadow,
               },
