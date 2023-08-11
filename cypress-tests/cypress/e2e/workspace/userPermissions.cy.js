@@ -18,7 +18,7 @@ data.folderName = `${fake.companyName.toLowerCase()}-folder`;
 
 describe("User permissions", () => {
   before(() => {
-    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
+    cy.intercept("GET", "/api/folders?searchKey=&type=front-end").as("homePage");
     cy.appUILogin();
     permissions.reset();
     cy.get(commonSelectors.homePageLogo).click();
