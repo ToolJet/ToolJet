@@ -293,6 +293,7 @@ export const DropDown = function DropDown({
               setExposedVariable('selectedOptionLabel', selectOptions.find((option) => option.value === value)?.label);
             }}
             style={customStyles.control({}, {})}
+            sx={{ '& .MuiOutlinedInput-root': { height } }}
           >
             {properties.loadingState && (
               <CircularProgress
