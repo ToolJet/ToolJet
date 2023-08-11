@@ -888,7 +888,7 @@ export function isExpectedDataType(data, expectedDataType) {
   return data;
 }
 
-export const validateAppName = (name, nameType, showError = false, allowSpecialChars = true) => {
+export const validateAppName = (name, showError = false) => {
   const newName = name.trim();
   let errorMsg = '';
   if (newName.length > 50) {
