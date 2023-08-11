@@ -6,6 +6,7 @@ import cx from 'classnames';
 
 function Logs({ logProps, idx, darkMode }) {
   const [open, setOpen] = React.useState(false);
+  console.log('Debug debugger: open:', open);
 
   const title = ` [${capitalize(logProps?.type)} ${logProps?.key}]`;
   const message = logProps?.isQuerySuccessLog
@@ -26,7 +27,10 @@ function Logs({ logProps, idx, darkMode }) {
     <div className="tab-content debugger-content mb-1" key={`${logProps?.key}-${idx}`}>
       <p
         className="m-0 d-flex"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={(e) => {
+          console.log('Debug debugger: setOpen:', e);
+          setOpen((prev) => !prev);
+        }}
         style={{ pointerEvents: logProps?.isQuerySuccessLog ? 'none' : 'default' }}
       >
         <span className={cx('mx-1 position-absolute')} style={defaultStyles}>

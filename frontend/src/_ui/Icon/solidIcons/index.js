@@ -115,6 +115,8 @@ import Lock from './Lock.jsx';
 import Mail from './Mail.jsx';
 import Logs from './Logs.jsx';
 import Marketplace from './Marketplace.jsx';
+import Minimize from './Minimize.jsx';
+import Maximize from './Maximize.jsx';
 import PlusRectangle from './PlusRectangle.jsx';
 
 const Icon = (props) => {
@@ -351,6 +353,10 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
+    case 'minimize':
+      return <Minimize {...props} />;
+    case 'maximize':
+      return <Maximize {...props} />;
     default:
       return <Apps {...props} />;
   }

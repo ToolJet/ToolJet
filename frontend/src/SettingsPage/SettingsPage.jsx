@@ -28,16 +28,10 @@ function SettingsPage(props) {
 
   const updateDetails = async () => {
     const firstNameMatch = firstName.match(/^ *$/);
-    const lastNameMatch = lastName.match(/^ *$/);
-    if (firstNameMatch !== null || lastNameMatch !== null) {
-      toast.error(
-        `${firstNameMatch !== null ? 'First name' : ''}${
-          lastNameMatch !== null ? (firstNameMatch !== null ? ' and last name' : 'Last name') : ''
-        } can't be empty!`,
-        {
-          position: 'top-center',
-        }
-      );
+    if (firstNameMatch !== null) {
+      toast.error(`First name can't be empty!`, {
+        position: 'top-center',
+      });
       return;
     }
 

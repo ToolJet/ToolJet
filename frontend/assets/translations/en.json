@@ -181,7 +181,7 @@
             "events": "Events",
             "transformation": {
                 "transformationToolTip": "Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python",
-                "transformations": "Enable Transformations"
+                "transformations": "Transformations"
             }
         },
         "inspector": {
@@ -204,7 +204,7 @@
                 "table": "Table",
                 "pageIndex": "Page index",
                 "component": "Component",
-                "addHandler": "+ Add handler",
+                "addHandler": "Add handler",
                 "addEventHandler": "+ Add event handler",
                 "emptyMessage": "This {{componentName}} doesn't have any event handlers",
                 "page": "Page"
@@ -259,7 +259,7 @@
                     "enterLastName": "Enter Last Name",
                     "enterEmail": "Enter email id",
                     "enterFulltName": "Enter full name",
-                    "inviteNewUsers":"Invite new users"
+                    "inviteNewUsers": "Invite new users"
                 },
                 "manageGroups": {
                     "permissions": {
