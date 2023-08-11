@@ -1109,7 +1109,11 @@ export function Table({
                                     }`}
                                     {...column.getSortByToggleProps()}
                                   >
-                                    <div className={`${column.columnType !== 'selector' && 'd-flex custom-gap-4'}`}>
+                                    <div
+                                      className={`${
+                                        column.columnType !== 'selector' && column.isEditable && 'd-flex custom-gap-4'
+                                      }`}
+                                    >
                                       <div>
                                         {column.columnType !== 'selector' && column.isEditable && (
                                           <SolidIcon
