@@ -357,6 +357,29 @@
       }
     }
   }
+  .warning-no-data{
+    padding: 12px;
+    border-radius: 6px;
+    background-color: var(--slate3, #F1F3F5) !important;
+    gap: 10px;
+    .warning-svg-wrapper{
+      display: flex;
+      height: 20px;
+      width: 20px;
+      justify-content: center;
+      padding: 2.5px 1.667px;
+      align-items: center;
+      background: inherit;
+    }
+    .warning-no-data-text{
+      color: var(--slate11) !important;
+      /* Paragraph/Small/Medium */
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 500;
+      line-height: 20px; /* 142.857% */
+    }
+  }
 }
 .table-striped > tbody > tr:nth-of-type(even){
   background-color: var(--slate2) !important;

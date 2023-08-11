@@ -1040,7 +1040,7 @@ export function Table({
           {...getTableProps()}
           className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'} ${
             tableDetails.addNewRowsDetails.addingNewRows && 'disabled'
-          }`}
+          } ${!loadingState && page.length === 0 && 'h-100'}`}
           style={computedStyles}
         >
           <thead>
@@ -1188,9 +1188,14 @@ export function Table({
           </thead>
 
           {!loadingState && page.length === 0 && (
-            <center className="w-100">
-              <div className="py-5"> no data </div>
-            </center>
+            <div className="d-flex flex-column align-items-center custom-gap-8 justify-content-center h-100">
+              <div className="warning-no-data">
+                <div className="warning-svg-wrapper">
+                  <SolidIcon name="warning" width="16" />
+                </div>
+              </div>
+              <div className="warning-no-data-text">No data</div>
+            </div>
           )}
 
           {!loadingState && (
