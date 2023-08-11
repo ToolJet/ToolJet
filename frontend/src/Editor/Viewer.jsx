@@ -555,7 +555,6 @@ class ViewerComponent extends React.Component {
               onConfirm={(queryConfirmationData) => onQueryConfirmOrCancel(this, queryConfirmationData, true, 'view')}
               onCancel={() => onQueryConfirmOrCancel(this, queryConfirmationList[0], false, 'view')}
               queryConfirmationData={queryConfirmationList[0]}
-              darkMode={this.props.darkMode}
               key={queryConfirmationList[0]?.queryName}
             />
             <DndProvider backend={HTML5Backend}>
