@@ -3,6 +3,7 @@ import Headers from './TabHeaders';
 import Params from './TabParams';
 import Body from './TabBody';
 import { Tab, ListGroup, Row } from 'react-bootstrap';
+import { CustomToggleSwitch } from '@/Editor/QueryManager/Components/CustomToggleSwitch';
 
 function ControlledTabs({
   options,
@@ -22,21 +23,29 @@ function ControlledTabs({
   return (
     <Tab.Container activeKey={key} onSelect={(k) => setKey(k)} defaultActiveKey="headers">
       <Row>
-        <div className="keys">
-          <ListGroup className="query-pane-rest-api-keys-list-group mx-1" variant="flush">
+        <div className="keys d-flex justify-content-between">
+          <ListGroup className="query-pane-rest-api-keys-list-group mx-1 mb-2" variant="flush">
             {tabs.map((tab) => (
               <ListGroup.Item key={tab} eventKey={tab.toLowerCase()}>
                 <span>{tab}</span>
               </ListGroup.Item>
             ))}
           </ListGroup>
+          {key === 'body' && (
+            <div className="text-nowrap d-flex align-items-center">
+              Raw JSON&nbsp;&nbsp;
+              <CustomToggleSwitch
+                toggleSwitchFunction={setBodyToggle}
+                action="bodyToggle"
+                darkMode={darkMode}
+                isChecked={bodyToggle}
+              />
+            </div>
+          )}
         </div>
 
         <div className={`col ${darkMode && 'theme-dark'}`}>
-          <Tab.Content
-            bsPrefix="rest-api-tab-content"
-            className="border overflow-hidden query-manager-border-color rounded"
-          >
+          <Tab.Content bsPrefix="rest-api-tab-content" className="query-manager-border-color rounded">
             <Tab.Pane eventKey="headers" t bsPrefix="rest-api-tabpanes" transition={false}>
               <Headers
                 removeKeyValuePair={removeKeyValuePair}
@@ -69,7 +78,6 @@ function ControlledTabs({
                 jsonBody={options['json_body']}
                 theme={theme}
                 bodyToggle={bodyToggle}
-                setBodyToggle={setBodyToggle}
                 darkMode={darkMode}
                 componentName={componentName}
               />
