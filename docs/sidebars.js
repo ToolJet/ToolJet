@@ -214,6 +214,13 @@ const sidebars = {
     },
     {
       'type': 'category',
+      'label': 'Workflows',
+      'items': [
+        'workflows/overview',
+      ],
+    },
+    {
+      'type': 'category',
       'label': 'Org Management',
       'items': [
         {
