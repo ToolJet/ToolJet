@@ -101,14 +101,13 @@ export const RadioButton = function RadioButton({
         <div
           data-disabled={disabledState}
           style={{
-            height: 'auto',
+            height,
             display: visibility ? 'flex' : 'none',
             boxShadow,
-            alignItems: 'center',
           }}
           data-cy={dataCy}
         >
-          <FormLabel style={{ color: textColor, marginRight: '10px' }}>{label}</FormLabel>
+          <FormLabel style={{ color: textColor, marginRight: '10px', paddingTop: '15px' }}>{label}</FormLabel>
           <RadioGroup
             value={checkedValue}
             name={`${id}-${uuidv4()}`}
@@ -129,7 +128,7 @@ export const RadioButton = function RadioButton({
                   style={{
                     color: textColor,
                     flexBasis: 'auto',
-                    padding: '8px',
+                    padding: '5px',
                   }}
                   value={option.value}
                   control={
