@@ -13,23 +13,30 @@ export class CreateLayoutTable1691007037021 implements MigrationInterface {
             default: 'gen_random_uuid()',
           },
           {
-            name: 'name',
-            type: 'varchar',
-            isNullable: false,
-          },
-          {
             name: 'type',
-            type: 'varchar',
+            type: 'enum',
+            enumName: 'layput_type',
+            enum: ['desktop', 'mobile'],
             isNullable: false,
           },
           {
             name: 'top',
-            type: 'integer',
+            type: 'double precision',
             isNullable: false,
           },
           {
             name: 'left',
-            type: 'integer',
+            type: 'double precision',
+            isNullable: false,
+          },
+          {
+            name: 'width',
+            type: 'double precision',
+            isNullable: false,
+          },
+          {
+            name: 'height',
+            type: 'double precision',
             isNullable: false,
           },
           {

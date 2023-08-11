@@ -29,6 +29,7 @@ import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
 
 import { ComponentsService } from '@services/components.service';
+import { PageService } from '@services/page.service';
 
 @Controller('apps')
 export class AppsController {
@@ -36,6 +37,7 @@ export class AppsController {
     private appsService: AppsService,
     private foldersService: FoldersService,
     private componentsService: ComponentsService,
+    private pageService: PageService,
     private appsAbilityFactory: AppsAbilityFactory
   ) {}
 
@@ -88,9 +90,7 @@ export class AppsController {
       ? await this.appsService.findDataQueriesForVersion(app.editingVersion.id)
       : [];
 
-    const pagesForVersion = app.editingVersion ? await this.appsService.findPagesForVersion(app.editingVersion.id) : [];
-
-    console.log('------arpit [pagesforVersion]', { pagesForVersion });
+    const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(app.editingVersion.id) : [];
 
     // serialize queries
     for (const query of dataQueriesForVersion) {
@@ -320,15 +320,86 @@ export class AppsController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const updateType = versionEditDto.app_diff?.type;
-    console.log('----arpit apps controller => ', { updateType });
-
-    // if(updateType=== 'components') {
-    //   await this.componentsService.createOrUpdate(versionEditDto.app_diff.components, versionId)
-    // }
+    // const updateType = versionEditDto.app_diff?.type;
+    // console.log('----arpit apps controller => ', { updateType });
 
     await this.appsService.updateVersion(version, versionEditDto, app.organizationId);
     return;
+  }
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Post(':id/versions/:versionId/components')
+  async createComponent(
+    @User() user,
+    @Param('id') id,
+    @Param('versionId') versionId,
+    @Body() versionEditDto: VersionEditDto
+  ) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+
+    if (!ability.can('updateVersions', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    // const updateType = versionEditDto.app_diff?.type;
+    console.log('----arpit apps controller v2 => ', { versionEditDto });
+    await this.componentsService.create(versionEditDto.diff, versionEditDto.pageId);
+  }
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Put(':id/versions/:versionId/components')
+  async updateComponent(
+    @User() user,
+    @Param('id') id,
+    @Param('versionId') versionId,
+    @Body() versionEditDto: VersionEditDto
+  ) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+
+    if (!ability.can('updateVersions', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    // const updateType = versionEditDto.app_diff?.type;
+    console.log('----arpit apps controller v2 [update] => ', { versionEditDto });
+    await this.componentsService.update(versionEditDto.diff);
+  }
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Put(':id/versions/:versionId/components/layout')
+  async updateComponentLayput(
+    @User() user,
+    @Param('id') id,
+    @Param('versionId') versionId,
+    @Body() versionEditDto: VersionEditDto
+  ) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+
+    if (!ability.can('updateVersions', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    // const updateType = versionEditDto.app_diff?.type;
+    console.log('----arpit apps controller v2 |layput | [update] => ', { versionEditDto });
+    await this.componentsService.componentLayoutChange(versionEditDto.diff);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -39,6 +39,7 @@ import { EventHandler } from 'src/entities/event_handler.entity';
 import { Layout } from 'src/entities/layout.entity';
 
 import { ComponentsService } from '@services/components.service';
+import { PageService } from '@services/page.service';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { ComponentsService } from '@services/components.service';
     PluginsHelper,
     AppEnvironmentService,
     ComponentsService,
+    PageService,
   ],
   controllers: [AppsController, AppUsersController, AppsImportExportController],
 })

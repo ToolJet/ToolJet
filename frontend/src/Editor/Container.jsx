@@ -60,6 +60,8 @@ export const Container = ({
     [JSON.stringify(appDefinition), currentPageId]
   );
 
+  console.log('----mohaaan components', { components });
+
   const currentState = useCurrentState();
   const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
     (state) => ({

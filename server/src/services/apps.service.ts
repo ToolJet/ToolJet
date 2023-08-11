@@ -386,15 +386,6 @@ export class AppsService {
     });
   }
 
-  async findPagesForVersion(appVersionId: string): Promise<Page[]> {
-    return await dbTransactionWrap(async (manager: EntityManager) => {
-      return manager
-        .createQueryBuilder(Page, 'pages')
-        .where('pages.appVersionId = :appVersionId', { appVersionId }) // Replace 'AppVersionId' with the actual column name
-        .getMany();
-    });
-  }
-
   async createNewDataSourcesAndQueriesForVersion(
     manager: EntityManager,
     appVersion: AppVersion,

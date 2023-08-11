@@ -7,6 +7,7 @@ export const appVersionService = {
   create,
   del,
   save,
+  autoSaveApp,
 };
 
 function getAll(appId) {
@@ -44,7 +45,7 @@ function del(appId, versionId) {
 }
 
 function save(appId, versionId, values, isUserSwitchedVersion = false) {
-  console.log('---piku [version saved]', { values });
+  // console.log('---piku [version saved]', { values });
   const body = { is_user_switched_version: isUserSwitchedVersion };
   if (values.definition) body['definition'] = values.definition;
   if (values.name) body['name'] = values.name;
@@ -57,4 +58,23 @@ function save(appId, versionId, values, isUserSwitchedVersion = false) {
     body: JSON.stringify(body),
   };
   return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
+}
+function autoSaveApp(appId, versionId, diff, type, pageId, operation, isUserSwitchedVersion = false) {
+  console.log('---piku [version saved] [v2]', { operation, type, diff });
+
+  const OPERATION = Object.freeze({
+    create: 'POST',
+    update: 'PUT',
+    delete: 'DELETE',
+  });
+
+  const body = { is_user_switched_version: isUserSwitchedVersion, pageId, diff: diff };
+
+  const requestOptions = {
+    method: OPERATION[operation],
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  };
+  return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}/${type}`, requestOptions).then(handleResponse);
 }
