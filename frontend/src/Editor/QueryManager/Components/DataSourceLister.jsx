@@ -66,7 +66,6 @@ function DataSourceLister({
             {fetchIconForSource(source)}
             <ToolTip message={source.name}>
               <p data-cy={`${String(source.name).toLocaleLowerCase().replace(/\s+/g, '-')}-add-query-card`}>
-                {' '}
                 {source.name}
               </p>
             </ToolTip> 
