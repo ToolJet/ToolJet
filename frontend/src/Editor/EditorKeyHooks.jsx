@@ -10,7 +10,6 @@ export const EditorKeyHooks = ({
   removeMultipleComponents,
 }) => {
   const handleHotKeysCallback = (key) => {
-    console.log('---arpit-- hotkeys', { key });
     switch (key) {
       case 'Escape':
         handleEditorEscapeKeyPress();
@@ -19,7 +18,6 @@ export const EditorKeyHooks = ({
         removeMultipleComponents();
         break;
       case 'KeyD':
-        console.log('---arpit-- paste component');
         cloneComponents();
         break;
       case 'KeyC':

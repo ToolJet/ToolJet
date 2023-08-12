@@ -32,6 +32,7 @@ const defaultComponent = {
   styles: {},
   validation: {},
   events: [],
+  type: '',
 };
 
 const updateType = Object.freeze({
@@ -39,6 +40,7 @@ const updateType = Object.freeze({
   containerChanges: 'components/layout',
   componentAdded: 'components',
   componentDefinitionChanged: 'components',
+  componentDeleted: 'components',
 });
 
 export const computeAppDiff = (appDiff, currentPageId, opts) => {
@@ -46,10 +48,20 @@ export const computeAppDiff = (appDiff, currentPageId, opts) => {
   let updateDiff;
   let operation = 'update';
 
+  console.log('---piku [computeAppDiff]', { appDiff, currentPageId, opts });
+
   if (opts?.pageDefinitionChanged) {
     updateDiff = appDiff?.pages[currentPageId];
 
     type = updateType.pageDefinitionChanged;
+  } else if (opts?.componentDeleted) {
+    const currentPageComponents = appDiff?.pages[currentPageId]?.components;
+
+    updateDiff = _.keys(currentPageComponents);
+
+    type = updateType.componentDeleted;
+
+    operation = 'delete';
   } else if ((opts?.containerChanges || opts?.componentDefinitionChanged) && !opts?.componentAdded) {
     const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 
@@ -65,16 +77,15 @@ export const computeAppDiff = (appDiff, currentPageId, opts) => {
 
       result[id] = _.defaultsDeep(metaDiff, defaultComponent);
 
+      result[id].type = componentMeta.component;
       result[id].layouts = appDiff.pages[currentPageId].components[id].layouts;
-
       operation = 'create';
+
       return result;
     }, {});
 
     type = updateType.componentDefinitionChanged;
   }
-
-  console.log('---piku [currentPageComponents]', { updateDiff, opts, type });
 
   return { updateDiff, type, operation };
 };

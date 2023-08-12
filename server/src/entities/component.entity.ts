@@ -10,6 +10,9 @@ export class Component {
   @Column({ name: 'name' })
   name: string;
 
+  @Column({ name: 'type' })
+  type: string;
+
   @Column({ name: 'page_id' })
   pageId: string;
 

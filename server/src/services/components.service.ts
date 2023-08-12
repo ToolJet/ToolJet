@@ -97,6 +97,22 @@ export class ComponentsService {
     });
   }
 
+  async delete(componentIds: string[]) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const components = await manager.findByIds(Component, componentIds);
+
+      if (!components.length) {
+        return {
+          error: {
+            message: `Components with ids ${componentIds} do not exist`,
+          },
+        };
+      }
+
+      await manager.delete(Component, componentIds);
+    });
+  }
+
   async componentLayoutChange(componenstLayoutDiff: object) {
     return dbTransactionWrap(async (manager: EntityManager) => {
       for (const componentId in componenstLayoutDiff) {
@@ -123,8 +139,6 @@ export class ComponentsService {
             ...currentLayout,
             ...layout,
           };
-
-          console.log('--arpit [layput changed]', { type, layout, componentLayout, newLayout });
 
           await manager.update(Layout, { id: componentLayout.id }, newLayout);
         }
@@ -166,6 +180,7 @@ export class ComponentsService {
       const transformedComponent: Component = new Component();
       transformedComponent.id = componentId;
       transformedComponent.name = componentData.name;
+      transformedComponent.type = componentData.type;
       transformedComponent.properties = componentData.properties || {};
       transformedComponent.styles = componentData.styles || {};
       transformedComponent.validations = componentData.validation || {};
@@ -184,6 +199,7 @@ export class ComponentsService {
       [id]: {
         component: {
           name,
+          component: componentData.type,
           definition: {
             properties,
             styles,

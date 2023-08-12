@@ -18,6 +18,11 @@ export class CreateComponentTable1691006952074 implements MigrationInterface {
             isNullable: false,
           },
           {
+            name: 'type',
+            type: 'varchar',
+            isNullable: false,
+          },
+          {
             name: 'page_id',
             type: 'uuid',
             isNullable: false,
