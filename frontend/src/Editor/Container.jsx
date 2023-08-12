@@ -60,8 +60,6 @@ export const Container = ({
     [JSON.stringify(appDefinition), currentPageId]
   );
 
-  console.log('----mohaaan components', { components });
-
   const currentState = useCurrentState();
   const { appVersionsId, enableReleasedVersionPopupState, isVersionReleased } = useAppVersionStore(
     (state) => ({
@@ -149,6 +147,7 @@ export const Container = ({
   const noOfBoxs = Object.values(boxes || []).length;
   useEffect(() => {
     updateCanvasHeight(boxes);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noOfBoxs]);
 
   const moveBox = useCallback(

@@ -64,9 +64,10 @@ import { shallow } from 'zustand/shallow';
 import { useEditorActions, useEditorState, useEditorStore } from '@/_stores/editorStore';
 import { useAppDataActions, useAppDataStore, useAppInfo } from '@/_stores/appDataStore';
 import { useMounted } from '@/_hooks/use-mount';
+
 // eslint-disable-next-line import/no-unresolved
 import { diff } from 'deep-object-diff';
-import { camelizeKeys } from 'humps';
+import { camelizeKeys, decamelizeKeys } from 'humps';
 
 setAutoFreeze(false);
 enablePatches();
@@ -227,7 +228,6 @@ const EditorComponent = (props) => {
     }
 
     if (mounted && didAppDefinitionChanged && currentPageId) {
-      console.log('----mohaaan: useEffecr', { appDefinition });
       const components = appDefinition?.pages[currentPageId]?.components || {};
 
       computeComponentState(components);
@@ -236,6 +236,7 @@ const EditorComponent = (props) => {
         autoSave();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify({ appDefinition, currentPageId, dataQueries })]);
 
   const editorRef = {
@@ -630,6 +631,47 @@ const EditorComponent = (props) => {
   };
 
   //!--------
+
+  const buildComponentMetaDefinition = (components = {}) => {
+    for (const componentId in components) {
+      const currentComponentData = components[componentId];
+      const componentMeta = componentTypes.find((comp) => currentComponentData.component.component === comp.component);
+
+      const mergedDefinition = {
+        ...componentMeta.definition,
+        properties: {
+          ...componentMeta.definition.properties,
+          ...currentComponentData?.component.definition.properties,
+        },
+
+        styles: {
+          ...componentMeta.definition.styles,
+          ...currentComponentData?.component.definition.styles,
+        },
+        validations: {
+          ...componentMeta.definition.validations,
+          ...currentComponentData?.component.definition.validations,
+        },
+      };
+
+      const mergedComponent = {
+        component: {
+          ...componentMeta,
+          ...currentComponentData.component,
+        },
+        layouts: {
+          ...currentComponentData.layouts,
+        },
+        withDefaultChildren: componentMeta.withDefaultChildren ?? false,
+      };
+
+      mergedComponent.component.definition = mergedDefinition;
+
+      components[componentId] = mergedComponent;
+    }
+    return components;
+  };
+
   const buildAppDefinition = (data) => {
     const editingVersion = _.omit(camelizeKeys(data.editing_version), ['definition', 'updatedAt', 'createdAt', 'name']);
 
@@ -637,6 +679,10 @@ const EditorComponent = (props) => {
     _.unset(editingVersion, 'id');
 
     const pages = data.pages.reduce((acc, page) => {
+      const currentComponents = buildComponentMetaDefinition(_.cloneDeep(page?.components));
+
+      page.components = currentComponents;
+
       acc[page.id] = page;
 
       return acc;
@@ -648,6 +694,8 @@ const EditorComponent = (props) => {
       showHideViewerNavigation: editingVersion.showHideViewerNavigation ?? true,
       pages: pages,
     };
+
+    // const componentMeta = componentTypes.find((comp) => component.component === comp.component);
 
     return appJSON;
   };
@@ -677,7 +725,7 @@ const EditorComponent = (props) => {
       const homePageId = !startingPageId || startingPageId === 'null' ? appJson.homePageId : startingPageId;
 
       const currentComponents = appJson.pages[homePageId]?.components ?? {};
-      console.log('---piku [fetching app] [pages] ==> ', { currentComponents });
+      console.log('---arpit [fetching app] [pages] ==> ', { currentComponents });
       const currentpageData = {
         handle: appJson.pages[homePageId]?.handle,
         name: appJson.pages[homePageId]?.name,
@@ -727,7 +775,6 @@ const EditorComponent = (props) => {
 
   // !--------
   const setAppDefinitionFromVersion = (version, shouldWeEditVersion = true) => {
-    console.log('---arpit [setAppFromVersion]--', version);
     if (version?.id !== props.editingVersion?.id) {
       appDefinitionChanged(defaults(version.definition, defaultDefinition(props.darkMode)), {
         skipAutoSave: true,
@@ -783,11 +830,6 @@ const EditorComponent = (props) => {
     let updatedAppDefinition;
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
-    console.log('--arpit | appDefinitionChanged func()', {
-      opts,
-      newDefinition,
-    });
-
     updatedAppDefinition = produce(copyOfAppDefinition, (draft) => {
       if (_.isEmpty(draft)) return;
 
@@ -822,6 +864,7 @@ const EditorComponent = (props) => {
       setUndoStack((prev) => [...prev, undoPatches]);
 
       updateAppDefinitionDiff(diffPatches);
+
       updateState({
         appDiffOptions: opts,
       });
@@ -839,7 +882,6 @@ const EditorComponent = (props) => {
   };
 
   const saveEditingVersion = (isUserSwitchedVersion = false) => {
-    console.log('---arpit [saving - editionversion]--', { appDefinitionDiff });
     if (props.isVersionReleased && !isUserSwitchedVersion) {
       updateEditorState({
         isSaving: false,
@@ -952,10 +994,10 @@ const EditorComponent = (props) => {
       canUndo: undoStack.length > 0,
       canRedo: redoStack.length > 0,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(undoStack), JSON.stringify(redoStack)]);
 
   const componentDefinitionChanged = (componentDefinition, props) => {
-    console.log('---arpit checking:::: ', { props });
     if (props?.isVersionReleased) {
       useAppVersionStore.getState().actions.enableReleasedVersionPopupState();
       return;
@@ -1024,6 +1066,7 @@ const EditorComponent = (props) => {
       }
       appDefinitionChanged(newDefinition, {
         componentDefinitionChanged: true,
+        componentDeleted: true,
       });
       handleInspectorView();
     } else {

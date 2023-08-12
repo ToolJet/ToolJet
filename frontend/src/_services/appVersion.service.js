@@ -60,8 +60,6 @@ function save(appId, versionId, values, isUserSwitchedVersion = false) {
   return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
 function autoSaveApp(appId, versionId, diff, type, pageId, operation, isUserSwitchedVersion = false) {
-  console.log('---piku [version saved] [v2]', { operation, type, diff });
-
   const OPERATION = Object.freeze({
     create: 'POST',
     update: 'PUT',

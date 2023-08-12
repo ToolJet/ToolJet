@@ -1130,10 +1130,11 @@ export function renderTooltip({ props, text }) {
 export function computeComponentState(components = {}) {
   let componentState = {};
   const currentComponents = getCurrentState().components;
+
   Object.keys(components).forEach((key) => {
-    const component = components[key];
-    const componentMeta = componentTypes.find((comp) => component.component.component === comp.component);
-    console.log('------tj: computeComponentState', { component, currentComponents });
+    const { component } = components[key];
+    const componentMeta = componentTypes.find((comp) => component.component === comp.component);
+
     const existingComponentName = Object.keys(currentComponents).find((comp) => currentComponents[comp].id === key);
     const existingValues = currentComponents[existingComponentName];
 
@@ -1149,14 +1150,14 @@ export function computeComponentState(components = {}) {
       }
 
       if (!isListView && !isForm) {
-        componentState[component.component.name] = {
+        componentState[component.name] = {
           ...componentMeta.exposedVariables,
           id: key,
           ...existingValues,
         };
       }
     } else {
-      componentState[component.component.name] = {
+      componentState[component.name] = {
         ...componentMeta.exposedVariables,
         id: key,
         ...existingValues,
@@ -1586,7 +1587,7 @@ export const removeSelectedComponent = (pageId, newDefinition, selectedComponent
     delete newDefinition.pages[pageId].components[component.id];
   });
 
-  updateAppDefinition(newDefinition, { componentDefinitionChanged: true });
+  updateAppDefinition(newDefinition, { componentDefinitionChanged: true, componentDeleted: true });
 };
 
 const getSelectedText = () => {
