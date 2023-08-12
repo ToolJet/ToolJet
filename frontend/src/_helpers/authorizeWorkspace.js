@@ -20,10 +20,10 @@ export const authorizeWorkspace = () => {
     /* CASE-1 */
     authenticationService
       .validateSession(appId, workspaceIdOrSlug)
-      .then(({ current_organization_id }) => {
+      .then(({ current_organization_id, current_organization_slug }) => {
         if (window.location.pathname !== `${getSubpath() ?? ''}/switch-workspace`) {
           /*CASE-2*/
-          authorizeUserAndHandleErrors(current_organization_id);
+          authorizeUserAndHandleErrors(current_organization_id, current_organization_slug);
         } else {
           updateCurrentSession({
             current_organization_id,
@@ -69,16 +69,12 @@ const isThisExistedRoute = () => {
   return pathnames?.length > 0 ? (checkPath() ? true : false) : false;
 };
 
-const fetchOrganizations = (current_organization_id, unauthorized_organization_id, callback) => {
+const fetchOrganizations = (current_organization_id, callback) => {
   organizationService.getOrganizations().then((response) => {
     const current_organization = response.organizations?.find((org) => org.id === current_organization_id);
-    const unauthorized_organization = unauthorized_organization_id
-      ? response.organizations?.find((org) => org.id === unauthorized_organization_id)
-      : null;
     callback({
       organizations: response.organizations,
       current_organization,
-      unauthorized_organization,
     });
   });
 };
@@ -102,7 +98,7 @@ const updateCurrentSession = (newSession) => {
     CASE-3: If CASE-2 fails (indicating the need to log in to the workspace or having an invalid session), the user is directed to the workspace login page.
     CASE-4: During the execution of CASE-2, if the user has a valid session but encounters errors such as an incorrect workspace ID or non-existent workspace, they will be directed to the switch-workspace page.
 */
-export const authorizeUserAndHandleErrors = (workspace_id) => {
+export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug) => {
   const subpath = getSubpath();
   //initial session details
   updateCurrentSession({
@@ -114,7 +110,7 @@ export const authorizeUserAndHandleErrors = (workspace_id) => {
     .then((data) => {
       /* CASE-1 */
       const { current_organization_id } = data;
-      fetchOrganizations(current_organization_id, null, ({ organizations, current_organization }) => {
+      fetchOrganizations(current_organization_id, ({ organizations, current_organization }) => {
         const { name: current_organization_name } = current_organization;
         /* add the user details like permission and user previlliage details to the subject */
         updateCurrentSession({
@@ -131,6 +127,8 @@ export const authorizeUserAndHandleErrors = (workspace_id) => {
         /* if the auth token didn't contain workspace-id, try switch workspace fn */
 
         const unauthorized_organization_id = workspace_id;
+        const unauthorized_organization_slug = workspace_slug;
+
         /* get current session's workspace id */
         authenticationService
           .validateSession()
@@ -147,24 +145,19 @@ export const authorizeUserAndHandleErrors = (workspace_id) => {
               })
               .catch(() => {
                 /* CASE-3 */
-                fetchOrganizations(
-                  current_organization_id,
-                  unauthorized_organization_id,
-                  ({ current_organization, unauthorized_organization }) => {
-                    const { name: current_organization_name, slug: current_organization_slug } = current_organization;
-                    const { slug: unauthorized_organization_slug } = unauthorized_organization;
-                    updateCurrentSession({
-                      current_organization_name,
-                      current_organization_slug,
-                      load_app: true,
-                    });
+                fetchOrganizations(current_organization_id, ({ current_organization }) => {
+                  const { name: current_organization_name, slug: current_organization_slug } = current_organization;
+                  updateCurrentSession({
+                    current_organization_name,
+                    current_organization_slug,
+                    load_app: true,
+                  });
 
-                    if (!isThisWorkspaceLoginPage())
-                      return (window.location = `${
-                        subpath ?? ''
-                      }/login/${unauthorized_organization_slug}?redirectTo=${getPathname(null, true)}`);
-                  }
-                );
+                  if (!isThisWorkspaceLoginPage())
+                    return (window.location = `${
+                      subpath ?? ''
+                    }/login/${unauthorized_organization_slug}?redirectTo=${getPathname(null, true)}`);
+                });
               });
           })
           /* CASE-3 */
@@ -173,7 +166,7 @@ export const authorizeUserAndHandleErrors = (workspace_id) => {
         /* CASE-4 */
         window.location = subpath ? `${subpath}${'/switch-workspace'}` : '/switch-workspace';
       } else {
-        /* Any other errors leave the user on current page [Let the page or private-route component take care] */
+        /* Any other errors, leave the user on current page [Let the page or private-route component take care] */
         if (!isThisWorkspaceLoginPage() && !isThisWorkspaceLoginPage(true))
           updateCurrentSession({
             authentication_status: false,

@@ -12,6 +12,7 @@ export default function GoogleSSOLoginButton(props) {
   };
   const googleLogin = (e) => {
     e.preventDefault();
+    props.setRedirectUrlToCookie();
     const { client_id } = props.configs;
     const authUrl = buildURLWithQuery('https://accounts.google.com/o/oauth2/auth', {
       redirect_uri: `${window.public_config?.TOOLJET_HOST}/sso/google${props.configId ? `/${props.configId}` : ''}`,

@@ -1,9 +1,10 @@
 import React from 'react';
 import { buildURLWithQuery } from '@/_helpers/utils';
 
-export default function GitSSOLoginButton({ configs, text }) {
+export default function GitSSOLoginButton({ configs, text, setRedirectUrlToCookie }) {
   const gitLogin = (e) => {
     e.preventDefault();
+    setRedirectUrlToCookie();
     window.location.href = buildURLWithQuery(`${configs.host_name || 'https://github.com'}/login/oauth/authorize`, {
       client_id: configs?.client_id,
       scope: 'user:email',

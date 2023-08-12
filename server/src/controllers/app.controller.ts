@@ -32,6 +32,7 @@ import { SessionAuthGuard } from 'src/modules/auth/session-auth-guard';
 import { UsersService } from '@services/users.service';
 import { SessionService } from '@services/session.service';
 import { OrganizationsService } from '@services/organizations.service';
+import { Organization } from 'src/entities/organization.entity';
 
 @Controller()
 export class AppController {
@@ -61,23 +62,26 @@ export class AppController {
   @UseGuards(SessionAuthGuard)
   @Get('session')
   async getSessionDetails(@User() user, @Query('appId') appId: string, @Query('workspaceSlug') workspaceSlug: string) {
-    let organizationId: string;
-    let app: any;
+    let currentOrganization: Organization;
+
+    let app: { organizationId: string; isPublic: boolean };
     if (appId) {
       app = await this.userService.returnOrgIdOfAnApp(appId);
-      //if the user has a session and the app is public, we don't need to authorize the app organization id
-      if (!app?.isPublic) organizationId = app.organizationId;
-    } else if (workspaceSlug) {
-      const id = await this.organizationService.fetchOrganizationId(workspaceSlug);
-      if (!id) {
+    }
+
+    /* if the user has a session and the app is public, we don't need to authorize the app organization id */
+    if ((app && !app?.isPublic) || workspaceSlug) {
+      const organization = await this.organizationService.fetchOrganization(workspaceSlug || app.organizationId);
+      if (!organization) {
         throw new NotFoundException("Coudn't found workspace. workspace id or slug is incorrect!.");
       }
-      organizationId = id;
+      currentOrganization = organization;
     }
-    if (organizationId && user.organizationIds?.includes(organizationId)) {
-      user.organization_id = organizationId;
+
+    if (currentOrganization && user.organizationIds?.includes(currentOrganization.id)) {
+      user.organization_id = currentOrganization.id;
     }
-    return this.authService.generateSessionPayload(user, organizationId);
+    return this.authService.generateSessionPayload(user, currentOrganization);
   }
 
   @UseGuards(JwtAuthGuard)

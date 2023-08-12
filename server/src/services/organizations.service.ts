@@ -143,14 +143,14 @@ export class OrganizationsService {
     return await this.organizationsRepository.findOne({ where: { id }, relations: ['ssoConfigs'] });
   }
 
-  async fetchOrganizationId(slug: string): Promise<string> {
+  async fetchOrganization(slug: string): Promise<Organization> {
     let organization: Organization;
     try {
-      organization = await this.organizationsRepository.findOneOrFail({ where: { slug }, select: ['id'] });
+      organization = await this.organizationsRepository.findOneOrFail({ where: { slug }, select: ['id', 'slug'] });
     } catch (error) {
-      organization = await this.organizationsRepository.findOne(slug, { select: ['id'] });
+      organization = await this.organizationsRepository.findOne(slug, { select: ['id', 'slug'] });
     }
-    return organization?.id;
+    return organization;
   }
 
   async getSingleOrganization(): Promise<Organization> {

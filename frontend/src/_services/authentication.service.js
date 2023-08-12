@@ -10,7 +10,7 @@ import {
 import { getWorkspaceId } from '@/_helpers/utils';
 import config from 'config';
 import queryString from 'query-string';
-import { getPathname, excludeWorkspaceIdFromURL } from '@/_helpers/routes';
+import { getPathname } from '@/_helpers/routes';
 
 const currentSessionSubject = new BehaviorSubject({
   current_organization_id: null,
