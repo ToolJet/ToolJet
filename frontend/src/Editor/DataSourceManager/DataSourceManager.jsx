@@ -470,7 +470,7 @@ class DataSourceManagerComponent extends React.Component {
             <span className="footer-text">
               {this.props.t(
                 'editor.queryManager.dataSourceManager.noResultFound',
-                `Don't see what you were looking for?`
+                ``
               )}
             </span>
             <br />
@@ -923,7 +923,7 @@ const EmptyStateContainer = ({
               </div>
             </div>
             <div className="col-auto">
-              <Button className="mt-2" variant="primary" onClick={handleSend}>
+              <Button className="mt-2" disabled={inputValue.length > 0 ? false : true} variant="primary" onClick={handleSend}>
                 {t('editor.queryManager.dataSourceManager.send', 'Send')}
               </Button>
             </div>
