@@ -17,7 +17,7 @@ import {
 import queryString from 'query-string';
 import ViewerLogoIcon from './Icons/viewer-logo.svg';
 import { DataSourceTypes } from './DataSourceManager/SourceComponents';
-import { resolveReferences } from '@/_helpers/utils';
+import { resolveReferences, isQueryRunnable } from '@/_helpers/utils';
 import { withTranslation } from 'react-i18next';
 import _ from 'lodash';
 import { Navigate } from 'react-router-dom';
@@ -29,7 +29,7 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { handleAppAccess } from '@/_helpers/handleAppAccess';
-import { getPathname, getQueryParams, excludeWorkspaceIdFromURL } from '@/_helpers/routes';
+import { getQueryParams } from '@/_helpers/routes';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -169,7 +169,7 @@ class ViewerComponent extends React.Component {
 
   runQueries = (data_queries) => {
     data_queries.forEach((query) => {
-      if (query.options.runOnPageLoad) {
+      if (query.options.runOnPageLoad && isQueryRunnable(query)) {
         runQuery(this, query.id, query.name, undefined, 'view');
       }
     });

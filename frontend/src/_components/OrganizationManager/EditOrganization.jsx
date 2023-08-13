@@ -103,6 +103,13 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     setDisabled(!error?.status);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      editOrganization();
+    }
+  };
+
   const closeModal = () => {
     setFields({ name: { value: currentValue?.name, error: '' }, slug: { value: currentValue?.slug, error: '' } });
     setShowEditOrg(false);
@@ -128,6 +135,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
             <input
               type="text"
               onChange={(e) => handleInputChange(e.target.value, 'name')}
+              onKeyDown={handleKeyDown}
               className="form-control"
               placeholder={t('header.organization.workspaceName', 'workspace name')}
               disabled={isCreating}
@@ -153,6 +161,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
                 e.persist();
                 delayedSlugChange(e.target.value, 'slug');
               }}
+              onKeyDown={handleKeyDown}
               defaultValue={fields['slug']?.value}
               data-cy="workspace-slug-input-field"
               autoFocusfields

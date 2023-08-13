@@ -176,6 +176,16 @@ export const Folders = function Folders({
     }
   }
 
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      if (showUpdateForm) {
+        executeEditFolder();
+      } else {
+        saveFolder();
+      }
+    }
+  };
+
   const handleInputChange = (e) => {
     setErrorText('');
     const error = validateName(e.target.value, 'Folder name', false, false);
@@ -335,6 +345,7 @@ export const Folders = function Folders({
               value={newFolderName}
               maxLength={50}
               data-cy="folder-name-input"
+              onKeyPress={handleKeyPress}
               autoFocus
             />
             <label className="tj-input-error">{errorText || ''}</label>
