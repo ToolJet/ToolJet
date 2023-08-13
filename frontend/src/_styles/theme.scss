@@ -10776,13 +10776,62 @@ tbody {
       color: var(--base) !important;
     }
   }
+
+  .shareable-link-container,
+  .app-slug-container {
+    .field-name {
+      color: var(--slate-12);
+    }
+    input.slug-input {
+      background: #1f2936 !important;
+      color: #f4f6fa !important;
+      border-color: #324156 !important;
+    }  
+    .applink-text {
+      background-color: #2b394b !important;
+    }
+
+    .input-group-text {
+      background-color: #2b394b !important;
+    }
+
+    .tj-text-input {
+      border-color: #324156 !important;
+    }
+
+    .input-with-icon {
+      .form-control{
+        background-color: #1f2936 !important;
+        border-color: #3E4B5A !important;
+        color: #fff !important;
+      }
+    }
+  }
+
+  .manage-app-users-footer {
+    .default-secondary-button {
+      background-color: #4D72FA !important;
+      color: #F4F6FA !important;
+    }
+  }
+
+  .manage-app-users-close-btn{
+    filter: brightness(0) invert(1) !important;
+  }
 }
 
 .break-all {
   word-break: break-all;
 }
 
-.app-slug,
+.workspace-folder-modal{
+  .tj-text-input.dark {
+    background:  #202425;
+    border-color: var(--slate7) !important;
+  }
+}
+
+.app-slug-container,
 .shareable-link-container,
 .workspace-folder-modal {
   .tj-app-input {
@@ -10815,11 +10864,6 @@ tbody {
       border: 1px solid #D7DBDF;
       box-shadow: none;
     }
-  }
-
-  .tj-text-input.dark {
-    background:  #202425;
-    border: none;
   }
 
   .input-with-icon {
@@ -10901,6 +10945,7 @@ tbody {
   }
 }
 
+.app-slug-container,
 .workspace-folder-modal {
   .tj-app-input {
     padding-bottom: 0px !important;

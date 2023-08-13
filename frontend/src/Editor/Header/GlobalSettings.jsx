@@ -119,13 +119,13 @@ export const GlobalSettings = ({
           <HeaderSection.PanelHeader title="Global settings" />
         </HeaderSection>
         <div className="card-body">
-          <div className="app-slug-container workspace-folder-modal">
+          <div className="app-slug-container">
             <div className="row">
               <div className="col tj-app-input input-with-icon">
-                <label>Unique app slug</label>
+                <label className="field-name">Unique app slug</label>
                 <input
                   type="text"
-                  className={`form-control is-valid`}
+                  className={`form-control is-valid slug-input`}
                   placeholder={t('header.organization.workspaceSlug', 'unique workspace slug')}
                   maxLength={50}
                   onChange={(e) => {
@@ -158,7 +158,7 @@ export const GlobalSettings = ({
             </div>
             <div className="row">
               <div className="col modal-main tj-app-input">
-                <label>App link</label>
+                <label className="field-name">App link</label>
                 <div className={`tj-text-input break-all ${darkMode ? 'dark' : ''}`}>
                   {!slugProgress ? (
                     `${getHostURL()}/${getWorkspaceId()}/apps/${slug?.value || oldSlug || ''}`

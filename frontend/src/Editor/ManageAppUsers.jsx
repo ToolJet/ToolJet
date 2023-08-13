@@ -210,7 +210,12 @@ class ManageAppUsersComponent extends React.Component {
         >
           <Modal.Header>
             <Modal.Title data-cy="modal-header">{this.props.t('editor.share', 'Share')}</Modal.Title>
-            <button className="btn-close" aria-label="Close" onClick={this.hideModal} data-cy="modal-close-button" />
+            <button
+              className="btn-close manage-app-users-close-btn"
+              aria-label="Close"
+              onClick={this.hideModal}
+              data-cy="modal-close-button"
+            />
           </Modal.Header>
           <Modal.Body>
             {isLoading ? (
@@ -229,18 +234,18 @@ class ManageAppUsersComponent extends React.Component {
                       disabled={this.state.ischangingVisibility}
                       data-cy="make-public-app-toggle"
                     />
-                    <span className="form-check-label" data-cy="make-public-app-label">
+                    <span className="form-check-label field-name" data-cy="make-public-app-label">
                       {this.props.t('editor.shareModal.makeApplicationPublic', 'Make application public')}
                     </span>
                   </div>
                 </div>
 
                 <div className="shareable-link tj-app-input mb-2">
-                  <label data-cy="shareable-app-link-label">
+                  <label data-cy="shareable-app-link-label" className="field-name">
                     {this.props.t('editor.shareModal.shareableLink', 'Shareable app link')}
                   </label>
                   <div className="input-group">
-                    <span className="input-group-text" data-cy="app-link">
+                    <span className="input-group-text applink-text" data-cy="app-link">
                       {appLink}
                     </span>
                     <div className="input-with-icon">
@@ -333,7 +338,7 @@ class ManageAppUsersComponent extends React.Component {
                 </div>
                 {(this.state.app.is_public || window?.public_config?.ENABLE_PRIVATE_APP_EMBED === 'true') && (
                   <div className="tj-app-input">
-                    <label>Embedded app link</label>
+                    <label className="field-name">Embedded app link</label>
                     <span className={`tj-text-input justify-content-between ${this.props.darkMode ? 'dark' : ''}`}>
                       <span>{embeddableLink}</span>
                       <span className="copy-container">
