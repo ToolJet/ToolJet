@@ -971,8 +971,3 @@ export const isQueryRunnable = (query) => {
   //TODO: both view api and creat/update apis return dataSourceId in two format 1) camelCase 2) snakeCase. Need to unify it.
   return !!(query?.data_source_id || query?.dataSourceId || !isEmpty(query?.plugins));
 };
-
-export const redirectToDashboard = () => {
-  const subpath = getSubpath();
-  window.location = `${subpath ? `${subpath}` : ''}/${getWorkspaceId()}`;
-};
