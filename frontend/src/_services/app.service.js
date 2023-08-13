@@ -22,6 +22,7 @@ export const appService = {
   setPasswordFromToken,
   acceptInvite,
   getVersions,
+  renameApp,
 };
 
 function getConfig() {
@@ -74,6 +75,16 @@ function changeIcon(icon, appId) {
     body: JSON.stringify({ icon }),
   };
   return fetch(`${config.apiUrl}/apps/${appId}/icons`, requestOptions).then(handleResponse);
+}
+
+function renameApp(name, appId) {
+  const requestOptions = {
+    method: 'PUT',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ app: { name } }),
+  };
+  return fetch(`${config.apiUrl}/apps/${appId}`, requestOptions).then(handleResponse);
 }
 
 function getApp(id, accessType) {

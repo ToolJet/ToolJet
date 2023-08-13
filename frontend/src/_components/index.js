@@ -5,6 +5,7 @@ export * from './DarkModeToggle';
 export * from './SearchBox';
 export * from './ToolTip';
 export * from './CreateApp';
+export * from './RenameApp';
 export * from './ImageWithSpinner';
 export * from './Menu';
 export * from './LoginLoader';
