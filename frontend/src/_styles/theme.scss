@@ -11,6 +11,7 @@
 @import "./dropdown-custom.scss";
 @import "./ui-operations.scss";
 @import 'react-loading-skeleton/dist/skeleton.css';
+@import "./table-component.scss";
 
 /* ibm-plex-sans-100 - latin */
 @font-face {
@@ -10948,7 +10949,4 @@ tbody {
     background-color: #F1F3F5;
     color: #C1C8CD;
   }
-}
-.jet-table {
-  background-color: var(--base) !important;
 }
