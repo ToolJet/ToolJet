@@ -7,6 +7,8 @@ import { isExpectedDataType } from '@/_helpers/utils.js';
 import config from 'config';
 import { TreeItem, TreeView } from '@mui/lab';
 import { Checkbox, FormControlLabel } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 export const TreeSelect = ({ height, properties, styles, setExposedVariable, fireEvent, darkMode, dataCy }) => {
   const { label } = properties;
@@ -271,8 +273,8 @@ export const TreeSelect = ({ height, properties, styles, setExposedVariable, fir
             {data && expanded && checked && (
               <TreeView
                 aria-label="controlled"
-                defaultCollapseIcon={<span> - </span>}
-                defaultExpandIcon={<span> + </span>}
+                defaultCollapseIcon={<ExpandMoreIcon />}
+                defaultExpandIcon={<ChevronRightIcon />}
                 expanded={expanded}
                 onNodeToggle={handleToggle}
                 multiSelect

@@ -131,10 +131,12 @@ export const TextInput = function TextInput({
       {config.UI_LIB === 'mui' && (
         <TextField
           multiline
+          size="small"
           helperText={validationError}
           className={`text-input ${visibility || 'invisible'}`}
           sx={{
             width: '100%',
+            minWidth: '38px',
             '& .MuiFormHelperText-root': {
               color: styles.errTextColor,
             },
@@ -143,6 +145,7 @@ export const TextInput = function TextInput({
             },
             '& .MuiOutlinedInput-root': {
               height,
+              minHeight: '38px',
               borderRadius: `${styles.borderRadius}px`,
               color: darkMode && styles.textColor === '#000' ? '#fff' : styles.textColor,
               backgroundColor:
