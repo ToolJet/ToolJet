@@ -68,7 +68,7 @@ function autoSaveApp(appId, versionId, diff, type, pageId, operation, isUserSwit
 
   let body = {};
 
-  if ((type === 'pages' && operation === 'create') || operation === 'delete') {
+  if (!type || (type === 'pages' && operation === 'create') || operation === 'delete') {
     body = {
       ...diff,
     };
@@ -82,5 +82,7 @@ function autoSaveApp(appId, versionId, diff, type, pageId, operation, isUserSwit
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/${type}`, requestOptions).then(handleResponse);
+  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/${type ?? ''}`, requestOptions).then(
+    handleResponse
+  );
 }

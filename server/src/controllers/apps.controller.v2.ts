@@ -28,6 +28,7 @@ import { AppDecorator } from 'src/decorators/app.decorator';
 
 import { ComponentsService } from '@services/components.service';
 import { PageService } from '@services/page.service';
+import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 
 @Controller({
   path: 'apps',
@@ -90,6 +91,30 @@ export class AppsControllerV2 {
       };
     }
     return response;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Put(':id/versions/:versionId')
+  async updateVersion(
+    @User() user,
+    @Param('id') id,
+    @Param('versionId') versionId,
+    @Body() appVersionUpdateDto: AppVersionUpdateDto
+  ) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+
+    if (!ability.can('updateVersions', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    return await this.appsService.updateAppVersion(version, appVersionUpdateDto);
   }
 
   //components api

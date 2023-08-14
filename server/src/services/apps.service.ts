@@ -29,6 +29,7 @@ import { decode } from 'js-base64';
 import { DataSourceScopes } from 'src/helpers/data_source.constants';
 import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 import { Page } from 'src/entities/page.entity';
+import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 
 @Injectable()
 export class AppsService {
@@ -663,6 +664,16 @@ export class AppsService {
     }
 
     editableParams['updatedAt'] = new Date();
+
+    return await this.appVersionsRepository.update(version.id, editableParams);
+  }
+
+  async updateAppVersion(version: AppVersion, body: AppVersionUpdateDto) {
+    const editableParams = {};
+
+    if (body?.homePageId) {
+      editableParams['homePageId'] = body.homePageId;
+    }
 
     return await this.appVersionsRepository.update(version.id, editableParams);
   }
