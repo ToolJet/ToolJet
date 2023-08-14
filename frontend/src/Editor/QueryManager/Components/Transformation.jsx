@@ -174,7 +174,7 @@ return [row for row in data if row['amount'] > 1000]
             </span>
           </OverlayTrigger>
           <div className="flex-grow-l">
-            <div className=" d-flex">
+            <div className="align-items-center d-flex">
               <div className="mb-0">
                 <span className="d-flex">
                   <CustomToggleSwitch

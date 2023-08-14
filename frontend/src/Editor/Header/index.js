@@ -76,20 +76,13 @@ export default function EditorHeader({
             </h1>
             <div
               style={{
-                maxHeight: '45px',
+                maxHeight: '48px',
               }}
               className="flex-grow-1 row"
             >
               <div className="col">
                 <div className="row p-2">
                   <div className="col global-settings-app-wrapper">
-                    <GlobalSettings
-                      globalSettingsChanged={globalSettingsChanged}
-                      globalSettings={appDefinition.globalSettings}
-                      M={M}
-                      toggleAppMaintenance={toggleAppMaintenance}
-                      is_maintenance_on={is_maintenance_on}
-                    />
                     <EditAppName appId={app.id} appName={app.name} onNameChanged={onNameChanged} />
                   </div>
 

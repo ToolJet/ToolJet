@@ -335,6 +335,11 @@ button {
     margin-bottom: 24px;
     width: 475px;
     margin: auto;
+
+    a {
+      color: var(--indigo9);
+      text-decoration: none;
+    }
   }
 
   .header-query-datasource-card-container {
@@ -608,13 +613,21 @@ button {
         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         box-sizing: border-box;
         border-radius: 4px;
+        background-color: var(--slate3);
 
         img {
           margin: 0 auto;
         }
 
         &:hover {
-          background: rgba(66, 153, 225, 0.1);
+          background-color: var(--base);
+          border: 1px solid var(--slate5, #E6E8EB);
+
+        }
+
+        &:active {
+          background-color: var(--slate4);
+          border: 1px solid var(--slate6, #DFE3E6);
         }
       }
 
@@ -3253,15 +3266,6 @@ input:focus-visible {
     }
   }
 
-  .editor-sidebar {
-    border: solid rgba(255, 255, 255, 0.09);
-    border-width: 0px 0px 0px 0px !important;
-
-    .nav-tabs {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.09) !important;
-    }
-  }
-
   .editor .editor-sidebar .nav-tabs .nav-link {
     color: #ffffff;
 
@@ -3284,11 +3288,6 @@ input:focus-visible {
     border-color: transparent !important;
   }
 
-  .editor .main .query-pane .query-definition-pane .header {
-    border: solid #ffffff17;
-    border-width: 0px 0px 1px 0px !important;
-    background: #1f2936;
-  }
 
   .left-sidebar {
     .text-muted {
@@ -3363,11 +3362,6 @@ input:focus-visible {
     }
   }
 
-  .data-pane {
-    border: solid #ffffff17 !important;
-    border-width: 0px 1px 0px 0px !important;
-  }
-
   .main .query-pane .data-pane .queries-container .queries-header {
     border: solid #ffffff17 !important;
     border-width: 0px 0px 1px 0px !important;
@@ -3378,9 +3372,7 @@ input:focus-visible {
   }
 
   .query-pane {
-    background-color: var(--base) !important;
-    background-color: #1f2936 !important;
-    border-top: 2px solid var(--slate4) !important;
+    border-top: 1px solid var(--slate5) !important;
   }
 
   .input-icon .input-icon-addon img {
@@ -7014,7 +7006,7 @@ tbody {
 
     .canvas {
       height: 100vh;
-      background-color: #e6e6e6;
+      background-color: var(--base);
       border-radius: 5px;
       display: flex;
       justify-content: center;
@@ -7155,11 +7147,6 @@ tbody {
     background-color: #1F2936;
   }
 
-  .editor-center {
-    .canvas {
-      background-color: #1F2936;
-    }
-  }
 
   .query-panel {
     .queries {
@@ -8052,7 +8039,7 @@ tbody {
   .load div {
     width: 20px;
     height: 20px;
-    background-color: #3E63DD;
+    background-color: var(--indigo9);
     border-radius: 50%;
     margin: 0 5px;
     animation-name: #{up-and-down};
@@ -10219,16 +10206,6 @@ tbody {
   display: flex;
 }
 
-// sidebar styles inside editor :: temporary
-// .theme-dark,
-// .dark-theme {
-//   .editor {
-//     .left-sidebar {
-//       background-color: var(--base-black);
-//     }
-//   }
-// }
-
 .tj-db-table {
   table {
     max-width: calc(100% - 28px);
@@ -10913,7 +10890,7 @@ tbody {
   &:focus,
   &:active {
     box-shadow: 0px 0px 0px 2px #C6D4F9;
-    border: 1px solid var(--light-indigo-09, #3E63DD);
+    border: 1px solid var(--light-indigo-09, var(--indigo9));
   }
 }
 
@@ -11134,4 +11111,28 @@ tbody {
 
 .sidebar-panel-header {
   color: var(--slate12);
+}
+
+.modal-content {
+  background-color: var(--base);
+  color: var(--slate12);
+}
+
+.main-editor-canvas {
+  background-color: var(--base);
+}
+
+.event-manager-popover {
+  border: none;
+  // background: var(--slate1, #FBFCFD);
+  /* Shadow/03 */
+  box-shadow: 0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08);
+
+  .popover-body {
+    background-color: var(--base);
+    color: var(--slate12);
+    border: 1px solid var(--slate3, #F1F3F5);
+    border-radius: 6px;
+  }
+
 }

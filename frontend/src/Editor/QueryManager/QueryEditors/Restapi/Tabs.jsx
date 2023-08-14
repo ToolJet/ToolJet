@@ -44,7 +44,7 @@ function ControlledTabs({
           )}
         </div>
 
-        <div className={`col ${darkMode && 'theme-dark'}`}>
+        <div className={`col`}>
           <Tab.Content bsPrefix="rest-api-tab-content" className="query-manager-border-color rounded">
             <Tab.Pane eventKey="headers" t bsPrefix="rest-api-tabpanes" transition={false}>
               <Headers

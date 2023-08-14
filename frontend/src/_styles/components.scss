@@ -17,7 +17,7 @@ $btn-dark-color: #FFFFFF;
   transition: all 0.3s ease-in-out;
 
   &:hover {
-    @if $bg !=none {
+    @if $bg  !=none {
       background-color: darken($bg, 10%);
     }
   }
@@ -250,8 +250,8 @@ $btn-dark-color: #FFFFFF;
 }
 
 .copilot-alert {
-  background-color: #F8F9FA !important;
-  border: 1px solid #E6E8EB !important;
+  background-color: var(--slate2) !important;
+  border: 1px solid var(--slate5) !important;
 }
 
 .page-handle-edit-container {
@@ -273,7 +273,7 @@ $btn-dark-color: #FFFFFF;
   }
 
   .page-handler-input {
-    border-radius: $base-border-radius !important;
+    border-radius: $base-border-radius  !important;
   }
 }
 
@@ -347,4 +347,14 @@ $btn-dark-color: #FFFFFF;
   font-weight: 500;
   font-size: 12px;
   line-height: 20px;
+}
+
+#page-handler-menu.global-settings {
+  background-color: var(--base);
+
+  .popover-body {
+    color: var(--slate12);
+  }
+
+  border: none;
 }

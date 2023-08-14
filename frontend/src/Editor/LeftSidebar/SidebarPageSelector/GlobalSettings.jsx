@@ -27,7 +27,7 @@ export const GlobalSettings = ({ darkMode, showHideViewerNavigationControls, sho
       placement={'bottom-end'}
       rootClose={true}
       overlay={
-        <Popover id="page-handler-menu" className={`global-settings ${darkMode && 'popover-dark-themed'}`}>
+        <Popover id="page-handler-menu" className={`global-settings ${darkMode && 'dark-theme'}`}>
           <Popover.Body bsPrefix="popover-body">
             <div className="card-body">
               <label htmlFor="pin" className="form-label" data-cy={`page-settings-header`}>

@@ -1,6 +1,11 @@
 // for selects and dropdowns across app dashboard
 .react-select__control {
     background-color: var(--base) !important;
+    border: 1px solid var(--slate7) !important;
+
+    &:active {
+        border: 1px solid var(--indigo9);
+    }
 }
 
 .react-select__menu {

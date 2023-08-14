@@ -43,7 +43,7 @@ export function Confirm({
       onHide={handleClose}
       size="sm"
       centered={true}
-      contentClassName={darkMode ? 'theme-dark' : ''}
+      contentClassName={darkMode ? 'dark-theme' : ''}
     >
       {title && (
         <Modal.Header>
