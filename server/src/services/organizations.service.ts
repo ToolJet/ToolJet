@@ -153,6 +153,8 @@ export class OrganizationsService {
           orgEnvironmentVariableCreate: isAdmin,
           orgEnvironmentVariableUpdate: isAdmin,
           orgEnvironmentVariableDelete: isAdmin,
+          orgEnvironmentConstantCreate: isAdmin,
+          orgEnvironmentConstantDelete: isAdmin,
           folderUpdate: isAdmin,
           folderDelete: isAdmin,
         });

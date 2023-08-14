@@ -269,6 +269,9 @@ export class UsersService {
       case 'OrgEnvironmentVariable':
         return await this.canUserPerformActionOnEnvironmentVariable(user, action);
 
+      case 'OrganizationConstant':
+        return await this.canUserPerformActionOnOrgEnvironmentConstants(user, action);
+
       default:
         return false;
     }
@@ -341,6 +344,32 @@ export class UsersService {
       case 'delete':
         permissionGrant = this.canAnyGroupPerformAction(
           'orgEnvironmentVariableDelete',
+          await this.groupPermissions(user)
+        );
+        break;
+      default:
+        permissionGrant = false;
+        break;
+    }
+
+    return permissionGrant;
+  }
+
+  async canUserPerformActionOnOrgEnvironmentConstants(user: User, action: string): Promise<boolean> {
+    let permissionGrant: boolean;
+
+    switch (action) {
+      case 'create':
+      case 'update':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentConstantCreate',
+          await this.groupPermissions(user)
+        );
+        break;
+
+      case 'delete':
+        permissionGrant = this.canAnyGroupPerformAction(
+          'orgEnvironmentConstantDelete',
           await this.groupPermissions(user)
         );
         break;

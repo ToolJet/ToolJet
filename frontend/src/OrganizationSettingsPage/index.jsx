@@ -10,13 +10,14 @@ import { CopilotSetting } from '@/CopilotSettings';
 import { BreadCrumbContext } from '../App/App';
 import FolderList from '@/_ui/FolderList/FolderList';
 import { OrganizationList } from '../_components/OrganizationManager/List';
+import { ManageOrgConstants } from '@/ManageOrgConstants';
 
 export function OrganizationSettings(props) {
   const [admin, setAdmin] = useState(authenticationService.currentSessionValue?.admin);
   const [selectedTab, setSelectedTab] = useState(admin ? 'Users & permissions' : 'manageEnvVars');
   const { updateSidebarNAV } = useContext(BreadCrumbContext);
 
-  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables'];
+  const sideBarNavs = ['Users', 'Groups', 'SSO', 'Workspace variables', 'Workspace constants'];
   const defaultOrgName = (groupName) => {
     switch (groupName) {
       case 'Users':
@@ -27,6 +28,8 @@ export function OrganizationSettings(props) {
         return 'manageSSO';
       case 'Workspace variables':
         return 'manageEnvVars';
+      case 'Workspace constants':
+        return 'manageOrgConstants';
       default:
         return groupName;
     }
@@ -42,6 +45,10 @@ export function OrganizationSettings(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticationService.currentSessionValue?.admin]);
 
+  const goTooOrgConstantsDashboard = () => {
+    setSelectedTab('manageOrgConstants');
+  };
+
   return (
     <Layout switchDarkMode={props.switchDarkMode} darkMode={props.darkMode}>
       <div className="wrapper organization-settings-page">
@@ -51,7 +58,7 @@ export function OrganizationSettings(props) {
               {sideBarNavs.map((item, index) => {
                 return (
                   <>
-                    {(admin || item == 'Workspace variables' || item == 'Copilot') && (
+                    {(admin || item == 'Workspace variables' || item == 'Copilot' || item == 'Workspace constants') && (
                       <FolderList
                         className="workspace-settings-nav-items"
                         key={index}
@@ -61,6 +68,15 @@ export function OrganizationSettings(props) {
                           else updateSidebarNAV(item);
                         }}
                         selectedItem={selectedTab == defaultOrgName(item)}
+                        renderBadgeForItems={['Workspace constants']}
+                        renderBadge={() => (
+                          <span
+                            style={{ width: '40px', textTransform: 'lowercase' }}
+                            className="badge bg-color-primary badge-pill"
+                          >
+                            new
+                          </span>
+                        )}
                         dataCy={item.toLowerCase().replace(/\s+/g, '-')}
                       >
                         {item}
@@ -78,8 +94,11 @@ export function OrganizationSettings(props) {
               {selectedTab === 'Users & permissions' && <ManageOrgUsers darkMode={props.darkMode} />}
               {selectedTab === 'manageGroups' && <ManageGroupPermissions darkMode={props.darkMode} />}
               {selectedTab === 'manageSSO' && <ManageSSO />}
-              {selectedTab === 'manageEnvVars' && <ManageOrgVars darkMode={props.darkMode} />}
+              {selectedTab === 'manageEnvVars' && (
+                <ManageOrgVars darkMode={props.darkMode} goTooOrgConstantsDashboard={goTooOrgConstantsDashboard} />
+              )}
               {selectedTab === 'manageCopilot' && <CopilotSetting />}
+              {selectedTab === 'manageOrgConstants' && <ManageOrgConstants darkMode={props.darkMode} />}
             </div>
           </div>
         </div>
