@@ -49,12 +49,6 @@ export const GlobalSettings = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentState.components]);
 
-  React.useEffect(() => {
-    backgroundFxQuery &&
-      globalSettingsChanged('canvasBackgroundColor', resolveReferences(backgroundFxQuery, realState));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(resolveReferences(backgroundFxQuery, realState))]);
-
   const popoverContent = (
     <div id="global-settings-popover" className={cx({ 'theme-dark': darkMode, disabled: isVersionReleased })}>
       <div bsPrefix="global-settings-popover">
@@ -73,7 +67,7 @@ export const GlobalSettings = ({
                   className="form-check-input"
                   type="checkbox"
                   checked={hideHeader}
-                  onChange={(e) => globalSettingsChanged('hideHeader', e.target.checked)}
+                  onChange={(e) => globalSettingsChanged({ hideHeader: e.target.checked })}
                 />
               </div>
             </div>
@@ -104,7 +98,7 @@ export const GlobalSettings = ({
                     placeholder={'0'}
                     onChange={(e) => {
                       const width = e.target.value;
-                      if (!Number.isNaN(width) && width >= 0) globalSettingsChanged('canvasMaxWidth', width);
+                      if (!Number.isNaN(width) && width >= 0) globalSettingsChanged({ canvasMaxWidth: width });
                     }}
                     value={canvasMaxWidth}
                   />
@@ -114,12 +108,17 @@ export const GlobalSettings = ({
                     aria-label="Select canvas width type"
                     onChange={(event) => {
                       const newCanvasMaxWidthType = event.currentTarget.value;
-                      globalSettingsChanged('canvasMaxWidthType', newCanvasMaxWidthType);
+
+                      const options = {
+                        canvasMaxWidthType: newCanvasMaxWidthType,
+                      };
+
                       if (newCanvasMaxWidthType === '%') {
-                        globalSettingsChanged('canvasMaxWidth', 100);
+                        options.canvasMaxWidth = 100;
                       } else if (newCanvasMaxWidthType === 'px') {
-                        globalSettingsChanged('canvasMaxWidth', 1292);
+                        options.canvasMaxWidth = 1292;
                       }
+                      globalSettingsChanged(options);
                     }}
                   >
                     <option value="%" selected={canvasMaxWidthType === '%'}>
@@ -132,27 +131,7 @@ export const GlobalSettings = ({
                 </div>
               </div>
             </div>
-            {/* <div className="d-flex mb-3">
-              <span className="w-full m-auto" data-cy={`label-max-canvas-height`}>
-                {t('leftSidebar.Settings.maxHeightOfCanvas', 'Max height of canvas')}
-              </span>
-              <div className="position-relative">
-                <div className="input-with-icon">
-                  <input
-                    data-cy="maximum-canvas-height-input-field"
-                    type="text"
-                    className={`form-control form-control-sm maximum-canvas-height-input-field`}
-                    placeholder={'0'}
-                    onChange={(e) => {
-                      const height = e.target.value;
-                      if (!Number.isNaN(height) && height <= 2400) globalSettingsChanged('canvasMaxHeight', height);
-                    }}
-                    value={canvasMaxHeight}
-                  />
-                  <span className="input-group-text">px</span>
-                </div>
-              </div>
-            </div> */}
+
             <div className="d-flex align-items-center">
               <span className="w-full" data-cy={`label-bg-canvas`}>
                 {t('leftSidebar.Settings.backgroundColorOfCanvas', 'Background color of canvas')}
@@ -167,8 +146,12 @@ export const GlobalSettings = ({
                       onFocus={() => setShowPicker(true)}
                       color={canvasBackgroundColor}
                       onChangeComplete={(color) => {
-                        globalSettingsChanged('canvasBackgroundColor', [color.hex, color.rgb]);
-                        globalSettingsChanged('backgroundFxQuery', color.hex);
+                        const options = {
+                          canvasBackgroundColor: [color.hex, color.rgb],
+                          backgroundFxQuery: color.hex,
+                        };
+
+                        globalSettingsChanged(options);
                       }}
                     />
                   </div>
@@ -208,8 +191,12 @@ export const GlobalSettings = ({
                       className="canvas-hinter-wrap"
                       lineNumbers={false}
                       onChange={(color) => {
-                        globalSettingsChanged('canvasBackgroundColor', resolveReferences(color, realState));
-                        globalSettingsChanged('backgroundFxQuery', color);
+                        const options = {
+                          canvasBackgroundColor: resolveReferences(color, realState),
+                          backgroundFxQuery: color,
+                        };
+
+                        globalSettingsChanged(options);
                       }}
                     />
                   )}
