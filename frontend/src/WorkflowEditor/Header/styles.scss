@@ -1,0 +1,16 @@
+.workflow-header {
+    .workflow-edit-app-name {
+        input[type="text"] {
+            color: #232e3c;
+            background-color: #ffffff;
+            border: solid #ffffff;
+        }
+        >.dark {
+            background-color: #ffffff !important;
+        }
+    }
+    
+    .saving-status {
+        color: #232e3c;
+    }
+}

@@ -25,6 +25,9 @@ export class App extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ name: 'type' })
+  type: string;
+
   @Column({ name: 'name' })
   name: string;
 

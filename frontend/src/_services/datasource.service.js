@@ -12,9 +12,11 @@ export const datasourceService = {
   fetchOauth2BaseUrl,
 };
 
-function getAll(appVersionId, environment_id) {
+function getAll(appVersionId, environment_id, includeStaticSources = false) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  let searchParams = new URLSearchParams(`app_version_id=${appVersionId}&environment_id=${environment_id}`);
+  let searchParams = new URLSearchParams(
+    `app_version_id=${appVersionId}&environment_id=${environment_id}&includeStaticSources=${includeStaticSources}`
+  );
   return fetch(`${config.apiUrl}/data_sources?` + searchParams, requestOptions).then(handleResponse);
 }
 

@@ -88,7 +88,7 @@ describe('folders controller', () => {
 
       let folder1 = folders[0];
       expect(new Set(Object.keys(folder1))).toEqual(
-        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count'])
+        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count', 'type'])
       );
       expect(folder1.organization_id).toEqual(user.organizationId);
       expect(folder1.count).toEqual(1);
@@ -108,7 +108,7 @@ describe('folders controller', () => {
 
       folder1 = folders[0];
       expect(new Set(Object.keys(folder1))).toEqual(
-        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count'])
+        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count', 'type'])
       );
       expect(folder1.organization_id).toEqual(user.organizationId);
       expect(folder1.count).toEqual(1);
@@ -128,7 +128,7 @@ describe('folders controller', () => {
 
       folder1 = folders[0];
       expect(new Set(Object.keys(folder1))).toEqual(
-        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count'])
+        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count', 'type'])
       );
       expect(folder1.organization_id).toEqual(user.organizationId);
       expect(folder1.count).toEqual(0);
@@ -203,7 +203,7 @@ describe('folders controller', () => {
 
       let folder1 = folders[0];
       expect(new Set(Object.keys(folder1))).toEqual(
-        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count'])
+        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count', 'type'])
       );
       expect(folder1.organization_id).toEqual(user.organizationId);
       expect(folder1.count).toEqual(1);
@@ -223,7 +223,7 @@ describe('folders controller', () => {
 
       folder1 = folders[0];
       expect(new Set(Object.keys(folder1))).toEqual(
-        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count'])
+        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count', 'type'])
       );
       expect(folder1.organization_id).toEqual(user.organizationId);
       expect(folder1.count).toEqual(1);
@@ -243,7 +243,7 @@ describe('folders controller', () => {
 
       folder1 = folders[0];
       expect(new Set(Object.keys(folder1))).toEqual(
-        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count'])
+        new Set(['id', 'name', 'organization_id', 'created_at', 'updated_at', 'folder_apps', 'count', 'type'])
       );
       expect(folder1.organization_id).toEqual(user.organizationId);
       expect(folder1.count).toEqual(0);
@@ -422,7 +422,7 @@ describe('folders controller', () => {
         .post(`/api/folders`)
         .set('tj-workspace-id', user.defaultOrganizationId)
         .set('Cookie', loggedUser.tokenCookie)
-        .send({ name: 'my folder' });
+        .send({ name: 'my folder', type: 'front-end' });
 
       expect(response.statusCode).toBe(201);
 
@@ -458,7 +458,7 @@ describe('folders controller', () => {
         .post(`/api/folders`)
         .set('tj-workspace-id', adminUserData.user.defaultOrganizationId)
         .set('Cookie', superAdminUserData['tokenCookie'])
-        .send({ name: 'my folder' });
+        .send({ name: 'my folder', type: 'front-end' });
 
       expect(response.statusCode).toBe(201);
 

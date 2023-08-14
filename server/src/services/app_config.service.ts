@@ -14,7 +14,12 @@ export class AppConfigService {
     );
 
     const instanceConfigs = await this.instanceSettingsService.getSettings(this.fetchDefaultInstanceConfig());
-    return { ...instanceConfigs, ...Object.fromEntries(mapEntries) };
+    const publicConfigVars = { ...instanceConfigs, ...Object.fromEntries(mapEntries) };
+
+    if (publicConfigVars?.ENABLE_WORKFLOWS_FEATURE === undefined) {
+      publicConfigVars.ENABLE_WORKFLOWS_FEATURE = 'false';
+    }
+    return publicConfigVars;
   }
 
   fetchDefaultConfig() {
@@ -28,6 +33,7 @@ export class AppConfigService {
       'TOOLJET_HOST',
       'SUB_PATH',
       'ENABLE_MARKETPLACE_FEATURE',
+      'ENABLE_WORKFLOWS_FEATURE',
       'WHITE_LABEL_LOGO',
       'WHITE_LABEL_TEXT',
       'WHITE_LABEL_FAVICON',

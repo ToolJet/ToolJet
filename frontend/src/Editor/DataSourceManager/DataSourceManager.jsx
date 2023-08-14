@@ -232,7 +232,7 @@ class DataSourceManagerComponent extends React.Component {
             this.setState({ isSaving: false });
             this.props.updateSelectedDatasource(name);
 
-            this.hideModal();
+            this.hideModal(selectedDataSource);
             toast.success(
               this.props.t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'),
               { position: 'top-center' }
@@ -946,6 +946,11 @@ const EmptyStateContainer = ({
                   value={inputValue}
                   placeholder={placeholder}
                   onChange={(e) => set(e.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      handleSend();
+                    }
+                  }}
                 />
               </div>
             </div>
@@ -998,12 +1003,12 @@ const SearchBoxContainer = ({ onChange, onClear, queryString, activeDatasourceLi
       element = document.querySelector('.input-icon .form-control');
     }
 
-    if (searchText) {
+    if (searchText && element) {
       element.style.paddingLeft = '0.5rem';
     }
 
     return () => {
-      element.style.paddingLeft = '2.5rem';
+      element && (element.style.paddingLeft = '2.5rem');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText]);

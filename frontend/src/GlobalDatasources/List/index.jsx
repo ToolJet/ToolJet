@@ -46,6 +46,7 @@ export const List = ({ updateSelectedDatasource }) => {
 
   const executeDataSourceDeletion = () => {
     toggleDataSourceManagerModal(false);
+    setDeleteModalVisibility(false);
     setDeletingDatasource(true);
     globalDatasourceService
       .deleteDataSource(selectedDataSource.id)

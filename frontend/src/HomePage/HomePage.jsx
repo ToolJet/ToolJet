@@ -75,6 +75,13 @@ class HomePageComponent extends React.Component {
     document.title = `${retrieveWhiteLabelText()} - Dashboard`;
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.appType != this.props.appType) {
+      this.fetchFolders();
+      this.fetchApps(1);
+    }
+  }
+
   fetchAppsLimit() {
     appService.getAppsLimit().then((data) => {
       this.setState({ appsLimit: data?.appsCount });
@@ -95,14 +102,13 @@ class HomePageComponent extends React.Component {
       currentPage: page,
       appSearchKey,
     });
-
-    appService.getAll(page, folder, appSearchKey).then((data) =>
+    appService.getAll(page, folder, appSearchKey, this.props.appType).then((data) => {
       this.setState({
         apps: data.apps,
         meta: { ...this.state.meta, ...data.meta },
         isLoading: false,
-      })
-    );
+      });
+    });
   };
 
   fetchFolders = (searchKey) => {
@@ -112,7 +118,7 @@ class HomePageComponent extends React.Component {
       appSearchKey: appSearchKey,
     });
 
-    folderService.getAll(appSearchKey).then((data) => {
+    folderService.getAll(appSearchKey, this.props.appType).then((data) => {
       const currentFolder = data?.folders?.filter(
         (folder) => this.state.currentFolder?.id && folder.id === this.state.currentFolder?.id
       )?.[0];
@@ -141,7 +147,7 @@ class HomePageComponent extends React.Component {
     let _self = this;
     _self.setState({ creatingApp: true });
     appService
-      .createApp({ icon: sample(iconList) })
+      .createApp({ icon: sample(iconList), type: this.props.appType })
       .then((data) => {
         /* Posthog Event */
         posthog.capture('click_new_app', {
@@ -631,7 +637,11 @@ class HomePageComponent extends React.Component {
             <div className="home-page-sidebar col p-0">
               {this.canCreateApp() && (
                 <div className="create-new-app-license-wrapper">
-                  <LicenseTooltip limits={appsLimit} feature={'apps'} isAvailable={true}>
+                  <LicenseTooltip
+                    limits={appsLimit}
+                    feature={this.props.appType === 'workflow' ? 'workflow' : 'app'}
+                    isAvailable={true}
+                  >
                     <div className="create-new-app-wrapper">
                       <Dropdown as={ButtonGroup} className="d-inline-flex create-new-app-dropdown">
                         <Button
@@ -643,14 +653,17 @@ class HomePageComponent extends React.Component {
                           {isImportingApp && (
                             <span className="spinner-border spinner-border-sm mx-2" role="status"></span>
                           )}
-                          {this.props.t('homePage.header.createNewApplication', 'Create new app')}
+                          {this.props.t(
+                            `${
+                              this.props.appType === 'workflow' ? 'workflowsDashboard' : 'homePage'
+                            }.header.createNewApplication`,
+                            'Create new app'
+                          )}
                         </Button>
-                        <Dropdown.Toggle
-                          disabled={appsLimit?.percentage >= 100 && !appsLimit?.licenseStatus?.isExpired}
-                          split
-                          className="d-inline"
-                          data-cy="import-dropdown-menu"
-                        />
+
+                        {this.props.appType !== 'workflow' && (
+                          <Dropdown.Toggle split className="d-inline" data-cy="import-dropdown-menu" />
+                        )}
                         <Dropdown.Menu className="import-lg-position new-app-dropdown">
                           <Dropdown.Item
                             className="homepage-dropdown-style tj-text tj-text-xsm"
@@ -708,6 +721,7 @@ class HomePageComponent extends React.Component {
                 canUpdateFolder={this.canUpdateFolder()}
                 darkMode={this.props.darkMode}
                 canCreateApp={this.canCreateApp()}
+                appType={this.props.appType}
               />
               <OrganizationList />
             </div>
@@ -737,6 +751,7 @@ class HomePageComponent extends React.Component {
                     showTemplateLibraryModal={this.state.showTemplateLibraryModal}
                     viewTemplateLibraryModal={this.showTemplateLibraryModal}
                     hideTemplateLibraryModal={this.hideTemplateLibraryModal}
+                    appType={this.props.appType}
                   />
                 )}
                 {!isLoading && meta.total_count === 0 && appSearchKey && (
@@ -762,6 +777,7 @@ class HomePageComponent extends React.Component {
                       darkMode={this.props.darkMode}
                       appActionModal={this.appActionModal}
                       removeAppFromFolder={this.removeAppFromFolder}
+                      appType={this.props.appType}
                     />
                   ))}
               </div>

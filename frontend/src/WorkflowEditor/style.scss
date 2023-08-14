@@ -1,0 +1,238 @@
+.workflow-editor {
+    background-color: aliceblue;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: clip;
+
+  .header {
+    height: 45px;
+    min-height: 45px;
+    width: 100%;
+    background-color: white;
+    border-bottom: solid aliceblue 1px;
+
+
+    .items {
+
+      display: flex;
+      flex-direction: row;
+
+      .logo-section {
+        display: flex;
+        align-items: center;
+        width: 80px;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+        
+      }
+
+      .name-editor {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 'fit-content';
+        margin-right: 24px;
+
+        .app-name {
+          position: relative;
+          left: 0;
+          top:0;
+          width: fit-content;
+          .form-control-plaintext {
+            width: fit-content;
+          }
+        }
+      }
+
+      .saving-status {
+        line-height: 45px;
+        width: 200px;
+        padding-left: 4px;
+      }
+
+      .run-button {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        width: 100%;
+
+        .button-container {
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-end;
+
+          button {
+            width: 100px;
+          }
+        }
+      }
+    }
+
+  }
+
+  .body {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+
+    .flow-editor-column {
+      height: 100%;
+      width: 100%;
+    }
+
+    .left-sidebar-column {
+      background-color: white;
+      padding:0;
+      border-right: solid 0.5px lightgrey;
+
+      .left-sidebar-container.drawer-open {
+        width: 356px
+      }
+
+      .left-sidebar-container {
+
+        display: flex;
+        flex-direction: row;
+        width: 56px;
+        height: 100%;
+
+        .left-sidebar {
+          height: 100%;
+          padding: 0;
+          width: 56px;
+          border-left: solid 0.5px lightgrey;
+  
+          .icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-top: 5px;
+            
+            svg {
+              width: 20px;
+              height: 20px;
+            }
+  
+            svg.active {
+              stroke: black;
+              stroke-width: 2px;
+            }
+          }
+  
+          .icon:hover {
+            background-color: rgb(239, 239, 239);
+          }
+        }
+
+        .left-sidebar-drawer {
+          position: fixed;
+          width: 300px;
+          height: 100%;
+          background-color: white;
+          display: flex;
+          border-color: white;
+          border-width: 0;
+          overflow: clip;
+          left: 56px;
+          z-index: 1;
+
+          .title-row {
+            border-bottom: solid 0.5px rgb(235, 234, 234);
+            .title-text {
+              margin-top: 10px;
+              margin-left: 10px
+            }
+          }
+
+          .list-row {
+            .run-item {
+              padding-left: 10px;
+              height: 35px;
+              line-height: 35px;
+              display: flex;
+              flex-direction: row;
+              vertical-align: middle;
+
+              .check-icon {
+                width: 17px;
+                height: 17px;
+
+                svg {
+                  stroke: white;
+                  background: green;
+                  border-radius: 10px;
+                  width: inherit;
+                  height: inherit;
+                }
+              }
+
+              .text {
+                margin-left: 10px;
+              }
+            }
+
+            .run-item:hover {
+              background-color: aliceblue;
+              cursor: pointer;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .logs-panel {
+    z-index: 2;
+    .header {
+      padding-left: 10px;
+      height: 40px;
+      display: flex;
+      flex-direction: row;
+      line-height: 40px;
+      cursor: pointer;
+      border: solid 0.5px lightgrey;
+
+      .up-icon {
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin-left: 2px;
+
+        svg {
+          stroke: black;
+          height: 13px;
+          width: 13px;
+          stroke-width: 2px;
+        }
+      }
+
+      span {
+        cursor: pointer;
+        font-weight: bold;
+      }
+    }
+
+    .logs-console {
+      height: 250px;
+      background-color: #222323;
+      color: white;
+      padding-left: 10px;
+      padding-top: 10px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 15px;
+      overflow-y: auto;
+    }
+  }
+
+  .flow-canvas {
+    background-color: #ECEFF4;
+  }
+}

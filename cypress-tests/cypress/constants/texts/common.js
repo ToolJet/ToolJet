@@ -72,7 +72,7 @@ export const commonText = {
   createButton: "Create",
   saveChangesButton: "Save changes",
   emailInputLabel: "Email",
-  allApplicationLink: "All apps",
+  allApplicationLink: "All applications",
   notificationsCardTitle: "Notifications",
   emptyNotificationTitle: "You're all caught up!",
   emptyNotificationSubtitle: "You don't have any unread notifications!",
@@ -170,7 +170,7 @@ export const commonText = {
     // iframeLinkLabel: "Get embeddable link for this application",
     // ifameLinkCopyButton: "copy",
   },
-  groupInputFieldLabel: "Select Group"
+  groupInputFieldLabel: "Select Group",
 };
 
 export const commonWidgetText = {
@@ -199,7 +199,7 @@ export const commonWidgetText = {
   codeMirrorInputTrue: codeMirrorInputLabel(true),
   codeMirrorInputFalse: codeMirrorInputLabel("false"),
 
-  addEventHandlerLink: "+ Add event handler",
+  addEventHandlerLink: "Add handler",
   inspectorComponentLabel: "components",
   componentValueLabel: "Value",
   labelDefaultValue: "Default Value",

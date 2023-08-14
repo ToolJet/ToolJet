@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { bootstrap as globalAgentBootstrap } from 'global-agent';
 import { custom } from 'openid-client';
 import { join } from 'path';
+import { Transport } from '@nestjs/microservices';
 import { LicenseService } from '@services/license.service';
 import License from '@ee/licensing/configs/License';
 
@@ -154,5 +155,15 @@ if (process.env.TOOLJET_HTTP_PROXY) {
   process.env['GLOBAL_AGENT_HTTP_PROXY'] = process.env.TOOLJET_HTTP_PROXY;
   globalAgentBootstrap();
 }
+async function bootstrapWorker() {
+  const app = await NestFactory.createMicroservice<any>(AppModule, {
+    transport: Transport.REDIS,
+    options: {
+      url: 'redis://localhost:6379',
+    },
+  });
+
+  void app.listen();
+}
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
-bootstrap();
+process.env.WORKER ? bootstrapWorker() : bootstrap();

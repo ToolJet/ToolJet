@@ -5,7 +5,12 @@ import { UserGroupPermission } from 'src/entities/user_group_permission.entity';
 import { Brackets, createQueryBuilder, SelectQueryBuilder } from 'typeorm';
 import { isSuperAdmin } from './utils.helper';
 
-export function viewableAppsQuery(user: User, searchKey?: string, select?: Array<string>): SelectQueryBuilder<App> {
+export function viewableAppsQuery(
+  user: User,
+  searchKey?: string,
+  select?: Array<string>,
+  type?: string
+): SelectQueryBuilder<App> {
   const viewableAppsQb = createQueryBuilder(App, 'viewable_apps');
 
   if (select) {
@@ -40,7 +45,9 @@ export function viewableAppsQuery(user: User, searchKey?: string, select?: Array
         })
       );
   }
+
   viewableAppsQb.andWhere('viewable_apps.organization_id = :organizationId', { organizationId: user.organizationId });
+  viewableAppsQb.andWhere('viewable_apps.type = :type', { type: type });
 
   if (searchKey) {
     viewableAppsQb.andWhere('LOWER(viewable_apps.name) like :searchKey', {
@@ -54,7 +61,8 @@ export function viewableAppsQuery(user: User, searchKey?: string, select?: Array
 export function getFolderQuery(
   getAllFolders: boolean,
   allViewableAppIds: Array<string>,
-  organizationId: string
+  organizationId: string,
+  type = 'front-end'
 ): SelectQueryBuilder<Folder> {
   const query = createQueryBuilder(Folder, 'folders');
   if (getAllFolders) {
@@ -69,6 +77,9 @@ export function getFolderQuery(
   query
     .andWhere('folders.organization_id = :organizationId', {
       organizationId,
+    })
+    .andWhere('folders.type = :type', {
+      type,
     })
     .orderBy('folders.name', 'ASC');
   return query;

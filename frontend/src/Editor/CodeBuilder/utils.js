@@ -240,7 +240,9 @@ export function canShowHint(editor, ignoreBraces = false) {
 }
 
 export function handleChange(editor, onChange, ignoreBraces = false, currentState, editorSource = undefined) {
-  const suggestions = getSuggestionKeys(currentState, editorSource);
+  const isWorkflowNode = editorSource?.startsWith('workflowNode'); //To stop generating suggestion in workflow nodes
+
+  const suggestions = !isWorkflowNode && getSuggestionKeys(currentState, editorSource);
   let state = editor.state.matchHighlighter;
   editor.addOverlay((state.overlay = makeOverlay(state.options.style)));
 

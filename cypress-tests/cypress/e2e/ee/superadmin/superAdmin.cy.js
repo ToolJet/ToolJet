@@ -31,7 +31,7 @@ data.workspaceName = `${fake.companyName}-workspace`;
 describe("dashboard", () => {
   beforeEach(() => {
     cy.appUILogin();
-    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=").as("homePage");
+    cy.intercept("GET", "/api/folders?searchKey=&type=front-end").as("homePage");
     resetAllowPersonalWorkspace();
   });
   it("Verify elements of the instance settings page", () => {
