@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-escape */
 import moment from 'moment';
-import _ from 'lodash';
+import _, { isEmpty } from 'lodash';
 import axios from 'axios';
 import JSON5 from 'json5';
 import { previewQuery, executeAction } from '@/_helpers/appUtils';
@@ -10,6 +10,7 @@ import { authenticationService } from '@/_services/authentication.service';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { getCurrentState } from '@/_stores/currentStateStore';
 import { getCookie, eraseCookie } from '@/_helpers/cookie';
+import { staticDataSources } from '@/Editor/QueryManager/constants';
 
 export function findProp(obj, prop, defval) {
   if (typeof defval === 'undefined') defval = null;
@@ -550,7 +551,14 @@ export const generateAppActions = (_ref, queryId, mode, isPreview = false) => {
     ? Object.entries(_ref.state.appDefinition.pages[currentPageId]?.components)
     : {};
   const runQuery = (queryName = '', parameters) => {
-    const query = useDataQueriesStore.getState().dataQueries.find((query) => query.name === queryName);
+    const query = useDataQueriesStore.getState().dataQueries.find((query) => {
+      const isFound = query.name === queryName;
+      if (isPreview) {
+        return isFound;
+      } else {
+        return isFound && isQueryRunnable(query);
+      }
+    });
 
     const processedParams = {};
     if (_.isEmpty(query) || queryId === query?.id) {
@@ -981,6 +989,15 @@ export const redirectToWorkspace = () => {
   const path = eraseRedirectUrl();
   const redirectPath = `${returnWorkspaceIdIfNeed(path)}${path && path !== '/' ? path : ''}`;
   window.location = getSubpath() ? `${getSubpath()}${redirectPath}` : redirectPath;
+};
+
+/** Check if the query is connected to a DS. */
+export const isQueryRunnable = (query) => {
+  if (staticDataSources.find((source) => query.kind === source.kind)) {
+    return true;
+  }
+  //TODO: both view api and creat/update apis return dataSourceId in two format 1) camelCase 2) snakeCase. Need to unify it.
+  return !!(query?.data_source_id || query?.dataSourceId || !isEmpty(query?.plugins));
 };
 
 export const redirectToDashboard = () => {
