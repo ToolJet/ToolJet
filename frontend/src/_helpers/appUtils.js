@@ -8,8 +8,10 @@ import {
   computeComponentName,
   generateAppActions,
   loadPyodide,
+  executeWorkflow,
+  isQueryRunnable,
 } from '@/_helpers/utils';
-import { dataqueryService, datasourceService } from '@/_services';
+import { dataqueryService } from '@/_services';
 import _ from 'lodash';
 import moment from 'moment';
 import Tooltip from 'react-bootstrap/Tooltip';
@@ -31,6 +33,7 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useQueryPanelStore } from '@/_stores/queryPanelStore';
 import { useCurrentStateStore, getCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
+import SolidIcon from '../_ui/Icon/SolidIcons';
 
 const ERROR_TYPES = Object.freeze({
   ReferenceError: 'ReferenceError',
@@ -585,7 +588,6 @@ export async function onEvent(_ref, eventName, options, mode = 'edit') {
   let _self = _ref;
 
   const { customVariables } = options;
-
   if (eventName === 'onPageLoad') {
     await executeActionsForEventId(_ref, 'onPageLoad', { definition: { events: [options] } }, mode, customVariables);
   }
@@ -829,6 +831,13 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
       );
     } else if (query.kind === 'runpy') {
       queryExecutionPromise = executeRunPycode(_ref, query.options.code, query, true, 'edit');
+    } else if (query.kind === 'workflows') {
+      queryExecutionPromise = executeWorkflow(
+        _ref,
+        query.options.workflowId,
+        query.options.blocking,
+        query.options?.params
+      );
     } else {
       queryExecutionPromise = dataqueryService.preview(
         query,
@@ -889,7 +898,7 @@ export function previewQuery(_ref, query, calledFromQuery = false, parameters = 
           case 'Created':
           case 'Accepted':
           case 'No Content': {
-            toast(`Query completed.`, {
+            toast(`Query ${'(' + query.name + ') ' || ''}completed.`, {
               icon: '🚀',
             });
             break;
@@ -970,8 +979,20 @@ export function runQuery(_ref, queryId, queryName, confirmed = undefined, mode =
         currentSessionValue?.current_organization_id,
         getCurrentState()
       );
+    } else if (query.kind === 'workflows') {
+      queryExecutionPromise = executeWorkflow(
+        _self,
+        query.options.workflowId,
+        query.options.blocking,
+        query.options?.params
+      );
     } else {
-      queryExecutionPromise = dataqueryService.run(queryId, options, currentAppEnvironmentId ?? environmentId);
+      queryExecutionPromise = dataqueryService.run(
+        queryId,
+        options,
+        query?.options,
+        currentAppEnvironmentId ?? environmentId
+      );
     }
 
     queryExecutionPromise
@@ -1197,6 +1218,7 @@ export const getSvgIcon = (key, height = 50, width = 50, iconFile = undefined, s
   if (key === 'runjs') return <RunjsIcon style={{ height, width }} />;
   if (key === 'tooljetdb') return <RunTooljetDbIcon />;
   if (key === 'runpy') return <RunPyIcon />;
+  if (key === 'workflows') return <SolidIcon name="workflows" fill="#3D63DC" />;
   const Icon = allSvgs[key];
 
   if (!Icon) return <></>;
@@ -1653,7 +1675,7 @@ export const checkExistingQueryName = (newName) =>
 
 export const runQueries = (queries, _ref) => {
   queries.forEach((query) => {
-    if (query.options.runOnPageLoad) {
+    if (query.options.runOnPageLoad && isQueryRunnable(query)) {
       runQuery(_ref, query.id, query.name);
     }
   });
@@ -1664,14 +1686,14 @@ export const computeQueryState = (queries, _ref) => {
   queries.forEach((query) => {
     if (query.plugin?.plugin_id) {
       queryState[query.name] = {
-        ...query.plugin.manifest_file.data.source.exposedVariables,
+        ...query.plugin.manifest_file.data?.source?.exposedVariables,
         kind: query.plugin.manifest_file.data.source.kind,
         ...getCurrentState().queries[query.name],
       };
     } else {
       queryState[query.name] = {
-        ...DataSourceTypes.find((source) => source.kind === query.kind).exposedVariables,
-        kind: DataSourceTypes.find((source) => source.kind === query.kind).kind,
+        ...DataSourceTypes.find((source) => source.kind === query.kind)?.exposedVariables,
+        kind: DataSourceTypes.find((source) => source.kind === query.kind)?.kind,
         ...getCurrentState()?.queries[query.name],
       };
     }

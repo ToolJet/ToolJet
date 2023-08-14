@@ -40,4 +40,5 @@ const routes = [
   { path: '/license', breadcrumb: 'Enterprise Edition' },
   { path: '/instance-settings', breadcrumb: 'Instance settings' },
   { path: '/audit-logs', breadcrumb: 'Audit logs' },
+  { path: '/:worspace_id/workflows', breadcrumb: 'Workflows', props: { beta: true } },
 ];

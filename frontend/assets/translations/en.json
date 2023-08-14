@@ -186,7 +186,7 @@
             "events": "Events",
             "transformation": {
                 "transformationToolTip": "Transformations can be enabled on queries to transform the query results. ToolJet allows you to transform the query results using two programming languages: JavaScript and Python",
-                "transformations": "Enable Transformations"
+                "transformations": "Transformations"
             }
         },
         "inspector": {
@@ -209,7 +209,7 @@
                 "table": "Table",
                 "pageIndex": "Page index",
                 "component": "Component",
-                "addHandler": "+ Add handler",
+                "addHandler": "Add handler",
                 "addEventHandler": "+ Add event handler",
                 "emptyMessage": "This {{componentName}} doesn't have any event handlers",
                 "page": "Page"
@@ -263,7 +263,7 @@
                     "enterFirstName": "Enter First Name",
                     "enterLastName": "Enter Last Name",
                     "enterEmail": "Enter email id",
-                    "enterFulltName": "Enter full name",
+                    "enterFullName": "Enter full name",
                     "inviteNewUsers":"Invite new users"
                 },
                 "manageGroups": {
@@ -272,16 +272,18 @@
                         "createNewGroup": "Create new group",
                         "updateGroup": "Update group",
                         "addNewGroup": "Add new group",
-                        "enterName": "Enter Name",
+                        "enterName": "Enter group name",
                         "createGroup": "Create Group",
                         "name": "Name"
                     },
                     "permissionResources": {
                         "userGroup": "User group",
                         "apps": "Apps",
+                        "workflows": "Workflows",
                         "users": "User",
                         "permissions": "Permissions",
                         "addAppsToGroup": "Select apps to add to the group",
+                        "addWorkflowsToGroup": "Select workflows to add to the group",
                         "name": "name",
                         "addUsersToGroup": "Select users to add to the group",
                         "email": "email",
@@ -393,7 +395,7 @@
             "importApplication": "Import an app"
         },
         "foldersSection": {
-            "allApplications": "All apps",
+            "allApplications": "All applications",
             "folders": "Folders",
             "createNewFolder": "+ Create new",
             "noFolders": "You haven't created any folders. Use folders to organize your apps",
@@ -417,6 +419,53 @@
         "noApplicationFound": "No Applications found",
         "thisFolderIsEmpty": "This folder is empty",
         "deleteAppAndData": "The app {{appName}} and the associated data will be permanently deleted, do you want to continue?",
+        "removeAppFromFolder": "The app will be removed from this folder, do you want to continue?",
+        "change": "Change",
+        "templateCard": {
+            "use": "Use",
+            "preview": "Preview",
+            "leadGeneretion": "Lead generetion"
+        },
+        "templateLibraryModal": {
+            "select": "Select template",
+            "createAppfromTemplate": "Create application from template"
+        }
+    },
+    "workflowsDashboard": {
+        "appCard": {
+            "run": "Run",
+            "openInWorkflowEditor": "Open in workflow editor"
+        },
+        "blankPage": {
+            "welcomeToToolJet": "Welcome to your new ToolJet workspace",
+            "getStartedCreateNewApp": "You can get started by creating a new application or by creating an application using a template in ToolJet Library.",
+            "importApplication": "Import an application"
+        },
+        "foldersSection": {
+            "allApplications": "All workflows",
+            "folders": "Folders",
+            "createNewFolder": "+ Create new",
+            "noFolders": "You haven't created any folders. Use folders to organize your apps",
+            "createFolder": "Create folder",
+            "updateFolder": "Update folder",
+            "editFolder": "Edit folder",
+            "deleteFolder": "Delete folder",
+            "folderName": "Folder name",
+            "wishToDeleteFolder": "Are you sure you want to delete the folder? Apps within the folder will not be deleted."
+        },
+        "header": {
+            "createNewApplication": "Create new workflow",
+            "import": "Import",
+            "chooseFromTemplate": "Choose from template"
+        },
+        "pagination": {
+            "showing": "Showing",
+            "of": "of",
+            "to": "to"
+        },
+        "noApplicationFound": "No Applications found",
+        "thisFolderIsEmpty": "This folder is empty",
+        "deleteAppAndData": "The app and the associated data will be permanently deleted, do you want to continue?",
         "removeAppFromFolder": "The app will be removed from this folder, do you want to continue?",
         "change": "Change",
         "templateCard": {

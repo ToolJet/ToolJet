@@ -166,6 +166,7 @@
   src: url('/assets/fonts/ibm-plex-sans-v19-latin/ibm-plex-sans-v19-latin-700italic.woff2') format('woff2');
   /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
+
 // variables
 $border-radius: 4px;
 
@@ -307,7 +308,7 @@ button {
 
   .resizer-select,
   .resizer-active {
-    border: solid 1px $primary  !important;
+    border: solid 1px $primary !important;
 
     .top-right,
     .top-left,
@@ -337,7 +338,8 @@ button {
 
   .datasource-picker {
     margin-bottom: 24px;
-    padding: 0 32px;
+    width: 475px;
+    margin: auto;
   }
 
   .header-query-datasource-card-container {
@@ -791,7 +793,7 @@ button {
 
   .list-group.list-group-transparent.dark .all-apps-link,
   .list-group-item-action.dark.active {
-    background-color: $dark-background  !important;
+    background-color: $dark-background !important;
   }
 }
 
@@ -1488,7 +1490,7 @@ button {
   .select-search-dark input {
     width: 224px !important;
     height: 32px !important;
-    border-radius: $border-radius  !important;
+    border-radius: $border-radius !important;
   }
 }
 
@@ -1499,7 +1501,7 @@ button {
   .select-search__value input,
   .select-search-dark input {
     height: 32px !important;
-    border-radius: $border-radius  !important;
+    border-radius: $border-radius !important;
   }
 }
 
@@ -1560,7 +1562,7 @@ button {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  border-radius: $border-radius  !important;
+  border-radius: $border-radius !important;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
@@ -2025,7 +2027,10 @@ button {
       background: white;
       box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px,
         rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
-      white-space: initial;
+
+      :not(textarea) {
+        white-space: initial;
+      }
     }
 
     .text-container:focus-visible,
@@ -2661,6 +2666,10 @@ body {
   .CodeMirror-scroll {
     position: static;
     top: 0;
+  }
+
+  .form-check {
+    display: inline-block;
   }
 }
 
@@ -3467,6 +3476,7 @@ input:focus-visible {
 
   .query-pane {
     background-color: #1f2936 !important;
+    border-top: 2px solid var(--slate4) !important;
   }
 
   .input-icon .input-icon-addon img {
@@ -3942,7 +3952,7 @@ input[type="text"] {
 
 .nav-tabs .nav-link.active {
   font-weight: 400 !important;
-  color: $primary  !important;
+  color: $primary !important;
 }
 
 .empty {
@@ -4457,7 +4467,7 @@ input[type="text"] {
 
 .tabs-inspector.dark {
   .nav-link.active {
-    border-bottom: 1px solid $primary  !important;
+    border-bottom: 1px solid $primary !important;
   }
 }
 
@@ -4692,7 +4702,7 @@ input[type="text"] {
   }
 
   input {
-    border-radius: $border-radius  !important;
+    border-radius: $border-radius !important;
     padding-left: 1.75rem !important;
     border-radius: $border-radius  !important;
   }
@@ -4861,11 +4871,11 @@ input[type="text"] {
 }
 
 .modal-content.home-modal-component.dark {
-  background-color: $bg-dark-light  !important;
-  color: $white  !important;
+  background-color: $bg-dark-light !important;
+  color: $white !important;
 
   .modal-header {
-    background-color: $bg-dark-light  !important;
+    background-color: $bg-dark-light !important;
   }
 
   .btn-close {
@@ -4873,22 +4883,22 @@ input[type="text"] {
   }
 
   .form-control {
-    border-color: $border-grey-dark  !important;
+    border-color: $border-grey-dark !important;
     color: inherit;
   }
 
   input {
-    background-color: $bg-dark-light  !important;
+    background-color: $bg-dark-light !important;
   }
 
   .form-select {
-    background-color: $bg-dark  !important;
-    color: $white  !important;
-    border-color: $border-grey-dark  !important;
+    background-color: $bg-dark !important;
+    color: $white !important;
+    border-color: $border-grey-dark !important;
   }
 
   .text-muted {
-    color: $white  !important;
+    color: $white !important;
   }
 }
 
@@ -5183,7 +5193,7 @@ div#driver-page-overlay {
 }
 
 .dark-theme-walkthrough#driver-popover-item {
-  background-color: $bg-dark-light  !important;
+  background-color: $bg-dark-light !important;
   border-color: rgba(101, 109, 119, 0.16) !important;
 
   .driver-popover-title {
@@ -5191,7 +5201,7 @@ div#driver-page-overlay {
   }
 
   .driver-popover-tip {
-    border-color: transparent transparent transparent $bg-dark-light  !important;
+    border-color: transparent transparent transparent $bg-dark-light !important;
   }
 
   .driver-popover-description {
@@ -5223,7 +5233,7 @@ div#driver-page-overlay {
 
   .driver-next-btn,
   .driver-prev-btn {
-    color: $primary  !important;
+    color: $primary !important;
   }
 
   .driver-disabled {
@@ -5249,11 +5259,11 @@ div#driver-page-overlay {
     color: #d9dcde !important;
   }
 
-    .popover-header {
-      background-color: var(--slate2);
-      color: var(--slate11);
-      border-bottom-color: var
-    }
+  .popover-header {
+    background-color: var(--slate2);
+    color: var(--slate11);
+    border-bottom-color: var
+  }
 }
 
 .toast-dark-mode {
@@ -5282,8 +5292,12 @@ div#driver-page-overlay {
   color: $light-gray;
 }
 
+.dynamic-form-row {
+  margin-top: 20px !important;
+  margin-bottom: 20px !important;
+}
+
 #transformation-popover-container {
-  margin-left: 80px !important;
   margin-bottom: -2px !important;
 }
 
@@ -5678,7 +5692,7 @@ div#driver-page-overlay {
   }
 
   .selected-node {
-    border-color: $primary-light  !important;
+    border-color: $primary-light !important;
   }
 
   .json-tree-icon-container .selected-node>svg:first-child {
@@ -5769,7 +5783,7 @@ div#driver-page-overlay {
   }
 
   .selected-node {
-    border-color: $primary-light  !important;
+    border-color: $primary-light !important;
   }
 
   .selected-node .group-object-container .badge {
@@ -6036,7 +6050,7 @@ div#driver-page-overlay {
 
 //Kanban board
 .kanban-container.dark-themed {
-  background-color: $bg-dark-light  !important;
+  background-color: $bg-dark-light !important;
 
   .kanban-column {
     .card-header {
@@ -6082,7 +6096,7 @@ div#driver-page-overlay {
     }
 
     .dnd-card.card.card-dark {
-      background-color: $bg-dark  !important;
+      background-color: $bg-dark !important;
     }
   }
 
@@ -7573,6 +7587,12 @@ tbody {
         fill: $color-light-indigo-10;
       }
     }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: .65;
   }
 
   .query-run-svg {
@@ -11369,25 +11389,27 @@ tbody {
     }
   }
 }
-.generate-cell-value-component-div-wrapper{
-  
+
+.generate-cell-value-component-div-wrapper {
+
   .form-control-plaintext:focus-visible {
     outline-color: #dadcde;
     border-radius: 4px;
   }
-  
+
   .form-control-plaintext:hover {
     outline-color: #dadcde;
     border-radius: 4px;
   }
 }
-.dark-theme{
-  .generate-cell-value-component-div-wrapper{
-  
+
+.dark-theme {
+  .generate-cell-value-component-div-wrapper {
+
     .form-control-plaintext:focus-visible {
       filter: invert(-1);
     }
-    
+
     .form-control-plaintext:hover {
       filter: invert(-1);
     }
@@ -11541,6 +11563,88 @@ tbody {
     display: flex;
     flex-direction: column;
     align-items: center;
+  }
+}
+.query-rename-input {
+
+  &:focus,
+  &:active {
+    box-shadow: 0px 0px 0px 2px #C6D4F9;
+    border: 1px solid var(--light-indigo-09, #3E63DD);
+  }
+}
+
+.btn-query-panel-header {
+  height: 28px;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background-color: transparent;
+  border: none;
+
+  &.active {
+    background-color: var(--slate5) !important;
+  }
+
+  &:hover,
+  &:focus {
+    background-color: var(--slate4) !important;
+  }
+}
+
+.tj-scrollbar {
+
+  ::-webkit-scrollbar,
+  &::-webkit-scrollbar {
+    width: 16px;
+    border-radius: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb,
+  &::-webkit-scrollbar-thumb {
+    border: 4px solid var(--base);
+    border-radius: 8px;
+    background-color: var(--slate4) !important;
+  }
+
+  ::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-track {
+    background-color: var(--base);
+  }
+
+}
+
+.form-check>.form-check-input:not(:checked) {
+  background-color: var(--base);
+  border-color: var(--slate7);
+}
+
+/*
+* remove this once whole app is migrated to new styles. use only `theme-dark` class everywhere. 
+* This is added since some of the pages are in old theme and making changes to `theme-dark` styles can break UI style somewhere else 
+*/
+.tj-dark-mode {
+  background-color: var(--base) !important;
+  color: var(--base-black) !important;
+}
+
+.tj-list-btn {
+  border-radius: 6px;
+
+  &:hover {
+    background-color: var(--slate4);
+  }
+
+  &.active {
+    background-color: var(--slate5);
+  }
+}
+
+.tj-list-option {
+  &.active {
+    background-color: var(--indigo2);
   }
 }
 

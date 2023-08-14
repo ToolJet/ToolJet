@@ -3,6 +3,7 @@ import DynamicForm from '@/_components/DynamicForm';
 import RunjsSchema from './Runjs.schema.json';
 import TooljetDbSchema from '../../QueryManager/QueryEditors/TooljetDatabase/manifest.json';
 import RunpySchema from './Runpy.schema.json';
+import WorkflowsSchema from './Workflows.schema.json';
 
 // eslint-disable-next-line import/no-unresolved
 import { allManifests } from '@tooljet/plugins/client';
@@ -20,7 +21,7 @@ export const CloudStorageSources = Object.keys(allManifests).reduce((accumulator
   return accumulator;
 }, []);
 
-export const OtherSources = [RunjsSchema.source, RunpySchema.source, TooljetDbSchema.source];
+export const OtherSources = [RunjsSchema.source, RunpySchema.source, TooljetDbSchema.source, WorkflowsSchema.source];
 export const DataSourceTypes = [...DataBaseSources, ...ApiSources, ...CloudStorageSources, ...OtherSources];
 
 export const SourceComponents = Object.keys(allManifests).reduce((accumulator, currentValue) => {
