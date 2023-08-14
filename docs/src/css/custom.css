@@ -168,9 +168,9 @@ img {
   height: 25px;
 }
 
-strong {
+/* strong {
   color: #4d72fa;
-}
+} */
 
 .alert a {
   color: inherit;
@@ -264,6 +264,11 @@ strong {
 
 .DocSearch-Button {
   border-radius: 5px !important;
+}
+
+.DocSearch-Search-Icon {
+  height: 13px;
+  width: 13px;
 }
 
 @media screen and (min-width: 768px) {
