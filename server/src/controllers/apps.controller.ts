@@ -28,7 +28,6 @@ import { EntityManager } from 'typeorm';
 import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
 
-import { ComponentsService } from '@services/components.service';
 import { PageService } from '@services/page.service';
 
 @Controller('apps')
@@ -36,7 +35,6 @@ export class AppsController {
   constructor(
     private appsService: AppsService,
     private foldersService: FoldersService,
-    private componentsService: ComponentsService,
     private pageService: PageService,
     private appsAbilityFactory: AppsAbilityFactory
   ) {}
@@ -322,100 +320,6 @@ export class AppsController {
 
     await this.appsService.updateVersion(version, versionEditDto, app.organizationId);
     return;
-  }
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ValidAppInterceptor)
-  @Post(':id/versions/:versionId/components')
-  async createComponent(
-    @User() user,
-    @Param('id') id,
-    @Param('versionId') versionId,
-    @Body() versionEditDto: VersionEditDto
-  ) {
-    const version = await this.appsService.findVersion(versionId);
-    const app = version.app;
-
-    if (app.id !== id) {
-      throw new BadRequestException();
-    }
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
-
-    if (!ability.can('updateVersions', app)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
-    }
-
-    await this.componentsService.create(versionEditDto.diff, versionEditDto.pageId);
-  }
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ValidAppInterceptor)
-  @Put(':id/versions/:versionId/components')
-  async updateComponent(
-    @User() user,
-    @Param('id') id,
-    @Param('versionId') versionId,
-    @Body() versionEditDto: VersionEditDto
-  ) {
-    const version = await this.appsService.findVersion(versionId);
-    const app = version.app;
-
-    if (app.id !== id) {
-      throw new BadRequestException();
-    }
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
-
-    if (!ability.can('updateVersions', app)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
-    }
-
-    await this.componentsService.update(versionEditDto.diff);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ValidAppInterceptor)
-  @Delete(':id/versions/:versionId/components')
-  async deleteComponents(
-    @User() user,
-    @Param('id') id,
-    @Param('versionId') versionId,
-    @Body() versionEditDto: VersionEditDto
-  ) {
-    const version = await this.appsService.findVersion(versionId);
-    const app = version.app;
-
-    if (app.id !== id) {
-      throw new BadRequestException();
-    }
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
-
-    if (!ability.can('updateVersions', app)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
-    }
-
-    await this.componentsService.delete(versionEditDto.diff);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(ValidAppInterceptor)
-  @Put(':id/versions/:versionId/components/layout')
-  async updateComponentLayput(
-    @User() user,
-    @Param('id') id,
-    @Param('versionId') versionId,
-    @Body() versionEditDto: VersionEditDto
-  ) {
-    const version = await this.appsService.findVersion(versionId);
-    const app = version.app;
-
-    if (app.id !== id) {
-      throw new BadRequestException();
-    }
-    const ability = await this.appsAbilityFactory.appsActions(user, id);
-
-    if (!ability.can('updateVersions', app)) {
-      throw new ForbiddenException('You do not have permissions to perform this action');
-    }
-
-    await this.componentsService.componentLayoutChange(versionEditDto.diff);
   }
 
   @UseGuards(JwtAuthGuard)

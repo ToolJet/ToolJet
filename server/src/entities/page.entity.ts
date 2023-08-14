@@ -11,7 +11,10 @@ export class Page {
   name: string;
 
   @Column({ name: 'page_handle' })
-  pageHandle: string;
+  handle: string;
+
+  @Column()
+  index: number;
 
   @Column({ name: 'app_version_id' })
   appVersionId: string;

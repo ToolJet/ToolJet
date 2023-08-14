@@ -1161,6 +1161,8 @@ const EditorComponent = (props) => {
       return;
     }
 
+    setCurrentPageId(pageId);
+
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
 
     copyOfAppDefinition.pages[pageId].name = newName;
@@ -1192,12 +1194,17 @@ const EditorComponent = (props) => {
       name,
       handle: newHandle,
       components: {},
-      index: Object.keys(copyOfAppDefinition.pages).length,
+      index: Object.keys(copyOfAppDefinition.pages).length + 1,
     };
 
     setCurrentPageId(newPageId);
 
-    appDefinitionChanged(copyOfAppDefinition, { pageDefinitionChanged: true, switchPage: true, pageId: newPageId });
+    appDefinitionChanged(copyOfAppDefinition, {
+      pageDefinitionChanged: true,
+      addNewPage: true,
+      switchPage: true,
+      pageId: newPageId,
+    });
   };
 
   const switchPage = (pageId, queryParams = []) => {
@@ -1288,6 +1295,7 @@ const EditorComponent = (props) => {
 
     appDefinitionChanged(newAppDefinition, {
       pageDefinitionChanged: true,
+      deletePageRequest: true,
     });
 
     toast.success(`${toBeDeletedPage.name} page deleted.`);
@@ -1447,7 +1455,7 @@ const EditorComponent = (props) => {
     const pagesObj = newSortedPages.reduce((acc, page, index) => {
       acc[page.id] = {
         ...page,
-        index: index,
+        index: index + 1,
       };
       return acc;
     }, {});
@@ -1458,6 +1466,7 @@ const EditorComponent = (props) => {
 
     appDefinitionChanged(newAppDefinition, {
       pageDefinitionChanged: true,
+      pageSortingChanged: true,
     });
   };
 
