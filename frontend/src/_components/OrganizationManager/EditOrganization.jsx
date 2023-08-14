@@ -48,6 +48,13 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
     setNewOrgName(e.target.value);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      editOrganization();
+    }
+  };
+
   const closeModal = () => {
     setShowEditOrg(false);
     setErrorText('');
@@ -66,6 +73,7 @@ export const EditOrganization = ({ showEditOrg, setShowEditOrg, currentValue }) 
           <input
             type="text"
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             className="form-control"
             placeholder={t('header.organization.workspaceName', 'workspace name')}
             disabled={isCreating}

@@ -11,6 +11,9 @@ export type QueryOptions = {
   scan_condition: string;
   query_condition: string;
   operation: string;
+  update_condition: string;
+  table_parameters: string;
+  new_item_details: string;
 };
 
 export type AssumeRoleCredentials = {

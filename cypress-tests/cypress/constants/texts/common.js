@@ -170,7 +170,7 @@ export const commonText = {
     // iframeLinkLabel: "Get embeddable link for this application",
     // ifameLinkCopyButton: "copy",
   },
-  groupInputFieldLabel: "Select Group"
+  groupInputFieldLabel: "Select Group",
 };
 
 export const commonWidgetText = {
@@ -199,7 +199,7 @@ export const commonWidgetText = {
   codeMirrorInputTrue: codeMirrorInputLabel(true),
   codeMirrorInputFalse: codeMirrorInputLabel("false"),
 
-  addEventHandlerLink: "+ Add event handler",
+  addEventHandlerLink: "Add handler",
   inspectorComponentLabel: "components",
   componentValueLabel: "Value",
   labelDefaultValue: "Default Value",
