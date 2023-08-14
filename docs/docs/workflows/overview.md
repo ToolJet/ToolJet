@@ -5,9 +5,8 @@ title: Overview
 <div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
 <br/>
 
-Tooljet Workflows is a powerful and flexible tool that lets you create data-centric automation tasks and isolate complex logic for reusability. It allows users to set up nodes that can run complex queries across various data sources, run conditional flows and execute custom Javascript code. 
+Tooljet Workflows is as a visual, node-based platform tailored for data-centric automation tasks. With its intuitive design, users can effortlessly create nodes to run detailed queries across diverse data sources, manage conditional flows, and execute custom Javascript code. This not only simplifies intricate processes but also makes them more presentable, bridging the gap between complexity and clarity. Whether you're delving into data integration, generating detailed reports, or ensuring rigorous validation, Tooljet Workflows is your go-to solution. 
 
-Whether it's for data integration, reporting, validation, or any other data-focused task, Tooljet Workflows offers an intuitive way to streamline processes.
 
 ## Quickstart Guide
 
@@ -189,32 +188,30 @@ With this basic workflow, we've essentially isolated a complex data-centric task
 
 You can now use this workflow in your Tooljet Application from the query panel. 
 
-
-
 <!-- 
+
 ## Topbar
-The topbar will have the application name of the left followed by a text on the right that indicates whether the latest changes have been saved. To the right, we have a "Enable" checkbox and a "Run" button. If you uncheck the "Enable" button, the workflows will not stop executing in the application. The "Run" button allows you run the entire flow. 
+The topbar will have the application name on the left along with a text that indicates whether the latest changes have been saved. To the right, we have a **Enable** checkbox and a "Run" button. If you uncheck the **Enable** button, the workflows will stop executing in the application. The **Run** button allows you run the entire flow. 
 
 ## Nodes
-Every new instance of workflow will have two nodes - "Start Trigger" and "Result" on the canvas. Nodes are a graphical representation of each process in a workflow. 
+Every new instance of a workflow will have two nodes - **Start Trigger** and **Result** on the canvas. Nodes are a graphical representation of each process in a workflow. 
 
-The list of nodes can be divided into four types:
+The list of nodes that you can add to the canvas can be divided into four types:
 
 - **JavaScript** node that lets you run custom JavaScript logic.
-- **If Else** condition node that lets select the outgoing path based on the condition provided
+- **If Else** condition node that executes the outgoing path based on the condition provided
 - **Data Source And Other Services** nodes that will allow you to run complex queries on your databases, send emails/messages, etc.
 - **Rest API** node that allows for interaction with RESTful web services
 
+The **Start Trigger** node triggers the workflow to run. Once the workflow execution is completed, the resulting data is stored in the **Result** node. 
+
+To create a new node on the canvas, click and drag the blue circle right next to **Start Trigger** node. You'll get a list of nodes to choose from. 
+
+The **Start Trigger** node will only have an outgoing flow while the "Result" node will only have an incoming flow. The **If condition** node will have one incoming node and two outgoing nodes, one of which will be executed based on whether the **If condition** evaluates to true or false. All the other nodes will have one incoming and one outgoing flows, denoted by the blue circles on either side.
 
 
 ## Logs
 
-Once you execute the workflow by pressing on the "Run" button, the logs panel will reflect the execution details of each node. Logs let you easily track the order of execution and look for errors. You can click on the logs panel to expand or minimize it. 
+Once you execute the workflow by pressing on the **Run** button, the logs panel will reflect the execution details of each node. Logs let you easily track the order of execution and check whether the execution of individual nodes is successfull. You can click on the topbar of the logs panel to expand or minimize it. 
 
-To create a new node on the canvas, click and drag the blue circle right next to "Start Trigger" node. You'll get a list of nodes to choose from. 
-
-The "Start Trigger" node will only have an outgoing flow while the "Result" node will only have an incoming flow. All the other nodes will have both incoming and outgoing flows, denoted by the blue circles on either side.
-
-##  
-
-To create a new workflow, click on the workflow icon in the left sidebar and click on the **Create New Workflow** button. Once you've done that, you'll be taken to a fresh instance of a workflow. -->
+ -->
