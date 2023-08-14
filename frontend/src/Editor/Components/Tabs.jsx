@@ -70,11 +70,6 @@ export const Tabs = function Tabs({
   }, [parsedDefaultTab]);
 
   useEffect(() => {
-    setExposedVariable('currentTab', currentTab);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTab]);
-
-  useEffect(() => {
     const currentTabData = parsedTabs.filter((tab) => tab.id === currentTab);
     setBgColor(currentTabData[0]?.backgroundColor ? currentTabData[0]?.backgroundColor : darkMode ? '#324156' : '#fff');
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -103,8 +98,10 @@ export const Tabs = function Tabs({
         setExposedVariable('currentTab', id).then(() => fireEvent('onTabSwitch'));
       }
     });
+    setExposedVariable('currentTab', currentTab);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setCurrentTab]);
+  }, [setCurrentTab, currentTab]);
 
   const renderTabContent = (id, tab) => (
     <div

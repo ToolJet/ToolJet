@@ -288,21 +288,21 @@ export const FilePicker = ({
     });
     onEvent('onFileDeselected', { component });
   };
-
   useEffect(() => {
     if (selectedFiles.length === 0) {
       setShowSelectedFiles(false);
     }
-    onComponentOptionChanged(component, 'file', selectedFiles, id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedFiles]);
 
-  useEffect(() => {
-    setExposedVariable('clearFiles', async function () {
+    onComponentOptionChanged(component, 'file', selectedFiles, id);
+
+    const clearFiles = async () => {
       setSelectedFiles([]);
-    });
+    };
+
+    setExposedVariable('clearFiles', clearFiles);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setSelectedFiles]);
+  }, [selectedFiles, setSelectedFiles]);
 
   return (
     <section>

@@ -34,23 +34,18 @@ export const Text = function Text({ height, properties, styles, darkMode, setExp
     const text = computeText();
     setText(text);
     setExposedVariable('text', text);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.text]);
 
-  useEffect(() => {
     setExposedVariable('setText', async function (text) {
       setText(text);
       setExposedVariable('text', text);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setText]);
 
-  useEffect(() => {
     setExposedVariable('visibility', async function (value) {
       setVisibility(value);
     });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setVisibility]);
+  }, [properties.text, setText, setVisibility]);
 
   function computeText() {
     return properties.text === 0 || properties.text === false ? properties.text?.toString() : properties.text;

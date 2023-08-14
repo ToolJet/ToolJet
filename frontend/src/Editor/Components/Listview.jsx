@@ -46,14 +46,9 @@ export const Listview = function Listview({
   };
   const [selectedRowIndex, setSelectedRowIndex] = useState(undefined);
   const [positiveColumns, setPositiveColumns] = useState(columns);
+  const parentRef = useRef(null);
+  const [childrenData, setChildrenData] = useState({});
 
-  function onRowClicked(index) {
-    setSelectedRowIndex(index);
-    setExposedVariable('selectedRowId', index);
-    setExposedVariable('selectedRow', childrenData[index]);
-    fireEvent('onRowClicked');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }
   function onRecordClicked(index) {
     setSelectedRowIndex(index);
     setExposedVariable('selectedRecordId', index);
@@ -61,22 +56,19 @@ export const Listview = function Listview({
     fireEvent('onRecordClicked');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }
-
-  const parentRef = useRef(null);
-
-  const [childrenData, setChildrenData] = useState({});
+  function onRowClicked(index) {
+    setSelectedRowIndex(index);
+    setExposedVariable('selectedRowId', index);
+    setExposedVariable('selectedRow', childrenData[index]);
+    fireEvent('onRowClicked');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }
 
   useEffect(() => {
     if (columns < 1) {
       setPositiveColumns(1);
     } else setPositiveColumns(columns);
   }, [columns]);
-
-  useEffect(() => {
-    setExposedVariable('data', {});
-    setExposedVariable('children', {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     setExposedVariable('data', childrenData);

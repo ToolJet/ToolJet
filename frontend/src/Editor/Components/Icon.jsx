@@ -34,15 +34,11 @@ export const Icon = ({
     setExposedVariable('setVisibility', async function (visibility) {
       setIconVisibility(visibility);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setIconVisibility]);
-
-  useEffect(() => {
     setExposedVariable('click', async function () {
       fireEvent('onClick');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setIconVisibility]);
 
   return (
     <div

@@ -75,49 +75,46 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
   }, [JSON.stringify(cardData), JSON.stringify(columnDataAsObj)]);
 
   useEffect(() => {
-    if (shouldUpdateData.current) {
-      shouldUpdateData.current = false;
-      setExposedVariable('updatedCardData', getData(cardDataAsObj))?.then(() => {
-        // fireEvent('onUpdate');
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldUpdateData.current, JSON.stringify(cardDataAsObj)]);
-
-  useEffect(() => {
     droppableItemsColumnId.current = containers.find((container) => items[container]?.length > 0);
   }, [items, containers]);
 
   useEffect(() => {
-    setExposedVariable('updateCardData', async function (cardId, value) {
-      if (cardDataAsObj[cardId] === undefined) return toast.error('Card not found');
+    const updateCardDataFunc = async (cardId, value) => {
+      if (cardDataAsObj[cardId] === undefined) {
+        return toast.error('Card not found');
+      }
+
       const cardToBeUpdated = { ...cardDataAsObj[cardId] };
       cardDataAsObj[cardId] = value;
       const diffKeys = Object.keys(diff(cardToBeUpdated, value));
+
       if (lastSelectedCard?.id === cardId) {
-        return setExposedVariables({
+        setExposedVariables({
           lastSelectedCard: cardDataAsObj[cardId],
           lastUpdatedCard: cardDataAsObj[cardId],
-          lastCardUpdate: diffKeys.map((key) => {
-            return {
-              [key]: { oldValue: cardToBeUpdated[key], newValue: value[key] },
-            };
-          }),
+          lastCardUpdate: diffKeys.map((key) => ({
+            [key]: { oldValue: cardToBeUpdated[key], newValue: value[key] },
+          })),
           updatedCardData: getData(cardDataAsObj),
         }).then(() => {
           fireEvent('onUpdate');
         });
+      } else {
+        setExposedVariable('updatedCardData', getData(cardDataAsObj)).then(() => {
+          fireEvent('onUpdate');
+        });
       }
-      setExposedVariable('updatedCardData', getData(cardDataAsObj)).then(() => {
-        fireEvent('onUpdate');
-      });
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastSelectedCard, JSON.stringify(cardDataAsObj)]);
-  useEffect(() => {
-    setExposedVariable('moveCard', async function (cardId, columnId) {
-      if (cardDataAsObj[cardId] === undefined) return toast.error('Card not found');
-      if (cardDataAsObj[cardId]['columnId'] === columnId) return;
+    };
+
+    const moveCardFunc = async (cardId, columnId) => {
+      if (cardDataAsObj[cardId] === undefined) {
+        return toast.error('Card not found');
+      }
+
+      if (cardDataAsObj[cardId]['columnId'] === columnId) {
+        return;
+      }
+
       const cardToBeMoved = { ...cardDataAsObj[cardId] };
       const originColumnId = cardToBeMoved['columnId'];
       const activeIndex = items[cardToBeMoved['columnId']].indexOf(cardId);
@@ -135,15 +132,17 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
         cardDetails: { ...cardDataAsObj[cardId] },
       };
       setExposedVariable('lastCardMovement', lastCardMovement).then(() => fireEvent('onCardMoved'));
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, JSON.stringify(cardDataAsObj)]);
+    };
 
-  useEffect(() => {
-    setExposedVariable('addCard', async function (cardDetails) {
-      if (cardDataAsObj[cardDetails.id]) return toast.error('Card already exists');
-      if (cardDetails?.columnId === undefined || items[cardDetails?.columnId] === undefined)
+    const addCardFunc = async (cardDetails) => {
+      if (cardDataAsObj[cardDetails.id]) {
+        return toast.error('Card already exists');
+      }
+
+      if (cardDetails?.columnId === undefined || items[cardDetails?.columnId] === undefined) {
         return toast.error('Column Id not found');
+      }
+
       const columnId = cardDetails.columnId;
       cardDataAsObj[cardDetails.id] = cardDetails;
       setItems((items) => ({
@@ -155,13 +154,13 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
         fireEvent('onCardAdded');
         // fireEvent('onUpdate');
       });
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, JSON.stringify(cardDataAsObj)]);
+    };
 
-  useEffect(() => {
-    setExposedVariable('deleteCard', async function (cardId) {
-      if (cardDataAsObj[cardId] === undefined) return toast.error('Card not found');
+    const deleteCardFunc = async (cardId) => {
+      if (cardDataAsObj[cardId] === undefined) {
+        return toast.error('Card not found');
+      }
+
       const columnId = cardDataAsObj[cardId]['columnId'];
       const deletedCard = cardDataAsObj[cardId];
       delete cardDataAsObj[cardId];
@@ -174,9 +173,22 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
         fireEvent('onCardRemoved');
         // fireEvent('onUpdate');
       });
-    });
+    };
+
+    if (shouldUpdateData.current) {
+      shouldUpdateData.current = false;
+      setExposedVariable('updatedCardData', getData(cardDataAsObj)).then(() => {
+        // fireEvent('onUpdate');
+      });
+    }
+
+    setExposedVariable('updateCardData', updateCardDataFunc);
+    setExposedVariable('moveCard', moveCardFunc);
+    setExposedVariable('addCard', addCardFunc);
+    setExposedVariable('deleteCard', deleteCardFunc);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal, JSON.stringify(cardDataAsObj)]);
+  }, [shouldUpdateData.current, JSON.stringify(cardDataAsObj), lastSelectedCard, showModal, items]);
 
   const [clonedItems, setClonedItems] = useState(null);
   const sensors = useSensors(

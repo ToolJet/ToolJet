@@ -5,24 +5,18 @@ export const TextArea = function TextArea({ height, properties, styles, setExpos
   useEffect(() => {
     setValue(properties.value);
     setExposedVariable('value', properties.value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.value]);
 
-  useEffect(() => {
     setExposedVariable('setText', async function (text) {
       setValue(text);
       setExposedVariable('value', text);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setValue]);
 
-  useEffect(() => {
     setExposedVariable('clear', async function () {
       setValue('');
       setExposedVariable('value', '');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setValue]);
+  }, [properties.value, setValue]);
 
   return (
     <textarea

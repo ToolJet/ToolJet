@@ -635,17 +635,13 @@ export function Table({
       setExposedVariable('sortApplied', []);
     }
     if (mounted) setExposedVariable('sortApplied', sortOptions).then(() => fireEvent('onSort'));
-  }, [sortOptions]);
 
-  useEffect(() => {
     setExposedVariable('setPage', async function (targetPageIndex) {
       setPaginationInternalPageIndex(targetPageIndex);
       setExposedVariable('pageIndex', targetPageIndex);
       if (!serverSidePagination && clientSidePagination) gotoPage(targetPageIndex - 1);
     });
-  }, [serverSidePagination, clientSidePagination, setPaginationInternalPageIndex]);
 
-  useEffect(() => {
     setExposedVariable('selectRow', async function (key, value) {
       const item = tableData.filter((item) => item[key] == value);
       const row = rows.find((item, index) => item.original[key] == value);
@@ -658,8 +654,7 @@ export function Table({
         });
       }
     });
-  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]);
-  useEffect(() => {
+
     setExposedVariable('deselectRow', async function () {
       if (!_.isEmpty(tableDetails.selectedRow)) {
         const selectedRowDetails = { selectedRow: {}, selectedRowId: {} };
@@ -670,9 +665,7 @@ export function Table({
       }
       return;
     });
-  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.selectedRow)]);
 
-  useEffect(() => {
     setExposedVariable('discardChanges', async function () {
       if (Object.keys(tableDetails.changeSet || {}).length > 0) {
         setExposedVariables({
@@ -683,9 +676,7 @@ export function Table({
         });
       }
     });
-  }, [JSON.stringify(tableData), JSON.stringify(tableDetails.changeSet)]);
 
-  useEffect(() => {
     setExposedVariable('discardNewlyAddedRows', async function () {
       if (
         tableDetails.addNewRowsDetails.addingNewRows &&
@@ -699,10 +690,37 @@ export function Table({
         });
       }
     });
+
+    setExposedVariable('downloadTableData', async function (format) {
+      exportData(format, true);
+    });
+
+    setExposedVariable(
+      'filteredData',
+      globalFilteredRows.map((row) => row.original)
+    );
+
+    if (_.isEmpty(changeSet)) {
+      setExposedVariable(
+        'updatedData',
+        _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current
+      );
+    }
   }, [
+    sortOptions,
+    serverSidePagination,
+    clientSidePagination,
+    setPaginationInternalPageIndex,
+    JSON.stringify(tableData),
+    JSON.stringify(tableDetails.selectedRow),
+    JSON.stringify(tableDetails.changeSet),
     JSON.stringify(tableDetails.addNewRowsDetails.newRowsChangeSet),
     tableDetails.addNewRowsDetails.addingNewRows,
     JSON.stringify(tableDetails.addNewRowsDetails.newRowsDataUpdates),
+    _.toString(globalFilteredRows),
+    columns,
+    JSON.stringify(globalFilteredRows.map((row) => row.original)),
+    JSON.stringify(changeSet),
   ]);
 
   useEffect(() => {
@@ -728,12 +746,6 @@ export function Table({
       });
     }
   }, [selectedFlatRows.length, selectedFlatRows]);
-
-  useEffect(() => {
-    setExposedVariable('downloadTableData', async function (format) {
-      exportData(format, true);
-    });
-  }, [_.toString(globalFilteredRows), columns]);
 
   useEffect(() => {
     if (mounted) {
@@ -794,28 +806,13 @@ export function Table({
   useEffect(() => {
     if (rowDetails?.hoveredRowId !== '' && hoverRef.current !== rowDetails?.hoveredRowId) rowHover();
   }, [rowDetails]);
-
-  useEffect(() => {
-    setExposedVariable(
-      'filteredData',
-      globalFilteredRows.map((row) => row.original)
-    );
-  }, [JSON.stringify(globalFilteredRows.map((row) => row.original))]);
-
   const rowHover = () => {
     mergeToTableDetails(rowDetails);
     setExposedVariables(rowDetails).then(() => {
       fireEvent('onRowHovered');
     });
   };
-  useEffect(() => {
-    if (_.isEmpty(changeSet)) {
-      setExposedVariable(
-        'updatedData',
-        _.isEmpty(updatedDataReference.current) ? tableData : updatedDataReference.current
-      );
-    }
-  }, [JSON.stringify(changeSet)]);
+
   useEffect(() => {
     if (
       allowSelection &&

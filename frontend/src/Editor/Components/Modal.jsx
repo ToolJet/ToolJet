@@ -50,10 +50,6 @@ export const Modal = function Modal({
       setExposedVariable('show', true);
       setShowModal(true);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setShowModal]);
-
-  useEffect(() => {
     setExposedVariable('close', async function () {
       setShowModal(false);
       setExposedVariable('show', false);

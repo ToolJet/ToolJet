@@ -38,52 +38,42 @@ export const TextInput = function TextInput({
   }, [styles.visibility]);
 
   useEffect(() => {
-    setExposedVariable('isValid', isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
+    const setFocusFunc = async () => {
+      textInputRef.current.focus();
+    };
 
-  useEffect(() => {
+    const setBlurFunc = async () => {
+      textInputRef.current.blur();
+    };
+
+    const setTextFunc = async (text) => {
+      setValue(text);
+      await setExposedVariable('value', text);
+      fireEvent('onChange');
+    };
+
+    const clearFunc = async () => {
+      setValue('');
+      await setExposedVariable('value', '');
+      fireEvent('onChange');
+    };
+
+    setExposedVariable('isValid', isValid);
     setValue(properties.value);
     setExposedVariable('value', properties.value);
+    setExposedVariable('setFocus', setFocusFunc);
+    setExposedVariable('setBlur', setBlurFunc);
+    setExposedVariable('disable', async (value) => {
+      await setDisable(value);
+    });
+    setExposedVariable('visibility', async (value) => {
+      await setVisibility(value);
+    });
+    setExposedVariable('setText', setTextFunc);
+    setExposedVariable('clear', clearFunc);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [properties.value]);
-
-  useEffect(() => {
-    setExposedVariable('setFocus', async function () {
-      textInputRef.current.focus();
-    });
-  }, []);
-  useEffect(() => {
-    setExposedVariable('setBlur', async function () {
-      textInputRef.current.blur();
-    });
-  }, []);
-
-  useEffect(() => {
-    setExposedVariable('disable', async function (value) {
-      setDisable(value);
-    });
-  }, []);
-
-  useEffect(() => {
-    setExposedVariable('visibility', async function (value) {
-      setVisibility(value);
-    });
-  }, []);
-
-  useEffect(() => {
-    setExposedVariable('setText', async function (text) {
-      setValue(text);
-      setExposedVariable('value', text).then(fireEvent('onChange'));
-    });
-  }, [setValue]);
-
-  useEffect(() => {
-    setExposedVariable('clear', async function () {
-      setValue('');
-      setExposedVariable('value', '').then(fireEvent('onChange'));
-    });
-  }, [setValue]);
+  }, [isValid, properties.value]);
 
   return (
     <div data-disabled={disable} className={`text-input ${visibility || 'invisible'}`}>

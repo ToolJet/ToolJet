@@ -44,9 +44,8 @@ export const ColorPicker = function ({
     const rgbaArray = getRGBAValueFromHex(hex);
     return `rgba(${rgbaArray[0]}, ${rgbaArray[1]}, ${rgbaArray[2]})`;
   };
-
   useEffect(() => {
-    setExposedVariable('setColor', async function (colorCode) {
+    const handleSetColor = async (colorCode) => {
       if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(colorCode)) {
         if (colorCode !== color) {
           setColor(colorCode);
@@ -60,26 +59,31 @@ export const ColorPicker = function ({
         setExposedVariable('selectedColorRGBA', 'undefined').then(() => fireEvent('onChange'));
         setColor('Invalid Color');
       }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setColor]);
+    };
 
-  useEffect(() => {
-    if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(defaultColor)) {
-      if (defaultColor !== color) {
-        setExposedVariable('selectedColorHex', `${defaultColor}`);
-        setExposedVariable('selectedColorRGB', hexToRgb(defaultColor));
-        setExposedVariable('selectedColorRGBA', hexToRgba(defaultColor));
-        setColor(defaultColor);
+    const handleDefaultColor = () => {
+      if (/^#(([\dA-Fa-f]{3}){1,2}|([\dA-Fa-f]{4}){1,2})$/.test(defaultColor)) {
+        if (defaultColor !== color) {
+          setExposedVariable('selectedColorHex', `${defaultColor}`);
+          setExposedVariable('selectedColorRGB', hexToRgb(defaultColor));
+          setExposedVariable('selectedColorRGBA', hexToRgba(defaultColor));
+          setColor(defaultColor);
+        }
+      } else {
+        setExposedVariable('selectedColorHex', 'undefined');
+        setExposedVariable('selectedColorRGB', 'undefined');
+        setExposedVariable('selectedColorRGBA', 'undefined');
+        setColor(`Invalid Color`);
       }
-    } else {
-      setExposedVariable('selectedColorHex', 'undefined');
-      setExposedVariable('selectedColorRGB', 'undefined');
-      setExposedVariable('selectedColorRGBA', 'undefined');
-      setColor(`Invalid Color`);
-    }
+    };
+
+    setExposedVariable('setColor', handleSetColor);
+
+    // Call handleDefaultColor immediately after defining it to apply the logic to the defaultColor
+    handleDefaultColor();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultColor]);
+  }, [defaultColor, color, setColor]);
 
   const handleColorChange = (colorCode) => {
     const { r, g, b, a } = colorCode.rgb;
