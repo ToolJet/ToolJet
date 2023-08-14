@@ -8,7 +8,7 @@ import OptionsIcon from './icons/options.svg';
 
 import { commentsService } from '@/_services';
 import { useTranslation } from 'react-i18next';
-import { useEditorStore } from '@/_stores/editorStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 
 const CommentActions = ({
@@ -23,7 +23,7 @@ const CommentActions = ({
   const [open, trigger, content, setOpen] = usePopover(false);
   const popoverFadeStyle = useSpring({ opacity: open ? 1 : 0 });
   const { t } = useTranslation();
-  const { appId } = useEditorStore(
+  const { appId } = useAppDataStore(
     (state) => ({
       appId: state?.appId,
     }),

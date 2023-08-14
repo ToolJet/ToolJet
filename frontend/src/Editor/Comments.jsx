@@ -5,12 +5,12 @@ import { isEmpty } from 'lodash';
 import Comment from './Comment';
 import { commentsService } from '@/_services';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
-import { useEditorStore } from '@/_stores/editorStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 const Comments = ({ newThread = {}, socket, canvasWidth, currentPageId }) => {
   const [threads, setThreads] = React.useState([]);
   const { appVersionsId } = useAppVersionStore((state) => ({ appVersionsId: state?.editingVersion?.id }), shallow);
-  const { appId } = useEditorStore(
+  const { appId } = useAppDataStore(
     (state) => ({
       appId: state?.appId,
     }),

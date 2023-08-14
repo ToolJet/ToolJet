@@ -169,7 +169,6 @@ class EditorComponent extends React.Component {
     handleAppAccess('editor', this.props.params.slug).then((accessData) => {
       const { id: appId } = accessData;
       useAppDataStore.getState().actions.setAppId(appId);
-      useEditorStore.getState().actions.setAppId(appId);
       const { socket } = createWebsocketConnection(appId);
       this.socket = socket;
       this.setState({

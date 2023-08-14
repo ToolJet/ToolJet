@@ -5,6 +5,7 @@ import { commentsService } from '@/_services';
 import TabContent from './Content';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { useEditorStore } from '@/_stores/editorStore';
+import { useAppDataStore } from '@/_stores/appDataStore';
 import { shallow } from 'zustand/shallow';
 
 const CommentNotifications = ({ socket, pageId }) => {
@@ -15,9 +16,14 @@ const CommentNotifications = ({ socket, pageId }) => {
     }),
     shallow
   );
-  const { toggleComments, appId } = useEditorStore(
+  const { toggleComments } = useEditorStore(
     (state) => ({
       toggleComments: state?.actions.toggleComments,
+    }),
+    shallow
+  );
+  const { appId } = useAppDataStore(
+    (state) => ({
       appId: state?.appId,
     }),
     shallow
