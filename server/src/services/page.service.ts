@@ -4,15 +4,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Page } from 'src/entities/page.entity';
 import { ComponentsService } from './components.service';
+import { CreatePageDto, UpdatePageDto } from '@dto/pages.dto';
+import { AppsService } from './apps.service';
+import { dbTransactionWrap } from 'src/helpers/utils.helper';
 
 @Injectable()
 export class PageService {
   constructor(
-    private readonly manager: EntityManager,
     @InjectRepository(Page)
     private readonly pageRepository: Repository<Page>,
 
-    private componentsService: ComponentsService
+    private componentsService: ComponentsService,
+    private appService: AppsService
   ) {}
 
   async findPagesForVersion(appVersionId: string): Promise<Page[]> {
@@ -31,5 +34,84 @@ export class PageService {
 
   async findOne(id: string): Promise<Page> {
     return this.pageRepository.findOne(id);
+  }
+
+  async createPage(page: CreatePageDto, appVersionId: string): Promise<Page> {
+    const newPage = {
+      ...page,
+      appVersionId: appVersionId,
+    };
+
+    return this.pageRepository.save(newPage);
+  }
+
+  async updatePage(pageUpdates: UpdatePageDto) {
+    if (Object.keys(pageUpdates.diff).length > 1) {
+      return this.updatePagesOrder(pageUpdates.diff);
+    }
+
+    const currentPage = await this.pageRepository.findOne(pageUpdates.pageId);
+
+    if (!currentPage) {
+      throw new Error('Page not found');
+    }
+    return this.pageRepository.update(pageUpdates.pageId, pageUpdates.diff);
+  }
+
+  async updatePagesOrder(pages) {
+    const pagesToPage = Object.keys(pages).map((pageId) => {
+      return {
+        id: pageId,
+        index: pages[pageId].index,
+      };
+    });
+
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      await Promise.all(
+        pagesToPage.map(async (page) => {
+          await manager.update(Page, page.id, page);
+        })
+      );
+    });
+  }
+
+  async deletePage(pageId: string, appVersionId: string) {
+    const pageExists = await this.pageRepository.findOne(pageId);
+    const { editingVersion } = await this.appService.findAppFromVersion(appVersionId);
+
+    if (!pageExists) {
+      throw new Error('Page not found');
+    }
+
+    if (editingVersion?.homePageId === pageId) {
+      throw new Error('Cannot delete home page');
+    }
+    const pageDeletedIndex = pageExists.index;
+    const pageDeleted = await this.pageRepository.delete(pageId);
+
+    if (pageDeleted.affected === 0) {
+      throw new Error('Page not deleted');
+    }
+
+    const pages = await this.pageRepository.find({ appVersionId: pageExists.appVersionId });
+
+    const rearrangedPages = this.rearrangePagesOnDelete(pages, pageDeletedIndex);
+
+    await this.pageRepository.save(rearrangedPages);
+  }
+
+  rearrangePagesOnDelete(pages: Page[], pageDeletedIndex: number) {
+    const rearrangedPages = pages.map((page, index) => {
+      if (index + 1 >= pageDeletedIndex) {
+        return {
+          ...page,
+          index: page.index - 1,
+        };
+      }
+
+      return page;
+    });
+
+    return rearrangedPages;
   }
 }

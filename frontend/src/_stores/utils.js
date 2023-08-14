@@ -48,12 +48,31 @@ export const computeAppDiff = (appDiff, currentPageId, opts) => {
   let updateDiff;
   let operation = 'update';
 
-  console.log('---piku [computeAppDiff]', { appDiff, currentPageId, opts });
+  if (opts?.deletePageRequest) {
+    const deletePageId = _.keys(appDiff?.pages).map((pageId) => {
+      if (appDiff?.pages[pageId]?.pageId === undefined) {
+        return pageId;
+      }
+    })[0];
 
-  if (opts?.pageDefinitionChanged) {
+    updateDiff = {
+      pageId: deletePageId,
+    };
+
+    type = updateType.pageDefinitionChanged;
+    operation = 'delete';
+  } else if (opts?.pageSortingChanged) {
+    updateDiff = appDiff?.pages;
+
+    type = updateType.pageDefinitionChanged;
+  } else if (opts?.pageDefinitionChanged) {
     updateDiff = appDiff?.pages[currentPageId];
 
     type = updateType.pageDefinitionChanged;
+
+    if (opts?.addNewPage) {
+      operation = 'create';
+    }
   } else if (opts?.componentDeleted) {
     const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 

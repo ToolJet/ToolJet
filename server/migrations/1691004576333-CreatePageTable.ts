@@ -18,6 +18,11 @@ export class CreatePageTable1691004576333 implements MigrationInterface {
             isNullable: false,
           },
           {
+            name: 'index',
+            type: 'int',
+            isNullable: false,
+          },
+          {
             name: 'page_handle',
             type: 'varchar',
             isNullable: false,

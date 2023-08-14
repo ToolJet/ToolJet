@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { App } from '../../entities/app.entity';
 import { File } from '../../entities/file.entity';
 import { AppsController } from '../../controllers/apps.controller';
+import { AppsControllerV2 } from '../../controllers/apps.controller.v2';
 import { AppsService } from '../../services/apps.service';
 import { AppVersion } from '../../../src/entities/app_version.entity';
 import { DataQuery } from '../../../src/entities/data_query.entity';
@@ -83,6 +84,6 @@ import { PageService } from '@services/page.service';
     ComponentsService,
     PageService,
   ],
-  controllers: [AppsController, AppUsersController, AppsImportExportController],
+  controllers: [AppsController, AppsControllerV2, AppUsersController, AppsImportExportController],
 })
 export class AppsModule {}
