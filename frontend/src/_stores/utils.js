@@ -44,6 +44,25 @@ const updateType = Object.freeze({
 });
 
 export const computeAppDiff = (appDiff, currentPageId, opts) => {
+  const { updateDiff, type, operation } = updateFor(appDiff, currentPageId, opts);
+
+  return { updateDiff, type, operation };
+};
+
+const updateFor = (appDiff, currentPageId, opts) => {
+  const componentUpdates = ['componentAdded', 'componentDefinitionChanged', 'componentDeleted', 'containerChanges'];
+  const pageUpdates = ['pageDefinitionChanged', 'pageSortingChanged', 'deletePageRequest', 'addNewPage'];
+
+  const options = _.keys(opts);
+
+  if (_.intersection(options, componentUpdates).length > 0) {
+    return computeComponentDiff(appDiff, currentPageId, opts);
+  } else if (_.intersection(options, pageUpdates).length > 0) {
+    return computePageUpdate(appDiff, currentPageId, opts);
+  }
+};
+
+const computePageUpdate = (appDiff, currentPageId, opts) => {
   let type;
   let updateDiff;
   let operation = 'update';
@@ -73,7 +92,17 @@ export const computeAppDiff = (appDiff, currentPageId, opts) => {
     if (opts?.addNewPage) {
       operation = 'create';
     }
-  } else if (opts?.componentDeleted) {
+  }
+
+  return { updateDiff, type, operation };
+};
+
+const computeComponentDiff = (appDiff, currentPageId, opts) => {
+  let type;
+  let updateDiff;
+  let operation = 'update';
+
+  if (opts?.componentDeleted) {
     const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 
     updateDiff = _.keys(currentPageComponents);
