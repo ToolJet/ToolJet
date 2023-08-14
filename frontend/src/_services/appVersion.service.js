@@ -68,7 +68,11 @@ function autoSaveApp(appId, versionId, diff, type, pageId, operation, isUserSwit
 
   let body = {};
 
-  if (!type || (type === 'pages' && operation === 'create') || operation === 'delete') {
+  if (type === 'pages' && (operation === 'create' || operation === 'delete')) {
+    body = {
+      ...diff,
+    };
+  } else if (!type || type === 'global_settings') {
     body = {
       ...diff,
     };

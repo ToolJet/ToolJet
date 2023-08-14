@@ -53,6 +53,7 @@ const updateFor = (appDiff, currentPageId, opts) => {
   const componentUpdates = ['componentAdded', 'componentDefinitionChanged', 'componentDeleted', 'containerChanges'];
   const pageUpdates = ['pageDefinitionChanged', 'pageSortingChanged', 'deletePageRequest', 'addNewPage'];
   const appUpdates = ['homePageChanged'];
+  const globalSettings = ['globalSettings'];
 
   const options = _.keys(opts);
 
@@ -64,6 +65,12 @@ const updateFor = (appDiff, currentPageId, opts) => {
     return {
       updateDiff: appDiff,
       type: null,
+      operation: 'update',
+    };
+  } else if (_.intersection(options, globalSettings).length > 0) {
+    return {
+      updateDiff: appDiff,
+      type: 'global_settings',
       operation: 'update',
     };
   }

@@ -675,6 +675,10 @@ export class AppsService {
       editableParams['homePageId'] = body.homePageId;
     }
 
+    if (body?.globalSettings) {
+      editableParams['globalSettings'] = body.globalSettings;
+    }
+
     return await this.appVersionsRepository.update(version.id, editableParams);
   }
 

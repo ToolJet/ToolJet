@@ -78,31 +78,6 @@ function setWindowTitle(name) {
 
 const decimalToHex = (alpha) => (alpha === 0 ? '00' : Math.round(255 * alpha).toString(16));
 
-const defaultDefinition = (darkMode) => {
-  const defaultPageId = uuid();
-  return {
-    showViewerNavigation: true,
-    homePageId: defaultPageId,
-    pages: {
-      [defaultPageId]: {
-        components: {},
-        handle: 'home',
-        name: 'Home',
-        index: 0,
-      },
-    },
-    globalSettings: {
-      hideHeader: false,
-      appInMaintenance: false,
-      canvasMaxWidth: 1292,
-      canvasMaxWidthType: 'px',
-      canvasMaxHeight: 2400,
-      canvasBackgroundColor: darkMode ? '#2f3c4c' : '#edeff5',
-      backgroundFxQuery: '',
-    },
-  };
-};
-
 const EditorComponent = (props) => {
   const { socket } = createWebsocketConnection(props?.params?.id);
   const mounted = useMounted();
@@ -569,7 +544,6 @@ const EditorComponent = (props) => {
   };
 
   const computeCanvasBackgroundColor = () => {
-    //!Global settings needs to be out
     const { canvasBackgroundColor } = appDefinition?.globalSettings ?? '#edeff5';
     if (['#2f3c4c', '#edeff5'].includes(canvasBackgroundColor)) {
       return props.darkMode ? '#2f3c4c' : '#edeff5';
@@ -604,19 +578,20 @@ const EditorComponent = (props) => {
 
   const handleEditorMarginLeftChange = (value) => setEditorMarginLeft(value);
 
-  const globalSettingsChanged = (key, value) => {
+  const globalSettingsChanged = (globalOptions) => {
     const copyOfAppDefinition = JSON.parse(JSON.stringify(appDefinition));
     const newAppDefinition = _.cloneDeep(copyOfAppDefinition);
 
-    if (value?.[1]?.a == undefined) newAppDefinition.globalSettings[key] = value;
-    else {
-      const hexCode = `${value?.[0]}${decimalToHex(value?.[1]?.a)}`;
-      newAppDefinition.globalSettings[key] = hexCode;
+    for (const [key, value] of Object.entries(globalOptions)) {
+      if (value?.[1]?.a == undefined) newAppDefinition.globalSettings[key] = value;
+      else {
+        const hexCode = `${value?.[0]}${decimalToHex(value?.[1]?.a)}`;
+        newAppDefinition.globalSettings[key] = hexCode;
+      }
     }
 
     updateEditorState({
       isSaving: true,
-      // appDefinition,
     });
 
     appDefinitionChanged(newAppDefinition, {
@@ -776,11 +751,11 @@ const EditorComponent = (props) => {
   // !--------
   const setAppDefinitionFromVersion = (version, shouldWeEditVersion = true) => {
     if (version?.id !== props.editingVersion?.id) {
-      appDefinitionChanged(defaults(version.definition, defaultDefinition(props.darkMode)), {
-        skipAutoSave: true,
-        skipYmapUpdate: true,
-        versionChanged: true,
-      });
+      // appDefinitionChanged(defaults(version.definition, defaultDefinition(props.darkMode)), {
+      //   skipAutoSave: true,
+      //   skipYmapUpdate: true,
+      //   versionChanged: true,
+      // });
       if (version?.id === currentVersionId) {
         updateEditorState({
           canUndo: false,
