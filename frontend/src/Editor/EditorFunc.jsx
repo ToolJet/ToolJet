@@ -887,9 +887,9 @@ const EditorComponent = (props) => {
         isSaving: false,
       });
     } else if (!isEmpty(props?.editingVersion)) {
-      const componentDiff = computeAppDiff(appDefinitionDiff, currentPageId, appDiffOptions);
+      const updateDiff = computeAppDiff(appDefinitionDiff, currentPageId, appDiffOptions);
 
-      updateAppVersion(appId, props.editingVersion?.id, currentPageId, componentDiff, isUserSwitchedVersion)
+      updateAppVersion(appId, props.editingVersion?.id, currentPageId, updateDiff, isUserSwitchedVersion)
         .then(() => {
           const _editingVersion = {
             ...props.editingVersion,
