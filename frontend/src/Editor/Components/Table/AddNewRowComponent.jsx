@@ -15,6 +15,7 @@ export function AddNewRowComponent({
   defaultColumn,
   columns,
   addNewRowsDetails,
+  utilityForNestedNewRow,
 }) {
   const getNewRowObject = () => {
     return allColumns.reduce((accumulator, column) => {
@@ -44,7 +45,8 @@ export function AddNewRowComponent({
   useEffect(() => {
     if (!rowsFromPrevOperationPresent) {
       const newRowDataUpdates = newRowsState.reduce((accumulator, row, index) => {
-        accumulator[index] = newRowsState[index];
+        const nestedData = utilityForNestedNewRow(row);
+        accumulator[index] = nestedData;
         return accumulator;
       }, {});
       setExposedVariable('newRows', newRowsState).then(() => {
@@ -120,7 +122,8 @@ export function AddNewRowComponent({
           onClick={() => {
             const rowData = _.cloneDeep(newRowsState);
             const index = rowData.length;
-            const newRow = getNewRowObject();
+            let newRow = getNewRowObject();
+            newRow = utilityForNestedNewRow(newRow);
             rowData.push(newRow);
             let newRowDataUpdates = addNewRowsDetails.newRowsDataUpdates;
             newRowDataUpdates[index] = newRow;

@@ -310,7 +310,7 @@ export const JSONNode = ({ data, ...restProps }) => {
 
   return (
     <div
-      className={cx('d-flex row-flex mt-1 font-monospace container-fluid px-1', {
+      className={cx('d-flex row-flex mt-1 container-fluid px-1', {
         'json-node-element': !expandable,
       })}
       onMouseLeave={() => updateHoveredNode(null)}

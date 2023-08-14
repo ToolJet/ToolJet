@@ -13,30 +13,70 @@ import GoogleSheets from '@/_components/Googlesheets';
 import Slack from '@/_components/Slack';
 import Zendesk from '@/_components/Zendesk';
 import ToolJetDbOperations from '@/Editor/QueryManager/QueryEditors/TooljetDatabase/ToolJetDbOperations';
+import { orgEnvironmentVariableService } from '../_services';
 
 import { find, isEmpty } from 'lodash';
 import { ButtonSolid } from './AppButton';
+import { useCurrentState } from '@/_stores/currentStateStore';
+import { useEditorStore } from '@/_stores/editorStore';
+import { shallow } from 'zustand/shallow';
 
 const DynamicForm = ({
   schema,
+  isGDS,
   optionchanged,
   createDataSource,
   options,
   isSaving,
   selectedDataSource,
-  currentState,
   isEditMode,
   optionsChanged,
   queryName,
   computeSelectStyles = false,
+  onBlur,
+  layout = 'vertical',
 }) => {
   const [computedProps, setComputedProps] = React.useState({});
+  const isHorizontalLayout = layout === 'horizontal';
+  const currentState = useCurrentState();
 
+  const { isEditorActive } = useEditorStore(
+    (state) => ({
+      isEditorActive: state?.isEditorActive,
+    }),
+    shallow
+  );
+
+  const [workspaceVariables, setWorkspaceVariables] = React.useState([]);
   // if(schema.properties)  todo add empty check
   React.useLayoutEffect(() => {
     if (!isEditMode || isEmpty(options)) {
       optionsChanged(schema?.defaults ?? {});
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  React.useEffect(() => {
+    if (isGDS) {
+      orgEnvironmentVariableService.getVariables().then((data) => {
+        const client_variables = {};
+        const server_variables = {};
+        data.variables.map((variable) => {
+          if (variable.variable_type === 'server') {
+            server_variables[variable.variable_name] = 'HiddenEnvironmentVariable';
+          } else {
+            client_variables[variable.variable_name] = variable.value;
+          }
+        });
+
+        setWorkspaceVariables({ client: client_variables, server: server_variables });
+      });
+    }
+
+    return () => {
+      setWorkspaceVariables([]);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -147,7 +187,10 @@ const DynamicForm = ({
           value: options?.[key]?.value,
           ...(type === 'textarea' && { rows: rows }),
           ...(helpText && { helpText }),
-          onChange: (e) => optionchanged(key, e.target.value),
+          onChange: (e) => optionchanged(key, e.target.value, true), //shouldNotAutoSave is true because autosave should occur during onBlur, not after each character change (in optionchanged).
+          onblur: () => onBlur(),
+          isGDS,
+          workspaceVariables,
         };
       case 'toggle':
         return {
@@ -177,7 +220,12 @@ const DynamicForm = ({
         };
 
       case 'react-component-headers': {
-        const isRenderedAsQueryEditor = currentState != null;
+        let isRenderedAsQueryEditor;
+        if (!isEditorActive) {
+          isRenderedAsQueryEditor = false;
+        } else {
+          isRenderedAsQueryEditor = !isGDS && currentState != null;
+        }
         return {
           getter: key,
           options: isRenderedAsQueryEditor
@@ -312,56 +360,80 @@ const DynamicForm = ({
     };
 
     return (
-      <div className="row">
+      <div className={`${isHorizontalLayout ? '' : 'row'}`}>
         {Object.keys(obj).map((key) => {
           const { label, type, encrypted, className } = obj[key];
           const Element = getElement(type);
+          const isSpecificComponent = ['tooljetdb-operations'].includes(type);
 
           return (
-            <div className={cx('my-2', { 'col-md-12': !className, [className]: !!className })} key={key}>
-              <div className="d-flex align-items-center">
-                {label && (
-                  <label
-                    className="form-label"
-                    data-cy={`label-${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}`}
-                  >
-                    {label}
-                  </label>
-                )}
-                {(type === 'password' || encrypted) && selectedDataSource?.id && (
-                  <div className="mx-1 col">
-                    <ButtonSolid
-                      className="datasource-edit-btn mb-2"
-                      type="a"
-                      variant="tertiary"
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={(event) => handleEncryptedFieldsToggle(event, key)}
+            <div
+              className={cx('my-2', {
+                'col-md-12': !className && !isHorizontalLayout,
+                [className]: !!className,
+                'd-flex': isHorizontalLayout,
+                'dynamic-form-row': isHorizontalLayout,
+              })}
+              key={key}
+            >
+              {!isSpecificComponent && (
+                <div
+                  className={cx('d-flex', {
+                    'form-label': isHorizontalLayout,
+                    'align-items-center': !isHorizontalLayout,
+                  })}
+                >
+                  {label && (
+                    <label
+                      className="form-label"
+                      data-cy={`label-${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}`}
                     >
-                      {computedProps?.[key]?.['disabled'] ? 'Edit' : 'Cancel'}
-                    </ButtonSolid>
-                  </div>
-                )}
-                {(type === 'password' || encrypted) && (
-                  <div className="col-auto mb-2">
-                    <small className="text-green">
-                      <img
-                        className="mx-2 encrypted-icon"
-                        src="assets/images/icons/padlock.svg"
-                        width="12"
-                        height="12"
-                      />
-                      Encrypted
-                    </small>
-                  </div>
-                )}
+                      {label}
+                    </label>
+                  )}
+                  {(type === 'password' || encrypted) && selectedDataSource?.id && (
+                    <div className="mx-1 col">
+                      <ButtonSolid
+                        className="datasource-edit-btn mb-2"
+                        type="a"
+                        variant="tertiary"
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(event) => handleEncryptedFieldsToggle(event, key)}
+                      >
+                        {computedProps?.[key]?.['disabled'] ? 'Edit' : 'Cancel'}
+                      </ButtonSolid>
+                    </div>
+                  )}
+                  {(type === 'password' || encrypted) && (
+                    <div className="col-auto mb-2">
+                      <small className="text-green">
+                        <img
+                          className="mx-2 encrypted-icon"
+                          src="assets/images/icons/padlock.svg"
+                          width="12"
+                          height="12"
+                        />
+                        Encrypted
+                      </small>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div
+                className={cx({
+                  'flex-grow-1': isHorizontalLayout && !isSpecificComponent,
+                  'w-100': isHorizontalLayout && type !== 'codehinter',
+                })}
+              >
+                <Element
+                  {...getElementProps(obj[key])}
+                  {...computedProps[key]}
+                  data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
+                  customWrap={true} //to be removed after whole ui is same
+                  isHorizontalLayout={isHorizontalLayout}
+                />
               </div>
-              <Element
-                {...getElementProps(obj[key])}
-                {...computedProps[key]}
-                data-cy={`${String(label).toLocaleLowerCase().replace(/\s+/g, '-')}-text-field`}
-                customWrap={true} //to be removed after whole ui is same
-              />
             </div>
           );
         })}
@@ -377,17 +449,19 @@ const DynamicForm = ({
       const selector = options?.[flipComponentDropdown?.key]?.value || options?.[flipComponentDropdown?.key];
       return (
         <>
-          <div className="row">
+          <div className={`${isHorizontalLayout ? '' : 'row'}`}>
             {flipComponentDropdown.commonFields && getLayout(flipComponentDropdown.commonFields)}
             <div
               className={cx('my-2', {
-                'col-md-12': !flipComponentDropdown.className,
+                'col-md-12': !flipComponentDropdown.className && !isHorizontalLayout,
+                'd-flex': isHorizontalLayout,
+                'dynamic-form-row': isHorizontalLayout,
                 [flipComponentDropdown.className]: !!flipComponentDropdown.className,
               })}
             >
-              {flipComponentDropdown.label && (
+              {(flipComponentDropdown.label || isHorizontalLayout) && (
                 <label
-                  className="form-label"
+                  className={cx('form-label')}
                   data-cy={`${String(flipComponentDropdown.label)
                     .toLocaleLowerCase()
                     .replace(/\s+/g, '-')}-dropdown-label`}
@@ -395,7 +469,7 @@ const DynamicForm = ({
                   {flipComponentDropdown.label}
                 </label>
               )}
-              <div data-cy={'query-select-dropdown'}>
+              <div data-cy={'query-select-dropdown'} className={cx({ 'flex-grow-1': isHorizontalLayout })}>
                 <Select
                   {...getElementProps(flipComponentDropdown)}
                   styles={computeSelectStyles ? computeSelectStyles('100%') : {}}
