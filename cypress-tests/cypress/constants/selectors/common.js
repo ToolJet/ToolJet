@@ -213,7 +213,12 @@ export const commonSelectors = {
   },
   inspectorPinIcon: '[data-cy="null-option-icon"]',
   groupInputFieldLabel: '[data-cy="label-group-input-field"]',
-
+  documentationLink: '[data-cy="read-documentation-option-button"]',
+  nameLabel: '[data-cy="name-label"]',
+  valueLabel: '[data-cy="value-label"]',
+  valueInputField: '[data-cy="value-input-field"]',
+  yesButton: '[data-cy="yes-button"]',
+  pagination: '[data-cy="pagination-section"]',
 };
 
 export const commonWidgetSelector = {

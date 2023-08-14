@@ -171,6 +171,7 @@ export const commonText = {
     // ifameLinkCopyButton: "copy",
   },
   groupInputFieldLabel: "Select Group",
+  documentationLink: "Read Documentation",
 };
 
 export const commonWidgetText = {
