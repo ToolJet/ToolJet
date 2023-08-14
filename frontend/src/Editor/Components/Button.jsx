@@ -51,37 +51,26 @@ export const Button = function Button(props) {
         fireEvent('onClick');
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [disable]);
 
-  useEffect(() => {
     setExposedVariable('setText', async function (text) {
       setLabel(text);
       setExposedVariable('buttonText', text);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setLabel]);
 
-  useEffect(() => {
     setExposedVariable('disable', async function (value) {
       setDisable(value);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setDisable]);
 
-  useEffect(() => {
     setExposedVariable('visibility', async function (value) {
       setVisibility(value);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setVisibility]);
 
-  useEffect(() => {
     setExposedVariable('loading', async function (value) {
       setLoading(value);
     });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setLoading]);
+  }, [disable, setLabel, setDisable, setVisibility, setLoading]);
 
   const hasCustomBackground = backgroundColor?.charAt() === '#';
   if (hasCustomBackground) {
