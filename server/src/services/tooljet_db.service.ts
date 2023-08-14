@@ -221,34 +221,28 @@ export class TooljetDbService {
     return result;
   }
 
-  // Work in Progress
   private async joinTable(organizationId: string, params) {
     const { joinQueryJson } = params;
     const finalQuery = await this.buildJoinQuery(organizationId, joinQueryJson);
-
-    // return await this.tooljetDbManager.query(
-    //   `select *
-    //     from "d705adfd-d0ae-496a-afdc-8915eb85ecfe" cd
-    //     left join "b2395659-3c0c-4980-904a-9cf2ec6ab84f" ct
-    //     on customer_type_id = ct.id
-    //   `
-    // );
 
     return await this.tooljetDbManager.query(finalQuery);
   }
 
   private async buildJoinQuery(organizationId: string, queryJson) {
-    // Pending: For Subquery Alias is the table name incorporate it also
-    // Pending: Select Statement - Nested params
+    // Pending: For Subquery, Alias is its table name. Need to handle it on Internal Table details mapping
+    // Pending: SELECT Statement - Nested params --> SUM( price * quantity )
 
     if (!queryJson.tables.length) throw new BadRequestException('TableList is N/A');
+
     const tableList = queryJson.tables
       .filter((table) => table.type === 'Table')
       .map((filteredTable) => filteredTable.name);
+
     const internalTables = await this.postgrestProxyService.findOrFailAllInternalTableFromTableNames(
       tableList,
       organizationId
     );
+
     const internalTableNametoIdMap = tableList.reduce((acc, tableName) => {
       return {
         ...acc,
@@ -256,8 +250,8 @@ export class TooljetDbService {
       };
     }, {});
 
-    console.log('internalTableNametoIdMap', internalTableNametoIdMap);
-
+    // Constructing the Query - Based on Input JSON
+    // @description: Only SELECT & FROM statement is Mandatory, else is Optional
     let finalQuery = ``;
     finalQuery += `SELECT ${await this.constructSelectStatement(queryJson.fields, internalTableNametoIdMap)}`;
     finalQuery += `\nFROM ${await this.constructFromStatement(queryJson, internalTableNametoIdMap)}`;
@@ -273,7 +267,6 @@ export class TooljetDbService {
       finalQuery += `\nORDER BY ${await this.constructOrderByStatement(queryJson.order_by, internalTableNametoIdMap)}`;
     if (queryJson.limit) finalQuery += `\nLIMIT ${queryJson.limit}`;
 
-    console.log('finalQuery ---------------------------\n', finalQuery);
     return finalQuery;
   }
 
@@ -327,20 +320,30 @@ export class TooljetDbService {
           return `(${this.constructWhereStatement(condition.conditions, internalTableNametoIdMap)})`;
         // @description: Building a Condition for 'WHERE & HAVING statements' - LHS, operator and RHS
         // @description: In LHS & RHS it is not mandatory to provide table name, but column name is mandatory
+        // @description: In LHS & RHS - We get function only in HAVING statement
         const { operator, leftField, rightField } = condition;
-        const leftSideInput =
-          leftField.type === 'Value'
-            ? this.addQuotesIfString(leftField.value)
-            : `${leftField.table ? '"' + internalTableNametoIdMap[leftField.table] + '"' + '.' : ''}${
-                leftField.columnName
-              }`;
 
-        const rightSideInput =
-          rightField.type === 'Value'
-            ? this.addQuotesIfString(rightField.value)
-            : `${rightField.table ? '"' + internalTableNametoIdMap[rightField.table] + '"' + '.' : ''}${
-                rightField.columnName
-              }`;
+        let leftSideInput = ``;
+        if (leftField.type === 'Value') {
+          leftSideInput += this.addQuotesIfString(leftField.value);
+        } else {
+          if (leftField.function) leftSideInput += `${leftField.function}(`;
+          leftSideInput += `${leftField.table ? '"' + internalTableNametoIdMap[leftField.table] + '"' + '.' : ''}${
+            leftField.columnName
+          }`;
+          if (leftField.function) leftSideInput += `)`;
+        }
+
+        let rightSideInput = ``;
+        if (rightField.type === 'Value') {
+          rightSideInput += this.addQuotesIfString(rightField.value);
+        } else {
+          if (rightField.function) rightSideInput += `${rightField.function}(`;
+          rightSideInput += `${rightField.table ? '"' + internalTableNametoIdMap[rightField.table] + '"' + '.' : ''}${
+            rightField.columnName
+          }`;
+          if (rightField.function) rightSideInput += `)`;
+        }
 
         return `${leftSideInput} ${operator} ${rightSideInput}`;
       })
