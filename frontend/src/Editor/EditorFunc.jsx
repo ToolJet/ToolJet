@@ -858,7 +858,6 @@ const EditorComponent = (props) => {
     const shouldUpdate = !_.isEmpty(diffPatches) && !isEqual(appDefinitionDiff, diffPatches);
 
     if (shouldUpdate) {
-      // const redoPatch = diffToPatches(diffPatches);
       const undoPatches = diffToPatches(inversePatches);
 
       setUndoStack((prev) => [...prev, undoPatches]);

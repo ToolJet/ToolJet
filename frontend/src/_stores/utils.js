@@ -52,6 +52,7 @@ export const computeAppDiff = (appDiff, currentPageId, opts) => {
 const updateFor = (appDiff, currentPageId, opts) => {
   const componentUpdates = ['componentAdded', 'componentDefinitionChanged', 'componentDeleted', 'containerChanges'];
   const pageUpdates = ['pageDefinitionChanged', 'pageSortingChanged', 'deletePageRequest', 'addNewPage'];
+  const appUpdates = ['homePageChanged'];
 
   const options = _.keys(opts);
 
@@ -59,6 +60,12 @@ const updateFor = (appDiff, currentPageId, opts) => {
     return computeComponentDiff(appDiff, currentPageId, opts);
   } else if (_.intersection(options, pageUpdates).length > 0) {
     return computePageUpdate(appDiff, currentPageId, opts);
+  } else if (_.intersection(options, appUpdates).length > 0) {
+    return {
+      updateDiff: appDiff,
+      type: null,
+      operation: 'update',
+    };
   }
 };
 
