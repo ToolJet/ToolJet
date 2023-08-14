@@ -49,31 +49,72 @@ export const computeAppDiff = (appDiff, currentPageId, opts) => {
   return { updateDiff, type, operation };
 };
 
+// const updateFor = (appDiff, currentPageId, opts) => {
+//   const componentUpdates = ['componentAdded', 'componentDefinitionChanged', 'componentDeleted', 'containerChanges'];
+//   const pageUpdates = ['pageDefinitionChanged', 'pageSortingChanged', 'deletePageRequest', 'addNewPage'];
+//   const appUpdates = ['homePageChanged'];
+//   const globalSettings = ['globalSettings'];
+
+//   const options = _.keys(opts);
+
+//   if (_.intersection(options, componentUpdates).length > 0) {
+//     return computeComponentDiff(appDiff, currentPageId, opts);
+//   } else if (_.intersection(options, pageUpdates).length > 0) {
+//     return computePageUpdate(appDiff, currentPageId, opts);
+//   } else if (_.intersection(options, appUpdates).length > 0) {
+//     return {
+//       updateDiff: appDiff,
+//       type: null,
+//       operation: 'update',
+//     };
+//   } else if (_.intersection(options, globalSettings).length > 0) {
+//     return {
+//       updateDiff: appDiff,
+//       type: 'global_settings',
+//       operation: 'update',
+//     };
+//   }
+// };
+
 const updateFor = (appDiff, currentPageId, opts) => {
-  const componentUpdates = ['componentAdded', 'componentDefinitionChanged', 'componentDeleted', 'containerChanges'];
-  const pageUpdates = ['pageDefinitionChanged', 'pageSortingChanged', 'deletePageRequest', 'addNewPage'];
-  const appUpdates = ['homePageChanged'];
-  const globalSettings = ['globalSettings'];
+  const updateTypeMappings = [
+    {
+      updateTypes: ['componentAdded', 'componentDefinitionChanged', 'componentDeleted', 'containerChanges'],
+      processingFunction: computeComponentDiff,
+    },
+    {
+      updateTypes: ['pageDefinitionChanged', 'pageSortingChanged', 'deletePageRequest', 'addNewPage'],
+      processingFunction: computePageUpdate,
+    },
+    {
+      updateTypes: ['homePageChanged'],
+      processingFunction: () => ({
+        updateDiff: appDiff,
+        type: null,
+        operation: 'update',
+      }),
+    },
+    {
+      updateTypes: ['globalSettings'],
+      processingFunction: () => ({
+        updateDiff: appDiff,
+        type: 'global_settings',
+        operation: 'update',
+      }),
+    },
+  ];
 
   const options = _.keys(opts);
 
-  if (_.intersection(options, componentUpdates).length > 0) {
-    return computeComponentDiff(appDiff, currentPageId, opts);
-  } else if (_.intersection(options, pageUpdates).length > 0) {
-    return computePageUpdate(appDiff, currentPageId, opts);
-  } else if (_.intersection(options, appUpdates).length > 0) {
-    return {
-      updateDiff: appDiff,
-      type: null,
-      operation: 'update',
-    };
-  } else if (_.intersection(options, globalSettings).length > 0) {
-    return {
-      updateDiff: appDiff,
-      type: 'global_settings',
-      operation: 'update',
-    };
+  for (const { updateTypes, processingFunction } of updateTypeMappings) {
+    if (_.intersection(options, updateTypes).length > 0) {
+      return processingFunction(appDiff, currentPageId, opts);
+    }
   }
+
+  // Handle case when no matching update type is found
+
+  return null;
 };
 
 const computePageUpdate = (appDiff, currentPageId, opts) => {

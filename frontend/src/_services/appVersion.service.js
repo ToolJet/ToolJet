@@ -45,7 +45,6 @@ function del(appId, versionId) {
 }
 
 function save(appId, versionId, values, isUserSwitchedVersion = false) {
-  // console.log('---piku [version saved]', { values });
   const body = { is_user_switched_version: isUserSwitchedVersion };
   if (values.definition) body['definition'] = values.definition;
   if (values.name) body['name'] = values.name;
@@ -59,26 +58,31 @@ function save(appId, versionId, values, isUserSwitchedVersion = false) {
   };
   return fetch(`${config.apiUrl}/apps/${appId}/versions/${versionId}`, requestOptions).then(handleResponse);
 }
+
 function autoSaveApp(appId, versionId, diff, type, pageId, operation, isUserSwitchedVersion = false) {
-  const OPERATION = Object.freeze({
+  const OPERATION = {
     create: 'POST',
     update: 'PUT',
     delete: 'DELETE',
-  });
+  };
 
-  let body = {};
+  const bodyMappings = {
+    pages: {
+      create: { ...diff },
+      delete: { ...diff },
+    },
+    global_settings: {
+      update: { ...diff },
+    },
+  };
 
-  if (type === 'pages' && (operation === 'create' || operation === 'delete')) {
-    body = {
-      ...diff,
-    };
-  } else if (!type || type === 'global_settings') {
-    body = {
-      ...diff,
-    };
-  } else {
-    body = { is_user_switched_version: isUserSwitchedVersion, pageId, diff: diff };
-  }
+  const body = !type
+    ? { ...diff }
+    : bodyMappings[type]?.[operation] || {
+        is_user_switched_version: isUserSwitchedVersion,
+        pageId,
+        diff,
+      };
 
   const requestOptions = {
     method: OPERATION[operation],
@@ -86,7 +90,8 @@ function autoSaveApp(appId, versionId, diff, type, pageId, operation, isUserSwit
     credentials: 'include',
     body: JSON.stringify(body),
   };
-  return fetch(`${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/${type ?? ''}`, requestOptions).then(
-    handleResponse
-  );
+
+  const url = `${config.apiUrl}/v2/apps/${appId}/versions/${versionId}/${type ?? ''}`;
+
+  return fetch(url, requestOptions).then(handleResponse);
 }
