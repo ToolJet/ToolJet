@@ -334,7 +334,10 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                       <Button
                         // Todo: Update link to documentation: workspace constants
                         onClick={() =>
-                          window.open('https://docs.tooljet.com/docs/tutorial/workspace-variables', '_blank')
+                          window.open(
+                            'https://docs.tooljet.com/docs/org-management/workspaces/workspace_constants/',
+                            '_blank'
+                          )
                         }
                         darkMode={darkMode}
                         size="sm"
