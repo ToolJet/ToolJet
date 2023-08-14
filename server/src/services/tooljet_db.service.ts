@@ -3,13 +3,15 @@ import { EntityManager } from 'typeorm';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { InternalTable } from 'src/entities/internal_table.entity';
 import { isString } from 'lodash';
+import { PostgrestProxyService } from '@services/postgrest_proxy.service';
 
 @Injectable()
 export class TooljetDbService {
   constructor(
     private readonly manager: EntityManager,
     @InjectEntityManager('tooljetDb')
-    private tooljetDbManager: EntityManager
+    private tooljetDbManager: EntityManager,
+    private readonly postgrestProxyService: PostgrestProxyService
   ) {}
 
   async perform(organizationId: string, action: string, params = {}) {
@@ -219,46 +221,71 @@ export class TooljetDbService {
     return result;
   }
 
+  // Work in Progress
   private async joinTable(organizationId: string, params) {
     const { joinQueryJson } = params;
-    this.buildJoinQuery(organizationId, joinQueryJson);
+    const finalQuery = await this.buildJoinQuery(organizationId, joinQueryJson);
 
-    return await this.tooljetDbManager.query(
-      `select *
-        from "d705adfd-d0ae-496a-afdc-8915eb85ecfe" cd
-        left join "b2395659-3c0c-4980-904a-9cf2ec6ab84f" ct
-        on customer_type_id = ct.id
-      `
-    );
+    // return await this.tooljetDbManager.query(
+    //   `select *
+    //     from "d705adfd-d0ae-496a-afdc-8915eb85ecfe" cd
+    //     left join "b2395659-3c0c-4980-904a-9cf2ec6ab84f" ct
+    //     on customer_type_id = ct.id
+    //   `
+    // );
+
+    return await this.tooljetDbManager.query(finalQuery);
   }
 
   private async buildJoinQuery(organizationId: string, queryJson) {
-    // Pending: Table to Id mapping
+    // Pending: For Subquery Alias is the table name incorporate it also
     // Pending: Select Statement - Nested params
 
+    if (!queryJson.tables.length) throw new BadRequestException('TableList is N/A');
+    const tableList = queryJson.tables
+      .filter((table) => table.type === 'Table')
+      .map((filteredTable) => filteredTable.name);
+    const internalTables = await this.postgrestProxyService.findOrFailAllInternalTableFromTableNames(
+      tableList,
+      organizationId
+    );
+    const internalTableNametoIdMap = tableList.reduce((acc, tableName) => {
+      return {
+        ...acc,
+        [tableName]: internalTables.find((table) => table.tableName === tableName).id,
+      };
+    }, {});
+
+    console.log('internalTableNametoIdMap', internalTableNametoIdMap);
+
     let finalQuery = ``;
-    finalQuery += `SELECT ${await this.constructSelectStatement(queryJson.fields)}`;
-    finalQuery += `\nFROM ${await this.constructFromStatement(queryJson)}`;
-    if (queryJson?.joins?.length) finalQuery += `\n${await this.constructJoinStatements(queryJson.joins)}`;
-    if (queryJson?.conditions) finalQuery += `\nWHERE ${await this.constructWhereStatement(queryJson.conditions)}`;
+    finalQuery += `SELECT ${await this.constructSelectStatement(queryJson.fields, internalTableNametoIdMap)}`;
+    finalQuery += `\nFROM ${await this.constructFromStatement(queryJson, internalTableNametoIdMap)}`;
+    if (queryJson?.joins?.length)
+      finalQuery += `\n${await this.constructJoinStatements(queryJson.joins, internalTableNametoIdMap)}`;
+    if (queryJson?.conditions)
+      finalQuery += `\nWHERE ${await this.constructWhereStatement(queryJson.conditions, internalTableNametoIdMap)}`;
     if (queryJson?.group_by?.length)
-      finalQuery += `\nGROUP BY ${await this.constructGroupByStatement(queryJson.group_by)}`;
-    if (queryJson?.having) finalQuery += `\nHAVING ${await this.constructWhereStatement(queryJson.having)}`;
+      finalQuery += `\nGROUP BY ${await this.constructGroupByStatement(queryJson.group_by, internalTableNametoIdMap)}`;
+    if (queryJson?.having)
+      finalQuery += `\nHAVING ${await this.constructWhereStatement(queryJson.having, internalTableNametoIdMap)}`;
     if (queryJson?.order_by?.length)
-      finalQuery += `\nORDER BY ${await this.constructOrderByStatement(queryJson.order_by)}`;
+      finalQuery += `\nORDER BY ${await this.constructOrderByStatement(queryJson.order_by, internalTableNametoIdMap)}`;
     if (queryJson.limit) finalQuery += `\nLIMIT ${queryJson.limit}`;
 
     console.log('finalQuery ---------------------------\n', finalQuery);
     return finalQuery;
   }
 
-  private constructSelectStatement(selectStatementInputList) {
+  private constructSelectStatement(selectStatementInputList, internalTableNametoIdMap) {
     if (selectStatementInputList.length) {
       const selectQueryFields = selectStatementInputList
         .map((field) => {
           let fieldExpression = ``;
           if (field.function) fieldExpression += `${field.function}(`;
-          fieldExpression += `${field.table ? field.table + '.' : ''}${field.name}`;
+          fieldExpression += `${field.table ? '"' + internalTableNametoIdMap[field.table] + '"' + '.' : ''}${
+            field.name
+          }`;
           if (field.function) fieldExpression += `)`;
           if (field.alias) fieldExpression += ` AS ${field.alias}`;
           return fieldExpression;
@@ -270,45 +297,50 @@ export class TooljetDbService {
     throw new BadRequestException('Select statement in the query is empty');
   }
 
-  private constructFromStatement(queryJson) {
+  private constructFromStatement(queryJson, internalTableNametoIdMap) {
     const { from } = queryJson;
     if (from.name) {
-      return `${from.name} ${from.alias ? from.alias : ''}`;
+      return `${'"' + internalTableNametoIdMap[from.name] + '"'} ${from.alias ? from.alias : ''}`;
     }
 
     throw new BadRequestException('Base table is not selected in the query');
   }
 
-  private constructJoinStatements(joinsInputList) {
+  private constructJoinStatements(joinsInputList, internalTableNametoIdMap) {
     const joinStatementOutput = joinsInputList
       .map((joinCondition) => {
         const { table, joinType, conditions } = joinCondition;
-        return `${joinType} JOIN ${table} ${
+        return `${joinType} JOIN ${'"' + internalTableNametoIdMap[table] + '"'} ${
           joinCondition.alias ? joinCondition.alias : ''
-        } ON ${this.constructWhereStatement(conditions)}`;
+        } ON ${this.constructWhereStatement(conditions, internalTableNametoIdMap)}`;
       })
       .join('\n');
     return joinStatementOutput;
   }
 
-  private constructWhereStatement(whereStatementConditions) {
+  private constructWhereStatement(whereStatementConditions, internalTableNametoIdMap) {
     const { operator, conditionsList } = whereStatementConditions;
     const whereConditionOutput = conditionsList
       .map((condition) => {
         // @description: Recursive call to build - Sub-condition
-        if (condition.conditions) return `(${this.constructWhereStatement(condition.conditions)})`;
+        if (condition.conditions)
+          return `(${this.constructWhereStatement(condition.conditions, internalTableNametoIdMap)})`;
         // @description: Building a Condition for 'WHERE & HAVING statements' - LHS, operator and RHS
         // @description: In LHS & RHS it is not mandatory to provide table name, but column name is mandatory
         const { operator, leftField, rightField } = condition;
         const leftSideInput =
           leftField.type === 'Value'
             ? this.addQuotesIfString(leftField.value)
-            : `${leftField.table ? leftField.table + '.' : ''}${leftField.columnName}`;
+            : `${leftField.table ? '"' + internalTableNametoIdMap[leftField.table] + '"' + '.' : ''}${
+                leftField.columnName
+              }`;
 
         const rightSideInput =
           rightField.type === 'Value'
             ? this.addQuotesIfString(rightField.value)
-            : `${rightField.table ? rightField.table + '.' : ''}${rightField.columnName}`;
+            : `${rightField.table ? '"' + internalTableNametoIdMap[rightField.table] + '"' + '.' : ''}${
+                rightField.columnName
+              }`;
 
         return `${leftSideInput} ${operator} ${rightSideInput}`;
       })
@@ -316,16 +348,20 @@ export class TooljetDbService {
     return whereConditionOutput;
   }
 
-  private constructGroupByStatement(groupByInputList) {
-    return groupByInputList.map((groupByInput) => `${groupByInput.table}.${groupByInput.columnName}`).join(', ');
+  private constructGroupByStatement(groupByInputList, internalTableNametoIdMap) {
+    return groupByInputList
+      .map((groupByInput) => `${'"' + internalTableNametoIdMap[groupByInput.table] + '"'}.${groupByInput.columnName}`)
+      .join(', ');
   }
 
-  private constructOrderByStatement(orderByInputList) {
+  private constructOrderByStatement(orderByInputList, internalTableNametoIdMap) {
     // @description: For "ORDER BY" statement table field is optional. But column_name & order_by direction is mandatory
     return orderByInputList
       .map((orderByInput) => {
         const { columnName, direction } = orderByInput;
-        return `${orderByInput.table ? orderByInput.table + '.' : ''}${columnName} ${direction}`;
+        return `${
+          orderByInput.table ? '"' + internalTableNametoIdMap[orderByInput.table] + '"' + '.' : ''
+        }${columnName} ${direction}`;
       })
       .join(`, `);
   }

@@ -84,7 +84,7 @@ export class PostgrestProxyService {
     return urlBeingReplaced;
   }
 
-  private async findOrFailAllInternalTableFromTableNames(requestedTableNames: Array<string>, organizationId: string) {
+  async findOrFailAllInternalTableFromTableNames(requestedTableNames: Array<string>, organizationId: string) {
     const internalTables = await this.manager.find(InternalTable, {
       where: {
         organizationId,
