@@ -169,9 +169,9 @@ export class AppsService {
     }
   }
 
-  async clone(existingApp: App, user: User): Promise<App> {
+  async clone(existingApp: App, user: User, appName: string): Promise<App> {
     const appWithRelations = await this.appImportExportService.export(user, existingApp.id);
-    const clonedApp = await this.appImportExportService.import(user, appWithRelations);
+    const clonedApp = await this.appImportExportService.import(user, appWithRelations, appName);
 
     return clonedApp;
   }

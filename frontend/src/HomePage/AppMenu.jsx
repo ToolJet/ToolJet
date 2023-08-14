@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 
 export const AppMenu = function AppMenu({
   deleteApp,
-  cloneApp,
   exportApp,
   canCreateApp,
   canDeleteApp,
@@ -66,7 +65,10 @@ export const AppMenu = function AppMenu({
                         onClick={() => openAppActionModal('remove-app-from-folder')}
                       />
                     )}
-                    <Field text={t('homePage.appCard.cloneApp', 'Clone app')} onClick={cloneApp} />
+                    <Field
+                      text={t('homePage.appCard.cloneApp', 'Clone app')}
+                      onClick={() => openAppActionModal('clone-app')}
+                    />
                     <Field text={t('homePage.appCard.exportApp', 'Export app')} onClick={exportApp} />
                   </>
                 )}

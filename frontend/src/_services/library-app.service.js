@@ -6,9 +6,10 @@ export const libraryAppService = {
   templateManifests,
 };
 
-function deploy(identifier) {
+function deploy(identifier, appName) {
   const body = {
     identifier,
+    appName,
   };
 
   const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };

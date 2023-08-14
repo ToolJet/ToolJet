@@ -44,8 +44,13 @@ function createApp(body = {}) {
   return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
 }
 
-function cloneApp(id) {
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include' };
+function cloneApp(id, name) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ name }),
+  };
   return fetch(`${config.apiUrl}/apps/${id}/clone`, requestOptions).then(handleResponse);
 }
 
@@ -61,8 +66,13 @@ function getVersions(id) {
   return fetch(`${config.apiUrl}/apps/${id}/versions`, requestOptions).then(handleResponse);
 }
 
-function importApp(body) {
-  const requestOptions = { method: 'POST', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+function importApp(app, name) {
+  const requestOptions = {
+    method: 'POST',
+    headers: authHeader(),
+    credentials: 'include',
+    body: JSON.stringify({ app, name }),
+  };
   return fetch(`${config.apiUrl}/apps/import`, requestOptions).then(handleResponse);
 }
 

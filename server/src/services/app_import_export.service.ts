@@ -8,7 +8,7 @@ import { AppVersion } from 'src/entities/app_version.entity';
 import { GroupPermission } from 'src/entities/group_permission.entity';
 import { AppGroupPermission } from 'src/entities/app_group_permission.entity';
 import { DataSourcesService } from './data_sources.service';
-import { dbTransactionWrap, defaultAppEnvironments, truncateAndReplace } from 'src/helpers/utils.helper';
+import { dbTransactionWrap, defaultAppEnvironments, catchDbException } from 'src/helpers/utils.helper';
 import { isEmpty } from 'lodash';
 import { AppEnvironment } from 'src/entities/app_environments.entity';
 import { DataSourceOptions } from 'src/entities/data_source_options.entity';
@@ -16,6 +16,7 @@ import { AppEnvironmentService } from './app_environments.service';
 import { convertAppDefinitionFromSinglePageToMultiPage } from '../../lib/single-page-to-and-from-multipage-definition-conversion';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { Organization } from 'src/entities/organization.entity';
+import { DataBaseConstraints } from 'src/helpers/db_constraints.constants';
 
 @Injectable()
 export class AppImportExportService {
@@ -121,7 +122,7 @@ export class AppImportExportService {
     });
   }
 
-  async import(user: User, appParamsObj: any): Promise<App> {
+  async import(user: User, appParamsObj: any, appName: string): Promise<App> {
     if (typeof appParamsObj !== 'object') {
       throw new BadRequestException('Invalid params for app import');
     }
@@ -141,6 +142,7 @@ export class AppImportExportService {
     const schemaUnifiedAppParams = appParams?.schemaDetails?.multiPages
       ? appParams
       : convertSinglePageSchemaToMultiPageSchema(appParams);
+    schemaUnifiedAppParams.name = appName;
 
     await dbTransactionWrap(async (manager) => {
       importedApp = await this.createImportedAppForUser(manager, schemaUnifiedAppParams, user);
@@ -158,18 +160,24 @@ export class AppImportExportService {
   }
 
   async createImportedAppForUser(manager: EntityManager, appParams: any, user: User): Promise<App> {
-    const importedApp = manager.create(App, {
-      name: truncateAndReplace(appParams.name),
-      organizationId: user.organizationId,
-      userId: user.id,
-      slug: null, // Prevent db unique constraint error.
-      icon: appParams.icon,
-      isPublic: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    await manager.save(importedApp);
-    return importedApp;
+    return await catchDbException(
+      async () => {
+        const importedApp = manager.create(App, {
+          name: appParams.name,
+          organizationId: user.organizationId,
+          userId: user.id,
+          slug: null,
+          icon: appParams.icon,
+          isPublic: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await manager.save(importedApp);
+        return importedApp;
+      },
+      DataBaseConstraints.APP_NAME_UNIQUE,
+      'This app name is already taken.'
+    );
   }
 
   /*
