@@ -1,5 +1,11 @@
 import React from 'react';
-import { appService, authenticationService, orgEnvironmentVariableService, organizationService } from '@/_services';
+import {
+  appService,
+  authenticationService,
+  orgEnvironmentVariableService,
+  orgEnvironmentConstantService,
+  organizationService,
+} from '@/_services';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Container } from './Container';
@@ -126,6 +132,7 @@ class ViewerComponent extends React.Component {
     });
 
     const variables = await this.fetchOrgEnvironmentVariables(data.slug, data.is_public);
+    const constants = await this.fetchOrgEnvironmentConstants(data.slug, data.is_public);
 
     const pages = Object.entries(data.definition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
     const homePageId = data.definition.homePageId;
@@ -153,6 +160,7 @@ class ViewerComponent extends React.Component {
         variables: {},
       },
       ...variables,
+      ...constants,
     });
     useEditorStore.getState().actions.toggleCurrentLayout(mobileLayoutHasWidgets ? 'mobile' : 'desktop');
     this.setState(
@@ -192,6 +200,37 @@ class ViewerComponent extends React.Component {
         runQuery(this, query.id, query.name, undefined, 'view');
       }
     });
+  };
+
+  fetchOrgEnvironmentConstants = async (slug, isPublic) => {
+    const orgConstants = {};
+
+    let variablesResult;
+    if (!isPublic) {
+      const { constants } = await orgEnvironmentConstantService.getAll();
+      variablesResult = constants;
+    } else {
+      const { constants } = await orgEnvironmentConstantService.getConstantsFromPublicApp(slug);
+
+      variablesResult = constants;
+    }
+
+    console.log('--org constant 2.0', { variablesResult });
+
+    if (variablesResult && Array.isArray(variablesResult)) {
+      variablesResult.map((constant) => {
+        const constantValue = constant.values.find((value) => value.environmentName === 'production')['value'];
+        orgConstants[constant.name] = constantValue;
+      });
+
+      // console.log('--org constant 2.0', { orgConstants });
+
+      return {
+        constants: orgConstants,
+      };
+    }
+
+    return { constants: {} };
   };
 
   fetchOrgEnvironmentVariables = async (slug, isPublic) => {
