@@ -891,6 +891,7 @@ export function isExpectedDataType(data, expectedDataType) {
 export const validateAppName = (name, showError = false) => {
   const newName = name.trim();
   let errorMsg = '';
+  console.log(newName.length);
   if (newName.length > 50) {
     errorMsg = `Maximum length has been reached`;
     showError &&

@@ -1,59 +1,85 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ToolTip } from '@/_components';
 import { appService } from '@/_services';
-import { handleHttpErrorMessages, validateName } from '../../_helpers/utils';
+import { handleHttpErrorMessages, validateAppName, validateName } from '../../_helpers/utils';
 import InfoOrErrorBox from './InfoOrErrorBox';
+import { toast } from 'react-hot-toast';
 
 function EditAppName({ appId, appName, onNameChanged }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [name, setName] = useState(appName);
   const [isValid, setIsValid] = useState(true);
-  const [isMaxLengthExceeded, setIsMaxLengthExceeded] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); // Track editing state
+  const [isEditing, setIsEditing] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
   const inputRef = useRef(null);
 
   useEffect(() => {
     setName(appName);
   }, [appName]);
 
+  const clearError = () => {
+    setIsError(false);
+    setErrorMessage('');
+  };
+
+  const setError = (message) => {
+    setIsError(true);
+    setErrorMessage(message);
+  };
+
   const saveAppName = async (newName) => {
     const trimmedName = newName.trim();
-    if (!validateName(trimmedName, 'App name').status) {
-      setIsValid(false);
-      setIsMaxLengthExceeded(false);
+    console.log(trimmedName, 'first');
+    if (validateAppName(trimmedName).errorMsg) {
+      console.log(trimmedName, appName);
+      setError('Maximum length has been reached');
+      setName(appName);
+      clearError();
+      toast.error('App name could not be updated. Please try again!');
       return;
     }
-    if (trimmedName.length > 50) {
-      setIsMaxLengthExceeded(true);
-      setIsValid(true);
-      return;
-    }
+
     if (trimmedName === appName) {
-      setName(trimmedName);
       setIsValid(true);
-      setIsMaxLengthExceeded(false);
-      setIsEditing(false); // Turn off editing when save is successful
+      setIsEditing(false);
       return;
     }
+
     try {
       await appService.saveApp(appId, { name: trimmedName });
       onNameChanged(trimmedName);
       setIsValid(true);
-      setIsMaxLengthExceeded(false);
-      setIsEditing(false); // Turn off editing when save is successful
+      setIsEditing(false);
     } catch (error) {
-      handleHttpErrorMessages(error, 'app');
+      if (error.statusCode === 409) {
+        setError('App name already exists');
+      } else {
+        handleHttpErrorMessages(error, 'app');
+      }
     }
   };
 
-  const handleBlur = (e) => {
-    saveAppName(e.target.value);
+  const handleBlur = () => {
+    saveAppName(name);
   };
 
   const handleFocus = () => {
     setIsValid(true);
-    setIsMaxLengthExceeded(false);
-    setIsEditing(true); // Turn on editing when the input is focused
+    setIsEditing(true);
+  };
+
+  const handleInput = (e) => {
+    const newValue = e.target.value;
+    setIsValid(true);
+    setName(newValue);
+
+    if (newValue.length > 50) {
+      setError('Maximum length has been reached');
+    } else {
+      clearError();
+    }
   };
 
   return (
@@ -62,38 +88,25 @@ function EditAppName({ appId, appName, onNameChanged }) {
         <input
           ref={inputRef}
           type="text"
-          onChange={(e) => {
-            if (document.getElementsByClassName('tooltip').length) {
-              document.getElementsByClassName('tooltip')[0].style.display = 'none';
-            }
-            setIsValid(true);
-            setIsMaxLengthExceeded(false);
-            validateName(e.target.value, 'App name', true);
-            setName(e.target.value);
-          }}
+          onInput={handleInput} // Use onInput event instead of onChange
           onBlur={handleBlur}
           onFocus={handleFocus}
           onClick={() => {
             inputRef.current.select();
-            setIsEditing(true); // Turn on editing when the input is clicked
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              inputRef.current.blur();
-            }
+            setIsEditing(true);
           }}
           className={`form-control-plaintext form-control-plaintext-sm ${
-            (isValid && !isMaxLengthExceeded) || !isValid ? '' : 'is-invalid'
+            (!isError && !isEditing) || isValid ? '' : 'is-invalid'
           }`}
           value={name}
-          maxLength={50}
+          maxLength={51}
           data-cy="app-name-input"
         />
       </ToolTip>
       <InfoOrErrorBox
-        active={isMaxLengthExceeded || isEditing} // Active when length exceeded or editing
-        message="Maximum length reached"
-        isError={true}
+        active={isError || isEditing}
+        message={errorMessage || 'App name should be unique and max 50 characters'}
+        isError={isError}
       />
     </div>
   );
