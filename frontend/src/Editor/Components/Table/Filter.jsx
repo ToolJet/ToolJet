@@ -175,7 +175,7 @@ export function Filter(props) {
                     >
                       <Typography
                         data-cy={`label-filter-column`}
-                        sx={{ maxWidth: '70px' }}
+                        sx={{ maxWidth: '70px', minWidth: '70px' }}
                         variant="body1"
                       >
                         {index > 0 ? 'and' : 'column'}

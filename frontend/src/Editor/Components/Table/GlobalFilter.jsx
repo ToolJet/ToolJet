@@ -1,7 +1,7 @@
 import React from 'react';
 import config from 'config';
 import { Box, TextField } from '@mui/material';
-import { SearchOffOutlined } from '@mui/icons-material';
+import { SearchOutlined } from '@mui/icons-material';
 
 // Table Search
 export const GlobalFilter = ({
@@ -64,7 +64,7 @@ export const GlobalFilter = ({
             placeholder="Search…"
             autoFocus
             InputProps={{
-              startAdornment: <SearchOffOutlined />,
+              startAdornment: <SearchOutlined />,
             }}
           />
         </Box>

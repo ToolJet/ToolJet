@@ -87,6 +87,8 @@ export function AddNewRowComponent({
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
           container={document.getElementsByClassName('card jet-table')[0]}
+          fullWidth
+          maxWidth="md"
         >
           <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography
