@@ -210,25 +210,25 @@ class HomePageComponent extends React.Component {
     }
   };
 
-  deployApp = (event, appName, selectedApp) => {
+  deployApp = async (event, appName, selectedApp) => {
     event.preventDefault();
     const id = selectedApp.id;
     this.setState({ deploying: true });
-    libraryAppService
-      .deploy(id, appName)
-      .then((data) => {
-        this.setState({ deploying: false });
-        toast.success('App created successfully!', {
-          position: 'top-center',
-        });
-        this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
-      })
-      .catch((e) => {
-        this.setState({ deploying: false });
-        if (e.statusCode === 409) {
-          return false;
-        }
-      });
+    try {
+      const data = await libraryAppService.deploy(id, appName);
+      this.setState({ deploying: false });
+      toast.success('App created successfully!', { position: 'top-center' });
+      this.props.navigate(`/${getWorkspaceId()}/apps/${data.id}`);
+    } catch (e) {
+      this.setState({ deploying: false });
+      console.log(e, 'first');
+      if (e.statusCode === 409) {
+        console.log(e, 'second');
+        return false;
+      } else {
+        return e;
+      }
+    }
   };
 
   canUserPerform(user, action, app) {

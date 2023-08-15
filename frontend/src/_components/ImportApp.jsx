@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import Modal from '../HomePage/Modal';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
@@ -77,9 +77,9 @@ export function ImportApp({ closeModal, importApp, fileContent, show }) {
           <ButtonSolid
             onClick={() => handleImportApp(fileContent)}
             data-cy="Import App"
-            disabled={isLoading || errorText || !isNameChanged || !newAppName}
+            disabled={isLoading || errorText || newAppName.length > 50 || newAppName.length === 0}
           >
-            {isLoading ? 'Creating...' : 'Clone App'}
+            {isLoading ? 'Creating...' : 'Import App'}
           </ButtonSolid>
         </>
       }

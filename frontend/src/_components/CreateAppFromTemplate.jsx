@@ -41,7 +41,7 @@ export function CreateAppFromTemplate({ templateDetails, closeModal, deployApp, 
       try {
         const success = await deployApp(e, newAppName, templateDetails);
         if (success === false) {
-          setErrorText('App name already exists!');
+          setErrorText('App name already exists');
         } else {
           setErrorText('');
           closeModal();
@@ -79,11 +79,9 @@ export function CreateAppFromTemplate({ templateDetails, closeModal, deployApp, 
             Cancel
           </ButtonSolid>
           <ButtonSolid
-            onClick={(e) => {
-              handleDeployApp(e);
-            }}
+            onClick={(e) => handleDeployApp(e)}
             data-cy="+ Create App"
-            disabled={isLoading || errorText || !isNameChanged || !newAppName}
+            disabled={isLoading || errorText || newAppName.length > 50 || newAppName.length === 0}
           >
             {isLoading ? 'Creating...' : '+ Create App'}
           </ButtonSolid>
