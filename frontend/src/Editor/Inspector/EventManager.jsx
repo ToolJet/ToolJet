@@ -217,7 +217,7 @@ export const EventManager = ({
       alertType: 'info',
     });
     setEvents(newEvents);
-    eventsChanged(newEvents);
+    eventsChanged(newEvents, false, true);
   }
 
   //following two are functions responsible for on change and value for the control specific actions

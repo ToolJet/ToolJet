@@ -17,6 +17,7 @@ const initialState = {
   components: [],
   pages: [],
   layouts: [],
+  events: [],
   eventHandlers: [],
   appDefinitionDiff: null,
   appDiffOptions: {},
