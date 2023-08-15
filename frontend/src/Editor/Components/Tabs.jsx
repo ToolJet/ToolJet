@@ -95,7 +95,7 @@ export const Tabs = function Tabs({
     setExposedVariable('setTab', async function (id) {
       if (id) {
         setCurrentTab(id);
-        setExposedVariable('currentTab', id).then(() => fireEvent('onTabSwitch'));
+        setExposedVariable('currentTab', id)?.then(() => fireEvent('onTabSwitch'));
       }
     });
     setExposedVariable('currentTab', currentTab);

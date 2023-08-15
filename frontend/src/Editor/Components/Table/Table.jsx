@@ -322,7 +322,7 @@ export function Table({
   }
 
   function onPageIndexChanged(page) {
-    onComponentOptionChanged(component, 'pageIndex', page).then(() => {
+    onComponentOptionChanged(component, 'pageIndex', page)?.then(() => {
       onEvent('onPageChanged', { component, data: {} });
     });
   }
@@ -339,14 +339,14 @@ export function Table({
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    }).then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
+    })?.then(() => mergeToTableDetails({ dataUpdates: {}, changeSet: {} }));
   }
 
   function handleChangesDiscarded() {
     setExposedVariables({
       changeSet: {},
       dataUpdates: [],
-    }).then(() => {
+    })?.then(() => {
       mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
       fireEvent('onCancelChanges');
     });
@@ -477,7 +477,7 @@ export function Table({
         !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) ||
         tableDetails.addNewRowsDetails.addingNewRows
       ) {
-        setExposedVariable('newRows', []).then(() => {
+        setExposedVariable('newRows', [])?.then(() => {
           mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
         });
       }
@@ -634,7 +634,7 @@ export function Table({
     if (!sortOptions) {
       setExposedVariable('sortApplied', []);
     }
-    if (mounted) setExposedVariable('sortApplied', sortOptions).then(() => fireEvent('onSort'));
+    if (mounted) setExposedVariable('sortApplied', sortOptions)?.then(() => fireEvent('onSort'));
 
     setExposedVariable('setPage', async function (targetPageIndex) {
       setPaginationInternalPageIndex(targetPageIndex);
@@ -647,7 +647,7 @@ export function Table({
       const row = rows.find((item, index) => item.original[key] == value);
       if (row != undefined) {
         const selectedRowDetails = { selectedRow: item[0], selectedRowId: row.id };
-        setExposedVariables(selectedRowDetails).then(() => {
+        setExposedVariables(selectedRowDetails)?.then(() => {
           toggleRowSelected(row.id);
           mergeToTableDetails(selectedRowDetails);
           fireEvent('onRowClicked');
@@ -658,7 +658,7 @@ export function Table({
     setExposedVariable('deselectRow', async function () {
       if (!_.isEmpty(tableDetails.selectedRow)) {
         const selectedRowDetails = { selectedRow: {}, selectedRowId: {} };
-        setExposedVariables(selectedRowDetails).then(() => {
+        setExposedVariables(selectedRowDetails)?.then(() => {
           if (allowSelection && !showBulkSelector) toggleRowSelected(tableDetails.selectedRowId, false);
           mergeToTableDetails(selectedRowDetails);
         });
@@ -671,7 +671,7 @@ export function Table({
         setExposedVariables({
           changeSet: {},
           dataUpdates: [],
-        }).then(() => {
+        })?.then(() => {
           mergeToTableDetails({ dataUpdates: {}, changeSet: {} });
         });
       }
@@ -685,7 +685,7 @@ export function Table({
       ) {
         setExposedVariables({
           newRows: [],
-        }).then(() => {
+        })?.then(() => {
           mergeToAddNewRowsDetails({ newRowsChangeSet: {}, newRowsDataUpdates: {}, addingNewRows: false });
         });
       }
@@ -727,7 +727,7 @@ export function Table({
     if (showBulkSelector) {
       const selectedRowsOriginalData = selectedFlatRows.map((row) => row.original);
       const selectedRowsId = selectedFlatRows.map((row) => row.id);
-      setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId }).then(() => {
+      setExposedVariables({ selectedRows: selectedRowsOriginalData, selectedRowsId: selectedRowsId })?.then(() => {
         const selectedRowsDetails = selectedFlatRows.reduce((accumulator, row) => {
           accumulator.push({ selectedRowId: row.id, selectedRow: row.original });
           return accumulator;
@@ -741,7 +741,7 @@ export function Table({
     ) {
       const selectedRow = selectedFlatRows?.[0]?.original ?? {};
       const selectedRowId = selectedFlatRows?.[0]?.id ?? null;
-      setExposedVariables({ selectedRow, selectedRowId }).then(() => {
+      setExposedVariables({ selectedRow, selectedRowId })?.then(() => {
         mergeToTableDetails({ selectedRow, selectedRowId });
       });
     }
@@ -749,7 +749,7 @@ export function Table({
 
   useEffect(() => {
     if (mounted) {
-      setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null }).then(() => {
+      setExposedVariables({ selectedRows: [], selectedRowsId: [], selectedRow: {}, selectedRowId: null })?.then(() => {
         mergeToTableDetails({ selectedRowsDetails: [], selectedRow: {}, selectedRowId: null });
         toggleAllRowsSelected(false);
       });
@@ -774,7 +774,7 @@ export function Table({
         ['currentData', data],
         ['selectedRow', []],
         ['selectedRowId', null],
-      ]).then(() => {
+      ])?.then(() => {
         if (tableDetails.selectedRowId || !_.isEmpty(tableDetails.selectedRowDetails)) {
           toggleAllRowsSelected(false);
           mergeToTableDetails({ selectedRow: {}, selectedRowId: null, selectedRowDetails: [] });
@@ -808,7 +808,7 @@ export function Table({
   }, [rowDetails]);
   const rowHover = () => {
     mergeToTableDetails(rowDetails);
-    setExposedVariables(rowDetails).then(() => {
+    setExposedVariables(rowDetails)?.then(() => {
       fireEvent('onRowHovered');
     });
   };
@@ -828,7 +828,7 @@ export function Table({
       const pageNumber = Math.floor(selectedRowId / rowsPerPage) + 1;
       preSelectRow.current = true;
       if (highlightSelectedRow) {
-        setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId }).then(() => {
+        setExposedVariables({ selectedRow: selectedRow, selectedRowId: selectedRowId })?.then(() => {
           toggleRowSelected(selectedRowId, true);
           mergeToTableDetails({ selectedRow: selectedRow, selectedRowId: selectedRowId });
         });
@@ -1138,7 +1138,7 @@ export function Table({
                       }
                       const selectedRow = row.original;
                       const selectedRowId = row.id;
-                      setExposedVariables({ selectedRow, selectedRowId }).then(() => {
+                      setExposedVariables({ selectedRow, selectedRowId })?.then(() => {
                         mergeToTableDetails({ selectedRow, selectedRowId });
                         fireEvent('onRowClicked');
                       });
@@ -1285,7 +1285,7 @@ export function Table({
                   <button
                     className={`btn btn-primary btn-sm mx-2 ${tableDetails.isSavingChanges ? 'btn-loading' : ''}`}
                     onClick={() =>
-                      onEvent('onBulkUpdate', { component }).then(() => {
+                      onEvent('onBulkUpdate', { component })?.then(() => {
                         handleChangesSaved();
                       })
                     }
