@@ -28,6 +28,7 @@ import { AppDecorator } from 'src/decorators/app.decorator';
 
 import { ComponentsService } from '@services/components.service';
 import { PageService } from '@services/page.service';
+import { EventsService } from '@services/events_handler.service';
 import { AppVersionUpdateDto } from '@dto/app-version-update.dto';
 
 @Controller({
@@ -39,6 +40,7 @@ export class AppsControllerV2 {
     private appsService: AppsService,
     private componentsService: ComponentsService,
     private pageService: PageService,
+    private eventService: EventsService,
     private appsAbilityFactory: AppsAbilityFactory
   ) {}
 
@@ -306,5 +308,43 @@ export class AppsControllerV2 {
     if (pageId) {
       await this.pageService.deletePage(pageId, versionId);
     }
+  }
+
+  // events api
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Post(':id/versions/:versionId/events')
+  async createEvent(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+
+    if (!ability.can('updateVersions', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    return this.eventService.createEvent(body, versionId);
+  }
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ValidAppInterceptor)
+  @Put(':id/versions/:versionId/events')
+  async updateEvents(@User() user, @Param('id') id, @Param('versionId') versionId, @Body() body) {
+    const version = await this.appsService.findVersion(versionId);
+    const app = version.app;
+
+    if (app.id !== id) {
+      throw new BadRequestException();
+    }
+    const ability = await this.appsAbilityFactory.appsActions(user, id);
+
+    if (!ability.can('updateVersions', app)) {
+      throw new ForbiddenException('You do not have permissions to perform this action');
+    }
+
+    return await this.eventService.updateEvent(body, versionId);
   }
 }

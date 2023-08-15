@@ -207,7 +207,7 @@ export const Inspector = ({
     componentDefinitionChanged(newComponent, { eventUpdated: true });
   }
 
-  function eventsChanged(newEvents, isReordered = false) {
+  function eventsChanged(newEvents, isReordered = false, isNew = false) {
     let newComponent = JSON.parse(JSON.stringify(component));
     let newDefinition = JSON.parse(JSON.stringify(newComponent.component.definition));
 
@@ -215,7 +215,14 @@ export const Inspector = ({
 
     newComponent.component.definition = newDefinition;
 
-    componentDefinitionChanged(newComponent, { eventsChanged: true });
+    const opts = {
+      componentsEventsChanged: true,
+    };
+
+    if (isReordered) opts.eventsReOrdered = true;
+    if (isNew) opts.newEvent = true;
+
+    componentDefinitionChanged(newComponent, opts);
   }
 
   function eventOptionUpdated(event, option, value) {

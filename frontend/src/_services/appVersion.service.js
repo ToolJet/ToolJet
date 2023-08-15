@@ -74,6 +74,10 @@ function autoSaveApp(appId, versionId, diff, type, pageId, operation, isUserSwit
     global_settings: {
       update: { ...diff },
     },
+    events: {
+      update: diff,
+      create: diff,
+    },
   };
 
   const body = !type

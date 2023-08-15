@@ -29,6 +29,7 @@ import { ValidAppInterceptor } from 'src/interceptors/valid.app.interceptor';
 import { AppDecorator } from 'src/decorators/app.decorator';
 
 import { PageService } from '@services/page.service';
+import { EventsService } from '@services/events_handler.service';
 
 @Controller('apps')
 export class AppsController {
@@ -36,6 +37,7 @@ export class AppsController {
     private appsService: AppsService,
     private foldersService: FoldersService,
     private pageService: PageService,
+    private eventsService: EventsService,
     private appsAbilityFactory: AppsAbilityFactory
   ) {}
 
@@ -89,6 +91,9 @@ export class AppsController {
       : [];
 
     const pagesForVersion = app.editingVersion ? await this.pageService.findPagesForVersion(app.editingVersion.id) : [];
+    const eventsForVersion = app.editingVersion
+      ? await this.eventsService.findEventsForVersion(app.editingVersion.id)
+      : [];
 
     // serialize queries
     for (const query of dataQueriesForVersion) {
@@ -100,6 +105,7 @@ export class AppsController {
     response['data_queries'] = seralizedQueries;
     response['definition'] = app.editingVersion?.definition;
     response['pages'] = pagesForVersion;
+    response['events'] = eventsForVersion;
 
     //! if editing version exists, camelize the definition
     if (app.editingVersion && app.editingVersion.definition) {

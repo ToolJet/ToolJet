@@ -687,28 +687,19 @@ const EditorComponent = (props) => {
       await fetchDataQueries(data.editing_version?.id, true, true);
       const appDefData = buildAppDefinition(data);
 
-      // let dataDefinition = data.definition ?? defaults(data.definition, defaultDefinition(props.darkMode));
-
-      // const pages = Object.entries(dataDefinition.pages).map(([pageId, page]) => ({ id: pageId, ...page }));
-      // const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
-      // const homePageId = !startingPageHandle || startingPageId === 'null' ? dataDefinition.homePageId : startingPageId;
-
-      // !------
       const appJson = appDefData;
       const pages = data.pages;
+      const events = data.events;
+
       const startingPageId = pages.filter((page) => page.handle === startingPageHandle)[0]?.id;
       const homePageId = !startingPageId || startingPageId === 'null' ? appJson.homePageId : startingPageId;
 
-      const currentComponents = appJson.pages[homePageId]?.components ?? {};
-      console.log('---arpit [fetching app] [pages] ==> ', { currentComponents });
       const currentpageData = {
         handle: appJson.pages[homePageId]?.handle,
         name: appJson.pages[homePageId]?.name,
         id: homePageId,
         variables: {},
       };
-
-      // !------
 
       setCurrentPageId(homePageId);
 
@@ -721,6 +712,7 @@ const EditorComponent = (props) => {
         appName: data?.name,
         userId: data?.user_id,
         appId: data?.id,
+        events: events,
       });
 
       useCurrentStateStore.getState().actions.setCurrentState({
@@ -751,6 +743,7 @@ const EditorComponent = (props) => {
   // !--------
   const setAppDefinitionFromVersion = (version, shouldWeEditVersion = true) => {
     if (version?.id !== props.editingVersion?.id) {
+      // !Need to fix this
       // appDefinitionChanged(defaults(version.definition, defaultDefinition(props.darkMode)), {
       //   skipAutoSave: true,
       //   skipYmapUpdate: true,
@@ -992,7 +985,7 @@ const EditorComponent = (props) => {
       const diffPatches = diff(appDefinition, updatedAppDefinition);
 
       if (!isEmpty(diffPatches)) {
-        appDefinitionChanged(updatedAppDefinition, { skipAutoSave: true, componentDefinitionChanged: true });
+        appDefinitionChanged(updatedAppDefinition, { skipAutoSave: true, componentDefinitionChanged: true, ...props });
       }
     }
 
@@ -1464,6 +1457,7 @@ const EditorComponent = (props) => {
 
     appDefinitionChanged(newAppDefinition, {
       pageDefinitionChanged: true,
+      pageEventsChanged: true,
     });
   };
 

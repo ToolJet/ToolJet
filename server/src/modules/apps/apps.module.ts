@@ -41,6 +41,7 @@ import { Layout } from 'src/entities/layout.entity';
 
 import { ComponentsService } from '@services/components.service';
 import { PageService } from '@services/page.service';
+import { EventsService } from '@services/events_handler.service';
 
 @Module({
   imports: [
@@ -83,6 +84,7 @@ import { PageService } from '@services/page.service';
     AppEnvironmentService,
     ComponentsService,
     PageService,
+    EventsService,
   ],
   controllers: [AppsController, AppsControllerV2, AppUsersController, AppsImportExportController],
 })

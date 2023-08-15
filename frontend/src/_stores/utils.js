@@ -41,43 +41,73 @@ const updateType = Object.freeze({
   componentAdded: 'components',
   componentDefinitionChanged: 'components',
   componentDeleted: 'components',
+  componentsEventsChanged: 'events',
+  pageEventsChanged: 'events',
+});
+
+const eventHandlerType = Object.freeze({
+  componentsEventsChanged: 'components',
+  pageEventsChanged: 'pages',
 });
 
 export const computeAppDiff = (appDiff, currentPageId, opts) => {
   const { updateDiff, type, operation } = updateFor(appDiff, currentPageId, opts);
 
+  console.log('----arpit [updateFor]', { updateDiff, type, operation });
   return { updateDiff, type, operation };
 };
 
-// const updateFor = (appDiff, currentPageId, opts) => {
-//   const componentUpdates = ['componentAdded', 'componentDefinitionChanged', 'componentDeleted', 'containerChanges'];
-//   const pageUpdates = ['pageDefinitionChanged', 'pageSortingChanged', 'deletePageRequest', 'addNewPage'];
-//   const appUpdates = ['homePageChanged'];
-//   const globalSettings = ['globalSettings'];
+function verifyIsEventUpdates(data, eventsObj) {
+  if (!data.pages || Object.keys(data.pages).length === 0) {
+    return false;
+  }
 
-//   const options = _.keys(opts);
+  for (const pageId in data.pages) {
+    const components = data.pages[pageId].components;
+    for (const componentId in components) {
+      if (components[componentId].component.definition.events) {
+        eventsObj.components = Object.values(components[componentId].component.definition.events).map((e) => ({
+          event: e,
+          eventType: 'component',
+          attachedTo: componentId,
+        }));
 
-//   if (_.intersection(options, componentUpdates).length > 0) {
-//     return computeComponentDiff(appDiff, currentPageId, opts);
-//   } else if (_.intersection(options, pageUpdates).length > 0) {
-//     return computePageUpdate(appDiff, currentPageId, opts);
-//   } else if (_.intersection(options, appUpdates).length > 0) {
-//     return {
-//       updateDiff: appDiff,
-//       type: null,
-//       operation: 'update',
-//     };
-//   } else if (_.intersection(options, globalSettings).length > 0) {
-//     return {
-//       updateDiff: appDiff,
-//       type: 'global_settings',
-//       operation: 'update',
-//     };
-//   }
-// };
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function computeEventDiff(appDiff, currentPageId, opts = []) {
+  let type = 'events';
+  let updateDiff;
+  let operation = 'update';
+
+  const events = {
+    components: [],
+    pages: [],
+  };
+  verifyIsEventUpdates(appDiff, events);
+
+  updateDiff = events[eventHandlerType[opts[0]]];
+  console.log('----arpit [computeEventDiff]', { events, opts });
+
+  if (opts.includes('newEvent')) {
+    operation = 'create';
+    updateDiff = updateDiff[0];
+  }
+
+  return { updateDiff, type, operation };
+}
 
 const updateFor = (appDiff, currentPageId, opts) => {
   const updateTypeMappings = [
+    {
+      updateTypes: ['componentsEventsChanged', 'pageEventsChanged', 'eventsReOrdered', 'newEvent'],
+      processingFunction: computeEventDiff,
+    },
     {
       updateTypes: ['componentAdded', 'componentDefinitionChanged', 'componentDeleted', 'containerChanges'],
       processingFunction: computeComponentDiff,
@@ -107,8 +137,10 @@ const updateFor = (appDiff, currentPageId, opts) => {
   const options = _.keys(opts);
 
   for (const { updateTypes, processingFunction } of updateTypeMappings) {
-    if (_.intersection(options, updateTypes).length > 0) {
-      return processingFunction(appDiff, currentPageId, opts);
+    const optionsTypes = _.intersection(options, updateTypes);
+
+    if (optionsTypes.length > 0) {
+      return processingFunction(appDiff, currentPageId, optionsTypes);
     }
   }
 
@@ -122,7 +154,7 @@ const computePageUpdate = (appDiff, currentPageId, opts) => {
   let updateDiff;
   let operation = 'update';
 
-  if (opts?.deletePageRequest) {
+  if (opts.includes('deletePageRequest')) {
     const deletePageId = _.keys(appDiff?.pages).map((pageId) => {
       if (appDiff?.pages[pageId]?.pageId === undefined) {
         return pageId;
@@ -135,16 +167,16 @@ const computePageUpdate = (appDiff, currentPageId, opts) => {
 
     type = updateType.pageDefinitionChanged;
     operation = 'delete';
-  } else if (opts?.pageSortingChanged) {
+  } else if (opts.includes('pageSortingChanged')) {
     updateDiff = appDiff?.pages;
 
     type = updateType.pageDefinitionChanged;
-  } else if (opts?.pageDefinitionChanged) {
+  } else if (opts.includes('pageDefinitionChanged')) {
     updateDiff = appDiff?.pages[currentPageId];
 
     type = updateType.pageDefinitionChanged;
 
-    if (opts?.addNewPage) {
+    if (opts.includes('addNewPage')) {
       operation = 'create';
     }
   }
@@ -157,7 +189,7 @@ const computeComponentDiff = (appDiff, currentPageId, opts) => {
   let updateDiff;
   let operation = 'update';
 
-  if (opts?.componentDeleted) {
+  if (opts.includes('componentDeleted')) {
     const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 
     updateDiff = _.keys(currentPageComponents);
@@ -165,12 +197,15 @@ const computeComponentDiff = (appDiff, currentPageId, opts) => {
     type = updateType.componentDeleted;
 
     operation = 'delete';
-  } else if ((opts?.containerChanges || opts?.componentDefinitionChanged) && !opts?.componentAdded) {
+  } else if (
+    (opts.includes('containerChanges') || opts.includes('componentDefinitionChanged')) &&
+    !opts.includes('componentAdded')
+  ) {
     const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 
     updateDiff = currentPageComponents;
-    type = opts?.componentDefinitionChanged ? updateType.componentDefinitionChanged : updateType.containerChanges;
-  } else if (opts?.componentAdded) {
+    type = opts.includes('containerChanges') ? updateType.containerChanges : updateType.componentDefinitionChanged;
+  } else if (opts.includes('componentAdded')) {
     const currentPageComponents = appDiff?.pages[currentPageId]?.components;
 
     updateDiff = _.toPairs(currentPageComponents ?? []).reduce((result, [id, component]) => {

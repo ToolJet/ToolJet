@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { AppVersion } from './app_version.entity';
 
 enum Target {
@@ -15,8 +15,8 @@ export class EventHandler {
   @Column({ name: 'name' })
   name: string;
 
-  @Column({ name: 'app_version_id' })
-  AppVersionId: string;
+  @Column('simple-json')
+  event: any;
 
   @Column({ name: 'source_id' })
   sourceId: string;
@@ -24,6 +24,10 @@ export class EventHandler {
   @Column({ name: 'target' })
   target: Target;
 
-  @ManyToOne(() => AppVersion, (appVersion) => appVersion.eventHandlers)
+  @Column({ name: 'app_version_id' })
+  appVersionId: string;
+
+  @ManyToOne(() => AppVersion, (appVersion) => appVersion.pages)
+  @JoinColumn({ name: 'app_version_id' })
   appVersion: AppVersion;
 }
