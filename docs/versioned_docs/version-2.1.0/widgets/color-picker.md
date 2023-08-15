@@ -5,21 +5,19 @@ title: Color Picker
 
 # Color Picker
 
-Color Picker widget is used to select the desired color from the color picker
+Color Picker widget is used to select the desired color from the color picker. This component can be used to select the color and get respective hex, rgb and rgba value of selected color.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/color-picker/picker.png" alt="ToolJet - Widget Reference - Color Picker" />
+<img className="screenshot-full" src="/img/widgets/color-picker/picker1.png" alt="ToolJet - Widget Reference - Color Picker" />
 
 </div>
 
 ## Properties
 
-### Default Color
-
-The data needs to be an valid hex color
-
-- One can change default color either from color picker or using fx (need to provide only respective hex value)
+| Property | Description | Type | Default value |
+| --- | --- | --- | --- |
+| Default Color | Default color in the color picker. Expects a respective hex value. | `string` | `#000000` |
 
 **Example:**
 
@@ -28,44 +26,49 @@ Valid color : #000000 or #000
 Invalid Color : #0000, "black" , rgb(0,0,0) ,
 ```
 
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/color-picker/colorpickerdefaultvalue.png" alt="ToolJet - Widget Reference - Color Picker" />
-
-</div>
-
 ## Events
 
-To add an event to a color-picker component, click on the widget handle to open the widget properties on the right sidebar. Go to the **Events** section and click on **+ Add handler**.
+Events are used to trigger some actions when the user interacts with the widget. To add an event, click on the `+ Add handler` on the right sidebar.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/color-picker/events.png" alt="ToolJet - Widget Reference - Color Picker" />
+<img className="screenshot-full" src="/img/widgets/color-picker/events1.png" alt="ToolJet - Widget Reference - Color Picker" />
 
 </div>
 
-### On change
+| Event | Description |
+| --- | --- |
+| On change | On change event is triggered when the color is changed on the color-picker. |
 
-On change event is triggered when the color is changed on the color-picker.
+## General
+#### Tooltip
+
+A Tooltip is often used to specify the extra information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text.
+
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/color-picker/tooltip.png" alt="ToolJet - Widget Reference - Color Picker" width='300'/>
+
+</div>
 
 ## Layout
 
-| Layout          | description                               | Expected value                                                                                                |
-| --------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Show on desktop | Toggle on or off to display desktop view. | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
-| Show on mobile  | Toggle on or off to display mobile view.  | You can programmatically determining the value by clicking on `Fx` to set the value `{{true}}` or `{{false}}` |
+<div style={{textAlign: 'center'}}>
+
+<img className="screenshot-full" src="/img/widgets/color-picker/layout1.png" alt="ToolJet - Widget Reference - Color Picker" width='300'/>
+
+</div>
+
+| Layout | description | Expected value |
+| ------ | ----------- | -------------- |
+| Show on desktop | Toggle on or off to control the visibility of the widget on desktop. By default, it's set to `{{true}}`. | `boolean` ex: {{true}} or {{false}} |
+| Show on mobile | Toggle on or off to control the visibility of the widget on mobile. By default, it's set to `{{false}}`. | `boolean` ex: {{true}} or {{false}} |
 
 ## Styles
 
-| Style      | Description                                                                                                                                                                                                                                              |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not visible after the app is deployed. By default, it's set to `{{true}}`. |
-
-### Actions
-
-| Action      | Description | Properties |
-| ----------- | ----------- | ------------------ |
-| setColor | Set the  color. | `color` eg - `#ffffff` |
+| Property | Description | Expected value |
+| ------ | ----------- | -------------- |
+| Visibility | Toggle on or off to control the visibility of the widget. By default, it's set to `{{true}}`. | `boolean` ex: {{true}} or {{false}} |
 
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
