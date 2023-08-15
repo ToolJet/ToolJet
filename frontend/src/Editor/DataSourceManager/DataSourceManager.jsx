@@ -928,7 +928,7 @@ const EmptyStateContainer = ({
               </div>
             </div>
             <div className="col-auto">
-              <Button className="mt-2" disabled={inputValue.length > 0 ? false : true} variant="primary" onClick={handleSend}>
+              <Button className="mt-2" disabled={!inputValue.length} variant="primary" onClick={handleSend}>
                 {t('editor.queryManager.dataSourceManager.send', 'Send')}
               </Button>
             </div>
