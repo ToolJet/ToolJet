@@ -1105,7 +1105,7 @@ export function Table({
           )}
           <Box className="table-responsive jet-data-table">
             <MUITable {...getTableProps()}>
-              <TableHead>
+              <TableHead sx={{ backgroundColor: '#E7E7E7' }}>
                 {headerGroups.map((headerGroup, index) => (
                   <DragDropContext
                     key={index}

@@ -108,7 +108,7 @@ export function AddNewRowComponent({
           <DialogContent>
             <TableContainer component={Paper}>
               <Table {...getTableProps()}>
-                <TableHead>
+                <TableHead sx={{ backgroundColor: '#E7E7E7' }}>
                   {headerGroups.map((headerGroup, index) => {
                     return (
                       <TableRow
