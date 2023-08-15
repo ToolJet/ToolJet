@@ -4,11 +4,11 @@ title: Circular Progress Bar
 ---
 # Circular Progress Bar
 
-Circular progress bar widget can be used to show progress in a progress circle.
+Circular progress bar component can be used to show progress in a progress circle. It can be used to show progress of a task or percentage of a goal achieved.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/circular-progressbar/cpb.png" alt="ToolJet - Widget Reference - Circular progress bar" />
+<img className="screenshot-full" src="/img/widgets/circular-progressbar/cpb1.png" alt="ToolJet - Component Reference - Circular progress bar" />
 
 </div>
 
@@ -20,25 +20,23 @@ Any property having `Fx` button next to its field can be **programmatically conf
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/circular-progressbar/prop.png" alt="ToolJet - Widget Reference - Circular progress bar" />
+<img className="screenshot-full" src="/img/widgets/circular-progressbar/prop1.png" alt="ToolJet - Component Reference - Circular progress bar" width='300'/>
 
 </div>
 
 | properties  | description | Expected Value |
 | ----------- | ----------- | --------------- |
 | Text | We can set a text inside the progress circle.| It expects a `String`, you can also use js to dynamically update the text as the progress changes. |
-| Progress | It can be used to set the progress of the widget. | Progress should be an integer between 0 and 100.|
+| Progress | It can be used to set the progress of the component. | Progress should be an integer between 0 and 100.|
 
-### General
+## General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
-
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+A Tooltip is often used to specify the extra information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Circular progress bar" />
+<img className="screenshot-full" src="/img/widgets/circular-progressbar/tooltip.png" alt="ToolJet - Component Reference - Circular progress bar" width='300'/>
 
 </div>
 
@@ -46,20 +44,20 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/circular-progressbar/layout.png" alt="ToolJet - Widget Reference - Circular progress bar" />
+<img className="screenshot-full" src="/img/widgets/circular-progressbar/layout1.png" alt="ToolJet - Component Reference - Circular progress bar" width='300'/>
 
 </div>
 
 | Layout  | description |
 | ----------- | ----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
+| Show on desktop | Toggle on or off to display the component in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
+| Show on mobile | Toggle on or off to display the component in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
 
 ## Styles
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/circular-progressbar/styles.png" alt="ToolJet - Widget Reference - Circular progress bar" />
+<img className="screenshot-full" src="/img/widgets/circular-progressbar/styles1.png" alt="ToolJet - Component Reference - Circular progress bar" width='300'/>
 
 </div>
 
@@ -71,10 +69,10 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 | Stroke width | To define the width of stroke | Value must between 0-100.|
 | Counter Clockwise | Whether to rotate progress bar in counterclockwise direction. | It accepts `{{true}}` and `{{false}}`, Default value is `false`.|
 | Circle ratio | To define ratio of the full circle diameter the progressbar should use. | It accepts numerical value and the default is `1`. |
-| Visibility | Toggle on or off to control the visibility of the widget. | You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
+| Visibility | Toggle on or off to control the visibility of the component. | You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the component will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
 
 :::info
-Circular progress bar widget uses [react-circular-progress](https://github.com/kevinsqi/react-circular-progressbar) package. Check the repo for further more details about properties and styles.
+Circular progress bar component uses [react-circular-progress](https://github.com/kevinsqi/react-circular-progressbar) package. Check the repo for further more details about properties and styles.
 :::
 
 
