@@ -4,11 +4,11 @@ title: Code Editor
 ---
 # Code Editor
 
-Code Editor widget is a versatile text editor for editing code and supports several languages. 
+Code Editor widget is a versatile text editor for editing code and supports several languages. This component can be used for editing code snippets in the supported languages(mentioned below).
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/code-editor/editor.png" alt="ToolJet - Widget Reference - Code editor" />
+<img className="screenshot-full" src="/img/widgets/code-editor/code1.png" alt="ToolJet - Widget Reference - Code editor" />
 
 </div>
 
@@ -17,12 +17,6 @@ Code Editor widget is a versatile text editor for editing code and supports seve
 :::info
 Any property having `Fx` button next to its field can be **programmatically configured**.
 :::
-
-<div style={{textAlign: 'center'}}>
-
-<img className="screenshot-full" src="/img/widgets/code-editor/prop.png" alt="ToolJet - Widget Reference - Code editor" />
-
-</div>
 
 | properties      | description | Expected value |
 | ----------- | ----------- | ----------------- |
@@ -168,16 +162,14 @@ Any property having `Fx` button next to its field can be **programmatically conf
 </details>
 :::
 
-### General
+## General
 #### Tooltip
 
-A Tooltip is often used to specify extra information about something when the user hovers the mouse pointer over the widget.
-
-Under the <b>General</b> accordion, you can set the value in the string format. Now hovering over the widget will display the string as the tooltip.
+A Tooltip is often used to specify the extra information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text.
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/tooltip.png" alt="ToolJet - Widget Reference - Code editor" />
+<img className="screenshot-full" src="/img/widgets/code-editor/tooltip.png" alt="ToolJet - Widget Reference - Code editor" width='300'/>
 
 </div>
 
@@ -185,7 +177,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/code-editor/layout.png" alt="ToolJet - Widget Reference - Code editor" />
+<img className="screenshot-full" src="/img/widgets/code-editor/layout1.png" alt="ToolJet - Widget Reference - Code editor" width='300'/>
 
 </div>
 
@@ -198,7 +190,7 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 
 <div style={{textAlign: 'center'}}>
 
-<img className="screenshot-full" src="/img/widgets/code-editor/styles.png" alt="ToolJet - Widget Reference - Code editor" />
+<img className="screenshot-full" src="/img/widgets/code-editor/styles1.png" alt="ToolJet - Widget Reference - Code editor" width='300'/>
 
 </div>
 
@@ -207,7 +199,6 @@ Under the <b>General</b> accordion, you can set the value in the string format. 
 | Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
 | Disable | This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
 | Border radius | Use this property to modify the border radius of the editor. The field expects only numerical value from `1` to `100`, default is `0`. |
-
 
 ## Exposed Variables
 
