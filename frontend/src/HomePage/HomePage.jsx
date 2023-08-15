@@ -402,7 +402,7 @@ class HomePageComponent extends React.Component {
           showRemoveAppFromFolderConfirmation: true,
         });
         break;
-      case 'rename-app': // Adding the case for renaming the app
+      case 'rename-app':
         this.setState({
           appOperations: { ...appOperations, selectedApp: app },
           showRenameAppModal: true,

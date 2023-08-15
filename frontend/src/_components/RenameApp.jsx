@@ -18,7 +18,7 @@ export function RenameApp({ closeModal, renameApp, show, selectedAppId, selected
   }, [newAppName, selectedAppName]);
 
   useEffect(() => {
-    setIsSuccess(false); // Reset success state when modal opens
+    setIsSuccess(false);
   }, [show]);
 
   useEffect(() => {
@@ -50,22 +50,6 @@ export function RenameApp({ closeModal, renameApp, show, selectedAppId, selected
     setErrorText(error?.errorMsg || '');
     setNewAppName(newAppName);
   };
-
-  //   const validateAppName = (name, nameType, showError = false, allowSpecialChars = true) => {
-  //     const newName = name.trim();
-  //     let errorMsg = '';
-  //     if (newName.length > 50) {
-  //       errorMsg = `Maximum length has been reached`;
-  //       showError &&
-  //         toast.error(errorMsg, {
-  //           id: '1',
-  //         });
-  //     }
-  //     return {
-  //       status: errorMsg.length > 0,
-  //       errorMsg,
-  //     };
-  //   };
 
   return (
     <Modal
