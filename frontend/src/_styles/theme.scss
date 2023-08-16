@@ -335,7 +335,8 @@ button {
 
   .datasource-picker {
     margin-bottom: 24px;
-    padding: 0 32px;
+    width: 475px;
+    margin: auto;
   }
 
   .header-query-datasource-card-container {
@@ -3099,7 +3100,7 @@ input:focus-visible {
 .widgets-list {
   --tblr-gutter-x: 0px !important;
   padding-right: 4px;
-  padding-left: 4px;
+  padding-left: 3px;
 }
 
 .input-with-icon {
@@ -3400,6 +3401,8 @@ input:focus-visible {
 
   .query-pane {
     background-color: var(--base) !important;
+    background-color: #1f2936 !important;
+    border-top: 2px solid var(--slate4) !important;
   }
 
   .input-icon .input-icon-addon img {
@@ -5186,8 +5189,12 @@ div#driver-page-overlay {
   color: $light-gray;
 }
 
+.dynamic-form-row {
+  margin-top: 20px !important;
+  margin-bottom: 20px !important;
+}
+
 #transformation-popover-container {
-  margin-left: 80px !important;
   margin-bottom: -2px !important;
 }
 
@@ -7411,6 +7418,12 @@ tbody {
         fill: $color-light-indigo-10;
       }
     }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: .65;
   }
 
   .query-run-svg {
@@ -10917,6 +10930,89 @@ tbody {
   display: none;
 }
 
+.query-rename-input {
+
+  &:focus,
+  &:active {
+    box-shadow: 0px 0px 0px 2px #C6D4F9;
+    border: 1px solid var(--light-indigo-09, #3E63DD);
+  }
+}
+
+.btn-query-panel-header {
+  height: 28px;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background-color: transparent;
+  border: none;
+
+  &.active {
+    background-color: var(--slate5) !important;
+  }
+
+  &:hover,
+  &:focus {
+    background-color: var(--slate4) !important;
+  }
+}
+
+.tj-scrollbar {
+
+  ::-webkit-scrollbar,
+  &::-webkit-scrollbar {
+    width: 16px;
+    border-radius: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb,
+  &::-webkit-scrollbar-thumb {
+    border: 4px solid var(--base);
+    border-radius: 8px;
+    background-color: var(--slate4) !important;
+  }
+
+  ::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-track {
+    background-color: var(--base);
+  }
+
+}
+
+.form-check>.form-check-input:not(:checked) {
+  background-color: var(--base);
+  border-color: var(--slate7);
+}
+
+/*
+* remove this once whole app is migrated to new styles. use only `theme-dark` class everywhere. 
+* This is added since some of the pages are in old theme and making changes to `theme-dark` styles can break UI style somewhere else 
+*/
+.tj-dark-mode {
+  background-color: var(--base) !important;
+  color: var(--base-black) !important;
+}
+
+.tj-list-btn {
+  border-radius: 6px;
+
+  &:hover {
+    background-color: var(--slate4);
+  }
+
+  &.active {
+    background-color: var(--slate5);
+  }
+}
+
+.tj-list-option {
+  &.active {
+    background-color: var(--indigo2);
+  }
+}
+
 .runjs-parameter-badge {
   max-width: 140px;
 }
@@ -11056,4 +11152,8 @@ tbody {
   top: 0px;
   display: flex;
   right: 218px;
+}
+
+.sidebar-panel-header {
+  color: var(--slate12);
 }
