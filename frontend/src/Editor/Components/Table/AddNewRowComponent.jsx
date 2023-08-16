@@ -3,6 +3,7 @@ import { useTable, useBlockLayout } from 'react-table';
 import _ from 'lodash';
 import { Tooltip } from 'react-tooltip';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
 
 export function AddNewRowComponent({
   hideAddNewRowPopup,
@@ -85,7 +86,16 @@ export function AddNewRowComponent({
                   {headerGroup.headers.map((column, index) => {
                     return (
                       <th key={index} {...column.getHeaderProps()} className="th">
-                        <div className="tj-text-xsm">{column.render('Header')}</div>
+                        <div className="d-flex custom-gap-4 align-items-center">
+                          <SolidIcon
+                            name="editable"
+                            width="16px"
+                            height="16px"
+                            fill={darkMode ? '#4C5155' : '#C1C8CD'}
+                            vievBox="0 0 16 16"
+                          />
+                          <div className="tj-text-xsm">{column.render('Header')}</div>
+                        </div>
                       </th>
                     );
                   })}

@@ -22,6 +22,9 @@
     .card-footer{
         padding: 0.75rem;
     }
+    .card-header{
+      border-bottom: 0 !important;
+    }
     .table-clear-icon{
       border-radius: 4px;
       border: 1px solid var(--base-transparent, rgba(255, 255, 255, 0.00)) !important;
@@ -51,6 +54,13 @@
     }
     .tr{
       height: 32px; 
+    }
+    .table-row{
+      border-top: 0 !important;
+      border-bottom: 1px solid inherit;
+    }
+    .table-bordered > :not(caption) > * > *{
+      border-width: 0 1px 0 0;
     }
 }
 
@@ -228,6 +238,12 @@
 }
 
 .jet-data-table {
+  .th:first-child,td:first-child{
+    border-left: none;
+  }
+  .th:last-child,td:last-child{
+    border-right: none;
+  }
   overflow: hidden;
 
   .form-check {
@@ -363,6 +379,7 @@
 }
 
 .table-add-new-row{
+  padding: 8px;
     color: var(--slate12) !important;
     .th{
         background-color: var(--slate3) !important;
