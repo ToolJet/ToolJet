@@ -77,18 +77,24 @@ export function onComponentOptionsChanged(_ref, component, options) {
 export function onComponentOptionChanged(_ref, component, option_name, value) {
   const componentName = component.name;
   const components = getCurrentState().components;
-
   let componentData = components[componentName];
   componentData = componentData || {};
-  componentData[option_name] = value;
-  if (option_name !== 'id') {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: { ...components, [componentName]: componentData },
+  if (option_name === 'allVariables') {
+    Object.keys(value).map((item) => {
+      componentData[item] = value[item];
     });
-  } else if (!componentData?.id) {
-    useCurrentStateStore.getState().actions.setCurrentState({
-      components: { ...components, [componentName]: componentData },
-    });
+  } else componentData[option_name] = value;
+
+  if (!component.parent) {
+    if (option_name !== 'id') {
+      useCurrentStateStore.getState().actions.setCurrentState({
+        components: { ...components, [componentName]: componentData },
+      });
+    } else if (!componentData?.id) {
+      useCurrentStateStore.getState().actions.setCurrentState({
+        components: { ...components, [componentName]: componentData },
+      });
+    }
   }
 
   return Promise.resolve();

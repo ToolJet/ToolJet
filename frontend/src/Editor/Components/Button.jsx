@@ -46,29 +46,35 @@ export const Button = function Button(props) {
   };
 
   useEffect(() => {
-    setExposedVariable('click', async function () {
-      if (!disable) {
-        fireEvent('onClick');
-      }
-    });
+    const exposedVariables = {
+      allVariables: {
+        click: async function () {
+          if (!disable) {
+            fireEvent('onClick');
+          }
+        },
+        setText: async function (text) {
+          setLabel(text);
+          exposedVariables.allVariables.buttonText = text;
+        },
+        disable: async function (value) {
+          setDisable(value);
+        },
+        visibility: async function (value) {
+          setVisibility(value);
+        },
+        loading: async function (value) {
+          setLoading(value);
+        },
+      },
+    };
 
-    setExposedVariable('setText', async function (text) {
-      setLabel(text);
-      setExposedVariable('buttonText', text);
-    });
+    setExposedVariable('allVariables', exposedVariables.allVariables);
 
-    setExposedVariable('disable', async function (value) {
-      setDisable(value);
-    });
-
-    setExposedVariable('visibility', async function (value) {
-      setVisibility(value);
-    });
-
-    setExposedVariable('loading', async function (value) {
-      setLoading(value);
-    });
-
+    // Clean up the exposed variables when the component unmounts
+    return () => {
+      setExposedVariable('allVariables', null);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disable, setLabel, setDisable, setVisibility, setLoading]);
 
