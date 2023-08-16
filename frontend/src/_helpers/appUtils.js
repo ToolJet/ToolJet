@@ -576,6 +576,23 @@ function executeActionWithDebounce(_ref, event, mode, customVariables) {
 
       case 'switch-page': {
         _ref.switchPage(event.pageId, resolveReferences(event.queryParams, getCurrentState(), [], customVariables));
+        if (_ref.state.appDefinition.pages[event.pageId]) {
+          const { name, disabled } = _ref.state.appDefinition.pages[event.pageId];
+          if (disabled) {
+            const generalProps = {
+              navToDisablePage: {
+                type: 'navToDisablePage',
+                page: name,
+                data: {
+                  message: `Attempt to switch to disabled page ${name} blocked, redirected to home page.`,
+                  status: true,
+                },
+              },
+            };
+            useCurrentStateStore.getState().actions.setErrors(generalProps);
+          }
+        }
+
         return Promise.resolve();
       }
     }
@@ -1254,6 +1271,9 @@ export const debuggerActions = {
           generalProps.message = value.data.message;
           generalProps.property = key.split('- ')[1];
           error.resolvedProperties = value.resolvedProperties;
+          break;
+        case 'navToDisablePage':
+          generalProps.message = value.data.message;
           break;
 
         default:
