@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTable, useBlockLayout } from 'react-table';
 import _ from 'lodash';
 import { Tooltip } from 'react-tooltip';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 export function AddNewRowComponent({
   hideAddNewRowPopup,
@@ -59,10 +60,10 @@ export function AddNewRowComponent({
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = newRowData;
 
   return (
-    <div className="table-add-new-row card">
+    <div className={`table-add-new-row card ${darkMode && 'dark-theme'}`}>
       <div className="card-header row">
         <div className="col">
-          <h4 data-cy={`header-filters`} className="font-weight-normal">
+          <h4 data-cy={`header-filters`} className="font-weight-500 tj-text-lg">
             Add new rows
           </h4>
         </div>
@@ -75,7 +76,7 @@ export function AddNewRowComponent({
       <div className="table-responsive jet-data-table">
         <table
           {...getTableProps()}
-          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'}`}
+          className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'dark-theme'}`}
         >
           <thead>
             {headerGroups.map((headerGroup, index) => {
@@ -84,7 +85,7 @@ export function AddNewRowComponent({
                   {headerGroup.headers.map((column, index) => {
                     return (
                       <th key={index} {...column.getHeaderProps()} className="th">
-                        <div>{column.render('Header')}</div>
+                        <div className="tj-text-xsm">{column.render('Header')}</div>
                       </th>
                     );
                   })}
@@ -143,29 +144,37 @@ export function AddNewRowComponent({
         </button>
         <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
       </div>
-      <div className="card-footer">
-        <button
-          className="btn btn-primary btn-sm mx-2"
+      <div className="card-footer d-flex custom-gap-4">
+        <ButtonSolid
+          variant="secondary"
+          className={`tj-text-xsm`}
+          fill={darkMode ? '#3E63DD' : '#3E63DD'}
           onClick={() => {
             onEvent('onNewRowsAdded', { component }).then(() => {
               mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
               setNewRowsState([]);
             });
           }}
+          size="sm"
+          style={{ padding: '10px 20px' }}
         >
-          Save
-        </button>
-        <button
+          <span>Save</span>
+        </ButtonSolid>
+        <ButtonSolid
+          variant="tertiary"
+          className={`tj-text-xsm`}
+          fill={darkMode ? '#697177' : '#889096'}
           onClick={() => {
             setExposedVariable('newRows', []).then(() => {
               mergeToAddNewRowsDetails({ newRowsDataUpdates: {}, newRowsChangeSet: {}, addingNewRows: false });
               setNewRowsState([]);
             });
           }}
-          className="btn btn-light btn-sm"
+          size="sm"
+          style={{ padding: '10px 20px' }}
         >
-          Discard
-        </button>
+          <span>Discard</span>
+        </ButtonSolid>
       </div>
     </div>
   );

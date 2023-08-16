@@ -47,6 +47,8 @@ import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
+import SolidIcon from '@/_ui/Icon/SolidIcons';
+import SingleOptionOflist from '@/ToolJetUI/SingleOptionOfList';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -857,16 +859,21 @@ export function Table({
   }, [JSON.stringify(defaultSelectedRow), JSON.stringify(data)]);
 
   function downlaodPopover() {
+    const options = [
+      { dataCy: 'option-download-CSV', text: 'Download as CSV', value: 'csv' },
+      { dataCy: 'option-download-execel', text: 'Download as Excel', value: 'xlsx' },
+      { dataCy: 'option-download-pdf', text: 'Download as PDF', value: 'pdf' },
+    ];
     return (
       <Popover
         id="popover-basic"
         data-cy="popover-card"
-        className={`${darkMode && 'popover-dark-themed theme-dark'} shadow table-widget-download-popup`}
-        placement="bottom"
+        className={`${darkMode && 'dark-theme'} shadow table-widget-download-popup`}
+        placement="top-end"
       >
-        <Popover.Body>
-          <div className="d-flex flex-column">
-            <span data-cy={`option-download-CSV`} className="cursor-pointer" onClick={() => exportData('csv', true)}>
+        <Popover.Body className="p-0">
+          <div className="">
+            {/* <span data-cy={`option-download-CSV`} className="cursor-pointer" onClick={() => exportData('csv', true)}>
               Download as CSV
             </span>
             <span
@@ -882,9 +889,70 @@ export function Table({
               onClick={() => exportData('pdf', true)}
             >
               Download as PDF
-            </span>
+            </span> */}
+            {options.map((option) => {
+              return (
+                <SingleOptionOflist
+                  size="sm"
+                  darkMode={darkMode}
+                  className="table-download-option cursor-pointer"
+                  onClickFunction={() => exportData(option.value, true)}
+                  key={option.value}
+                  dataCy={option.dataCy}
+                >
+                  <SingleOptionOflist.optionForPopover size="sm" optionText={option.text} className="pointer" />
+                </SingleOptionOflist>
+              );
+            })}
           </div>
         </Popover.Body>
+      </Popover>
+    );
+  }
+
+  function hideColumnsPopover() {
+    const heightOfTableComponent = document.querySelector('.card.jet-table.table-component')?.offsetHeight;
+    return (
+      <Popover
+        className={`${darkMode && 'dark-theme'}`}
+        style={{ maxHeight: `${heightOfTableComponent - 79}px`, overflowY: 'auto' }}
+      >
+        <div
+          data-cy={`dropdown-hide-column`}
+          className={`dropdown-table-column-hide-common ${
+            darkMode ? 'dropdown-table-column-hide-dark-themed dark-theme' : 'dropdown-table-column-hide'
+          } `}
+          placement="top-end"
+        >
+          <div className="dropdown-item cursor-pointer">
+            <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
+            <span className="hide-column-name tj-text-xsm" data-cy={`options-select-all-coloumn`}>
+              Select All
+            </span>
+          </div>
+          {allColumns.map(
+            (column) =>
+              typeof column.Header === 'string' && (
+                <div key={column.id}>
+                  <div>
+                    <label className="dropdown-item d-flex cursor-pointer">
+                      <input
+                        type="checkbox"
+                        data-cy={`checkbox-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
+                        {...column.getToggleHiddenProps()}
+                      />
+                      <span
+                        className="hide-column-name tj-text-xsm"
+                        data-cy={`options-coloumn-${String(column.Header).toLowerCase().replace(/\s+/g, '-')}`}
+                      >
+                        {` ${column.Header}`}
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              )
+          )}
+        </div>
       </Popover>
     );
   }
@@ -892,7 +960,7 @@ export function Table({
     <div
       data-cy={`draggable-widget-${String(component.name).toLowerCase()}`}
       data-disabled={parsedDisabledState}
-      className="card jet-table table-component"
+      className={`card jet-table table-component ${darkMode && 'dark-theme'}`}
       style={{
         width: `100%`,
         height: `${height}px`,
@@ -907,46 +975,48 @@ export function Table({
       }}
       ref={tableRef}
     >
-      <div
-        className="table-card-header d-flex justify-content-between align-items-center"
-        style={{ padding: '12px', height: 56 }}
-      >
-        <div className="tj-text tj-header-h7">{component.name}</div>
-        <div className="d-flex custom-gap-8" style={{ maxHeight: 32 }}>
-          {displaySearchBox && (
-            <GlobalFilter
-              globalFilter={state.globalFilter}
-              useAsyncDebounce={useAsyncDebounce}
-              setGlobalFilter={setGlobalFilter}
-              onComponentOptionChanged={onComponentOptionChanged}
-              component={component}
-              onEvent={onEvent}
-              darkMode={darkMode}
-            />
-          )}
-          {showFilterButton && (
-            <>
-              <Tooltip id="tooltip-for-filter-data" className="tooltip" />
-              <ButtonSolid
-                variant="tertiary"
-                className={`tj-text-xsm ${tableDetails?.filterDetails?.filtersVisible && 'cursor-not-allowed'}`}
-                style={{ minWidth: '32px' }}
-                leftIcon="filter"
-                fill={darkMode ? '#ECEDEE' : '#11181C'}
-                iconWidth="16"
-                onClick={() => {
-                  showFilters();
-                }}
-                size="md"
-                data-tooltip-id="tooltip-for-filter-data"
-                data-tooltip-content="Filter data"
-              ></ButtonSolid>
-            </>
-          )}
+      {(displaySearchBox || showFilterButton) && (
+        <div
+          className="table-card-header d-flex justify-content-between align-items-center"
+          style={{ padding: '12px', height: 56 }}
+        >
+          <div className="tj-text tj-header-h7">{component.name}</div>
+          <div className="d-flex custom-gap-8" style={{ maxHeight: 32 }}>
+            {displaySearchBox && (
+              <GlobalFilter
+                globalFilter={state.globalFilter}
+                useAsyncDebounce={useAsyncDebounce}
+                setGlobalFilter={setGlobalFilter}
+                onComponentOptionChanged={onComponentOptionChanged}
+                component={component}
+                onEvent={onEvent}
+                darkMode={darkMode}
+              />
+            )}
+            {showFilterButton && (
+              <>
+                <Tooltip id="tooltip-for-filter-data" className="tooltip" />
+                <ButtonSolid
+                  variant="tertiary"
+                  className={`tj-text-xsm ${tableDetails?.filterDetails?.filtersVisible && 'cursor-not-allowed'}`}
+                  style={{ minWidth: '32px' }}
+                  leftIcon="filter"
+                  fill={darkMode ? '#ECEDEE' : '#11181C'}
+                  iconWidth="16"
+                  onClick={() => {
+                    showFilters();
+                  }}
+                  size="md"
+                  data-tooltip-id="tooltip-for-filter-data"
+                  data-tooltip-content="Filter data"
+                ></ButtonSolid>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       {/* Show top bar unless search box is disabled and server pagination is enabled */}
-      {/* {(displaySearchBox || showDownloadButton || showFilterButton || showAddNewRowButton) && (
+      {/* {(displaySearchBox || showFilterButton) && (
         <div className={`card-body border-bottom py-3 ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'}`}>
           <div
             className={`d-flex align-items-center ms-auto text-muted ${
@@ -965,23 +1035,6 @@ export function Table({
               />
             )}
             <div>
-              {showAddNewRowButton && (
-                <button
-                  className="btn btn-light btn-sm p-1 mx-1"
-                  onClick={(e) => {
-                    showAddNewRowPopup();
-                  }}
-                  data-tooltip-id="tooltip-for-add-new-row"
-                  data-tooltip-content="Add new row"
-                  disabled={tableDetails.addNewRowsDetails.addingNewRows}
-                >
-                  <img src="assets/images/icons/plus.svg" width="15" height="15" />
-                  {!tableDetails.addNewRowsDetails.addingNewRows &&
-                    !_.isEmpty(tableDetails.addNewRowsDetails.newRowsDataUpdates) && (
-                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                    )}
-                </button>
-              )}
               <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
               {showFilterButton && (
                 <>
@@ -999,79 +1052,10 @@ export function Table({
                   <Tooltip id="tooltip-for-filter-data" className="tooltip" />
                 </>
               )}
-              {showDownloadButton && (
-                <>
-                  <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'bottom-end'}>
-                    <span
-                      className="btn btn-light btn-sm p-1"
-                      data-tooltip-id="tooltip-for-download"
-                      data-tooltip-content="Download"
-                    >
-                      <img src="assets/images/icons/download.svg" width="15" height="15" />
-                    </span>
-                  </OverlayTrigger>
-                  <Tooltip id="tooltip-for-download" className="tooltip" />
-                </>
-              )}
-              {!hideColumnSelectorButton && (
-                <OverlayTrigger
-                  trigger="click"
-                  rootClose={true}
-                  overlay={
-                    <Popover>
-                      <div
-                        data-cy={`dropdown-hide-column`}
-                        className={`dropdown-table-column-hide-common ${
-                          darkMode ? 'dropdown-table-column-hide-dark-themed' : 'dropdown-table-column-hide'
-                        } `}
-                      >
-                        <div className="dropdown-item">
-                          <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} />
-                          <span className="hide-column-name" data-cy={`options-select-all-coloumn`}>
-                            Select All
-                          </span>
-                        </div>
-                        {allColumns.map(
-                          (column) =>
-                            typeof column.Header === 'string' && (
-                              <div key={column.id}>
-                                <div>
-                                  <label className="dropdown-item">
-                                    <input
-                                      type="checkbox"
-                                      data-cy={`checkbox-coloumn-${String(column.Header)
-                                        .toLowerCase()
-                                        .replace(/\s+/g, '-')}`}
-                                      {...column.getToggleHiddenProps()}
-                                    />
-                                    <span
-                                      className="hide-column-name"
-                                      data-cy={`options-coloumn-${String(column.Header)
-                                        .toLowerCase()
-                                        .replace(/\s+/g, '-')}`}
-                                    >
-                                      {` ${column.Header}`}
-                                    </span>
-                                  </label>
-                                </div>
-                              </div>
-                            )
-                        )}
-                      </div>
-                    </Popover>
-                  }
-                  placement={'bottom-end'}
-                >
-                  <span data-cy={`select-column-icon`} className={`btn btn-light btn-sm p-1 mb-0 mx-1 `}>
-                    <IconEyeOff style={{ width: '15', height: '15', margin: '0px' }} />
-                  </span>
-                </OverlayTrigger>
-              )}
             </div>
           </div>
         </div>
-      )} */}
-
+      )}{' '} */}
       <div className="table-responsive jet-data-table">
         <table
           {...getTableProps()}
@@ -1311,10 +1295,58 @@ export function Table({
           </div>
         )}
       </div>
-      {(clientSidePagination || serverSidePagination || Object.keys(tableDetails.changeSet || {}).length > 0) && (
-        <div className="card-footer d-flex align-items-center jet-table-footer justify-content-center">
-          <div className="table-footer row gx-0">
-            <div className="col">
+      {(clientSidePagination ||
+        serverSidePagination ||
+        Object.keys(tableDetails.changeSet || {}).length > 0 ||
+        showAddNewRowButton ||
+        showDownloadButton) && (
+        <div
+          className={`card-footer d-flex align-items-center jet-table-footer justify-content-center ${
+            darkMode && 'dark-theme'
+          }`}
+        >
+          <div className={`table-footer row gx-0 d-flex align-items-center h-100`}>
+            <div className="col d-flex justify-content-start custom-gap-4">
+              {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
+                <>
+                  <ButtonSolid
+                    variant="secondary"
+                    className={`tj-text-xsm`}
+                    fill={darkMode ? '#3E63DD' : '#3E63DD'}
+                    onClick={() => {
+                      onEvent('onBulkUpdate', { component }).then(() => {
+                        handleChangesSaved();
+                      });
+                    }}
+                    data-cy={`table-button-save-changes`}
+                    size="md"
+                    isLoading={tableDetails.isSavingChanges ? true : false}
+                    style={{ padding: '10px 20px' }}
+                  >
+                    <span>Save changes</span>
+                  </ButtonSolid>
+                  <ButtonSolid
+                    variant="tertiary"
+                    className={`tj-text-xsm`}
+                    fill={darkMode ? '#697177' : '#889096'}
+                    onClick={() => {
+                      handleChangesDiscarded();
+                    }}
+                    data-cy={`table-button-discard-changes`}
+                    size="md"
+                    style={{ padding: '10px 20px' }}
+                  >
+                    <span>Discard changes</span>
+                  </ButtonSolid>
+                </>
+              ) : (
+                <span data-cy={`footer-number-of-records`} className="font-weight-500 text-black-000">
+                  {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
+                  {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
+                </span>
+              )}
+            </div>
+            <div className="col d-flex justify-content-center h-100">
               {(clientSidePagination || serverSidePagination) && (
                 <Pagination
                   lastActivePageIndex={pageIndex}
@@ -1328,36 +1360,67 @@ export function Table({
                   setPageIndex={setPaginationInternalPageIndex}
                   enableNextButton={enableNextButton}
                   enablePrevButton={enablePrevButton}
+                  darkMode={darkMode}
                 />
               )}
             </div>
-            <div className="col d-flex justify-content-end">
-              {showBulkUpdateActions && Object.keys(tableDetails.changeSet || {}).length > 0 ? (
-                <>
-                  <button
-                    className={`btn btn-primary btn-sm mx-2 ${tableDetails.isSavingChanges ? 'btn-loading' : ''}`}
-                    onClick={() =>
-                      onEvent('onBulkUpdate', { component }).then(() => {
-                        handleChangesSaved();
-                      })
+            <div className="col d-flex justify-content-end ">
+              {showAddNewRowButton && (
+                <ButtonSolid
+                  variant="ghostBlack"
+                  className={`tj-text-xsm ${tableDetails.addNewRowsDetails.addingNewRows && 'cursor-not-allowed'}`}
+                  style={{ minWidth: '32px' }}
+                  leftIcon="plus"
+                  fill={darkMode ? '#ECEDEE' : '#11181C'}
+                  iconWidth="16"
+                  onClick={() => {
+                    if (!tableDetails.addNewRowsDetails.addingNewRows) {
+                      showAddNewRowPopup();
                     }
-                    data-cy={`table-button-save-changes`}
-                  >
-                    Save Changes
-                  </button>
-                  <button
-                    className="btn btn-light btn-sm"
-                    onClick={() => handleChangesDiscarded()}
-                    data-cy={`table-button-discard-changes`}
-                  >
-                    Discard changes
-                  </button>
-                </>
-              ) : (
-                <span data-cy={`footer-number-of-records`}>
-                  {clientSidePagination && !serverSidePagination && `${globalFilteredRows.length} Records`}
-                  {serverSidePagination && totalRecords ? `${totalRecords} Records` : ''}
-                </span>
+                  }}
+                  size="md"
+                  data-tooltip-id="tooltip-for-add-new-row"
+                  data-tooltip-content="Add new row"
+                ></ButtonSolid>
+              )}
+              {showDownloadButton && (
+                <div>
+                  <OverlayTrigger trigger="click" overlay={downlaodPopover()} rootClose={true} placement={'top-end'}>
+                    <span>
+                      {' '}
+                      <ButtonSolid
+                        variant="ghostBlack"
+                        className="tj-text-xsm"
+                        style={{
+                          minWidth: '32px',
+                        }}
+                        leftIcon="filedownload"
+                        fill={darkMode ? '#ECEDEE' : '#11181C'}
+                        iconWidth="16"
+                        size="md"
+                        data-tooltip-id="tooltip-for-download"
+                        data-tooltip-content="Download"
+                      ></ButtonSolid>
+                    </span>
+                  </OverlayTrigger>
+                </div>
+              )}
+              {!hideColumnSelectorButton && (
+                <OverlayTrigger trigger="click" rootClose={true} overlay={hideColumnsPopover()} placement={'top-end'}>
+                  <span>
+                    {' '}
+                    <ButtonSolid
+                      variant="ghostBlack"
+                      className="tj-text-xsm"
+                      style={{ minWidth: '32px' }}
+                      leftIcon="eye1"
+                      fill={darkMode ? '#ECEDEE' : '#11181C'}
+                      iconWidth="16"
+                      size="md"
+                      data-cy={`select-column-icon`}
+                    ></ButtonSolid>
+                  </span>
+                </OverlayTrigger>
               )}
             </div>
           </div>

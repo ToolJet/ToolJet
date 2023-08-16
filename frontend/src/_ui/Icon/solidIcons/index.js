@@ -116,6 +116,10 @@ import Mail from './Mail.jsx';
 import Logs from './Logs.jsx';
 import Marketplace from './Marketplace.jsx';
 import PlusRectangle from './PlusRectangle.jsx';
+import CheveronLeftDouble from './CheveronLeftDouble.jsx';
+import CheveronRightDouble from './CheveronRightDouble.jsx';
+import Dot from './Dot.jsx';
+import Check from './Check.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -157,8 +161,12 @@ const Icon = (props) => {
       return <CheveronDown {...props} />;
     case 'cheveronleft':
       return <CheveronLeft {...props} />;
+    case 'cheveronleftdouble':
+      return <CheveronLeftDouble {...props} />;
     case 'cheveronright':
       return <CheveronRight {...props} />;
+    case 'cheveronrightdouble':
+      return <CheveronRightDouble {...props} />;
     case 'cheveronup':
       return <CheveronUp {...props} />;
     case 'clearrectangle':
@@ -351,6 +359,10 @@ const Icon = (props) => {
       return <Mail {...props} />;
     case 'marketplace':
       return <Marketplace {...props} />;
+    case 'dot':
+      return <Dot {...props} />;
+    case 'check':
+      return <Check {...props} />;
     default:
       return <Apps {...props} />;
   }

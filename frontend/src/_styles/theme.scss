@@ -11,8 +11,7 @@
 @import "./dropdown-custom.scss";
 @import "./ui-operations.scss";
 @import 'react-loading-skeleton/dist/skeleton.css';
-@import "./table-component.scss";
-
+@import './table-component.scss';
 /* ibm-plex-sans-100 - latin */
 @font-face {
   font-display: swap;
@@ -6856,34 +6855,6 @@ tbody {
   }
 }
 
-.dropdown-table-column-hide-common {
-  border-radius: 3px;
-  height: auto;
-  overflow-y: scroll;
-  padding: 8px 16px;
-  width: 20rem;
-  max-height: 200px;
-}
-
-.dropdown-table-column-hide {
-  background-color: #ffffff;
-  box-shadow: 0 0 0 2px #0000001a;
-}
-
-.dropdown-table-column-hide-dark-themed {
-  color: #ffffff !important;
-  background-color: #1f2936 !important;
-  box-shadow: 0 0 0 2px #9292921a;
-}
-
-.hide-column-table-text {
-  margin: 0 !important;
-}
-
-.hide-column-name {
-  padding-left: 10px !important;
-}
-
 .rest-methods-url {
   .cm-s-default {
     .cm-string-2 {
@@ -6942,17 +6913,6 @@ tbody {
 
   .table-list-item:hover .table-list-item-popover {
     display: block;
-  }
-}
-
-// download pop-up in the table widget
-.table-widget-download-popup {
-  .cursor-pointer {
-    width: 130px;
-
-    &:hover {
-      font-weight: bolder;
-    }
   }
 }
 
@@ -10940,4 +10900,19 @@ tbody {
 }
 .custom-gap-8{
   gap: 8px;
+}
+.color-slate-11{
+  color: var(--slate11) !important;
+}
+.custom-gap-6{
+  gap:6px
+}
+.custom-gap-2{
+  gap:2px
+}
+.custom-gap-4{
+  gap: 4px;
+}
+.text-black-000{
+  color: var(--text-black-000) !important;
 }
