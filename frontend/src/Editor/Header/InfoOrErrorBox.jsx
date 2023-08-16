@@ -1,6 +1,6 @@
 import React from 'react';
 
-function InfoOrErrorBox({ active, message, isError }) {
+function InfoOrErrorBox({ active, message, isError, darkMode }) {
   const boxStyle = {
     display: active ? 'flex' : 'none',
     flexDirection: 'column',
@@ -10,8 +10,8 @@ function InfoOrErrorBox({ active, message, isError }) {
     width: '200px',
     height: '32px',
     borderRadius: '6px',
-    border: '1px solid var(--tomato-03, #FFF0EE)',
-    background: 'var(--base-white-00, #FFF)',
+    border: `1px solid ${darkMode ? 'var(--dark-border-color, #2D3748)' : 'var(--light-border-color, #FFF0EE)'}`,
+    background: darkMode ? 'var(--dark-bg-01, #1E293B)' : 'var(--base-white-00, #FFF)',
     boxShadow: '0px 1px 2px 0px rgba(16, 24, 40, 0.05)',
     color: isError ? 'var(--light-tomato-10, #DB4324)' : 'var(--slate-light-10, #7E868C)',
     zIndex: 10000,

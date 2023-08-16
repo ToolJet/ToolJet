@@ -31,13 +31,11 @@ function EditAppName({ appId, appName, onNameChanged }) {
 
   const saveAppName = async (newName) => {
     const trimmedName = newName.trim();
-    console.log(trimmedName, 'first');
     if (validateAppName(trimmedName).errorMsg) {
-      console.log(trimmedName, appName);
-      setError('Maximum length has been reached');
       setName(appName);
       clearError();
       toast.error('App name could not be updated. Please try again!');
+      setIsEditing(false);
       return;
     }
 
@@ -84,11 +82,11 @@ function EditAppName({ appId, appName, onNameChanged }) {
 
   return (
     <div className={`app-name input-icon ${darkMode ? 'dark' : ''}`}>
-      <ToolTip message={name} placement="bottom">
+      <ToolTip message={name} placement="bottom" isVisible={!isEditing}>
         <input
           ref={inputRef}
           type="text"
-          onInput={handleInput} // Use onInput event instead of onChange
+          onInput={handleInput}
           onBlur={handleBlur}
           onFocus={handleFocus}
           onClick={() => {
@@ -107,6 +105,7 @@ function EditAppName({ appId, appName, onNameChanged }) {
         active={isError || isEditing}
         message={errorMessage || 'App name should be unique and max 50 characters'}
         isError={isError}
+        darkMode={darkMode}
       />
     </div>
   );
