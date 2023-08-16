@@ -3,7 +3,7 @@ import { ToolTip } from '@/_components';
 import { appService } from '@/_services';
 import { handleHttpErrorMessages, validateName } from '../../_helpers/utils';
 
-function EditAppName({ appId, appName, onNameChanged }) {
+function EditAppName({ appId, appName = '', onNameChanged }) {
   const darkMode = localStorage.getItem('darkMode') === 'true';
   const [name, setName] = React.useState(appName);
 

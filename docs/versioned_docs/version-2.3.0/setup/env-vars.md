@@ -78,7 +78,7 @@ Use this environment variable to enable/disable the feature that allows users to
 ### Marketplace
 #### Marketplace feature enable ( optional )
 
-Use this environment variable to enable/disable the feature that allows users to use the [marketplace](/docs/marketplace).
+Use this environment variable to enable/disable the feature that allows users to use the marketplace.
 
 | variable                   | value             |
 | -------------------------- | ----------------- |

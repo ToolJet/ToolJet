@@ -20,6 +20,7 @@ export const DropDown = function DropDown({
   const { selectedTextColor, borderRadius, visibility, disabledState, justifyContent, boxShadow } = styles;
   const [currentValue, setCurrentValue] = useState(() => (advanced ? findDefaultItem(schema) : value));
   const { value: exposedValue } = exposedVariables;
+  const [showValidationError, setShowValidationError] = useState(false);
 
   function findDefaultItem(schema) {
     const foundItem = schema?.find((item) => item?.default === true);
@@ -244,6 +245,7 @@ export const DropDown = function DropDown({
             isDisabled={disabledState}
             value={selectOptions.filter((option) => option.value === currentValue)[0] ?? null}
             onChange={(selectedOption, actionProps) => {
+              setShowValidationError(true);
               if (actionProps.action === 'select-option') {
                 setCurrentValue(selectedOption.value);
                 setExposedVariable('value', selectedOption.value).then(() => fireEvent('onSelect'));
@@ -260,7 +262,9 @@ export const DropDown = function DropDown({
           />
         </div>
       </div>
-      <div className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}>{validationError}</div>
+      <div className={`invalid-feedback ${isValid ? '' : visibility ? 'd-flex' : 'none'}`}>
+        {showValidationError && validationError}
+      </div>
     </>
   );
 };
