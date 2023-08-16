@@ -511,7 +511,7 @@ export const widgets = [
         disabledState: { value: '{{false}}' },
         cellSize: { value: 'compact' },
         borderRadius: { value: '0' },
-        tableType: { value: 'table-bordered' },
+        tableType: { value: 'table-classic' },
       },
     },
   },

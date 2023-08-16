@@ -120,6 +120,7 @@ import CheveronLeftDouble from './CheveronLeftDouble.jsx';
 import CheveronRightDouble from './CheveronRightDouble.jsx';
 import Dot from './Dot.jsx';
 import Check from './Check.jsx';
+import Editable from './Editable.jsx';
 
 const Icon = (props) => {
   switch (props.name) {
@@ -363,6 +364,8 @@ const Icon = (props) => {
       return <Dot {...props} />;
     case 'check':
       return <Check {...props} />;
+    case 'editable':
+      return <Editable {...props} />;
     default:
       return <Apps {...props} />;
   }

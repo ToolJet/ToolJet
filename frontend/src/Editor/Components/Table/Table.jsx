@@ -591,11 +591,13 @@ export function Table({
         hooks.visibleColumns.push((columns) => [
           {
             id: 'selection',
-            Header: ({ getToggleAllPageRowsSelectedProps }) => (
-              <div className="d-flex flex-column align-items-center">
-                {showBulkSelector && <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />}
-              </div>
-            ),
+            Header: ({ getToggleAllPageRowsSelectedProps }) => {
+              return (
+                <div className="d-flex flex-column align-items-center">
+                  {showBulkSelector && <IndeterminateCheckbox {...getToggleAllPageRowsSelectedProps()} />}
+                </div>
+              );
+            },
             Cell: ({ row }) => {
               return (
                 <div className="d-flex flex-column align-items-center">
@@ -1061,7 +1063,7 @@ export function Table({
           {...getTableProps()}
           className={`table table-vcenter table-nowrap ${tableType} ${darkMode && 'table-dark'} ${
             tableDetails.addNewRowsDetails.addingNewRows && 'disabled'
-          }`}
+          } ${!loadingState && page.length === 0 && 'h-100'}`}
           style={computedStyles}
         >
           <thead>
@@ -1089,52 +1091,139 @@ export function Table({
                       ref={droppableProvided.innerRef}
                       key={index}
                       {...headerGroup.getHeaderGroupProps()}
-                      tabIndex="0"
                       className="tr"
                     >
-                      {headerGroup.headers.map((column, index) => (
-                        <Draggable
-                          key={column.id}
-                          draggableId={column.id}
-                          index={index}
-                          isDragDisabled={!column.accessor}
-                        >
-                          {(provided, snapshot) => {
-                            return (
-                              <th
-                                key={index}
-                                {...column.getHeaderProps()}
-                                className={
-                                  column.isSorted ? (column.isSortedDesc ? 'sort-desc th' : 'sort-asc th') : 'th'
-                                }
-                              >
-                                <div
-                                  data-cy={`column-header-${String(column.exportValue)
-                                    .toLowerCase()
-                                    .replace(/\s+/g, '-')}`}
-                                  {...column.getSortByToggleProps()}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  // {...extraProps}
-                                  ref={provided.innerRef}
-                                  style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
+                      {headerGroup.headers.map((column, index) => {
+                        return (
+                          <Draggable
+                            key={column.id}
+                            draggableId={column.id}
+                            index={index}
+                            isDragDisabled={!column.accessor}
+                          >
+                            {(provided, snapshot) => {
+                              let headerProps = { ...column.getHeaderProps() };
+                              if (column.columnType === 'selector') {
+                                headerProps = {
+                                  ...headerProps,
+                                  style: {
+                                    ...headerProps.style,
+                                    width: 40,
+                                    padding: 0,
+                                    display: 'flex',
+                                    'align-items': 'center',
+                                    'justify-content': 'center',
+                                  },
+                                };
+                              }
+                              return (
+                                <th
+                                  key={index}
+                                  {...headerProps}
+                                  className={`th tj-text-xsm font-weight-400 ${
+                                    column.isSorted && (column.isSortedDesc ? '' : '')
+                                  } ${column.isResizing && 'resizing-column'}`}
                                 >
-                                  {column.render('Header')}
-                                </div>
-                                <div
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                  }}
-                                  draggable="true"
-                                  {...column.getResizerProps()}
-                                  className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
-                                />
-                              </th>
-                            );
-                          }}
-                        </Draggable>
-                      ))}
+                                  <div
+                                    className={`${
+                                      column.columnType !== 'selector' && 'd-flex justify-content-between custom-gap-12'
+                                    }`}
+                                    {...column.getSortByToggleProps()}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    // {...extraProps}
+                                    ref={provided.innerRef}
+                                    style={{ ...getItemStyle(snapshot, provided.draggableProps.style) }}
+                                  >
+                                    <div
+                                      className={`${
+                                        column.columnType !== 'selector' && column.isEditable && 'd-flex custom-gap-4'
+                                      }`}
+                                    >
+                                      <div>
+                                        {column.columnType !== 'selector' && column.isEditable && (
+                                          <SolidIcon
+                                            name="editable"
+                                            width="16px"
+                                            height="16px"
+                                            fill={darkMode ? '#4C5155' : '#C1C8CD'}
+                                            vievBox="0 0 16 16"
+                                          />
+                                        )}
+                                      </div>
+                                      <div
+                                        data-cy={`column-header-${String(column.exportValue)
+                                          .toLowerCase()
+                                          .replace(/\s+/g, '-')}`}
+                                        className={`header-text ${
+                                          column.id === 'selection' &&
+                                          column.columnType === 'selector' &&
+                                          'selector-column'
+                                        }`}
+                                      >
+                                        {column.render('Header')}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      {column.columnType !== 'selector' &&
+                                        column.isSorted &&
+                                        (column.isSortedDesc ? (
+                                          <SolidIcon
+                                            name="arrowdown"
+                                            width="16"
+                                            height="16"
+                                            fill={darkMode ? '#ECEDEE' : '#11181C'}
+                                          />
+                                        ) : (
+                                          <SolidIcon
+                                            name="arrowup"
+                                            width="16"
+                                            height="16"
+                                            fill={darkMode ? '#ECEDEE' : '#11181C'}
+                                          />
+                                        ))}
+                                    </div>
+                                  </div>
+                                  <div
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                    }}
+                                    draggable="true"
+                                    {...column.getResizerProps()}
+                                    className={`${
+                                      column.id === 'selection' && column.columnType === 'selector' ? '' : 'resizer'
+                                    }  ${column.isResizing ? 'isResizing' : ''}`}
+                                  >
+                                    {/* {column.isResizing && (
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="25"
+                                        height="24"
+                                        viewBox="0 0 25 24"
+                                        fill="none"
+                                      >
+                                        <rect
+                                          width="24"
+                                          height="24"
+                                          transform="translate(0.00195312)"
+                                          fill=""
+                                          // style="mix-blend-mode:multiply"
+                                        />
+                                        <path
+                                          d="M12.498 13.5015H12.4981H14.5191V15.5875V16.7996L15.3737 15.94L18.9387 12.354L19.2892 12.0014L18.9387 11.6489L15.3737 8.06393L14.5191 7.20459V8.41649V10.5215H12.4981H9.49811V8.41449V7.20714L8.64451 8.06099L5.05851 11.648L4.70505 12.0015L5.05856 12.355L8.64456 15.941L9.49811 16.7946V15.5875V13.5006L12.498 13.5015Z"
+                                          fill="black"
+                                          stroke="white"
+                                        />
+                                      </svg>
+                                    )} */}
+                                  </div>
+                                </th>
+                              );
+                            }}
+                          </Draggable>
+                        );
+                      })}
                     </tr>
                   )}
                 </Droppable>
@@ -1143,9 +1232,14 @@ export function Table({
           </thead>
 
           {!loadingState && page.length === 0 && (
-            <center className="w-100">
-              <div className="py-5"> no data </div>
-            </center>
+            <div className="d-flex flex-column align-items-center custom-gap-8 justify-content-center h-100">
+              <div className="warning-no-data">
+                <div className="warning-svg-wrapper">
+                  <SolidIcon name="warning" width="16" />
+                </div>
+              </div>
+              <div className="warning-no-data-text">No data</div>
+            </div>
           )}
 
           {!loadingState && (
@@ -1199,10 +1293,14 @@ export function Table({
                             _.get(tableDetails.changeSet[cell.row.index], currentColumn?.accessor, undefined) !==
                             undefined
                           ) {
-                            cellProps.style.backgroundColor = darkMode ? '#1c252f' : '#ffffde';
-                            cellProps.style['--tblr-table-accent-bg'] = darkMode ? '#1c252f' : '#ffffde';
+                            cellProps.style.backgroundColor = darkMode ? '#391A03' : '#FFF1E7';
+                            cellProps.style['--tblr-table-accent-bg'] = darkMode ? '#391A03' : '#FFF1E7';
                           }
                         }
+                      }
+                      if (cell.column.columnType === 'selector') {
+                        cellProps.style.width = 40;
+                        cellProps.style.padding = 0;
                       }
                       const wrapAction = textWrapActions(cell.column.id);
                       const rowChangeSet = changeSet ? changeSet[cell.row.index] : null;
@@ -1249,6 +1347,8 @@ export function Table({
                             'has-datepicker': cell.column.columnType === 'datepicker',
                             'align-items-center flex-column': cell.column.columnType === 'selector',
                             [cellSize]: true,
+                            'selector-column': cell.column.columnType === 'selector' && cell.column.id === 'selection',
+                            'resizing-column': cell.column.isResizing,
                           })}
                           {...cellProps}
                           style={{ ...cellProps.style, backgroundColor: cellBackgroundColor ?? 'inherit' }}
