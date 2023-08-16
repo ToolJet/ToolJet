@@ -12,29 +12,46 @@ export const PrivateRoute = ({ children }) => {
 
   const params = useParams();
   const [extraProps, setExtraProps] = useState({});
+  const [isValidating, setValidationStatus] = useState(true);
 
   const pathname = getPathname(null, true);
   const isEditorOrViewerGoingToRender = pathname.startsWith('/apps/') || pathname.startsWith('/applications/');
 
+  const validateRoutes = async (group_permissions, callback) => {
+    if (isEditorOrViewerGoingToRender && group_permissions) {
+      const componentType = pathname.startsWith('/apps/') ? 'editor' : 'viewer';
+      const { slug } = params;
+
+      /* Validate the app permissions */
+      const accessDetails = await handleAppAccess(componentType, slug);
+      setExtraProps(accessDetails);
+      callback();
+    } else {
+      callback();
+    }
+  };
+
   useEffect(() => {
     const subject = authenticationService.currentSession.subscribe(async (newSession) => {
-      /* Valid session and check if the component is editor or viewer */
-      if (isEditorOrViewerGoingToRender && newSession?.group_permissions) {
-        const componentType = pathname.startsWith('/apps/') ? 'editor' : 'viewer';
-        const { slug } = params;
-
-        /* Validate the app permissions */
-        const accessDetails = await handleAppAccess(componentType, slug);
-        setExtraProps(accessDetails);
+      /* When user refreshes the editor page this validation will happen. and pass the props to the component if the user has access to the app */
+      validateRoutes(newSession?.group_permissions, () => {
         setSession(newSession);
-      } else {
-        setSession(newSession);
-      }
+      });
     });
 
     () => subject.unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setValidationStatus(true);
+    /* When change routes (not hard reload) will validate the access */
+    validateRoutes(session?.group_permissions, () => {
+      console.log('inside');
+      setValidationStatus(false);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   //get either slug or id from the session and replace
   const { current_organization_slug, current_organization_id } = session;
@@ -43,10 +60,9 @@ export const PrivateRoute = ({ children }) => {
     (current_organization_slug || current_organization_id) && window.history.replaceState(null, null, path);
   }
 
-  // authorised so return component
   if (
-    session?.group_permissions ||
-    location.pathname.startsWith('/applications/') ||
+    (session?.group_permissions && !isValidating) ||
+    (location.pathname.startsWith('/applications/') && !isValidating) ||
     (location.pathname === '/switch-workspace' && session?.current_organization_id)
   ) {
     return isEditorOrViewerGoingToRender ? React.cloneElement(children, extraProps) : children;
