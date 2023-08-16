@@ -82,6 +82,7 @@ const Authentication = ({
           getter={'access_token_custom_headers'}
           options={access_token_custom_headers}
           optionchanged={optionchanged}
+          workspaceConstants={workspaceConstants}
         />
 
         <div className="col-md-12">

@@ -18,6 +18,7 @@ const Oauth = ({
   authObject,
   optionchanged,
   access_token_custom_headers,
+  workspaceConstants,
 }) => {
   useEffect(() => {
     if (authObject && authObject?.flows['authorizationCode']) {
@@ -104,6 +105,7 @@ const Oauth = ({
           className="form-control"
           onChange={(e) => optionchanged('client_id', e.target.value)}
           value={client_id}
+          workspaceConstants={workspaceConstants}
         />
       </div>
 
