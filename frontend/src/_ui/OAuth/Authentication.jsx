@@ -22,6 +22,7 @@ const Authentication = ({
   auth_url,
   multiple_auth_enabled,
   optionchanged,
+  workspaceConstants,
 }) => {
   if (auth_type === 'oauth2') {
     return (
@@ -54,6 +55,7 @@ const Authentication = ({
                 className="form-control"
                 onChange={(e) => optionchanged('header_prefix', e.target.value)}
                 value={header_prefix}
+                workspaceConstants={workspaceConstants}
               />
             </div>
           )}
@@ -67,6 +69,7 @@ const Authentication = ({
             className="form-control"
             onChange={(e) => optionchanged('access_token_url', e.target.value)}
             value={access_token_url}
+            workspaceConstants={workspaceConstants}
           />
         </div>
 
@@ -88,6 +91,7 @@ const Authentication = ({
             className="form-control"
             onChange={(e) => optionchanged('client_id', e.target.value)}
             value={client_id}
+            workspaceConstants={workspaceConstants}
           />
         </div>
 
@@ -100,10 +104,11 @@ const Authentication = ({
             </small>
           </label>
           <Input
-            type="text"
+            type="password"
             className="form-control"
             onChange={(e) => optionchanged('client_secret', e.target.value)}
             value={client_secret}
+            workspaceConstants={workspaceConstants}
           />
         </div>
 
@@ -114,6 +119,7 @@ const Authentication = ({
             className="form-control"
             onChange={(e) => optionchanged('scopes', e.target.value)}
             value={scopes}
+            workspaceConstants={workspaceConstants}
           />
         </div>
 
@@ -134,6 +140,7 @@ const Authentication = ({
                 className="form-control"
                 onChange={(e) => optionchanged('auth_url', e.target.value)}
                 value={auth_url}
+                workspaceConstants={workspaceConstants}
               />
             </div>
 
@@ -160,6 +167,7 @@ const Authentication = ({
                 type="checkbox"
                 checked={multiple_auth_enabled}
                 onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
+                workspaceConstants={workspaceConstants}
               />
               <span className="form-check-label">Authentication Required for All Users</span>
             </label>
@@ -177,6 +185,7 @@ const Authentication = ({
             className="form-control"
             onChange={(e) => optionchanged('username', e.target.value)}
             value={username}
+            workspaceConstants={workspaceConstants}
           />
         </div>
         <div className="col-md-12">
@@ -188,10 +197,11 @@ const Authentication = ({
             </small>
           </label>
           <Input
-            type="text"
+            type="password"
             className="form-control"
             onChange={(e) => optionchanged('password', e.target.value)}
             value={password}
+            workspaceConstants={workspaceConstants}
           />
         </div>
       </div>
@@ -208,10 +218,11 @@ const Authentication = ({
             </small>
           </label>
           <Input
-            type="text"
+            type="password"
             className="form-control"
             onChange={(e) => optionchanged('bearer_token', e.target.value)}
             value={bearer_token}
+            workspaceConstants={workspaceConstants}
           />
         </div>
       </div>
