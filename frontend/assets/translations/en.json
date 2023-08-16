@@ -721,7 +721,7 @@
       "noActionMessage": "This table doesn't have any action buttons"
     },
     "Button": {
-      "displayName": "Button (ok)",
+      "displayName": "Button",
       "description": "Trigger actions: queries, alerts etc"
     },
     "Chart": {
@@ -729,51 +729,55 @@
       "description": "Display charts"
     },
     "Modal": {
-      "displayName": "Modal (ok)",
+      "displayName": "Modal",
       "description": "Modal triggered by events"
     },
     "TextInput": {
-      "displayName": "Text Input (ok)",
+      "displayName": "Text Input",
       "description": "Text field for forms"
     },
     "NumberInput": {
-      "displayName": "Number Input (ok)",
+      "displayName": "Number Input",
       "description": "Number field for forms"
     },
     "PasswordInput": {
-      "displayName": "Password Input (ok)",
+      "displayName": "Password Input",
       "description": "Password input field for forms"
     },
     "Datepicker": {
-      "displayName": "Date Picker (ok)",
+      "displayName": "Date Picker",
       "description": "Select a date and time"
     },
     "Checkbox": {
-      "displayName": "Checkbox (ok)",
+      "displayName": "Checkbox",
       "description": "A single checkbox"
     },
     "Radio-button": {
-      "displayName": "Radio Button (ok)",
+      "displayName": "Radio Button",
       "description": "Radio buttons"
     },
     "ToggleSwitch": {
-      "displayName": "Toggle Switch (ok)",
+      "displayName": "Toggle Switch",
       "description": "Toggle Switch"
     },
     "Textarea": {
-      "displayName": "Textarea (ok)",
+      "displayName": "Textarea",
       "description": "Text area form field"
     },
     "DateRangePicker": {
-      "displayName": "Range Picker",
+      "displayName": "Range Picker (Pendiente)",
       "description": "Select a date range"
     },
     "Text": {
-      "displayName": "Text (ok)",
+      "displayName": "Text",
       "description": "Display markdown or HTML"
     },
+    "Icon": {
+      "displayName": "Icon (Pendiente)",
+      "description": "Icon"
+    },
     "Image": {
-      "displayName": "Image (ok)",
+      "displayName": "Image",
       "description": "Display an Image"
     },
     "Container": {
@@ -781,11 +785,11 @@
       "description": "Wrapper for multiple components"
     },
     "Dropdown": {
-      "displayName": "Dropdown (ok)",
+      "displayName": "Dropdown",
       "description": "Select one value from options"
     },
     "Multiselect": {
-      "displayName": "Multiselect (ok)",
+      "displayName": "Multiselect",
       "description": "Select multiple values from options"
     },
     "RichTextEditor": {
@@ -801,15 +805,15 @@
       "description": "Scan QR codes and hold its data"
     },
     "StarRating": {
-      "displayName": "Rating (ok)",
+      "displayName": "Rating",
       "description": "Star rating"
     },
     "Divider": {
-      "displayName": "Divider (ok)",
+      "displayName": "Divider",
       "description": "Separator between components"
     },
     "FilePicker": {
-      "displayName": "File Picker",
+      "displayName": "File Picker (Pendiente)",
       "description": "File Picker"
     },
     "Calendar": {
@@ -829,7 +833,7 @@
       "description": "Tabs component"
     },
     "Timer": {
-      "displayName": "Timer",
+      "displayName": "Timer (pendiente)",
       "description": "timer"
     },
     "Listview": {
@@ -837,19 +841,19 @@
       "description": "Wrapper for multiple components"
     },
     "Tags": {
-      "displayName": "Tags (ok)",
+      "displayName": "Tags",
       "description": "Content can be shown as tags"
     },
     "Pagination": {
-      "displayName": "Pagination (ok)",
+      "displayName": "Pagination",
       "description": "Pagination "
     },
     "CircularProgressbar": {
-      "displayName": "Circular Progressbar (ok)",
+      "displayName": "Circular Progressbar",
       "description": "Show the progress using circular progressbar"
     },
     "Spinner": {
-      "displayName": "Spinner (ok)",
+      "displayName": "Spinner",
       "description": "Spinner can be used to display loading status"
     },
     "Statistics": {
@@ -857,11 +861,11 @@
       "description": "Statistics can be used to display different statistical information"
     },
     "RangeSlider": {
-      "displayName": "Range Slider (ok)",
+      "displayName": "Range Slider",
       "description": "Can be used to show slider with a range"
     },
     "Timeline": {
-      "displayName": "Timeline (ok)",
+      "displayName": "Timeline",
       "description": "Visual representation of a sequence of events"
     },
     "SvgImage": {
@@ -873,7 +877,7 @@
       "description": "HTML Viewer"
     },
     "VerticalDivider": {
-      "displayName": "Vertical Divider (ok)",
+      "displayName": "Vertical Divider",
       "description": "Vertical Separator between components"
     },
     "CustomComponent": {
@@ -881,11 +885,11 @@
       "description": "Add your custom react component"
     },
     "ButtonGroup": {
-      "displayName": "Button Group (ok)",
+      "displayName": "Button Group",
       "description": "ButtonGroup"
     },
     "Link": {
-      "displayName": "Link (ok)",
+      "displayName": "Link",
       "description": "Add link to the text"
     },
     "PDF": {
@@ -893,7 +897,7 @@
       "description": "Embed PDF file"
     },
     "Steps": {
-      "displayName": "Steps (ok)",
+      "displayName": "Steps",
       "description": "Steps"
     },
     "KanbanBoard": {
