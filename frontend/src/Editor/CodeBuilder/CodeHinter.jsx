@@ -102,7 +102,7 @@ export function CodeHinter({
   });
   const { t } = useTranslation();
   const { variablesExposedForPreview } = useContext(EditorContext);
-
+  // console.log(paramLabel, 'codeShow');
   const prevCountRef = useRef(false);
 
   useEffect(() => {

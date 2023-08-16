@@ -62,7 +62,6 @@ import Upstatistics from './upstatistics.jsx';
 import Verticaldivider from './verticaldivider.jsx';
 
 const WidgetIcon = (props) => {
-  console.log('props', props);
   switch (props.name) {
     case 'boundedbox':
       return <BoundedBox {...props} />;

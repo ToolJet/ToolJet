@@ -364,15 +364,8 @@ export const Inspector = ({
             </div>
           </div>
         </div>
-        <div style={{}}>
-          <Tabs
-            defaultActiveKey={'properties'}
-            id="inspector"
-            // className={cx('mb-3 sidebar-debugger', {
-            //   'theme-dark dark-theme': darkMode,
-            // })}
-            // justify
-          >
+        <div>
+          <Tabs defaultActiveKey={'properties'} id="inspector">
             <Tab eventKey="properties" title="Properties">
               {propertiesTab}
             </Tab>

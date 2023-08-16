@@ -15,6 +15,8 @@ import { useTranslation } from 'react-i18next';
 
 import { useDataQueries } from '@/_stores/dataQueriesStore';
 import RunjsParameters from './ActionConfigurationPanels/RunjsParamters';
+import { Button } from 'react-bootstrap';
+import AddNewButton from '@/ToolJetUI/Buttons/AddNewButton/AddNewButton';
 
 export const EventManager = ({
   component,
@@ -827,7 +829,7 @@ export const EventManager = ({
                           >
                             <div className="card column-sort-row">
                               <div className={rowClassName} data-cy="event-handler-card">
-                                <div className="row p-2" role="button">
+                                <div className="row" role="button" style={{ padding: '6px 12px' }}>
                                   <div className="col-auto" style={{ cursor: 'grab' }}>
                                     <svg
                                       width="8"
@@ -868,10 +870,10 @@ export const EventManager = ({
                                       />
                                     </svg>
                                   </div>
-                                  <div className="col text-truncate" data-cy="event-handler">
+                                  <div className="col text-truncate event-handler-text" data-cy="event-handler">
                                     {componentMeta.events[event.eventId]['displayName']}
                                   </div>
-                                  <div className="col text-truncate" data-cy="event-name">
+                                  <div className="col text-truncate event-name-text" data-cy="event-name">
                                     <small className="event-action font-weight-light text-truncate">
                                       {actionMeta.name}
                                     </small>
@@ -950,16 +952,13 @@ export const EventManager = ({
 
   return (
     <>
-      <div className="text-right mb-3">
-        <button
-          className="btn btn-sm border-0 font-weight-normal padding-2 col-auto color-primary inspector-add-button"
-          onClick={addHandler}
-          data-cy="add-more-event-handler"
-        >
-          {t('editor.inspector.eventManager.addHandler', '+ Add handler')}
-        </button>
+      <div className="mb-3">
+        {renderHandlers(events)}
+        <AddNewButton onClick={addHandler} data-cy="add-more-event-handler">
+          {/* {t('editor.inspector.eventManager.addHandler', 'New event handler')} */}
+          New event handler
+        </AddNewButton>
       </div>
-      {renderHandlers(events)}
     </>
   );
 };

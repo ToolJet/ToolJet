@@ -1,0 +1,24 @@
+.list-group {
+
+}
+
+.list-group-item {
+padding: 6px 8px !important; 
+color: var(--slate12) !important;
+border: unset !important;
+border-radius: 6px !important;
+}
+
+.list-group-item-action:hover {
+  background-color: var(--slate4) !important ;
+}
+
+.list-group-item-action:disabled {
+    color: var(--slate9) !important;
+}
+
+.list-group-item.active {
+ background-color: var(--slate5) !important;
+ color: var(--slate12) !important
+//  border: unset;
+}
