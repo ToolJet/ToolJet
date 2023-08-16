@@ -1116,6 +1116,7 @@ export function Table({
                                   },
                                 };
                               }
+                              const isEditable = resolveReferences(column?.isEditable ?? false, currentState);
                               return (
                                 <th
                                   key={index}
@@ -1137,11 +1138,11 @@ export function Table({
                                   >
                                     <div
                                       className={`${
-                                        column.columnType !== 'selector' && column.isEditable && 'd-flex custom-gap-4'
+                                        column.columnType !== 'selector' && isEditable && 'd-flex custom-gap-4'
                                       }`}
                                     >
                                       <div>
-                                        {column.columnType !== 'selector' && column.isEditable && (
+                                        {column.columnType !== 'selector' && isEditable && (
                                           <SolidIcon
                                             name="editable"
                                             width="16px"
