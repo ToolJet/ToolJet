@@ -23,7 +23,7 @@ import { shallow } from 'zustand/shallow';
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'react-bootstrap';
 
-export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef }, ref) => {
+export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, appId }, ref) => {
   const { renameQuery } = useDataQueriesActions();
   const selectedQuery = useSelectedQuery();
   const selectedDataSource = useSelectedDataSource();
