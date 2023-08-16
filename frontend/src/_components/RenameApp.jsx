@@ -11,6 +11,7 @@ export function RenameApp({ closeModal, renameApp, show, selectedAppId, selected
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorText, setErrorText] = useState('');
+  const [clearInput, setClearInput] = useState(false);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -25,12 +26,17 @@ export function RenameApp({ closeModal, renameApp, show, selectedAppId, selected
     inputRef.current?.select();
   }, [show]);
 
+  useEffect(() => {
+    setIsSuccess(false);
+    setNewAppName(selectedAppName);
+    setClearInput(false);
+  }, [show, selectedAppName]);
+
   const handleRenameApp = async (newAppName, selectedAppId) => {
     if (!errorText) {
       setIsLoading(true);
       try {
         const success = await renameApp(newAppName, selectedAppId);
-        console.log(success);
         if (success === false) {
           setErrorText('App name already exists');
         } else {
@@ -46,9 +52,15 @@ export function RenameApp({ closeModal, renameApp, show, selectedAppId, selected
 
   const handleInputChange = (e) => {
     const newAppName = e.target.value;
-    const error = validateAppName(newAppName, 'App Name', true, false);
+    const error = validateAppName(newAppName, 'App name', true, false);
     setErrorText(error?.errorMsg || '');
-    setNewAppName(newAppName);
+
+    if (clearInput) {
+      setNewAppName('');
+      setClearInput(false);
+    } else {
+      setNewAppName(newAppName);
+    }
   };
 
   return (
@@ -79,7 +91,7 @@ export function RenameApp({ closeModal, renameApp, show, selectedAppId, selected
             onChange={handleInputChange}
             className="form-control"
             placeholder={'Enter app name'}
-            value={newAppName || selectedAppName}
+            value={newAppName}
             data-cy="app-name-input"
             autoFocus
             ref={inputRef}
