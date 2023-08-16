@@ -4,7 +4,7 @@ title: Code Editor
 ---
 # Code Editor
 
-Code Editor widget is a versatile text editor for editing code and supports several languages. This component can be used for editing code snippets in the supported languages(mentioned below).
+Code Editor component is a versatile text editor for editing code and supports several languages. This component can be used for editing code snippets in the supported languages(mentioned below).
 
 <div style={{textAlign: 'center'}}>
 
@@ -183,8 +183,8 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 | Layout  | description |
 | ----------- | ----------- |
-| Show on desktop | Toggle on or off to display the widget in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
-| Show on mobile | Toggle on or off to display the widget in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
+| Show on desktop | Toggle on or off to display the component in desktop view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
+| Show on mobile | Toggle on or off to display the component in mobile view. You can programmatically determine the value by clicking on Fx to set the value `{{true}}` or `{{false}}`. |
 
 ## Styles
 
@@ -196,8 +196,8 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 | Styles  | description | 
 | ----------- | ----------- |
-| Visibility | Toggle on or off to control the visibility of the widget. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the widget will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
-| Disable | This is `off` by default, toggle `on` the switch to lock the widget and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the widget will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
+| Visibility | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the component will not be visible after the app is deployed. By default, it's set to `{{true}}`. |
+| Disable | This is `off` by default, toggle `on` the switch to lock the component and make it non-functional. You can also programmatically set the value by clicking on the `Fx` button next to it. If set to `{{true}}`, the component will be locked and becomes non-functional. By default, its value is set to `{{false}}`. |
 | Border radius | Use this property to modify the border radius of the editor. The field expects only numerical value from `1` to `100`, default is `0`. |
 
 ## Exposed Variables
@@ -205,7 +205,3 @@ A Tooltip is often used to specify the extra information when the user hovers th
 | Variables      | Description |
 | ----------- | ----------- |
 | value | This variable holds the value whenever the user inputs anything on the code-editor . You can access the value dynamically using JS: `{{components.codeeditor1.value}}`| 
-
-## Component specific actions (CSA)
-
-There are currently no CSA (Component-Specific Actions) implemented to regulate or control the component.
