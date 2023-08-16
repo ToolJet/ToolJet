@@ -2,18 +2,24 @@
 id: overview
 title: Overview
 ---
-<div className='badge badge--primary heading-badge'>Available on: Paid plans</div>
+<div className='badge badge--primary heading-badge' style={{marginBottom:'10px'}}>Available on: Paid plans</div>
 <br/>
 
-Tooljet Workflows is as a visual, node-based platform tailored for data-centric automation tasks. With its intuitive design, users can effortlessly create nodes to run detailed queries across diverse data sources, manage conditional flows, and execute custom Javascript code. This not only simplifies intricate processes but also makes them more presentable, bridging the gap between complexity and clarity. Whether you're delving into data integration, generating detailed reports, or ensuring rigorous validation, Tooljet Workflows is your go-to solution. 
+ToolJet Workflows is a visual, node-based platform tailored for data-centric automation tasks. With its intuitive design, users can create detailed queries across diverse data sources, manage conditional flows, and execute custom JavaScript code. ToolJet Workflows can be used to simplify and isolate intricate processes and make them more presentable.
+
+<div style={{textAlign: 'center'}}>
+    <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/hero.png" alt="Workflows Preview" />
+</div>
+
+Whether you're delving into data integration, generating detailed reports, or ensuring rigorous validation, ToolJet Workflows is your go-to solution. 
 
 
 ## Quickstart Guide
 
-This introductory guide will help you understand the basics of Tooljet Workflows. We'll create a workflow that fetches the sales data from the database, transforms the data using Javascript and sends an SMS notification to the Sales Manager using Twilio. We will also conditionally return a success/failure message that can be used in a Tooljet Application to show a pop-up alert. 
+This introductory guide will help you understand the basics of ToolJet Workflows. We'll create a workflow that fetches the sales data from the database, transforms the data using JavaScript and sends an SMS notification to the Sales Manager using Twilio. The workflow will also conditionally return a success/failure message that can be used in a ToolJet Application to show a pop-up alert. 
 
 :::info
-For this guide, we've created a MonthlySales table in PostgreSQL with 5 columns - SalesID, ProductID, Month, UnitsSold and Total Revenue. We've also configured Twilio for SMS notification. All data sources that are configured in **Global Datasources** will be available in Workflows.
+All data sources that are configured in **Global Datasources** will be available in Workflows.
 :::
 
 To create a new workflow, click on the workflow icon in the left sidebar and click on the **Create New Workflow** button. You'll be taken to a fresh instance of a workflow. Let's start by renaming the workflow to *Quickstart Guide*. 
@@ -22,9 +28,9 @@ To create a new workflow, click on the workflow icon in the left sidebar and cli
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/create-new-workflow.gif" alt="Create New Workflow" />
 </div>
 
-The new instance of the workflow will have two nodes on the canvas - *Start Trigger* and *Result*. Nodes are a graphical representation of each process in a workflow.  
+The new instance of the workflow will have two nodes on the canvas - **Start Trigger** and **Result**. Nodes are a graphical representation of each process in a workflow.  
 
-Click on the blue circle on the *Start trigger* node and drag it to create a new node. Then select "PostgreSQL" node. 
+Click on the blue circle on the **Start trigger** node and drag it to create a new node. Then select **PostgreSQL** node. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/new-db-node.gif" alt="Create New PostgreSQL Node" />
@@ -32,18 +38,22 @@ Click on the blue circle on the *Start trigger* node and drag it to create a new
 
 <br/>
 
-We can now see a *postgresql1* node connected to the outgoing flow of the *Start trigger* node on the canvas. Click on the *postgresql1* node, a dialog box will show up on the right.  
+:::info
+For this guide, we've created a MonthlySales table in PostgreSQL with 5 columns - SalesID, ProductID, Month, UnitsSold and Total Revenue. We've also configured Twilio to send an SMS notification.
+:::
 
-<div style={{display: 'flex', paddingTop:'10px', justifyContent: 'space-between', flexDirection: window.innerWidth <= 768 ? 'column' : 'row', alignItems:'center'}}>
+We can now see a node named *postgresql1* connected to the outgoing flow of the **Start trigger** node on the canvas. Click on the *postgresql1* node, a dialog box will show up on the right.   
+
+<div style={{display: 'flex', justifyContent: 'space-between', flexDirection: window.innerWidth <= 768 ? 'column' : 'row', alignItems:'center'}}>
   <div style={{flex: 1, padding: '0', alignment:'center'}}>
     <p style={{textAlign: 'left'}}>
         - Click on the input field next to the PostgreSQL logo and rename the node to <i>fetchSalesData</i>. 
         <br/>    
         <br/>    
-        - There are two dropdowns right below the name field. The first dropdown lets you pick from a list of available nodes. The second dropdown lets you pick between "SQL" and "GUI" to frame your query. 
+        - There are two dropdowns right below the name field. The first dropdown lets you pick from a list of available nodes. The second dropdown lets you pick between <b>SQL mode</b> and <b>GUI mode</b> to frame your query. 
         <br/>
         <br/>
-        - We will stick to "SQL mode" for our example.
+        - We will stick to <b>SQL mode</b> for our example.
         <br/>
         <br/>
         - Below the two dropdowns we have an input field to write our SQL query, we'll enter the below query in the input field to fetch the required data:
@@ -51,7 +61,7 @@ We can now see a *postgresql1* node connected to the outgoing flow of the *Start
         <b>SELECT</b> <i>ProductID, Month, UnitsSold, TotalRevenue</i> <b>FROM</b> <i>MonthlySales</i>;
         <br/>    
         <br/>
-        - If you click on the Run button in the top-bar and open this node again, the results window at the bottom will be populated with the result of the query.  
+        - If you click on the <b>Run</b> button in the top bar, the results field at the bottom will be populated with the result of the query.  
     </p>
   </div>
   <div style={{flex: 1, padding: '10px'}}>
@@ -60,35 +70,33 @@ We can now see a *postgresql1* node connected to the outgoing flow of the *Start
 </div>
 <br/>
 
-Create an outgoing flow from the *fetchSalesData* node that we just created by clicking on the blue circle on its right. Select the Javascript node and rename it to *createNotification*. 
+Create an outgoing flow from the *fetchSalesData* node that we just created by clicking on the blue circle on its right. Select the **JavaScript** node and rename it to *createNotification*. 
 
 <div style={{textAlign: 'center'}}>
-    <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/new-js-node.gif" alt="Create New Javascript Node" />
+    <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/new-js-node.gif" alt="Create New JavaScript Node" />
 </div>
-<br/>
+
+The **JavaScript** node lets you run JavaScript code to transform data and perform other tasks. In our example, we are using it to convert the result from the previous node into a string. 
     
-<div style={{display: 'flex', paddingTop:'10px', justifyContent: 'space-between', flexDirection: window.innerWidth <= 768 ? 'column' : 'row', alignItems:'center'}}>
+<div style={{display: 'flex', justifyContent: 'space-between', flexDirection: window.innerWidth <= 768 ? 'column' : 'row', alignItems:'center'}}>
   <div style={{flex: 1, padding: '0', alignment:'center'}}>
     <p style={{textAlign: 'left'}}>
-        - The JavaScript node lets you run JavaScript code to transform data and perform other tasks. 
-        <br/>
-        <br/>
-        - Use a "return" statement to ensure that the node returns the data after the JavaScript code runs. 
-        <br/>    
-        <br/>    
         - In the JavaScript node, the data retrieved from the <i>fetchSalesData</i> node can be accessed using the property - <b>fetchSalesData.data</b>. 
         <br/>    
         <br/>    
         - Additionally, to determine the execution status (success or failure) of the node, refer to the <b>fetchSalesData.status</b> property. 
+        <br/>
+        <br/>
+        - It is important to use a <b>return</b> statement in the JavaScript node to ensure that the node returns some data after the code executes. 
     </p>    
   </div>
   <div style={{flex: 1, padding: '10px'}}>
-    <img className="screenshot-full" src="/img/workflows/overview/js-config.png" alt="Javascript Node Configuration"  />
+    <img className="screenshot-full" src="/img/workflows/overview/js-config.png" alt="JavaScript Node Configuration"  />
   </div>
 </div>
 <br/>
 
-We'll use the following code in the *createNotification* node to format our notification. 
+We'll use the following code in the *createNotification* node to format our notification. Note that we are using a **return** statement to make sure that we are returning data that will be transferred to the next node. 
 ```js
 const notification = fetchSalesData.data.map(sale => {
                      return`Product ID ${sale.productid} sold
@@ -101,14 +109,14 @@ return notification;
 
 Now that we are ready with our notification text, let's create a way to send it using Twilio. 
 
-Create an outgoing flow from the *createNotification* node and select the "Twilio" node. Rename the node to *sendSMS*. Click on the "Operation" dropdown and select "Send SMS" and then enter the Sales Manager's  number in the "To Number" field. 
+Create an outgoing flow from the *createNotification* node and select the **Twilio** node. Rename the node to *sendSMS*. Click on the **Operation** dropdown and select **Send SMS** and then enter the Sales Manager's  number in the **To Number** field. 
 
-In the "body" field, we will retreive the data returned from the *createNotification* node. Since *createNotification* only returns a string. Simply enter the name of the node as shown below to access it:
+In the **Body** field, we will retreive the data returned from the *createNotification* node. Since *createNotification* only returns a string, simply enter the name of the node as shown below to access it:
 ```js
 {{createNotification}}
 ```
 
-Click on the **Run** button on the top right to test our workflow. The **Logs** panel at the bottom will expand and with details of each node executes sequentually. Logs give a quick overview of errors, execution start time, execution end time and success/failure of each node. Click on top bar of the Logs panel to expand or minimize it. 
+Click on the **Run** button on the top right to test our workflow. The **Logs** panel at the bottom will expand with details of each node execution. Logs give a quick overview of errors, execution start time, execution end time and success/failure of each node. Click on top bar of the Logs panel to expand or minimize it. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/sendSMS-trigger.png" alt="Send SMS trigger" />
@@ -117,20 +125,20 @@ Click on the **Run** button on the top right to test our workflow. The **Logs** 
 In the above screenshot, Logs indicate that all three nodes that we've created have successfully executed. The *sendSMS* node has sent an SMS notification to the Sales Manager.
 
 <div style={{textAlign: 'center'}}>
-    <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/message-screenshot.png" alt="Send SMS trigger" />
+    <img style={{padding: '10px', width:'400px'}} className="screenshot-full" src="/img/workflows/overview/message-screenshot.png" alt="Send SMS trigger" />
 </div>
 <br/>
-Click on the *sendSMS* node and look at the "Results". Under the "data" property, we can see "errorMessage" property along with a host of other properties. The "errorMessage" will be null for successful SMS notifications. 
-<br/>
-<br/>
+
+Click on the *sendSMS* node and look at the **Results**. Under the **data** property, we can see an **errorMessage** indentifier. The **errorMessage** will be null for the messages that are successfully sent to the intended number. 
+
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/sendSMS-result.png" alt="Send SMS result" />
 </div>
 <br/>
 
-Referring to the "errorMessage" property of the *sendSMS* node, we'll use the **If Else** node to end the workflow with a success or failure message. 
+Referring to the **errorMessage** identifier of the *sendSMS* node, we'll use the **If condition** node to end the workflow with a success or failure message. 
 
-Create an outgoing flow from the *sendSMS* node and select **If condition**. The If condition node will have one incoming flow and two outgoing flows. The outgoing flow connected to the green circle will execute if the condition is evaluated to true and the one with the red condition will execute if the condition is false.
+Create an outgoing flow from the *sendSMS* node and select **If condition**. The If condition node will have one incoming flow and two outgoing flows. The node accepts a logical expression and evaluates it. The outgoing flow connected to the green circle will execute if the logical expression is evaluated to true, and the one with the red circle will execute if the logical expression is evaluated to false.
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/if-condition.png" alt="If condition flow" />
@@ -142,14 +150,14 @@ Click on the **If condition** node, a dialog box will appear on the right.
 <div style={{display: 'flex', paddingTop:'10px', justifyContent: 'space-between', flexDirection: window.innerWidth <= 768 ? 'column' : 'row', alignItems:'center'}}>
   <div style={{flex: 1, padding: '0', alignment:'center'}}>
     <p style={{textAlign: 'left'}}>
-        - Enter the below logic in the input area: <br/>
+        - Enter the below logical expression in the input area: <br/>
         <b>sendSMS.data.errorMessage = null</b>
         <br/>    
         <br/>
-        - The If condition node will return true if the <b>sendSMS.data.errorMessage</b> property is null. In case an error message is present, it'll return false.
+        - The If condition node will return true if <b>errorMessage</b> is null. In case an error message is present, it'll return false.
         <br/>    
         <br/>   
-        - We can now configure two outgoing flows, one of which will be executed based on the provided logic.  
+        - We can now configure two outgoing flows, one of which will be executed based on the provided logical expression.  
     </p>    
   </div>
   <div style={{flex: 1, padding: '10px'}}>
@@ -158,7 +166,7 @@ Click on the **If condition** node, a dialog box will appear on the right.
 </div>
 <br/>
 
-Click on the green circle on the **If condition** node and drag it, select a new **Javascript node** and rename it to *Success*. Similarly, create one outgoing flow from the red circle and select a JavaScript node. Rename it to *Failure*. 
+Click on the green circle on the **If condition** node and drag it, select a new **JavaScript node** and rename it to *successMessage*. Similarly, create one outgoing flow from the red circle and select a JavaScript node. Rename it to *failureMessage*. 
 
 <div style={{textAlign: 'center'}}>
     <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/success-failure-messages.png" alt="Success and Failure Nodes" />
@@ -184,34 +192,37 @@ Note that we are using the return statement in both the newly created JavaScript
 
 Check the logs. All the nodes should get executed sequentially. The *successMessage* or *failureMessage* node will get executed based on the evaluation of the **If condition** node.  
 
-With this basic workflow, we've essentially isolated a complex data-centric task and made it reusable and easy to maintain. First we used a **PostgreSQL** node to fetch the sales data from our table. Using the **JavaScript** node, we transformed that data and returned a string that can be used for our SMS notification. Then we used **Twilio** to send the notification via SMS, followed by the **If else** node to return a success or failure message. 
+With this basic workflow, we've essentially isolated a complex data-centric task and made it presentable and reusable. First we used a **PostgreSQL** node to fetch the sales data from our table. Using the **JavaScript** node, we transformed that data and returned a string that can be used for our SMS notification. Then we used **Twilio** to send the notification via SMS, followed by the **If else** node to return a success or failure message. 
 
-You can now use this workflow in your Tooljet Application from the query panel. 
+You can now use this workflow in your ToolJet Application from the query panel. In your application, simply click on the **+ Add** button in the query panel and select **Run Workflow**. Then select **Quickstart Guide** under **Workflow**. Rename the query to *sendNotification*.
 
-<!-- 
+<div style={{textAlign: 'center'}}>
+    <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/add-workflow-in-app.gif" alt="Add workflow to application" />
+</div>
+<br/>
 
-## Topbar
-The topbar will have the application name on the left along with a text that indicates whether the latest changes have been saved. To the right, we have a **Enable** checkbox and a "Run" button. If you uncheck the **Enable** button, the workflows will stop executing in the application. The **Run** button allows you run the entire flow. 
+We'll add the workflow to a **Button** component. Select a **Button** component, click on **Add handler** under **Events**. Leave the **Event** as **On click** and select **Run Query** as **Action**, and for the **Query** dropdown, select the workflow that should execute when the button is clicked. We'll select the *sendNotification* query that we have created for this example. 
 
-## Nodes
-Every new instance of a workflow will have two nodes - **Start Trigger** and **Result** on the canvas. Nodes are a graphical representation of each process in a workflow. 
+<div style={{textAlign: 'center'}}>
+    <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/send-notification-button-config.png" alt="Configure send notification button" />
+</div>
+<br/>
 
-The list of nodes that you can add to the canvas can be divided into four types:
+Let's add another **Event** to the button. We'll keep the action as **Show Alert** for this event and add the below code to the **Message** property.
+```js
+{{queries.sendNotification.data.successMessage ||
+queries.sendNotification.data.failureMessage}}
+```
+The above code will return success or failure message based on the output we receive from the *Quickstart Guide* workflow. Now, every time we press the button, an alert message will appear.
 
-- **JavaScript** node that lets you run custom JavaScript logic.
-- **If Else** condition node that executes the outgoing path based on the condition provided
-- **Data Source And Other Services** nodes that will allow you to run complex queries on your databases, send emails/messages, etc.
-- **Rest API** node that allows for interaction with RESTful web services
+<div style={{textAlign: 'center'}}>
+    <img style={{padding: '10px'}} className="screenshot-full" src="/img/workflows/overview/alert-message.png" alt="Configure send notification button" />
+</div>
+<br/>
 
-The **Start Trigger** node triggers the workflow to run. Once the workflow execution is completed, the resulting data is stored in the **Result** node. 
-
-To create a new node on the canvas, click and drag the blue circle right next to **Start Trigger** node. You'll get a list of nodes to choose from. 
-
-The **Start Trigger** node will only have an outgoing flow while the "Result" node will only have an incoming flow. The **If condition** node will have one incoming node and two outgoing nodes, one of which will be executed based on whether the **If condition** evaluates to true or false. All the other nodes will have one incoming and one outgoing flows, denoted by the blue circles on either side.
+We've now successfully used a workflow in our ToolJet Application. 
 
 
-## Logs
 
-Once you execute the workflow by pressing on the **Run** button, the logs panel will reflect the execution details of each node. Logs let you easily track the order of execution and check whether the execution of individual nodes is successfull. You can click on the topbar of the logs panel to expand or minimize it. 
 
- -->
+
