@@ -55,7 +55,7 @@ export const Button = function Button(props) {
         },
         setText: async function (text) {
           setLabel(text);
-          exposedVariables.allVariables.buttonText = text;
+          setExposedVariable('buttonText', text);
         },
         disable: async function (value) {
           setDisable(value);
