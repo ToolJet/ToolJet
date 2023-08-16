@@ -96,11 +96,11 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
             [key]: { oldValue: cardToBeUpdated[key], newValue: value[key] },
           })),
           updatedCardData: getData(cardDataAsObj),
-        }).then(() => {
+        })?.then(() => {
           fireEvent('onUpdate');
         });
       } else {
-        setExposedVariable('updatedCardData', getData(cardDataAsObj)).then(() => {
+        setExposedVariable('updatedCardData', getData(cardDataAsObj))?.then(() => {
           fireEvent('onUpdate');
         });
       }
@@ -131,7 +131,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
         destinationIndex: 0,
         cardDetails: { ...cardDataAsObj[cardId] },
       };
-      setExposedVariable('lastCardMovement', lastCardMovement).then(() => fireEvent('onCardMoved'));
+      setExposedVariable('lastCardMovement', lastCardMovement)?.then(() => fireEvent('onCardMoved'));
     };
 
     const addCardFunc = async (cardDetails) => {
@@ -150,7 +150,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
         [columnId]: [...items[columnId], cardDetails.id],
       }));
 
-      setExposedVariables({ lastAddedCard: { ...cardDetails }, updatedCardData: getData(cardDataAsObj) }).then(() => {
+      setExposedVariables({ lastAddedCard: { ...cardDetails }, updatedCardData: getData(cardDataAsObj) })?.then(() => {
         fireEvent('onCardAdded');
         // fireEvent('onUpdate');
       });
@@ -169,15 +169,17 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
         ...items,
         [columnId]: items[columnId].filter((id) => id !== cardId),
       }));
-      setExposedVariables({ lastRemovedCard: { ...deletedCard }, updatedCardData: getData(cardDataAsObj) }).then(() => {
-        fireEvent('onCardRemoved');
-        // fireEvent('onUpdate');
-      });
+      setExposedVariables({ lastRemovedCard: { ...deletedCard }, updatedCardData: getData(cardDataAsObj) })?.then(
+        () => {
+          fireEvent('onCardRemoved');
+          // fireEvent('onUpdate');
+        }
+      );
     };
 
     if (shouldUpdateData.current) {
       shouldUpdateData.current = false;
-      setExposedVariable('updatedCardData', getData(cardDataAsObj)).then(() => {
+      setExposedVariable('updatedCardData', getData(cardDataAsObj))?.then(() => {
         // fireEvent('onUpdate');
       });
     }
@@ -298,7 +300,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
         ...items,
         [activeContainer]: items[activeContainer].filter((id) => id !== activeId),
       }));
-      setExposedVariable('lastRemovedCard', { ...deletedCard }).then(() => {
+      setExposedVariable('lastRemovedCard', { ...deletedCard })?.then(() => {
         fireEvent('onCardRemoved');
       });
       setActiveId(null);
@@ -325,12 +327,12 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
           destinationIndex: overIndex,
           cardDetails: { ...cardDataAsObj[active.id] },
         };
-        setExposedVariable('lastCardMovement', lastCardMovement).then(() => fireEvent('onCardMoved'));
+        setExposedVariable('lastCardMovement', lastCardMovement)?.then(() => fireEvent('onCardMoved'));
       } else if (cardMovementRef.current !== null) {
         const { cardDetails, destinationColumnId } = cardMovementRef.current;
         if (cardDetails?.id === over?.id && destinationColumnId === overContainer) {
           shouldUpdateData.current = true;
-          setExposedVariable('lastCardMovement', { ...cardMovementRef.current }).then(() => {
+          setExposedVariable('lastCardMovement', { ...cardMovementRef.current })?.then(() => {
             cardMovementRef.current = null;
             fireEvent('onCardMoved');
           });
