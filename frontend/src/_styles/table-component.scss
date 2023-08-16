@@ -65,6 +65,11 @@
 }
 
 .jet-data-table {
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--slate4) !important; /* Color of the scrollbar thumb */
+    border-radius: 8px; /* Rounded corners of the thumb */
+  }
+  
   thead {
     z-index: 2;
   }
