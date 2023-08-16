@@ -19,7 +19,7 @@ export const GlobalDatasources = (props) => {
   const [dataSources, setDataSources] = useState([]);
   const [showDataSourceManagerModal, toggleDataSourceManagerModal] = useState(false);
   const [isEditing, setEditing] = useState(true);
-  const [isLoading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(true);
   const [environments, setEnvironments] = useState([]);
   const [currentEnvironment, setCurrentEnvironment] = useState(null);
   const [activeDatasourceList, setActiveDatasourceList] = useState('#databases');

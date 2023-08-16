@@ -95,19 +95,19 @@ function Layout({ children, switchDarkMode, darkMode }) {
                 {/* DATASOURCES */}
                 {admin && (
                   <li className="text-center cursor-pointer">
-                    <ToolTip message="Global Datasources" placement="right">
+                    <ToolTip message="Data Sources" placement="right">
                       <Link
-                        to={getPrivateRoute('global_datasources')}
-                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('global_datasources'), event)}
+                        to={getPrivateRoute('data_sources')}
+                        onClick={(event) => checkForUnsavedChanges(getPrivateRoute('data_sources'), event)}
                         className={`tj-leftsidebar-icon-items  ${
-                          router.pathname === getPrivateRoute('global_datasources') && `current-seleted-route`
+                          router.pathname === getPrivateRoute('data_sources') && `current-seleted-route`
                         }`}
                         data-cy="icon-global-datasources"
                       >
                         <SolidIcon
                           name="datasource"
                           fill={
-                            router.pathname === getPrivateRoute('global_datasources')
+                            router.pathname === getPrivateRoute('data_sources')
                               ? '#3E63DD'
                               : darkMode
                               ? '#4C5155'

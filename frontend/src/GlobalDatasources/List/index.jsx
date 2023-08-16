@@ -52,18 +52,19 @@ export const List = ({ updateSelectedDatasource }) => {
   };
 
   const executeDataSourceDeletion = () => {
-    setDeleteModalVisibility(false);
     setDeletingDatasource(true);
     setLoading(true);
     globalDatasourceService
       .deleteDataSource(selectedDataSource.id)
       .then(() => {
+        setDeleteModalVisibility(false);
         toast.success('Data Source Deleted');
         setDeletingDatasource(false);
         setSelectedDataSource(null);
         fetchDataSources(true);
       })
       .catch(({ error }) => {
+        setDeleteModalVisibility(false);
         setDeletingDatasource(false);
         setSelectedDataSource(null);
         setLoading(false);
@@ -116,7 +117,7 @@ export const List = ({ updateSelectedDatasource }) => {
                 {!showInput ? (
                   <>
                     <div className="datasources-info tj-text-xsm" data-cy="added-ds-label">
-                      Datasources Added{' '}
+                      Data Sources Added{' '}
                       {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
                     </div>
                     <div
@@ -133,7 +134,7 @@ export const List = ({ updateSelectedDatasource }) => {
                   <SearchBox
                     width="248px"
                     callBack={handleSearch}
-                    placeholder={'Search for Datasources'}
+                    placeholder={'Search for Data Sources'}
                     customClass="tj-common-search-input"
                     onClearCallback={handleClose}
                     autoFocus={true}

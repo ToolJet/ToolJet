@@ -7,7 +7,7 @@ export const SegregatedList = ({ dataSources, activeDatasourceList, handleOnSele
   return (
     <>
       <div className="datasources-info tj-text-xsm datasource-list-header" data-cy="datasource-list-header">
-        All datasources {dataSources[0].list.length > 0 && `(${dataSources[0].list.length})`}
+        All data sources {dataSources[0].list.length > 0 && `(${dataSources[0].list.length})`}
       </div>
       {dataSources.slice(1, 5).map((dataSource, index) => (
         <div
