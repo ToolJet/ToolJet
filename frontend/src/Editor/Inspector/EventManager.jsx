@@ -181,10 +181,12 @@ export const EventManager = ({
   }
 
   function getPageOptions() {
-    return pages.map((page) => ({
-      name: page.name,
-      value: page.id,
-    }));
+    return pages
+      .filter((page) => !page.disabled)
+      .map((page) => ({
+        name: page.name,
+        value: page.id,
+      }));
   }
 
   function handlerChanged(index, param, value) {

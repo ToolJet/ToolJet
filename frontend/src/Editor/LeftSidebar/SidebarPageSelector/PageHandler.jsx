@@ -166,7 +166,7 @@ export const PageHandler = ({
                 className="color-slate09"
               >
                 {isHomePage && 'Home'}
-                {(isDisabled || (isDisabled && isHidden)) && 'Disabled'}
+                {isDisabled && 'Disabled'}
                 {isHidden && !isDisabled && 'Hidden'}
               </span>
             )}
