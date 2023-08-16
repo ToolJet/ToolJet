@@ -55,10 +55,6 @@ export const Form = function Form(props) {
     setExposedVariable('resetForm', async function () {
       resetComponent();
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     setExposedVariable('submitForm', async function () {
       if (isValid) {
         onEvent('onSubmit', { component }).then(() => resetComponent());
