@@ -54,7 +54,6 @@ import { useCurrentStateStore, useCurrentState } from '@/_stores/currentStateSto
 import { resetAllStores } from '@/_stores/utils';
 import { setCookie } from '@/_helpers/cookie';
 import { shallow } from 'zustand/shallow';
-import { handleAppAccess } from '@/_helpers/handleAppAccess';
 
 setAutoFreeze(false);
 enablePatches();
@@ -64,9 +63,12 @@ class EditorComponent extends React.Component {
     super(props);
 
     resetAllStores();
+    const appId = props.id;
+    useAppDataStore.getState().actions.setAppId(appId);
     useEditorStore.getState().actions.setIsEditorActive(true);
+    const { socket } = createWebsocketConnection(appId);
+    this.socket = socket;
     this.renameQueryNameId = React.createRef();
-    this.socket = null;
     const defaultPageId = uuid();
     this.subscription = null;
     this.defaultDefinition = {
@@ -101,7 +103,7 @@ class EditorComponent extends React.Component {
       allComponentTypes: componentTypes,
       isLoading: true,
       users: null,
-      appId: null,
+      appId,
       showLeftSidebar: true,
       zoomLevel: 1.0,
       deviceWindowWidth: 450,
@@ -166,55 +168,45 @@ class EditorComponent extends React.Component {
   };
 
   async componentDidMount() {
-    handleAppAccess('editor', this.props.params.slug).then((accessData) => {
-      const { id: appId } = accessData;
-      useAppDataStore.getState().actions.setAppId(appId);
-      const { socket } = createWebsocketConnection(appId);
-      this.socket = socket;
-      this.setState({
-        appId,
-      });
-
-      window.addEventListener('message', this.handleMessage);
-      this.getCurrentOrganizationDetails();
-      this.autoSave();
-      this.fetchApps(0);
-      this.fetchApp(this.props.params.pageHandle, appId);
-      this.fetchOrgEnvironmentVariables();
-      this.initComponentVersioning();
-      this.initRealtimeSave();
-      this.initEventListeners();
-      this.setState({
-        currentSidebarTab: 2,
-        selectedComponents: [],
-        scrollOptions: {
-          container: this.canvasContainerRef.current,
-          throttleTime: 30,
-          threshold: 0,
-        },
-      });
-      const globals = {
-        ...this.props.currentState.globals,
-        theme: { name: this.props.darkMode ? 'dark' : 'light' },
-        urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
-      };
-      const page = {
-        ...this.props.currentState.page,
-        handle: this.props.pageHandle,
-        variables: {},
-      };
-      useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
-
-      this.appDataStoreListner = useAppDataStore.subscribe(({ isSaving } = {}) => {
-        if (isSaving !== this.state.isSaving) {
-          this.setState({ isSaving });
-        }
-      });
-
-      this.dataQueriesStoreListner = useDataQueriesStore.subscribe(({ dataQueries }) => {
-        computeQueryState(dataQueries, this);
-      }, shallow);
+    window.addEventListener('message', this.handleMessage);
+    this.getCurrentOrganizationDetails();
+    this.autoSave();
+    this.fetchApps(0);
+    this.fetchApp(this.props.params.pageHandle);
+    this.fetchOrgEnvironmentVariables();
+    this.initComponentVersioning();
+    this.initRealtimeSave();
+    this.initEventListeners();
+    this.setState({
+      currentSidebarTab: 2,
+      selectedComponents: [],
+      scrollOptions: {
+        container: this.canvasContainerRef.current,
+        throttleTime: 30,
+        threshold: 0,
+      },
     });
+    const globals = {
+      ...this.props.currentState.globals,
+      theme: { name: this.props.darkMode ? 'dark' : 'light' },
+      urlparams: JSON.parse(JSON.stringify(queryString.parse(this.props.location.search))),
+    };
+    const page = {
+      ...this.props.currentState.page,
+      handle: this.props.pageHandle,
+      variables: {},
+    };
+    useCurrentStateStore.getState().actions.setCurrentState({ globals, page });
+
+    this.appDataStoreListner = useAppDataStore.subscribe(({ isSaving } = {}) => {
+      if (isSaving !== this.state.isSaving) {
+        this.setState({ isSaving });
+      }
+    });
+
+    this.dataQueriesStoreListner = useDataQueriesStore.subscribe(({ dataQueries }) => {
+      computeQueryState(dataQueries, this);
+    }, shallow);
   }
 
   /**
@@ -267,7 +259,7 @@ class EditorComponent extends React.Component {
     this.socket?.addEventListener('message', (event) => {
       const data = event.data.replace(/^"(.+(?="$))"$/, '$1');
       if (data === 'versionReleased') {
-        this.fetchApp(null, this.state.appId);
+        this.fetchApp();
         // } else if (data === 'dataQueriesChanged') {                //Commented since this need additional BE changes to work.
         //   this.fetchDataQueries(this.state.editingVersion?.id);    //Also needs revamping to exclude notifying the client of their own changes.
       } else if (data === 'dataSourcesChanged') {
@@ -340,7 +332,9 @@ class EditorComponent extends React.Component {
     );
   };
 
-  fetchApp = (startingPageHandle, appId) => {
+  fetchApp = (startingPageHandle) => {
+    const appId = this.props.id;
+
     const callBack = async (data) => {
       let dataDefinition = defaults(data.definition, this.defaultDefinition);
 

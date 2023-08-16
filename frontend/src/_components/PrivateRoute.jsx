@@ -1,19 +1,39 @@
-import React, { useEffect } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { authenticationService } from '@/_services';
-import { appendWorkspaceId, excludeWorkspaceIdFromURL } from '@/_helpers/routes';
+import { appendWorkspaceId, excludeWorkspaceIdFromURL, getPathname } from '@/_helpers/routes';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
 import { getWorkspaceId } from '@/_helpers/utils';
+import { handleAppAccess } from '@/_helpers/handleAppAccess';
 
 export const PrivateRoute = ({ children }) => {
   const [session, setSession] = React.useState(authenticationService.currentSessionValue);
   const location = useLocation();
+
+  const params = useParams();
+  const [extraProps, setExtraProps] = useState({});
+
+  const pathname = getPathname(null, true);
+  const isEditorOrViewerGoingToRender = pathname.startsWith('/apps/') || pathname.startsWith('/applications/');
+
   useEffect(() => {
-    const subject = authenticationService.currentSession.subscribe((newSession) => {
-      setSession(newSession);
+    const subject = authenticationService.currentSession.subscribe(async (newSession) => {
+      /* Valid session and check if the component is editor or viewer */
+      if (isEditorOrViewerGoingToRender && newSession?.group_permissions) {
+        const componentType = pathname.startsWith('/apps/') ? 'editor' : 'viewer';
+        const { slug } = params;
+
+        /* Validate the app permissions */
+        const accessDetails = await handleAppAccess(componentType, slug);
+        setExtraProps(accessDetails);
+        setSession(newSession);
+      } else {
+        setSession(newSession);
+      }
     });
 
     () => subject.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   //get either slug or id from the session and replace
@@ -29,7 +49,7 @@ export const PrivateRoute = ({ children }) => {
     location.pathname.startsWith('/applications/') ||
     (location.pathname === '/switch-workspace' && session?.current_organization_id)
   ) {
-    return children;
+    return isEditorOrViewerGoingToRender ? React.cloneElement(children, extraProps) : children;
   } else {
     if (
       (session?.authentication_status === false || session?.authentication_failed) &&
@@ -48,15 +68,7 @@ export const PrivateRoute = ({ children }) => {
       );
     }
 
-    return (
-      <div className="spin-loader">
-        <div className="load">
-          <div className="one"></div>
-          <div className="two"></div>
-          <div className="three"></div>
-        </div>
-      </div>
-    );
+    return <TJLoader />;
   }
 };
 

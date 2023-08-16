@@ -28,8 +28,7 @@ import { setCookie } from '@/_helpers/cookie';
 import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
-import { handleAppAccess } from '@/_helpers/handleAppAccess';
-import { getQueryParams } from '@/_helpers/routes';
+import { useAppDataStore } from '@/_stores/appDataStore';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -226,35 +225,33 @@ class ViewerComponent extends React.Component {
 
   setupViewer() {
     const slug = this.props.params.slug;
-    const versionName = getQueryParams('version');
+    const appId = this.props.id;
+    const versionId = this.props.versionId;
 
     this.subscription = authenticationService.currentSession.subscribe((currentSession) => {
       if (currentSession?.load_app && slug) {
         if (currentSession?.group_permissions) {
-          handleAppAccess('viewer', slug, versionName).then((accessData) => {
-            const { id: appId, versionId } = accessData;
-            useEditorStore.getState().actions.setAppId(appId);
+          useAppDataStore.getState().actions.setAppId(appId);
 
-            const currentUser = currentSession.current_user;
-            const userVars = {
-              email: currentUser.email,
-              firstName: currentUser.first_name,
-              lastName: currentUser.last_name,
-              groups: currentSession?.group_permissions?.map((group) => group.group),
-            };
-            this.props.setCurrentState({
-              globals: {
-                ...this.props.currentState.globals,
-                currentUser: userVars, // currentUser is updated in setStateForContainer function as well
-              },
-            });
-            this.setState({
-              currentUser,
-              userVars,
-              versionId,
-            });
-            versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
+          const currentUser = currentSession.current_user;
+          const userVars = {
+            email: currentUser.email,
+            firstName: currentUser.first_name,
+            lastName: currentUser.last_name,
+            groups: currentSession?.group_permissions?.map((group) => group.group),
+          };
+          this.props.setCurrentState({
+            globals: {
+              ...this.props.currentState.globals,
+              currentUser: userVars, // currentUser is updated in setStateForContainer function as well
+            },
           });
+          this.setState({
+            currentUser,
+            userVars,
+            versionId,
+          });
+          versionId ? this.loadApplicationByVersion(appId, versionId) : this.loadApplicationBySlug(slug);
         } else if (currentSession?.authentication_failed) {
           this.loadApplicationBySlug(slug);
         }

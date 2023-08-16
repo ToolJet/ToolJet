@@ -1,15 +1,18 @@
 import { organizationService, authenticationService, appsService } from '@/_services';
 import { safelyParseJSON, getWorkspaceId } from '@/_helpers/utils';
-import { redirectToDashboard, getSubpath, getPathname } from '@/_helpers/routes';
+import { redirectToDashboard, getSubpath, getPathname, getQueryParams } from '@/_helpers/routes';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import queryString from 'query-string';
 
-export const handleAppAccess = (componentType, slug, versionName) => {
-  if (componentType === 'editor' || versionName) {
+export const handleAppAccess = (componentType, slug) => {
+  const previewQueryParams = getPreviewQueryParams();
+  const isLocalPreview = !_.isEmpty(previewQueryParams);
+  const queryParams = { ...previewQueryParams, access_type: isLocalPreview ? 'view' : 'edit' };
+  if (componentType === 'editor' || isLocalPreview) {
     /* Editor or app preview */
-    return appsService.validatePrivateApp(slug, versionName ? 'view' : 'edit', versionName).catch((error) => {
-      handleError(componentType, error, slug, versionName);
+    return appsService.validatePrivateApp(slug, queryParams).catch((error) => {
+      handleError(componentType, error, slug, previewQueryParams);
     });
   } else {
     /* Released app link [launch/sharable link] */
@@ -19,8 +22,8 @@ export const handleAppAccess = (componentType, slug, versionName) => {
   }
 };
 
-const switchOrganization = (componentType, slug, orgId, versionName) => {
-  const query = queryString.stringify({ version: versionName });
+const switchOrganization = (componentType, slug, orgId, previewQueryParams) => {
+  const query = queryString.stringify(previewQueryParams);
   const path = !_.isEmpty(query) ? `/applications/${slug}${query ? `?${query}` : ''}` : `/apps/${slug}`;
   const sub_path = getSubpath() ?? '';
   organizationService.switchOrganization(orgId).then(
@@ -33,7 +36,7 @@ const switchOrganization = (componentType, slug, orgId, versionName) => {
   );
 };
 
-const handleError = (componentType, error, slug, versionName) => {
+const handleError = (componentType, error, slug, previewQueryParams) => {
   try {
     if (error?.data) {
       const statusCode = error.data?.statusCode;
@@ -45,7 +48,7 @@ const handleError = (componentType, error, slug, versionName) => {
           currentSessionValue.current_user &&
           currentSessionValue.current_organization_id !== errorObj?.organizationId
         ) {
-          switchOrganization(componentType, slug, errorObj?.organizationId, versionName);
+          switchOrganization(componentType, slug, errorObj?.organizationId, previewQueryParams);
           return;
         }
         redirectToDashboard();
@@ -60,4 +63,11 @@ const handleError = (componentType, error, slug, versionName) => {
   } catch (err) {
     redirectToDashboard();
   }
+};
+
+const getPreviewQueryParams = () => {
+  const queryParams = getQueryParams();
+  return {
+    ...(queryParams['version'] && { version_name: queryParams.version }),
+  };
 };

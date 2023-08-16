@@ -28,9 +28,9 @@ function validateReleasedApp(slug) {
   return fetch(`${config.apiUrl}/apps/validate-released-app-access/${slug}`, requestOptions).then(handleResponse);
 }
 
-function validatePrivateApp(slug, access_type, version_name) {
+function validatePrivateApp(slug, queryParams) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  const query = queryString.stringify({ access_type, version_name });
+  const query = queryString.stringify(queryParams);
 
   return fetch(
     `${config.apiUrl}/apps/validate-private-app-access/${slug}${query ? `?${query}` : ''}`,
