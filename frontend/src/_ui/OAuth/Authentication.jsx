@@ -129,7 +129,12 @@ const Authentication = ({
             <label className="form-label pt-2">Custom Query Parameters</label>
           </div>
         </div>
-        <Headers getter={'custom_query_params'} options={custom_query_params} optionchanged={optionchanged} />
+        <Headers
+          getter={'custom_query_params'}
+          options={custom_query_params}
+          optionchanged={optionchanged}
+          workspaceConstants={workspaceConstants}
+        />
 
         {grant_type === 'authorization_code' && (
           <div>
@@ -150,7 +155,12 @@ const Authentication = ({
                 <label className="form-label pt-2">Custom Authentication Parameters</label>
               </div>
             </div>
-            <Headers getter={'custom_auth_params'} options={custom_auth_params} optionchanged={optionchanged} />
+            <Headers
+              getter={'custom_auth_params'}
+              options={custom_auth_params}
+              optionchanged={optionchanged}
+              workspaceConstants={workspaceConstants}
+            />
             <label className="form-label text-muted mt-3">Client Authentication</label>
             <Select
               options={[
@@ -168,7 +178,6 @@ const Authentication = ({
                 type="checkbox"
                 checked={multiple_auth_enabled}
                 onChange={() => optionchanged('multiple_auth_enabled', !multiple_auth_enabled)}
-                workspaceConstants={workspaceConstants}
               />
               <span className="form-check-label">Authentication Required for All Users</span>
             </label>
