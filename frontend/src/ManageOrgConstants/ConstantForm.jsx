@@ -31,7 +31,7 @@ const ConstantForm = ({
     max_name_length_reached: 'Maximum length has been reached',
     invalid_name:
       'Constant name should start with a letter or underscore and can only contain letters, numbers and underscores',
-    invalid_value_length: 'Value should be less than 10000 characters',
+    invalid_value_length: 'Value should be less than 10000 characters and cannot be empty',
     invalid_value: 'This value is already in use. Please enter a different value',
   });
 
@@ -70,7 +70,7 @@ const ConstantForm = ({
   const handleConstantValueError = (name, value) => {
     if (name !== 'value') return;
 
-    const invalidValueLength = value.length > 10000;
+    const invalidValueLength = value.trim().length > 10000 || value.trim().length === 0;
 
     if (invalidValueLength) {
       setError((prev) => ({ ...prev, value: ERROR_MESSAGES.invalid_value_length }));
