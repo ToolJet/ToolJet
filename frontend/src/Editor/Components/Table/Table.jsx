@@ -982,19 +982,7 @@ export function Table({
           className="table-card-header d-flex justify-content-between align-items-center"
           style={{ padding: '12px', height: 56 }}
         >
-          <div className="tj-text tj-header-h7">{component.name}</div>
-          <div className="d-flex custom-gap-8" style={{ maxHeight: 32 }}>
-            {displaySearchBox && (
-              <GlobalFilter
-                globalFilter={state.globalFilter}
-                useAsyncDebounce={useAsyncDebounce}
-                setGlobalFilter={setGlobalFilter}
-                onComponentOptionChanged={onComponentOptionChanged}
-                component={component}
-                onEvent={onEvent}
-                darkMode={darkMode}
-              />
-            )}
+          <div>
             {showFilterButton && (
               <>
                 <Tooltip id="tooltip-for-filter-data" className="tooltip" />
@@ -1015,16 +1003,7 @@ export function Table({
               </>
             )}
           </div>
-        </div>
-      )}
-      {/* Show top bar unless search box is disabled and server pagination is enabled */}
-      {/* {(displaySearchBox || showFilterButton) && (
-        <div className={`card-body border-bottom py-3 ${tableDetails.addNewRowsDetails.addingNewRows && 'disabled'}`}>
-          <div
-            className={`d-flex align-items-center ms-auto text-muted ${
-              displaySearchBox ? 'justify-content-between' : 'justify-content-end'
-            }`}
-          >
+          <div className="d-flex custom-gap-8" style={{ maxHeight: 32 }}>
             {displaySearchBox && (
               <GlobalFilter
                 globalFilter={state.globalFilter}
@@ -1036,28 +1015,9 @@ export function Table({
                 darkMode={darkMode}
               />
             )}
-            <div>
-              <Tooltip id="tooltip-for-add-new-row" className="tooltip" />
-              {showFilterButton && (
-                <>
-                  <span
-                    className="btn btn-light btn-sm p-1 mx-1"
-                    onClick={() => showFilters()}
-                    data-tooltip-id="tooltip-for-filter-data"
-                    data-tooltip-content="Filter data"
-                  >
-                    <img src="assets/images/icons/filter.svg" width="15" height="15" />
-                    {tableDetails.filterDetails.filters.length > 0 && (
-                      <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                    )}
-                  </span>
-                  <Tooltip id="tooltip-for-filter-data" className="tooltip" />
-                </>
-              )}
-            </div>
           </div>
         </div>
-      )}{' '} */}
+      )}
       <div className="table-responsive jet-data-table">
         <table
           {...getTableProps()}
