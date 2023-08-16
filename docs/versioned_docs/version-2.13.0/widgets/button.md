@@ -16,8 +16,10 @@ Button component can be used to trigger an action. It can be used to submit a fo
 
 </div>
 
+<br/>
+
 | Property      | Description |
-| ----------- | ----------- |
+| :----------- | :----------- |
 | **Button Text** | It can be used to set the label of the button. |
 | **Loading state** | Loading state can be used to show a spinner as the button content. Loading state is commonly used with isLoading property of the queries to show a loading status while a query is being run. |
 
@@ -31,8 +33,10 @@ Events are actions that can be triggered programmatically when the user interact
 
 </div>
 
+<br/>
+
 | Event      | Description |
-| ----------- | ----------- |
+| :----------- | :----------- |
 | **On click** | On click event is triggered when the button is clicked. |
 | **On hover** | On hover event is triggered when the mouse cursor is moved over the button. Just like any other event on ToolJet, you can set multiple handlers for on click event. |
 
@@ -40,13 +44,12 @@ Events are actions that can be triggered programmatically when the user interact
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
 :::
 
-
 ## General
 #### Tooltip
 
 A Tooltip is often used to specify the extra information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text.
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
 
 <img className="screenshot-full" src="/img/widgets/button/tooltip.png" alt="ToolJet - Component Reference - Button Properties" />
 
@@ -54,29 +57,32 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 ## Layout
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
 
 <img className="screenshot-full" src="/img/widgets/button/layout.png" alt="ToolJet - Component Reference - Button Properties" />
 
 </div>
 
-| Layout  | description | Expected value |
-| ----------- | ----------- | ------------ |
+<br/>
+
+| Layout  | Description | Expected value |
+| :----------- | :----------- | :------------ |
 | **Show on desktop** | Toggle on to show the component on desktop. By default, it's set to `{{true}}`. | `{{true}}` or `{{false}}` |
 | **Show on mobile** | Toggle on to show the component on tablet. By default, it's set to `{{false}}`. | `{{true}}` or `{{false}}` |
 
 
 ## Styles
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
 
 <img className="screenshot-full" src="/img/widgets/button/styles.png" alt="ToolJet - Component Reference - Button Styles" />
 
 </div>
 
+<br/>
 
 | Style      | Description |
-| ----------- | ----------- | 
+| :----------- | :----------- | 
 | **Background color** |  You can change the background color of the componentby entering the Hex color code or choosing a color of your choice from the color picker. |
 | **Text color** |  You can change the color of the Text in button by entering the Hex color code or choosing a color of your choice from the color picker. |
 | **Loader color** |  You can change the color of the loader in button by entering the Hex color code or choosing a color of your choice from the color picker. This will only be affective if the [loading state](#properties-1) property of the button is enabled. |
@@ -93,7 +99,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
 ## Exposed variables
 
 | Variable      | Description |
-| ----------- | ----------- |
+| :----------- | :----------- |
 | **buttonText** | This variable stores the text displayed on the button. Its value can be accessed dynamically through JavaScript using the following syntax: `{{components.button1.buttonText}}` |
 
 ## Component specific actions (CSA)
@@ -101,7 +107,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
 Following actions of button component can be controlled using the component specific actions(CSA):
 
 | Actions     | Description |
-| ----------- | ----------- |
+| :----------- | :----------- |
 | **click** | You can regulate the click of a button via a component-specific action within any event handler. Additionally, you have the option to employ a RunJS query to execute component-specific actions such as `await components.button1.click()` |
 | **setText** | button's text can be controlled using component specific action from any of the event handler. You can also use RunJS query to execute component specific actions: `await components.button1.setText('New Button Text')` |
 | **disable** | button can be disabled using the component specific action from any of the event handler. You can also use RunJS query to execute this action: `await components.button1.disable(true)` or `await components.button1.disable(false)` |

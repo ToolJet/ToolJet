@@ -21,8 +21,10 @@ A bounded box is an infinitely customizable image annotation component that can 
 
 </div>
 
+<br/>
+
 | **Property** | **Description** |
-| ----------- | ----------- |
+| :----------- | :----------- |
 | **Image URL** | The URL or image data to show it on the component. |
 | **Default value** | The data that will load the default bounded boxes over the image when the app is loaded. The data is expected to be an array of objects format. Learn more about the [Default value](#default-value) data properties. |
 | **Selector** | The bounded box support selection using rectangle or point. Click on the **Fx** to set the value (`RECTANGLE` or `POINT`) programmatically. |
@@ -33,7 +35,7 @@ A bounded box is an infinitely customizable image annotation component that can 
 Provide the data that will load the default bounded boxes over the image when the app is loaded. The data is expected to be an array of objects format.
 
 | **Property** | **Values** |
-| -------- | ------ |
+| :-------- | :------ |
 | **type** | Sets the type of the bounded box. The value can be `RECTANGLE` or `POINT`. |
 | **width** | Sets the width of the bounded box in pixels. The value should be a number. If the `type` value is `POINT`, set it to `0`. |
 | **height** | Sets the height of the bounded box in pixels. The value should be a number. If the `type` value is `POINT`, set it to `0`. |
@@ -68,15 +70,18 @@ Provide the data that will load the default bounded boxes over the image when th
 
 Events are actions that can be triggered programmatically when the user interacts with the component. Click on the component handle to open its properties on the right. Go to the **Events** accordion and click on **+ Add handler**. 
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
 
 <img className="screenshot-full" src="/img/widgets/bounded-box/onchange.png" alt="Button group events" width="600"/>
 
 </div>
 
+<br/>
+
 | **Event** | **Description** |
-| ----------- | ----------- |
+| :----------- | :----------- |
 | **On change** | Triggered when the label from the dropdown in the selector is changed in the bounded box. |
+
 
 :::info
 Check [Action Reference](/docs/category/actions-reference) docs to get the detailed information about all the **Actions**.
@@ -87,7 +92,7 @@ Check [Action Reference](/docs/category/actions-reference) docs to get the detai
 
 A Tooltip is often used to specify the extra information when the user hovers the mouse pointer over the component. Once a value is set for Tooltip, hovering over the element will display the specified string as the tooltip text.
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
 
 <img className="screenshot-full" src="/img/widgets/bounded-box/tooltip1.png" alt="Button group events" width="300"/>
 
@@ -95,27 +100,31 @@ A Tooltip is often used to specify the extra information when the user hovers th
 
 ## Layout
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
 
 <img className="screenshot-full" src="/img/widgets/button-group/layout.png" alt="Button group layout" width="300"/>
 
 </div>
 
-| Layout  | description | Expected value |
-| ----------- | ----------- | ------------ |
+<br/>
+
+| Layout  | Description | Expected value |
+| :----------- | :----------- | :------------ |
 | **Show on desktop** | Toggle on to show the component on desktop. By default, it's set to `{{true}}`. | `{{true}}` or `{{false}}` |
 | **Show on mobile** | Toggle on to show the component on tablet. By default, it's set to `{{false}}`. | `{{true}}` or `{{false}}` |
 
 ## Styles
 
-<div style={{textAlign: 'center'}}>
+<div style={{textAlign: 'left'}}>
 
 <img className="screenshot-full" src="/img/widgets/bounded-box/styles.png" alt="Bounded box properties" width="300"/>
 
 </div>
 
+<br/>
+
 | **Style**      | **Description** |
-| ----------- | ----------- | 
+| :----------- | :----------- | 
 | **Visibility** | Toggle on or off to control the visibility of the component. You can programmatically change its value by clicking on the `Fx` button next to it. If `{{false}}` the component will not be visible when the app is loaded. By default, it's set to `{{true}}`. |
 | **Disable** | Toggle on to disable the component. You can programmatically change its value by clicking on the `Fx` button next to it, if set to `{{true}}`, the component will be disabled and becomes non-functional. By default, its value is set to `{{false}}`. |
 
@@ -126,7 +135,7 @@ Any property having `Fx` button next to its field can be **programmatically conf
 ## Exposed variables
 
 | **Variable**    | **Description** |
-| ----------- | ----------- | 
+| :----------- | :----------- | 
 | **annotations** | This variable is an array of objects, where each object represents an annotation added to an image. The object contains the following keys: type, x, y, width, height, text, and id |
 | **annotations.`type`** | There are two types of annotations: Rectangle and Point |
 | **annotations.`x`** | coordinates on x axis  |
