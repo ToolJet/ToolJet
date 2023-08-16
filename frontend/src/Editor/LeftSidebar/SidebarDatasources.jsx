@@ -234,7 +234,7 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
     shallow
   );
   return (
-    <div>
+    <div className="left-sidebar-local-datasources-wrapper">
       <HeaderSection darkMode={darkMode}>
         <HeaderSection.PanelHeader title="Datasources">
           <div className="d-flex justify-content-end">
