@@ -62,13 +62,10 @@ describe("Workspace constants", () => {
                         "have.text",
                         workspaceConstantsText.addNewConstantButton
                     )
-                    .click();
-                cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
-            } else {
-                cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
+
             }
         });
-
+        cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
         cy.get(workspaceConstantsSelectors.contantFormTitle).verifyVisibleElement(
             "have.text",
             workspaceConstantsText.addConstatntText
@@ -96,7 +93,6 @@ describe("Workspace constants", () => {
         );
         cy.get(workspaceConstantsSelectors.addConstantButton).should("be.disabled");
 
-        cy.get(workspaceConstantsSelectors.addNewConstantButton).click();
         cy.clearAndType(commonSelectors.nameInputField, constName);
         cy.clearAndType(commonSelectors.valueInputField, constName);
         cy.get(workspaceConstantsSelectors.addConstantButton).should("be.enabled");

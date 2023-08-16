@@ -15,7 +15,7 @@ const ConstantForm = ({
 }) => {
   const [fields, setFields] = useState(() => ({
     ...selectedConstant,
-    environments: [{ label: currentEnvironment.name, value: currentEnvironment.id }],
+    environments: [{ label: currentEnvironment?.name, value: currentEnvironment?.id }],
   }));
 
   const [error, setError] = useState({});
@@ -26,7 +26,9 @@ const ConstantForm = ({
   }
 
   const ERROR_MESSAGES = Object.freeze({
-    name_already_exists: `Constant with this name already exists in ${capitalize(currentEnvironment.name)} environment`,
+    name_already_exists: `Constant with this name already exists in ${capitalize(
+      currentEnvironment?.name
+    )} environment`,
     invalid_name_length: 'Constant name should be between 1 and 32 characters',
     max_name_length_reached: 'Maximum length has been reached',
     invalid_name:
@@ -40,7 +42,7 @@ const ConstantForm = ({
 
     if (name !== 'name') return;
 
-    const isNameAlreadyExists = checkIfConstantNameExists(value, currentEnvironment.id);
+    const isNameAlreadyExists = checkIfConstantNameExists(value, currentEnvironment?.id);
     const invalidNameLength = value.length > 32;
     const maxNameLengthReached = value.length === 32;
     const invalidName = !isValidPropertyName(value);
