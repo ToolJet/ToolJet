@@ -2278,18 +2278,6 @@ tr:focus {
   padding: 5px;
 }
 
-.table-filters,
-.table-add-new-row {
-  position: absolute;
-  top: 2.85rem;
-  width: 80%;
-  max-width: 700px;
-  margin-right: 10%;
-  right: 0;
-  height: 300px;
-  z-index: 100;
-}
-
 .code-builder {
   border: solid 1px #dadcde;
   border-radius: 2px;
@@ -10949,4 +10937,7 @@ tbody {
     background-color: #F1F3F5;
     color: #C1C8CD;
   }
+}
+.custom-gap-8{
+  gap: 8px;
 }

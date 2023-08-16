@@ -46,6 +46,7 @@ import GenerateEachCellValue from './GenerateEachCellValue';
 import { toast } from 'react-hot-toast';
 import { Tooltip } from 'react-tooltip';
 import { AddNewRowComponent } from './AddNewRowComponent';
+import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
 // utilityForNestedNewRow function is used to construct nested object while adding or updating new row when '.' is present in column key for adding new row
 const utilityForNestedNewRow = (row) => {
@@ -911,7 +912,7 @@ export function Table({
         style={{ padding: '12px', height: 56 }}
       >
         <div className="tj-text tj-header-h7">{component.name}</div>
-        <div className="d-flex" style={{ maxHeight: 32 }}>
+        <div className="d-flex custom-gap-8" style={{ maxHeight: 32 }}>
           {displaySearchBox && (
             <GlobalFilter
               globalFilter={state.globalFilter}
@@ -925,18 +926,21 @@ export function Table({
           )}
           {showFilterButton && (
             <>
-              <span
-                className="btn btn-light btn-sm p-1 mx-1"
-                onClick={() => showFilters()}
+              <Tooltip id="tooltip-for-filter-data" className="tooltip" />
+              <ButtonSolid
+                variant="tertiary"
+                className={`tj-text-xsm ${tableDetails?.filterDetails?.filtersVisible && 'cursor-not-allowed'}`}
+                style={{ minWidth: '32px' }}
+                leftIcon="filter"
+                fill={darkMode ? '#ECEDEE' : '#11181C'}
+                iconWidth="16"
+                onClick={() => {
+                  showFilters();
+                }}
+                size="md"
                 data-tooltip-id="tooltip-for-filter-data"
                 data-tooltip-content="Filter data"
-              >
-                <img src="assets/images/icons/filter.svg" width="15" height="15" />
-                {tableDetails.filterDetails.filters.length > 0 && (
-                  <a className="badge bg-azure" style={{ width: '4px', height: '4px', marginTop: '5px' }}></a>
-                )}
-              </span>
-              <Tooltip id="tooltip-for-filter-data" className="tooltip" />
+              ></ButtonSolid>
             </>
           )}
         </div>
