@@ -45,7 +45,7 @@ export function RenameApp({ closeModal, renameApp, show, selectedAppId, selected
   };
 
   const handleInputChange = (e) => {
-    const newAppName = e.target.value.trim();
+    const newAppName = e.target.value;
     const error = validateAppName(newAppName, 'App Name', true, false);
     setErrorText(error?.errorMsg || '');
     setNewAppName(newAppName);
@@ -64,7 +64,7 @@ export function RenameApp({ closeModal, renameApp, show, selectedAppId, selected
           <ButtonSolid
             onClick={() => handleRenameApp(newAppName, selectedAppId)}
             data-cy="Update"
-            disabled={isLoading || errorText || !isNameChanged}
+            disabled={isLoading || errorText || !isNameChanged || newAppName.trim().length === 0}
           >
             {isLoading ? 'Creating...' : 'Update'}
           </ButtonSolid>
