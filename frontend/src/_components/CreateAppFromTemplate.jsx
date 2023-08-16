@@ -56,7 +56,7 @@ export function CreateAppFromTemplate({ templateDetails, closeModal, deployApp, 
   };
 
   const handleInputChange = (e) => {
-    const newAppName = e.target.value.trim();
+    const newAppName = e.target.value;
     const error = validateAppName(newAppName, 'App name', true, false);
     setErrorText(error?.errorMsg || '');
 
@@ -81,7 +81,7 @@ export function CreateAppFromTemplate({ templateDetails, closeModal, deployApp, 
           <ButtonSolid
             onClick={(e) => handleDeployApp(e)}
             data-cy="+ Create App"
-            disabled={isLoading || errorText || newAppName.length > 50 || newAppName.length === 0}
+            disabled={isLoading || errorText || newAppName.length > 50 || newAppName.trim().length === 0}
           >
             {isLoading ? 'Creating...' : '+ Create App'}
           </ButtonSolid>

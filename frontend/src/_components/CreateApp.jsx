@@ -30,7 +30,7 @@ export function CreateApp({ closeModal, createApp, show }) {
   };
 
   const handleInputChange = (e) => {
-    const newAppName = e.target.value.trim();
+    const newAppName = e.target.value;
     const error = validateAppName(newAppName, 'App Name', true, false);
     setErrorText(error?.errorMsg || '');
     setappName(newAppName);
@@ -46,7 +46,11 @@ export function CreateApp({ closeModal, createApp, show }) {
           <ButtonSolid variant="tertiary" onClick={closeModal} data-cy="cancel-button" className="modal-footer-divider">
             Cancel
           </ButtonSolid>
-          <ButtonSolid onClick={handleCreateApp} data-cy="+ Create App" disabled={isLoading || errorText || !appName}>
+          <ButtonSolid
+            onClick={handleCreateApp}
+            data-cy="+ Create App"
+            disabled={isLoading || errorText || appName.trim().length === 0}
+          >
             {isLoading ? 'Creating...' : '+ Create App'}
           </ButtonSolid>
         </>

@@ -51,7 +51,7 @@ export function CloneApp({ closeModal, cloneApp, show, selectedAppId, selectedAp
   };
 
   const handleInputChange = (e) => {
-    const newAppName = e.target.value.trim();
+    const newAppName = e.target.value;
     const error = validateAppName(newAppName, 'App name', true, false);
     setErrorText(error?.errorMsg || '');
 
@@ -76,7 +76,7 @@ export function CloneApp({ closeModal, cloneApp, show, selectedAppId, selectedAp
           <ButtonSolid
             onClick={() => handleCloneApp(newAppName, selectedAppId)}
             data-cy="Clone App"
-            disabled={isLoading || errorText || !isNameChanged || !newAppName}
+            disabled={isLoading || errorText || !isNameChanged || !newAppName || newAppName.trim().length === 0}
           >
             {isLoading ? 'Creating...' : 'Clone App'}
           </ButtonSolid>

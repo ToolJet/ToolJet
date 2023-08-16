@@ -52,7 +52,7 @@ export function ImportApp({ closeModal, importApp, fileContent, show }) {
   };
 
   const handleInputChange = (e) => {
-    const newAppName = e.target.value.trim();
+    const newAppName = e.target.value;
     const error = validateAppName(newAppName, 'App name', true, false);
     setErrorText(error?.errorMsg || '');
 
@@ -77,7 +77,7 @@ export function ImportApp({ closeModal, importApp, fileContent, show }) {
           <ButtonSolid
             onClick={() => handleImportApp(fileContent)}
             data-cy="Import App"
-            disabled={isLoading || errorText || newAppName.length > 50 || newAppName.length === 0}
+            disabled={isLoading || errorText || newAppName.length > 50 || newAppName.trim().length === 0}
           >
             {isLoading ? 'Creating...' : 'Import App'}
           </ButtonSolid>
