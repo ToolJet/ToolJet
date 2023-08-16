@@ -138,7 +138,7 @@ const ConstantForm = ({
         </h3>
       </div>
       <div className="card-body org-constant-form">
-        <form noValidate>
+        <form noValidate onSubmit={(e) => e.preventDefault()}>
           <div className="form-group mb-3 ">
             <div className="d-flex mb-3">
               <div
