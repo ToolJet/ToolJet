@@ -543,19 +543,20 @@
 
 }
 .table-striped > tbody > tr:nth-of-type(even){
-  background-color: var(--slate2) !important;
-  --tblr-table-accent-bg : var(--slate2) !important;
+  background-color: var(--slate2) ;
+  --tblr-table-accent-bg : var(--slate2) ;
 }
 .resizing-column{
   background-color: var(--slate4, #ECEEF0) !important; 
   border-right: 4px solid var(--slate5, #E6E8EB) !important;
 }
-
+.table-striped{
+  .resizing-column{
+    background-color: var(--slate4, #ECEEF0) !important; 
+    --tblr-table-accent-bg : var(--slate4,#ECEEF0) ;
+    border-right: 4px solid var(--slate5, #E6E8EB) !important;
+  }
+}
 .isResizing{
   cursor: ew-resize !important;
-  // // &:hover,&:focus{
-  // //   svg{
-  // //     display: none;
-  // //   }
-  // // }
 }
