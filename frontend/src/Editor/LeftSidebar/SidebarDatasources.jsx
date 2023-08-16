@@ -160,7 +160,7 @@ export const LeftSidebarDataSources = ({
           </span>
         </div>
         {showDeleteIcon && !isVersionReleased && (
-          <div className="col-auto">
+          <div className="col-auto cursor-pointer">
             <button className="btn btn-sm p-1 ds-delete-btn" onClick={() => deleteDataSource(dataSource)}>
               <div>
                 <TrashIcon width="14" height="14" />
@@ -169,7 +169,7 @@ export const LeftSidebarDataSources = ({
           </div>
         )}
         {convertToGlobal && admin && !isVersionReleased && (
-          <div className="col-auto">
+          <div className="col-auto cursor-pointer">
             <OverlayTrigger
               rootClose={false}
               show={isConversionVisible}
@@ -258,7 +258,7 @@ const LeftSidebarDataSourcesContainer = ({ darkMode, RenderDataSource, dataSourc
           <div className="d-flex flex-column w-100">
             {dataSources.length ? (
               <>
-                <div className="tj-text-sm my-2 datasources-category">Local Datasources</div>
+                <div className="tj-text-sm my-2 datasources-category">Local Data Sources</div>
                 <div className="mt-2 w-100" data-cy="datasource-Label">
                   {dataSources?.map((source, idx) => (
                     <RenderDataSource
