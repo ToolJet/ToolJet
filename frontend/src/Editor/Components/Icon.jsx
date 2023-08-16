@@ -31,12 +31,16 @@ export const Icon = ({
   }, [visibility]);
 
   useEffect(() => {
-    setExposedVariable('setVisibility', async function (visibility) {
-      setIconVisibility(visibility);
-    });
-    setExposedVariable('click', async function () {
-      fireEvent('onClick');
-    });
+    const exposedVariables = {
+      setVisibility: async function (visibility) {
+        setIconVisibility(visibility);
+      },
+      click: async function () {
+        fireEvent('onClick');
+      },
+    };
+
+    setExposedVariable('allVariables', exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setIconVisibility]);
 

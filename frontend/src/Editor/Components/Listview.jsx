@@ -71,12 +71,17 @@ export const Listview = function Listview({
   }, [columns]);
 
   useEffect(() => {
-    setExposedVariable('data', childrenData);
-    setExposedVariable('children', childrenData);
-    if (selectedRowIndex != undefined) {
-      setExposedVariable('selectedRowId', selectedRowIndex);
-      setExposedVariable('selectedRow', childrenData[selectedRowIndex]);
+    const exposedVariables = {
+      data: childrenData,
+      children: childrenData,
+    };
+
+    if (selectedRowIndex !== undefined) {
+      exposedVariables.selectedRowId = selectedRowIndex;
+      exposedVariables.selectedRow = childrenData[selectedRowIndex];
     }
+
+    setExposedVariable('allVariables', exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenData]);
 

@@ -32,18 +32,19 @@ export const Text = function Text({ height, properties, styles, darkMode, setExp
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const text = computeText();
-    setText(text);
-    setExposedVariable('text', text);
 
-    setExposedVariable('setText', async function (text) {
-      setText(text);
-      setExposedVariable('text', text);
-    });
+    const exposedVariables = {
+      text,
+      setText: async function (newText) {
+        setText(newText);
+        setExposedVariable('text', newText);
+      },
+      visibility: async function (value) {
+        setVisibility(value);
+      },
+    };
 
-    setExposedVariable('visibility', async function (value) {
-      setVisibility(value);
-    });
-
+    setExposedVariable('allVariables', exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.text, setText, setVisibility]);
 

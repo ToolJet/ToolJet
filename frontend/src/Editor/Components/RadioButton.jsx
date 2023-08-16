@@ -35,10 +35,14 @@ export const RadioButton = function RadioButton({
   }
 
   useEffect(() => {
-    setExposedVariable('value', value);
-    setExposedVariable('selectOption', async function (option) {
-      onSelect(option);
-    });
+    const exposedVariables = {
+      value,
+      selectOption: async function (option) {
+        onSelect(option);
+      },
+    };
+
+    setExposedVariable('allVariables', exposedVariables);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, setValue]);
 

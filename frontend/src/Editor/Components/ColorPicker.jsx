@@ -77,11 +77,14 @@ export const ColorPicker = function ({
       }
     };
 
-    setExposedVariable('setColor', handleSetColor);
+    const exposedVariables = {
+      setColor: handleSetColor,
+    };
+
+    setExposedVariable('allVariables', exposedVariables);
 
     // Call handleDefaultColor immediately after defining it to apply the logic to the defaultColor
     handleDefaultColor();
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultColor, color, setColor]);
 

@@ -92,13 +92,17 @@ export const Tabs = function Tabs({
   }
 
   useEffect(() => {
-    setExposedVariable('setTab', async function (id) {
-      if (id) {
-        setCurrentTab(id);
-        setExposedVariable('currentTab', id)?.then(() => fireEvent('onTabSwitch'));
-      }
-    });
-    setExposedVariable('currentTab', currentTab);
+    const exposedVariables = {
+      setTab: async function (id) {
+        if (id) {
+          setCurrentTab(id);
+          setExposedVariable('currentTab', id)?.then(() => fireEvent('onTabSwitch'));
+        }
+      },
+      currentTab,
+    };
+
+    setExposedVariable('allVariables', exposedVariables);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setCurrentTab, currentTab]);
