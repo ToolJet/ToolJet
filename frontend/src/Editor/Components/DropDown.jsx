@@ -75,21 +75,34 @@ export const DropDown = function DropDown({
   }
 
   useEffect(() => {
-    const exposedVariables = {
-      selectOption: async function (value) {
-        selectOption(value);
-      },
-      isValid,
-      label,
-      optionLabels: advanced
-        ? (schema || []).filter((item) => item?.visible).map((item) => item.label)
-        : display_values,
-      value: exposedValue !== currentValue ? currentValue : null,
-      selectedOptionLabel: display_values?.[values?.indexOf(currentValue)],
-    };
+    setExposedVariable('selectOption', async function (value) {
+      selectOption(value);
+    });
 
-    setExposedVariable('allVariables', exposedVariables);
+    setExposedVariable('isValid', isValid);
+    setExposedVariable('label', label);
 
+    if (advanced) {
+      const visibleSchemaItems = schema?.filter((item) => item?.visible);
+      setExposedVariable(
+        'optionLabels',
+        visibleSchemaItems?.map((item) => item.label)
+      );
+
+      if (hasVisibleFalse(currentValue)) {
+        setCurrentValue(findDefaultItem(schema));
+      }
+    } else {
+      setExposedVariable('optionLabels', display_values);
+    }
+
+    const index = values?.indexOf(currentValue);
+
+    if (exposedValue !== currentValue) {
+      setExposedVariable('value', currentValue);
+    }
+
+    setExposedVariable('selectedOptionLabel', display_values?.[index]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [advanced, currentValue, display_values, exposedValue, isValid, label, schema, selectOption, values]);
 

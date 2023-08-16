@@ -46,18 +46,14 @@ export const Modal = function Modal({
   const size = properties.size ?? 'lg';
 
   useEffect(() => {
-    const exposedVariables = {
-      open: async function () {
-        setExposedVariable('show', true);
-        setShowModal(true);
-      },
-      close: async function () {
-        setShowModal(false);
-        setExposedVariable('show', false);
-      },
-    };
-
-    setExposedVariable('allVariables', exposedVariables);
+    setExposedVariable('open', async function () {
+      setExposedVariable('show', true);
+      setShowModal(true);
+    });
+    setExposedVariable('close', async function () {
+      setShowModal(false);
+      setExposedVariable('show', false);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setShowModal]);
 

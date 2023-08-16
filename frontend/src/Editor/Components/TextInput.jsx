@@ -58,22 +58,19 @@ export const TextInput = function TextInput({
       fireEvent('onChange');
     };
 
-    const exposedVariables = {
-      isValid,
-      value: properties.value,
-      setFocus: setFocusFunc,
-      setBlur: setBlurFunc,
-      disable: async (value) => {
-        await setDisable(value);
-      },
-      visibility: async (value) => {
-        await setVisibility(value);
-      },
-      setText: setTextFunc,
-      clear: clearFunc,
-    };
-
-    setExposedVariable('allVariables', exposedVariables);
+    setExposedVariable('isValid', isValid);
+    setValue(properties.value);
+    setExposedVariable('value', properties.value);
+    setExposedVariable('setFocus', setFocusFunc);
+    setExposedVariable('setBlur', setBlurFunc);
+    setExposedVariable('disable', async (value) => {
+      await setDisable(value);
+    });
+    setExposedVariable('visibility', async (value) => {
+      await setVisibility(value);
+    });
+    setExposedVariable('setText', setTextFunc);
+    setExposedVariable('clear', clearFunc);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isValid, properties.value]);

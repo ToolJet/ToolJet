@@ -2,21 +2,19 @@ import React, { useState, useEffect } from 'react';
 
 export const TextArea = function TextArea({ height, properties, styles, setExposedVariable, dataCy }) {
   const [value, setValue] = useState(properties.value);
-
   useEffect(() => {
-    const exposedVariables = {
-      value: properties.value,
-      setText: async function (text) {
-        setValue(text);
-        setExposedVariable('value', text);
-      },
-      clear: async function () {
-        setValue('');
-        setExposedVariable('value', '');
-      },
-    };
+    setValue(properties.value);
+    setExposedVariable('value', properties.value);
 
-    setExposedVariable('allVariables', exposedVariables);
+    setExposedVariable('setText', async function (text) {
+      setValue(text);
+      setExposedVariable('value', text);
+    });
+
+    setExposedVariable('clear', async function () {
+      setValue('');
+      setExposedVariable('value', '');
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [properties.value, setValue]);
 

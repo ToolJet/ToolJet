@@ -152,6 +152,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
 
       setExposedVariables({ lastAddedCard: { ...cardDetails }, updatedCardData: getData(cardDataAsObj) })?.then(() => {
         fireEvent('onCardAdded');
+        // fireEvent('onUpdate');
       });
     };
 
@@ -171,6 +172,7 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
       setExposedVariables({ lastRemovedCard: { ...deletedCard }, updatedCardData: getData(cardDataAsObj) })?.then(
         () => {
           fireEvent('onCardRemoved');
+          // fireEvent('onUpdate');
         }
       );
     };
@@ -182,15 +184,10 @@ export function KanbanBoard({ widgetHeight, kanbanProps, parentRef }) {
       });
     }
 
-    const exposedVariables = {
-      updateCardData: updateCardDataFunc,
-      moveCard: moveCardFunc,
-      addCard: addCardFunc,
-      deleteCard: deleteCardFunc,
-      updatedCardData: getData(cardDataAsObj),
-    };
-
-    setExposedVariable('allVariables', exposedVariables);
+    setExposedVariable('updateCardData', updateCardDataFunc);
+    setExposedVariable('moveCard', moveCardFunc);
+    setExposedVariable('addCard', addCardFunc);
+    setExposedVariable('deleteCard', deleteCardFunc);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldUpdateData.current, JSON.stringify(cardDataAsObj), lastSelectedCard, showModal, items]);
