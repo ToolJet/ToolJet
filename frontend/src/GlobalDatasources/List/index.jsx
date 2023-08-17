@@ -98,7 +98,9 @@ export const List = ({ updateSelectedDatasource }) => {
         <div className="mb-4">
           <EmptyFoldersIllustration />
         </div>
-        <div className="tj-text-md text-secondary">No datasources added</div>
+        <div className="tj-text-md text-secondary" data-cy="empty-ds-page-text">
+          No datasources added
+        </div>
       </div>
     );
   };
@@ -114,7 +116,7 @@ export const List = ({ updateSelectedDatasource }) => {
               <div className="d-flex justify-content-between datasources-search" style={{ marginBottom: '8px' }}>
                 {!showInput ? (
                   <>
-                    <div className="datasources-info tj-text-xsm">
+                    <div className="datasources-info tj-text-xsm" data-cy="added-ds-label">
                       Data Sources Added{' '}
                       {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
                     </div>
@@ -123,6 +125,7 @@ export const List = ({ updateSelectedDatasource }) => {
                       onClick={() => {
                         setShowInput(true);
                       }}
+                      data-cy="added-ds-search-icon"
                     >
                       <SolidIcon name="search" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
                     </div>
@@ -135,6 +138,7 @@ export const List = ({ updateSelectedDatasource }) => {
                     customClass="tj-common-search-input"
                     onClearCallback={handleClose}
                     autoFocus={true}
+                    dataCy={'added-ds'}
                   />
                 )}
               </div>
