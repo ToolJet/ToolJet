@@ -95,6 +95,7 @@ export const DraggableBox = function DraggableBox({
   readOnly,
   customResolvables,
   parentId,
+  parentKey,
   hoveredComponent,
   onComponentHover,
   sideBarDebugger,
@@ -298,6 +299,7 @@ export const DraggableBox = function DraggableBox({
                   readOnly={readOnly}
                   customResolvables={customResolvables}
                   parentId={parentId}
+                  parentKey={parentKey}
                   allComponents={allComponents}
                   sideBarDebugger={sideBarDebugger}
                   childComponents={childComponents}

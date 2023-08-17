@@ -144,6 +144,7 @@ export const Box = function Box({
   mode,
   customResolvables,
   parentId,
+  parentKey,
   sideBarDebugger,
   readOnly,
   childComponents,
@@ -162,7 +163,6 @@ export const Box = function Box({
       ...styles,
     };
   }
-
   const componentMeta = useMemo(() => {
     return componentTypes.find((comp) => component.component === comp.component);
   }, [component]);
@@ -270,23 +270,20 @@ export const Box = function Box({
       ...{ validationObject: component.definition.validation, currentState },
       customResolveObjects: customResolvables,
     });
-  const checkParent = (parent) => {
+  const checkParent = () => {
     let isListView = false,
       isForm = false;
-    Object.keys(containerProps.appDefinition.pages[containerProps.currentPageId]?.components).forEach((item) => {
-      if (parent == item) {
-        try {
-          isListView =
-            containerProps.appDefinition.pages[containerProps.currentPageId]?.components[item]?.component?.component ===
-            'Listview';
-          isForm =
-            containerProps.appDefinition.pages[containerProps.currentPageId]?.components[item]?.component?.component ===
-            'Form';
-        } catch {
-          console.log('error');
-        }
-      }
-    });
+    try {
+      isListView =
+        containerProps.appDefinition.pages[containerProps.currentPageId].components[parentKey]?.component?.component ===
+        'Listview';
+      isForm =
+        containerProps.appDefinition.pages[containerProps.currentPageId].components[parentKey]?.component?.component ===
+        'Form';
+    } catch {
+      console.log('error');
+    }
+
     if (!isListView && !isForm) return true;
     else return false;
   };
@@ -335,8 +332,12 @@ export const Box = function Box({
               styles={{ ...validatedStyles, boxShadow: validatedGeneralStyles?.boxShadow }}
               setExposedVariable={(variable, value) => {
                 if (component?.parent) {
-                  if (checkParent(component?.parent)) onComponentOptionChanged(component, variable, value, id);
-                } else onComponentOptionChanged(component, variable, value, id);
+                  if (checkParent()) {
+                    onComponentOptionChanged(component, variable, value, id);
+                  }
+                } else {
+                  onComponentOptionChanged(component, variable, value, id);
+                }
               }}
               setExposedVariables={(variableSet) => onComponentOptionsChanged(component, Object.entries(variableSet))}
               fireEvent={fireEvent}

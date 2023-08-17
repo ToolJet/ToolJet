@@ -555,6 +555,7 @@ export const SubContainer = ({
                 onComponentHover={onComponentHover}
                 hoveredComponent={hoveredComponent}
                 parentId={parentComponent?.name}
+                parentKey={box?.component?.parent}
                 sideBarDebugger={sideBarDebugger}
                 isMultipleComponentsSelected={selectedComponents?.length > 1 ? true : false}
                 exposedVariables={exposedVariables ?? {}}
