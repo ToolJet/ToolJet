@@ -16,6 +16,8 @@
     "@mui/material": "^5.14.4",
     "@mui/x-data-grid": "^6.11.0",
     "@mui/x-date-pickers": "^6.10.2",
+    "@mui/x-date-pickers-pro": "^6.11.2",
+    "@mui/x-license-pro": "^6.10.2",
     "@radix-ui/colors": "^0.1.8",
     "@radix-ui/react-popover": "^1.0.3",
     "@react-google-maps/api": "^2.18.1",
