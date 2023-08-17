@@ -47,7 +47,6 @@ export const PrivateRoute = ({ children }) => {
     setValidationStatus(true);
     /* When change routes (not hard reload) will validate the access */
     validateRoutes(session?.group_permissions, () => {
-      console.log('inside');
       setValidationStatus(false);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps

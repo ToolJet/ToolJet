@@ -142,12 +142,17 @@ export const getRedirectURL = (path) => {
   if (path) {
     redirectLoc = `${returnWorkspaceIdIfNeed(path)}${path !== '/' ? path : ''}`;
   } else {
-    const params = queryString.parse(window.location.search);
-    const { from } = params.redirectTo ? { from: { pathname: params.redirectTo } } : { from: { pathname: '/' } };
+    const redirectTo = getRedirectTo();
+    const { from } = redirectTo ? { from: { pathname: redirectTo } } : { from: { pathname: '/' } };
     if (from.pathname !== '/confirm')
       from.pathname = `${returnWorkspaceIdIfNeed(from.pathname)}${from.pathname !== '/' ? from.pathname : ''}`;
     redirectLoc = from.pathname;
   }
 
   return redirectLoc;
+};
+
+export const getRedirectTo = () => {
+  const params = new URL(window.location.href).searchParams;
+  return params.get('redirectTo') || '/';
 };

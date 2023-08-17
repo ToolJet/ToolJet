@@ -52,6 +52,8 @@ export const authenticationService = {
   authorize,
   validateSession,
   getUserDetails,
+  getLoginOrganizationSlug,
+  saveLoginOrganizationSlug,
 };
 
 function login(email, password, organizationId) {
@@ -96,6 +98,14 @@ function getLoginOrganizationId() {
 
 function deleteLoginOrganizationId() {
   eraseCookie('login-workspace');
+}
+
+function saveLoginOrganizationSlug(organizationSlug) {
+  organizationSlug && setCookie('login-workspace-slug', organizationSlug);
+}
+
+function getLoginOrganizationSlug() {
+  return getCookie('login-workspace-slug');
 }
 
 function getOrganizationConfigs(organizationId) {

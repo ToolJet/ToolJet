@@ -15,7 +15,7 @@ import EyeShow from '../../assets/images/onboardingassets/Icons/EyeShow';
 import Spinner from '@/_ui/Spinner';
 import { getCookie, eraseCookie, setCookie } from '@/_helpers/cookie';
 import { withRouter } from '@/_hoc/withRouter';
-import { pathnameToArray, getSubpath, getRedirectURL, redirectToDashboard } from '@/_helpers/routes';
+import { pathnameToArray, getSubpath, getRedirectURL, redirectToDashboard, getRedirectTo } from '@/_helpers/routes';
 class LoginPageComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -66,6 +66,7 @@ class LoginPageComponent extends React.Component {
         this.organizationId = configs.id;
         if (this.organizationId) {
           authenticationService.saveLoginOrganizationId(this.organizationId);
+          authenticationService.saveLoginOrganizationSlug(this.organizationSlug);
         }
         this.setState({ isGettingConfigs: false, configs });
       },
@@ -139,9 +140,7 @@ class LoginPageComponent extends React.Component {
     const iframe = window !== window.top;
 
     if (iframe) {
-      const params = new URL(window.location.href).searchParams;
-
-      const redirectPath = params.get('redirectTo') || '/';
+      const redirectPath = getRedirectTo();
       window.parent.postMessage(
         {
           type: 'redirectTo',

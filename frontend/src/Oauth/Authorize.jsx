@@ -4,6 +4,7 @@ import { authenticationService } from '@/_services';
 import { Navigate } from 'react-router-dom';
 import Configs from './Configs/Config.json';
 import { RedirectLoader } from '../_components';
+import { getCookie } from '@/_helpers';
 
 export function Authorize() {
   const [error, setError] = useState('');
@@ -11,6 +12,8 @@ export function Authorize() {
   const router = useRouter();
 
   const organizationId = authenticationService.getLoginOrganizationId();
+  const organizationSlug = authenticationService.getLoginOrganizationSlug();
+  const redirectUrl = getCookie('redirectPath');
 
   useEffect(() => {
     const errorMessage = router.query.error_description || router.query.error;
@@ -76,7 +79,9 @@ export function Authorize() {
       {(success || error) && (
         <Navigate
           replace
-          to={`/login${error && organizationId ? `/${organizationId}` : ''}`}
+          to={`/login${error && organizationSlug ? `/${organizationSlug}` : '/'}${
+            redirectUrl ? `?redirectTo=${redirectUrl}` : ''
+          }`}
           state={{ errorMessage: error && error }}
         />
       )}
