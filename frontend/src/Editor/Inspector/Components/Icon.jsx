@@ -43,7 +43,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
     paramUpdated({ name: 'icon' }, 'value', icon, 'properties');
   };
 
-  const iconLib = config.UI_LIB === 'mui' ? IconsMUI : Icons;
+  const IconLib = config.UI_LIB === 'mui' ? IconsMUI : Icons;
 
   const eventPopover = () => {
     return (
@@ -70,7 +70,7 @@ export function Icon({ componentMeta, darkMode, ...restProps }) {
                   if (filteredIcons[index] === undefined || filteredIcons[index] === 'createReactComponent')
                     return null;
                   // eslint-disable-next-line import/namespace
-                  const IconElement = iconLib[filteredIcons[index]];
+                  const IconElement = IconLib[filteredIcons[index]];
 
                   return (
                     <div
