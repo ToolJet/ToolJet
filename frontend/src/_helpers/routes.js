@@ -67,7 +67,7 @@ export const redirectToDashboard = (data) => {
   const { current_organization_slug, current_organization_id } = authenticationService.currentSessionValue;
   const id_slug = data
     ? data?.current_organization_slug || data?.current_organization_id
-    : current_organization_slug || current_organization_id;
+    : current_organization_slug || current_organization_id || '';
   window.location = getSubpath() ? `${getSubpath()}/${id_slug}` : `/${id_slug}`;
 };
 
