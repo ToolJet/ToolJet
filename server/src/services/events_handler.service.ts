@@ -22,6 +22,26 @@ export class EventsService {
     });
   }
 
+  async findAllEventsWithSourceId(sourceId: string): Promise<EventHandler[]> {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const allEvents = await manager.find(EventHandler, {
+        where: { sourceId },
+      });
+      return allEvents;
+    });
+  }
+
+  async cascadeDeleteEvents(sourceId: string) {
+    return dbTransactionWrap(async (manager: EntityManager) => {
+      const allEvents = await manager.find(EventHandler, {
+        where: { sourceId },
+      });
+
+      await manager.remove(allEvents);
+      return allEvents;
+    });
+  }
+
   async createEvent(options, versionId) {
     if (Object.keys(options).length === 0) {
       return new BadRequestException('No event found');

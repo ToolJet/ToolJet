@@ -345,6 +345,8 @@ export class AppsControllerV2 {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    return await this.eventService.updateEvent(body, versionId);
+    console.log('-----arpit update events', { body });
+
+    // return await this.eventService.updateEvent(body, versionId);
   }
 }
