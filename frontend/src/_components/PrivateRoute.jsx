@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { authenticationService } from '@/_services';
 import { appendWorkspaceId, excludeWorkspaceIdFromURL, getPathname } from '@/_helpers/routes';
 import { TJLoader } from '@/_ui/TJLoader/TJLoader';
@@ -9,7 +9,7 @@ import { handleAppAccess } from '@/_helpers/handleAppAccess';
 export const PrivateRoute = ({ children }) => {
   const [session, setSession] = React.useState(authenticationService.currentSessionValue);
   const location = useLocation();
-
+  const navigate = useNavigate();
   const params = useParams();
   const [extraProps, setExtraProps] = useState({});
   const [isValidatingUserAccess, setUserValidationStatus] = useState(true);
@@ -18,7 +18,13 @@ export const PrivateRoute = ({ children }) => {
   const isEditorOrViewerGoingToRender = pathname.startsWith('/apps/') || pathname.startsWith('/applications/');
 
   const validateRoutes = async (group_permissions, callback) => {
-    if (isEditorOrViewerGoingToRender && group_permissions) {
+    /* validate the app access if the route either /apps/ or /application/ and 
+      user has a valid session also user isn't switching between pages on editor 
+    */
+    const isSwitchingPages = location.state?.isSwitchingPage;
+    /* replacing the state. otherwise the route will keep isSwitchingPage value `true` */
+    navigate(location.pathname, { replace: true });
+    if (isEditorOrViewerGoingToRender && group_permissions && !isSwitchingPages) {
       const componentType = pathname.startsWith('/apps/') ? 'editor' : 'viewer';
       const { slug } = params;
 
@@ -42,7 +48,7 @@ export const PrivateRoute = ({ children }) => {
 
   useEffect(() => {
     setUserValidationStatus(true);
-    /* When change routes (not hard reload). will validate the access */
+    /* When route changes (not hard reload). will validate the access */
     validateRoutes(session?.group_permissions, () => {
       setUserValidationStatus(false);
     });

@@ -1359,7 +1359,11 @@ class EditorComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.slug}/${handle}?${queryParamsString}`);
+    this.props.navigate(`/${getWorkspaceId()}/apps/${this.state.slug}/${handle}?${queryParamsString}`, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
 
     const { globals: existingGlobals } = this.props.currentState;
 
@@ -1468,7 +1472,9 @@ class EditorComponent extends React.Component {
     const editingVersion = this.props?.editingVersion;
     const previewQuery = queryString.stringify({ version: editingVersion?.name });
     const appVersionPreviewLink = editingVersion
-      ? `/applications/${app.slug}/${currentState.page.handle}${!_.isEmpty(previewQuery) ? `?${previewQuery}` : ''}`
+      ? `/applications/${slug || appId}/${currentState.page.handle}${
+          !_.isEmpty(previewQuery) ? `?${previewQuery}` : ''
+        }`
       : '';
     return (
       <div className="editor wrapper">

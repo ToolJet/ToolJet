@@ -229,8 +229,6 @@ class ViewerComponent extends React.Component {
       const appId = this.props.id;
       const versionId = this.props.versionId;
 
-      console.log('inside', this.props);
-
       if (currentSession?.load_app && slug) {
         if (currentSession?.group_permissions) {
           useAppDataStore.getState().actions.setAppId(appId);
@@ -399,11 +397,11 @@ class ViewerComponent extends React.Component {
 
     const queryParamsString = queryParams.map(([key, value]) => `${key}=${value}`).join('&');
 
-    if (this.state.slug) this.props.navigate(`/applications/${this.state.slug}/${handle}?${queryParamsString}`);
-    else
-      this.props.navigate(
-        `/applications/${this.state.appId}/versions/${this.state.versionId}/${handle}?${queryParamsString}`
-      );
+    this.props.navigate(`/applications/${this.state.slug}/${handle}?${queryParamsString}`, {
+      state: {
+        isSwitchingPage: true,
+      },
+    });
   };
 
   handleEvent = (eventName, options) => onEvent(this, eventName, options, 'view');
