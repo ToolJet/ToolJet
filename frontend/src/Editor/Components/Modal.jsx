@@ -123,7 +123,8 @@ export const Modal = function Modal({
 
   function hideModal() {
     setShowModal(false);
-    setExposedVariable('show', false).then(() => fireEvent('onClose'));
+    setExposedVariable('show', false);
+    fireEvent('onClose');
   }
   const backwardCompatibilityCheck = height == '34' || modalHeight != undefined ? true : false;
 

@@ -31,7 +31,8 @@ export const RadioButton = function RadioButton({
 
   function onSelect(selection) {
     setValue(selection);
-    setExposedVariable('value', selection).then(() => fireEvent('onSelectionChange'));
+    setExposedVariable('value', selection);
+    fireEvent('onSelectionChange');
   }
 
   useEffect(() => {

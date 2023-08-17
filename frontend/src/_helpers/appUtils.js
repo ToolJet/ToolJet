@@ -80,9 +80,10 @@ export function onComponentOptionChanged(_ref, component, option_name, value) {
   let componentData = components[componentName];
   componentData = componentData || {};
   if (option_name === 'allVariables') {
-    Object.keys(value).map((item) => {
-      componentData[item] = value[item];
-    });
+    value &&
+      Object.keys(value).map((item) => {
+        componentData[item] = value[item];
+      });
   } else componentData[option_name] = value;
 
   if (!component.parent) {

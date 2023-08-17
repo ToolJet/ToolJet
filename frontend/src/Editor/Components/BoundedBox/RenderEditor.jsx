@@ -46,7 +46,8 @@ export const RenderEditor = ({
               },
             });
 
-            setExposedVariable('annotations', getExposedAnnotations(annotations)).then(() => fireEvent('onChange'));
+            setExposedVariable('annotations', getExposedAnnotations(annotations));
+            fireEvent('onChange');
             return annotations;
           });
         }}

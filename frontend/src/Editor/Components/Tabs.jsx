@@ -148,7 +148,8 @@ export const Tabs = function Tabs({
             style={{ opacity: tab?.disabled && '0.5', width: tabWidth == 'split' && '33.3%' }}
             onClick={() => {
               !tab?.disabled && setCurrentTab(tab.id);
-              !tab?.disabled && setExposedVariable('currentTab', tab.id).then(() => fireEvent('onTabSwitch'));
+              !tab?.disabled && setExposedVariable('currentTab', tab.id);
+              fireEvent('onTabSwitch');
             }}
             key={tab.id}
           >

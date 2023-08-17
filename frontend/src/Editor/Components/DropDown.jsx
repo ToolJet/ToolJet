@@ -78,33 +78,13 @@ export const DropDown = function DropDown({
     setExposedVariable('selectOption', async function (value) {
       selectOption(value);
     });
-
-    setExposedVariable('isValid', isValid);
-    setExposedVariable('label', label);
-
-    if (advanced) {
-      const visibleSchemaItems = schema?.filter((item) => item?.visible);
-      setExposedVariable(
-        'optionLabels',
-        visibleSchemaItems?.map((item) => item.label)
-      );
-
-      if (hasVisibleFalse(currentValue)) {
-        setCurrentValue(findDefaultItem(schema));
-      }
-    } else {
-      setExposedVariable('optionLabels', display_values);
-    }
-
-    const index = values?.indexOf(currentValue);
-
-    if (exposedValue !== currentValue) {
-      setExposedVariable('value', currentValue);
-    }
-
-    setExposedVariable('selectedOptionLabel', display_values?.[index]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [advanced, currentValue, display_values, exposedValue, isValid, label, schema, selectOption, values]);
+  }, [JSON.stringify(values), setCurrentValue, JSON.stringify(display_values)]);
+
+  useEffect(() => {
+    setExposedVariable('isValid', isValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
 
   useEffect(() => {
     let newValue = undefined;
@@ -117,6 +97,45 @@ export const DropDown = function DropDown({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, JSON.stringify(values)]);
+
+  useEffect(() => {
+    let index = null;
+    if (exposedValue !== currentValue) {
+      setExposedVariable('value', currentValue);
+    }
+    index = values?.indexOf(currentValue);
+    setExposedVariable('selectedOptionLabel', display_values?.[index]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentValue, JSON.stringify(display_values), JSON.stringify(values)]);
+
+  useEffect(() => {
+    let newValue = undefined;
+    let index = null;
+
+    if (values?.includes(currentValue)) newValue = currentValue;
+    else if (values?.includes(value)) newValue = value;
+    index = values?.indexOf(newValue);
+    setExposedItem(newValue, index);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(values)]);
+
+  useEffect(() => {
+    setExposedVariable('label', label);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [label]);
+
+  useEffect(() => {
+    if (advanced) {
+      setExposedVariable(
+        'optionLabels',
+        schema?.filter((item) => item?.visible)?.map((item) => item.label)
+      );
+      if (hasVisibleFalse(currentValue)) {
+        setCurrentValue(findDefaultItem(schema));
+      }
+    } else setExposedVariable('optionLabels', display_values);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(schema), advanced, JSON.stringify(display_values), currentValue]);
 
   function hasVisibleFalse(value) {
     for (let i = 0; i < schema?.length; i++) {
@@ -225,7 +244,8 @@ export const DropDown = function DropDown({
             onChange={(selectedOption, actionProps) => {
               if (actionProps.action === 'select-option') {
                 setCurrentValue(selectedOption.value);
-                setExposedVariable('value', selectedOption.value).then(() => fireEvent('onSelect'));
+                setExposedVariable('value', selectedOption.value);
+                fireEvent('onSelect');
                 setExposedVariable('selectedOptionLabel', selectedOption.label);
               }
             }}

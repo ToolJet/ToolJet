@@ -86,7 +86,6 @@ export const Form = function Form(props) {
   };
 
   useEffect(() => {
-    // resetComponent()
     if (mounted) resetComponent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(JSONSchema)]);
