@@ -1,7 +1,9 @@
 import React from 'react';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
 
-const EmptyState = ({ canCreateVariable, setIsManageVarDrawerOpen }) => {
+const EmptyState = ({ canCreateVariable, setIsManageVarDrawerOpen, isLoading }) => {
+  if (isLoading) return null;
+
   return (
     <div className="w-100 workspace-constant-card-body">
       <div className="align-items-center p-3 justify-content-between">
