@@ -1,5 +1,11 @@
 import { organizationService, authenticationService } from '@/_services';
-import { pathnameToArray, getSubpath, getWorkspaceIdOrSlugFromURL, getPathname, getRedirectURL } from './routes';
+import {
+  pathnameToArray,
+  getSubpath,
+  getWorkspaceIdOrSlugFromURL,
+  getPathname,
+  getRedirectToWithParams,
+} from './routes';
 
 /* [* Be cautious: READ THE CASES BEFORE TOUCHING THE CODE. OTHERWISE YOU MAY SEE ENDLESS REDIRECTIONS (AKA ROUTES-BURMUDA-TRIANGLE) *]
   What is this function?
@@ -156,7 +162,7 @@ export const authorizeUserAndHandleErrors = (workspace_id, workspace_slug) => {
                   if (!isThisWorkspaceLoginPage())
                     return (window.location = `${
                       subpath ?? ''
-                    }/login/${unauthorized_organization_slug}?redirectTo=${getPathname(null, true)}`);
+                    }/login/${unauthorized_organization_slug}?redirectTo=${getRedirectToWithParams()}`);
                 });
               });
           })

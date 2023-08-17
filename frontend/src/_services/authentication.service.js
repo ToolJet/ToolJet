@@ -10,7 +10,7 @@ import {
 import { getWorkspaceId } from '@/_helpers/utils';
 import config from 'config';
 import queryString from 'query-string';
-import { getPathname } from '@/_helpers/routes';
+import { getRedirectToWithParams } from '@/_helpers/routes';
 
 const currentSessionSubject = new BehaviorSubject({
   current_organization_id: null,
@@ -257,7 +257,7 @@ function logout(avoidRedirection = false) {
     if (avoidRedirection) {
       window.location.href = loginPath;
     } else {
-      const pathname = getPathname(null, !getPathname().includes('integrations'));
+      const pathname = getRedirectToWithParams();
       window.location.href = loginPath + `?redirectTo=${`${pathname.indexOf('/') === 0 ? '' : '/'}${pathname}`}`;
     }
   };

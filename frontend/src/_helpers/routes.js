@@ -2,6 +2,7 @@
 import { stripTrailingSlash, getWorkspaceId } from '@/_helpers/utils';
 import { authenticationService } from '@/_services/authentication.service';
 import queryString from 'query-string';
+import _ from 'lodash';
 
 export const getPrivateRoute = (page, params = {}) => {
   const routes = {
@@ -118,7 +119,7 @@ export const getWorkspaceIdOrSlugFromURL = () => {
 };
 
 export const excludeWorkspaceIdFromURL = (pathname) => {
-  if (!pathname.includes('/applications/')) {
+  if (!['integrations', 'applications'].find((path) => pathname.includes(path))) {
     const paths = pathname?.split('/').filter((path) => path !== '');
     paths.shift();
     const newPath = paths.join('/');
@@ -155,4 +156,18 @@ export const getRedirectURL = (path) => {
 export const getRedirectTo = () => {
   const params = new URL(window.location.href).searchParams;
   return params.get('redirectTo') || '/';
+};
+
+export const getPreviewQueryParams = () => {
+  const queryParams = getQueryParams();
+  return {
+    ...(queryParams['version'] && { version: queryParams.version }),
+  };
+};
+
+export const getRedirectToWithParams = () => {
+  const pathname = getPathname(null, true);
+  const queryParams = pathname.includes('/applications/') ? getPreviewQueryParams() : {};
+  const query = !_.isEmpty(queryParams) ? queryString.stringify(queryParams) : '';
+  return `${pathname}${!_.isEmpty(query) ? `?${query}` : ''}`;
 };

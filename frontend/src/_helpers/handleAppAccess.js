@@ -1,6 +1,6 @@
 import { organizationService, authenticationService, appsService } from '@/_services';
 import { safelyParseJSON, getWorkspaceId } from '@/_helpers/utils';
-import { redirectToDashboard, getSubpath, getPathname, getQueryParams } from '@/_helpers/routes';
+import { redirectToDashboard, getSubpath, getQueryParams } from '@/_helpers/routes';
 import { toast } from 'react-hot-toast';
 import _ from 'lodash';
 import queryString from 'query-string';
@@ -9,22 +9,24 @@ export const handleAppAccess = (componentType, slug) => {
   const previewQueryParams = getPreviewQueryParams();
   const isLocalPreview = !_.isEmpty(previewQueryParams);
   const queryParams = { ...previewQueryParams, access_type: isLocalPreview ? 'view' : 'edit' };
+  const query = queryString.stringify(previewQueryParams);
+  const redirectPath = !_.isEmpty(query) ? `/applications/${slug}${query ? `?${query}` : ''}` : `/apps/${slug}`;
+
   if (componentType === 'editor' || isLocalPreview) {
     /* Editor or app preview */
     return appsService.validatePrivateApp(slug, queryParams).catch((error) => {
-      handleError(componentType, error, slug, previewQueryParams);
+      handleError(componentType, error, slug, redirectPath);
     });
   } else {
     /* Released app link [launch/sharable link] */
     return appsService.validateReleasedApp(slug).catch((error) => {
-      handleError(componentType, error, slug);
+      handleError(componentType, error, redirectPath);
     });
   }
 };
 
-const switchOrganization = (componentType, slug, orgId, previewQueryParams) => {
-  const query = queryString.stringify(previewQueryParams);
-  const path = !_.isEmpty(query) ? `/applications/${slug}${query ? `?${query}` : ''}` : `/apps/${slug}`;
+const switchOrganization = (componentType, orgId, redirectPath) => {
+  const path = redirectPath;
   const sub_path = getSubpath() ?? '';
   organizationService.switchOrganization(orgId).then(
     () => {
@@ -36,7 +38,7 @@ const switchOrganization = (componentType, slug, orgId, previewQueryParams) => {
   );
 };
 
-const handleError = (componentType, error, slug, previewQueryParams) => {
+const handleError = (componentType, error, redirectPath) => {
   try {
     if (error?.data) {
       const statusCode = error.data?.statusCode;
@@ -48,12 +50,12 @@ const handleError = (componentType, error, slug, previewQueryParams) => {
           currentSessionValue.current_user &&
           currentSessionValue.current_organization_id !== errorObj?.organizationId
         ) {
-          switchOrganization(componentType, slug, errorObj?.organizationId, previewQueryParams);
+          switchOrganization(componentType, errorObj?.organizationId, redirectPath);
           return;
         }
         redirectToDashboard();
       } else if (statusCode === 401) {
-        window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${getPathname(null, true)}`;
+        window.location = `${getSubpath() ?? ''}/login/${getWorkspaceId()}?redirectTo=${redirectPath}`;
         return;
       } else if (statusCode === 404 || statusCode === 422) {
         toast.error(error?.error ?? 'App not found');
