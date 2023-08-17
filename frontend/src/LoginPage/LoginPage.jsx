@@ -226,7 +226,7 @@ class LoginPageComponent extends React.Component {
                     <h2 data-cy="no-workspace">
                       {this.props.t(
                         'loginSignupPage.workspaceDoesntExist',
-                        'Workspace Does not exist. Please check the login url again'
+                        'Workspace does not exist. Please check the workspace login url again'
                       )}
                     </h2>
                   </div>

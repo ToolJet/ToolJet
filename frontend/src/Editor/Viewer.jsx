@@ -29,6 +29,7 @@ import { useDataQueriesStore } from '@/_stores/dataQueriesStore';
 import { useCurrentStateStore } from '@/_stores/currentStateStore';
 import { shallow } from 'zustand/shallow';
 import { useAppDataStore } from '@/_stores/appDataStore';
+import { getPreviewQueryParams } from '@/_helpers/routes';
 
 class ViewerComponent extends React.Component {
   constructor(props) {
@@ -390,6 +391,9 @@ class ViewerComponent extends React.Component {
 
   switchPage = (id, queryParams = []) => {
     document.getElementById('real-canvas').scrollIntoView();
+    /* Keep default query params for preview */
+    const defaultParams = getPreviewQueryParams();
+    queryParams.push(...Object.entries(defaultParams));
 
     if (this.state.currentPageId === id) return;
 
