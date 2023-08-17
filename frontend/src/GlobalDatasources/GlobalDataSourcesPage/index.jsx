@@ -141,6 +141,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
         })
         .then((data) => {
           setActiveDatasourceList('');
+          setAddingDataSource(false);
           toast.success(t('editor.queryManager.dataSourceManager.toast.success.dataSourceAdded', 'Datasource Added'), {
             position: 'top-center',
           });
@@ -222,6 +223,7 @@ export const GlobalDataSourcesPage = ({ darkMode = false, updateSelectedDatasour
         isLoading={addingDataSource}
         variant="secondary"
         onClick={() => createDataSource(item)}
+        data-cy={`${item.title.toLowerCase().replace(/\s+/g, '-')}-add-button`}
       >
         <SolidIcon name="plus" fill={darkMode ? '#3E63DD' : '#3E63DD'} width={18} viewBox="0 0 25 25" />
         <span className="ml-2">Add</span>

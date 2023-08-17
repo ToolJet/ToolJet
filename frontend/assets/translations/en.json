@@ -145,7 +145,7 @@
             "advanced": "Advanced",
             "preview": "Preview",
             "Save": "Save",
-            "selectDatasource": "Select Datasource",
+            "selectDatasource": "Select Data Source",
             "addDatasource": "Add datasource",
             "dataSourceManager": {
                 "toast": {
@@ -259,7 +259,7 @@
                     "enterLastName": "Enter Last Name",
                     "enterEmail": "Enter email id",
                     "enterFulltName": "Enter full name",
-                    "inviteNewUsers":"Invite new users"
+                    "inviteNewUsers": "Invite new users"
                 },
                 "manageGroups": {
                     "permissions": {
@@ -921,7 +921,7 @@
             "tip": "Debugger",
             "errors": "Errors",
             "noErrors": "No errors found",
-            "noLogs" : "No logs found",
+            "noLogs": "No logs found",
             "clear": "clear"
         },
         "Comments": {

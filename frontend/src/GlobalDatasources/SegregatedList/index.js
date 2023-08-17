@@ -6,8 +6,8 @@ export const SegregatedList = ({ dataSources, activeDatasourceList, handleOnSele
   const { handleActions } = useGlobalDatasourceUnsavedChanges();
   return (
     <>
-      <div className="datasources-info tj-text-xsm datasource-list-header">
-        All datasources {dataSources[0].list.length > 0 && `(${dataSources[0].list.length})`}
+      <div className="datasources-info tj-text-xsm datasource-list-header" data-cy="datasource-list-header">
+        All data sources {dataSources[0].list.length > 0 && `(${dataSources[0].list.length})`}
       </div>
       {dataSources.slice(1, 5).map((dataSource, index) => (
         <div
@@ -20,6 +20,10 @@ export const SegregatedList = ({ dataSources, activeDatasourceList, handleOnSele
             role="button"
             onClick={() => handleActions(() => handleOnSelect(dataSource.key, dataSource.type))}
             className="col d-flex align-items-center overflow-hidden"
+            data-cy={`${dataSource.key
+              .toLowerCase()
+              .replace(/\s+/g, '-')
+              .replace(/[^a-zA-Z0-9-]/g, '')}-datasource-button`}
           >
             <div className="font-400 tj-text-xsm text-truncate" style={{ paddingLeft: '6px' }}>
               {`${dataSource.type} (${dataSource.list.length})`}

@@ -52,18 +52,19 @@ export const List = ({ updateSelectedDatasource }) => {
   };
 
   const executeDataSourceDeletion = () => {
-    setDeleteModalVisibility(false);
     setDeletingDatasource(true);
     setLoading(true);
     globalDatasourceService
       .deleteDataSource(selectedDataSource.id)
       .then(() => {
+        setDeleteModalVisibility(false);
         toast.success('Data Source Deleted');
         setDeletingDatasource(false);
         setSelectedDataSource(null);
         fetchDataSources(true);
       })
       .catch(({ error }) => {
+        setDeleteModalVisibility(false);
         setDeletingDatasource(false);
         setSelectedDataSource(null);
         setLoading(false);
@@ -97,7 +98,9 @@ export const List = ({ updateSelectedDatasource }) => {
         <div className="mb-4">
           <EmptyFoldersIllustration />
         </div>
-        <div className="tj-text-md text-secondary">No datasources added</div>
+        <div className="tj-text-md text-secondary" data-cy="empty-ds-page-text">
+          No datasources added
+        </div>
       </div>
     );
   };
@@ -113,8 +116,8 @@ export const List = ({ updateSelectedDatasource }) => {
               <div className="d-flex justify-content-between datasources-search" style={{ marginBottom: '8px' }}>
                 {!showInput ? (
                   <>
-                    <div className="datasources-info tj-text-xsm">
-                      Datasources Added{' '}
+                    <div className="datasources-info tj-text-xsm" data-cy="added-ds-label">
+                      Data Sources Added{' '}
                       {!isLoading && filteredData && filteredData.length > 0 && `(${filteredData.length})`}
                     </div>
                     <div
@@ -122,6 +125,7 @@ export const List = ({ updateSelectedDatasource }) => {
                       onClick={() => {
                         setShowInput(true);
                       }}
+                      data-cy="added-ds-search-icon"
                     >
                       <SolidIcon name="search" width="14" fill={darkMode ? '#ECEDEE' : '#11181C'} />
                     </div>
@@ -130,10 +134,11 @@ export const List = ({ updateSelectedDatasource }) => {
                   <SearchBox
                     width="248px"
                     callBack={handleSearch}
-                    placeholder={'Search for Datasources'}
+                    placeholder={'Search for Data Sources'}
                     customClass="tj-common-search-input"
                     onClearCallback={handleClose}
                     autoFocus={true}
+                    dataCy={'added-ds'}
                   />
                 )}
               </div>

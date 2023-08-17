@@ -50,7 +50,7 @@ export function ConfirmDialog({
     >
       {title && (
         <Modal.Header>
-          <Modal.Title>{title}</Modal.Title>
+          <Modal.Title data-cy={`${title.toLowerCase().replace(/\s+/g, '-')}-title`}>{title}</Modal.Title>
           <svg
             onClick={onCloseIconClick ?? handleClose}
             className="cursor-pointer"
@@ -59,6 +59,7 @@ export function ConfirmDialog({
             viewBox="0 0 33 33"
             fill={darkMode ? '#3a3f42' : 'none'}
             xmlns="http://www.w3.org/2000/svg"
+            data-cy="modal-close-button"
           >
             <path
               fillRule="evenodd"

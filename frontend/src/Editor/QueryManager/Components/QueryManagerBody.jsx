@@ -226,12 +226,12 @@ export const QueryManagerBody = forwardRef(
     const renderDataSourcesList = () => (
       <>
         {renderDataSources(
-          t('editor.queryManager.selectDatasource', 'Select Datasource'),
+          t('editor.queryManager.selectDatasource', 'Select Data Source'),
           dataSources,
           staticDataSources
         )}
         {renderDataSources(
-          t('editor.queryManager.selectGlobalDatasource', 'Select Global Datasource'),
+          t('editor.queryManager.selectGlobalDatasource', 'Select Global Data Source'),
           globalDataSources,
           [],
           true
