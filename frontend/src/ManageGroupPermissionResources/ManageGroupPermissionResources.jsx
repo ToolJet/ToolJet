@@ -11,7 +11,7 @@ import BulkIcon from '@/_ui/Icon/bulkIcons/index';
 import Multiselect from '@/_ui/Multiselect/Multiselect';
 import { FilterPreview, MultiSelectUser } from '@/_components';
 import { ButtonSolid } from '@/_ui/AppButton/AppButton';
-import { LicenseBanner } from '@/LicenseBanner';
+// import { LicenseBanner } from '@/LicenseBanner';
 import posthog from 'posthog-js';
 
 class ManageGroupPermissionResourcesComponent extends React.Component {
@@ -479,9 +479,11 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
       ? groupPermission.folder_create && groupPermission.folder_delete && groupPermission.folder_update
       : false;
 
-    const appSelectOptions = appsNotInGroup.map((app) => {
-      return { name: app.name, value: app.id };
-    });
+    const appSelectOptions = appsNotInGroup
+      .filter((app) => app.type === 'front-end')
+      .map((app) => {
+        return { name: app.name, value: app.id };
+      });
 
     const dataSourceSelectOptions = dataSourcesNotInGroup.map((dataSource) => {
       return { name: dataSource.name, value: dataSource.id };
@@ -675,110 +677,112 @@ class ManageGroupPermissionResourcesComponent extends React.Component {
                             ) : (
                               <>
                                 {appsInGroup?.length > 0 ? (
-                                  appsInGroup.map((app) => (
-                                    <tr
-                                      key={app.id}
-                                      className="apps-table-row"
-                                      data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-app-permission-data`}
-                                    >
-                                      <td className="font-weight-500" data-cy="selected-app-name">
-                                        {app.name}
-                                      </td>
-                                      <td className="text-secondary d-flex">
-                                        <div className="apps-view-edit-wrap">
-                                          <label className="form-check form-check-inline">
-                                            <input
-                                              className="form-check-input"
-                                              type="radio"
-                                              onChange={() => {
-                                                this.updateAppGroupPermission(app, groupPermission.id, 'view');
-                                              }}
-                                              disabled={groupPermission.group === 'admin'}
-                                              checked={this.canAppGroupPermission(app, groupPermission.id, 'view')}
-                                              data-cy="checkbox-view-app"
-                                            />
-                                            <span className="form-check-label" data-cy="label-app-view">
-                                              {this.props.t('globals.view', 'view')}
-                                            </span>
-                                          </label>
-                                          <label className="form-check form-check-inline">
-                                            <input
-                                              className="form-check-input"
-                                              type="radio"
-                                              onChange={() => {
-                                                this.updateAppGroupPermission(app, groupPermission.id, 'edit');
-                                              }}
-                                              disabled={groupPermission.group === 'admin'}
-                                              checked={this.canAppGroupPermission(app, groupPermission.id, 'edit')}
-                                              data-cy="checkbox-app-edit"
-                                            />
-                                            <span className="form-check-label" data-cy="label-app-edit">
-                                              {this.props.t('globals.edit', 'Edit')}
-                                            </span>
-                                          </label>
-                                        </div>
-                                        <div>
-                                          <label className="form-check form-check-inline">
-                                            <input
-                                              className={`form-check-input ${
-                                                this.canAppGroupPermission(app, groupPermission.id, 'edit') &&
-                                                'faded-input'
-                                              }`}
-                                              type="checkbox"
-                                              onChange={() => {
-                                                this.updateAppGroupPermission(
+                                  appsInGroup
+                                    .filter((app) => app.type === 'front-end')
+                                    .map((app) => (
+                                      <tr
+                                        key={app.id}
+                                        className="apps-table-row"
+                                        data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-app-permission-data`}
+                                      >
+                                        <td className="font-weight-500" data-cy="selected-app-name">
+                                          {app.name}
+                                        </td>
+                                        <td className="text-secondary d-flex">
+                                          <div className="apps-view-edit-wrap">
+                                            <label className="form-check form-check-inline">
+                                              <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                onChange={() => {
+                                                  this.updateAppGroupPermission(app, groupPermission.id, 'view');
+                                                }}
+                                                disabled={groupPermission.group === 'admin'}
+                                                checked={this.canAppGroupPermission(app, groupPermission.id, 'view')}
+                                                data-cy="checkbox-view-app"
+                                              />
+                                              <span className="form-check-label" data-cy="label-app-view">
+                                                {this.props.t('globals.view', 'view')}
+                                              </span>
+                                            </label>
+                                            <label className="form-check form-check-inline">
+                                              <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                onChange={() => {
+                                                  this.updateAppGroupPermission(app, groupPermission.id, 'edit');
+                                                }}
+                                                disabled={groupPermission.group === 'admin'}
+                                                checked={this.canAppGroupPermission(app, groupPermission.id, 'edit')}
+                                                data-cy="checkbox-app-edit"
+                                              />
+                                              <span className="form-check-label" data-cy="label-app-edit">
+                                                {this.props.t('globals.edit', 'Edit')}
+                                              </span>
+                                            </label>
+                                          </div>
+                                          <div>
+                                            <label className="form-check form-check-inline">
+                                              <input
+                                                className={`form-check-input ${
+                                                  this.canAppGroupPermission(app, groupPermission.id, 'edit') &&
+                                                  'faded-input'
+                                                }`}
+                                                type="checkbox"
+                                                onChange={() => {
+                                                  this.updateAppGroupPermission(
+                                                    app,
+                                                    groupPermission.id,
+                                                    'hideFromDashboard'
+                                                  );
+                                                }}
+                                                disabled={
+                                                  groupPermission.group === 'admin' ||
+                                                  this.canAppGroupPermission(app, groupPermission.id, 'edit')
+                                                }
+                                                checked={this.canAppGroupPermission(
                                                   app,
                                                   groupPermission.id,
                                                   'hideFromDashboard'
-                                                );
+                                                )}
+                                                data-cy="checkbox-hide-from-dashboard"
+                                              />
+                                              <span
+                                                className={`form-check-label ${
+                                                  this.canAppGroupPermission(app, groupPermission.id, 'edit') &&
+                                                  'faded-text'
+                                                }`}
+                                                data-cy="label-hide-from-dashboard"
+                                              >
+                                                Hide from dashboard
+                                              </span>
+                                            </label>
+                                          </div>
+                                        </td>
+                                        <td>
+                                          {groupPermission.group !== 'admin' && (
+                                            <Link
+                                              to="#"
+                                              onClick={() => {
+                                                this.removeAppFromGroup(groupPermission.id, app.id, app.name);
                                               }}
-                                              disabled={
-                                                groupPermission.group === 'admin' ||
-                                                this.canAppGroupPermission(app, groupPermission.id, 'edit')
-                                              }
-                                              checked={this.canAppGroupPermission(
-                                                app,
-                                                groupPermission.id,
-                                                'hideFromDashboard'
-                                              )}
-                                              data-cy="checkbox-hide-from-dashboard"
-                                            />
-                                            <span
-                                              className={`form-check-label ${
-                                                this.canAppGroupPermission(app, groupPermission.id, 'edit') &&
-                                                'faded-text'
-                                              }`}
-                                              data-cy="label-hide-from-dashboard"
+                                              className="delete-link"
                                             >
-                                              Hide from dashboard
-                                            </span>
-                                          </label>
-                                        </div>
-                                      </td>
-                                      <td>
-                                        {groupPermission.group !== 'admin' && (
-                                          <Link
-                                            to="#"
-                                            onClick={() => {
-                                              this.removeAppFromGroup(groupPermission.id, app.id, app.name);
-                                            }}
-                                            className="delete-link"
-                                          >
-                                            <ButtonSolid
-                                              className="tj-text-xsm font-weight-600 remove-decoration  apps-remove-btn"
-                                              variant="dangerSecondary"
-                                              leftIcon="trash"
-                                              iconWidth="14"
-                                              fill={'#E54D2E'}
-                                              data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-remove-button`}
-                                            >
-                                              Remove
-                                            </ButtonSolid>
-                                          </Link>
-                                        )}
-                                      </td>
-                                    </tr>
-                                  ))
+                                              <ButtonSolid
+                                                className="tj-text-xsm font-weight-600 remove-decoration  apps-remove-btn"
+                                                variant="dangerSecondary"
+                                                leftIcon="trash"
+                                                iconWidth="14"
+                                                fill={'#E54D2E'}
+                                                data-cy={`${app.name.toLowerCase().replace(/\s+/g, '-')}-remove-button`}
+                                              >
+                                                Remove
+                                              </ButtonSolid>
+                                            </Link>
+                                          )}
+                                        </td>
+                                      </tr>
+                                    ))
                                 ) : (
                                   <div className="manage-groups-no-apps-wrap">
                                     <div className="manage-groups-no-apps-icon">

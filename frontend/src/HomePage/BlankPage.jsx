@@ -20,6 +20,7 @@ export const BlankPage = function BlankPage({
   showTemplateLibraryModal,
   hideTemplateLibraryModal,
   viewTemplateLibraryModal,
+  appType,
 }) {
   const { t } = useTranslation();
   const [deploying, setDeploying] = useState(false);
@@ -65,6 +66,74 @@ export const BlankPage = function BlankPage({
 
   const appCreationDisabled = appsLimit?.percentage >= 100 && !appsLimit?.licenseStatus?.isExpired;
 
+  const templateOptionsView = (
+    <>
+      <div className="hr-text" data-cy="action-option">
+        Or choose from templates
+      </div>
+      <div className="row" data-cy="app-template-row">
+        {staticTemplates.map(({ id, name }) => {
+          return (
+            <div
+              key={id}
+              className="col-4 app-template-card-wrapper"
+              onClick={() => {
+                /* Posthog Event */
+                posthog.capture('create_application_from_template', {
+                  workspace_id:
+                    authenticationService?.currentUserValue?.organization_id ||
+                    authenticationService?.currentSessionValue?.current_organization_id,
+                  template_name: name,
+                  button_name: 'create_application_from_template_card',
+                });
+                deployApp(id);
+              }}
+            >
+              <div
+                className="template-card cursor-pointer"
+                data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-card`}
+              >
+                <div
+                  className="img-responsive img-responsive-21x9 card-img-top template-card-img"
+                  style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}
+                  data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-image`}
+                />
+                <div className="card-body">
+                  <h3
+                    className="tj-text-md font-weight-500"
+                    data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-title`}
+                  >
+                    {name}
+                  </h3>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="m-auto text-center mt-4">
+        <button
+          disabled={appCreationDisabled}
+          className={cx('see-all-temlplates-link tj-text-sm font-weight-600 bg-transparent border-0', {
+            disabled: appCreationDisabled,
+          })}
+          onClick={() => {
+            posthog.capture('click_import_from_template', {
+              workspace_id:
+                authenticationService?.currentUserValue?.organization_id ||
+                authenticationService?.currentSessionValue?.current_organization_id,
+              button_name: 'click_see_all_templates_button',
+            });
+            viewTemplateLibraryModal();
+          }}
+          data-cy="see-all-apps-template-buton"
+        >
+          See all templates
+        </button>
+      </div>
+    </>
+  );
+
   return (
     appsLimit && (
       <div>
@@ -81,13 +150,21 @@ export const BlankPage = function BlankPage({
                       })}
                     </h3>
                     <p className={`empty-title`} data-cy="empty-homepage-description">
-                      {t(
-                        'blankPage.getStartedCreateNewApp',
-                        `You can get started by creating a new application or by creating an application using a template in ${retrieveWhiteLabelText()} Library.`,
-                        {
-                          whiteLabelText: retrieveWhiteLabelText(),
-                        }
-                      )}
+                      {appType !== 'workflow'
+                        ? t(
+                            'blankPage.getStartedCreateNewApp',
+                            `You can get started by creating a new application or by creating an application using a template in ${retrieveWhiteLabelText()} Library.`,
+                            {
+                              whiteLabelText: retrieveWhiteLabelText(),
+                            }
+                          )
+                        : t(
+                            'blankPage.getStartedCreateNewWorkflow',
+                            `You can get started by creating a new workflow.`,
+                            {
+                              whiteLabelText: retrieveWhiteLabelText(),
+                            }
+                          )}
                     </p>
                     <div className="row mt-4">
                       <ButtonSolid
@@ -99,112 +176,52 @@ export const BlankPage = function BlankPage({
                         className="col"
                         fill={'#FDFDFE'}
                       >
-                        Create new application
+                        Create new {appType !== 'workflow' ? 'application' : 'workflow'}
                       </ButtonSolid>
-                      <div className="col">
-                        <ButtonSolid
-                          disabled={appCreationDisabled}
-                          leftIcon="folderdownload"
-                          onChange={handleImportApp}
-                          isLoading={isImportingApp}
-                          data-cy="button-import-an-app"
-                          className="col"
-                          variant="tertiary"
-                        >
-                          <label
-                            className={cx('', { 'cursor-pointer': !appCreationDisabled })}
-                            style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}
-                            data-cy="import-an-application"
+                      {appType !== 'workflow' && (
+                        <div className="col">
+                          <ButtonSolid
+                            disabled={appCreationDisabled}
+                            leftIcon="folderdownload"
+                            onChange={handleImportApp}
+                            isLoading={isImportingApp}
+                            data-cy="button-import-an-app"
+                            className="col"
+                            variant="tertiary"
                           >
-                            &nbsp;{t('blankPage.importApplication', 'Import an app')}
-                            <input
-                              disabled={appCreationDisabled}
-                              type="file"
-                              ref={fileInput}
-                              style={{ display: 'none' }}
-                              data-cy="import-option-input"
-                              onClick={() => {
-                                /* Posthog Event */
-                                posthog.capture('click_import_button', {
-                                  workspace_id:
-                                    authenticationService?.currentUserValue?.organization_id ||
-                                    authenticationService?.currentSessionValue?.current_organization_id,
-                                  button_name: 'click_import_an_application_button',
-                                });
-                              }}
-                            />
-                          </label>
-                        </ButtonSolid>
-                      </div>
+                            <label
+                              className={cx('', { 'cursor-pointer': !appCreationDisabled })}
+                              style={{ visibility: isImportingApp ? 'hidden' : 'visible' }}
+                              data-cy="import-an-application"
+                            >
+                              &nbsp;{t('blankPage.importApplication', 'Import an app')}
+                              <input
+                                disabled={appCreationDisabled}
+                                type="file"
+                                ref={fileInput}
+                                style={{ display: 'none' }}
+                                data-cy="import-option-input"
+                                onClick={() => {
+                                  /* Posthog Event */
+                                  posthog.capture('click_import_button', {
+                                    workspace_id:
+                                      authenticationService?.currentUserValue?.organization_id ||
+                                      authenticationService?.currentSessionValue?.current_organization_id,
+                                    button_name: 'click_import_an_application_button',
+                                  });
+                                }}
+                              />
+                            </label>
+                          </ButtonSolid>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="col-6 empty-home-page-image" data-cy="empty-home-page-image">
                     <EmptyIllustration />
                   </div>
                 </div>
-                <div className="hr-text" data-cy="action-option">
-                  Or choose from templates
-                </div>
-                <div className="row" data-cy="app-template-row">
-                  {staticTemplates.map(({ id, name }) => {
-                    return (
-                      <div
-                        key={id}
-                        className="col-4 app-template-card-wrapper"
-                        onClick={() => {
-                          /* Posthog Event */
-                          posthog.capture('create_application_from_template', {
-                            workspace_id:
-                              authenticationService?.currentUserValue?.organization_id ||
-                              authenticationService?.currentSessionValue?.current_organization_id,
-                            template_name: name,
-                            button_name: 'create_application_from_template_card',
-                          });
-                          deployApp(id);
-                        }}
-                      >
-                        <div
-                          className="template-card cursor-pointer"
-                          data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-card`}
-                        >
-                          <div
-                            className="img-responsive img-responsive-21x9 card-img-top template-card-img"
-                            style={{ backgroundImage: `url(assets/images/templates/${id}.png)` }}
-                            data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-image`}
-                          />
-                          <div className="card-body">
-                            <h3
-                              className="tj-text-md font-weight-500"
-                              data-cy={`${name.toLowerCase().replace(/\s+/g, '-')}-app-template-title`}
-                            >
-                              {name}
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="m-auto text-center mt-4">
-                  <button
-                    disabled={appCreationDisabled}
-                    className={cx('see-all-temlplates-link tj-text-sm font-weight-600 bg-transparent border-0', {
-                      disabled: appCreationDisabled,
-                    })}
-                    onClick={() => {
-                      posthog.capture('click_import_from_template', {
-                        workspace_id:
-                          authenticationService?.currentUserValue?.organization_id ||
-                          authenticationService?.currentSessionValue?.current_organization_id,
-                        button_name: 'click_see_all_templates_button',
-                      });
-                      viewTemplateLibraryModal();
-                    }}
-                    data-cy="see-all-apps-template-buton"
-                  >
-                    See all templates
-                  </button>
-                </div>
+                {appType !== 'workflow' && templateOptionsView}
               </div>
             </div>
           </div>

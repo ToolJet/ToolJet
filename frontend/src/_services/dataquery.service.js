@@ -9,6 +9,7 @@ export const dataqueryService = {
   del,
   preview,
   changeQueryDataSource,
+  updateStatus,
 };
 
 function getAll(appVersionId) {
@@ -32,14 +33,24 @@ function create(app_id, app_version_id, name, kind, options, data_source_id, plu
   return fetch(`${config.apiUrl}/data_queries`, requestOptions).then(handleResponse);
 }
 
-function update(id, name, options) {
+function update(id, name, options, dataSourceId) {
   const body = {
     options,
     name,
+    data_source_id: dataSourceId,
   };
 
   const requestOptions = { method: 'PATCH', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
   return fetch(`${config.apiUrl}/data_queries/${id}`, requestOptions).then(handleResponse);
+}
+
+function updateStatus(id, status) {
+  const body = {
+    status,
+  };
+
+  const requestOptions = { method: 'PUT', headers: authHeader(), credentials: 'include', body: JSON.stringify(body) };
+  return fetch(`${config.apiUrl}/data_queries/${id}/status`, requestOptions).then(handleResponse);
 }
 
 function del(id) {
@@ -47,8 +58,9 @@ function del(id) {
   return fetch(`${config.apiUrl}/data_queries/${id}`, requestOptions).then(handleResponse);
 }
 
-function run(queryId, options, environmentId) {
+function run(queryId, resolvedOptions, options, environmentId) {
   const body = {
+    resolvedOptions: resolvedOptions,
     options: options,
   };
 

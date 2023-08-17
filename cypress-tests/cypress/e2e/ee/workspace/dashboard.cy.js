@@ -10,10 +10,10 @@ import { dashboardText } from "Texts/dashboard";
 
 describe("dashboard", () => {
   before(() => {
-    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=", {
+    cy.intercept("GET", "/api/apps?page=1&folder=&searchKey=&type=front-end", {
       fixture: "intercept/emptyDashboard.json",
     }).as("emptyDashboard");
-    cy.intercept("GET", "/api/folders?searchKey=", { folders: [] }).as(
+    cy.intercept("GET", "/api/folders?searchKey=&type=front-end", { folders: [] }).as(
       "folders"
     );
     login();

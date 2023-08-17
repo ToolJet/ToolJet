@@ -96,6 +96,7 @@
     "react-tooltip": "^5.8.1",
     "react-virtuoso": "^4.1.0",
     "react-zoom-pan-pinch": "^2.6.1",
+    "reactflow": "^11.7.4",
     "rxjs": "^7.8.0",
     "semver": "^7.3.8",
     "superstruct": "^1.0.3",

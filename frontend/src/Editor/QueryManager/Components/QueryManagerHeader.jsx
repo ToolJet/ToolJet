@@ -1,253 +1,258 @@
-import React, { useState, forwardRef } from 'react';
-import RunIcon from '../Icons/RunIcon';
-import BreadcrumbsIcon from '../Icons/BreadcrumbsIcon';
+import React, { useState, forwardRef, useRef, useEffect } from 'react';
 import RenameIcon from '../Icons/RenameIcon';
-import PreviewIcon from '../Icons/PreviewIcon';
-import CreateIcon from '../Icons/CreateIcon';
+import FloppyDisk from '@/_ui/Icon/solidIcons/FloppyDisk';
+import Eye1 from '@/_ui/Icon/solidIcons/Eye1';
+import Play from '@/_ui/Icon/solidIcons/Play';
 import cx from 'classnames';
 import { toast } from 'react-hot-toast';
-import { Tooltip } from 'react-tooltip';
 import { useTranslation } from 'react-i18next';
 import { previewQuery, checkExistingQueryName, runQuery } from '@/_helpers/appUtils';
 import { posthog } from 'posthog-js';
 
 import { useDataQueriesActions, useQueryCreationLoading, useQueryUpdationLoading } from '@/_stores/dataQueriesStore';
-import { useSelectedQuery, useSelectedDataSource, useUnsavedChanges } from '@/_stores/queryPanelStore';
-import ToggleQueryEditorIcon from '../Icons/ToggleQueryEditorIcon';
+import {
+  useSelectedQuery,
+  useSelectedDataSource,
+  usePreviewLoading,
+  useShowCreateQuery,
+  useNameInputFocussed,
+} from '@/_stores/queryPanelStore';
 import { useCurrentState } from '@/_stores/currentStateStore';
 import { useAppVersionStore } from '@/_stores/appVersionStore';
 import { shallow } from 'zustand/shallow';
+import { Tooltip } from 'react-tooltip';
+import { Button } from 'react-bootstrap';
 
-export const QueryManagerHeader = forwardRef(
-  (
-    {
-      darkMode,
-      mode,
-      addNewQueryAndDeselectSelectedQuery,
-      updateDraftQueryName,
-      toggleQueryEditor,
-      previewLoading = false,
-      options,
-      appId,
-      editorRef,
-    },
-    ref
-  ) => {
-    const { renameQuery, updateDataQuery, createDataQuery } = useDataQueriesActions();
-    const selectedQuery = useSelectedQuery();
-    const isCreationInProcess = useQueryCreationLoading();
-    const isUpdationInProcess = useQueryUpdationLoading();
-    const isUnsavedQueriesAvailable = useUnsavedChanges();
-    const selectedDataSource = useSelectedDataSource();
-    const { t } = useTranslation();
-    const queryName = selectedQuery?.name ?? '';
-    const [renamingQuery, setRenamingQuery] = useState(false);
-    const { queries } = useCurrentState((state) => ({ queries: state.queries }), shallow);
-    const { isVersionReleased, editingVersionId, isEditorFreezed } = useAppVersionStore(
-      (state) => ({
-        isVersionReleased: state.isVersionReleased,
-        editingVersionId: state.editingVersion?.id,
-        isEditorFreezed: state.isEditorFreezed,
-      }),
-      shallow
+export const QueryManagerHeader = forwardRef(({ darkMode, options, editorRef, appId }, ref) => {
+  const { renameQuery } = useDataQueriesActions();
+  const selectedQuery = useSelectedQuery();
+  const selectedDataSource = useSelectedDataSource();
+  const [showCreateQuery, setShowCreateQuery] = useShowCreateQuery();
+  const queryName = selectedQuery?.name ?? '';
+  const { queries } = useCurrentState((state) => ({ queries: state.queries }), shallow);
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
+
+  useEffect(() => {
+    if (selectedQuery?.name) {
+      setShowCreateQuery(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedQuery?.name]);
+
+  const isInDraft = selectedQuery?.status === 'draft';
+
+  const executeQueryNameUpdation = (newName) => {
+    const { name } = selectedQuery;
+    if (name === newName || !newName) {
+      return false;
+    }
+
+    const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
+    if (isNewQueryNameAlreadyExists) {
+      toast.error('Query name already exists');
+      return false;
+    }
+
+    if (newName) {
+      renameQuery(selectedQuery?.id, newName, editorRef);
+      return true;
+    }
+  };
+
+  const buttonLoadingState = (loading, disabled = false) => {
+    return cx(
+      `${loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`,
+      { 'theme-dark ': darkMode },
+      { disabled: disabled || !selectedDataSource }
     );
+  };
 
-    const buttonText = mode === 'edit' ? 'Save' : 'Create';
-    const buttonDisabled = isUpdationInProcess || isCreationInProcess;
-
-    const executeQueryNameUpdation = (newName) => {
-      const { id, name } = selectedQuery;
-      if (name === newName) {
-        return setRenamingQuery(false);
-      }
-      const isNewQueryNameAlreadyExists = checkExistingQueryName(newName);
-      if (newName && !isNewQueryNameAlreadyExists) {
-        if (id === 'draftQuery') {
-          toast.success('Query Name Updated');
-          updateDraftQueryName(newName);
-        } else {
-          renameQuery(selectedQuery?.id, newName, editorRef);
-        }
-        setRenamingQuery(false);
-      } else {
-        if (isNewQueryNameAlreadyExists) {
-          toast.error('Query name already exists');
-        }
-        setRenamingQuery(false);
-      }
+  const previewButtonOnClick = () => {
+    /* posthog event [click_preview] */
+    posthog.capture('click_preview', { dataSource: selectedDataSource?.kind, appId });
+    const _options = { ...options };
+    const query = {
+      data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
+      pluginId: selectedDataSource.pluginId,
+      options: _options,
+      kind: selectedDataSource.kind,
+      name: queryName,
     };
+    const hasParamSupport = selectedQuery?.options?.hasParamSupport;
+    previewQuery(editorRef, query, false, undefined, hasParamSupport)
+      .then(() => {
+        ref.current.scrollIntoView();
+      })
+      .catch(({ error, data }) => {
+        console.log(error, data);
+      });
+  };
 
-    const createOrUpdateDataQuery = (shouldRunQuery = false) => {
-      if (selectedQuery?.id === 'draftQuery') {
-        /* posthog event [save_query] */
-        posthog.capture('save_query', { dataSource: selectedDataSource?.kind, appId });
-        return createDataQuery(appId, editingVersionId, options, shouldRunQuery);
-      }
-      if (isUnsavedQueriesAvailable) return updateDataQuery(options, shouldRunQuery);
-      shouldRunQuery && runQuery(editorRef, selectedQuery?.id, selectedQuery?.name);
-    };
-
-    const renderRenameInput = () => (
-      <input
-        data-cy={`query-rename-input`}
-        type="text"
-        className={cx('border-indigo-09 bg-transparent', { 'text-white': darkMode })}
-        autoFocus
-        defaultValue={queryName}
-        onKeyUp={(event) => {
-          event.persist();
-          if (event.keyCode === 13) {
-            executeQueryNameUpdation(event.target.value);
-          }
-        }}
-        onBlur={({ target }) => executeQueryNameUpdation(target.value)}
-      />
-    );
-
-    const renderBreadcrumb = () => {
-      if (selectedQuery === null) return;
-      return (
-        <>
-          <span
-            className={`${darkMode ? 'color-light-gray-c3c3c3' : 'color-light-slate-11'} 
-          cursor-pointer font-weight-400`}
-            onClick={addNewQueryAndDeselectSelectedQuery}
-            data-cy={`query-type-header`}
-          >
-            {mode === 'create' ? 'New Query' : 'Queries'}
-          </span>
-          <span className="breadcrum">
-            <BreadcrumbsIcon />
-          </span>
-          <div className="query-name-breadcrum d-flex align-items-center">
-            <span
-              className={cx('query-manager-header-query-name font-weight-400', { ellipsis: !renamingQuery })}
-              data-cy={`query-name-label`}
-            >
-              {renamingQuery ? renderRenameInput() : queryName}
-            </span>
-            <span
-              className={cx('breadcrum-rename-query-icon', {
-                'd-none': renamingQuery && (isVersionReleased || isEditorFreezed),
-              })}
-              onClick={() => setRenamingQuery(true)}
-            >
-              {!(isVersionReleased || isEditorFreezed) && <RenameIcon />}
-            </span>
-          </div>
-        </>
-      );
-    };
-
-    const buttonLoadingState = (loading, disabled = false) => {
-      return cx(
-        `${loading ? (darkMode ? 'btn-loading' : 'button-loading') : ''}`,
-        { 'theme-dark ': darkMode },
-        { disabled: disabled || !selectedDataSource }
-      );
-    };
-
-    const previewButtonOnClick = () => {
-      /* posthog event [click_preview] */
-      posthog.capture('click_preview', { dataSource: selectedDataSource?.kind, appId });
-      const _options = { ...options };
-      const query = {
-        data_source_id: selectedDataSource.id === 'null' ? null : selectedDataSource.id,
-        pluginId: selectedDataSource.pluginId,
-        options: _options,
-        kind: selectedDataSource.kind,
-      };
-      const hasParamSupport = mode === 'create' || selectedQuery?.options?.hasParamSupport;
-      previewQuery(editorRef, query, false, undefined, hasParamSupport)
-        .then(() => {
-          ref.current.scrollIntoView();
-        })
-        .catch(({ error, data }) => {
-          console.log(error, data);
-        });
-    };
-
-    const renderPreviewButton = () => {
-      return (
+  const renderRunButton = () => {
+    const { isLoading } = queries[selectedQuery?.name] ?? false;
+    return (
+      <span
+        {...(isInDraft && {
+          'data-tooltip-id': 'query-header-btn-run',
+          'data-tooltip-content': 'Connect a data source to run',
+        })}
+      >
         <button
-          onClick={previewButtonOnClick}
-          className={`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading)}`}
-          data-cy={'query-preview-button'}
-        >
-          <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
-            <PreviewIcon />
-          </span>
-          <span>{t('editor.queryManager.preview', 'Preview')}</span>
-        </button>
-      );
-    };
-
-    const renderSaveButton = () => {
-      return (
-        <button
-          className={`default-tertiary-button ${buttonLoadingState(
-            isCreationInProcess || isUpdationInProcess,
-            isVersionReleased || isEditorFreezed
-          )}`}
-          onClick={() => createOrUpdateDataQuery(false)}
-          disabled={buttonDisabled}
-          data-cy={`query-${buttonText.toLowerCase()}-button`}
-        >
-          <span className="d-flex query-create-run-svg query-icon-wrapper">
-            <CreateIcon />
-          </span>
-          <span>{buttonText}</span>
-        </button>
-      );
-    };
-
-    const renderRunButton = () => {
-      const { isLoading } = queries[selectedQuery?.name] ?? false;
-      return (
-        <button
-          onClick={() => createOrUpdateDataQuery(true)}
+          onClick={() => runQuery(editorRef, selectedQuery?.id, selectedQuery?.name)}
           className={`border-0 default-secondary-button float-right1 ${buttonLoadingState(isLoading)}`}
           data-cy="query-run-button"
+          disabled={isInDraft}
+          {...(isInDraft && {
+            'data-tooltip-id': 'query-header-btn-run',
+            'data-tooltip-content': 'Publish the query to run',
+          })}
         >
           <span
-            className={cx('query-manager-btn-svg-wrapper d-flex align-item-center query-icon-wrapper query-run-svg', {
+            className={cx({
               invisible: isLoading,
             })}
           >
-            <RunIcon />
+            <Play width={14} fill="var(--indigo9)" viewBox="0 0 14 14" />
           </span>
           <span className="query-manager-btn-name">{isLoading ? ' ' : 'Run'}</span>
         </button>
-      );
-    };
-
-    const renderButtons = () => {
-      if (selectedQuery === null) return;
-      return (
-        <>
-          {renderPreviewButton()}
-          {renderSaveButton()}
-          {renderRunButton()}
-        </>
-      );
-    };
-
-    return (
-      <div className="row header">
-        <div className="col font-weight-500">{renderBreadcrumb()}</div>
-        <div className="query-header-buttons">
-          {renderButtons()}
-          <span
-            onClick={toggleQueryEditor}
-            className={`toggle-query-editor-svg m-3`}
-            data-tooltip-id="tooltip-for-hide-query-editor"
-            data-tooltip-content="Hide query editor"
-          >
-            <ToggleQueryEditorIcon />
-          </span>
-          <Tooltip id="tooltip-for-hide-query-editor" className="tooltip" />
-        </div>
-      </div>
+        {isInDraft && <Tooltip id="query-header-btn-run" className="tooltip" />}
+      </span>
     );
-  }
-);
+  };
+
+  const renderButtons = () => {
+    if (selectedQuery === null || showCreateQuery) return;
+    return (
+      <>
+        <PreviewButton
+          onClick={previewButtonOnClick}
+          buttonLoadingState={buttonLoadingState}
+          disabled={isVersionReleased || isEditorFreezed}
+        />
+        {renderRunButton()}
+      </>
+    );
+  };
+
+  return (
+    <div className="row header">
+      <div className="col font-weight-500">
+        {selectedQuery && <NameInput onInput={executeQueryNameUpdation} value={queryName} darkMode={darkMode} />}
+      </div>
+      <div className="query-header-buttons me-3">{renderButtons()}</div>
+    </div>
+  );
+});
+
+const PreviewButton = ({ buttonLoadingState, onClick }) => {
+  const previewLoading = usePreviewLoading();
+  const { t } = useTranslation();
+
+  return (
+    <button
+      onClick={onClick}
+      className={cx(`default-tertiary-button float-right1 ${buttonLoadingState(previewLoading)}`)}
+      data-cy={'query-preview-button'}
+    >
+      <span className="query-preview-svg d-flex align-items-center query-icon-wrapper">
+        <Eye1 width={14} fill="var(--slate9)" />
+      </span>
+      <span>{t('editor.queryManager.preview', 'Preview')}</span>
+    </button>
+  );
+};
+
+const NameInput = ({ onInput, value, darkMode }) => {
+  const [isFocussed, setIsFocussed] = useNameInputFocussed(false);
+  const [name, setName] = useState(value);
+  const { isVersionReleased, isEditorFreezed } = useAppVersionStore(
+    (state) => ({
+      isVersionReleased: state.isVersionReleased,
+      isEditorFreezed: state.isEditorFreezed,
+    }),
+    shallow
+  );
+  const inputRef = useRef();
+
+  useEffect(() => {
+    setName(value);
+  }, [value]);
+
+  useEffect(() => {
+    if (isFocussed) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [isFocussed]);
+
+  const handleChange = (event) => {
+    const sanitizedValue = event.target.value.replace(/[ \t&]/g, '');
+    setName(sanitizedValue);
+  };
+
+  const handleInput = (newName) => {
+    const result = onInput(newName);
+    if (!result) {
+      setName(value);
+    }
+  };
+
+  return (
+    <div className="query-name-breadcrum d-flex align-items-center ms-1">
+      <span
+        className="query-manager-header-query-name font-weight-400"
+        data-cy={`query-name-label`}
+        style={{ width: '150px' }}
+      >
+        {isFocussed ? (
+          <input
+            data-cy={`query-rename-input`}
+            type="text"
+            className={cx('border-indigo-09 bg-transparent query-rename-input py-1 px-2 rounded', {
+              'text-white': darkMode,
+            })}
+            autoFocus
+            ref={inputRef}
+            onChange={handleChange}
+            value={name}
+            onKeyDown={(event) => {
+              event.persist();
+              if (event.keyCode === 13) {
+                setIsFocussed(false);
+                handleInput(event.target.value);
+              }
+            }}
+            onBlur={({ target }) => {
+              setIsFocussed(false);
+              handleInput(target.value);
+            }}
+          />
+        ) : (
+          <Button
+            size="sm"
+            onClick={() => setIsFocussed(true)}
+            className={cx(
+              'bg-transparent justify-content-between color-slate12 w-100 px-2 py-1 rounded font-weight-500',
+              { disabled: isVersionReleased || isEditorFreezed }
+            )}
+          >
+            <span className="text-truncate">{name} </span>
+            <span
+              className={cx('breadcrum-rename-query-icon', { 'd-none': isFocussed && isVersionReleased })}
+              style={{ minWidth: 14 }}
+            >
+              {!(isVersionReleased || isEditorFreezed) && <RenameIcon />}
+            </span>
+          </Button>
+        )}
+      </span>
+    </div>
+  );
+};

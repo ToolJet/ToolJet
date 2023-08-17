@@ -66,10 +66,7 @@ describe("User permissions", () => {
     cy.createApp();
     cy.renameApp(data.appName);
     cy.dragAndDropWidget("Table", 250, 250);
-    cy.get(
-      ".query-datasource-card-container > .col-auto > .query-manager-btn-name"
-    ).click();
-    cy.get('[data-cy="add-new-data-source-button"]').should("be.visible")
+    cy.get('[data-cy="landing-page-add-new-ds-button"]').should("be.visible").click()
 
     adminLogin();
     cy.get(groupsSelector.permissionsLink).click();
@@ -172,5 +169,7 @@ describe("User permissions", () => {
     common.logout();
     cy.login(data.email, usersText.password);
     cy.get(commonSelectors.globalDataSourceIcon).should("not.exist");
+
+
   });
 });

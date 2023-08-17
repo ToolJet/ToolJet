@@ -108,6 +108,7 @@ import UserGroup from './UserGroup.jsx';
 import UserRemove from './UserRemove.jsx';
 import UTurn from './UTurn.jsx';
 import Variable from './Variable.jsx';
+import Workflows from './Workflows.jsx';
 import Warning from './Warning.jsx';
 import ZoomIn from './ZoomIn.jsx';
 import ZoomOut from './ZoomOut.jsx';
@@ -124,6 +125,8 @@ import Workspace from './Workspace.jsx';
 import CircularToggleDisabled from './CircularToggleDisabled.jsx';
 import CircularToggleEnabled from './CircularToggleEnabled.jsx';
 import Idea from './Idea.jsx';
+import Minimize from './Minimize.jsx';
+import Maximize from './Maximize.jsx';
 import PlusRectangle from './PlusRectangle.jsx';
 
 const Icon = (props) => {
@@ -268,6 +271,8 @@ const Icon = (props) => {
       return <Minus01 {...props} />;
     case 'mobile':
       return <Mobile {...props} />;
+    case 'informationcircle':
+      return <InformationCircle {...props} />;
     case 'morehorizontal':
       return <MoreHorizontal {...props} />;
     case 'morevertical':
@@ -376,6 +381,12 @@ const Icon = (props) => {
       return <Marketplace {...props} />;
     case 'workspace':
       return <Workspace {...props} />;
+    case 'workflows':
+      return <Workflows {...props} />;
+    case 'minimize':
+      return <Minimize {...props} />;
+    case 'maximize':
+      return <Maximize {...props} />;
     default:
       return <Apps {...props} />;
   }

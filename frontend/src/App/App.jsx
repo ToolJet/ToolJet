@@ -105,6 +105,7 @@ class AppComponent extends React.Component {
   }
 
   initTelemetryAndSupport(currentUser) {
+    const isApplicationsPath = window.location.pathname.includes('/applications/');
     function initFreshChat() {
       window.fcWidget.init({
         token: '0ef214a3-8ae1-41fb-b0d0-57764bf8f64b',
@@ -142,14 +143,18 @@ class AppComponent extends React.Component {
     function initiateCall() {
       initialize(document, 'Freshdesk Messaging-js-sdk');
     }
-    window.addEventListener
-      ? window.addEventListener('load', initiateCall, !1)
-      : window.attachEvent('load', initiateCall, !1);
 
-    try {
-      initiateCall();
-    } catch (e) {
-      console.log(e);
+    if (!isApplicationsPath) {
+      //freshchat needed only in editor mode and not in viwermode
+      window.addEventListener
+        ? window.addEventListener('load', initiateCall, !1)
+        : window.attachEvent('load', initiateCall, !1);
+
+      try {
+        initiateCall();
+      } catch (e) {
+        console.log(e);
+      }
     }
     initPosthog(currentUser);
   }
@@ -510,10 +515,21 @@ class AppComponent extends React.Component {
                 path="/:workspaceId"
                 element={
                   <PrivateRoute>
-                    <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} />
+                    <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'front-end'} />
                   </PrivateRoute>
                 }
               />
+              {window.public_config?.ENABLE_WORKFLOWS_FEATURE === 'true' && (
+                <Route
+                  exact
+                  path="/:workspaceId/workflows"
+                  element={
+                    <AdminRoute>
+                      <HomePage switchDarkMode={this.switchDarkMode} darkMode={darkMode} appType={'workflow'} />
+                    </AdminRoute>
+                  }
+                />
+              )}
               <Route
                 path="*"
                 render={() => {

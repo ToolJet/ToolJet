@@ -13,6 +13,7 @@ export const getPrivateRoute = (page, params = {}) => {
     integrations: '/integrations',
     global_datasources: '/global-datasources',
     audit_logs: '/audit-logs',
+    workflows: '/workflows',
   };
 
   let url = routes[page];

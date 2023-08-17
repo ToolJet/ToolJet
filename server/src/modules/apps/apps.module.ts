@@ -4,6 +4,7 @@ import { App } from '../../entities/app.entity';
 import { File } from '../../entities/file.entity';
 import { AppsController } from '../../controllers/apps.controller';
 import { AppsService } from '../../services/apps.service';
+import { WorkflowExecutionsController } from '../../controllers/workflow_executions_controller';
 import { AppVersion } from '../../../src/entities/app_version.entity';
 import { DataQuery } from '../../../src/entities/data_query.entity';
 import { CaslModule } from '../casl/casl.module';
@@ -35,6 +36,13 @@ import { PluginsService } from '@services/plugins.service';
 import { Plugin } from 'src/entities/plugin.entity';
 import { PluginsHelper } from 'src/helpers/plugins.helper';
 import { AppEnvironmentService } from '@services/app_environments.service';
+import { WorkflowExecution } from 'src/entities/workflow_execution.entity';
+import { WorkflowExecutionNode } from 'src/entities/workflow_execution_node.entity';
+import { WorkflowExecutionsService } from '@services/workflow_executions.service';
+import { WorkflowExecutionEdge } from 'src/entities/workflow_execution_edge.entity';
+import { BullModule } from '@nestjs/bull';
+import { DataQueriesService } from '@services/data_queries.service';
+import { OrgEnvironmentVariable } from 'src/entities/org_envirnoment_variable.entity';
 
 @Module({
   imports: [
@@ -57,8 +65,15 @@ import { AppEnvironmentService } from '@services/app_environments.service';
       File,
       AppEnvironment,
       Plugin,
+      WorkflowExecution,
+      WorkflowExecutionNode,
+      WorkflowExecutionEdge,
+      OrgEnvironmentVariable,
     ]),
     CaslModule,
+    BullModule.registerQueue({
+      name: 'workflows',
+    }),
   ],
   providers: [
     AppsService,
@@ -74,7 +89,9 @@ import { AppEnvironmentService } from '@services/app_environments.service';
     PluginsService,
     PluginsHelper,
     AppEnvironmentService,
+    WorkflowExecutionsService,
+    DataQueriesService,
   ],
-  controllers: [AppsController, AppUsersController, AppsImportExportController],
+  controllers: [AppsController, AppUsersController, AppsImportExportController, WorkflowExecutionsController],
 })
 export class AppsModule {}

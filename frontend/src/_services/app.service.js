@@ -24,6 +24,7 @@ export const appService = {
   getLicenseTerms,
   getVersions,
   getAppsLimit,
+  getWorkflows,
 };
 
 function getConfig() {
@@ -31,14 +32,19 @@ function getConfig() {
   return fetch(`${config.apiUrl}/config`, requestOptions).then(handleResponse);
 }
 
-function getAll(page, folder, searchKey) {
+function getAll(page, folder, searchKey, type) {
   const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
-  if (page === 0) return fetch(`${config.apiUrl}/apps`, requestOptions).then(handleResponse);
+  if (page === 0) return fetch(`${config.apiUrl}/apps?type=${type}`, requestOptions).then(handleResponse);
   else
     return fetch(
-      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}`,
+      `${config.apiUrl}/apps?page=${page}&folder=${folder || ''}&searchKey=${searchKey}&type=${type}`,
       requestOptions
     ).then(handleResponse);
+}
+
+function getWorkflows(id) {
+  const requestOptions = { method: 'GET', headers: authHeader(), credentials: 'include' };
+  return fetch(`${config.apiUrl}/apps/${id}/workflows`, requestOptions).then(handleResponse);
 }
 
 function createApp(body = {}) {

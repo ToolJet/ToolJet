@@ -10,6 +10,8 @@ import { authenticationService, licenseService } from '@/_services';
 import SolidIcon from '../Icon/SolidIcons';
 import { getPrivateRoute } from '@/_helpers/routes';
 import { LicenseTooltip } from '@/LicenseTooltip';
+import Beta from '../Beta';
+import './styles.scss';
 
 function Layout({ children, switchDarkMode, darkMode }) {
   const router = useRouter();
@@ -61,6 +63,7 @@ function Layout({ children, switchDarkMode, darkMode }) {
   const admin = currentUserValue?.admin;
   const super_admin = currentUserValue?.super_admin;
   const marketplaceEnabled = admin && window.public_config?.ENABLE_MARKETPLACE_FEATURE == 'true';
+  const workflowsEnabled = admin && window.public_config?.ENABLE_WORKFLOWS_FEATURE == 'true';
 
   return (
     <div className="row m-auto">
@@ -101,6 +104,38 @@ function Layout({ children, switchDarkMode, darkMode }) {
                     </Link>
                   </ToolTip>
                 </li>
+                {workflowsEnabled && (
+                  <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
+                    <ToolTip message="Workflows" placement="right">
+                      <Link
+                        to={getPrivateRoute('workflows')}
+                        className={`tj-leftsidebar-icon-items  ${
+                          router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
+                        }`}
+                        data-cy="icon-database"
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          height: 'fit-content',
+                          gap: '4px',
+                          padding: '8px',
+                        }}
+                      >
+                        <SolidIcon
+                          name="workflows"
+                          fill={
+                            router.pathname === getPrivateRoute('workflows') && `current-seleted-route`
+                              ? '#3E63DD'
+                              : darkMode
+                              ? '#4C5155'
+                              : '#C1C8CD'
+                          }
+                        />
+                        <Beta className="workflows-beta-tag" />
+                      </Link>
+                    </ToolTip>
+                  </li>
+                )}
                 {window.public_config?.ENABLE_TOOLJET_DB == 'true' && admin && (
                   <li className="text-center  cursor-pointer" data-cy={`database-icon`}>
                     <ToolTip message="Database" placement="right">

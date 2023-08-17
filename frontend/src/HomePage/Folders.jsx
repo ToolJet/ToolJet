@@ -26,6 +26,7 @@ export const Folders = function Folders({
   canDeleteFolder,
   canCreateApp,
   darkMode,
+  appType,
 }) {
   const [isLoading, setLoadingStatus] = useState(foldersLoading);
   const [showInput, setShowInput] = useState(false);
@@ -56,7 +57,7 @@ export const Folders = function Folders({
   }, [folders]);
 
   useEffect(() => {
-    updateSidebarNAV('All apps');
+    updateSidebarNAV(`All ${appType === 'workflow' ? 'workflows' : 'apps'}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -75,7 +76,7 @@ export const Folders = function Folders({
     if (!errorText) {
       setCreationStatus(true);
       folderService
-        .create(newName)
+        .create(newFolderName, appType)
         .then((data) => {
           toast.success('Folder created.');
           setCreationStatus(false);
@@ -166,6 +167,16 @@ export const Folders = function Folders({
         });
     }
   }
+
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      if (showUpdateForm) {
+        executeEditFolder();
+      } else {
+        saveFolder();
+      }
+    }
+  };
 
   const handleInputChange = (e) => {
     setErrorText('');
@@ -269,7 +280,10 @@ export const Folders = function Folders({
             onClick={() => handleFolderChange({})}
             data-cy="all-applications-link"
           >
-            {t('homePage.foldersSection.allApplications', 'All apps')}
+            {t(
+              `${appType === 'workflow' ? 'workflowsDashboard' : 'homePage'}.foldersSection.allApplications`,
+              'All apps'
+            )}
           </a>
         </div>
       )}
@@ -331,6 +345,7 @@ export const Folders = function Folders({
               value={newFolderName}
               maxLength={50}
               data-cy="folder-name-input"
+              onKeyPress={handleKeyPress}
               autoFocus
             />
             <label className="tj-input-error">{errorText || ''}</label>

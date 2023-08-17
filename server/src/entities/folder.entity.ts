@@ -20,6 +20,9 @@ export class Folder {
   id: string;
 
   @Column()
+  type: string;
+
+  @Column()
   name: string;
 
   @Column({ name: 'organization_id' })

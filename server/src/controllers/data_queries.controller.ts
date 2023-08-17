@@ -28,6 +28,7 @@ import { DataSource } from 'src/entities/data_source.entity';
 import { DataSourceScopes, DataSourceTypes } from 'src/helpers/data_source.constants';
 import { App } from 'src/entities/app.entity';
 import { GlobalDataSourceAbilityFactory } from 'src/modules/casl/abilities/global-datasource-ability.factory';
+import { isEmpty } from 'class-validator';
 
 @Controller('data_queries')
 export class DataQueriesController {
@@ -93,12 +94,18 @@ export class DataQueriesController {
     let dataSource: DataSource;
     let app: App;
 
-    if (!dataSourceId && !(kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy')) {
+    if (
+      !dataSourceId &&
+      !(kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy' || kind === 'workflows')
+    ) {
       throw new BadRequestException();
     }
 
     return dbTransactionWrap(async (manager: EntityManager) => {
-      if (!dataSourceId && (kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy')) {
+      if (
+        !dataSourceId &&
+        (kind === 'restapi' || kind === 'runjs' || kind === 'tooljetdb' || kind === 'runpy' || kind === 'workflows')
+      ) {
         dataSource = await this.dataSourcesService.findDefaultDataSource(
           kind,
           appVersionId,
@@ -143,14 +150,19 @@ export class DataQueriesController {
         appVersionId,
         manager
       );
-      return decamelizeKeys(dataQuery);
+
+      const decamelizedQuery = decamelizeKeys({ ...dataQuery, kind });
+
+      decamelizedQuery['options'] = dataQuery.options;
+
+      return decamelizedQuery;
     });
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(@User() user, @Param('id') dataQueryId, @Body() updateDataQueryDto: UpdateDataQueryDto) {
-    const { name, options } = updateDataQueryDto;
+    const { name, options, data_source_id } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
     const ability = await this.appsAbilityFactory.appsActions(user, dataQuery.app.id);
@@ -174,8 +186,10 @@ export class DataQueriesController {
       throw new ForbiddenException('You do not have permissions to perform this action');
     }
 
-    const result = await this.dataQueriesService.update(dataQueryId, name, options);
-    return decamelizeKeys(result);
+    const result = await this.dataQueriesService.update(dataQueryId, name, options, data_source_id);
+    const decamelizedQuery = decamelizeKeys({ ...dataQuery, ...result });
+    decamelizedQuery['options'] = result.options;
+    return decamelizedQuery;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -215,7 +229,7 @@ export class DataQueriesController {
     @Param('environmentId') environmentId,
     @Body() updateDataQueryDto: UpdateDataQueryDto
   ) {
-    const { options } = updateDataQueryDto;
+    const { options, resolvedOptions, data_source_id } = updateDataQueryDto;
 
     const dataQuery = await this.dataQueriesService.findOne(dataQueryId);
 
@@ -225,12 +239,17 @@ export class DataQueriesController {
       if (!ability.can('runQuery', dataQuery.app)) {
         throw new ForbiddenException('you do not have permissions to perform this action');
       }
+
+      if (ability.can('updateQuery', dataQuery.app) && !isEmpty(options)) {
+        await this.dataQueriesService.update(dataQueryId, dataQuery.name, options, data_source_id);
+        dataQuery['options'] = options;
+      }
     }
 
     let result = {};
 
     try {
-      result = await this.dataQueriesService.runQuery(user, dataQuery, options, environmentId);
+      result = await this.dataQueriesService.runQuery(user, dataQuery, resolvedOptions, environmentId);
     } catch (error) {
       if (error.constructor.name === 'QueryError') {
         result = {

@@ -26,6 +26,7 @@ export const ButtonBase = function ButtonBase(props) {
     iconCustomClass,
     iconWidth,
     customStyles = {},
+    iconViewBox,
     ...restProps
   } = props;
 
@@ -45,7 +46,15 @@ export const ButtonBase = function ButtonBase(props) {
     >
       {!isLoading && leftIcon && (
         <span className="tj-btn-left-icon">
-          {<SolidIcon fill={fill} className={iconCustomClass} name={leftIcon} width={iconWidth} />}
+          {
+            <SolidIcon
+              fill={fill}
+              className={iconCustomClass}
+              name={leftIcon}
+              width={iconWidth}
+              viewBox={iconViewBox}
+            />
+          }
         </span>
       )}
       {isLoading ? (
