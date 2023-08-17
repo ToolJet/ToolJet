@@ -18,6 +18,7 @@ const Oauth = ({
   authObject,
   optionchanged,
   access_token_custom_headers,
+  workspaceConstants,
 }) => {
   useEffect(() => {
     if (authObject && authObject?.flows['authorizationCode']) {
@@ -104,6 +105,7 @@ const Oauth = ({
           className="form-control"
           onChange={(e) => optionchanged('client_id', e.target.value)}
           value={client_id}
+          workspaceConstants={workspaceConstants}
         />
       </div>
 
@@ -132,7 +134,12 @@ const Oauth = ({
           <label className="form-label pt-2">Custom Query Parameters</label>
         </div>
       </div>
-      <Headers getter={'custom_query_params'} options={custom_query_params} optionchanged={optionchanged} />
+      <Headers
+        getter={'custom_query_params'}
+        options={custom_query_params}
+        optionchanged={optionchanged}
+        workspaceConstants={workspaceConstants}
+      />
 
       {grant_type === 'authorization_code' && (
         <div>
@@ -152,7 +159,12 @@ const Oauth = ({
               <label className="form-label pt-2">Custom Authentication Parameters</label>
             </div>
           </div>
-          <Headers getter={'custom_auth_params'} options={custom_auth_params} optionchanged={optionchanged} />
+          <Headers
+            getter={'custom_auth_params'}
+            options={custom_auth_params}
+            optionchanged={optionchanged}
+            workspaceConstants={workspaceConstants}
+          />
           <label className="form-label text-muted mt-3">Client Authentication</label>
           <Select
             options={[

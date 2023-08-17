@@ -414,6 +414,7 @@ const ManageOrgConstantsComponent = ({ darkMode }) => {
                     <EmptyState
                       canCreateVariable={canCreateVariable()}
                       setIsManageVarDrawerOpen={setIsManageVarDrawerOpen}
+                      isLoading={isLoading}
                     />
                   )}
                 </div>

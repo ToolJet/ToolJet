@@ -6,7 +6,7 @@ const Input = ({ helpText, ...props }) => {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
-    <div className="tj-app-input">
+    <div className="">
       <input {...props} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)} />
       <OrgConstantVariablesPreviewBox
         workspaceVariables={workspaceVariables}
